@@ -82,8 +82,8 @@ class _DefaultIndexListState extends State<DefaultIndexList> with AutomaticKeepA
   }
 }
 
-// Rename _IndexItem to OptimizedIndexItem for clarity
-class OptimizedIndexItem extends StatefulWidget {
+// A completely static wrapper to prevent rebuilds
+class OptimizedIndexItem extends StatelessWidget {
   final dynamic indexItem;
   final bool src;
   final double itemWidth;
@@ -96,117 +96,18 @@ class OptimizedIndexItem extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  OptimizedIndexItemState createState() => OptimizedIndexItemState();
-}
-
-// Rename _IndexItemState to OptimizedIndexItemState
-class OptimizedIndexItemState extends State<OptimizedIndexItem> {
-  StreamSubscription? _subscription;
-  
-  // Cache the values locally to avoid rebuilds
-  String _ltp = '0.00';
-  String _change = '0.00';
-  String _perChange = '0.00';
-  bool _isInitialized = false;
-  
-  // Track last update time to optimize rebuilds
-  DateTime _lastUpdateTime = DateTime.now();
-  
-  @override
-  void initState() {
-    super.initState();
-    // Initialize with current values
-    _ltp = widget.indexItem.ltp ?? '0.00';
-    _change = widget.indexItem.change ?? '0.00';
-    _perChange = widget.indexItem.perChange ?? '0.00';
-  }
-  
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    
-    if (!_isInitialized) {
-      _setupSocketListener();
-      _isInitialized = true;
-    }
-  }
-  
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-  
-  // Set up a focused socket listener that only updates this item
-  void _setupSocketListener() {
-    final token = widget.indexItem.token?.toString();
-    if (token == null) return;
-    
-    final websocket = ProviderScope.containerOf(context).read(websocketProvider);
-    
-    // Pre-load with socket data if available
-    final socketData = websocket.socketDatas[token];
-    if (socketData != null) {
-      _updateFromSocketData(socketData);
-    }
-    
-    // Set up subscription that only listens for this token
-    _subscription = websocket.socketDataStream.listen((data) {
-      if (data.containsKey(token)) {
-        final socketData = data[token];
-        if (socketData != null) {
-          // Only rebuild if data changed and enough time elapsed (throttle updates)
-          if (_updateFromSocketData(socketData)) {
-            final now = DateTime.now();
-            if (now.difference(_lastUpdateTime).inMilliseconds > 300) { // Throttle to reduce jank
-              _lastUpdateTime = now;
-              if (mounted) setState(() {});
-            }
-          }
-        }
-      }
-    });
-  }
-  
-  // Update local state from socket data, return true if values changed
-  bool _updateFromSocketData(dynamic socketData) {
-    bool hasUpdates = false;
-    
-    if (socketData['lp'] != null && socketData['lp'].toString() != "null") {
-      final newLtp = socketData['lp'].toString();
-      if (newLtp != _ltp) {
-        _ltp = newLtp;
-        hasUpdates = true;
-      }
-    }
-    
-    if (socketData['chng'] != null && socketData['chng'].toString() != "null") {
-      final newChange = socketData['chng'].toString();
-      if (newChange != _change) {
-        _change = newChange;
-        hasUpdates = true;
-      }
-    }
-    
-    if (socketData['pc'] != null && socketData['pc'].toString() != "null") {
-      final newPerChange = socketData['pc'].toString();
-      if (newPerChange != _perChange) {
-        _perChange = newPerChange;
-        hasUpdates = true;
-      }
-    }
-    
-    return hasUpdates;
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Store providers as locals to avoid reference in nested closures
     final theme = context.read(themeProvider);
+    final marketWatch = context.read(marketWatchProvider);
+    final indexProvider = context.read(indexListProvider);
+    final token = indexItem.token?.toString();
+    final exch = indexItem.exch?.toString();
     
     return RepaintBoundary(
       child: InkWell(
-        onTap: () => _handleTap(context),
-        onLongPress: () => _handleLongPress(context),
+        onTap: () => _handleTap(context, marketWatch, token, exch),
+        onLongPress: () => _handleLongPress(context, indexProvider, marketWatch),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8),
           decoration: BoxDecoration(
@@ -214,26 +115,26 @@ class OptimizedIndexItemState extends State<OptimizedIndexItem> {
               color: theme.isDarkMode
                   ? colors.darkColorDivider
                   : colors.colorDivider,
-              width: widget.src ? 0.6 : 0
+              width: src ? 0.6 : 0
             ),
-            color: widget.src
+            color: src
                 ? Colors.transparent
                 : theme.isDarkMode
                     ? const Color(0xffB5C0CF).withOpacity(.15)
                     : const Color(0xffF1F3F8),
             borderRadius: BorderRadius.circular(5)
           ),
-          width: widget.itemWidth,
+          width: itemWidth,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Fix hierarchy: Expanded outside RepaintBoundary
+              // Static part that never changes
               Expanded(
                 child: RepaintBoundary(
                   child: _StaticIndexName(
-                    name: widget.indexItem.idxname?.toUpperCase() ?? "",
+                    name: indexItem.idxname?.toUpperCase() ?? "",
                     isDarkMode: theme.isDarkMode,
-                    isSrc: widget.src,
+                    isSrc: src,
                   ),
                 ),
               ),
@@ -241,13 +142,14 @@ class OptimizedIndexItemState extends State<OptimizedIndexItem> {
               // Add spacing between static and dynamic parts
               const SizedBox(width: 4),
               
-              // Dynamic content that rebuilds with price changes
-              _DynamicPriceData(
-                ltp: _ltp,
-                change: _change,
-                perChange: _perChange,
+              // Dynamic part that updates with WebSocket data
+              _LivePriceWidget(
+                token: token ?? "",
+                initialLtp: indexItem.ltp ?? "0.00",
+                initialChange: indexItem.change ?? "0.00", 
+                initialPerChange: indexItem.perChange ?? "0.00",
                 isDarkMode: theme.isDarkMode,
-                isSrc: widget.src,
+                isSrc: src,
               ),
             ],
           ),
@@ -257,15 +159,13 @@ class OptimizedIndexItemState extends State<OptimizedIndexItem> {
   }
   
   // Handle tap on index item
-  Future<void> _handleTap(BuildContext context) async {
+  Future<void> _handleTap(BuildContext context, dynamic marketWatch, String? token, String? exch) async {
     try {
-      final marketWatch = context.read(marketWatchProvider);
-      
       // First, safely fetch the quote data
       await marketWatch.fetchScripQuoteIndex(
-        widget.indexItem.token?.toString() ?? "",
-        widget.indexItem.exch?.toString() ?? "",
-                      context);
+        token ?? "",
+        exch ?? "",
+        context);
 
       final quots = marketWatch.getQuotes;
       
@@ -275,7 +175,7 @@ class OptimizedIndexItemState extends State<OptimizedIndexItem> {
       }
       
       // Create DepthInputArgs with null safety
-                  DepthInputArgs depthArgs = DepthInputArgs(
+      DepthInputArgs depthArgs = DepthInputArgs(
         exch: quots.exch?.toString() ?? "",
         token: quots.token?.toString() ?? "",
         tsym: quots.tsym?.toString() ?? "",
@@ -294,36 +194,238 @@ class OptimizedIndexItemState extends State<OptimizedIndexItem> {
   }
   
   // Handle long press on index item
-  Future<void> _handleLongPress(BuildContext context) async {
+  Future<void> _handleLongPress(BuildContext context, dynamic indexProvider, dynamic marketWatch) async {
     try {
-      final indexProvider = context.read(indexListProvider);
       await indexProvider.fetchIndexList("NSE", context);
       
       // Pass the indexItem directly - no conversion needed
-                  await showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      isDismissible: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(10),
-                          topRight: Radius.circular(10),
-                        ),
-                      ),
+      await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          isDismissible: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10),
+              topRight: Radius.circular(10),
+            ),
+          ),
           builder: (_) => IndexBottomSheet(
-            defaultIndex: widget.indexItem, 
-            src: widget.src
+            defaultIndex: indexItem, 
+            src: src
           )
       );
       
       await indexProvider.fetchIndexList("exit", context);
-                  await context
-                      .read(marketWatchProvider)
-                      .requestMWScrip(context: context, isSubscribe: true);
+      await marketWatch.requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
       // Log or handle the error
       debugPrint("Error in index onLongPress: $e");
     }
+  }
+}
+
+// Isolated WebSocket listener that only rebuilds when price data changes
+class _LivePriceWidget extends StatefulWidget {
+  final String token;
+  final String initialLtp;
+  final String initialChange;
+  final String initialPerChange;
+  final bool isDarkMode;
+  final bool isSrc;
+  
+  const _LivePriceWidget({
+    Key? key,
+    required this.token,
+    required this.initialLtp,
+    required this.initialChange,
+    required this.initialPerChange,
+    required this.isDarkMode,
+    required this.isSrc,
+  }) : super(key: key);
+  
+  @override
+  State<_LivePriceWidget> createState() => _LivePriceWidgetState();
+}
+
+class _LivePriceWidgetState extends State<_LivePriceWidget> {
+  late String _ltp;
+  late String _change;
+  late String _perChange;
+  StreamSubscription? _subscription;
+  bool _isUpdatePending = false;
+  final _debouncer = Debouncer(milliseconds: 300);
+  bool _isInitialized = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _ltp = widget.initialLtp;
+    _change = widget.initialChange;
+    _perChange = widget.initialPerChange;
+    // Don't access providers in initState
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Only setup once
+    if (!_isInitialized) {
+      _setupSocketListener();
+      _isInitialized = true;
+    }
+  }
+  
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    _debouncer.cancel();
+    super.dispose();
+  }
+  
+  void _setupSocketListener() {
+    if (widget.token.isEmpty) return;
+    
+    final websocket = ProviderScope.containerOf(context).read(websocketProvider);
+    
+    // First check if current socket data exists
+    final existingData = websocket.socketDatas[widget.token];
+    if (existingData != null) {
+      _updateFromSocketData(existingData);
+    }
+    
+    // Listen for future updates
+    _subscription = websocket.socketDataStream.listen((data) {
+      if (data.containsKey(widget.token)) {
+        final socketData = data[widget.token];
+        if (socketData != null) {
+          final hasChanged = _updateFromSocketData(socketData);
+          
+          if (hasChanged && mounted && !_isUpdatePending) {
+            _isUpdatePending = true;
+            
+            // Debounce to prevent too many rebuilds
+            _debouncer.run(() {
+              if (mounted) {
+                setState(() {});
+                _isUpdatePending = false;
+              }
+            });
+          }
+        }
+      }
+    });
+  }
+  
+  bool _updateFromSocketData(dynamic data) {
+    bool hasChanged = false;
+    
+    if (data['lp'] != null && data['lp'].toString() != _ltp) {
+      _ltp = data['lp'].toString();
+      hasChanged = true;
+    }
+    
+    if (data['chng'] != null && data['chng'].toString() != _change) {
+      _change = data['chng'].toString();
+      hasChanged = true;
+    }
+    
+    if (data['pc'] != null && data['pc'].toString() != _perChange) {
+      _perChange = data['pc'].toString();
+      hasChanged = true;
+    }
+    
+    return hasChanged;
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    // Calculate styling values
+    final changeColor = _getChangeColor(_change, _perChange);
+    
+    return RepaintBoundary(
+      child: widget.isSrc
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    "₹$_ltp", 
+                    style: _getTextStyle(
+                      widget.isDarkMode ? const Color(0xffE5E5E5) : widget.isSrc ? const Color(0xff666666) : const Color(0xff000000),
+                      13,
+                      FontWeight.w600
+                    )
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    "$_change ", 
+                    style: _getTextStyle(changeColor, 12, FontWeight.w600)
+                  ),
+                  Text(
+                    "($_perChange%)", 
+                    style: _getTextStyle(changeColor, 12, FontWeight.w600)
+                  )
+                ]
+              ),
+            ],
+          )
+        : Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                "₹$_ltp", 
+                style: _getTextStyle(
+                  widget.isDarkMode ? const Color(0xffE5E5E5) : const Color(0xff000000),
+                  13,
+                  FontWeight.w600
+                )
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Text(
+                    "$_change ", 
+                    style: _getTextStyle(changeColor, 12, FontWeight.w600)
+                  ),
+                  Text(
+                    "($_perChange%)", 
+                    style: _getTextStyle(changeColor, 12, FontWeight.w600)
+                  ),
+                ],
+              )
+            ],
+          ),
+    );
+  }
+  
+  // Cache for text styles
+  static final Map<String, TextStyle> _textStyleCache = {};
+  
+  TextStyle _getTextStyle(Color color, double size, FontWeight weight) {
+    final key = '${color.value}|$size|${weight.index}';
+    return _textStyleCache.putIfAbsent(key, () => textStyle(color, size, weight));
+  }
+  
+  // Cache for change colors
+  static final Map<String, Color> _colorCache = {};
+  
+  Color _getChangeColor(String change, String perChange) {
+    final key = '$change|$perChange';
+    return _colorCache.putIfAbsent(key, () {
+      if (change.startsWith("-") || perChange.startsWith('-')) {
+        return colors.darkred;
+      } else if ((change == "null" || perChange == "null") ||
+                 (change == "0.00" || perChange == "0.00")) {
+        return colors.ltpgrey;
+      } else {
+        return colors.ltpgreen;
+      }
+    });
   }
 }
 
@@ -368,102 +470,19 @@ class _StaticIndexName extends StatelessWidget {
   }
 }
 
-// Reusable dynamic content widget for price data
-class _DynamicPriceData extends StatelessWidget {
-  final String ltp;
-  final String change;
-  final String perChange;
-  final bool isDarkMode;
-  final bool isSrc;
-  
-  // Cache for text styles to avoid recreation
-  static final Map<String, TextStyle> _styleCache = {};
-  
-  // Cache for color calculations
-  static final Map<String, Color> _colorCache = {};
-  
-  const _DynamicPriceData({
-    Key? key,
-    required this.ltp,
-    required this.change,
-    required this.perChange,
-    required this.isDarkMode,
-    required this.isSrc,
-  }) : super(key: key);
-  
-  // Get cached text style
-  TextStyle _getCachedStyle(Color color, double size, FontWeight weight) {
-    final key = '${color.value}|$size|${weight.index}';
-    if (!_styleCache.containsKey(key)) {
-      _styleCache[key] = textStyle(color, size, weight);
-    }
-    return _styleCache[key]!;
+// Debouncer helper class for throttling updates
+class Debouncer {
+  final int milliseconds;
+  Timer? _timer;
+
+  Debouncer({required this.milliseconds});
+
+  void run(VoidCallback action) {
+    _timer?.cancel();
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
   }
   
-  // Get cached color based on change value
-  Color _getCachedChangeColor(String value, String percentValue) {
-    final key = '$value|$percentValue';
-    if (!_colorCache.containsKey(key)) {
-      if (value.startsWith("-") || percentValue.startsWith('-')) {
-        _colorCache[key] = colors.darkred;
-      } else if ((value == "null" || percentValue == "null") ||
-               (value == "0.00" || percentValue == "0.00")) {
-        _colorCache[key] = colors.ltpgrey;
-      } else {
-        _colorCache[key] = colors.ltpgreen;
-      }
-    }
-    return _colorCache[key]!;
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    // Calculate price style once
-    final priceStyle = _getCachedStyle(
-      isDarkMode
-          ? const Color(0xffE5E5E5)
-          : isSrc ? const Color(0xff666666) : const Color(0xff000000),
-      13,
-      FontWeight.w600);
-    
-    // Calculate change colors and styles once
-    final changeColor = _getCachedChangeColor(change, perChange);
-    final perChangeColor = _getCachedChangeColor(perChange, perChange);
-    
-    final changeStyle = _getCachedStyle(changeColor, 12, FontWeight.w600);
-    final perChangeStyle = _getCachedStyle(perChangeColor, 12, FontWeight.w600);
-    
-    return RepaintBoundary(
-      child: isSrc
-                    ? Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-              const SizedBox(height: 24), // Align with name after spacing
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                  Text("₹$ltp", style: priceStyle),
-                                const SizedBox(width: 4),
-                  Text("$change ", style: changeStyle),
-                  Text("($perChange%)", style: perChangeStyle)
-                ]
-                          ),
-                        ],
-                      )
-        : Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-              Text("₹$ltp", style: priceStyle),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                  Text("$change ", style: changeStyle),
-                  Text("($perChange%)", style: perChangeStyle),
-                            ],
-                          )
-                        ],
-                      ),
-    );
+  void cancel() {
+    _timer?.cancel();
   }
 }
