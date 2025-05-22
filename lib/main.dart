@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 // import 'package:flutter/services.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -57,6 +58,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 // This method represents the project's entry level.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await FlutterDisplayMode.setHighRefreshRate();
   HttpOverrides.global = MyHttpOverrides();
   setupLocator();
   await NotificationService.initializeNotification();
