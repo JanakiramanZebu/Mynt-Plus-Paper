@@ -79,22 +79,30 @@ class _WatchListScreen extends State<WatchListScreen> with AutomaticKeepAliveCli
         scrollDirection: Axis.horizontal,
         controller: _controller,
         onPageChanged: (int d) async {
+          // Get the new watchlist name before unsubscribing
+          String newWatchlistName = marketWatch.marketWatchlist!.values![d];
+          
+          // Unsubscribe from current watchlist
           await marketWatch.requestMWScrip(context: context, isSubscribe: false);
-          for (var i = 0; i < marketWatch.marketWatchlist!.values!.length; i++) {
-            if (i == d) {
-              if (marketWatch.marketWatchlist!.values![i] == "My Stocks" ||
-                  marketWatch.marketWatchlist!.values![i] == "Nifty50" ||
-                  marketWatch.marketWatchlist!.values![i] == "Niftybank" ||
-                  marketWatch.marketWatchlist!.values![i] == "Sensex") {
-                await marketWatch.changeWlName(
-                    marketWatch.marketWatchlist!.values![i], "Yes");
-              } else {
-                await marketWatch.changeWlName(
-                    marketWatch.marketWatchlist!.values![i], "No");
-              }
-            }
+          
+          // Change to the new watchlist with proper flag
+          if (newWatchlistName == "My Stocks" ||
+              newWatchlistName == "Nifty50" ||
+              newWatchlistName == "Niftybank" ||
+              newWatchlistName == "Sensex") {
+            await marketWatch.changeWlName(newWatchlistName, "Yes");
+          } else {
+            await marketWatch.changeWlName(newWatchlistName, "No");
           }
+          
+          // Change watchlist scrips
           await marketWatch.changeWLScrip(marketWatch.wlName, context);
+          
+          // Special handling for My Stocks - explicitly subscribe to index data
+          if (newWatchlistName == "My Stocks") {
+            // Force resubscription to ensure index data is included
+            await marketWatch.requestMWScrip(context: context, isSubscribe: true);
+          }
         },
         itemBuilder: (BuildContext context, int index) {
           return RefreshIndicator(

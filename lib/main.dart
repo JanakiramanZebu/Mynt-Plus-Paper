@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 // import 'package:flutter/services.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -19,6 +20,34 @@ import 'provider/thems.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_names.dart';
 import 'themes/theme.dart';
+
+// Global provider to track Firebase initialization status
+final firebaseInitializedProvider = StateProvider<bool>((ref) => false);
+
+// Helper class for Firebase operations
+class FirebaseHelper {
+  // Static variable to track initialization status
+  static bool _isInitialized = false;
+  
+  // Check if Firebase is initialized
+  static bool isInitialized() {
+    return _isInitialized;
+  }
+  
+  // Mark Firebase as initialized
+  static void setInitialized(bool value) {
+    _isInitialized = value;
+    
+    // Also update the provider if possible
+    try {
+      final container = ProviderContainer();
+      container.read(firebaseInitializedProvider.notifier).state = value;
+    } catch (e) {
+      // Silently handle provider update errors
+      print("Provider update error: $e");
+    }
+  }
+}
 
 // used to pass messages from event handler to the UI
 final _messageStreamController = BehaviorSubject<RemoteMessage>();
@@ -53,75 +82,120 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 }
 
+// Separated Firebase initialization function for better control and performance
+Future<void> initializeFirebaseAsync() async {
+  final firebaseStartTime = DateTime.now();
+  print("Firebase initialization started at: $firebaseStartTime");
+  
+  try {
+    // Initialize Firebase with appropriate platform options
+    if (TargetPlatform.android == defaultTargetPlatform) {
+      await Firebase.initializeApp(
+          name: "dev project", options: DefaultFirebaseOptions.currentPlatform);
+    } else {
+      await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform);
+    }
+
+    final coreInitTime = DateTime.now();
+    final coreInitDuration = coreInitTime.difference(firebaseStartTime);
+    print("Firebase core initialized in: ${coreInitDuration.inMilliseconds}ms");
+
+    final Preferences pref = locator<Preferences>();
+    
+    // Configure messaging
+    final messaging = FirebaseMessaging.instance;
+    await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
+    // Get token for messaging
+    ConstantName.msgToken = await messaging.getToken();
+    log("Token ${ConstantName.msgToken}");
+
+    // Configure background messaging handler
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    
+    // Handle notification click when app was terminated
+    FirebaseMessaging.instance.getInitialMessage().then((message) async {
+      if (message != null) {
+        if (message.data["url"] != null) {
+          final Uri url = Uri.parse(message.data["url"]);
+          if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+            print("Could not launch URL");
+          }
+        }
+      }
+    });
+    
+    // Handle notification click when app was in background
+    FirebaseMessaging.onMessageOpenedApp.listen((message) async {
+      if (message.data["url"] != null) {
+        final Uri url = Uri.parse(message.data["url"]);
+        if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+          print("Could not launch URL");
+        }
+      }
+    });
+    
+    // Handle foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (kDebugMode) {
+        print("Message $message");
+        print('Handling a foreground message: ${message.messageId}');
+        print('Message data: ${message.data}');
+        print('Message notification: ${message.notification?.title}');
+        print('Message notification: ${message.notification?.body}');
+        print('Message notification: ${message.data["imageUrl"]}');
+      }
+      
+      handleNotificationMessage(message);
+      _messageStreamController.sink.add(message);
+    });
+
+    // Update initialization state after successful Firebase initialization
+    FirebaseHelper.setInitialized(true);
+    
+    final firebaseEndTime = DateTime.now();
+    final totalFirebaseDuration = firebaseEndTime.difference(firebaseStartTime);
+    print("Firebase fully initialized in: ${totalFirebaseDuration.inMilliseconds}ms");
+    
+  } catch (e) {
+    print("Firebase initialization error: $e");
+    // Don't update the provider state if initialization fails
+  }
+}
 
 // This method represents the project's entry level.
 void main() async {
+  // Track startup time
+  final startTime = DateTime.now();
+  print("App startup began at: $startTime");
+  
   WidgetsFlutterBinding.ensureInitialized();
+  await FlutterDisplayMode.setHighRefreshRate();
   HttpOverrides.global = MyHttpOverrides();
   setupLocator();
   await NotificationService.initializeNotification();
-  WidgetsFlutterBinding.ensureInitialized();
-  if (TargetPlatform.android == defaultTargetPlatform) {
-    await Firebase.initializeApp(
-        name: "dev project", options: DefaultFirebaseOptions.currentPlatform);
-  } else {
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
-  }
-
+  
   final Preferences pref = locator<Preferences>();
   await pref.init();
-  final messaging = FirebaseMessaging.instance;
-  await messaging.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
-
-// It requests a registration token for sending messages to users from your App server or other trusted server environment.
-  ConstantName.msgToken = await messaging.getToken();
-
-  log("Token ${ConstantName.msgToken}");
-
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  FirebaseMessaging.instance.getInitialMessage().then((message) async {
-  if (message != null) {
-    // Handle notification click when app was terminated
-    if (message.data["url"] != null) {
-      final Uri url = Uri.parse(message.data["url"]);
-      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-        print("Could not launch URL");
-      }
-    }
-  }
-});
-  FirebaseMessaging.onMessageOpenedApp.listen((message) async {
-  // Handle notification click when app was in background
-  if (message.data["url"] != null) {
-    final Uri url = Uri.parse(message.data["url"]);
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      print("Could not launch URL");
-    }
-  }
-});
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  if (kDebugMode) {
-    print("Message $message");
-    print('Handling a foreground message: ${message.messageId}');
-    print('Message data: ${message.data}');
-    print('Message notification: ${message.notification?.title}');
-    print('Message notification: ${message.notification?.body}');
-    print('Message notification: ${message.data["imageUrl"]}');
-  }
   
-  handleNotificationMessage(message);
-  _messageStreamController.sink.add(message);
-});
+  // Run the app first without waiting for Firebase
+  final beforeFirebase = DateTime.now();
+  final startupDuration = beforeFirebase.difference(startTime);
+  print("App ready to launch in: ${startupDuration.inMilliseconds}ms");
+  
   runApp(Phoenix(child: const ProviderScope(child: MyApp())));
+  
+  // Initialize Firebase after the app has started (non-blocking)
+  initializeFirebaseAsync();
 }
 
 class MyApp extends ConsumerWidget {

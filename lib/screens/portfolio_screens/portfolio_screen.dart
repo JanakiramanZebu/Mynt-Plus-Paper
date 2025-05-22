@@ -141,7 +141,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
             const SecureFund(),
             //   ]
             // ],
-            const Allholdings()
+            // const Allholdings()
           ]),
           // )
         ),

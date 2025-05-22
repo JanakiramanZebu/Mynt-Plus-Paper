@@ -310,14 +310,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
       ),
       //   ]
       // ],
-      Tab(
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-            Text(
-                "Total Portfolio${_allholds.isNotEmpty ? "s (${_allholds.length})" : ""}")
-          ])),
+      // Tab(
+      //     child: Row(
+      //         mainAxisAlignment: MainAxisAlignment.center,
+      //         crossAxisAlignment: CrossAxisAlignment.center,
+      //         children: [
+      //       Text(
+      //           "Total Portfolio${_allholds.isNotEmpty ? "s (${_allholds.length})" : ""}")
+      //     ])),
     ];
 
     notifyListeners();
