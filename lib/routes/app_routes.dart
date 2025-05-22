@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/screens/bonds/bonds_common_search_screen.dart';
 import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
@@ -7,6 +8,7 @@ import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_sip_details_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/order_single_page.dart';
 import 'package:mynt_plus/screens/profile_screen/app_webview/ipo_webview.dart';
+import '../main.dart'; // Import for FirebaseHelper
 import '../screens/authentication/login/login_banner_screen.dart';
 import '../screens/authentication/login/login_screen.dart';
 import '../screens/authentication/password/change_pass.dart';
@@ -141,13 +143,28 @@ static PageRouteBuilder _createRoute({
   );
 }
 
+  // Safe method to log screen views to Firebase Analytics
+  static void _logScreenView(String? screenName) {
+    try {
+      // Only log if Firebase is initialized and screenName is valid
+      if (FirebaseHelper.isInitialized() && screenName != null) {
+        FirebaseAnalytics.instance.logScreenView(
+          screenName: screenName,
+          screenClass: screenName,
+        );
+      }
+    } catch (e) {
+      // Silently handle analytics errors to prevent app navigation issues
+      print("Analytics logging error: $e");
+    }
+  }
+
   static Route router(RouteSettings settings) {
     currentRouteName = settings.name;
 
-    FirebaseAnalytics.instance.logScreenView(
-      screenName: currentRouteName,
-      screenClass: currentRouteName, // Customize if needed.
-    );
+    // Log screen view using the safe method
+    _logScreenView(currentRouteName);
+    
     final dynamic args = settings.arguments;
     switch (settings.name) {
       case Routes.splash:
