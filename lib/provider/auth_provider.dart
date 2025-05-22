@@ -53,9 +53,9 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Reader ref;
-  final String _version = "1.0.80(02)";
+  final String _version = "1.0.81(01)";
   late final String _versiontext =
-      "Version 3.0.2 Build $_version Released on 08 May";
+      "Version 3.0.2 Build $_version Released on 22 May";
   String get versiontext => _versiontext;
 
   //  Text field controller for Login and otp screen
@@ -734,6 +734,16 @@ class AuthProvider extends DefaultChangeNotifier {
       }
       if (_mobileOtp?.emsg == "otp not valid") {
         validateOtp('wrong');
+      } else if (_mobileOtp!.emsg ==
+          "Invalid Input : User Blocked due to multiple wrong attempts") {
+        final ctx = context;
+        ref(changePasswordProvider).userIdController.text = mobile_client;
+        Navigator.pushNamed(ctx, Routes.forgotPass);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, _mobileOtp!.emsg!));
+        // Future.delayed(const Duration(seconds: 1), () {
+        Navigator.pop(context);
+        // });
       }
       if (_mobileOtp?.emsg == "Invalid Input : Invalid OTP") {
         validateOtp('TOTP');

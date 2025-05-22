@@ -822,7 +822,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Search scrip by tarde symbol
 
-  scripSearch(String value, BuildContext context, int? seg, String options) async {
+  scripSearch(
+      String value, BuildContext context, int? seg, String options) async {
     if (value.length > 2) {
       await fetchSearchScrip(
           searchText: value,
@@ -878,7 +879,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
 
-  Future fetchMWList(BuildContext context, bool waitis) async {
+  Future fetchMWList(BuildContext context, bool waitis,
+      [bool swit = false]) async {
     try {
       _marketWatchlist = await api.getMWList();
       pref.setMWScrip(true);
@@ -895,9 +897,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           bool isFirst = true;
 
           for (var element in _marketWatchlist!.values!) {
-            if (isFirst && waitis) {
+            if (!waitis) {
               await fetchMWScrip(element, context);
-              isFirst = waitis;
+            } else if (isFirst && waitis) {
+              await fetchMWScrip(element, context);
+              isFirst = false;
             } else {
               fetchMWScrip(element, context); // No await here
             }
@@ -907,11 +911,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         if (_wlName.isEmpty) {
           _wlName = _marketWatchlist!.values!.first;
         }
-
         _marketWatchlist!.values!.addAll(_preDefWL);
-
         fetchPreDefMWScrip(context);
-        await changeWLScrip(_wlName, context);
+        if (swit == false) {
+          await changeWLScrip(_wlName, context);
+        }
       } else {
         if (_marketWatchlist!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
@@ -1444,21 +1448,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       } // _searchScripModel = await api.getSearchScrip(searchText: searchText);
       _searchScripModel = await api.getSearchScripNew(
           searchText: searchText, categ: segment, exchs: _exarr, opt: option);
-  print("object d");
       _allSearchScrip = [];
       // _equitySearchScrip = [];
       // _fNoSearchScrip = [];
       // _currencySearchScrip = [];
       // _commoditySearchScrip = [];
       if (_searchScripModel?.stat == "Ok") {
-  print("object if 1");
         ConstantName.sessCheck = true;
 
         final values = _searchScripModel!.values!;
         _isAdded = List<bool>.filled(values.length, false);
 
         if (values.isNotEmpty) {
-  print("object if 2");
           // final Set<String> currencySet = {
           //   "FUTCUR",
           //   "FUTIRC",
@@ -1994,6 +1995,33 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _optChainPutDown = [];
     _optChainPutUp = [];
 // Seperating Trade symbol(symbol,exp date, Option)
+ final List<OptionValues>? opt = _optionChainModel!.optValue;
+    for (var el in List<OptionValues>.from(opt!)) {
+      String complementType = el.optt == 'PE' ? 'CE' : 'PE';
+
+      bool exists = opt.any((item) =>
+          item.optt == complementType &&
+          num.parse(item.strprc.toString()) == num.parse(el.strprc.toString()));
+
+      if (!exists) {
+        _optionChainModel!.optValue!.add(OptionValues(
+          exch: el.exch,
+          token: "${el.token}${el.token}",
+          tsym: "|||",
+          optt: complementType,
+          pp: el.pp,
+          ls: el.ls,
+          ti: el.ti,
+          strprc: el.strprc,
+        ));
+      }
+    }
+
+    _optionChainModel!.optValue!.sort((a, b) {
+      return num.parse(a.strprc.toString())
+          .compareTo(num.parse(b.strprc.toString()));
+    });
+
     for (var element in _optionChainModel!.optValue!) {
       Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
@@ -2085,10 +2113,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   changeWLScrip(String wName, BuildContext context) async {
     try {
+      bool wlis = _marketWatchScripData.containsKey(wName);
       _scrips = wName == "My Stocks"
           ? []
-          : await jsonDecode(_marketWatchScripData[wName]) ?? [];
-
+          : wlis
+              ? await jsonDecode(_marketWatchScripData[wName]) ?? []
+              : [];
       if (wName == "My Stocks") {
         await ref(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: true);
@@ -2103,7 +2133,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
 // Delete market scrips by watchlist name
-  deleteWatchList(String wlName, BuildContext context) async {
+  deleteWatchList(String walName, BuildContext context) async {
     String input = "";
 
     for (var element in _scrips) {
@@ -2111,11 +2141,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
 
     _addDeleteScripModel = await api.getAddDeleteSciptoMW(
-        isAdd: false, scripToken: input, wlname: wlName);
+        isAdd: false, scripToken: input, wlname: walName);
 
     if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
-      await changeWlName("", "No");
-      await fetchMWList(context, false);
+      if (walName == _wlName) {
+        await changeWlName("", "No");
+      }
+      await fetchMWList(context, false, walName == _wlName);
     }
   }
 

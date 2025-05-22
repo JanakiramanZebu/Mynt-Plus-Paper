@@ -174,15 +174,6 @@ class TradeBook extends ConsumerWidget {
 
                             if ((tradeBook[itemIndex].exch == "NSE" ||
                                 tradeBook[itemIndex].exch == "BSE")) {
-                              context.read(marketWatchProvider).depthBtns.add({
-                                "btnName": "Fundamental",
-                                "imgPath": assets.dInfo,
-                                "key": context
-                                    .read(showcaseProvide)
-                                    .fundamentalcase,
-                                "case": "Click here to view fundamental data."
-                              });
-
                               await context
                                   .read(marketWatchProvider)
                                   .fetchTechData(
@@ -432,15 +423,6 @@ class TradeBook extends ConsumerWidget {
                                     "NSE" ||
                                 order.tradeBooksearch![itemIndex].exch ==
                                     "BSE")) {
-                              context.read(marketWatchProvider).depthBtns.add({
-                                "btnName": "Fundamental",
-                                "imgPath": assets.dInfo,
-                                "key": context
-                                    .read(showcaseProvide)
-                                    .fundamentalcase,
-                                "case": "Click here to view fundamental data."
-                              });
-
                               await context.read(marketWatchProvider).fetchTechData(
                                   context: context,
                                   exch:

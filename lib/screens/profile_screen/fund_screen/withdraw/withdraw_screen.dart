@@ -14,7 +14,6 @@ class WithdrawScreen extends StatefulWidget {
   final TranctionProvider withdarw;
   final FocusNode foucs;
   final ThemesProvider theme;
-
   final String segment;
   const WithdrawScreen({
     super.key,
@@ -31,12 +30,15 @@ class WithdrawScreen extends StatefulWidget {
 class _WithdrawScreenState extends State<WithdrawScreen> {
   String withdarwerror = "";
   late bool _isVisible;
-
+  bool disable = false;
   @override
   void initState() {
     context.read(transcationProvider).withdrawstatus![0].msg == "no data found"
         ? _isVisible = false
         : _isVisible = true;
+
+    disable = (widget.withdarw.withdrawamount.text.isEmpty ||
+        widget.withdarw.payoutdetails!.withdrawAmount == "0.00");
     super.initState();
   }
 
@@ -66,15 +68,17 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
               widget.withdarw.withdrawamount.text = value;
               setState(() {
                 if (widget.withdarw.withdrawamount.text.isNotEmpty) {
-                  double.parse(widget.withdarw.payoutdetails!.withdrawAmount
-                                  .toString())
-                              .toInt() >
-                          double.parse(widget.withdarw.withdrawamount.text)
-                      ? withdarwerror = ""
-                      : withdarwerror = "Insufficient fund";
+                  disable = !(double.parse(widget
+                          .withdarw.payoutdetails!.withdrawAmount
+                          .toString()) >=
+                      double.parse(widget.withdarw.withdrawamount.text));
+                } else if (widget.withdarw.withdrawamount.text.isEmpty ||
+                    widget.withdarw.payoutdetails!.withdrawAmount == "0.00") {
+                  disable = true;
                 } else {
-                  withdarwerror = "";
+                  disable = false;
                 }
+                withdarwerror = disable ? "Insufficient fund" : "";
               });
             },
             decoration: InputDecoration(
@@ -166,9 +170,44 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                     ),
                   ],
                 ),
-                contantTitleText(
-                  "₹${widget.withdarw.payoutdetails!.withdrawAmount}",
-                  widget.theme,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    contantTitleText(
+                      "₹${widget.withdarw.payoutdetails!.withdrawAmount}",
+                      widget.theme,
+                    ),
+                    if (double.parse(widget
+                            .withdarw.payoutdetails!.withdrawAmount
+                            .toString()) >
+                        0) ...[
+                      InkWell(
+                          onTap: () {
+                            setState(() {
+                              widget.withdarw.withdrawamount.text = widget
+                                  .withdarw.payoutdetails!.withdrawAmount
+                                  .toString();
+                                  withdarwerror = "";
+                              disable = false;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: widget.theme.isDarkMode
+                                  ? colors.colorLightBlue.withOpacity(0.1)
+                                  : colors.colorBlue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text("Withdraw All",
+                                style: textStyles.resendOtpstyle.copyWith(
+                                    color: widget.theme.isDarkMode
+                                        ? colors.colorLightBlue
+                                        : colors.colorBlue)),
+                          )),
+                    ]
+                  ],
                 ),
                 const SizedBox(height: 5),
                 Divider(color: colors.colorDivider),
@@ -179,25 +218,22 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
             ),
           ),
           Container(
+            height: 40,
             margin: const EdgeInsets.symmetric(horizontal: 16),
             width: MediaQuery.of(context).size.width,
             child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
-                  backgroundColor:
-                      widget.withdarw.withdrawamount.text.isEmpty ||
-                              widget.withdarw.payoutdetails!.withdrawAmount ==
-                                  "0.00"
-                          ? colors.darkGrey
-                          : widget.theme.isDarkMode
-                              ? colors.colorbluegrey
-                              : colors.colorBlack,
+                  backgroundColor: disable
+                      ? colors.darkGrey
+                      : widget.theme.isDarkMode
+                          ? colors.colorbluegrey
+                          : colors.colorBlack,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
                   ),
                 ),
-                onPressed: widget.withdarw.withdrawamount.text.isEmpty ||
-                        widget.withdarw.payoutdetails!.withdrawAmount == "0.00"
+                onPressed: (disable)
                     ? () {
                         if (widget.withdarw.payoutdetails!.withdrawAmount ==
                             "0.00") {
@@ -229,10 +265,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                     : Text(
                         'Withdraw',
                         style: textStyle(
-                            widget.withdarw.withdrawamount.text.isEmpty ||
-                                    widget.withdarw.payoutdetails!
-                                            .withdrawAmount ==
-                                        "0.00"
+                            disable
                                 ? colors.colorGrey
                                 : widget.theme.isDarkMode
                                     ? colors.colorBlack
@@ -257,9 +290,11 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                   Text(
                     "Open Request",
                     style: textStyle(
-                      widget.theme.isDarkMode
-                      ?colors.colorWhite
-                      :colors.colorBlack, 15, FontWeight.w600),
+                        widget.theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        15,
+                        FontWeight.w600),
                   ),
                   const SizedBox(
                     height: 12,

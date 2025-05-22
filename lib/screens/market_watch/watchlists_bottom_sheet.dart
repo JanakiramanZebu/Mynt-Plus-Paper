@@ -22,8 +22,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ScopedReader watch, _) {
-      final watchlist = watch(marketWatchProvider).marketWatchlist!.values!;
-      final preDefWl = watch(marketWatchProvider).preDefWL;
+      final marketWatch = watch(marketWatchProvider);
+      final watchlist = marketWatch.marketWatchlist!.values!;
+      final preDefWl = marketWatch.preDefWL;
       final theme = watch(themeProvider);
       return Container(
           decoration: BoxDecoration(
@@ -106,8 +107,8 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                       .requestWSHoldings(
                                           context: context, isSubscribe: true);
                                 } else {
-                                  await watch(marketWatchProvider)
-                                      .changeWLScrip(preDefWl[index], context);
+                                  await marketWatch.changeWLScrip(
+                                      preDefWl[index], context);
                                 }
 
                                 Navigator.pop(context);
@@ -162,8 +163,8 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                 .read(marketWatchProvider)
                                 .changeWlName(watchlist[index], "No");
 
-                            await watch(marketWatchProvider)
-                                .changeWLScrip(watchlist[index], context);
+                            await marketWatch.changeWLScrip(
+                                watchlist[index], context);
 
                             Navigator.pop(context);
                           },
@@ -216,13 +217,8 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                           ),
                                           onTap: () async {
                                             // Click to Delete watchlist name
-                                            await watch(marketWatchProvider)
-                                                .changeWLScrip(
-                                                    watchlist[index], context);
-
-                                            await watch(marketWatchProvider)
-                                                .deleteWatchList(
-                                                    watchlist[index], context);
+                                            await marketWatch.deleteWatchList(
+                                                watchlist[index], context);
 
                                             Navigator.pop(context);
                                           }))
@@ -231,7 +227,10 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                     },
                     separatorBuilder: (BuildContext context, int index) {
                       return const ListDivider();
-                    })
+                    }),
+                const SizedBox(
+                  height: 24,
+                )
               ]));
     });
   }

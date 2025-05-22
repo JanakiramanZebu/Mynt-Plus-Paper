@@ -688,20 +688,20 @@ class _OptionChainContent extends ConsumerWidget {
                       child: OptChainCallList(
                         swipe: swipecontroller,
                         callData: scripInfo.optChainCallUP,
-                        isCallUp: true
+                        isCallUp: false
                       ),
                     ),
                     SizedBox(
                       width: 100,
                       child: StrikePriceListCard(
                         strike: scripInfo.optChainCallUP,
-                        isCallUp: true
+                        isCallUp: false
                       ),
                     ),
                     Flexible(
                       child: OptChainPutList(
                         putData: scripInfo.optChainPutUp,
-                        isPutUp: true
+                        isPutUp: false
                       ),
                     )
                   ],

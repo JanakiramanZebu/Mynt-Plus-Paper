@@ -229,7 +229,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 //  Assinging and portfolio name length set
 
-  fetchBrokerDetails(BuildContext context, bool isSubscribe) async {
+  fetchBrokerDetails(BuildContext context, bool isSubscribe, bool consent) async {
     try {
       _tphloader = true;
       var res = await api.getallHolding();
@@ -246,6 +246,12 @@ class PortfolioProvider extends DefaultChangeNotifier {
         _allholds = res.equities;
         _ldate = res.syncDatetime;
       } else {
+         if (consent) {
+          Future.delayed(const Duration(seconds: 2), () {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(warningMessage(context, "Unable to fetch data"));
+          });
+        }
         _allholds = {};
       }
       notifyListeners();

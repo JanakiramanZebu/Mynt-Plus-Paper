@@ -15,12 +15,13 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/list_divider.dart';
+import '../../../sharedWidget/snack_bar.dart';
 
 class OptChainCallList extends StatelessWidget {
   final List<OptionValues>? callData;
   final bool isCallUp;
   final SwipeActionController? swipe;
-  
+
   const OptChainCallList({
     super.key,
     this.callData,
@@ -73,7 +74,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
   late String _oiPerChng;
   StreamSubscription? _subscription;
   bool _isListenerSetup = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -82,55 +83,63 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
     _perChange = widget.option.perChange ?? "0.00";
     _oiLack = widget.option.oiLack ?? "0.00";
     _oiPerChng = widget.option.oiPerChng ?? "0.00";
-    
+
     // Don't set up the listener in initState - moved to didChangeDependencies
   }
-  
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     // Only set up the listener once
     if (!_isListenerSetup) {
       _setupSocketListener();
       _isListenerSetup = true;
     }
   }
-  
+
   @override
   void dispose() {
     _subscription?.cancel();
     super.dispose();
   }
-  
+
   void _setupSocketListener() {
     // Get the stream of data
     final provider = ProviderScope.containerOf(context).read(websocketProvider);
-    
+
     // Only subscribe to changes for THIS token
     _subscription = provider.socketDataStream.listen((socketData) {
       if (!mounted) return;
-      
+
       // Only process if this token's data changed
       if (socketData.containsKey(widget.option.token)) {
         final data = socketData[widget.option.token];
         if (data == null) return;
-        
+
         // Check if values actually changed before updating state
         bool needsUpdate = false;
-        
+
         final newLp = data['lp']?.toString();
-        if (newLp != null && newLp != _lp && newLp != "null" && newLp != "0" && newLp != "0.0") {
+        if (newLp != null &&
+            newLp != _lp &&
+            newLp != "null" &&
+            newLp != "0" &&
+            newLp != "0.0") {
           _lp = newLp;
           needsUpdate = true;
         }
-        
+
         final newPc = data['pc']?.toString();
-        if (newPc != null && newPc != _perChange && newPc != "null" && newPc != "0" && newPc != "0.0") {
+        if (newPc != null &&
+            newPc != _perChange &&
+            newPc != "null" &&
+            newPc != "0" &&
+            newPc != "0.0") {
           _perChange = newPc;
           needsUpdate = true;
         }
-        
+
         // Calculate OI values only if needed
         final oi = double.tryParse("${data['oi']}");
         if (oi != null && oi > 0) {
@@ -139,7 +148,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
             _oiLack = newOiLack;
             needsUpdate = true;
           }
-          
+
           final poi = double.tryParse("${data['poi'] ?? 0.00}") ?? 0.0;
           final newOiPerChng = ((poi / oi) * 100).toStringAsFixed(2);
           if (newOiPerChng != _oiPerChng) {
@@ -147,7 +156,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
             needsUpdate = true;
           }
         }
-        
+
         // Only rebuild if data actually changed
         if (needsUpdate) {
           setState(() {});
@@ -155,15 +164,16 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
       }
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    final scripData = ProviderScope.containerOf(context).read(marketWatchProvider);
+    final scripData =
+        ProviderScope.containerOf(context).read(marketWatchProvider);
     final theme = ProviderScope.containerOf(context).read(themeProvider);
-    
+
     return RepaintBoundary(
       child: SwipeActionCell(
-        isDraggable: true,
+        isDraggable: widget.option.tsym!.contains("|||") ? false : true,
         fullSwipeFactor: 0.7,
         controller: widget.swipe,
         index: widget.index,
@@ -193,8 +203,16 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
           ),
         ],
         child: InkWell(
-          onLongPress: () => _handleLongPress(context, widget.option),
-          onTap: () => _handleTap(context, widget.option),
+          onLongPress: () => {
+            widget.option.tsym!.contains("|||")
+                ? _symbolenotFound(context)
+                : _handleLongPress(context, widget.option)
+          },
+          onTap: () => {
+            widget.option.tsym!.contains("|||")
+                ? _symbolenotFound(context)
+                : _handleTap(context, widget.option)
+          },
           child: Container(
             height: 58,
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -212,7 +230,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
       ),
     );
   }
-  
+
   Widget _buildOIData(ThemesProvider theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -220,7 +238,8 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
       children: [
         Text(
           _oiLack,
-          style: _getTextStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+          style: _getTextStyle(
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
         ),
         const SizedBox(height: 3),
         Text(
@@ -238,7 +257,8 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
       children: [
         Text(
           _lp,
-          style: _getTextStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+          style: _getTextStyle(
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
         ),
         const SizedBox(height: 3),
         Text(
@@ -248,11 +268,16 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
       ],
     );
   }
-  
+
+  void _symbolenotFound(BuildContext context) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(warningMessage(context, "Scrip Not founded"));
+  }
+
   void _handleLongPress(BuildContext context, OptionValues option) {
     final provider = ProviderScope.containerOf(context);
     final scripData = provider.read(marketWatchProvider);
-    
+
     if (scripData.isPreDefWLs == "Yes") {
       Fluttertoast.showToast(
         msg: "This is a pre-defined watchlist that cannot be Added!",
@@ -263,10 +288,10 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
       );
     } else {
       provider.read(websocketProvider).establishConnection(
-        channelInput: "${option.exch}|${option.token}",
-        task: "t",
-        context: context,
-      );
+            channelInput: "${option.exch}|${option.token}",
+            task: "t",
+            context: context,
+          );
       scripData.addDelMarketScrip(
         scripData.wlName,
         "${option.exch}|${option.token}",
@@ -282,7 +307,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
   Future<void> _handleTap(BuildContext context, OptionValues option) async {
     final provider = ProviderScope.containerOf(context);
     final scripData = provider.read(marketWatchProvider);
-    
+
     await scripData.fetchScripQuoteIndex(
       "${option.token}",
       "${option.exch}",
@@ -305,7 +330,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
   static final Map<Color, TextStyle> _actionStyleCache = {};
   static final Map<Color, TextStyle> _textStyleCache = {};
   static final Map<String, TextStyle> _percentageStyleCache = {};
-  
+
   static TextStyle _getActionStyle(Color color) {
     return _actionStyleCache.putIfAbsent(
       color,
@@ -315,7 +340,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
       ).copyWith(color: color),
     );
   }
-  
+
   static TextStyle _getTextStyle(Color color) {
     return _textStyleCache.putIfAbsent(
       color,
@@ -325,7 +350,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
       ).copyWith(color: color),
     );
   }
-  
+
   static TextStyle _getPercentageStyle(String? value) {
     final key = value ?? "0.00";
     return _percentageStyleCache.putIfAbsent(

@@ -611,11 +611,7 @@ class _PositionItemState extends State<_PositionItem> {
 
     // Handle NSE/BSE specific data
     if (widget.position.exch == "NSE" || widget.position.exch == "BSE") {
-      marketWatch.depthBtns.add({
-        "btnName": "Fundamental",
-        "imgPath": assets.dInfo,
-        "case": "Click here to view fundamental data."
-      });
+     
 
       await marketWatch.fetchTechData(
         context: context,

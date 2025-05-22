@@ -202,17 +202,6 @@ class GttOrderBook extends ConsumerWidget {
 
                                   if ((gttOrderBook[index].exch == "NSE" ||
                                       gttOrderBook[index].exch == "BSE")) {
-                                    context
-                                        .read(marketWatchProvider)
-                                        .depthBtns
-                                        .add({
-                                      "btnName": "Fundamental",
-                                      "imgPath": assets.dInfo,
-                                      "key": context
-                                          .read(showcaseProvide)
-                                          .fundamentalcase,
-                                      "case": "Click here to view fundamental data."
-                                    });
 
                                     await context
                                         .read(marketWatchProvider)
@@ -477,13 +466,6 @@ class GttOrderBook extends ConsumerWidget {
 
                             if ((order.gttOrderBookSearch![index].exch == "NSE" ||
                                 order.gttOrderBookSearch![index].exch == "BSE")) {
-                              context.read(marketWatchProvider).depthBtns.add({
-                                "btnName": "Fundamental",
-                                "imgPath": assets.dInfo,
-                                "key":
-                                    context.read(showcaseProvide).fundamentalcase,
-                                "case": "Click here to view fundamental data."
-                              });
 
                               await context.read(marketWatchProvider).fetchTechData(
                                   context: context,

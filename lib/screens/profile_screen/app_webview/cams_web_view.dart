@@ -76,7 +76,7 @@ class CamsWebViewState extends State<CamsWebView> {
                         // Future.microtask(() {
                         context
                             .read(portfolioProvider)
-                            .fetchBrokerDetails(context, true);
+                            .fetchBrokerDetails(context, true, false);
                         // });
 
                         Navigator.of(context).pop();

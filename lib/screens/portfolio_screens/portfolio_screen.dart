@@ -23,7 +23,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
   @override
   void initState() {
     //  await
-    context.read(portfolioProvider).fetchBrokerDetails(context, false);
+    context.read(portfolioProvider).fetchBrokerDetails(context, false, false);
 
     context.read(portfolioProvider).portTab = TabController(
         length: context.read(portfolioProvider).portTabName.length,

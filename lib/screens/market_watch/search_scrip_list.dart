@@ -36,14 +36,14 @@ class SearchScripList extends ConsumerWidget {
       separatorBuilder: (context, index) => const ListDivider(),
       itemBuilder: (BuildContext context, int index) {
         final scrip = searchValue[index];
-        final bool opc = searchScrip.getOptionawait(
-          scrip.exch.toString(),
-          scrip.token.toString(),
-        );
+        // final bool opc = searchScrip.getOptionawait(
+        //   scrip.exch.toString(),
+        //   scrip.token.toString(),
+        // );
 
-        if (!(isBasket == "Option||Is" ? opc : true)) {
-          return const SizedBox.shrink();
-        }
+        // if (!(isBasket == "Option||Is" ? opc : true)) {
+        //   return const SizedBox.shrink();
+        // }
 
         return ListTile(
           onTap: () async {
@@ -61,7 +61,7 @@ class SearchScripList extends ConsumerWidget {
               currentRouteName = 'Chart';
               await searchScrip.searchClear();
               Navigator.of(context).pop();
-            } else if (isBasket == "Option||Is" && opc) {
+            } else if (isBasket == "Option||Is") {
               currentRouteName = 'Optionchain';
               searchScrip.setOptionScript(
                 context,
