@@ -39,7 +39,7 @@ mixin IndexApi on ApiCore {
 
       // log("Index List ===> ${res.body}");
       if (res.statusCode == 401) {
-        // context.read(userProvider).sessionLogout(context);
+        // ref.read(userProvider).sessionLogout(context);
       } else {
         final resp = IndexListModel.fromJson(
             jsonDecode(res.body) as Map<String, dynamic>);

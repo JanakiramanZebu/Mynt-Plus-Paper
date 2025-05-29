@@ -55,11 +55,11 @@ class comTaxpnlScreen extends State<comTaxpnl> {
     ];
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final eqtypestring = watch(ledgerProvider).eqtypestring;
-      final dertypestring = watch(ledgerProvider).dertypestring;
-      final ledgerprovider = watch(ledgerProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+      final eqtypestring = ref.watch(ledgerProvider).eqtypestring;
+      final dertypestring = ref.watch(ledgerProvider).dertypestring;
+      final ledgerprovider = ref.watch(ledgerProvider);
   
 
       return Scaffold(

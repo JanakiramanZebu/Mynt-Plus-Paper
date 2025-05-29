@@ -28,15 +28,15 @@ import '../../../sharedWidget/snack_bar.dart';
 import '../margin_charges_bottom_sheet.dart';
 import '../order_screen_header.dart';
 
-class RepeatOrder extends StatefulWidget {
+class RepeatOrder extends ConsumerStatefulWidget {
   final OrderBookModel orderBookList;
   const RepeatOrder({super.key, required this.orderBookList});
 
   @override
-  State<RepeatOrder> createState() => _RepeatOrderState();
+  ConsumerState<RepeatOrder> createState() => _RepeatOrderState();
 }
 
-class _RepeatOrderState extends State<RepeatOrder> {
+class _RepeatOrderState extends ConsumerState<RepeatOrder> {
   bool? isBuy;
   bool addStoploss = false;
   bool isAgree = false;
@@ -55,7 +55,7 @@ class _RepeatOrderState extends State<RepeatOrder> {
       isBuy = widget.orderBookList.trantype == "B";
       isAmo = widget.orderBookList.amo == "Yes";
       frezQty = int.parse(
-          context.read(marketWatchProvider).scripInfoModel!.frzqty ?? "0");
+          ref.read(marketWatchProvider).scripInfoModel!.frzqty ?? "0");
       validityType = widget.orderBookList.exch == "BSE" ||
               widget.orderBookList.exch == "BFO"
           ? "EOS"
@@ -78,9 +78,9 @@ class _RepeatOrderState extends State<RepeatOrder> {
           raw: {});
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await context.read(ordInputProvider).getOrderData(widget.orderBookList);
+      await ref.read(ordInputProvider).getOrderData(widget.orderBookList);
     });
-    marginUpdate(context.read(ordInputProvider));
+    marginUpdate(ref.read(ordInputProvider));
     super.initState();
   }
 
@@ -91,12 +91,12 @@ class _RepeatOrderState extends State<RepeatOrder> {
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return; // If system handled back, do nothing
       },
-      child: Consumer(builder: (context, ScopedReader watch, _) {
-        final orderProvide = watch(orderProvider);
-        final scripInfo = watch(marketWatchProvider);
-        final orderInput = watch(ordInputProvider);
-        final internet = watch(networkStateProvider);
-        final theme = context.read(themeProvider);
+      child: Consumer(builder: (context, WidgetRef ref, _) {
+        final orderProvide = ref.watch(orderProvider);
+        final scripInfo = ref.watch(marketWatchProvider);
+        final orderInput = ref.watch(ordInputProvider);
+        final internet = ref.watch(networkStateProvider);
+        final theme = ref.read(themeProvider);
         return GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: Scaffold(
@@ -481,8 +481,7 @@ class _RepeatOrderState extends State<RepeatOrder> {
                                                                   .colorWhite
                                                           : orderInput.priceName !=
                                                                   orderInput
-                                                                          .priceNames[
-                                                                      index]
+                                                                      .priceNames[index]
                                                               ? const Color(
                                                                   0xff666666)
                                                               : colors
@@ -2329,8 +2328,7 @@ class _RepeatOrderState extends State<RepeatOrder> {
               ? orderInput.mktProtCtrl.text
               : '',
           channel: '');
-      await context
-          .read(orderProvider)
+      await ref.read(orderProvider)
           .fetchPlaceOrder(context, placeOrderInput, false);
     } else {
       showModalBottomSheet(
@@ -2531,8 +2529,7 @@ class _RepeatOrderState extends State<RepeatOrder> {
                                       ? orderInput.mktProtCtrl.text
                                       : '',
                                   channel: '');
-                              await context
-                                  .read(orderProvider)
+                              await ref.read(orderProvider)
                                   .slicePlaceOrder(context, placeOrderInput);
                             }
 
@@ -2571,16 +2568,13 @@ class _RepeatOrderState extends State<RepeatOrder> {
                                       ? orderInput.mktProtCtrl.text
                                       : '',
                                   channel: '');
-                              await context
-                                  .read(orderProvider)
+                              await ref.read(orderProvider)
                                   .slicePlaceOrder(context, placeOrderInput);
                             }
-                            await context
-                                .read(orderProvider)
+                            await ref.read(orderProvider)
                                 .fetchOrderBook(context, true);
 
-                            context
-                                .read(indexListProvider)
+                            ref.read(indexListProvider)
                                 .bottomMenu(2, context);
                             Navigator.pop(context);
                             Navigator.pop(context);
@@ -2608,7 +2602,7 @@ class _RepeatOrderState extends State<RepeatOrder> {
                     orderInput.priceName == "SL MKT"))
             ? "0"
             : orderInput.priceVal,
-        prctyp: context.read(ordInputProvider).prcType,
+        prctyp: ref.read(ordInputProvider).prcType,
         prd: orderInput.orderType,
         qty: orderInput.qtyCrl.text.isEmpty ? "0" : orderInput.qtyCrl.text,
         rorgprc: '0',
@@ -2623,7 +2617,7 @@ class _RepeatOrderState extends State<RepeatOrder> {
                 orderInput.priceName == "SL MKT"
             ? orderInput.triggerPriceCtrl.text
             : "");
-    context.read(orderProvider).fetchOrderMargin(input, context);
+    ref.read(orderProvider).fetchOrderMargin(input, context);
     BrokerageInput brokerageInput = BrokerageInput(
         exch: "${widget.orderBookList.exch}",
         prc: ((widget.orderBookList.exch == "MCX" ||
@@ -2636,6 +2630,6 @@ class _RepeatOrderState extends State<RepeatOrder> {
         qty: orderInput.qtyCrl.text.isEmpty ? "0" : orderInput.qtyCrl.text,
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.orderBookList.tsym}");
-    context.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
+    ref.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
   }
 }

@@ -31,9 +31,9 @@ class PnlScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final ledgerprovider = watch(ledgerProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+      final ledgerprovider = ref.watch(ledgerProvider);
       Future<void> _refresh() async {
         await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");

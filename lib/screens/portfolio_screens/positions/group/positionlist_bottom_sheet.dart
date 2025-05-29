@@ -17,10 +17,10 @@ class PositionListBottomSheet extends ConsumerWidget {
   const PositionListBottomSheet({super.key, required this.grpName});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final positionBook = watch(portfolioProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final positionBook = ref.watch(portfolioProvider);
 
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
 
     return DraggableScrollableSheet(
         initialChildSize:

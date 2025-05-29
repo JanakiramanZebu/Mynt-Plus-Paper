@@ -20,7 +20,7 @@ import 'opt_chain_call_list.dart';
 import 'opt_chain_put_list.dart';
 import 'strike_price_list_card.dart';
 
-class OptionChainSS extends StatefulWidget {
+class OptionChainSS extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
   // final String isBasket;
 
@@ -31,10 +31,10 @@ class OptionChainSS extends StatefulWidget {
   });
 
   @override
-  State<OptionChainSS> createState() => _OptionChainSSState();
+  ConsumerState<OptionChainSS> createState() => _OptionChainSSState();
 }
 
-class _OptionChainSSState extends State<OptionChainSS> {
+class _OptionChainSSState extends ConsumerState<OptionChainSS> {
   String regtoken = "";
 
   final ScrollController _controller = ScrollController();
@@ -57,7 +57,7 @@ class _OptionChainSSState extends State<OptionChainSS> {
     });
     super.initState();
     Future.microtask(() {
-      context.read(marketWatchProvider).loadDefaultTabs();
+      ref.read(marketWatchProvider).loadDefaultTabs();
     });
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -99,13 +99,11 @@ class _OptionChainSSState extends State<OptionChainSS> {
         canPop: true,
         onPopInvokedWithResult: (didPop, result) async {
           if (didPop) return;
-          await context
-              .read(marketWatchProvider)
+          await ref.read(marketWatchProvider)
               .calldepthApis(context, widget.wlValue, "");
-          await context
-              .read(marketWatchProvider)
+          await ref.read(marketWatchProvider)
               .requestWSOptChain(context: context, isSubscribe: false);
-          await context.read(websocketProvider).establishConnection(
+          await ref.read(websocketProvider).establishConnection(
                 channelInput: "${widget.wlValue.exch}|${widget.wlValue.token}",
                 task: "ud",
                 context: context,
@@ -118,8 +116,8 @@ class _OptionChainSSState extends State<OptionChainSS> {
                   padding: const EdgeInsets.all(0),
                   icon: const Icon(Icons.chevron_left, size: 38),
                   onPressed: () async {
-                    final wsProvider = context.read(websocketProvider);
-              final scripInfo = context.read(marketWatchProvider);
+                    final wsProvider = ref.read(websocketProvider);
+              final scripInfo = ref.read(marketWatchProvider);
                     final currentContext = context; 
                     Navigator.pop(context);
                     await scripInfo.calldepthApis(
@@ -190,9 +188,9 @@ class _OptionTopBar extends ConsumerWidget {
   }) : super(key: key);
   
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final tvChart = watch(marketWatchProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tvChart = ref.watch(marketWatchProvider);
+    final theme = ref.read(themeProvider);
     
     return RepaintBoundary(
       child: Container(
@@ -319,9 +317,9 @@ class _DateSelectorTabs extends ConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final scripInfo = watch(marketWatchProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scripInfo = ref.watch(marketWatchProvider);
+    final theme = ref.read(themeProvider);
     
     return RepaintBoundary(
       child: Padding(
@@ -372,7 +370,7 @@ class _DateSelectorTabs extends ConsumerWidget {
                     }
                     scripInfo.selecexpDate(scripInfo.sortDate[index]);
 
-                    await context.read(marketWatchProvider).fetchOPtionChain(
+                    await ref.read(marketWatchProvider).fetchOPtionChain(
                       context: context,
                       exchange: scripInfo.optionExch!,
                       numofStrike: scripInfo.numStrike,
@@ -410,7 +408,107 @@ class _DateSelectorTabs extends ConsumerWidget {
   }
 }
 
-// Widget for column headers
+// Helper function to avoid duplicating the showStrikeCountSelector code
+void _showStrikeCountSelector(BuildContext context, WidgetRef ref, MarketWatchProvider scripInfo, ThemesProvider theme, VoidCallback scrollToStrikePrice) {
+  showModalBottomSheet(
+    useSafeArea: true,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16))
+    ),
+    context: context,
+    builder: (context) => Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xff999999),
+            blurRadius: 4.0,
+            offset: Offset(2.0, 0.0)
+          )
+        ]
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const CustomDragHandler(),
+          Text(
+            "Select Number of Strike",
+            style: textStyles.appBarTitleTxt.copyWith(
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
+            )
+          ),
+          const SizedBox(height: 6),
+          Flexible(
+            child: ListView.separated(
+              physics: const ClampingScrollPhysics(),
+              itemBuilder: (context, index) {
+                return ListTile(
+                  onTap: () async {
+                    scripInfo.selecNumStrike(scripInfo.numStrikes[index]);
+                    
+                    // First close the modal
+                    Navigator.pop(context);
+                    
+                    // Then fetch data with the new strike count
+                    await ref.read(marketWatchProvider).fetchOPtionChain(
+                      context: context,
+                      exchange: scripInfo.optionExch!,
+                      numofStrike: scripInfo.numStrikes[index],
+                      strPrc: scripInfo.optionStrPrc,
+                      tradeSym: scripInfo.selectedTradeSym!
+                    );
+                    
+                    // Use a longer delay to ensure data is loaded and widgets are built
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      if (context.mounted) {
+                        // Use the callback to main screen's scroll method
+                        scrollToStrikePrice();
+                      }
+                    });
+                  },
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                  dense: true,
+                  title: Text(
+                    scripInfo.numStrikes[index],
+                    style: textStyle(
+                      scripInfo.numStrike == scripInfo.numStrikes[index] && theme.isDarkMode
+                          ? colors.colorLightBlue
+                          : scripInfo.numStrike == scripInfo.numStrikes[index]
+                              ? colors.colorBlue
+                              : colors.colorGrey,
+                      14,
+                      scripInfo.numStrike == scripInfo.numStrikes[index] ? FontWeight.w600 : FontWeight.w500
+                    )
+                  ),
+                  trailing: SvgPicture.asset(
+                    theme.isDarkMode
+                        ? scripInfo.numStrike == scripInfo.numStrikes[index]
+                            ? assets.darkActProductIcon
+                            : assets.darkProductIcon
+                        : scripInfo.numStrike == scripInfo.numStrikes[index]
+                            ? assets.actProductIcon
+                            : assets.productIcon
+                  )
+                );
+              },
+              separatorBuilder: (context, index) {
+                return const ListDivider();
+              },
+              shrinkWrap: true,
+              itemCount: scripInfo.numStrikes.length
+            )
+          )
+        ]
+      )
+    )
+  );
+}
+
+// Widget for column headers - updated to ConsumerWidget
 class _ColumnHeaders extends ConsumerWidget {
   final VoidCallback scrollToStrikePrice;
   
@@ -420,9 +518,9 @@ class _ColumnHeaders extends ConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final scripInfo = watch(marketWatchProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scripInfo = ref.watch(marketWatchProvider);
+    final theme = ref.read(themeProvider);
     
     return RepaintBoundary(
       child: Container(
@@ -454,7 +552,7 @@ class _ColumnHeaders extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: InkWell(
                 onTap: () {
-                  _showStrikeCountSelector(context, scripInfo, theme);
+                  _showStrikeCountSelector(context, ref, scripInfo, theme, scrollToStrikePrice);
                 },
                 child: Row(
                   children: [
@@ -504,105 +602,6 @@ class _ColumnHeaders extends ConsumerWidget {
       ),
     );
   }
-  
-  void _showStrikeCountSelector(BuildContext context, MarketWatchProvider scripInfo, ThemesProvider theme) {
-    showModalBottomSheet(
-      useSafeArea: true,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16))
-      ),
-      context: context,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0xff999999),
-              blurRadius: 4.0,
-              offset: Offset(2.0, 0.0)
-            )
-          ]
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CustomDragHandler(),
-            Text(
-              "Select Number of Strike",
-              style: textStyles.appBarTitleTxt.copyWith(
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
-              )
-            ),
-            const SizedBox(height: 6),
-            Flexible(
-              child: ListView.separated(
-                physics: const ClampingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    onTap: () async {
-                      scripInfo.selecNumStrike(scripInfo.numStrikes[index]);
-                      
-                      // First close the modal
-                      Navigator.pop(context);
-                      
-                      // Then fetch data with the new strike count
-                      await context.read(marketWatchProvider).fetchOPtionChain(
-                        context: context,
-                        exchange: scripInfo.optionExch!,
-                        numofStrike: scripInfo.numStrikes[index],
-                        strPrc: scripInfo.optionStrPrc,
-                        tradeSym: scripInfo.selectedTradeSym!
-                      );
-                      
-                      // Use a longer delay to ensure data is loaded and widgets are built
-                      Future.delayed(const Duration(milliseconds: 500), () {
-                        if (context.mounted) {
-                          // Use the callback to main screen's scroll method
-                          scrollToStrikePrice();
-                        }
-                      });
-                    },
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                    dense: true,
-                    title: Text(
-                      scripInfo.numStrikes[index],
-                      style: textStyle(
-                        scripInfo.numStrike == scripInfo.numStrikes[index] && theme.isDarkMode
-                            ? colors.colorLightBlue
-                            : scripInfo.numStrike == scripInfo.numStrikes[index]
-                                ? colors.colorBlue
-                                : colors.colorGrey,
-                        14,
-                        scripInfo.numStrike == scripInfo.numStrikes[index] ? FontWeight.w600 : FontWeight.w500
-                      )
-                    ),
-                    trailing: SvgPicture.asset(
-                      theme.isDarkMode
-                          ? scripInfo.numStrike == scripInfo.numStrikes[index]
-                              ? assets.darkActProductIcon
-                              : assets.darkProductIcon
-                          : scripInfo.numStrike == scripInfo.numStrikes[index]
-                              ? assets.actProductIcon
-                              : assets.productIcon
-                    )
-                  );
-                },
-                separatorBuilder: (context, index) {
-                  return const ListDivider();
-                },
-                shrinkWrap: true,
-                itemCount: scripInfo.numStrikes.length
-              )
-            )
-          ]
-        )
-      )
-    );
-  }
 }
 
 // Widget for predefined watchlist banner (conditional)
@@ -610,8 +609,8 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
   const _PreDefinedWatchlistBanner({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final scripInfo = watch(marketWatchProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scripInfo = ref.watch(marketWatchProvider);
     
     if (scripInfo.isPreDefWLs == "Yes") {
       return const SizedBox.shrink();
@@ -653,8 +652,8 @@ class _OptionChainContent extends ConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final scripInfo = watch(marketWatchProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scripInfo = ref.watch(marketWatchProvider);
     final depthData = scripInfo.getQuotes!;
     
     // Determine if data is fully loaded
@@ -758,10 +757,10 @@ class _ActionButtons extends ConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final scripInfo = watch(marketWatchProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scripInfo = ref.watch(marketWatchProvider);
     final depthData = scripInfo.getQuotes!;
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     
     // Determine if we should show buttons
     if (scripInfo.scripDepthloader ||
@@ -789,7 +788,7 @@ class _ActionButtons extends ConsumerWidget {
             Expanded(
               child: InkWell(
                 onTap: () async {
-                  await placeOrderInput(scripInfo, context, depthData, true);
+                  await _placeOrderInput(context, ref, wlValue, depthData, true);
                 },
                 child: Container(
                   height: 40,
@@ -814,7 +813,7 @@ class _ActionButtons extends ConsumerWidget {
             Expanded(
               child: InkWell(
                 onTap: () async {
-                  await placeOrderInput(scripInfo, context, depthData, false);
+                  await _placeOrderInput(context, ref, wlValue, depthData, false);
                 },
                 child: Container(
                   height: 40,
@@ -840,16 +839,24 @@ class _ActionButtons extends ConsumerWidget {
       ),
     );
   }
+}
 
-  Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
-      GetQuotes depthData, bool transType) async {
-    await ctx.read(marketWatchProvider).fetchScripInfo(
-        wlValue.token, wlValue.exch, ctx, true);
+// Global helper function 
+Future<void> _placeOrderInput(
+  BuildContext context,
+  WidgetRef ref,
+  DepthInputArgs wlValue,
+  GetQuotes depthData, 
+  bool transType
+) async {
+  await ref.read(marketWatchProvider).fetchScripInfo(
+      wlValue.token, wlValue.exch, context, true);
+  
     OrderScreenArgs orderArgs = OrderScreenArgs(
-        exchange: wlValue.exch,
-        tSym: wlValue.tsym,
+      exchange: wlValue.exch,
+      tSym: wlValue.tsym,
         isExit: false,
-        token: wlValue.token,
+      token: wlValue.token,
         transType: transType,
         lotSize: depthData.ls,
         ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
@@ -858,11 +865,11 @@ class _ActionButtons extends ConsumerWidget {
         holdQty: '',
         isModify: false,
         raw: {});
-    Navigator.pop(ctx);
-    Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
+  
+  Navigator.pop(context);
+  Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
-      "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!,
+    "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
       "isBskt": ""
     });
-  }
 }

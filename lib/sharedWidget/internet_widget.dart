@@ -25,9 +25,9 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final webSocket = watch(websocketProvider);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, ref, child) {
+      final webSocket = ref.watch(websocketProvider);
+      final theme = ref.watch(themeProvider);
       return Scaffold(
         body: SafeArea(
           child: Column(
@@ -59,7 +59,7 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
                         borderRadius: BorderRadius.circular(30),
                       )),
                   onPressed: () {
-                    // context.read(indexListProvider).checkSession(context);
+                    // ref.read(indexListProvider).checkSession(context);
                     webSocket.closeSocket(true);
                     webSocket.changeretryscreen(true);
                     webSocket.reconnect(context);

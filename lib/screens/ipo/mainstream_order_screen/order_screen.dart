@@ -13,7 +13,7 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/ipo_error_widget.dart';
 import '../../../sharedWidget/snack_bar.dart';
 
-class ApplyIpoScreen extends StatefulWidget {
+class ApplyIpoScreen extends ConsumerStatefulWidget {
   final MainIPO mainstream;
   const ApplyIpoScreen({
     super.key,
@@ -21,10 +21,10 @@ class ApplyIpoScreen extends StatefulWidget {
   });
 
   @override
-  State<ApplyIpoScreen> createState() => _ApplyIpoScreenState();
+  ConsumerState<ApplyIpoScreen> createState() => _ApplyIpoScreenState();
 }
 
-class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
+class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
   // bool ischecked = true;
   String upierrortext = "Please enter the UPI Id";
   // int required = 0;
@@ -70,10 +70,10 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Consumer(
-        builder: (context, watch, child) {
-          final ipo = watch(ipoProvide);
-          final theme = watch(themeProvider);
-          // final upiid = watch(transcationProvider);
+        builder: (context, ref, child) {
+          final ipo = ref.watch(ipoProvide);
+          final theme = ref.watch(themeProvider);
+          // final upiid = ref.watch(transcationProvider);
           var chips =
               ipo.ipoCategory.map((e) => e['subCatCode']).toSet().toList();
           // if (selectedChip == null && chips.isNotEmpty) {
@@ -1858,7 +1858,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
     //   print(
     //       "Text: ${iposbids[i].bitis} Checkbox: ${iposbids[i].qty}, requried:${iposbids[i].cutoff},bidprice:${iposbids[i].price} value Total: ${iposbids[i].total}");
     // }
-    await context.read(ipoProvide).fetchupiidvalidation(
+    await ref.read(ipoProvide).fetchupiidvalidation(
         context, upiid.upiid.text, "343245", menudata, iposbids, iposupiid);
   }
 }

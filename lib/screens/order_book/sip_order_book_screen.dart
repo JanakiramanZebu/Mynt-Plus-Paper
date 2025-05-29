@@ -17,9 +17,9 @@ class SipOrderBook extends ConsumerWidget {
   const SipOrderBook({super.key, required this.sipbook});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final order = watch(orderProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final order = ref.watch(orderProvider);
     return sipbook == null
         ? const NoDataFound()
         : Column(
@@ -162,7 +162,7 @@ class SipOrderBook extends ConsumerWidget {
                           itemBuilder: (context, index) {
                             return InkWell(
                                 onTap: () async {
-                                  context
+                                  ref
                                       .read(orderProvider)
                                       .fetchSipOrderHistory(context);
                                   Navigator.pushNamed(
@@ -355,7 +355,7 @@ class SipOrderBook extends ConsumerWidget {
                           itemBuilder: (context, index) {
                             return InkWell(
                                 onTap: () async {
-                                  context
+                                  ref
                                       .read(orderProvider)
                                       .fetchSipOrderHistory(context);
                                   Navigator.pushNamed(

@@ -15,9 +15,9 @@ class InvesTypeWidget extends ConsumerWidget {
       {super.key, required this.scripInfo, required this.ordType});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final orderInput = watch(ordInputProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orderInput = ref.watch(ordInputProvider);
+    final theme = ref.read(themeProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

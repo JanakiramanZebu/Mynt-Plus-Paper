@@ -9,21 +9,21 @@ import '../../provider/thems.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_internet_widget.dart';
 
-class EditScrip extends StatefulWidget {
+class EditScrip extends ConsumerStatefulWidget {
   final String wlName;
   const EditScrip({super.key, required this.wlName});
 
   @override
-  State<EditScrip> createState() => _EditScripState();
+  ConsumerState<EditScrip> createState() => _EditScripState();
 }
 
-class _EditScripState extends State<EditScrip> {
+class _EditScripState extends ConsumerState<EditScrip> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      context.read(marketWatchProvider).setpageName("edit");
+      ref.read(marketWatchProvider).setpageName("edit");
     });
-    // context.read(networkStateProvider).networkStream();
+    // ref.read(networkStateProvider).networkStream();
     super.initState();
   }
 
@@ -32,10 +32,10 @@ class _EditScripState extends State<EditScrip> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final marketwatch = watch(marketWatchProvider);
-      final theme = context.read(themeProvider);
-      final internet = watch(networkStateProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final marketwatch = ref.watch(marketWatchProvider);
+      final theme = ref.read(themeProvider);
+      final internet = ref.watch(networkStateProvider);
 
       return PopScope(
           canPop: true, // Allows back navigation
@@ -43,7 +43,7 @@ class _EditScripState extends State<EditScrip> {
             if (didPop) return; // If system handled back, do nothing
 
             marketwatch.setpageName("");
-            await context
+            await ref
                 .read(marketWatchProvider)
                 .requestMWScrip(context: context, isSubscribe: true);
             marketwatch.delQty();
@@ -59,7 +59,7 @@ class _EditScripState extends State<EditScrip> {
               leading: InkWell(
                 onTap: () {
                   marketwatch.setpageName("");
-                  context
+                  ref
                       .read(marketWatchProvider)
                       .requestMWScrip(context: context, isSubscribe: true);
                   marketwatch.delQty();

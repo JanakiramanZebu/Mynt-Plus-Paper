@@ -12,15 +12,15 @@ import '../../../../sharedWidget/custom_switch_btn.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/list_divider.dart';
 
-class OptionStrategyEdit extends StatefulWidget {
+class OptionStrategyEdit extends ConsumerStatefulWidget {
   final OptionValues scripData;
   const OptionStrategyEdit({super.key, required this.scripData});
 
   @override
-  State<OptionStrategyEdit> createState() => _OptionStrategyEditState();
+  ConsumerState<OptionStrategyEdit> createState() => _OptionStrategyEditState();
 }
 
-class _OptionStrategyEditState extends State<OptionStrategyEdit> {
+class _OptionStrategyEditState extends ConsumerState<OptionStrategyEdit> {
   TextEditingController textCtrl = TextEditingController();
   String? errorText;
 
@@ -35,7 +35,7 @@ class _OptionStrategyEditState extends State<OptionStrategyEdit> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return AlertDialog(
         backgroundColor: theme.isDarkMode
             ? const Color.fromARGB(255, 18, 18, 18)

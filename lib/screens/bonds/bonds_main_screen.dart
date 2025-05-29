@@ -8,25 +8,25 @@ import '../../../res/res.dart';
 import '../../provider/thems.dart';
 import '../../routes/route_names.dart';
 
-class BondsScreen extends StatefulWidget {
+class BondsScreen extends ConsumerStatefulWidget {
   const BondsScreen({super.key});
 
   @override
-  State<BondsScreen> createState() => _BondsmainScreenState();
+  ConsumerState<BondsScreen> createState() => _BondsmainScreenState();
 }
 
-class _BondsmainScreenState extends State<BondsScreen> {
+class _BondsmainScreenState extends ConsumerState<BondsScreen> {
   @override
   void initState() {
-    context.read(bondsProvider).fetchAllBonds();
+    ref.read(bondsProvider).fetchAllBonds();
     setState(() {});
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
 
       return Scaffold(
         appBar: AppBar(

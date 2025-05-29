@@ -113,7 +113,7 @@
 //         crossAxisAlignment: CrossAxisAlignment.end,
 //         children: [
 //           Text("${scripData.symbol} ",
-//               style: textStyles.scripNameTxtStyle.copyWith(color: context.read(themeProvider) .isDarkMode?colors.colorWhite:colors.colorBlack)),
+//               style: textStyles.scripNameTxtStyle.copyWith(color: ref.read(themeProvider) .isDarkMode?colors.colorWhite:colors.colorBlack)),
 //           if (scripData.option!.isNotEmpty)
 //             Text("${scripData.option}",
 //                 style: textStyles.scripNameTxtStyle

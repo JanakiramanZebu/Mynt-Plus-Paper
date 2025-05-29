@@ -16,10 +16,10 @@ class MFSipdetScreen extends ConsumerWidget {
   const MFSipdetScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final fund = watch(fundProvider);
-    final mfData = watch(mfProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final fund = ref.watch(fundProvider);
+    final mfData = ref.watch(mfProvider);
 
     return Scaffold(
       body: Stack(

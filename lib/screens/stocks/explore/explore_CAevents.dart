@@ -19,10 +19,10 @@ class _CaEventsState extends State<CaEvents> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final actionEvents = watch(stocksProvide);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final actionEvents = ref.watch(stocksProvide);
       final selectmodel = actionEvents.selctedEventAct;
-      final marketWatch = watch(marketWatchProvider);
+      final marketWatch = ref.watch(marketWatchProvider);
       final raw = actionEvents.selctedEventAct == 'dividend'
           ? actionEvents.caeventsModel?.dividend
           : actionEvents.selctedEventAct == 'bonus'

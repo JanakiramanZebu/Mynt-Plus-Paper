@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,10 +13,10 @@ import 'portfolio_provider.dart';
 import 'websocket_provider.dart';
 
 final networkStateProvider =
-    ChangeNotifierProvider((ref) => NetworkStateProvider(ref.read));
+    ChangeNotifierProvider((ref) => NetworkStateProvider(ref));
 
 class NetworkStateProvider extends ChangeNotifier {
-  final Reader ref;
+  final Ref ref;
   NetworkStateProvider(this.ref);
   StreamController<ConnectivityResult> networkState =
       StreamController<ConnectivityResult>.broadcast();
@@ -84,7 +84,7 @@ class NetworkStateProvider extends ChangeNotifier {
     try {
       result = await _connectivity.checkConnectivity();
     } on PlatformException catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "Internet connection", "Error": "$e"});
       notifyListeners();
@@ -103,46 +103,46 @@ class NetworkStateProvider extends ChangeNotifier {
     _connectionStatus = result;
 
     if (_connectionStatus == ConnectivityResult.none) {
-      ref(websocketProvider).closeSocket(true);
-      ref(websocketProvider).websockConn(false);
+      ref.read(websocketProvider).closeSocket(true);
+      ref.read(websocketProvider).websockConn(false);
     } else {
-      // ref(websocketProvider).websockConn(false);
+      // ref.read(websocketProvider).websockConn(false);
       if (ConstantName.sessCheck) {
         if (ConstantName.lastSubscribe.isNotEmpty) {
-          ref(websocketProvider).establishConnection(
+          ref.read(websocketProvider).establishConnection(
               channelInput: ConstantName.lastSubscribe,
               task: "t",
               context: _globbcontext!);
         }
         if (ConstantName.lastSubscribeDepth.isNotEmpty) {
-          ref(websocketProvider).establishConnection(
+          ref.read(websocketProvider).establishConnection(
               channelInput: ConstantName.lastSubscribeDepth,
               task: "d",
               context: _globbcontext!);
         }
       }
 
-      if (ref(indexListProvider).selectedBtmIndx == 1) {
-        // await ref(marketWatchProvider)
-        //     .fetchMWScrip(ref(marketWatchProvider).wlName,  _globbcontext!);
+      if (ref.read(indexListProvider).selectedBtmIndx == 1) {
+        // await ref.read(marketWatchProvider)
+        //     .fetchMWScrip(ref.read(marketWatchProvider).wlName,  _globbcontext!);
 
-        await ref(marketWatchProvider)
+        await ref.read(marketWatchProvider)
             .requestMWScrip(context: _globbcontext!, isSubscribe: true);
-      } else if (ref(indexListProvider).selectedBtmIndx == 2) {
-        await ref(portfolioProvider)
+      } else if (ref.read(indexListProvider).selectedBtmIndx == 2) {
+        await ref.read(portfolioProvider)
             .requestWSHoldings(isSubscribe: true, context: _globbcontext!);
-        await ref(portfolioProvider)
+        await ref.read(portfolioProvider)
             .requestWSPosition(isSubscribe: true, context: _globbcontext!);
-        // await ref(portfolioProvider).fetchHoldings(_globbcontext, "");
-        // await ref(portfolioProvider).fetchPositionBook(_globbcontext!, false);
-      } else if (ref(indexListProvider).selectedBtmIndx == 3) {
-        await ref(orderProvider)
+        // await ref.read(portfolioProvider).fetchHoldings(_globbcontext, "");
+        // await ref.read(portfolioProvider).fetchPositionBook(_globbcontext!, false);
+      } else if (ref.read(indexListProvider).selectedBtmIndx == 3) {
+        await ref.read(orderProvider)
             .requestWSOrderBook(isSubscribe: true, context: _globbcontext!);
 
-        // ref(orderProvider).fetchOrderBook(_globbcontext!, true);
-        // ref(orderProvider).fetchTradeBook(_globbcontext!);
+        // ref.read(orderProvider).fetchOrderBook(_globbcontext!, true);
+        // ref.read(orderProvider).fetchTradeBook(_globbcontext!);
 
-        // ref(orderProvider).fetchGTTOrderBook(_globbcontext!, "");
+        // ref.read(orderProvider).fetchGTTOrderBook(_globbcontext!, "");
       }
     }
     // log(" connectionStatus - $_connectionStatus");

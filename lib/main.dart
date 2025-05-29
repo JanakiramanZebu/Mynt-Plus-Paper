@@ -9,7 +9,7 @@ import 'package:mynt_plus/firebase_options.dart';
 import 'package:mynt_plus/locator/constant.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart';
+// import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:mynt_plus/notification/notification_service.dart';
@@ -192,7 +192,7 @@ void main() async {
   final startupDuration = beforeFirebase.difference(startTime);
   print("App ready to launch in: ${startupDuration.inMilliseconds}ms");
   
-  runApp(Phoenix(child: const ProviderScope(child: MyApp())));
+  runApp(const ProviderScope(child: MyApp()));
   
   // Initialize Firebase after the app has started (non-blocking)
   initializeFirebaseAsync();
@@ -202,8 +202,8 @@ class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final themeProvide = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeProvide = ref.watch(themeProvider);
     themeProvide.getThemeData();
     // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     //     statusBarIconBrightness: themeProvide.isDarkMode

@@ -39,14 +39,14 @@ import 'portfolio_screens/positions/group/position_group_bottomsheet.dart';
 import 'profile_screen/logged_user_bottom_sheet.dart';
 import 'profile_screen/profile_main_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObserver {
   late WebSocketProvider socketProvider; // Store the reference
 
   @override
@@ -59,20 +59,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 // This is a websockt heartbeat connection that reconnects every two seconds only.
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
-        context.read(websocketProvider).reconnect(context);
-        // context.read(websocketProvider).startPingCheck(context);
+        ref.read(websocketProvider).reconnect(context);
+        // ref.read(websocketProvider).startPingCheck(context);
       }
     });
-    context.read(networkStateProvider).networkStream();
-    context.read(marketWatchProvider).fToast.init(context);
-    context.read(versionProvider).checkVersion(context);
+    ref.read(networkStateProvider).networkStream();
+    ref.read(marketWatchProvider).fToast.init(context);
+    ref.read(versionProvider).checkVersion(context);
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    socketProvider = context.read(websocketProvider); // Store reference safely
+    socketProvider = ref.read(websocketProvider); // Store reference safely
   }
 
   @override
@@ -94,16 +94,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         Future.microtask(() async {
           try {
             // Check session status without loading indicators
-            await context.read(indexListProvider).checkSession(context);
+            await ref.read(indexListProvider).checkSession(context);
             
             // Only load data if session is valid and app is still mounted
-            if (mounted && context.read(indexListProvider).checkSess?.stat == "Ok") {
+            if (mounted && ref.read(indexListProvider).checkSess?.stat == "Ok") {
               // Load these in parallel for better performance
               final futures = [
-                context.read(portfolioProvider).fetchPositionBook(context, false),
-                context.read(portfolioProvider).fetchHoldings(context, ""),
-                context.read(orderProvider).fetchOrderBook(context, false),
-                context.read(orderProvider).fetchTradeBook(context),
+                ref.read(portfolioProvider).fetchPositionBook(context, false),
+                ref.read(portfolioProvider).fetchHoldings(context, ""),
+                ref.read(orderProvider).fetchOrderBook(context, false),
+                ref.read(orderProvider).fetchTradeBook(context),
               ];
               
               await Future.wait(futures);
@@ -121,33 +121,33 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         break;
         
       case AppLifecycleState.inactive:
-        if (context.read(indexListProvider).selectedBtmIndx == 2) {
-          context.read(portfolioProvider).cancelTimer();
+        if (ref.read(indexListProvider).selectedBtmIndx == 2) {
+          ref.read(portfolioProvider).cancelTimer();
         }
-        final userProfile = context.read(userProfileProvider);
+        final userProfile = ref.read(userProfileProvider);
         userProfile.setonloadChartdialog(false);
         print("app in inactive");
         break;
         
       case AppLifecycleState.paused:
-        if (context.read(indexListProvider).selectedBtmIndx == 2) {
-          context.read(portfolioProvider).cancelTimer();
+        if (ref.read(indexListProvider).selectedBtmIndx == 2) {
+          ref.read(portfolioProvider).cancelTimer();
         }
         print("app in paused");
         break;
         
       case AppLifecycleState.detached:
-        if (context.read(indexListProvider).selectedBtmIndx == 2) {
-          context.read(portfolioProvider).cancelTimer();
+        if (ref.read(indexListProvider).selectedBtmIndx == 2) {
+          ref.read(portfolioProvider).cancelTimer();
         }
-        final userProfile = context.read(userProfileProvider);
+        final userProfile = ref.read(userProfileProvider);
         userProfile.setonloadChartdialog(false);
         print("app in detached");
         break;
         
       case AppLifecycleState.hidden:
-        if (context.read(indexListProvider).selectedBtmIndx == 2) {
-          context.read(portfolioProvider).cancelTimer();
+        if (ref.read(indexListProvider).selectedBtmIndx == 2) {
+          ref.read(portfolioProvider).cancelTimer();
         }
     }
   }
@@ -156,62 +156,62 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void _handleWebSocketConnections() {
     if (!mounted) return;
     
-    final websocket = context.read(websocketProvider);
+    final websocket = ref.read(websocketProvider);
     
     if (websocket.wsConnected == false || websocket.wsConnected == true) {
-      if (ConstantName.lastSubscribe.isNotEmpty) {
+          if (ConstantName.lastSubscribe.isNotEmpty) {
         websocket.establishConnection(
-          channelInput: ConstantName.lastSubscribe,
-          task: "t",
-          context: context);
-      }
+                channelInput: ConstantName.lastSubscribe,
+                task: "t",
+                context: context);
+          }
       
-      if (ConstantName.lastSubscribeDepth.isNotEmpty) {
+          if (ConstantName.lastSubscribeDepth.isNotEmpty) {
         websocket.establishConnection(
-          channelInput: ConstantName.lastSubscribeDepth,
-          task: "d",
-          context: context);
-      }
+                channelInput: ConstantName.lastSubscribeDepth,
+                task: "d",
+                context: context);
+          }
       
-      if (context.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+      if (ref.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
         websocket.changeconnectioncount();
         
-        final indexProvide = context.read(indexListProvider);
+        final indexProvide = ref.read(indexListProvider);
         if (indexProvide.selectedBtmIndx == 1) {
-          context.read(marketWatchProvider)
-              .requestMWScrip(context: context, isSubscribe: true);
-        }
+          ref.read(marketWatchProvider)
+                  .requestMWScrip(context: context, isSubscribe: true);
+            }
         
         if (indexProvide.selectedBtmIndx == 2) {
-          context.read(portfolioProvider)
-              .requestWSHoldings(context: context, isSubscribe: true);
-          context.read(portfolioProvider).timerfunc();
-          context.read(portfolioProvider)
-              .requestWSPosition(context: context, isSubscribe: true);
-        }
+          ref.read(portfolioProvider)
+                  .requestWSHoldings(context: context, isSubscribe: true);
+          ref.read(portfolioProvider).timerfunc();
+          ref.read(portfolioProvider)
+                  .requestWSPosition(context: context, isSubscribe: true);
+            }
         
         if (indexProvide.selectedBtmIndx == 3) {
-          context.read(orderProvider)
-              .requestWSOrderBook(context: context, isSubscribe: true);
+          ref.read(orderProvider)
+                  .requestWSOrderBook(context: context, isSubscribe: true);
+            }
+          }
         }
-      }
-    }
   }
   
   // Extract chart data handling to separate method
   void _handleChartData() {
     if (!mounted) return;
     
-    final userProfile = context.read(userProfileProvider);
-    final scriptInfo = context.read(marketWatchProvider).getQuotes;
+    final userProfile = ref.read(userProfileProvider);
+    final scriptInfo = ref.read(marketWatchProvider).getQuotes;
     
     if (userProfile.showchartof && scriptInfo?.exch != null) {
-      context.read(marketWatchProvider).setChartScript(
+      ref.read(marketWatchProvider).setChartScript(
         scriptInfo!.exch.toString(),
-        scriptInfo.token.toString(),
-        scriptInfo.tsym.toString());
+                scriptInfo.token.toString(),
+                scriptInfo.tsym.toString());
     } else if (userProfile.showchartof) {
-      userProfile.setChartdialog(false);
+            userProfile.setChartdialog(false);
     }
   }
 
@@ -232,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           }
         },
         child: Scaffold(
-          resizeToAvoidBottomInset: context.read(userProfileProvider).showchartof ? false : true,
+          resizeToAvoidBottomInset: ref.read(userProfileProvider).showchartof ? false : true,
           body: Stack(
             children: [
               _buildMainScaffold(),
@@ -244,31 +244,34 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   // Main scaffold with navigation and content
   Widget _buildMainScaffold() {
-    final internet = context.read(networkStateProvider);
-    final websocket = context.read(websocketProvider);
+    final internet = ref.read(networkStateProvider);
+    final websocket = ref.read(websocketProvider);
     
     // Show no internet screen if needed
     if (internet.connectionStatus == ConnectivityResult.none ||
         websocket.connectioncount >= 5) {
       return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Color(0xffFFFFFF),
-        ),
-        body: NoInternetScreen(),
+                          appBar: AppBar(
+                            elevation: 0,
+                            backgroundColor: Color(0xffFFFFFF),
+                          ),
+                          body: NoInternetScreen(),
       );
     }
     
     // Otherwise show the main app content
     return Consumer(
-      builder: (context, watch, _) {
-        final indexProvide = watch(indexListProvider);
-        final theme = watch(themeProvider);
-        
+      builder: (context, ref, _) {
+        // Use select to listen only to the selected bottom index
+        final selectedBtmIndx = ref.watch(indexListProvider.select((indexProvide) => indexProvide.selectedBtmIndx));
+        final theme = ref.watch(themeProvider); // Theme is used throughout, so watching the whole provider is acceptable here
+
         return Scaffold(
-          appBar: _buildAppBar(indexProvide),
-          bottomNavigationBar: _buildBottomNav(indexProvide),
-          body: _buildBody(indexProvide, theme),
+          // Pass only the selected index to the AppBar builder
+          appBar: _buildAppBar(selectedBtmIndx, theme.isDarkMode),
+          bottomNavigationBar: _buildBottomNav(selectedBtmIndx, theme),
+          // Pass only the selected index and theme to the Body builder
+          body: _buildBody(selectedBtmIndx, theme),
         );
       },
     );
@@ -277,13 +280,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   // Chart overlay component
   Widget _buildChartOverlay() {
     return Consumer(
-      builder: (context, watch, _) {
-        final userProfile = watch(userProfileProvider);
-        final theme = watch(themeProvider);
-        
+      builder: (context, ref, _) {
+        // Use select to listen only to the showchartof property
+        final showChart = ref.watch(userProfileProvider.select((userProfile) => userProfile.showchartof));
+        final webViewKey = ref.watch(userProfileProvider.select((userProfile) => userProfile.webViewKey));
+        final theme = ref.watch(themeProvider); // Theme is used here
+
         return Positioned(
-          key: userProfile.webViewKey,
-          bottom: userProfile.showchartof
+          key: webViewKey,
+          bottom: showChart
             ? 0
             : (MediaQuery.of(context).size.height + 100),
           child: AnimatedContainer(
@@ -301,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               bottom: false,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
-                children: [
+                            children: [
                   ChartScreenWebView(
                     chartArgs: ChartArgs(
                       exch: 'ABC',
@@ -319,21 +324,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   // App bar based on selected tab
-  PreferredSizeWidget? _buildAppBar(dynamic indexProvide) {
+  // Accept selectedTab and isDarkMode as parameters to avoid watching providers here
+  PreferredSizeWidget? _buildAppBar(int selectedTab, bool isDarkMode) {
     // Return null for first tab
-    if (indexProvide.selectedBtmIndx == 0) {
+    if (selectedTab == 0) {
       return null;
     }
     
     return AppBar(
-      shadowColor: context.read(themeProvider).isDarkMode
-          ? colors.darkColorDivider
-          : colors.colorDivider,
-      leadingWidth: 205,
-      elevation: .3,
-      leading: _buildAppBarLeading(indexProvide.selectedBtmIndx),
-      actions: _buildAppBarActions(indexProvide.selectedBtmIndx),
-      bottom: _buildAppBarBottom(indexProvide.selectedBtmIndx),
+      shadowColor: isDarkMode
+                                              ? colors.darkColorDivider
+                                              : colors.colorDivider,
+                                          leadingWidth: 205,
+                                          elevation: .3,
+      leading: _buildAppBarLeading(selectedTab),
+      actions: _buildAppBarActions(selectedTab),
+      bottom: _buildAppBarBottom(selectedTab),
     );
   }
   
@@ -341,56 +347,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget _buildAppBarLeading(int selectedTab) {
     if (selectedTab == 1) {
       return Consumer(
-        builder: (context, watch, _) {
-          final marketWatchList = watch(marketWatchProvider);
-          final portfolio = watch(portfolioProvider);
-          final theme = watch(themeProvider);
-          
+        builder: (context, ref, _) {
+          // Use select to listen only to the watchlist name and scrips count
+          final wlName = ref.watch(marketWatchProvider.select((marketWatch) => marketWatch.wlName));
+          final scripsLength = ref.watch(marketWatchProvider.select((marketWatch) => marketWatch.scrips.length));
+          // Use select for isPreDefWLs
+          final isPreDefWLs = ref.watch(marketWatchProvider.select((marketWatch) => marketWatch.isPreDefWLs));
+          // Use select for holdings count
+          final holdingsLength = ref.watch(portfolioProvider.select((portfolio) => portfolio.holdingsModel!.length));
+          final theme = ref.watch(themeProvider); // Theme is needed here
+
           return InkWell(
             onTap: () {
               FocusScope.of(context).unfocus();
-              showModalBottomSheet(
-                useSafeArea: true,
+                                                        showModalBottomSheet(
+                                                            useSafeArea: true,
                 isScrollControlled: true,
-                shape: const RoundedRectangleBorder(
+                                                            shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-                context: context,
-                builder: (context) {
-                  return WatchlistsBottomSheet(currentWLName: marketWatchList.wlName);
+                                                            context: context,
+                                                            builder: (context) {
+                  return WatchlistsBottomSheet(currentWLName: wlName);
                 }
               );
-            },
-            child: Container(
+                                                      },
+                                                      child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      marketWatchList.wlName.isEmpty
-                        ? marketWatchList.wlName
-                        : marketWatchList.isPreDefWLs == "Yes"
-                          ? marketWatchList.wlName == "My Stocks"
-                            ? marketWatchList.wlName
-                            : marketWatchList.wlName
-                          : "${marketWatchList.wlName[0].toUpperCase()}${marketWatchList.wlName.substring(1)}'s Watchlist",
-                      style: textStyle(
+                                                            Expanded(
+                                                              child: Text(
+                      wlName.isEmpty
+                        ? wlName
+                        : isPreDefWLs == "Yes"
+                          ? wlName == "My Stocks"
+                                                                            ? wlName
+                                                                            : wlName
+                                                                        : "${wlName[0].toUpperCase()}${wlName.substring(1)}'s Watchlist",
+                                                                style: textStyle(
                         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                         14,
                         FontWeight.w600),
                       overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Text(
-                    marketWatchList.wlName == "My Stocks"
-                      ? "(${portfolio.holdingsModel!.length})"
-                      : "(${marketWatchList.scrips.length})",
-                    style: textStyle(
+                                                              ),
+                                                            ),
+                                                            Text(
+                    wlName == "My Stocks"
+                                                                    ? "(${holdingsLength})"
+                                                                    : "(${scripsLength})",
+                                                                style: textStyle(
                       theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
                       15,
                       FontWeight.w600)
                   ),
                   const SizedBox(width: 3),
-                  SvgPicture.asset(
+                                                            SvgPicture.asset(
                     assets.downArrow,
                     color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
                     width: 14
@@ -403,21 +414,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     } else {
       return Consumer(
-        builder: (context, watch, _) {
-          final theme = watch(themeProvider);
+        builder: (context, ref, _) {
+          final theme = ref.watch(themeProvider); // Theme is needed here
           
           return Padding(
             padding: const EdgeInsets.all(18),
-            child: Row(
+                                                      child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
+                                                        children: [
+                                                          Text(
                   selectedTab == 3
-                    ? "Orderbook"
+                                                                  ? "Orderbook"
                     : selectedTab == 2
-                      ? "Portfolio"
-                      : "Dashboard",
-                  style: textStyle(
+                                                                      ? "Portfolio"
+                                                                      : "Dashboard",
+                                                              style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                     17,
                     FontWeight.w600)
@@ -431,242 +442,45 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
   
   // App bar actions based on selected tab
-  List<Widget> _buildAppBarActions(int selectedTab) {
+  List<Widget>? _buildAppBarActions(int selectedTab) {
     // Default empty list
     if (selectedTab == 0) {
-      return [];
+      return null; // Return null for no actions
     }
-    
+
     // Watchlist actions (tab 1)
     if (selectedTab == 1) {
-      return [
-        Consumer(builder: (context, watch, _) {
-          final marketWatchList = watch(marketWatchProvider);
-          
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (marketWatchList.isPreDefWLs != "Yes" && marketWatchList.scrips.length > 1)
-                InkWell(
-                  onTap: () {
-                    FocusScope.of(context).unfocus();
-                    showModalBottomSheet(
-                      useSafeArea: true,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(16))
-                      ),
-                      context: context,
-                      builder: (context) {
-                        return const ScripFilterBottomSheet();
-                      }
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.only(left: 8, right: 10),
-                    child: SvgPicture.asset(
-                      assets.filterLines,
-                      width: 19,
-                      color: colors.colorGrey
-                    )
-                  ),
-                ),
-              InkWell(
-                onTap: () {
-                  context.read(marketWatchProvider).requestMWScrip(
-                    context: context,
-                    isSubscribe: false
-                  );
-                  Navigator.pushNamed(
-                    context,
-                    Routes.searchScrip,
-                    arguments: marketWatchList.wlName
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 16, left: 8),
-                  child: SvgPicture.asset(
-                    assets.searchIcon,
-                    width: 19,
-                    color: colors.colorGrey
-                  )
-                ),
-              ),
-            ],
-          );
-        }),
-      ];
+      // Return the extracted widget within a list
+      return [_WatchlistActions()];
     }
-    
+
     // Portfolio actions (tab 2)
     if (selectedTab == 2) {
-      return [
-        Consumer(builder: (context, watch, _) {
-          final portfolio = watch(portfolioProvider);
-          final theme = watch(themeProvider);
-          final funds = watch(fundProvider);
-          
-          if (portfolio.selectedTab == 0 && portfolio.allPostionList.isNotEmpty) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 15.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    height: 27,
-                    padding: const EdgeInsets.only(right: 10),
-                    child: OutlinedButton(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          useSafeArea: true,
-                          isScrollControlled: true,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(16))
-                          ),
-                          context: context,
-                          builder: (context) {
-                            return const PositionGroupBottomSheet();
-                          }
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
-                        ),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(32))
-                        )
-                      ),
-                      child: Text(
-                        "Group by",
-                        style: textStyle(
-                          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                          12,
-                          FontWeight.w600
-                        )
-                      )
-                    ),
-                  ),
-                  if (portfolio.exitAll && 
-                      portfolio.posSelection == "All position" && 
-                      portfolio.openPosition!.length > 1)
-                    SizedBox(
-                      height: 27,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          _showExitAllDialog(context, portfolio);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
-                          ),
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(32))
-                          )
-                        ),
-                        child: Text(
-                          "Exit All",
-                          style: textStyle(
-                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                            12,
-                            FontWeight.w600
-                          )
-                        )
-                      ),
-                    ),
-                ],
-              ),
-            );
-          } else if (portfolio.selectedTab == 2) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 15, top: 16),
-              child: InkWell(
-                onTap: () async {
-                  final pref = Preferences();
-                  await funds.fetchHstoken(context);
-                  
-                  Future.delayed(const Duration(microseconds: 10), () {
-                    launch('https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
-                  });
-                },
-                child: Text(
-                  "Web",
-                  style: textStyle(colors.colorBlue, 14, FontWeight.w600),
-                ),
-              ),
-            );
-          }
-          
-          return const SizedBox.shrink();
-        }),
-      ];
+      // Return the extracted widget within a list
+      return [_PortfolioActions()];
     }
-    
+
     // Orderbook actions (tab 3)
     if (selectedTab == 3) {
-      return [
-        Consumer(builder: (context, watch, _) {
-          final orderProviderWatch = watch(orderProvider);
-          final theme = watch(themeProvider);
-          
-          if (orderProviderWatch.selectedTab == 4) {
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  height: 30,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return const CreateBasket();
-                        }
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
-                      ),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(32))
-                      )
-                    ),
-                    child: Text(
-                      "Create Basket",
-                      style: textStyle(
-                        theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        12,
-                        FontWeight.w600
-                      )
-                    )
-                  )
-                )
-              ],
-            );
-          }
-          
-          return const SizedBox.shrink();
-        }),
-      ];
+      // Return the extracted widget within a list
+      return [_OrderbookActions()];
     }
-    
+
     // Default empty list for other tabs
-    return [];
+    return null; // Return null for no actions
   }
   
   // App bar bottom component
   PreferredSizeWidget? _buildAppBarBottom(int selectedTab) {
     if (selectedTab == 1) {
-      return PreferredSize(
-        preferredSize: const Size(20, 44),
+      return const PreferredSize(
+        preferredSize: const Size(double.infinity, 44), // Use double.infinity for width
         child: DefaultIndexList(src: false)
       );
     } else if (selectedTab == 4) {
       return PreferredSize(
-        preferredSize: const Size(20, 8),
-        child: _buildUserProfileSection(),
+        preferredSize: const Size(20, 8), // Adjust height as needed
+        child: _buildUserProfileSection(), // Use the extracted widget
       );
     }
     return null;
@@ -674,110 +488,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   
   // Build user profile tile for profile tab
   Widget _buildUserProfileSection() {
-    return Consumer(builder: (context, watch, _) {
-      final userProfile = watch(userProfileProvider);
-      final theme = watch(themeProvider);
-      
-      if (userProfile.userloader) {
-        return ListTile(
-          dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          leading: CircleAvatar(
-            backgroundColor: !theme.isDarkMode
-              ? Colors.grey[300]
-              : Color(0xff666666),
-          ),
-          title: Container(
-            height: 16,
-            width: 150,
-            color: !theme.isDarkMode ? Colors.grey[300] : Color(0xff666666),
-          ),
-          subtitle: Container(
-            height: 12,
-            width: 100,
-            color: !theme.isDarkMode ? Colors.grey[300] : Color(0xff666666),
-          ),
-          trailing: Container(
-            height: 24,
-            width: 50,
-            color: !theme.isDarkMode ? Colors.grey[300] : Color(0xff666666),
-          ),
-        );
-      }
-      
-      final uname = userProfile.userDetailModel?.uname?.toString() ?? "";
-      final uid = userProfile.userDetailModel?.uid?.toString() ?? "";
-      
-      return ListTile(
-        onTap: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            isDismissible: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-              ),
-            ),
-            builder: (_) => const LoggedUserBottomSheet(initRoute: 'switchAcc')
-          );
-        },
-        dense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        leading: SvgPicture.asset(
-          assets.myntnewLogo,
-          width: 46,
-          height: 46,
-        ),
-        title: Row(
-          children: [
-            Text(
-              _truncateProfileName(uname),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: textStyle(
-                Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-                16,
-                FontWeight.w600
-              )
-            ),
-            Icon(
-              Icons.expand_more,
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              size: 28,
-            )
-          ],
-        ),
-        subtitle: Text(
-          "Client ID: $uid",
-          style: textStyle(
-            const Color(0xff666666),
-            12,
-            FontWeight.w500
-          )
-        ),
-        trailing: SizedBox(
-          width: 100,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton(
-                splashRadius: 26,
-                onPressed: () {
-                  Navigator.pushNamed(context, Routes.qrscanner);
-                },
-                icon: SvgPicture.asset(
-                  "assets/profile/qr_code.svg",
-                  width: 28,
-                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
-                ),
-              ),
-            ]
-          )
-        )
-      );
-    });
+    return _UserProfileTile();
   }
   
   // Helper function for profile name truncation
@@ -788,16 +499,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
   
   // Body content
-  Widget _buildBody(dynamic indexProvide, dynamic theme) {
+  Widget _buildBody(int selectedTab, ThemesProvider theme) {
     return Consumer(
-      builder: (context, watch, _) {
-        final internet = watch(networkStateProvider);
-        final userProfile = watch(userProfileProvider);
-        
-        if ((internet.connectionStatus == ConnectivityResult.wifi ||
-            internet.connectionStatus == ConnectivityResult.mobile) &&
-            !userProfile.showchartof) {
-          return _onItemTapped(indexProvide.selectedBtmIndx, theme);
+      builder: (context, ref, _) {
+        // Use select to listen only to the connectionStatus
+        final internetStatus = ref.watch(networkStateProvider.select((internet) => internet.connectionStatus));
+        // Use select to listen only to the showchartof property
+        final showChart = ref.watch(userProfileProvider.select((userProfile) => userProfile.showchartof));
+
+        if ((internetStatus == ConnectivityResult.wifi ||
+            internetStatus == ConnectivityResult.mobile) &&
+            !showChart) {
+          // Use the selected tab directly to return the corresponding screen
+          return _onItemTapped(selectedTab, theme);
         }
         return SizedBox.shrink();
       }
@@ -805,40 +519,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
   
   // Bottom navigation
-  Widget _buildBottomNav(dynamic indexProvide) {
-    return Consumer(
-      builder: (context, watch, _) {
-        final theme = watch(themeProvider);
-        
-        return BottomAppBar(
-          height: 58,
+  Widget _buildBottomNav(int selectedTab, ThemesProvider theme) {
+    return BottomAppBar(
+                                      height: 58,
           shadowColor: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          padding: EdgeInsets.zero,
-          child: Row(
+                                      padding: EdgeInsets.zero,
+                                      child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              _buildBottomNavItem(1, assets.bookmarkedIcon, "Watchlist", indexProvide.selectedBtmIndx, theme),
-              _buildBottomNavItem(2, assets.barChart, "Portfolio", indexProvide.selectedBtmIndx, theme),
-              _buildBottomNavItem(3, assets.bag, "Orders", indexProvide.selectedBtmIndx, theme),
-              _buildBottomNavItem(4, "assets/profile/userlogo.svg", "Profile", indexProvide.selectedBtmIndx, theme, 
+                                          children: <Widget>[
+              _buildBottomNavItem(1, assets.bookmarkedIcon, "Watchlist", selectedTab, theme),
+              _buildBottomNavItem(2, assets.barChart, "Portfolio", selectedTab, theme),
+              _buildBottomNavItem(3, assets.bag, "Orders", selectedTab, theme),
+              _buildBottomNavItem(4, "assets/profile/userlogo.svg", "Profile", selectedTab, theme, 
                 useHeight: true, height: 18),
             ],
           ),
         );
-      }
-    );
   }
   
   // Single bottom navigation item
   Widget _buildBottomNavItem(int index, String iconAsset, String label, int selectedIndex, 
-    dynamic theme, {bool useHeight = false, double height = 24}) {
+    ThemesProvider theme, {bool useHeight = false, double height = 24}) {
     final isSelected = selectedIndex == index;
-    final internet = context.read(networkStateProvider);
-    final isInternetAvailable = internet.connectionStatus != ConnectivityResult.none;
+    // Use select to listen only to the connectionStatus
+    final internetStatus = ref.watch(networkStateProvider.select((internet) => internet.connectionStatus));
+    final isInternetAvailable = internetStatus != ConnectivityResult.none;
     
     return Expanded(
       child: RepaintBoundary(
-        child: InkWell(
+                                                child: InkWell(
           onTap: isInternetAvailable ? () {
             // Bottom navigation tap handling
             switch (index) {
@@ -856,13 +565,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 break;
             }
           } : null,
-          child: Container(
+                                                    child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 7),
-            decoration: BoxDecoration(
+                                                        decoration: BoxDecoration(
               border: isSelected
-                ? Border(
-                    top: BorderSide(
-                      color: theme.isDarkMode
+                                                                ? Border(
+                                                                    top: BorderSide(
+                                                                        color: theme.isDarkMode
                         ? colors.colorLightBlue
                         : colors.colorBlue,
                       width: 2
@@ -870,10 +579,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   )
                 : null
             ),
-            child: Column(
+                                                        child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
+                                                            children: [
                 useHeight
                   ? SvgPicture.asset(
                       iconAsset,
@@ -887,7 +596,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: textStyle(
+                                                                  style: textStyle(
                     _getBottomNavColor(theme, isSelected),
                     12,
                     isSelected ? FontWeight.w600 : FontWeight.w500
@@ -902,7 +611,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
   
   // Helper for nav item color
-  Color _getBottomNavColor(dynamic theme, bool isSelected) {
+  Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
     if (theme.isDarkMode && isSelected) {
       return colors.colorLightBlue;
     } else if (isSelected) {
@@ -914,13 +623,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   
   // Bottom nav handlers
   void _handleWatchlistTap() async {
-    final indexProvide = context.read(indexListProvider);
-    final portfolio = context.read(portfolioProvider);
-    final marketWatchList = context.read(marketWatchProvider);
-    final orderProviderRef = context.read(orderProvider);
+    final indexProvide = ref.read(indexListProvider);
+    final portfolio = ref.read(portfolioProvider);
+    final marketWatchList = ref.read(marketWatchProvider);
+    final orderProviderRef = ref.read(orderProvider);
     
     indexProvide.bottomMenu(1, context);
-    portfolio.cancelTimer();
+                                                      portfolio.cancelTimer();
 
     await portfolio.requestWSHoldings(context: context, isSubscribe: false);
     await orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
@@ -929,10 +638,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
   
   void _handlePortfolioTap() async {
-    final indexProvide = context.read(indexListProvider);
-    final portfolio = context.read(portfolioProvider);
-    final marketWatchList = context.read(marketWatchProvider);
-    final orderProviderRef = context.read(orderProvider);
+    final indexProvide = ref.read(indexListProvider);
+    final portfolio = ref.read(portfolioProvider);
+    final marketWatchList = ref.read(marketWatchProvider);
+    final orderProviderRef = ref.read(orderProvider);
     
     indexProvide.bottomMenu(2, context);
     
@@ -944,10 +653,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
   
   void _handleOrderbookTap() async {
-    final indexProvide = context.read(indexListProvider);
-    final portfolio = context.read(portfolioProvider);
-    final marketWatchList = context.read(marketWatchProvider);
-    final orderProviderRef = context.read(orderProvider);
+    final indexProvide = ref.read(indexListProvider);
+    final portfolio = ref.read(portfolioProvider);
+    final marketWatchList = ref.read(marketWatchProvider);
+    final orderProviderRef = ref.read(orderProvider);
     
     indexProvide.bottomMenu(3, context);
     portfolio.cancelTimer();
@@ -961,13 +670,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
   
   void _handleProfileTap() async {
-    final indexProvide = context.read(indexListProvider);
-    final portfolio = context.read(portfolioProvider);
-    final reportsprovider = context.read(ledgerProvider);
-    final fundProviderRef = context.read(fundProvider);
-    final userProfile = context.read(userProfileProvider);
-    final marketWatchList = context.read(marketWatchProvider);
-    final orderProviderRef = context.read(orderProvider);
+    final indexProvide = ref.read(indexListProvider);
+    final portfolio = ref.read(portfolioProvider);
+    final reportsprovider = ref.read(ledgerProvider);
+    final fundProviderRef = ref.read(fundProvider);
+    final userProfile = ref.read(userProfileProvider);
+    final marketWatchList = ref.read(marketWatchProvider);
+    final orderProviderRef = ref.read(orderProvider);
     
     indexProvide.bottomMenu(4, context);
     portfolio.cancelTimer();
@@ -983,12 +692,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     portfolio.requestWSPosition(context: context, isSubscribe: false);
   }
 
-  // The screen will change depending on the condition when you click on the bottom menu items.
+// The screen will change depending on the condition when you click on the bottom menu items.
   Widget _onItemTapped(int index, ThemesProvider theme) {
     switch (index) {
       case 0:
         return const DashboardScreen();
       case 1:
+        // The WatchListScreen itself will handle listening to marketWatchProvider
         return const WatchListScreen();
       case 2:
         return const PortfolioScreen();
@@ -1001,33 +711,39 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  // If an application asks for user confirmation before you can exit it, do so.
+// If an application asks for user confirmation before you can exit it, do so.
   Future<bool> showExitPopup() async {
-    if (context.read(userProfileProvider).showchartof) {
-      setState(() {
-        context.read(userProfileProvider).setChartdialog(false);
-        context.read(chartUpdateProvider).changeOrientation('portrait');
+    if (ref.read(userProfileProvider).showchartof) {
+      // Use ref.read for calls that don't need a rebuild
+      ref.read(userProfileProvider).setChartdialog(false);
+      ref.read(chartUpdateProvider).changeOrientation('portrait');
 
-        final mktwth = context.read(marketWatchProvider);
-        mktwth.chngDephBtn("Overview");
-        mktwth.singlePageloader(true);
+      final mktwth = ref.read(marketWatchProvider);
+      mktwth.chngDephBtn("Overview");
+      mktwth.singlePageloader(true);
 
-        mktwth.calldepthApis(context, mktwth.getQuotes, "");
+      // Ensure context is passed if needed by calldepthApis
+      mktwth.calldepthApis(context, mktwth.getQuotes, "");
 
-        mktwth.singlePageloader(false);
-      });
-      context.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
+      mktwth.singlePageloader(false);
+      
+      // Update state locally if needed
+      if(mounted) setState(() {});
+
+      ref.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
       return false; // Prevent back navigation when chart is visible
     } else {
       return await showDialog(
               context: context,
               builder: (BuildContext context) {
+                // Use ref.read where state is not needed for building the dialog
+                final theme = ref.read(themeProvider);
                 return AlertDialog(
-                    backgroundColor: context.read(themeProvider).isDarkMode
+                    backgroundColor: theme.isDarkMode
                         ? const Color.fromARGB(255, 18, 18, 18)
                         : colors.colorWhite,
                     titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-                        color: context.read(themeProvider).isDarkMode
+                        color: theme.isDarkMode
                             ? colors.colorWhite
                             : colors.colorBlack),
                     contentTextStyle: textStyles.menuTxt,
@@ -1049,7 +765,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           onPressed: () => Navigator.of(context).pop(false),
                           child: Text("No",
                               style: textStyles.textBtn.copyWith(
-                                  color: context.read(themeProvider).isDarkMode
+                                  color: theme.isDarkMode
                                       ? colors.colorLightBlue
                                       : colors.colorBlue))),
                       ElevatedButton(
@@ -1057,7 +773,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           style: ElevatedButton.styleFrom(
                               elevation: 0,
                               backgroundColor:
-                                  context.read(themeProvider).isDarkMode
+                                  theme.isDarkMode
                                       ? colors.colorbluegrey
                                       : colors.colorBlack,
                               shape: RoundedRectangleBorder(
@@ -1065,7 +781,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               )),
                           child: Text("Yes",
                               style: textStyle(
-                                  !context.read(themeProvider).isDarkMode
+                                  !theme.isDarkMode
                                       ? colors.colorWhite
                                       : colors.colorBlack,
                                   14,
@@ -1077,8 +793,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   // Show exit all positions dialog
-  void _showExitAllDialog(BuildContext context, dynamic portfolio) {
-    final theme = context.read(themeProvider);
+  void _showExitAllDialog(BuildContext context, dynamic portfolio, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     
     showDialog(
       context: context,
@@ -1147,114 +863,156 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 }
 
 // Watchlist actions component
-class _WatchlistActions extends StatelessWidget {
+class _WatchlistActions extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, _) {
-      final marketWatchList = watch(marketWatchProvider);
-      
-      return Row(
-        children: [
-          if (marketWatchList.isPreDefWLs != "Yes" && marketWatchList.scrips.length > 1)
-            InkWell(
-              onTap: () {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use ref.read outside the Consumer builder for method calls
+    final marketWatchProviderRef = ref.read(marketWatchProvider);
+
+    return Row(
+      children: [
+        // Use Consumer here to watch specific properties
+        Consumer(builder: (context, ref, _) {
+          // Use select to listen only to isPreDefWLs and scrips length
+          final isPreDefWLs = ref.watch(marketWatchProvider.select((marketWatch) => marketWatch.isPreDefWLs));
+          final scripsLength = ref.watch(marketWatchProvider.select((marketWatch) => marketWatch.scrips.length));
+
+          if (isPreDefWLs != "Yes" && scripsLength > 1) {
+            return InkWell(
+                                                                onTap: () {
                 FocusScope.of(context).unfocus();
-                showModalBottomSheet(
+                                                                  showModalBottomSheet(
                   useSafeArea: true,
                   isScrollControlled: true,
-                  shape: const RoundedRectangleBorder(
+                                                                      shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.vertical(top: Radius.circular(16))
                   ),
                   context: context,
                   builder: (context) {
-                    return const ScripFilterBottomSheet();
+                                                                        return const ScripFilterBottomSheet();
                   }
                 );
-              },
-              child: Container(
+                                                                },
+                                                                child: Container(
                 padding: const EdgeInsets.only(left: 8, right: 10),
-                child: SvgPicture.asset(
+                                                                    child: SvgPicture.asset(
                   assets.filterLines,
                   width: 19,
                   color: colors.colorGrey
                 )
               ),
-            ),
-          InkWell(
-            onTap: () {
-              context.read(marketWatchProvider).requestMWScrip(
+            );
+          }
+          return const SizedBox.shrink();
+        }),
+        Consumer(builder: (context, ref, _) { // Add another Consumer for the search icon
+          // Use select for wlName
+          final wlName = ref.watch(marketWatchProvider.select((marketWatch) => marketWatch.wlName));
+
+          return InkWell(
+                                                          onTap: () {
+              // Use the ref.read obtained outside the Consumer
+              marketWatchProviderRef.requestMWScrip(
                 context: context,
                 isSubscribe: false
               );
-              Navigator.pushNamed(
-                context,
+                                                            Navigator.pushNamed(
+                                                                context,
                 Routes.searchScrip,
-                arguments: marketWatchList.wlName
+                arguments: wlName
               );
-            },
-            child: Padding(
+                                                          },
+                                                          child: Padding(
               padding: const EdgeInsets.only(right: 16, left: 8),
-              child: SvgPicture.asset(
+                                                              child: SvgPicture.asset(
                 assets.searchIcon,
-                width: 19,
+                                                                  width: 19,
                 color: colors.colorGrey
               )
             ),
-          ),
-        ],
-      );
-    });
+          );
+        }),
+      ],
+    );
   }
 }
 
 // Portfolio actions stub
-class _PortfolioActions extends StatelessWidget {
+class _PortfolioActions extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, _) {
-      final portfolio = watch(portfolioProvider);
-      final selectedTab = portfolio.selectedTab;
-      
-      if (selectedTab == 0 && portfolio.allPostionList.isNotEmpty) {
-        return _PositionGroupActions();
-      } else if (selectedTab == 2) {
-        return _FundsWebActions();
-      }
-      
-      return SizedBox.shrink();
-    });
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use select to listen only to the selectedTab and allPostionList length
+    final selectedTab = ref.watch(portfolioProvider.select((portfolio) => portfolio.selectedTab));
+    final allPostionListLength = ref.watch(portfolioProvider.select((portfolio) => portfolio.allPostionList.length));
+    
+    if (selectedTab == 0 && allPostionListLength > 0) {
+      return _PositionGroupActions();
+    } else if (selectedTab == 2) {
+      return _FundsWebActions();
+    }
+    
+    return SizedBox.shrink();
   }
 }
 
 // Position group actions
-class _PositionGroupActions extends StatelessWidget {
+class _PositionGroupActions extends ConsumerWidget { // Make this a ConsumerWidget
   @override
-  Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, _) {
-      final portfolio = watch(portfolioProvider);
-      final theme = watch(themeProvider);
-      
-      return Padding(
-        padding: const EdgeInsets.only(right: 15.0),
-        child: Row(
-          children: [
-            Container(
-              height: 27,
-              padding: const EdgeInsets.only(right: 10),
+  Widget build(BuildContext context, WidgetRef ref) { // Add WidgetRef ref
+    // Use select to listen only to exitAll, posSelection, and openPosition length
+    final exitAll = ref.watch(portfolioProvider.select((portfolio) => portfolio.exitAll));
+    final posSelection = ref.watch(portfolioProvider.select((portfolio) => portfolio.posSelection));
+    final openPositionLength = ref.watch(portfolioProvider.select((portfolio) => portfolio.openPosition?.length ?? 0)); // Handle null
+    final portfolio = ref.read(portfolioProvider); // Use ref.read for method calls
+    final theme = ref.watch(themeProvider); // Theme is needed here
+    
+    return Padding(
+      padding: const EdgeInsets.only(right: 15.0),
+      child: Row(
+        children: [
+                                                            Container(
+                                                              height: 27,
+            padding: const EdgeInsets.only(right: 10),
+            child: OutlinedButton(
+              onPressed: () {
+                                                                        showModalBottomSheet(
+                  useSafeArea: true,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16))
+                  ),
+                                                                            context: context,
+                                                                            builder: (context) {
+                                                                              return const PositionGroupBottomSheet();
+                  }
+                );
+                                                                      },
+                                                                      style: OutlinedButton.styleFrom(
+                                                                          side: BorderSide(
+                  color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
+                ),
+                                                                          shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(32))
+                )
+              ),
+                                                                      child: Text(
+                                                                          "Group by",
+                                                                          style: textStyle(
+                                                                              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                                              12,
+                  FontWeight.w600
+                )
+              )
+            ),
+          ),
+          if (exitAll && 
+              posSelection == "All position" && 
+              openPositionLength > 1)
+                                                              SizedBox(
+                                                                height: 27,
               child: OutlinedButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    useSafeArea: true,
-                    isScrollControlled: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(16))
-                    ),
-                    context: context,
-                    builder: (context) {
-                      return const PositionGroupBottomSheet();
-                    }
-                  );
-                },
+                // Pass ref to _showExitAllDialog
+                onPressed: () => _showExitAllDialog(context, portfolio, ref), // Pass context, portfolio, and ref
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
                     color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
@@ -1264,7 +1022,7 @@ class _PositionGroupActions extends StatelessWidget {
                   )
                 ),
                 child: Text(
-                  "Group by",
+                  "Exit All",
                   style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                     12,
@@ -1273,69 +1031,44 @@ class _PositionGroupActions extends StatelessWidget {
                 )
               ),
             ),
-            if (portfolio.exitAll && 
-                portfolio.posSelection == "All position" && 
-                portfolio.openPosition!.length > 1)
-              SizedBox(
-                height: 27,
-                child: OutlinedButton(
-                  onPressed: () => _showExitAllDialog(context, portfolio),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                      color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
-                    ),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(32))
-                    )
-                  ),
-                  child: Text(
-                    "Exit All",
-                    style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w600
-                    )
-                  )
-                ),
-              ),
-          ]
-        ),
-      );
-    });
+        ]
+      ),
+    );
   }
   
-  void _showExitAllDialog(BuildContext context, dynamic portfolio) {
-    final theme = context.read(themeProvider);
+  // Show exit all positions dialog - Accept ref
+  void _showExitAllDialog(BuildContext context, dynamic portfolio, WidgetRef ref) {
+    final theme = ref.read(themeProvider); // Use ref.read here
     
-    showDialog(
+                                                                          showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: theme.isDarkMode ? const Color.fromARGB(255, 18, 18, 18) : colors.colorWhite,
+                                                                              return AlertDialog(
+                                                                                backgroundColor: theme.isDarkMode ? const Color.fromARGB(255, 18, 18, 18) : colors.colorWhite,
           titleTextStyle: textStyles.appBarTitleTxt.copyWith(
             color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
           ),
           contentTextStyle: textStyles.menuTxt.copyWith(
             color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
           ),
-          titlePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                                                                titlePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(14))
           ),
           scrollable: true,
           contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: const Text("Exit Position"),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Are you sure you want to exit all positions?")
-              ],
-            ),
-          ),
-          actions: [
+                                                                                insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                                                                                title: const Text("Exit Position"),
+                                                                                content: SizedBox(
+                                                                                  width: MediaQuery.of(context).size.width,
+                                                                                  child: const Column(
+                                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                    children: [
+                                                                                      Text("Are you sure you want to exit all positions?")
+                                                                                    ],
+                                                                                  ),
+                                                                                ),
+                                                                                actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
@@ -1345,16 +1078,16 @@ class _PositionGroupActions extends StatelessWidget {
                 )
               )
             ),
-            ElevatedButton(
-              onPressed: () async {
-                await portfolio.exitPosition(context, true);
-                Navigator.of(context).pop(true);
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: theme.isDarkMode ? colors.colorbluegrey : colors.colorBlack,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50),
+                                                                                  ElevatedButton(
+                                                                                    onPressed: () async {
+                                                                                      await portfolio.exitPosition(context, true);
+                                                                                      Navigator.of(context).pop(true);
+                                                                                    },
+                                                                                    style: ElevatedButton.styleFrom(
+                                                                                        elevation: 0,
+                                                                                        backgroundColor: theme.isDarkMode ? colors.colorbluegrey : colors.colorBlack,
+                                                                                        shape: RoundedRectangleBorder(
+                                                                                          borderRadius: BorderRadius.circular(50),
                 )
               ),
               child: Text(
@@ -1365,33 +1098,34 @@ class _PositionGroupActions extends StatelessWidget {
                   FontWeight.w500
                 )
               ),
-            ),
-          ],
-        );
-      },
-    );
+                                                                                  ),
+                                                                                ],
+                                                                              );
+                                                                            },
+                                                                          );
   }
 }
 
 // Funds web actions
-class _FundsWebActions extends StatelessWidget {
+class _FundsWebActions extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: const EdgeInsets.only(right: 15, top: 16),
-      child: InkWell(
-        onTap: () async {
-          final funds = context.read(fundProvider);
+                                                          padding: const EdgeInsets.only(right: 15, top: 16),
+                                                          child: InkWell(
+                                                            onTap: () async {
+          // Use ref.read for providers when just calling methods
+          final funds = ref.read(fundProvider);
           final pref = Preferences();
           
           await funds.fetchHstoken(context);
           
           Future.delayed(const Duration(microseconds: 10), () {
             launch('https://fund.mynt.in/fund/?sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}&src=app');
-          });
-        },
-        child: Text(
-          "Web",
+                                                              });
+                                                            },
+                                                            child: Text(
+                                                              "Web",
           style: textStyle(colors.colorBlue, 14, FontWeight.w600),
         ),
       ),
@@ -1400,132 +1134,170 @@ class _FundsWebActions extends StatelessWidget {
 }
 
 // Orderbook actions
-class _OrderbookActions extends StatelessWidget {
+class _OrderbookActions extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, _) {
-      final orderProviderWatch = watch(orderProvider);
-      final theme = watch(themeProvider);
-      
-      if (orderProviderWatch.selectedTab == 4) {
-        return Row(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              height: 30,
-              child: OutlinedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return const CreateBasket();
-                    }
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                    color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
-                  ),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(32))
-                  )
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use select to listen only to the selectedTab
+    final selectedTab = ref.watch(orderProvider.select((orderProvider) => orderProvider.selectedTab));
+    final theme = ref.watch(themeProvider); // Theme is needed here
+    
+    if (selectedTab == 4) {
+      return Row(
+        children: [
+                                                          Container(
+            margin: const EdgeInsets.only(right: 8),
+                                                              height: 30,
+            child: OutlinedButton(
+              onPressed: () {
+                                                                        showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                                                                              return const CreateBasket();
+                  }
+                );
+                                                                      },
+                                                                      style: OutlinedButton.styleFrom(
+                                                                          side: BorderSide(
+                  color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
                 ),
-                child: Text(
-                  "Create Basket",
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    12,
-                    FontWeight.w600
-                  )
+                                                                          shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(32))
+                )
+              ),
+                                                                      child: Text(
+                                                                          "Create Basket",
+                style: textStyle(
+                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  12,
+                  FontWeight.w600
                 )
               )
             )
-          ]
-        );
-      }
-      
-      return SizedBox.shrink();
-    });
+          )
+        ]
+      );
+    }
+    
+    return SizedBox.shrink();
   }
 }
 
 // User profile tile
-class _UserProfileTile extends StatelessWidget {
+class _UserProfileTile extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, _) {
-      final theme = watch(themeProvider);
-      final userProfile = watch(userProfileProvider);
-      
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use select to listen only to the userloader property
+    final userloader = ref.watch(userProfileProvider.select((userProfile) => userProfile.userloader));
+    final theme = ref.watch(themeProvider); // Theme is needed here
+    final userProfile = ref.read(userProfileProvider); // Use ref.read for accessing data directly
+    
+    if (userloader) {
       return ListTile(
-        onTap: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            isDismissible: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-              ),
-            ),
-            builder: (_) => const LoggedUserBottomSheet(initRoute: 'switchAcc')
-          );
-        },
         dense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        leading: SvgPicture.asset(
-          assets.myntnewLogo,
-          width: 46,
-          height: 46,
+        leading: CircleAvatar(
+                                                                        backgroundColor: !theme.isDarkMode
+                                                                            ? Colors.grey[300]
+                                                                            : Color(0xff666666),
+                                                                      ),
+        title: Container(
+          height: 16,
+          width: 150,
+          color: !theme.isDarkMode ? Colors.grey[300] : Color(0xff666666),
         ),
-        title: Row(
-          children: [
-            Text(
-              userProfile.userDetailModel!.uname.toString(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: textStyle(
-                Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-                16,
-                FontWeight.w600
-              )
-            ),
-            Icon(
-              Icons.expand_more,
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              size: 28,
-            )
-          ],
-        ),
-        subtitle: Text(
-          "Client ID: ${userProfile.userDetailModel!.uid}",
-          style: textStyle(
-            const Color(0xff666666),
-            12,
-            FontWeight.w500
-          )
-        ),
-        trailing: SizedBox(
+        subtitle: Container(
+          height: 12,
           width: 100,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton(
-                splashRadius: 26,
-                onPressed: () {
-                  Navigator.pushNamed(context, Routes.qrscanner);
-                },
-                icon: SvgPicture.asset(
-                  "assets/profile/qr_code.svg",
-                  width: 28,
-                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
-                ),
-              ),
-            ]
-          )
-        )
+          color: !theme.isDarkMode ? Colors.grey[300] : Color(0xff666666),
+        ),
+        trailing: Container(
+          height: 24,
+          width: 50,
+          color: !theme.isDarkMode ? Colors.grey[300] : Color(0xff666666),
+        ),
       );
-    });
+    }
+    
+    // Use select to listen only to uname and uid
+    final uname = ref.watch(userProfileProvider.select((userProfile) => userProfile.userDetailModel?.uname?.toString() ?? ""));
+    final uid = ref.watch(userProfileProvider.select((userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
+
+    return ListTile(
+      onTap: () {
+                                                                        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          isDismissible: true,
+          shape: const RoundedRectangleBorder(
+                                                                              borderRadius: BorderRadius.only(
+                                                                                topLeft: Radius.circular(10),
+                                                                                topRight: Radius.circular(10),
+                                                                              ),
+                                                                            ),
+          builder: (_) => const LoggedUserBottomSheet(initRoute: 'switchAcc')
+        );
+      },
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      leading: SvgPicture.asset(
+        assets.myntnewLogo,
+        width: 46,
+        height: 46,
+      ),
+      title: Row(
+                                                                        children: [
+                                                                          Text(
+            _truncateProfileName(uname), // Use the local _truncateProfileName
+                                                                              maxLines: 1,
+                                                                              overflow: TextOverflow.ellipsis,
+            style: textStyle(
+              Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+              16,
+              FontWeight.w600
+            )
+          ),
+                                                                          Icon(
+                                                                            Icons.expand_more,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            size: 28,
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                      subtitle: Text(
+        "Client ID: $uid",
+                                                                          style: textStyle(
+          const Color(0xff666666),
+          12,
+          FontWeight.w500
+        )
+      ),
+      trailing: SizedBox(
+        width: 100,
+                                                                              child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+                                                                                  children: [
+                                                                                    IconButton(
+                                                                                      splashRadius: 26,
+                                                                                      onPressed: () {
+                                                                                        Navigator.pushNamed(context, Routes.qrscanner);
+                                                                                      },
+              icon: SvgPicture.asset(
+                "assets/profile/qr_code.svg",
+                width: 28,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
+              ),
+            ),
+          ]
+        )
+      )
+    );
+  }
+  
+  // Helper function for profile name truncation - Needs to be static or outside the widget
+  // Moving this to _HomeScreenState as it was originally there
+  String _truncateProfileName(String text, {int maxLength = 12}) {
+    return (text.length > maxLength)
+        ? '${text.substring(0, maxLength)}...'
+        : text;
   }
 }

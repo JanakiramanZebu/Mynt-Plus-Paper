@@ -10,21 +10,21 @@ import '../../res/res.dart';
 import 'invalid_qr.dart';
 import 'qr_scan_detils.dart';
 
-class BarcodeScannerWithScanWindow extends StatefulWidget {
+class BarcodeScannerWithScanWindow extends ConsumerStatefulWidget {
   const BarcodeScannerWithScanWindow({super.key});
 
   @override
-  State<BarcodeScannerWithScanWindow> createState() =>
+  ConsumerState<BarcodeScannerWithScanWindow> createState() =>
       _BarcodeScannerWithScanWindowState();
 }
 
 class _BarcodeScannerWithScanWindowState
-    extends State<BarcodeScannerWithScanWindow> {
+    extends ConsumerState<BarcodeScannerWithScanWindow> {
   final MobileScannerController controller = MobileScannerController();
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     final scanWindow = Rect.fromCenter(
       center: MediaQuery.sizeOf(context).center(Offset.zero),
       width: 270,

@@ -12,11 +12,11 @@ class GlobalIndices extends ConsumerWidget {
   const GlobalIndices({super.key, this.globalIndices});
 
   @override
-  Widget build(BuildContext context,ScopedReader watch) {
-          final theme = context.read(themeProvider);
+  Widget build(BuildContext context,WidgetRef ref) {
+          final theme = ref.read(themeProvider);
     return RefreshIndicator(
       onRefresh: () async {
-        await context.read(stocksProvide).getGlobalIndices();
+        await ref.read(stocksProvide).getGlobalIndices();
       },
       child: ListView.separated(
           shrinkWrap: true,

@@ -23,7 +23,7 @@ import '../../sharedWidget/snack_bar.dart';
 import 'margin_charges_bottom_sheet.dart';
 import 'order_screen_header.dart';
 
-class ModifyPlaceOrderScreen extends StatefulWidget {
+class ModifyPlaceOrderScreen extends ConsumerStatefulWidget {
   final OrderBookModel modifyOrderArgs;
   final ScripInfoModel scripInfo;
   final OrderScreenArgs orderArg;
@@ -34,10 +34,10 @@ class ModifyPlaceOrderScreen extends StatefulWidget {
       required this.orderArg});
 
   @override
-  State<ModifyPlaceOrderScreen> createState() => _ModifyPlaceOrderScreenState();
+  ConsumerState<ModifyPlaceOrderScreen> createState() => _ModifyPlaceOrderScreenState();
 }
 
-class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
+class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen> {
   bool addStoploss = false;
   bool isAgree = false;
   bool addValidity = false;
@@ -162,10 +162,10 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
         if (didPop) return; // If system handled back, do nothing
       },
 
-      child: Consumer(builder: (context, ScopedReader watch, _) {
-        final orderProvide = watch(orderProvider);
-        final internet = watch(networkStateProvider);
-        final theme = context.read(themeProvider);
+      child: Consumer(builder: (context, WidgetRef ref, _) {
+        final orderProvide = ref.watch(orderProvider);
+        final internet = ref.watch(networkStateProvider);
+        final theme = ref.read(themeProvider);
         return GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: Scaffold(
@@ -456,11 +456,9 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                             if (number <
                                                                 999999) {
                                                               qtyCtrl
-                                                                  .text = (int.parse(
-                                                                          qtyCtrl
-                                                                              .text) +
-                                                                      multiplayer)
-                                                                  .toString();
+                                                                  .text = (int.parse(discQtyCtrl.text) +
+                                                                              1)
+                                                                          .toString();
                                                             }
                                                           } else {
                                                             qtyCtrl.text =
@@ -623,8 +621,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
                                                               12),
                                                           decoration: BoxDecoration(
                                                               borderRadius:
-                                                                  BorderRadius.circular(
-                                                                      20),
+                                                                  BorderRadius.circular(20),
                                                               color: theme.isDarkMode
                                                                   ? const Color(0xff555555)
                                                                   : colors.colorWhite),
@@ -1767,7 +1764,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
         blprc: '',
         trgprc:
             isActivePrice[2] || isActivePrice[3] ? triggerPriceCtrl.text : "");
-    context.read(orderProvider).fetchOrderMargin(input, context);
+    ref.read(orderProvider).fetchOrderMargin(input, context);
     BrokerageInput brokerageInput = BrokerageInput(
         exch: "${widget.scripInfo.exch}",
         prc: priceCtrl.text,
@@ -1777,7 +1774,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
             : qtyCtrl.text,
         trantype: widget.modifyOrderArgs.trantype!,
         tsym: "${widget.scripInfo.tsym}");
-    context.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
+    ref.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
   }
 
   modifyOrder() async {
@@ -1807,7 +1804,7 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
           context, "Quantity should be multiple of lot size $lotSize => $q"));
     }
     if (placeorder) {
-      context.read(orderProvider).setOrderloader(true);
+      ref.read(orderProvider).setOrderloader(true);
       ModifyOrderInput input = ModifyOrderInput(
           dscqty: widget.modifyOrderArgs.dscqty ?? "0",
           token: widget.modifyOrderArgs.token!,
@@ -1826,8 +1823,8 @@ class _ModifyPlaceOrderScreenState extends State<ModifyPlaceOrderScreen> {
           ret: validity,
           trgprc: triggerPriceCtrl.text,
           tsym: widget.modifyOrderArgs.tsym!);
-      await context.read(orderProvider).fetchModifyOrder(input, context);
-      context.read(orderProvider).setOrderloader(false);
+      await ref.read(orderProvider).fetchModifyOrder(input, context);
+      ref.read(orderProvider).setOrderloader(false);
     }
   }
 }

@@ -23,11 +23,11 @@ class MainSmeListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final ipos = watch(ipoProvide);
-      final mainstreamipo = watch(ipoProvide);
-      final upi = watch(transcationProvider);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final ipos = ref.watch(ipoProvide);
+      final mainstreamipo = ref.watch(ipoProvide);
+      final upi = ref.watch(transcationProvider);
+      final theme = ref.watch(themeProvider);
       final dev_height = MediaQuery.of(context).size.height;
 
       List<dynamic> openIpos = mainstreamipo.mainsme
@@ -386,10 +386,10 @@ class MainSmeListCard extends StatelessWidget {
                                                    upi.bankdetails!
                                                        .dATA![upi.indexss][2]);
                                                openIpos[index].key == "SME"
-                                                   ? await context
+                                                   ? await ref
                                                        .read(ipoProvide)
                                                        .smeipocategory()
-                                                   : await context
+                                                   : await ref
                                                        .read(ipoProvide)
                                                        .mainipocategory();
                                                                                 
@@ -911,10 +911,10 @@ class MainSmeListCard extends StatelessWidget {
                                                    upi.bankdetails!
                                                        .dATA![upi.indexss][2]);
                                                preOpenIpos[index].key == "SME"
-                                                   ? await context
+                                                   ? await ref
                                                        .read(ipoProvide)
                                                        .smeipocategory()
-                                                   : await context
+                                                   : await ref
                                                        .read(ipoProvide)
                                                        .mainipocategory();
                                                                      

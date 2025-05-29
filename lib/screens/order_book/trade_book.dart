@@ -22,9 +22,9 @@ class TradeBook extends ConsumerWidget {
   TradeBook({super.key, required this.tradeBook});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
-    final order = watch(orderProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
+    final order = ref.watch(orderProvider);
     return Column(children: [
       if (order.tradeBook!.length > 1)
         Container(
@@ -160,21 +160,21 @@ class TradeBook extends ConsumerWidget {
                       }
                       return InkWell(
                           onTap: () async {
-                            await context
+                            await ref
                                 .read(marketWatchProvider)
                                 .fetchLinkeScrip(
                                     "${tradeBook[itemIndex].token}",
                                     "${tradeBook[itemIndex].exch}",
                                     context);
 
-                            await watch(marketWatchProvider).fetchScripQuote(
+                            await ref.watch(marketWatchProvider).fetchScripQuote(
                                 "${tradeBook[itemIndex].token}",
                                 "${tradeBook[itemIndex].exch}",
                                 context);
 
                             if ((tradeBook[itemIndex].exch == "NSE" ||
                                 tradeBook[itemIndex].exch == "BSE")) {
-                              await context
+                              await ref
                                   .read(marketWatchProvider)
                                   .fetchTechData(
                                       context: context,
@@ -407,14 +407,14 @@ class TradeBook extends ConsumerWidget {
                       }
                       return InkWell(
                           onTap: () async {
-                            await context
+                            await ref
                                 .read(marketWatchProvider)
                                 .fetchLinkeScrip(
                                     "${order.tradeBooksearch![itemIndex].token}",
                                     "${order.tradeBooksearch![itemIndex].exch}",
                                     context);
 
-                            await watch(marketWatchProvider).fetchScripQuote(
+                            await ref.watch(marketWatchProvider).fetchScripQuote(
                                 "${order.tradeBooksearch![itemIndex].token}",
                                 "${order.tradeBooksearch![itemIndex].exch}",
                                 context);
@@ -423,7 +423,7 @@ class TradeBook extends ConsumerWidget {
                                     "NSE" ||
                                 order.tradeBooksearch![itemIndex].exch ==
                                     "BSE")) {
-                              await context.read(marketWatchProvider).fetchTechData(
+                              await ref.read(marketWatchProvider).fetchTechData(
                                   context: context,
                                   exch:
                                       "${order.tradeBooksearch![itemIndex].exch}",

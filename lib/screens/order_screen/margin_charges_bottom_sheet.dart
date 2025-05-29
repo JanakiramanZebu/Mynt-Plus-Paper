@@ -18,9 +18,9 @@ class MarginDetailsBottomsheet extends StatefulWidget {
 class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final orderMargin = watch(orderProvider).orderMarginModel;
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final orderMargin = ref.watch(orderProvider).orderMarginModel;
+      final theme = ref.watch(themeProvider);
       return Container(
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -201,10 +201,10 @@ class ChargesDetailsBottomsheet extends StatefulWidget {
 class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final orderBrokerage = watch(orderProvider).getBrokerageModel;
-      final orderProvide = watch(orderProvider);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final orderBrokerage = ref.watch(orderProvider).getBrokerageModel;
+      final orderProvide = ref.watch(orderProvider);
+      final theme = ref.watch(themeProvider);
       return orderProvide.getBrokerageModel!.emsg ==
               "Error Occurred : Invalid order details/brokerage plan not set"
           ? Container(

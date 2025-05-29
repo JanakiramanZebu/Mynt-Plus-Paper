@@ -9,10 +9,10 @@ import 'core/default_change_notifier.dart';
 import 'market_watch_provider.dart';
 
 final ordInputProvider =
-    ChangeNotifierProvider((ref) => OrderInputProvider(ref.read));
+    ChangeNotifierProvider((ref) => OrderInputProvider(ref));
 
 class OrderInputProvider extends DefaultChangeNotifier {
-  final Reader ref;
+  final Ref ref;
 
 // Repeat order
 
@@ -174,12 +174,12 @@ class OrderInputProvider extends DefaultChangeNotifier {
 
       if (result >=
           double.parse(
-              "${ref(marketWatchProvider).scripInfoModel!.uc ?? 0.00}")) {
-        priceVal = "${ref(marketWatchProvider).scripInfoModel!.uc}";
+              "${ref.read(marketWatchProvider).scripInfoModel!.uc ?? 0.00}")) {
+        priceVal = "${ref.read(marketWatchProvider).scripInfoModel!.uc}";
       } else if (result <=
           double.parse(
-              "${ref(marketWatchProvider).scripInfoModel!.lc ?? 0.00}")) {
-        priceVal = "${ref(marketWatchProvider).scripInfoModel!.lc}";
+              "${ref.read(marketWatchProvider).scripInfoModel!.lc ?? 0.00}")) {
+        priceVal = "${ref.read(marketWatchProvider).scripInfoModel!.lc}";
       } else {
         priceVal = result.toStringAsFixed(2);
       }

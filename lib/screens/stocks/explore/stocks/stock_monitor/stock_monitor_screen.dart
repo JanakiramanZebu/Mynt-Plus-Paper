@@ -13,9 +13,9 @@ class StockMonitorScreen extends ConsumerWidget {
   const StockMonitorScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
-    final stockMonitor = watch(stocksProvide);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
+    final stockMonitor = ref.watch(stocksProvide);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(

@@ -15,12 +15,12 @@ class ExitOrderScreen extends ConsumerWidget {
   const ExitOrderScreen({super.key, required this.exitOrdersList});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
-    final Orders = watch(orderProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
+    final Orders = ref.watch(orderProvider);
     
     return StreamBuilder<Map>(
-      stream: watch(websocketProvider).socketDataStream,
+      stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
         

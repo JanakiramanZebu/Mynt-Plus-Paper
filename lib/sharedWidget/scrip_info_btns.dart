@@ -28,10 +28,10 @@ class ScripInfoBtns extends ConsumerWidget {
       this.navigationLock});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final marketwatch = watch(marketWatchProvider);
-    final userProfile = watch(userProfileProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final marketwatch = ref.watch(marketWatchProvider);
+    final userProfile = ref.watch(userProfileProvider);
+    final theme = ref.read(themeProvider);
     return Container(
         padding: const EdgeInsets.only(left: 14, top: 8, bottom: 8),
         height: 50,
@@ -61,7 +61,7 @@ class ScripInfoBtns extends ConsumerWidget {
                 child: InkWell(
                     onTap: () async {
                       // Use navigation lock if provided, otherwise execute directly
-                      final action = () async {
+                      action() async {
                         userProfile.setonloadChartdialog(true);
                         marketwatch.singlePageloader(true);
 
@@ -98,7 +98,7 @@ class ScripInfoBtns extends ConsumerWidget {
                                 context);
                           }
 
-                          await context.read(websocketProvider).establishConnection(
+                          await ref.read(websocketProvider).establishConnection(
                               channelInput: (exch == "NFO" ||
                                       (exch == "MCX" && insName == "OPTFUT"))
                                   ? '${marketwatch.getQuotes!.undExch ?? marketwatch.getQuotes!.exch}|${marketwatch.getQuotes!.undTk ?? marketwatch.getQuotes!.token}'
@@ -127,7 +127,7 @@ class ScripInfoBtns extends ConsumerWidget {
                             .chngDephBtn(marketwatch.depthBtns[index]['btnName']);
 
                         if (marketwatch.actDeptBtn == "Overview") {
-                          await watch(websocketProvider).establishConnection(
+                          await ref.watch(websocketProvider).establishConnection(
                               channelInput: "$exch|$token",
                               task: "d",
                               context: context);
@@ -136,16 +136,16 @@ class ScripInfoBtns extends ConsumerWidget {
                         if (marketwatch.actDeptBtn == "Fundamental") {
                           if ((exch == "NSE" || exch == "BSE") &&
                               (insName != "UNDIND")) {
-                            await context
+                            await ref
                                 .read(marketWatchProvider)
                                 .fetchFundamentalData(
                                     tradeSym:
-                                        "${context.read(marketWatchProvider).getQuotes!.exch}:${context.read(marketWatchProvider).getQuotes!.tsym}");
+                                        "${ref.read(marketWatchProvider).getQuotes!.exch}:${ref.read(marketWatchProvider).getQuotes!.tsym}");
                           }
                           marketwatch.chngshareHold("Promoter Holding");
                         }
                         marketwatch.singlePageloader(false);
-                      };
+                      }
                       
                       if (navigationLock != null) {
                         navigationLock!(action);

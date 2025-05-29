@@ -12,8 +12,8 @@ class NewsScreen extends ConsumerWidget {
   const NewsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final news = watch(stocksProvide).newsModel!.data;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final news = ref.watch(stocksProvide).newsModel!.data;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       color: const Color(0xffFFFFFF),

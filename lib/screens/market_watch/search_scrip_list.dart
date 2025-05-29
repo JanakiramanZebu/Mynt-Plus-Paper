@@ -22,9 +22,9 @@ class SearchScripList extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
-    final searchScrip = watch(marketWatchProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
+    final searchScrip = ref.watch(marketWatchProvider);
 
     if (searchValue.isEmpty) {
       return const NoDataFound();

@@ -19,12 +19,12 @@ class IpoCloseOrderDetails extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
+  Widget build(BuildContext context, WidgetRef ref) {
     int currentYear = DateTime.now().year;
     final currentDate = DateTime.now();
     print("currentDate :: $currentDate");
 
-    final theme = watch(themeProvider);
+    final theme = ref.watch(themeProvider);
     return Scaffold(
       appBar: AppBar(
         elevation: .2,
@@ -322,9 +322,9 @@ class IpoCloseOrderDetails extends ConsumerWidget {
                     Expanded(
                       child: OutlinedButton(
                           onPressed: () async {
-                            await context.read(ipoProvide).getSmeIpo();
-                            await context.read(ipoProvide).getmainstreamipo();
-                            await context
+                            await ref.read(ipoProvide).getSmeIpo();
+                            await ref.read(ipoProvide).getmainstreamipo();
+                            await ref
                                 .read(ipoProvide)
                                 .getipoperfomance(currentYear);
                             Navigator.pushNamed(context, Routes.ipo);

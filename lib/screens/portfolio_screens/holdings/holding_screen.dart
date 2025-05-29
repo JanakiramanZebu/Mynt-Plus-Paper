@@ -6,7 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
+// import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Consumer, ConsumerWidget;
 import '../../../provider/fund_provider.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -17,18 +17,19 @@ import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';
+import '../../../utils/no_emoji_inputformatter.dart';
 import 'filter_scrip_bottom_sheet.dart';
 
 import 'holdings_list.dart';
 
-class HoldingScreen extends StatefulWidget {
+class HoldingScreen extends ConsumerStatefulWidget {
   const HoldingScreen({super.key});
 
   @override
-  State<HoldingScreen> createState() => _HoldingScreenState();
+  ConsumerState<HoldingScreen> createState() => _HoldingScreenState();
 }
 
-class _HoldingScreenState extends State<HoldingScreen> {
+class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   StreamSubscription? _socketSubscription;
   
   // Cached values to avoid recalculations
@@ -85,7 +86,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
   }
   
   void _setupSocketSubscription() {
-    final socketProvider = context.read(websocketProvider);
+    final socketProvider = ref.read(websocketProvider);
     
     // Use debounce to reduce update frequency
     _socketSubscription = socketProvider.socketDataStream.listen((socketDatas) {
@@ -108,7 +109,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
   
   // Update holdings data with socket updates - optimized version
   void _updateHoldingsData(Map socketDatas) {
-    final holdingProvider = context.read(portfolioProvider);
+    final holdingProvider = ref.read(portfolioProvider);
     final holdings = holdingProvider.showSearchHold
         ? holdingProvider.holdingSearchItem!
         : holdingProvider.holdingsModel!;
@@ -263,8 +264,8 @@ class _HoldingScreenState extends State<HoldingScreen> {
   void _calculateInitialValues() {
     if (_isInitialized) return; // Prevent duplicate initialization
     
-    final holdingProvider = context.read(portfolioProvider);
-    final websocket = context.read(websocketProvider);
+    final holdingProvider = ref.read(portfolioProvider);
+    final websocket = ref.read(websocketProvider);
     
     // Process initial socket data
     if (websocket.socketDatas.isNotEmpty) {
@@ -279,7 +280,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
   
   // Process initial data without triggering setState during build
   void _processInitialData(Map socketDatas) {
-    final holdingProvider = context.read(portfolioProvider);
+    final holdingProvider = ref.read(portfolioProvider);
     final holdings = holdingProvider.showSearchHold
         ? holdingProvider.holdingSearchItem!
         : holdingProvider.holdingsModel!;
@@ -380,13 +381,13 @@ class _HoldingScreenState extends State<HoldingScreen> {
   @override
   Widget build(BuildContext context) {
     // Read providers only once for static data
-    final theme = context.read(themeProvider);
-    final holdingProvider = context.read(portfolioProvider);
+    final theme = ref.read(themeProvider);
+    final holdingProvider = ref.read(portfolioProvider);
     
     // Use a focused Consumer only for the loading status
     return Consumer(
       builder: (context, watch, _) {
-        final isLoading = watch(portfolioProvider).holdloader;
+        final isLoading = ref.watch(portfolioProvider).holdloader;
         
         if (isLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -417,7 +418,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
   
   // Method to calculate summary values from holdings data
   void _calculateSummaryValues() {
-    final holdingProvider = context.read(portfolioProvider);
+    final holdingProvider = ref.read(portfolioProvider);
     final holdings = holdingProvider.showSearchHold
         ? holdingProvider.holdingSearchItem!
         : holdingProvider.holdingsModel!;
@@ -465,14 +466,14 @@ class _HoldingScreenState extends State<HoldingScreen> {
 
   // Summary section with investment and P&L information
   Widget _buildSummarySection() {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     
     // Add a Consumer to force rebuilds when holdings data changes
     return Consumer(
       builder: (context, watch, _) {
         // Watch holdings data but don't use it directly
         // This ensures the section rebuilds when API data updates
-        watch(portfolioProvider);
+        ref.watch(portfolioProvider);
         
         // Recalculate summary values when provider updates
         _calculateSummaryValues();
@@ -635,7 +636,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
     return Consumer(
       builder: (context, watch, _) {
         // Watch whether there are holdings and the showEdis flag
-        final holdingProvider = watch(portfolioProvider);
+        final holdingProvider = ref.watch(portfolioProvider);
         
         // Generate key based on what matters for action buttons
         final hasHoldings = holdingProvider.holdingsModel != null && 
@@ -668,9 +669,9 @@ class _HoldingScreenState extends State<HoldingScreen> {
     required bool showEdis,
     required bool showSearch
   }) {
-    final holdingProvider = context.read(portfolioProvider);
-    final mf = context.read(mfProvider);
-    final theme = context.read(themeProvider);
+    final holdingProvider = ref.read(portfolioProvider);
+    final mf = ref.read(mfProvider);
+    final theme = ref.read(themeProvider);
     
     return RepaintBoundary(
       child: Container(
@@ -703,8 +704,8 @@ class _HoldingScreenState extends State<HoldingScreen> {
                           )
                         ),
                                           onPressed: () async {
-                          await context.read(fundProvider).fetchHstoken(context);
-                          await context.read(fundProvider).eDis(context);
+                          await ref.read(fundProvider).fetchHstoken(context);
+                          await ref.read(fundProvider).eDis(context);
                         },
                         child: Text(
                           "E-DIS",
@@ -773,7 +774,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                       ),
                                 InkWell(
                                     onTap: () {
-                        context.read(portfolioProvider).showHoldSearch(true);
+                        ref.read(portfolioProvider).showHoldSearch(true);
                         // Reset cached widgets because UI structure changed
                         setState(() {
                           _cachedActionButtons = null;
@@ -802,19 +803,19 @@ class _HoldingScreenState extends State<HoldingScreen> {
   
   // Search bar section (shown conditionally)
   Widget _buildSearchBar() {
-    final holdingProvider = context.read(portfolioProvider);
+    final holdingProvider = ref.read(portfolioProvider);
     
     // Only watch the search visibility state with a focused Consumer
     return Consumer(
       builder: (context, watch, _) {
-        final showSearch = watch(portfolioProvider).showSearchHold;
+        final showSearch = ref.watch(portfolioProvider).showSearchHold;
         
         if (!showSearch) {
           return const SizedBox.shrink();
         }
         
         // Save theme reference to prevent repeated lookups
-        final theme = context.read(themeProvider);
+        final theme = ref.read(themeProvider);
         
         return RepaintBoundary(
           child: Container(
@@ -844,7 +845,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                               textCapitalization: TextCapitalization.characters,
                               inputFormatters: [
                                 UpperCaseTextFormatter(),
-                                RemoveEmojiInputFormatter(),
+                                NoEmojiInputFormatter(),
                       FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/.,]'))
                               ],
                               decoration: InputDecoration(
@@ -942,7 +943,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
           });
           
           // Fetch fresh data
-          await context.read(portfolioProvider).fetchHoldings(context, "Refresh");
+          await ref.read(portfolioProvider).fetchHoldings(context, "Refresh");
           
           // Recalculate all summaries with the new data
           _calculateSummaryValues();
@@ -971,13 +972,13 @@ class _HoldingScreenState extends State<HoldingScreen> {
 
   // Holdings list view based on search state
   Widget _buildHoldingsListView() {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     final isDarkMode = theme.isDarkMode;
     
     // Use a consumer to watch both the search state AND holdings data for API changes
     return Consumer(
       builder: (context, watch, _) {
-        final portfolioData = watch(portfolioProvider);
+        final portfolioData = ref.watch(portfolioProvider);
         
         // Watch both search state and actual holdings data
         final showSearch = portfolioData.showSearchHold;
@@ -1007,13 +1008,13 @@ class _HoldingScreenState extends State<HoldingScreen> {
           child: ListView.builder(
             // Use a key that only changes when the list fundamentally changes
             key: ValueKey('holdings-list-${items.length}'),
-            physics: const BouncingScrollPhysics(),
-            shrinkWrap: false,
-            itemBuilder: (BuildContext context, int idx) {
-              final index = idx ~/ 2;
+                                physics: const BouncingScrollPhysics(),
+                                shrinkWrap: false,
+                                itemBuilder: (BuildContext context, int idx) {
+                                  final index = idx ~/ 2;
                                   
               // Return cached divider for odd indices
-              if (idx.isOdd) {
+                                  if (idx.isOdd) {
                 return divider;
               }
     
@@ -1035,15 +1036,15 @@ class _HoldingScreenState extends State<HoldingScreen> {
               );
             },
             itemCount: items.length * 2 - 1,
-          ),
-        );
-      }
+                                ),
+                              );
+                            }
     );
   }
 }
 
 // A wrapper widget to isolate individual holding items for better performance
-class _HoldingItemWrapper extends StatefulWidget {
+class _HoldingItemWrapper extends ConsumerStatefulWidget {
   final dynamic holding;
   final ThemesProvider theme;
   final VoidCallback onTap;
@@ -1058,10 +1059,10 @@ class _HoldingItemWrapper extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<_HoldingItemWrapper> createState() => _HoldingItemWrapperState();
+  ConsumerState<_HoldingItemWrapper> createState() => _HoldingItemWrapperState();
 }
 
-class _HoldingItemWrapperState extends State<_HoldingItemWrapper> {
+class _HoldingItemWrapperState extends ConsumerState<_HoldingItemWrapper> {
   // Add navigation lock to prevent multiple taps
   bool _isNavigating = false;
 
@@ -1112,7 +1113,7 @@ class _HoldingItemWrapperState extends State<_HoldingItemWrapper> {
   }
   
   Future<void> _navigateToDetail(BuildContext context) async {
-    final marketWatch = context.read(marketWatchProvider);
+    final marketWatch = ref.read(marketWatchProvider);
     
     // Only load data if it's needed (check if current token is different)
     if (marketWatch.getQuotes?.token != widget.holding.exchTsym![0].token) {
@@ -1129,15 +1130,15 @@ class _HoldingItemWrapperState extends State<_HoldingItemWrapper> {
           await marketWatch.fetchScripQuote(
             "${widget.holding.exchTsym![0].token}",
             "${widget.holding.exchTsym![0].exch}",
-            context
+                                        context
           );
 
           if (!mounted) return;
           
           // Only fetch tech data for certain exchanges
           if (widget.holding.exchTsym![0].exch == "NSE" || widget.holding.exchTsym![0].exch == "BSE") {
-            await context.read(marketWatchProvider).fetchTechData(
-              context: context,
+            await ref.read(marketWatchProvider).fetchTechData(
+                                                context: context,
               exch: "${widget.holding.exchTsym![0].exch}",
               tradeSym: "${widget.holding.exchTsym![0].tsym}",
               lastPrc: "${widget.holding.exchTsym![0].lp}"
@@ -1154,10 +1155,10 @@ class _HoldingItemWrapperState extends State<_HoldingItemWrapper> {
     if (!mounted) return;
     
     // Navigate to detail screen
-    Navigator.pushNamed(
+                                    Navigator.pushNamed(
       context, 
       Routes.holdingDetail,
-      arguments: {
+                                        arguments: {
         "holdingData": widget.holding,
         "exchTsym": widget.holding.exchTsym![0]
       }

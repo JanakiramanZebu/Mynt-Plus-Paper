@@ -20,7 +20,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
   @override
   void initState() {
     setState(() {
-      // _character = context.read(ledgerProvider).filterval;
+      // _character = ref.read(ledgerProvider).filterval;
     });
     super.initState();
   }
@@ -28,10 +28,10 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final eqtypestring = watch(ledgerProvider).eqtypestring;
-      final ledgerprovider = watch(ledgerProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+      final eqtypestring = ref.watch(ledgerProvider).eqtypestring;
+      final ledgerprovider = ref.watch(ledgerProvider);
 
       print("clickvalue${ledgerprovider.eqtypestring}");
       return Scaffold(

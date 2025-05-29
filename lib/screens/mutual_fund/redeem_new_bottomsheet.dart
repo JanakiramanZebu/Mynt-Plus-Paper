@@ -31,18 +31,18 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
   // @override
   // void initState() {
   //   setState(() {
-  //     context.read(mfProvider).redemptionQty.text = context.read(portfolioProvider). mfQuotes!.minRdQty!;
-  //     context.read(mfProvider).redemptionAmount.text = (double.parse(context.read(mfProvider).redemptionQty.text) * double.parse(widget.mfHoldingData.exchTsym![0].nav!)).toString();
+  //     ref.read(mfProvider).redemptionQty.text = ref.read(portfolioProvider). mfQuotes!.minRdQty!;
+  //     ref.read(mfProvider).redemptionAmount.text = (double.parse(ref.read(mfProvider).redemptionQty.text) * double.parse(widget.mfHoldingData.exchTsym![0].nav!)).toString();
   //     });
   //   super.initState();
   // }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final portfolio = watch(portfolioProvider);
-      final theme = watch(themeProvider);
-      final mf = watch(mfProvider);
+    return Consumer(builder: (context, ref, child) {
+      final portfolio = ref.watch(portfolioProvider);
+      final theme = ref.watch(themeProvider);
+      final mf = ref.watch(mfProvider);
       return SingleChildScrollView(
         // initialChildSize: 0.50,
         // maxChildSize: .99,

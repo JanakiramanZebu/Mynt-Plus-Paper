@@ -23,17 +23,17 @@ import '../gtt_condition.dart';
 import '../invest_type_widget.dart';
 import '../order_screen_header.dart';
 
-class ModifyGTT extends StatefulWidget {
+class ModifyGTT extends ConsumerStatefulWidget {
   final GttOrderBookModel gttOrderBook;
   final ScripInfoModel scripInfo;
   const ModifyGTT(
       {super.key, required this.scripInfo, required this.gttOrderBook});
 
   @override
-  State<ModifyGTT> createState() => _ModifyGTTState();
+  ConsumerState<ModifyGTT> createState() => _ModifyGTTState();
 }
 
-class _ModifyGTTState extends State<ModifyGTT> {
+class _ModifyGTTState extends ConsumerState<ModifyGTT> {
   bool? isBuy;
 
   bool isOco = false;
@@ -52,7 +52,7 @@ class _ModifyGTTState extends State<ModifyGTT> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read(ordInputProvider).getModifyData(widget.gttOrderBook);
+      ref.read(ordInputProvider).getModifyData(widget.gttOrderBook);
     });
 
     setState(() {
@@ -80,27 +80,26 @@ class _ModifyGTTState extends State<ModifyGTT> {
           .toString());
 
       product = "I";
-      // context.read(networkStateProvider).networkStream();
+      // ref.read(networkStateProvider).networkStream();
     });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return PopScope(
       canPop: true, // Allows back navigation
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return; // If system handled back, do nothing
 
-        context.read(ordInputProvider).clearTextField();
-        await context
-            .read(marketWatchProvider)
+        ref.read(ordInputProvider).clearTextField();
+        await ref.read(marketWatchProvider)
             .requestMWScrip(context: context, isSubscribe: true);
       },
-      child: Consumer(builder: (context, ScopedReader watch, _) {
-        final orderInput = watch(ordInputProvider);
-        final internet = watch(networkStateProvider);
+      child: Consumer(builder: (context, WidgetRef ref, _) {
+        final orderInput = ref.watch(ordInputProvider);
+        final internet = ref.watch(networkStateProvider);
         return GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: Scaffold(
@@ -1136,7 +1135,7 @@ class _ModifyGTTState extends State<ModifyGTT> {
             ? orderInput.trgPrcCtrl.text
             : "",
         alid: '${widget.gttOrderBook.alId}');
-    await context.read(orderProvider).fetchModifyGTTOrder(input, context);
+    await ref.read(orderProvider).fetchModifyGTTOrder(input, context);
   }
 
   modifyOCOOrder(OrderInputProvider orderInput) async {
@@ -1166,6 +1165,6 @@ class _ModifyGTTState extends State<ModifyGTT> {
             ? orderInput.ocoTrgPrcCtrl.text
             : "",
         alid: '${widget.gttOrderBook.alId}');
-    await context.read(orderProvider).fetchOCOModifyOrder(input, context);
+    await ref.read(orderProvider).fetchOCOModifyOrder(input, context);
   }
 }

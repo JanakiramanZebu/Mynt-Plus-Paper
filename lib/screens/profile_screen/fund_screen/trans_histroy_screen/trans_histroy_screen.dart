@@ -17,9 +17,9 @@
 //   });
 
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
-//      final theme = watch(themeProvider);
-//         final transhis = watch(transcationProvider);
+//   Widget build(BuildContext context, WidgetRef ref) {
+//      final theme = ref.watch(themeProvider);
+//         final transhis = ref.watch(transcationProvider);
 //     return Scaffold(
       
 //       appBar: AppBar(

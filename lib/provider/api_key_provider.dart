@@ -12,12 +12,12 @@ import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 
 final apikeyprovider =
-    ChangeNotifierProvider((ref) => ApikeyProvider(ref.read));
+    ChangeNotifierProvider((ref) => ApikeyProvider(ref));
 
 class ApikeyProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
-  final Reader ref;
+  final Ref ref;
   ApikeyProvider(this.ref);
 
   Apikeymodel? _apikeyres;
@@ -46,12 +46,12 @@ class ApikeyProvider extends DefaultChangeNotifier {
       ConstantName.sessCheck = true;
       if (_apikeyres!.emsg == "Session Expired :  Invalid Session Key" &&
           _apikeyres!.stat == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
       return _apikeyres;
     } catch (e) {
-      ref(indexListProvider).logError.add({"type": "Fetch API", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "Fetch API", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
@@ -63,12 +63,12 @@ class ApikeyProvider extends DefaultChangeNotifier {
       ConstantName.sessCheck = true;
       if (_generateApikey!.emsg == "Session Expired :  Invalid Session Key" &&
           _generateApikey!.stat == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
       return _generateApikey;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "Regenerate API", "Error": "$e"});
       notifyListeners();

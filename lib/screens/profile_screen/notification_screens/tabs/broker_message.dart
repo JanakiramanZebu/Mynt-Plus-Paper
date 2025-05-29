@@ -10,9 +10,9 @@ class BrokerMsg extends ConsumerWidget {
   const BrokerMsg({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final noftification = watch(notificationprovider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final noftification = ref.watch(notificationprovider);
+    final theme = ref.read(themeProvider);
 
     return noftification.loading
         ? const Center(child: CircularProgressIndicator())

@@ -26,9 +26,9 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double netvalue = 0.0;
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final ledgerprovider = watch(ledgerProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+      final ledgerprovider = ref.watch(ledgerProvider);
       final sortedDates = ledgerprovider.grouped.keys.toList()
         ..sort((a, b) => b.compareTo(a));
       if (ledgerprovider.calenderpnlAllData != null) {
@@ -847,7 +847,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
 }
 
 class CalendarTabs extends StatefulWidget {
-  final dynamic theme; // Passed from your UI (e.g., watch(themeProvider))
+  final dynamic theme; // Passed from your UI (e.g., ref.watch(themeProvider))
   final Map<DateTime, double> heatmapData; // Data from ledgerprovider
 
   const CalendarTabs({
@@ -865,8 +865,8 @@ class _CalendarTabsState extends State<CalendarTabs> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return Consumer(
-      builder: (context, ScopedReader watch, _) {
-        final ledgerprovider = watch(ledgerProvider);
+      builder: (context, WidgetRef ref, _) {
+        final ledgerprovider = ref.watch(ledgerProvider);
         return Card(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),

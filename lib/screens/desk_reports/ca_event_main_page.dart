@@ -74,11 +74,11 @@ class _CAEventMainPage extends State<CAEventMainPage>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
       double screenWidth = MediaQuery.of(context).size.width;
 
-      final ledgerprovider = watch(ledgerProvider);
+      final ledgerprovider = ref.watch(ledgerProvider);
 
       return Scaffold(
         appBar: AppBar(

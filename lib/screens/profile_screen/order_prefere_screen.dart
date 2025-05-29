@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
@@ -18,7 +18,7 @@ import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/enums.dart';
 import '../../sharedWidget/snack_bar.dart';
 
-class OrderPreference extends StatefulWidget {
+class OrderPreference extends ConsumerStatefulWidget {
   final OrderScreenArgs? orderArg;
   final ScripInfoModel? scripInfo;
   final String? isRollback;
@@ -26,10 +26,10 @@ class OrderPreference extends StatefulWidget {
       {super.key, this.scripInfo, this.orderArg, this.isRollback});
 
   @override
-  State<OrderPreference> createState() => _OrderPreference();
+  ConsumerState<OrderPreference> createState() => _OrderPreference();
 }
 
-class _OrderPreference extends State<OrderPreference> {
+class _OrderPreference extends ConsumerState<OrderPreference> {
   Map localdata = {};
   String priceType = "Limit";
   String expriceType = "Market";
@@ -51,8 +51,9 @@ class _OrderPreference extends State<OrderPreference> {
 
   @override
   void initState() {
+    super.initState();
     gobackOP = widget.isRollback == "yes" ? true : false;
-    localdata = context.read(authProvider).ordgrefis;
+    localdata = ref.read(authProvider).ordgrefis;
 
     if (localdata.isNotEmpty) {
       priceType = localdata['prc'];
@@ -63,25 +64,29 @@ class _OrderPreference extends State<OrderPreference> {
       qtyCtrl = TextEditingController(text: "${localdata['qty']}");
       mktProtCtrl = TextEditingController(text: "${localdata['mrkprot']}");
     }
+    
+    // Initialize priceTypes and expriceTypes arrays
+    final showcaseProvider = ref.read(showcaseProvide);
+    
     priceTypes = [
       {
         "type": "Limit",
-        "key": context.read(showcaseProvide).limitprctype,
+        "key": showcaseProvider.limitprctype,
         "case": "Click here to set your order type to Limit."
       },
       {
         "type": "Market",
-        "key": context.read(showcaseProvide).marketprctype,
+        "key": showcaseProvider.marketprctype,
         "case": "Click here to set your order type to Market."
       },
       {
         "type": "SL Limit",
-        "key": context.read(showcaseProvide).sllimitprctype,
+        "key": showcaseProvider.sllimitprctype,
         "case": "Click here to set your order type to SL Limit."
       },
       {
         "type": "SL MKT",
-        "key": context.read(showcaseProvide).sllimktprctype,
+        "key": showcaseProvider.sllimktprctype,
         "case": "Click here to set your order type to SL MKT."
       },
     ];
@@ -89,12 +94,12 @@ class _OrderPreference extends State<OrderPreference> {
     expriceTypes = [
       {
         "type": "Limit",
-        "key": context.read(showcaseProvide).limitprctype,
+        "key": showcaseProvider.limitprctype,
         "case": "Click here to set your order type to Limit."
       },
       {
         "type": "Market",
-        "key": context.read(showcaseProvide).marketprctype,
+        "key": showcaseProvider.marketprctype,
         "case": "Click here to set your order type to Market."
       },
     ];
@@ -102,340 +107,281 @@ class _OrderPreference extends State<OrderPreference> {
     expriceType = ["Limit", "Market"].contains(localdata['expos'])
         ? localdata['expos']
         : 'Market';
-
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = context.read(themeProvider);
+    final theme = ref.watch(themeProvider);
 
-      return Scaffold(
-        appBar: AppBar(
-          leadingWidth: 41,
-          titleSpacing: 6,
-          centerTitle: false,
-          leading: gobackOP
-              ? InkWell(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, Routes.placeOrderScreen,
-                        arguments: {
-                          "orderArg": widget.orderArg,
-                          "scripInfo": widget.scripInfo,
-                          "isBskt": ""
-                        });
-                  },
-                  child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 9),
-                      child: SvgPicture.asset(assets.backArrow,
-                          color: theme.isDarkMode
+    return Scaffold(
+      appBar: AppBar(
+        leadingWidth: 41,
+        titleSpacing: 6,
+        centerTitle: false,
+        leading: gobackOP
+            ? InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, Routes.placeOrderScreen,
+                      arguments: {
+                        "orderArg": widget.orderArg,
+                        "scripInfo": widget.scripInfo,
+                        "isBskt": ""
+                      });
+                },
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 9),
+                    child: SvgPicture.asset(assets.backArrow,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack)))
+            : const CustomBackBtn(),
+        elevation: 0.2,
+        title: Text('Order Preference',
+            style: textStyle(
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                14,
+                FontWeight.w600)),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 16),
+                      child: headerTitleText("Product type", theme)),
+                  const SizedBox(height: 10),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: SizedBox(
+                          height: 38,
+                          child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                return ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        orderType = orderTypes[index];
+                                      });
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                        elevation: 0,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 0),
+                                        backgroundColor: !theme.isDarkMode
+                                            ? orderType != orderTypes[index]
+                                                ? const Color(0xffF1F3F8)
+                                                : colors.colorBlack
+                                            : orderType != orderTypes[index]
+                                                ? colors.darkGrey
+                                                : colors.colorbluegrey,
+                                        shape: const StadiumBorder()),
+                                    child: Text(
+                                        orderTypes[index] == "Delivery"
+                                            ? "Delivery / Carry"
+                                            : orderTypes[index],
+                                        style: textStyle(
+                                            !theme.isDarkMode
+                                                ? orderType !=
+                                                        orderTypes[index]
+                                                    ? const Color(0xff666666)
+                                                    : colors.colorWhite
+                                                : orderType !=
+                                                        orderTypes[index]
+                                                    ? const Color(0xff666666)
+                                                    : colors.colorBlack,
+                                            14,
+                                            orderType == orderTypes[index]
+                                                ? FontWeight.w600
+                                                : FontWeight.w500)));
+                              },
+                              separatorBuilder: (context, index) {
+                                return const SizedBox(width: 8);
+                              },
+                              itemCount: orderTypes.length))),
+                  const SizedBox(height: 6),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 16),
+                      child: headerTitleText("Order type", theme)),
+                  const SizedBox(height: 10),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: SizedBox(
+                          height: 38,
+                          child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                return ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        priceType = priceTypes[index]['type'];
+                                      });
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                        elevation: 0,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 0),
+                                        backgroundColor: !theme.isDarkMode
+                                            ? priceType !=
+                                                    priceTypes[index]['type']
+                                                ? const Color(0xffF1F3F8)
+                                                : colors.colorBlack
+                                            : priceType !=
+                                                    priceTypes[index]['type']
+                                                ? colors.darkGrey
+                                                : colors.colorbluegrey,
+                                        shape: const StadiumBorder()),
+                                    child: Text(priceTypes[index]['type'],
+                                        style: textStyle(
+                                            !theme.isDarkMode
+                                                ? priceType !=
+                                                        priceTypes[index]
+                                                            ['type']
+                                                    ? const Color(0xff666666)
+                                                    : colors.colorWhite
+                                                : priceType !=
+                                                        priceTypes[index]
+                                                            ['type']
+                                                    ? const Color(0xff666666)
+                                                    : colors.colorBlack,
+                                            14,
+                                            priceType ==
+                                                    priceTypes[index]['type']
+                                                ? FontWeight.w600
+                                                : FontWeight.w500)));
+                              },
+                              separatorBuilder: (context, index) {
+                                return const SizedBox(width: 8);
+                              },
+                              itemCount: priceTypes.length))),
+                  const SizedBox(height: 8),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 16),
+                      child: headerTitleText("Validity", theme)),
+                  const SizedBox(height: 10),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: SizedBox(
+                          height: 38,
+                          child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                return ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        validity = validityTypes[index];
+                                      });
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                        elevation: 0,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 0),
+                                        backgroundColor: !theme.isDarkMode
+                                            ? validity != validityTypes[index]
+                                                ? const Color(0xffF1F3F8)
+                                                : colors.colorBlack
+                                            : validity != validityTypes[index]
+                                                ? colors.darkGrey
+                                                : colors.colorbluegrey,
+                                        shape: const StadiumBorder()),
+                                    child: Text(validityTypes[index],
+                                        style: textStyle(
+                                            !theme.isDarkMode
+                                                ? validity !=
+                                                        validityTypes[index]
+                                                    ? const Color(0xff666666)
+                                                    : colors.colorWhite
+                                                : validity !=
+                                                        validityTypes[index]
+                                                    ? const Color(0xff666666)
+                                                    : colors.colorBlack,
+                                            14,
+                                            validity == validityTypes[index]
+                                                ? FontWeight.w600
+                                                : FontWeight.w500)));
+                              },
+                              separatorBuilder: (context, index) {
+                                return const SizedBox(width: 8);
+                              },
+                              itemCount: validityTypes.length))),
+                  const SizedBox(height: 24),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 16, bottom: 0),
+                      child: headerTitleText("Quantity preference", theme)),
+                  Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                    Radio<OrdQtyPref>(
+                        fillColor: MaterialStateProperty.resolveWith<Color>(
+                            (Set<MaterialState> states) {
+                          if (states.contains(MaterialState.disabled)) {
+                            return const Color(0xff666666);
+                          }
+                          return theme.isDarkMode
                               ? colors.colorWhite
-                              : colors.colorBlack)))
-              : const CustomBackBtn(),
-          elevation: 0.2,
-          title: Text('Order Preference',
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600)),
-        ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 16),
-                        child: headerTitleText("Product type", theme)),
-                    const SizedBox(height: 10),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: SizedBox(
-                            height: 38,
-                            child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) {
-                                  return ElevatedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          orderType = orderTypes[index];
-                                        });
-                                        FocusScope.of(context).unfocus();
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 0),
-                                          backgroundColor: !theme.isDarkMode
-                                              ? orderType != orderTypes[index]
-                                                  ? const Color(0xffF1F3F8)
-                                                  : colors.colorBlack
-                                              : orderType != orderTypes[index]
-                                                  ? colors.darkGrey
-                                                  : colors.colorbluegrey,
-                                          shape: const StadiumBorder()),
-                                      child: Text(
-                                          orderTypes[index] == "Delivery"
-                                              ? "Delivery / Carry"
-                                              : orderTypes[index],
-                                          style: textStyle(
-                                              !theme.isDarkMode
-                                                  ? orderType !=
-                                                          orderTypes[index]
-                                                      ? const Color(0xff666666)
-                                                      : colors.colorWhite
-                                                  : orderType !=
-                                                          orderTypes[index]
-                                                      ? const Color(0xff666666)
-                                                      : colors.colorBlack,
-                                              14,
-                                              orderType == orderTypes[index]
-                                                  ? FontWeight.w600
-                                                  : FontWeight.w500)));
-                                },
-                                separatorBuilder: (context, index) {
-                                  return const SizedBox(width: 8);
-                                },
-                                itemCount: orderTypes.length))),
-                    const SizedBox(height: 6),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 16),
-                        child: headerTitleText("Order type", theme)),
-                    const SizedBox(height: 10),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: SizedBox(
-                            height: 38,
-                            child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) {
-                                  return ElevatedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          priceType = priceTypes[index]['type'];
-                                        });
-                                        FocusScope.of(context).unfocus();
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 0),
-                                          backgroundColor: !theme.isDarkMode
-                                              ? priceType !=
-                                                      priceTypes[index]['type']
-                                                  ? const Color(0xffF1F3F8)
-                                                  : colors.colorBlack
-                                              : priceType !=
-                                                      priceTypes[index]['type']
-                                                  ? colors.darkGrey
-                                                  : colors.colorbluegrey,
-                                          shape: const StadiumBorder()),
-                                      child: Text(priceTypes[index]['type'],
-                                          style: textStyle(
-                                              !theme.isDarkMode
-                                                  ? priceType !=
-                                                          priceTypes[index]
-                                                              ['type']
-                                                      ? const Color(0xff666666)
-                                                      : colors.colorWhite
-                                                  : priceType !=
-                                                          priceTypes[index]
-                                                              ['type']
-                                                      ? const Color(0xff666666)
-                                                      : colors.colorBlack,
-                                              14,
-                                              priceType ==
-                                                      priceTypes[index]['type']
-                                                  ? FontWeight.w600
-                                                  : FontWeight.w500)));
-                                },
-                                separatorBuilder: (context, index) {
-                                  return const SizedBox(width: 8);
-                                },
-                                itemCount: priceTypes.length))),
-                    const SizedBox(height: 8),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 16),
-                        child: headerTitleText("Validity", theme)),
-                    const SizedBox(height: 10),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: SizedBox(
-                            height: 38,
-                            child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) {
-                                  return ElevatedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          validity = validityTypes[index];
-                                        });
-                                        FocusScope.of(context).unfocus();
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 0),
-                                          backgroundColor: !theme.isDarkMode
-                                              ? validity != validityTypes[index]
-                                                  ? const Color(0xffF1F3F8)
-                                                  : colors.colorBlack
-                                              : validity != validityTypes[index]
-                                                  ? colors.darkGrey
-                                                  : colors.colorbluegrey,
-                                          shape: const StadiumBorder()),
-                                      child: Text(validityTypes[index],
-                                          style: textStyle(
-                                              !theme.isDarkMode
-                                                  ? validity !=
-                                                          validityTypes[index]
-                                                      ? const Color(0xff666666)
-                                                      : colors.colorWhite
-                                                  : validity !=
-                                                          validityTypes[index]
-                                                      ? const Color(0xff666666)
-                                                      : colors.colorBlack,
-                                              14,
-                                              validity == validityTypes[index]
-                                                  ? FontWeight.w600
-                                                  : FontWeight.w500)));
-                                },
-                                separatorBuilder: (context, index) {
-                                  return const SizedBox(width: 8);
-                                },
-                                itemCount: validityTypes.length))),
-                    const SizedBox(height: 24),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16, bottom: 0),
-                        child: headerTitleText("Quantity preference", theme)),
-                    Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                      Radio<OrdQtyPref>(
-                          fillColor: WidgetStateProperty.resolveWith<Color>(
-                              (Set<WidgetState> states) {
-                            if (states.contains(WidgetState.disabled)) {
-                              return const Color(0xff666666);
-                            }
-                            return theme.isDarkMode
-                                ? colors.colorWhite
-                                : const Color(0xff666666);
-                          }),
-                          activeColor: theme.isDarkMode
+                              : const Color(0xff666666);
+                        }),
+                        activeColor: theme.isDarkMode
+                            ? colors.colorWhite
+                            : const Color(0xff666666),
+                        value: OrdQtyPref.mktqty,
+                        groupValue: QtyPrefer,
+                        onChanged: (OrdQtyPref? value) {
+                          setState(() {
+                            QtyPrefer = value!;
+                            qtyCtrl.text = "1";
+                          });
+                        }),
+                    Text('Minimum Qty',
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? Color(QtyPrefer == OrdQtyPref.mktqty
+                                    ? 0xffffffff
+                                    : 0xff666666)
+                                : Color(QtyPrefer == OrdQtyPref.mktqty
+                                    ? 0xff3E4763
+                                    : 0xff666666),
+                            14,
+                            FontWeight.w500)),
+                    Radio<OrdQtyPref>(
+                        fillColor: MaterialStateProperty.resolveWith<Color>(
+                            (Set<MaterialState> states) {
+                          if (states.contains(MaterialState.disabled)) {
+                            return const Color(0xff666666);
+                          }
+                          return theme.isDarkMode
                               ? colors.colorWhite
-                              : const Color(0xff666666),
-                          value: OrdQtyPref.mktqty,
-                          groupValue: QtyPrefer,
-                          onChanged: (OrdQtyPref? value) {
-                            setState(() {
-                              QtyPrefer = value!;
-                              qtyCtrl.text = "1";
-                            });
-                          }),
-                      Text('Minimum Qty',
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? Color(QtyPrefer == OrdQtyPref.mktqty
-                                      ? 0xffffffff
-                                      : 0xff666666)
-                                  : Color(QtyPrefer == OrdQtyPref.mktqty
-                                      ? 0xff3E4763
-                                      : 0xff666666),
-                              14,
-                              FontWeight.w500)),
-                      Radio<OrdQtyPref>(
-                          fillColor: WidgetStateProperty.resolveWith<Color>(
-                              (Set<WidgetState> states) {
-                            if (states.contains(WidgetState.disabled)) {
-                              return const Color(0xff666666);
-                            }
-                            return theme.isDarkMode
-                                ? colors.colorWhite
-                                : const Color(0xff666666);
-                          }),
-                          activeColor: theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xff666666),
-                          value: OrdQtyPref.mktlot,
-                          groupValue: QtyPrefer,
-                          onChanged: (OrdQtyPref? value) {
-                            setState(() {
-                              QtyPrefer = value!;
-                            });
-                          }),
-                      Text("No.of Market Lots",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? Color(QtyPrefer == OrdQtyPref.mktqty
-                                      ? 0xffffffff
-                                      : 0xff666666)
-                                  : Color(QtyPrefer == OrdQtyPref.mktqty
-                                      ? 0xff3E4763
-                                      : 0xff666666),
-                              14,
-                              FontWeight.w500))
-                    ]),
-                    if (QtyPrefer == OrdQtyPref.mktlot) ...[
-                      Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          height: 40,
-                          child: Row(children: [
-                            Expanded(
-                                child: CustomTextFormField(
-                                    fillColor: theme.isDarkMode
-                                        ? colors.darkGrey
-                                        : const Color(0xffF1F3F8),
-                                    hintText: qtyCtrl.text,
-                                    hintStyle: textStyle(
-                                        const Color(0xff666666),
-                                        15,
-                                        FontWeight.w400),
-                                    inputFormate: [
-                                      FilteringTextInputFormatter.digitsOnly
-                                    ],
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        16,
-                                        FontWeight.w600),
-                                    textCtrl: qtyCtrl,
-                                    textAlign: TextAlign.start,
-                                    onChanged: (value) {
-                                      ScaffoldMessenger.of(context)
-                                          .hideCurrentSnackBar();
-
-                                      if (value.isEmpty) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                "Quantity cannot be empty"));
-                                      } else {
-                                        String newValue = value.replaceAll(
-                                            RegExp(r'[^0-9]'), '');
-                                        if (newValue != value) {
-                                          setState(() {
-                                            qtyCtrl.text = newValue;
-                                            qtyCtrl.selection =
-                                                TextSelection.fromPosition(
-                                                    TextPosition(
-                                                        offset:
-                                                            newValue.length));
-                                          });
-                                        }
-                                      }
-                                    }))
-                          ])),
-                      const SizedBox(height: 14),
-                    ],
-                    const SizedBox(height: 10),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16, bottom: 12),
-                        child: headerTitleText("Market Protection%", theme)),
+                              : const Color(0xff666666);
+                        }),
+                        activeColor: theme.isDarkMode
+                            ? colors.colorWhite
+                            : const Color(0xff666666),
+                        value: OrdQtyPref.mktlot,
+                        groupValue: QtyPrefer,
+                        onChanged: (OrdQtyPref? value) {
+                          setState(() {
+                            QtyPrefer = value!;
+                          });
+                        }),
+                    Text("No.of Market Lots",
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? Color(QtyPrefer == OrdQtyPref.mktqty
+                                    ? 0xffffffff
+                                    : 0xff666666)
+                                : Color(QtyPrefer == OrdQtyPref.mktqty
+                                    ? 0xff3E4763
+                                    : 0xff666666),
+                            14,
+                            FontWeight.w500))
+                  ]),
+                  if (QtyPrefer == OrdQtyPref.mktlot) ...[
                     Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         height: 40,
@@ -445,162 +391,217 @@ class _OrderPreference extends State<OrderPreference> {
                                   fillColor: theme.isDarkMode
                                       ? colors.darkGrey
                                       : const Color(0xffF1F3F8),
+                                  hintText: qtyCtrl.text,
+                                  hintStyle: textStyle(
+                                      const Color(0xff666666),
+                                      15,
+                                      FontWeight.w400),
                                   inputFormate: [
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      ScaffoldMessenger.of(context)
-                                          .hideCurrentSnackBar();
-                                      if (value.isNotEmpty) {
-                                        if (int.parse(value) > 20) {
-                                          mktProtCtrl.text = "20";
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(warningMessage(
-                                                  context,
-                                                  "can't enter greater than 20% of Market Protection"));
-                                        } else if (int.parse(value) < 1) {
-                                          mktProtCtrl.text = "1";
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(warningMessage(
-                                                  context,
-                                                  "can't enter less than 1% of Market Protection"));
-                                        }
-                                      }
-                                    });
-                                  },
                                   style: textStyle(
                                       theme.isDarkMode
                                           ? colors.colorWhite
                                           : colors.colorBlack,
-                                      14,
+                                      16,
                                       FontWeight.w600),
-                                  textCtrl: mktProtCtrl,
-                                  prefixIcon: Container(
-                                    margin: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20),
-                                        color: theme.isDarkMode
-                                            ? const Color(0xff555555)
-                                            : colors.colorWhite),
-                                    child: SvgPicture.asset(
-                                        color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorGrey,
-                                        assets.precentIcon,
-                                        fit: BoxFit.scaleDown),
-                                  ),
-                                  textAlign: TextAlign.start))
-                        ])),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 16),
-                        child: headerTitleText(
-                            "Position exit ${expriceType}", theme)),
-                    const SizedBox(height: 10),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: SizedBox(
-                            height: 38,
-                            child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) {
-                                  return ElevatedButton(
-                                      onPressed: () {
+                                  textCtrl: qtyCtrl,
+                                  textAlign: TextAlign.start,
+                                  onChanged: (value) {
+                                    ScaffoldMessenger.of(context)
+                                        .hideCurrentSnackBar();
+
+                                    if (value.isEmpty) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(warningMessage(
+                                              context,
+                                              "Quantity cannot be empty"));
+                                    } else {
+                                      String newValue = value.replaceAll(
+                                          RegExp(r'[^0-9]'), '');
+                                      if (newValue != value) {
                                         setState(() {
-                                          expriceType =
-                                              expriceTypes[index]['type'];
+                                          qtyCtrl.text = newValue;
+                                          qtyCtrl.selection =
+                                              TextSelection.fromPosition(
+                                                  TextPosition(
+                                                      offset:
+                                                          newValue.length));
                                         });
-                                        FocusScope.of(context).unfocus();
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 0),
-                                          backgroundColor: !theme.isDarkMode
-                                              ? expriceType !=
-                                                      expriceTypes[index]
-                                                          ['type']
-                                                  ? const Color(0xffF1F3F8)
-                                                  : colors.colorBlack
-                                              : expriceType !=
-                                                      expriceTypes[index]
-                                                          ['type']
-                                                  ? colors.darkGrey
-                                                  : colors.colorbluegrey,
-                                          shape: const StadiumBorder()),
-                                      child: Text(expriceTypes[index]['type'],
-                                          style: textStyle(
-                                              !theme.isDarkMode
-                                                  ? expriceType !=
-                                                          expriceTypes[index]
-                                                              ['type']
-                                                      ? const Color(0xff666666)
-                                                      : colors.colorWhite
-                                                  : expriceType !=
-                                                          expriceTypes[index]
-                                                              ['type']
-                                                      ? const Color(0xff666666)
-                                                      : colors.colorBlack,
-                                              14,
-                                              expriceType ==
-                                                      expriceTypes[index]
-                                                          ['type']
-                                                  ? FontWeight.w600
-                                                  : FontWeight.w500)));
-                                },
-                                separatorBuilder: (context, index) {
-                                  return const SizedBox(width: 8);
-                                },
-                                itemCount: expriceTypes.length))),
-                    const SizedBox(height: 8),
+                                      }
+                                    }
+                                  }))
+                        ])),
+                    const SizedBox(height: 14),
                   ],
-                ),
+                  const SizedBox(height: 10),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 16, bottom: 12),
+                      child: headerTitleText("Market Protection%", theme)),
+                  Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      height: 40,
+                      child: Row(children: [
+                        Expanded(
+                            child: CustomTextFormField(
+                                fillColor: theme.isDarkMode
+                                    ? colors.darkGrey
+                                    : const Color(0xffF1F3F8),
+                                inputFormate: [
+                                  FilteringTextInputFormatter.digitsOnly
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    ScaffoldMessenger.of(context)
+                                        .hideCurrentSnackBar();
+                                    if (value.isNotEmpty) {
+                                      if (int.parse(value) > 20) {
+                                        mktProtCtrl.text = "20";
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(warningMessage(
+                                                context,
+                                                "can't enter greater than 20% of Market Protection"));
+                                      } else if (int.parse(value) < 1) {
+                                        mktProtCtrl.text = "1";
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(warningMessage(
+                                                context,
+                                                "can't enter less than 1% of Market Protection"));
+                                      }
+                                    }
+                                  });
+                                },
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    14,
+                                    FontWeight.w600),
+                                textCtrl: mktProtCtrl,
+                                prefixIcon: Container(
+                                  margin: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20),
+                                      color: theme.isDarkMode
+                                          ? const Color(0xff555555)
+                                          : colors.colorWhite),
+                                  child: SvgPicture.asset(
+                                      color: theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorGrey,
+                                      assets.precentIcon,
+                                      fit: BoxFit.scaleDown),
+                                ),
+                                textAlign: TextAlign.start))
+                      ])),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 16),
+                      child: headerTitleText(
+                          "Position exit ${expriceType}", theme)),
+                  const SizedBox(height: 10),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: SizedBox(
+                          height: 38,
+                          child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                return ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        expriceType =
+                                            expriceTypes[index]['type'];
+                                      });
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                        elevation: 0,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 0),
+                                        backgroundColor: !theme.isDarkMode
+                                            ? expriceType !=
+                                                    expriceTypes[index]
+                                                        ['type']
+                                                ? const Color(0xffF1F3F8)
+                                                : colors.colorBlack
+                                            : expriceType !=
+                                                    expriceTypes[index]
+                                                        ['type']
+                                                ? colors.darkGrey
+                                                : colors.colorbluegrey,
+                                        shape: const StadiumBorder()),
+                                    child: Text(expriceTypes[index]['type'],
+                                        style: textStyle(
+                                            !theme.isDarkMode
+                                                ? expriceType !=
+                                                        expriceTypes[index]
+                                                            ['type']
+                                                    ? const Color(0xff666666)
+                                                    : colors.colorWhite
+                                                : expriceType !=
+                                                        expriceTypes[index]
+                                                            ['type']
+                                                    ? const Color(0xff666666)
+                                                    : colors.colorBlack,
+                                            14,
+                                            expriceType ==
+                                                    expriceTypes[index]
+                                                        ['type']
+                                                ? FontWeight.w600
+                                                : FontWeight.w500)));
+                              },
+                              separatorBuilder: (context, index) {
+                                return const SizedBox(width: 8);
+                              },
+                              itemCount: expriceTypes.length))),
+                  const SizedBox(height: 8),
+                ],
               ),
             ),
-            Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: 46,
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            backgroundColor: theme.isDarkMode
-                                ? colors.colorbluegrey
-                                : colors.colorBlack,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
-                            )),
-                        onPressed: () async {
-                          if (mktProtCtrl.text.isEmpty ||
-                              int.parse(mktProtCtrl.text) > 20 ||
-                              int.parse(mktProtCtrl.text) < 1) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(context,
-                                    "Market Protection between 1% to 20%"));
-                          } else if ((QtyPrefer == OrdQtyPref.mktlot) &&
-                              qtyCtrl.text == "") {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(
-                                    context, "Quantity can not be 0 or empty"));
-                          } else {
-                            await setPrefOrderPrefer(context);
-                          }
-                        },
-                        child: Text("Save",
-                            textAlign: TextAlign.center,
-                            style: textStyle(
-                                !theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w500)))))
-          ],
-        ),
-      );
-    });
+          ),
+          Container(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: 46,
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          backgroundColor: theme.isDarkMode
+                              ? colors.colorbluegrey
+                              : colors.colorBlack,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          )),
+                      onPressed: () async {
+                        if (mktProtCtrl.text.isEmpty ||
+                            int.parse(mktProtCtrl.text) > 20 ||
+                            int.parse(mktProtCtrl.text) < 1) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              warningMessage(context,
+                                  "Market Protection between 1% to 20%"));
+                        } else if ((QtyPrefer == OrdQtyPref.mktlot) &&
+                            qtyCtrl.text == "") {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              warningMessage(
+                                  context, "Quantity can not be 0 or empty"));
+                        } else {
+                          await setPrefOrderPrefer(context);
+                        }
+                      },
+                      child: Text("Save",
+                          textAlign: TextAlign.center,
+                          style: textStyle(
+                              !theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              14,
+                              FontWeight.w500)))))
+        ],
+      ),
+    );
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
@@ -631,13 +632,15 @@ class _OrderPreference extends State<OrderPreference> {
       },
       "source": "MOB"
     };
-    await context.read(authProvider).getPrefOrderPrefer(local, true);
+    
+    final authProv = ref.read(authProvider);
+    await authProv.getPrefOrderPrefer(local, true);
 
     // await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
     ScaffoldMessenger.of(context).showSnackBar(
         successMessage(context, "Order Preference hav been saved"));
     // await pref.init();
-    await context.read(authProvider).setPrefOrderPrefer();
+    await authProv.setPrefOrderPrefer();
     Navigator.pop(context);
     if (gobackOP) {
       Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {

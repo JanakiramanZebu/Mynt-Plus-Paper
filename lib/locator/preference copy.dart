@@ -7,7 +7,7 @@
 //     _prefInstance = await SharedPreferences.getInstance();
 //   }
 
-//   Future clearLocalPref() async {
+//   Future clearLocalPref.read() async {
 //     await _prefInstance?.clear();
 //   }
 

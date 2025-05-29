@@ -38,7 +38,7 @@ class _BottomSheetScreenState extends State<BottomSheetScreen> {
       //             double.parse(widget.bondInfo.faceValue!))
       //         .toInt(),
       //     faceValue: double.parse(widget.bondInfo.faceValue!).toInt(),
-      //     // availableLedgerBalance: double.parse(context.read(bondsProvider).ledgerBalModel?.total?? "0.00"),
+      //     // availableLedgerBalance: double.parse(ref.read(bondsProvider).ledgerBalModel?.total?? "0.00"),
       //     minrequriedprice:
       //         (double.parse(widget.bondInfo.cutoffPrice!).toInt() *
       //                 (int.parse(widget.bondInfo.minBidQuantity!) /
@@ -61,10 +61,10 @@ class _BottomSheetScreenState extends State<BottomSheetScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final profile = watch(profileAllDetailsProvider);
-      // final upiid = watch(transcationProvider);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, ref, child) {
+      final profile = ref.watch(profileAllDetailsProvider);
+      // final upiid = ref.watch(transcationProvider);
+      final theme = ref.watch(themeProvider);
 
       // if (profile.checkForErrorsInBondPlaceOrder(bondDetails)) {
       //   profile.setisBondPlaceOrderBtnActiveValue = true;
@@ -328,7 +328,7 @@ class _BottomSheetScreenState extends State<BottomSheetScreen> {
                               //     : () async {
                               //       // insufficeint fund redirect fund screen
                               //       TranctionProvider transaction;
-                              //       transaction = context.read(transcationProvider);
+                              //       transaction = ref.read(transcationProvider);
                               //         await transaction
                               //                 .fetchValidateToken(context);
                               //             Future.delayed(

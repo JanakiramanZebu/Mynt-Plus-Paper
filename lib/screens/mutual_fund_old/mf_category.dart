@@ -9,10 +9,10 @@
 //   const MfCategory({super.key});
 
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
-//     final theme = watch(themeProvider);
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final theme = ref.watch(themeProvider);
 
-//     final mfData = watch(mfProvider);
+//     final mfData = ref.watch(mfProvider);
 //     return Container(
 //       height: 68,
 //       margin: const EdgeInsets.symmetric(vertical: 12),

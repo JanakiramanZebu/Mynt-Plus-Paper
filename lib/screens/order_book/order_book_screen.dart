@@ -13,32 +13,32 @@ import 'pending_alert_card.dart';
 import 'sip_order_book_screen.dart';
 import 'trade_book.dart';
 
-class OrderBookScreen extends StatefulWidget {
+class OrderBookScreen extends ConsumerStatefulWidget {
   const OrderBookScreen({super.key});
 
   @override
-  State<OrderBookScreen> createState() => _OrderBookScreenState();
+  ConsumerState<OrderBookScreen> createState() => _OrderBookScreenState();
 }
 
-class _OrderBookScreenState extends State<OrderBookScreen>
+class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
     with TickerProviderStateMixin {
   @override
   void initState() {
     setState(() {
-      context.read(orderProvider).tabCtrl = TabController(
-          length: context.read(orderProvider).orderTabName.length,
+      ref.read(orderProvider).tabCtrl = TabController(
+          length: ref.read(orderProvider).orderTabName.length,
           vsync: this,
-          initialIndex: context.read(orderProvider).selectedTab);
+          initialIndex: ref.read(orderProvider).selectedTab);
 
-      context.read(orderProvider).tabCtrl.addListener(() {
-        context
+      ref.read(orderProvider).tabCtrl.addListener(() {
+        ref
             .read(orderProvider)
-            .changeTabIndex(context.read(orderProvider).tabCtrl.index, context);
+            .changeTabIndex(ref.read(orderProvider).tabCtrl.index, context);
       });
     });
 
     FirebaseAnalytics.instance.logScreenView(
- screenName: 'Place order screen',
+      screenName: 'Place order screen',
       screenClass: 'Order_screen',
     );
     super.initState();
@@ -46,10 +46,10 @@ class _OrderBookScreenState extends State<OrderBookScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final orderBook = watch(orderProvider);
-      final theme = watch(themeProvider);
-      final sipBook = watch(orderProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final orderBook = ref.watch(orderProvider);
+      final theme = ref.watch(themeProvider);
+      final sipBook = ref.watch(orderProvider);
 
       return orderBook.loading
           ? const Center(child: CircularProgressIndicator())

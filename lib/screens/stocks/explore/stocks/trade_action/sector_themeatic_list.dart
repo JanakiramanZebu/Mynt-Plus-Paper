@@ -8,7 +8,7 @@ import '../../../../../provider/thems.dart';
 import '../../../../../res/res.dart';
 import '../../../../../routes/route_names.dart';
 
-class SectorThematicList extends StatelessWidget {
+class SectorThematicList extends ConsumerWidget {
   final List<SectorThemeaticModel> data;
   final bool isscollable;
 
@@ -16,8 +16,8 @@ class SectorThematicList extends StatelessWidget {
       {super.key, required this.data, required this.isscollable});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     return Container(
       margin: const EdgeInsets.only(top: 8),
       alignment: Alignment.topCenter,
@@ -34,8 +34,7 @@ class SectorThematicList extends StatelessWidget {
               data[index].perChng!.isEmpty ? "0.00" : data[index].perChng;
           return InkWell(
             onTap: () async {
-              await context
-                  .read(stocksProvide)
+              await ref.read(stocksProvide)
                   .fetchAdindices("${data[index].secName}");
               Navigator.pushNamed(context, Routes.sectorThematicDetail,
                   arguments: data[index]);

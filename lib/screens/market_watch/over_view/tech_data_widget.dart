@@ -10,9 +10,9 @@ class TexhDataWidget extends ConsumerWidget {
   const TexhDataWidget({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final techData = watch(marketWatchProvider);
-    // final theme =  watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final techData = ref.watch(marketWatchProvider);
+    // final theme =  ref.watch(themeProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [  

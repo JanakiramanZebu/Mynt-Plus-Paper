@@ -14,8 +14,8 @@ class MyAccount extends ConsumerWidget {
   const MyAccount({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final userProfile = watch(userProfileProvider);   final theme =context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userProfile = ref.watch(userProfileProvider);   final theme =ref.read(themeProvider);
     return Scaffold(
     
       appBar: AppBar(
@@ -34,7 +34,7 @@ class MyAccount extends ConsumerWidget {
         itemBuilder: (context, int index) {
           return ListTile(
             onTap: () async {
-              await context.read(fundProvider).fetchHstoken(context);
+              await ref.read(fundProvider).fetchHstoken(context);
               if (index == 0) {
                 Navigator.pushNamed(context, Routes.profileWebViewApp,
                     arguments: "profile");

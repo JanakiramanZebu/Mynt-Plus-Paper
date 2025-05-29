@@ -11,11 +11,11 @@ import '../screens/version_ui/version_ui.dart';
 import 'core/default_change_notifier.dart';
 
 final versionProvider =
-    ChangeNotifierProvider((ref) => VersionProvider(ref.read));
+    ChangeNotifierProvider((ref) => VersionProvider(ref));
 
 class VersionProvider extends DefaultChangeNotifier {
   final Preferences pref = locator<Preferences>();
-  final Reader ref;
+  final Ref ref;
   final api = locator<ApiExporter>();
   VersionProvider(this.ref);
 

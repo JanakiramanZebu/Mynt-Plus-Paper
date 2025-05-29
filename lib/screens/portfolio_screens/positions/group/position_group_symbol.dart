@@ -16,14 +16,14 @@ class PositionGroupSymbol extends ConsumerWidget {
   const PositionGroupSymbol({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final positionBook = watch(portfolioProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final positionBook = ref.watch(portfolioProvider);
+    final theme = ref.read(themeProvider);
     
     return positionBook.loading
         ? const Center(child: CircularProgressIndicator())
         : StreamBuilder<Map>(
-            stream: watch(websocketProvider).socketDataStream,
+            stream: ref.watch(websocketProvider).socketDataStream,
             builder: (context, snapshot) {
               final socketDatas = snapshot.data ?? {};
               
@@ -436,12 +436,12 @@ class PositionGroupSymbol extends ConsumerWidget {
                               itemBuilder: (BuildContext context, int ind) {
                                 return InkWell(
                                     onTap: () async {
-                                      await context.read(marketWatchProvider).fetchLinkeScrip(
+                                      await ref.read(marketWatchProvider).fetchLinkeScrip(
                                           "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['token']}",
                                           "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",
                                           context);
 
-                                      await watch(marketWatchProvider).fetchScripQuote(
+                                      await ref.watch(marketWatchProvider).fetchScripQuote(
                                           "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['token']}",
                                           "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",
                                           context);
@@ -454,8 +454,7 @@ class PositionGroupSymbol extends ConsumerWidget {
                                                       .groupPositionSym[index]]
                                                   ['groupList']![ind]['exch'] ==
                                               "BSE")) {
-                                        context
-                                            .read(marketWatchProvider)
+                                        ref.read(marketWatchProvider)
                                             .depthBtns
                                             .add({
                                           "btnName": "Fundamental",
@@ -464,7 +463,7 @@ class PositionGroupSymbol extends ConsumerWidget {
                                               "Click here to view fundamental data."
                                         });
 
-                                        await context.read(marketWatchProvider).fetchTechData(
+                                        await ref.read(marketWatchProvider).fetchTechData(
                                             context: context,
                                             exch:
                                                 "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",

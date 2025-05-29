@@ -21,8 +21,8 @@ class _PnlFliter extends State<PnlFliter> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
 
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final ledgerprovider = watch(ledgerProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final ledgerprovider = ref.watch(ledgerProvider);
       final filval = ledgerprovider.filterval;
 
       // if (filval == 'all') {

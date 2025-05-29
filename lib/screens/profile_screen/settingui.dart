@@ -22,10 +22,10 @@ class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final usersettings = watch(userProfileProvider);
-    final apikeys = context.read(apikeyprovider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final usersettings = ref.watch(userProfileProvider);
+    final apikeys = ref.read(apikeyprovider);
+    final theme = ref.read(themeProvider);
 
     final Preferences pref = locator<Preferences>();
     return Scaffold(
@@ -64,18 +64,18 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                         builder: (_) => TotpScreen(
                             secretKey:
-                                context.read(apikeyprovider).totpkey!.pwd));
+                                ref.read(apikeyprovider).totpkey!.pwd));
                   } else if (index == 2) {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
                           backgroundColor:
-                              context.read(themeProvider).isDarkMode
+                              ref.read(themeProvider).isDarkMode
                                   ? const Color.fromARGB(255, 18, 18, 18)
                                   : colors.colorWhite,
                           titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-                              color: context.read(themeProvider).isDarkMode
+                              color: ref.read(themeProvider).isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack),
                           titlePadding: const EdgeInsets.symmetric(
@@ -115,7 +115,7 @@ class SettingsScreen extends ConsumerWidget {
                                 onPressed: () => Navigator.of(context).pop(),
                                 child: Text("Cancel",
                                     style: textStyles.textBtn.copyWith(
-                                        color: context
+                                        color: ref
                                                 .read(themeProvider)
                                                 .isDarkMode
                                             ? colors.colorLightBlue
@@ -134,7 +134,7 @@ class SettingsScreen extends ConsumerWidget {
                                             BorderRadius.circular(50))),
                                 child: Text("Continue",
                                     style: textStyle(
-                                        !context.read(themeProvider).isDarkMode
+                                        !ref.read(themeProvider).isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
                                         14,
@@ -144,7 +144,7 @@ class SettingsScreen extends ConsumerWidget {
                       },
                     );
                   } else if (index == 3) {
-                    context.read(changePasswordProvider).userIdController.text =
+                    ref.read(changePasswordProvider).userIdController.text =
                         "${pref.clientId}";
                     Navigator.pushNamed(context, Routes.changePass,
                         arguments: "Yes");
@@ -395,10 +395,10 @@ class SettingsScreen extends ConsumerWidget {
                                       borderRadius: BorderRadius.circular(50),
                                     )),
                                 onPressed: () async {
-                                  await context
+                                  await ref
                                       .read(apikeyprovider)
                                       .fetchregenerateapikey(context, "1 year");
-                                  await context
+                                  await ref
                                       .read(apikeyprovider)
                                       .fetchapikey(context);
                                   ScaffoldMessenger.of(context).showSnackBar(

@@ -43,11 +43,11 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
-        final theme = watch(themeProvider);
-        final singlepage = watch(ipoProvide);
-        final upi = watch(transcationProvider);
-        //final ipoLtp = watch(marketWatchProvider);
+      builder: (context, ref, child) {
+        final theme = ref.watch(themeProvider);
+        final singlepage = ref.watch(ipoProvide);
+        final upi = ref.watch(transcationProvider);
+        //final ipoLtp = ref.watch(marketWatchProvider);
         // print("iposymbol ::: ${iposymbol}");
         return DraggableScrollableSheet(
           initialChildSize: 0.88,
@@ -1334,14 +1334,14 @@ class _MainSmeSinglePageState extends State<MainSmeSinglePage> {
                                             // Determine IPO category based on `subType`
                                             if (decodedJson['subType'] ==
                                                 "SME") {
-                                              await context
+                                              await ref
                                                   .read(ipoProvide)
                                                   .smeipocategory();
                                               Navigator.pushNamed(
                                                   context, Routes.smeapplyIPO,
                                                   arguments: ipoOrderbookData);
                                             } else {
-                                              await context
+                                              await ref
                                                   .read(ipoProvide)
                                                   .mainipocategory();
                                               Navigator.pushNamed(

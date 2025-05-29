@@ -56,11 +56,11 @@ class SliceOrderSheet extends StatefulWidget {
 class _SliceOrderSheetState extends State<SliceOrderSheet> {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final orders = watch(orderProvider);
-      final indexpro = watch(indexListProvider);
-      final orderInput = watch(ordInputProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+      final orders = ref.watch(orderProvider);
+      final indexpro = ref.watch(indexListProvider);
+      final orderInput = ref.watch(ordInputProvider);
       return PopScope(
           canPop: !orders.orderloader,
           onPopInvoked: (didPop) {

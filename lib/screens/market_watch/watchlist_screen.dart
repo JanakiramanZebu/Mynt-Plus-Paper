@@ -63,24 +63,30 @@ class _WatchListScreen extends State<WatchListScreen> with AutomaticKeepAliveCli
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final marketWatch = watch(marketWatchProvider);
-      final userProfile = watch(userProfileProvider);
-      final theme = context.read(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      // Use select to watch only specific properties instead of the entire provider
+      final wlName = ref.watch(marketWatchProvider.select((p) => p.wlName));
+      final marketWatchlist = ref.watch(marketWatchProvider.select((p) => p.marketWatchlist));
+      final scrips = ref.watch(marketWatchProvider.select((p) => p.scrips));
+      final isPreDefWLs = ref.watch(marketWatchProvider.select((p) => p.isPreDefWLs));
+      final theme = ref.read(themeProvider);
       
       // Check if watchlist changed to reduce rebuilds when only prices change
-      bool watchlistChanged = _currentWatchlist != marketWatch.wlName;
+      bool watchlistChanged = _currentWatchlist != wlName;
       if (watchlistChanged) {
-        _currentWatchlist = marketWatch.wlName;
+        _currentWatchlist = wlName;
       }
 
       return PageView.builder(
-        itemCount: marketWatch.marketWatchlist!.values!.length,
+        itemCount: marketWatchlist?.values?.length ?? 0,
         scrollDirection: Axis.horizontal,
         controller: _controller,
         onPageChanged: (int d) async {
           // Get the new watchlist name before unsubscribing
-          String newWatchlistName = marketWatch.marketWatchlist!.values![d];
+          String newWatchlistName = marketWatchlist!.values![d];
+          
+          // Get provider instance for method calls
+          final marketWatch = ref.read(marketWatchProvider);
           
           // Unsubscribe from current watchlist
           await marketWatch.requestMWScrip(context: context, isSubscribe: false);
@@ -105,22 +111,24 @@ class _WatchListScreen extends State<WatchListScreen> with AutomaticKeepAliveCli
           }
         },
         itemBuilder: (BuildContext context, int index) {
+          final marketWatch = ref.read(marketWatchProvider);
+          
           return RefreshIndicator(
             onRefresh: () async {
-              await marketWatch.fetchMWScrip(marketWatch.wlName, context);
+              await marketWatch.fetchMWScrip(wlName, context);
             },
-            child: marketWatch.wlName == "My Stocks"
+            child: wlName == "My Stocks"
                 ? const StocksScreen()
-                : marketWatch.scrips.isEmpty
-                    ? _buildEmptyState(theme, marketWatch)
-                    : _buildWatchlistView(marketWatch, watchlistChanged),
+                : scrips.isEmpty
+                    ? _buildEmptyState(theme, marketWatch, ref)
+                    : _buildWatchlistView(scrips, watchlistChanged, isPreDefWLs),
           );
         },
       );
     });
   }
 
-  Widget _buildEmptyState(ThemesProvider theme, MarketWatchProvider marketWatch) {
+  Widget _buildEmptyState(ThemesProvider theme, MarketWatchProvider marketWatch, WidgetRef ref) {
     // Cache the icon to prevent rebuilds
     final noDataIcon = SvgPicture.asset(
       assets.noDatafound,
@@ -152,16 +160,16 @@ class _WatchListScreen extends State<WatchListScreen> with AutomaticKeepAliveCli
     );
   }
 
-  Widget _buildWatchlistView(MarketWatchProvider marketWatch, bool watchlistChanged) {
+  Widget _buildWatchlistView(List scrips, bool watchlistChanged, String isPreDefWLs) {
     // Using a more optimized list to prevent unnecessary rebuilds
     return ListView.separated(
-      key: ValueKey(marketWatch.wlName), // Use key to rebuild when watchlist changes
+      key: ValueKey(scrips.length), // Use key based on list length for more precise rebuilds
       shrinkWrap: false,
       physics: const BouncingScrollPhysics(),
-      itemCount: marketWatch.scrips.length,
+      itemCount: scrips.length,
       separatorBuilder: (context, index) => const ListDivider(),
       itemBuilder: (BuildContext context, int idx) {
-        final scrip = marketWatch.scrips[idx];
+        final scrip = scrips[idx];
         
         // Use RepaintBoundary to isolate the card from other cards
         return RepaintBoundary(

@@ -419,11 +419,11 @@ static PageRouteBuilder _createRoute({
 
       // rough
 
-      case Routes.heatmapcalendarscreen:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => HeatmapCalendarScreen(),
-          beginOffset: const Offset(-1.0, 0.0),
-        );
+      // case Routes.heatmapcalendarscreen:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => HeatmapCalendarScreen(),
+      //     beginOffset: const Offset(-1.0, 0.0),
+      //   );
 
       case Routes.holdingscreen:
         return _createRoute(
@@ -454,27 +454,9 @@ static PageRouteBuilder _createRoute({
           beginOffset: const Offset(-1.0, 0.0),
         );
 
-      case Routes.pledgeandun:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => PledgenUnpledge(ddd: args),
-          beginOffset: const Offset(-1.0, 0.0),
-        );
-
-            case Routes.pledgehistorymainscreen:
+      case Routes.pledgehistorymainscreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => PledgeHistoryMainScreen(),
-          beginOffset: const Offset(-1.0, 0.0),
-        );
-
-      case Routes.pledgeunpledgeresponse:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => PledgenUnpledgeResponse(ddd: args),
-          beginOffset: const Offset(-1.0, 0.0),
-        );
-
-      case Routes.pledgeandun:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => PledgenUnpledge(ddd: args),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -631,12 +613,6 @@ static PageRouteBuilder _createRoute({
         return _createRoute(
           pageBuilder: (_, __, ___) => ModifyIpoOrderScreen(modifyipoorder: args),
           beginOffset: const Offset(-1.0, 0.0),
-        );
-
-      case Routes.ipoclosedetailsscreen:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => IpoCloseOrderDetails(ipoclose: args),
-          beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.ipoclosedetailsscreen:

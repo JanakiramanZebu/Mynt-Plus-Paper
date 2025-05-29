@@ -30,9 +30,9 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final theme = watch(themeProvider);
-      final mfdata = watch(mfProvider);
+    return Consumer(builder: (context, ref, child) {
+      final theme = ref.watch(themeProvider);
+      final mfdata = ref.watch(mfProvider);
       // print("11111111111111111${mfdata.mfsinglepageres!.invList}");
 // print("13434312${mfdata.holssinglelist![0].sCHEMECODE}");
       return Scaffold(

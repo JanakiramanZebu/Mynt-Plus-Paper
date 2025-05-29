@@ -8,25 +8,25 @@ import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/payment_loader.dart';
 import 'ipo_main_sub_screen.dart';
 
-class IPOScreen extends StatefulWidget {
+class IPOScreen extends ConsumerStatefulWidget {
   const IPOScreen({super.key});
 
   @override
-  State<IPOScreen> createState() => _IPOScreenState();
+  ConsumerState<IPOScreen> createState() => _IPOScreenState();
 }
 
-class _IPOScreenState extends State<IPOScreen> with TickerProviderStateMixin {
+class _IPOScreenState extends ConsumerState<IPOScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     setState(() {
-      context.read(ipoProvide).ipoScreenTab = TabController(
-          length: context.read(ipoProvide).ipoScreenTabName.length,
+      ref.read(ipoProvide).ipoScreenTab = TabController(
+          length: ref.read(ipoProvide).ipoScreenTabName.length,
           vsync: this,
-          initialIndex: context.read(ipoProvide).selectedTab);
+          initialIndex: ref.read(ipoProvide).selectedTab);
 
-      context.read(ipoProvide).ipoScreenTab.addListener(() {
-        context.read(ipoProvide).changeIpoIndex(
-            context.read(ipoProvide).ipoScreenTab.index, context);
+      ref.read(ipoProvide).ipoScreenTab.addListener(() {
+        ref.read(ipoProvide).changeIpoIndex(
+            ref.read(ipoProvide).ipoScreenTab.index, context);
       });
     });
     super.initState();
@@ -34,13 +34,12 @@ class _IPOScreenState extends State<IPOScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final theme = watch(themeProvider);
-      final ipo = watch(ipoProvide);
-      // final panelController = SlidingUpPanelController();
-      return GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: Scaffold(
+    final theme = ref.watch(themeProvider);
+    final ipo = ref.watch(ipoProvide);
+    // final panelController = SlidingUpPanelController();
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
             appBar: AppBar(
               elevation: .2,
               centerTitle: false,
@@ -108,7 +107,7 @@ class _IPOScreenState extends State<IPOScreen> with TickerProviderStateMixin {
               //         await context
               //             .read(ipoProvide)
               //             .getipoorderbookmodel(true);
-              //         // await context.read(ipoProvide).ipotab();
+              //         // await ref.read(ipoProvide).ipotab();
               //       });
 
               //       Navigator.pushNamed(context, Routes.ipoorderbook);
@@ -219,7 +218,7 @@ class _IPOScreenState extends State<IPOScreen> with TickerProviderStateMixin {
               //             style: TextStyle(
               //                 fontSize: 16, fontWeight: FontWeight.bold)),
               //         const SizedBox(height: 10),
-              //         context.read(ipoProvide).displayload
+              //         ref.read(ipoProvide).displayload
               //             ? const Center(child: CircularProgressIndicator())
               //             : Expanded(
               //                 child: SingleChildScrollView(
@@ -276,12 +275,11 @@ class _IPOScreenState extends State<IPOScreen> with TickerProviderStateMixin {
             //   ]),
             ),
       );
-    });
   }
 
   // void ipoorderbookgetdata(BuildContext context) async {
   //   Future.delayed(const Duration(microseconds: 100), () async {
-  //     await context.read(ipoProvide).getipoorderbookmodel1(true);
+  //     await ref.read(ipoProvide).getipoorderbookmodel1(true);
   //   });
   // }
 }

@@ -10,11 +10,11 @@ class CurStrkprice extends ConsumerWidget {
   const CurStrkprice({super.key, required this.token});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final strikePrc = watch(marketWatchProvider).getStikePrc ?? watch(marketWatchProvider).getQuotes;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strikePrc = ref.watch(marketWatchProvider).getStikePrc ?? ref.watch(marketWatchProvider).getQuotes;
     
     return StreamBuilder<Map>(
-      stream: watch(websocketProvider).socketDataStream,
+      stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return _buildStrikePriceWidget(strikePrc!.lp ?? "0.00");
@@ -27,7 +27,7 @@ class CurStrkprice extends ConsumerWidget {
           price = "${socketDatas[token]['lp']}";
         }
         
-        watch(marketWatchProvider).updateOptStrPrc(price);
+        ref.watch(marketWatchProvider).updateOptStrPrc(price);
         return _buildStrikePriceWidget(price);
       },
     );

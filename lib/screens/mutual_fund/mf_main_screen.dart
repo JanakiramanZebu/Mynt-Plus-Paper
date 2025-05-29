@@ -27,10 +27,10 @@ class _MfmainScreenState extends State<MfmainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final mf = watch(mfProvider);
-      final portfolio = watch(portfolioProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+      final mf = ref.watch(mfProvider);
+      final portfolio = ref.watch(portfolioProvider);
       return Scaffold(
         appBar: AppBar(
           // automaticallyImplyLeading: false,

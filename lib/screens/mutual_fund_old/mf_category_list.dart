@@ -16,10 +16,10 @@
 //   const MfCategoryList({super.key});
 
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
-//     final theme = watch(themeProvider);
-//     final mfData = watch(mfProvider);
-//     final fund = watch(fundProvider);
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final theme = ref.watch(themeProvider);
+//     final mfData = ref.watch(mfProvider);
+//     final fund = ref.watch(fundProvider);
 //     bool isfalse =
 //         mfData.topmutualfund!.isEmpty && mfData.mfCategory == "Watchlist";
 //     return Column(children: [

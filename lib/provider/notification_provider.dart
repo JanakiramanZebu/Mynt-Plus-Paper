@@ -12,12 +12,12 @@ import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 
 final notificationprovider =
-    ChangeNotifierProvider((ref) => NotificationProvider(ref.read));
+    ChangeNotifierProvider((ref) => NotificationProvider(ref));
 
 class NotificationProvider extends DefaultChangeNotifier {
   final Preferences pref = locator<Preferences>();
   final api = locator<ApiExporter>();
-  final Reader ref;
+  final Ref ref;
   NotificationProvider(this.ref);
 
   List<ExchangeMessageModel>? _exchangemessage;
@@ -64,14 +64,14 @@ class NotificationProvider extends DefaultChangeNotifier {
       _exchangemessage = await api.getexchmsg();
       if (_exchangemessage![0].emsg ==
           "Session Expired :  Invalid Session Key") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
       }
       notifyListeners();
       return _exchangemessage;
     } catch (e) {
-      ref(indexListProvider).logError.add({"type": "Exch msg", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "Exch msg", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
@@ -85,7 +85,7 @@ class NotificationProvider extends DefaultChangeNotifier {
   //     //     "------------------------------------> ${_exchangestatus![0].description}");
   //     if (_exchangestatus![0].emsg ==
   //         "Session Expired :  Invalid Session Key") {
-  //       ref(authProvider).loginMethCtrl.text =
+  //       ref.read(authProvider).loginMethCtrl.text =
   //           localstorage.getString("userId") ?? "";
   //       Navigator.pushNamedAndRemoveUntil(
   //           context,
@@ -97,7 +97,7 @@ class NotificationProvider extends DefaultChangeNotifier {
   //     notifyListeners();
   //     return _exchangestatus;
   //   } catch (e) {
-  //     ref(indexListProvider)
+  //     ref.read(indexListProvider)
   //         .logError
   //         .add({"type": "Exchange status", "Error": "$e"});
   //     notifyListeners();
@@ -110,7 +110,7 @@ class NotificationProvider extends DefaultChangeNotifier {
       // print("------------------------------------> ${_brokermsg!.length}");
       // print("------------------------------------> ${_brokermsg![0].emsg}");
       if (_brokermsg![0].emsg == "Session Expired :  Invalid Session Key") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
       }
@@ -118,7 +118,7 @@ class NotificationProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _brokermsg;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "Broker msg", "Error": "$e"});
       notifyListeners();

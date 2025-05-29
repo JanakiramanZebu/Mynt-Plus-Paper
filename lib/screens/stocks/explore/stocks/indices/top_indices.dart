@@ -45,8 +45,8 @@ class _TopIndicesState extends State<TopIndices> {
 
   @override
   Widget build(context) {
-    return Consumer(builder: (context, watch, child) {
-      // final indices = watch(indexListProvider);
+    return Consumer(builder: (context, ref, child) {
+      // final indices = ref.watch(indexListProvider);
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
@@ -59,8 +59,8 @@ class _TopIndicesState extends State<TopIndices> {
                           const Color(0xff000000), 16, FontWeight.w600))),
               TextButton(
                   onPressed: () async {
-                    await context.read(indexListProvider).fetchAllIndex();
-                    await context.read(stocksProvide).getGlobalIndices();
+                    await ref.read(indexListProvider).fetchAllIndex();
+                    await ref.read(stocksProvide).getGlobalIndices();
                     Navigator.pushNamed(context, Routes.allIndex);
                   },
                   child: Text('See all',

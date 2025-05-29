@@ -8,22 +8,22 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
-class PnlSummarBottom extends StatefulWidget {
+class PnlSummarBottom extends ConsumerStatefulWidget {
   const PnlSummarBottom({super.key});
 
   @override
-  State<PnlSummarBottom> createState() => _PnlSummarBottom();
+  ConsumerState<PnlSummarBottom> createState() => _PnlSummarBottom();
 }
 
-class _PnlSummarBottom extends State<PnlSummarBottom> {
+class _PnlSummarBottom extends ConsumerState<PnlSummarBottom> {
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
     double notional = 0.0;
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final ledgerdata = watch(ledgerProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final ledgerdata = ref.watch(ledgerProvider);
 
       if (ledgerdata.reportsloading == false) {
         for (var i = 0; i < ledgerdata.pnlSummaryData!.data!.length; i++) {

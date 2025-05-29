@@ -17,7 +17,7 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/ipo_error_widget.dart';
 import '../../../sharedWidget/snack_bar.dart';
 
-class SMEApplyIpoScreen extends StatefulWidget {
+class SMEApplyIpoScreen extends ConsumerStatefulWidget {
   final SMEIPO smeipo;
   const SMEApplyIpoScreen({
     super.key,
@@ -25,10 +25,10 @@ class SMEApplyIpoScreen extends StatefulWidget {
   });
 
   @override
-  State<SMEApplyIpoScreen> createState() => _SMEApplyIpoScreenState();
+  ConsumerState<SMEApplyIpoScreen> createState() => _SMEApplyIpoScreenState();
 }
 
-class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
+class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
   bool ischecked = false;
   String alertValue = "";
   String upierrortext = "";
@@ -59,7 +59,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
                   int.parse(widget.smeipo.minBidQuantity!).toInt())
               .toInt(),
           isChecked: false));
-      context.read(ipoProvide).viewupiid.text.isEmpty
+      ref.read(ipoProvide).viewupiid.text.isEmpty
           ? upierrortext = "Please enter the UPI ID"
           : upierrortext = "";
     });
@@ -83,10 +83,10 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Consumer(
-        builder: (context, watch, child) {
-          final ipo = watch(ipoProvide);
-          final upiid = watch(transcationProvider);
-          final theme = watch(themeProvider);
+        builder: (context, ref, child) {
+          final ipo = ref.watch(ipoProvide);
+          final upiid = ref.watch(transcationProvider);
+          final theme = ref.watch(themeProvider);
           return Scaffold(
               appBar: AppBar(
                 elevation: .2,
@@ -1143,7 +1143,7 @@ class _SMEApplyIpoScreenState extends State<SMEApplyIpoScreen> {
     //       "Text: ${iposbids[i].bitis} Checkbox: ${iposbids[i].qty}, requried:${iposbids[i].cutoff},bidprice:${iposbids[i].price} value Total: ${iposbids[i].total}");
     // }
 print("IPO PLACE ORDERS :: ${upiid.upiid.text} ,${inspect(menudata)} ,${inspect(iposbids)} ,${iposupiid}");
-    await context.read(ipoProvide).fetchupiidvalidation(
+    await ref.read(ipoProvide).fetchupiidvalidation(
         context, upiid.upiid.text, "343245", menudata, iposbids, iposupiid);
   }
 }

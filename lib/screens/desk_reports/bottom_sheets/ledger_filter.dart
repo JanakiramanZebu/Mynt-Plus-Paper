@@ -40,7 +40,7 @@ class _LedgerFilter extends State<LedgerFilter> {
   @override
   void initState() {
     setState(() {
-      // _character = context.read(ledgerProvider).filterval;
+      // _character = ref.read(ledgerProvider).filterval;
     });
     super.initState();
   }
@@ -49,10 +49,10 @@ class _LedgerFilter extends State<LedgerFilter> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
 
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final ledgerprovider = watch(ledgerProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final ledgerprovider = ref.watch(ledgerProvider);
       final filval = ledgerprovider.filterval;
-      final theme = watch(themeProvider);
+      final theme = ref.watch(themeProvider);
 
       return DraggableScrollableSheet(
         initialChildSize: ledgerprovider.currentfilterpage == 'tradebook'

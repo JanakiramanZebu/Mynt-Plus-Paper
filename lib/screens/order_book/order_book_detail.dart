@@ -14,14 +14,14 @@ import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/scrip_info_btns.dart';
 import '../../sharedWidget/time_line.dart';
 
-class OrderBookDetail extends StatelessWidget {
+class OrderBookDetail extends ConsumerWidget {
   final OrderBookModel orderBookData;
   const OrderBookDetail({super.key, required this.orderBookData});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Use read for static data that doesn't need to trigger rebuilds
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     
     return Scaffold(
       appBar: AppBar(
@@ -46,13 +46,13 @@ class _OrderAppBarTitle extends ConsumerWidget {
   const _OrderAppBarTitle({required this.orderBookData});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     
     // Only watch the WebSocket data for this specific symbol
     return Consumer(
       builder: (context, watch, _) {
-        final socketData = watch(websocketProvider).socketDataStream;
+        final socketData = ref.watch(websocketProvider).socketDataStream;
         
         return StreamBuilder<Map>(
           stream: socketData,
@@ -159,10 +159,10 @@ class _OrderDetailBody extends ConsumerWidget {
   const _OrderDetailBody({required this.orderBookData});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     // Only watch the specific data needed
-    final orderHistory = watch(orderProvider).orderHistoryModel;
+    final orderHistory = ref.watch(orderProvider).orderHistoryModel;
     
     return ListView(
       children: [
@@ -239,14 +239,14 @@ class _OrderDetailBody extends ConsumerWidget {
 }
 
 // Extracted order details section
-class _OrderDetailsSection extends StatelessWidget {
+class _OrderDetailsSection extends ConsumerWidget {
   final OrderBookModel orderBookData;
   
   const _OrderDetailsSection({required this.orderBookData});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -422,20 +422,20 @@ class _BottomActionBar extends ConsumerWidget {
   const _BottomActionBar({required this.orderBookData});
   
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     
     // Show different bottom bar based on order status
     if (orderBookData.status == "PENDING" ||
         orderBookData.status == "OPEN" ||
         orderBookData.status == "TRIGGER_PENDING") {
-      return _buildActionButtonsBar(context, theme);
+      return _buildActionButtonsBar(context, theme, ref);
     } else {
-      return _buildRepeatOrderBar(context, theme);
+      return _buildRepeatOrderBar(context, theme, ref);
     }
   }
   
-  Widget _buildActionButtonsBar(BuildContext context, ThemesProvider theme) {
+  Widget _buildActionButtonsBar(BuildContext context, ThemesProvider theme, WidgetRef ref) {
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
       child: Container(
@@ -458,7 +458,7 @@ class _BottomActionBar extends ConsumerWidget {
                       )
                     ),
                     onPressed: () async {
-                      _showExitPositionDialog(context, theme);
+                      _showExitPositionDialog(context, theme, ref);
                     },
                     child: Text("Exit",
                       style: textStyle(const Color(0XFFFFFFFF),
@@ -471,7 +471,7 @@ class _BottomActionBar extends ConsumerWidget {
               Expanded(
                 child: InkWell(
                   onTap: () async {
-                    _showCancelOrderDialog(context, theme);
+                    _showCancelOrderDialog(context, theme, ref);
                   },
                   child: Container(
                     height: 40,
@@ -500,7 +500,7 @@ class _BottomActionBar extends ConsumerWidget {
             Expanded(
               child: InkWell(
                 onTap: () async {
-                  await _navigateToModifyOrder(context);
+                  await _navigateToModifyOrder(context, ref);
                 },
                 child: Container(
                   height: 40,
@@ -532,7 +532,7 @@ class _BottomActionBar extends ConsumerWidget {
     );
   }
   
-  Widget _buildRepeatOrderBar(BuildContext context, ThemesProvider theme) {
+  Widget _buildRepeatOrderBar(BuildContext context, ThemesProvider theme, WidgetRef ref) {
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
       child: Container(
@@ -548,7 +548,7 @@ class _BottomActionBar extends ConsumerWidget {
         width: MediaQuery.of(context).size.width,
         child: InkWell(
           onTap: () async {
-            await _navigateToPlaceOrder(context);
+            await _navigateToPlaceOrder(context, ref);
           },
           child: Center(
             child: Text("Repeat order",
@@ -566,7 +566,7 @@ class _BottomActionBar extends ConsumerWidget {
     );
   }
   
-  void _showExitPositionDialog(BuildContext context, ThemesProvider theme) {
+  void _showExitPositionDialog(BuildContext context, ThemesProvider theme, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -615,7 +615,7 @@ class _BottomActionBar extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () async {
-                await context.read(orderProvider).fetchExitSNOOrd(
+                await ref.read(orderProvider).fetchExitSNOOrd(
                   "${orderBookData.snonum}",
                   "${orderBookData.prd}",
                   context,
@@ -647,7 +647,7 @@ class _BottomActionBar extends ConsumerWidget {
     );
   }
   
-  void _showCancelOrderDialog(BuildContext context, ThemesProvider theme) {
+  void _showCancelOrderDialog(BuildContext context, ThemesProvider theme, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -753,7 +753,7 @@ class _BottomActionBar extends ConsumerWidget {
                 )
               ),
               onPressed: () async {
-                await context.read(orderProvider).fetchOrderCancel(
+                await ref.read(orderProvider).fetchOrderCancel(
                   "${orderBookData.norenordno}",
                   context,
                   true
@@ -776,8 +776,8 @@ class _BottomActionBar extends ConsumerWidget {
     );
   }
   
-  Future<void> _navigateToModifyOrder(BuildContext context) async {
-    await context.read(marketWatchProvider).fetchScripInfo(
+  Future<void> _navigateToModifyOrder(BuildContext context, WidgetRef ref) async {
+    await ref.read(marketWatchProvider).fetchScripInfo(
       "${orderBookData.token}",
       '${orderBookData.exch}', 
       context
@@ -803,15 +803,15 @@ class _BottomActionBar extends ConsumerWidget {
       arguments: {
         "modifyOrderArgs": orderBookData,
         "orderArg": orderArgs,
-        "scripInfo": context.read(marketWatchProvider).scripInfoModel!
+        "scripInfo": ref.read(marketWatchProvider).scripInfoModel!
       }
     );
   }
   
-  Future<void> _navigateToPlaceOrder(BuildContext context) async {
+  Future<void> _navigateToPlaceOrder(BuildContext context, WidgetRef ref) async {
     Navigator.pop(context);
 
-    await context.read(marketWatchProvider).fetchScripInfo(
+    await ref.read(marketWatchProvider).fetchScripInfo(
       "${orderBookData.token}",
       "${orderBookData.exch}",
       context, 
@@ -836,7 +836,7 @@ class _BottomActionBar extends ConsumerWidget {
     Navigator.pushNamed(context, Routes.placeOrderScreen,
       arguments: {
         "orderArg": orderArgs,
-        "scripInfo": context.read(marketWatchProvider).scripInfoModel!,
+        "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
         "isBskt": ''
       }
     );

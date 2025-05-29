@@ -10,8 +10,8 @@
 //   const AmcFIlter({super.key});
 
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
-//     final mf = watch(mfProvider);
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final mf = ref.watch(mfProvider);
 //     return ExpansionTile(
 //       title: Text(
 //         "AMC",

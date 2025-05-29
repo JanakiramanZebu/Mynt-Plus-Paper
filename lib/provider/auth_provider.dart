@@ -47,12 +47,12 @@ import 'portfolio_provider.dart';
 import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
 
-final authProvider = ChangeNotifierProvider((ref) => AuthProvider(ref.read));
+final authProvider = ChangeNotifierProvider((ref) => AuthProvider(ref));
 
 class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
-  final Reader ref;
+  final Ref ref;
   final String _version = "1.0.81(01)";
   late final String _versiontext =
       "Version 3.0.2 Build $_version Released on 22 May";
@@ -87,7 +87,7 @@ class AuthProvider extends DefaultChangeNotifier {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: ref(themeProvider).isDarkMode
+          backgroundColor: ref.read(themeProvider).isDarkMode
               ? const Color.fromARGB(255, 18, 18, 18)
               : colors.colorWhite,
           shape: const RoundedRectangleBorder(
@@ -103,7 +103,7 @@ class AuthProvider extends DefaultChangeNotifier {
             children: [
               Text('Conformation!',
                   style: textStyle(
-                      !ref(themeProvider).isDarkMode
+                      !ref.read(themeProvider).isDarkMode
                           ? colors.colorBlack
                           : colors.colorWhite,
                       16,
@@ -125,7 +125,7 @@ class AuthProvider extends DefaultChangeNotifier {
                       child: Text(
                           "Do you like to remove this account from devices?",
                           style: textStyle(
-                              !ref(themeProvider).isDarkMode
+                              !ref.read(themeProvider).isDarkMode
                                   ? colors.colorBlack
                                   : colors.colorWhite,
                               14,
@@ -147,14 +147,14 @@ class AuthProvider extends DefaultChangeNotifier {
                   },
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: !ref(themeProvider).isDarkMode
+                      backgroundColor: !ref.read(themeProvider).isDarkMode
                           ? colors.colorBlack
                           : colors.colorbluegrey,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50))),
                   child: Text("Proceed",
                       style: textStyle(
-                          ref(themeProvider).isDarkMode
+                          ref.read(themeProvider).isDarkMode
                               ? colors.colorBlack
                               : colors.colorWhite,
                           14,
@@ -541,7 +541,7 @@ class AuthProvider extends DefaultChangeNotifier {
         // Navigator.pushNamed(context, Routes.loginOtpVerify);
       } else if (_mobileLogin!.emsg ==
           "Invalid Input : User Blocked due to multiple wrong attempts") {
-        ref(changePasswordProvider).userIdController.text =
+        ref.read(changePasswordProvider).userIdController.text =
             "${_mobileLogin!.clientid}";
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
@@ -550,10 +550,10 @@ class AuthProvider extends DefaultChangeNotifier {
         });
       } else if (_mobileLogin!.emsg == "Invalid Input : Change Password" ||
           _mobileLogin!.emsg == "Invalid Input : Password Expired") {
-        ref(changePasswordProvider).userIdController.text =
+        ref.read(changePasswordProvider).userIdController.text =
             "${_mobileLogin!.clientid}";
         if (_mobileLogin!.emsg == "Invalid Input : Password Expired") {
-          ref(changePasswordProvider).oldPassword.text = password.toString();
+          ref.read(changePasswordProvider).oldPassword.text = password.toString();
         }
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
@@ -579,7 +579,7 @@ class AuthProvider extends DefaultChangeNotifier {
         clearTextField();
         pref.setMobileLogin(false);
         pref.setLogout(true);
-        ref(indexListProvider).bottomMenu(1, context);
+        ref.read(indexListProvider).bottomMenu(1, context);
         loginMethCtrl.text = pref.clientId!;
         if (currentRouteName != Routes.loginScreen) {
           Navigator.pushNamedAndRemoveUntil(
@@ -737,7 +737,7 @@ class AuthProvider extends DefaultChangeNotifier {
       } else if (_mobileOtp!.emsg ==
           "Invalid Input : User Blocked due to multiple wrong attempts") {
         final ctx = context;
-        ref(changePasswordProvider).userIdController.text = mobile_client;
+        ref.read(changePasswordProvider).userIdController.text = mobile_client;
         Navigator.pushNamed(ctx, Routes.forgotPass);
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _mobileOtp!.emsg!));
@@ -802,22 +802,22 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setLogout(true);
         pref.setHideLoginOptBtn(false);
         pref.setMobileLogin(false);
-        ref(indexListProvider).bottomMenu(1, context);
+        ref.read(indexListProvider).bottomMenu(1, context);
         loginMethCtrl.text = pref.clientId!;
         notifyListeners();
         // ScaffoldMessenger.of(context)
         //     .showSnackBar(warningMessage(context, 'Logged out'));
 
         Navigator.pop(context);
-        // ref(websocketProvider).closeSocket();
-        // ref(websocketProvider).websockConn(false);
+        // ref.read(websocketProvider).closeSocket();
+        // ref.read(websocketProvider).websockConn(false);
         if (currentRouteName != Routes.loginScreen) {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.loginScreen, (route) => false);
         }
       }
     } catch (e) {
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
       notifyListeners();
     }
   }
@@ -863,7 +863,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
       if (authenticated) {
         // print('bioAuth - User authenticated successfully');
-        ref(themeProvider).navigateToNewPage(context);
+        ref.read(themeProvider).navigateToNewPage(context);
         initialLoadMethods(context, s);
       } else {
         showDialog(
@@ -897,7 +897,7 @@ class AuthProvider extends DefaultChangeNotifier {
                     onPressed: () => deviceAuth(context, s),
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: ref(themeProvider).isDarkMode
+                        backgroundColor: ref.read(themeProvider).isDarkMode
                             ? colors.colorbluegrey
                             : colors.colorBlack,
                         padding: const EdgeInsets.symmetric(vertical: 13),
@@ -957,7 +957,7 @@ class AuthProvider extends DefaultChangeNotifier {
                       onPressed: () => deviceAuth(context, s),
                       style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          backgroundColor: ref(themeProvider).isDarkMode
+                          backgroundColor: ref.read(themeProvider).isDarkMode
                               ? colors.colorbluegrey
                               : colors.colorBlack,
                           padding: const EdgeInsets.symmetric(vertical: 13),
@@ -995,59 +995,60 @@ class AuthProvider extends DefaultChangeNotifier {
       ConstantName.timer =
           Timer.periodic(const Duration(seconds: 1), (timer) {});
       ConstantName.timer!.cancel();
-      ref(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
+      ref.read(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
 
       if (s.isNotEmpty || pref.clientSession!.isNotEmpty) {
-        ref(websocketProvider).closeSocket(true);
+        ref.read(websocketProvider).closeSocket(true);
       }
 
-      await ref(indexListProvider).checkSession(context);
-      ref(marketWatchProvider).changeWlName("", "No");
+      await ref.read(indexListProvider).checkSession(context);
+      ref.read(marketWatchProvider).changeWlName("", "No");
       _logoutMsg = "";
 
-      if (ref(indexListProvider).checkSess!.stat == "Ok") {
-        ref(indexListProvider).fetchNotifyMsg();
-        ref(portfolioProvider).changeTabIndex(0);
-        await ref(themeProvider).navigateToNewPage(context);
-        await ref(portfolioProvider).fetchHoldings(context, "");
+      if (ref.read(indexListProvider).checkSess!.stat == "Ok") {
+        ref.read(indexListProvider).fetchNotifyMsg();
+        ref.read(portfolioProvider).changeTabIndex(0);
+        await ref.read(themeProvider).navigateToNewPage(context);
+        await ref.read(portfolioProvider).fetchHoldings(context, "");
 
-        await ref(indexListProvider).getDeafultIndexList(context);
-        await ref(marketWatchProvider).fetchMWList(context, true);
-        ref(orderProvider).fetchOrderBook(context, false);
-        ref(portfolioProvider).fetchPositionBook(context, false);
-        ref(orderProvider).fetchTradeBook(context);
-        ref(orderProvider).fetchGTTOrderBook(context, "initLoad");
-        ref(transcationProvider).fetchcwithdraw(context);
-        ref(transcationProvider).fetchfundbank(context);
-        ref(portfolioProvider).fetchOplist(context);
-        ref(userProfileProvider).fetchUserDetail(context);
-        ref(portfolioProvider).fetchPosGroupSymbol("", false);
-        ref(transcationProvider).fetchc(context);
+        await ref.read(indexListProvider).getDeafultIndexList(context);
+        await ref.read(marketWatchProvider).fetchMWList(context, true);
+        // initLaod(false);
+        ref.read(orderProvider).fetchOrderBook(context, false);
+        ref.read(portfolioProvider).fetchPositionBook(context, false);
+        ref.read(orderProvider).fetchTradeBook(context);
+        ref.read(orderProvider).fetchGTTOrderBook(context, "initLoad");
+        ref.read(transcationProvider).fetchcwithdraw(context);
+        ref.read(transcationProvider).fetchfundbank(context);
+        ref.read(portfolioProvider).fetchOplist(context);
+        ref.read(userProfileProvider).fetchUserDetail(context);
+        ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
+        ref.read(transcationProvider).fetchc(context);
 
         // FirebaseAnalytics.instance.setUserId(id: pref.clientId);
         // IPOs
-        setIposAPicalls();
+        // setIposAPicalls();
         // mf
-        setmfapicalls(context);
+        // setmfapicalls(context);
         // Explore
-        // await ref(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
-        // await ref(indexListProvider).fetchStockTopIndex();
+        // await ref.read(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
+        // await ref.read(indexListProvider).fetchStockTopIndex();
 
-        // await ref(stocksProvide).fetchCorporateAction();
-        // await ref(stocksProvide).fetchCAevents();
-        // await ref(stocksProvide).defaultSectorThemematicData();
-        // await ref(stocksProvide).getNews();
-        // await ref(stocksProvide).chngTradeAct("Equity");
+        // await ref.read(stocksProvide).fetchCorporateAction();
+        // await ref.read(stocksProvide).fetchCAevents();
+        // await ref.read(stocksProvide).defaultSectorThemematicData();
+        // await ref.read(stocksProvide).getNews();
+        // await ref.read(stocksProvide).chngTradeAct("Equity");
 
-        // ref(mfProvider).fetchcommonsearchWadd(null, "", context, false);
-        // ref(mfProvider).fetchmfCommonsearch("Z", context);
-        // ref(mfProvider).fetchMFWatchlist(null, "", context, false,"");
-        // ref(mfProvider).fetchBestMF();
+        // ref.read(mfProvider).fetchcommonsearchWadd(null, "", context, false);
+        // ref.read(mfProvider).fetchmfCommonsearch("Z", context);
+        // ref.read(mfProvider).fetchMFWatchlist(null, "", context, false,"");
+        // ref.read(mfProvider).fetchBestMF();
 
-        // ref(mfProvider).fetchMfOrderbook(context);
+        // ref.read(mfProvider).fetchMfOrderbook(context);
         setProfileAPicalls();
         setPrefOrderPrefer();
-        ref(orderProvider).setOrderIp();
+        ref.read(orderProvider).setOrderIp();
         // End Explore
         if (s.isEmpty) {
           Navigator.pushNamedAndRemoveUntil(
@@ -1076,7 +1077,7 @@ class AuthProvider extends DefaultChangeNotifier {
           }
         }
         // {
-        await ref(fundProvider).fetchFunds(context);
+        await ref.read(fundProvider).fetchFunds(context);
         Map data = {
           "uid": "${pref.clientId}_${pref.imei}",
           "log": {
@@ -1095,20 +1096,20 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   setIposAPicalls() async {
-    await ref(ipoProvide).getDashboardIpos();
-    await ref(ipoProvide).getSmeIpo();
-    await ref(ipoProvide).getmainstreamipo();
-    await ref(ipoProvide).getUpcomingIpoModel();
-    await ref(ipoProvide).getipoperfomance(currentYear);
-    await ref(ipoProvide).mergemainsme();
-    await ref(ipoProvide).fetchIpoPreClose();
+    await ref.read(ipoProvide).getDashboardIpos();
+    await ref.read(ipoProvide).getSmeIpo();
+    await ref.read(ipoProvide).getmainstreamipo();
+    await ref.read(ipoProvide).getUpcomingIpoModel();
+    await ref.read(ipoProvide).getipoperfomance(currentYear);
+    await ref.read(ipoProvide).mergemainsme();
+    await ref.read(ipoProvide).fetchIpoPreClose();
   }
 
   setmfapicalls(context) async {
-    ref(mfProvider).fetchnewMFBestList();
-    ref(mfProvider).fetchmfallcatnew();
-    ref(mfProvider).fetchmfNFO(context);
-    // ref(mfProvider).fetchmfNFO(context);
+    ref.read(mfProvider).fetchnewMFBestList();
+    ref.read(mfProvider).fetchmfallcatnew();
+    ref.read(mfProvider).fetchmfNFO(context);
+    // ref.read(mfProvider).fetchmfNFO(context);
   }
 
   setPrefOrderPrefer() async {
@@ -1157,7 +1158,7 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   setProfileAPicalls() async {
-    await ref(profileAllDetailsProvider).fetchClientProfileAllDetails();
+    await ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
   }
 
 // This method calls and returns to the login screen whenever the client session expires.
@@ -1179,8 +1180,8 @@ class AuthProvider extends DefaultChangeNotifier {
       loginMethCtrl.text = pref.clientId ?? "";
       
       // Close WebSocket early to stop needless data flow
-      ref(websocketProvider).closeSocket(true);
-      ref(websocketProvider).websockConn(false);
+      ref.read(websocketProvider).closeSocket(true);
+      ref.read(websocketProvider).websockConn(false);
       
       if (ConstantName.timer != null) {
         ConstantName.timer!.cancel();

@@ -15,9 +15,9 @@ class SectorThematicDetail extends ConsumerWidget {
   const SectorThematicDetail({super.key, required this.data});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final tradeAcrion = context.read(stocksProvide).indicesData;
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tradeAcrion = ref.read(stocksProvide).indicesData;
+    final theme = ref.read(themeProvider);
     return Scaffold(
       appBar: AppBar(
         leadingWidth: 41,

@@ -14,8 +14,8 @@ class InValidQRui extends ConsumerWidget {
   const InValidQRui({super.key, required this.camera});
 
   @override
-  Widget build(BuildContext context,ScopedReader watch) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context,WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     return Container(
       decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),

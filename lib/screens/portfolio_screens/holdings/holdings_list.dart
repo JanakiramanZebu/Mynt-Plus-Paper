@@ -10,7 +10,7 @@ import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
 
 // A wrapper widget that only rebuilds when necessary
-class HoldingsList extends StatelessWidget {
+class HoldingsList extends ConsumerWidget {
   final HoldingsModel holdingData;
   final ExchTsym exchTsym;
   
@@ -39,9 +39,9 @@ class HoldingsList extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Pre-calculate values that won't change during widget lifetime
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     final contentColor = theme.isDarkMode ? colors.colorWhite : colors.colorBlack;
     final labelColor = const Color(0xff5E6B7D);
     final dividerColor = theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider;
@@ -77,8 +77,8 @@ class HoldingsList extends StatelessWidget {
                 ltp: exchTsym.lp ?? '0.00',
                 labelColor: labelColor,
                 contentColor: contentColor,
-              )
-            ]
+                  )
+                ]
               ),
               const SizedBox(height: 4),
           // Exchange badge (static) and price change (dynamic)
@@ -94,7 +94,7 @@ class HoldingsList extends StatelessWidget {
               _DynamicPercentChange(
                 perChange: exchTsym.perChange ?? '0.00',
               )
-            ]
+                ]
               ),
               const SizedBox(height: 4),
           RepaintBoundary(child: Divider(color: dividerColor)),

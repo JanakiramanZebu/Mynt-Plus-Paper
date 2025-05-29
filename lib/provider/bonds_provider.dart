@@ -20,12 +20,12 @@ import '../models/bonds_model/state_bonds_model.dart';
 import '../models/bonds_model/treasury_bonds_model.dart';
 import 'core/default_change_notifier.dart';
 
-final bondsProvider = ChangeNotifierProvider((ref) => BondsProvider(ref.read));
+final bondsProvider = ChangeNotifierProvider((ref) => BondsProvider(ref));
 
 class BondsProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
-  final Reader ref;
+  final Ref ref;
   BondsProvider(this.ref);
 
   PlacedBondOrderResp? _bondOrderResponcesModel;

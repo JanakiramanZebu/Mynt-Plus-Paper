@@ -23,15 +23,15 @@ class _IPOSubScreenState extends State<IPOSubScreen>
   @override
   void initState() {
     // setState(() {
-    // context.read(ipoProvide).tabCtrl = TabController(
-    //     length: context.read(ipoProvide).orderTabName.length,
+    // ref.read(ipoProvide).tabCtrl = TabController(
+    //     length: ref.read(ipoProvide).orderTabName.length,
     //     vsync: this,
-    //     initialIndex: context.read(ipoProvide).selectedTab);
+    //     initialIndex: ref.read(ipoProvide).selectedTab);
 
-    // context.read(ipoProvide).tabCtrl.addListener(() {
+    // ref.read(ipoProvide).tabCtrl.addListener(() {
     //   context
     //       .read(ipoProvide)
-    //       .changeIpoIndex(context.read(ipoProvide).tabCtrl.index, context);
+    //       .changeIpoIndex(ref.read(ipoProvide).tabCtrl.index, context);
     // });
 
     // });
@@ -41,9 +41,9 @@ class _IPOSubScreenState extends State<IPOSubScreen>
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
-        final theme = watch(themeProvider);
-        final ipo = watch(ipoProvide);
+      builder: (context, ref, child) {
+        final theme = ref.watch(themeProvider);
+        final ipo = ref.watch(ipoProvide);
         return Column(
           children: [
             PreferredSize(
@@ -62,10 +62,10 @@ class _IPOSubScreenState extends State<IPOSubScreen>
                           onPressed: () async {
                             Future.delayed(const Duration(microseconds: 100),
                                 () async {
-                              await context
+                              await ref
                                   .read(ipoProvide)
                                   .getipoorderbookmodel(true);
-                              // await context.read(ipoProvide).ipotab();
+                              // await ref.read(ipoProvide).ipotab();
                             });
 
                             Navigator.pushNamed(context, Routes.ipoorderbook);

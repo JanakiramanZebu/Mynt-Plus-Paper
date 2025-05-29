@@ -5,11 +5,11 @@ import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final chartUpdateProvider =
-    ChangeNotifierProvider((ref) => ChartUpdateNotifier(ref.read));
+    ChangeNotifierProvider((ref) => ChartUpdateNotifier(ref));
 
 class ChartUpdateNotifier extends DefaultChangeNotifier {
   SharedPreferences? sharedPrefs;
-  final Reader ref;
+  final Ref ref;
   ChartUpdateNotifier(this.ref);
   String orientation = 'portrait';
 

@@ -16,9 +16,9 @@ class BondCancelAlert extends ConsumerWidget {
   final BondsOrderBookModel bondcancel;
   const BondCancelAlert({super.key, required this.bondcancel});
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final bonds = watch(bondsProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final bonds = ref.watch(bondsProvider);
     return AlertDialog(
       backgroundColor: theme.isDarkMode
           ? const Color.fromARGB(255, 18, 18, 18)
@@ -97,7 +97,7 @@ class BondCancelAlert extends ConsumerWidget {
                               pop(context);
                               Navigator.pop(context);
 
-                               await context
+                               await ref
                               .read(bondsProvider)
                               .cancelBondOrder(context, bondOrderData);
                               print(' cancel bond data :::::::;  $bondOrderData');

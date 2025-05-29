@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import '../../../../provider/thems.dart';
@@ -9,18 +9,18 @@ import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/list_divider.dart';
 
-class BreakUpDetails extends StatefulWidget {
+class BreakUpDetails extends ConsumerStatefulWidget {
   final TranctionProvider withdraw;
   const BreakUpDetails({super.key, required this.withdraw});
 
   @override
-  State<BreakUpDetails> createState() => _BreakUpDetailsState();
+  ConsumerState<BreakUpDetails> createState() => _BreakUpDetailsState();
 }
 
-class _BreakUpDetailsState extends State<BreakUpDetails> {
+class _BreakUpDetailsState extends ConsumerState<BreakUpDetails> {
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Container(

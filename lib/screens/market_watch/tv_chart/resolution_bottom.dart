@@ -8,14 +8,14 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/scroll_behavior.dart'; 
 
-class ResolutionBottom extends StatefulWidget {
+class ResolutionBottom extends ConsumerStatefulWidget {
   const ResolutionBottom({super.key});
 
   @override
-  State<ResolutionBottom> createState() => _ResolutionBottomState();
+  ConsumerState<ResolutionBottom> createState() => _ResolutionBottomState();
 }
 
-class _ResolutionBottomState extends State<ResolutionBottom> {
+class _ResolutionBottomState extends ConsumerState<ResolutionBottom> {
   // List<String> dateRange = ["1D", "5D", "1M", "3M", "6M", "1Y", "5Y"];
   List<String> minute = ["1m", "3m", "5m", "15m", "30m", "45m"];
   List<String> minuteDuration = ["1", "3", "5", "15", "30", "45"];
@@ -25,7 +25,7 @@ class _ResolutionBottomState extends State<ResolutionBottom> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       child: Column(
@@ -122,8 +122,8 @@ class _ResolutionBottomState extends State<ResolutionBottom> {
   }
 
   Consumer minutes(ThemesProvider theme) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final tvChart = watch(marketWatchProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final tvChart = ref.watch(marketWatchProvider);
       return SizedBox(
         height: 80,
         child: ListView.separated(
@@ -177,8 +177,8 @@ class _ResolutionBottomState extends State<ResolutionBottom> {
   }
 
   Consumer hours(ThemesProvider theme) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final tvChart = watch(marketWatchProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final tvChart = ref.watch(marketWatchProvider);
       return SizedBox(
         height: 80,
         child: ListView.separated(
@@ -232,8 +232,8 @@ class _ResolutionBottomState extends State<ResolutionBottom> {
   }
 
   Consumer days(ThemesProvider theme) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final tvChart = watch(marketWatchProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final tvChart = ref.watch(marketWatchProvider);
       return SizedBox(
         height: 80,
         child: ListView.separated(

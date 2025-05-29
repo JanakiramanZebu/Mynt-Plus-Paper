@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../provider/thems.dart';
 import '../res/res.dart';
 
-class CustomSwitch extends StatefulWidget {
+class CustomSwitch extends ConsumerStatefulWidget {
   final bool value;
   final Color? color;
   final ValueChanged<bool> onChanged;
@@ -12,10 +12,10 @@ class CustomSwitch extends StatefulWidget {
   const CustomSwitch({super.key, required this.value, required this.onChanged, this.color});
 
   @override
-  CustomSwitchState createState() => CustomSwitchState();
+  ConsumerState<CustomSwitch> createState() => CustomSwitchState();
 }
 
-class CustomSwitchState extends State<CustomSwitch>
+class CustomSwitchState extends ConsumerState<CustomSwitch>
     with SingleTickerProviderStateMixin {
   AnimationController? _animationController;
 
@@ -34,7 +34,7 @@ class CustomSwitchState extends State<CustomSwitch>
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return AnimatedBuilder(
       animation: _animationController!,
       builder: (context, child) {

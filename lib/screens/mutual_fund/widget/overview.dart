@@ -14,13 +14,13 @@ class MFOverview extends ConsumerWidget {
   const MFOverview({super.key, required this.mfStockData});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
+  Widget build(BuildContext context, WidgetRef ref) {
     late TooltipBehavior _tooltipBehavior;
-    final theme = watch(themeProvider);
-    final mfData = watch(mfProvider);
+    final theme = ref.watch(themeProvider);
+    final mfData = ref.watch(mfProvider);
     // factSheetDataModel!.data!;
-    final navGraph = watch(mfProvider).navGraph;
-    final mfProvide = watch(mfProvider);
+    final navGraph = ref.watch(mfProvider).navGraph;
+    final mfProvide = ref.watch(mfProvider);
     _tooltipBehavior = TooltipBehavior(
       enable: true,
       opacity: 0,
@@ -130,7 +130,7 @@ Container(
         stops: const [0.0, 0.5, 1.0],
       ),
       isVisibleInLegend: false, 
-      isVisible: true,
+      // isVisible: true,
       enableTooltip: true,
       borderColor: colors.colorBlue,
       borderWidth: 2,

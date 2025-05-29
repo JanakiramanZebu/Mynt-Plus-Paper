@@ -6,20 +6,20 @@ import '../../../../../models/indices/global_indices_model.dart';
 import '../../../../../provider/stocks_provider.dart';
 import '../../../../../res/res.dart';
 
-class GlobalIndices extends StatefulWidget {
+class GlobalIndices extends ConsumerStatefulWidget {
   final List<GlobalIndicesModel>? globalIndices;
   const GlobalIndices({super.key, this.globalIndices});
 
   @override
-  State<GlobalIndices> createState() => _GlobalIndicesState();
+  ConsumerState<GlobalIndices> createState() => _GlobalIndicesState();
 }
 
-class _GlobalIndicesState extends State<GlobalIndices> {
+class _GlobalIndicesState extends ConsumerState<GlobalIndices> {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () async {
-        await context.read(stocksProvide).getGlobalIndices();
+        await ref.read(stocksProvide).getGlobalIndices();
       },
       child: ListView.separated(
           shrinkWrap: true,

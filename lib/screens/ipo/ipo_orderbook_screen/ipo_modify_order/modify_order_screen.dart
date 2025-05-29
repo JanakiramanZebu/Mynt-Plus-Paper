@@ -15,7 +15,7 @@ import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/ipo_error_widget.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 
-class ModifyIpoOrderScreen extends StatefulWidget {
+class ModifyIpoOrderScreen extends ConsumerStatefulWidget {
   final IpoOrderBookModel modifyipoorder;
 
   const ModifyIpoOrderScreen({
@@ -24,10 +24,10 @@ class ModifyIpoOrderScreen extends StatefulWidget {
   });
 
   @override
-  State<ModifyIpoOrderScreen> createState() => _ModifyIpoOrderScreenState();
+  ConsumerState<ModifyIpoOrderScreen> createState() => _ModifyIpoOrderScreenState();
 }
 
-class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
+class _ModifyIpoOrderScreenState extends ConsumerState<ModifyIpoOrderScreen> {
   bool ischecked = false;
   String alertValue = "";
   String upierrortext = "";
@@ -72,10 +72,10 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
-        final ipo = watch(ipoProvide);
-        final upiid = watch(transcationProvider);
-        final theme = watch(themeProvider);
+      builder: (context, ref, child) {
+        final ipo = ref.watch(ipoProvide);
+        final upiid = ref.watch(transcationProvider);
+        final theme = ref.watch(themeProvider);
         return Scaffold(
          
             appBar: AppBar(
@@ -1133,7 +1133,7 @@ class _ModifyIpoOrderScreenState extends State<ModifyIpoOrderScreen> {
     //   print(
     //       "Text: ${iposbids[i].bitis} Checkbox: ${iposbids[i].qty}, requried:${iposbids[i].cutoff},bidprice:${iposbids[i].price} value Total: ${iposbids[i].total}");
     // }
-    await context.read(ipoProvide).fetchupiidvalidation(
+    await ref.read(ipoProvide).fetchupiidvalidation(
         context, ipo.viewupiid.text, "343245", menudata, iposbids, iposupiid);
   }
 }

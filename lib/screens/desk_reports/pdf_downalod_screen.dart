@@ -48,10 +48,10 @@ class PdfDownload extends StatelessWidget {
       ['Data 1.1', 'Data 1.2', 'Data 1.3', 'Data 1.3', 'Data 1.3'],
     ];
 
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
 
-      final ledgerprovider = watch(ledgerProvider);
+      final ledgerprovider = ref.watch(ledgerProvider);
       Future<void> _refresh() async {
         await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");

@@ -51,12 +51,12 @@ class HoldingScreen extends StatelessWidget {
     ];
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final socketDatas = watch(websocketProvider).socketDatas;
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+      final socketDatas = ref.watch(websocketProvider).socketDatas;
       double currentval = 0.0;
       double pnlstat = 0.0;
-      final ledgerprovider = watch(ledgerProvider);
+      final ledgerprovider = ref.watch(ledgerProvider);
       Future<void> _refresh() async {
         await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");

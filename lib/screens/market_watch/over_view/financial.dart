@@ -16,10 +16,10 @@ class FinancialWidget extends ConsumerWidget {
   const FinancialWidget({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final finData = watch(stocksProvide);
-    final provideData = watch(marketWatchProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final finData = ref.watch(stocksProvide);
+    final provideData = ref.watch(marketWatchProvider);
+    final theme = ref.read(themeProvider);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text("Financial",
           style: textStyle(
@@ -28,7 +28,7 @@ class FinancialWidget extends ConsumerWidget {
               FontWeight.w600)),
       const SizedBox(height: 5),
       Text(
-          "Fundamental breakdown of ${watch(marketWatchProvider).getQuotes!.tsym!.replaceAll("-EQ", "")} information",
+          "Fundamental breakdown of ${ref.watch(marketWatchProvider).getQuotes!.tsym!.replaceAll("-EQ", "")} information",
           style: textStyle(
               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               12,

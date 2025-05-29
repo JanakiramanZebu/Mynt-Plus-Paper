@@ -78,8 +78,8 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, ref, child) {
+      final theme = ref.watch(themeProvider);
 
       final List<ChartData> donutChart = [
         ChartData('Margin Used', double.parse("${_returns ?? 0.00}"),

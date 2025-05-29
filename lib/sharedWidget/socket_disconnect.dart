@@ -9,8 +9,8 @@ class SocketDisconnectedWidget extends ConsumerWidget {
 
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final webs = watch(websocketProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final webs = ref.watch(websocketProvider);
     return Scaffold(
       body: Align(
           alignment: Alignment.bottomCenter,

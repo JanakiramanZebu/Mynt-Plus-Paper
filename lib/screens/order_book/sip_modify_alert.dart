@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/order_book_model/sip_order_book.dart';
 import 'package:mynt_plus/provider/sip_order_provider.dart';
@@ -10,7 +10,7 @@ import '../../provider/order_provider.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/functions.dart';
 
-class SipModifyAlert extends StatelessWidget {
+class SipModifyAlert extends ConsumerWidget {
   final SipProvider sips;
   final TextEditingController sipqtyctrl;
   final SipDetails sipdetails;
@@ -25,7 +25,7 @@ class SipModifyAlert extends StatelessWidget {
       required this.themes});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       backgroundColor: themes.isDarkMode
           ? const Color.fromARGB(255, 18, 18, 18)
@@ -108,7 +108,7 @@ class SipModifyAlert extends StatelessWidget {
                         prd: sipdetails.scrips![0].prd.toString().toUpperCase(),
                         token: sipdetails.scrips![0].token.toString(),
                         qty: sipqtyctrl.text);
-                    await context.read(orderProvider).fetchModifySipOrder(
+                    await ref.read(orderProvider).fetchModifySipOrder(
                           context,
                           sipOrderInput,
                         );

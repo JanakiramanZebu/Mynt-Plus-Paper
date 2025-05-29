@@ -28,14 +28,14 @@
 // import 'websocket_provider.dart';
 
 // final portfolioProvider =
-//     ChangeNotifierProvider((ref) => PortfolioProvider(ref.read));
+//     ChangeNotifierProvider((ref) => PortfolioProvider(ref));
 
 // class PortfolioProvider extends DefaultChangeNotifier {
-//   final api = locator<ApiExporter>();
-//   final Preferences pref = locator<Preferences>();
+//   final api = ref.read(apiExporterProvider);
+//   final Preferences pref = ref.read(preferencesProvider);
 //   final FToast _fToast = FToast();
 //   FToast get fToast => _fToast;
-//   final Reader ref;
+//   final Ref ref;
 //   late TabController portTab;
 //   final TextEditingController holdingSearchCtrl = TextEditingController();
 //   final TextEditingController holdingMFSearchCtrl = TextEditingController();
@@ -349,10 +349,10 @@
 //                     int.parse("${element.btstqty ?? 0}")) -
 //                 int.parse("${element.usedqty ?? 0}");
 //             element.currentQty = qty;
-//             ref(websocketProvider)
+//             ref.read(websocketProvider)
 //                 .socketDatas["${element.exchTsym![0].token}"] = {'holdQty': ""};
 
-//             ref(websocketProvider).socketDatas["${element.exchTsym![0].token}"]
+//             ref.read(websocketProvider).socketDatas["${element.exchTsym![0].token}"]
 //                 ['holdQty'] = "${element.currentQty}";
 
 //             double avgCost = double.parse(
@@ -387,14 +387,14 @@
 //           if (_holdingsModel![0].emsg ==
 //                   "Session Expired :  Invalid Session Key" &&
 //               _holdingsModel![0].stat == "Not_Ok") {
-//             ref(authProvider).ifSessionExpired(context);
+//             ref.read(authProvider).ifSessionExpired(context);
 //           }
 //           _holdingsModel = [];
 //         }
 //       }
 //       notifyListeners();
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Holdings", "Error": "$e"});
 //       notifyListeners();
@@ -462,13 +462,13 @@
 //           if (_mfHoldingsModel![0].emsg ==
 //                   "Session Expired :  Invalid Session Key" &&
 //               _mfHoldingsModel![0].stat == "Not_Ok") {
-//             ref(authProvider).ifSessionExpired(context);
+//             ref.read(authProvider).ifSessionExpired(context);
 //           }
 //         }
 //       }
 //       notifyListeners();
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API MF Holdings", "Error": "$e"});
 //       notifyListeners();
@@ -583,14 +583,14 @@
 //           if (_postionBookModel![0].emsg ==
 //                   "Session Expired :  Invalid Session Key" &&
 //               _postionBookModel![0].stat == "Not_Ok") {
-//             ref(authProvider).ifSessionExpired(context);
+//             ref.read(authProvider).ifSessionExpired(context);
 //           }
 //         }
 //       }
 //       notifyListeners();
 //       return _postionBookModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Position Book", "Error": "$e"});
 //       notifyListeners();
@@ -619,7 +619,7 @@
 //       } else {
 //         if (_positionConvertionModel!.emsg ==
 //             "Session Expired :  Invalid Session Key") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         } else {
 //           ScaffoldMessenger.of(context).showSnackBar(
 //               warningMessage(context, "${_positionConvertionModel!.emsg}"));
@@ -628,7 +628,7 @@
 
 //       return _positionConvertionModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Position Conv", "Error": "$e"});
 //       notifyListeners();
@@ -824,12 +824,12 @@
 //           await fetchHoldings(context, "Refresh");
 //         }
 //         Navigator.pop(context);
-//         // ref(orderProvider).fetchOrderBook(context, false);
+//         // ref.read(orderProvider).fetchOrderBook(context, false);
 //       } else {
 //         if (_placeOrderModel!.emsg ==
 //                 "Session Expired :  Invalid Session Key" &&
 //             _placeOrderModel!.stat == "Not_Ok") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         } else {
 //           ScaffoldMessenger.of(context).showSnackBar(
 //               successMessage(context, "${_placeOrderModel!.emsg}"));
@@ -838,7 +838,7 @@
 
 //       return _placeOrderModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Place Order", "Error": "$e"});
 //       notifyListeners();
@@ -1340,7 +1340,7 @@
 //     }
 //     if (input.isNotEmpty) {
 //       // ConstantName.lastSubscribe = input;
-//       ref(websocketProvider).establishConnection(
+//       ref.read(websocketProvider).establishConnection(
 //           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
 //     }
 //     // notifyListeners();
@@ -1361,7 +1361,7 @@
 //     }
 //     if (input.isNotEmpty) {
 //       // ConstantName.lastSubscribe = input;
-//       ref(websocketProvider).establishConnection(
+//       ref.read(websocketProvider).establishConnection(
 //           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
 //     }
 //   }
@@ -1635,8 +1635,8 @@
 //                 tsym: "${element.tsym}",
 //                 mktProt: '',
 //                 channel: defaultTargetPlatform == TargetPlatform.android
-//                     ? '${ref(authProvider).deviceInfo["brand"]}'
-//                     : "${ref(authProvider).deviceInfo["model"]}" 
+//                     ? '${ref.read(authProvider).deviceInfo["brand"]}'
+//                     : "${ref.read(authProvider).deviceInfo["model"]}" 
 //                 );
 //             _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
@@ -1662,8 +1662,8 @@
 //                   tsym: "${element.tsym}",
 //                   mktProt: '',
 //                   channel: defaultTargetPlatform == TargetPlatform.android
-//                       ? '${ref(authProvider).deviceInfo["brand"]}'
-//                       : "${ref(authProvider).deviceInfo["model"]}" );
+//                       ? '${ref.read(authProvider).deviceInfo["brand"]}'
+//                       : "${ref.read(authProvider).deviceInfo["model"]}" );
 //               await fetchExitPosition(context, placeOrderInput, true);
 //             }
 //           }
@@ -1671,7 +1671,7 @@
 //       }
 //     }
 
-//     // ref(indexListProvider).bottomMenu(2);
+//     // ref.read(indexListProvider).bottomMenu(2);
 //     // Navigator.pop(context);
 //   }
 
@@ -1694,8 +1694,8 @@
 //           tsym: "${element.exchTsym![0].tsym}",
 //           mktProt: '',
 //           channel: defaultTargetPlatform == TargetPlatform.android
-//               ? '${ref(authProvider).deviceInfo["brand"]}'
-//               : "${ref(authProvider).deviceInfo["model"]}" );
+//               ? '${ref.read(authProvider).deviceInfo["brand"]}'
+//               : "${ref.read(authProvider).deviceInfo["model"]}" );
 //       await fetchExitPosition(context, placeOrderInput, false);
 //     }
 //   }
@@ -1787,7 +1787,7 @@
 //       _groupName = await api.createGroupName(name);
 
 //       if (_groupName!.status == "Data inserted") {
-//         //  ref(indexListProvider).bottomMenu(1);
+//         //  ref.read(indexListProvider).bottomMenu(1);
 //         await fetchPosGroupSymbol(name, isCreateGrp);
 
 //         Navigator.pop(c);

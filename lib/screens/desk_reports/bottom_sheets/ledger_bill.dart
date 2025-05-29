@@ -8,21 +8,21 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
-class LedgerBillBottom extends StatefulWidget {
+class LedgerBillBottom extends ConsumerStatefulWidget {
   const LedgerBillBottom({super.key});
 
   @override
-  State<LedgerBillBottom> createState() => _LedgerBillBottomState();
+  ConsumerState<LedgerBillBottom> createState() => _LedgerBillBottomState();
 }
 
-class _LedgerBillBottomState extends State<LedgerBillBottom> {
+class _LedgerBillBottomState extends ConsumerState<LedgerBillBottom> {
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final ledgerdata = watch(ledgerProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final ledgerdata = ref.watch(ledgerProvider);
 
       return DraggableScrollableSheet(
         initialChildSize: 0.88,

@@ -34,18 +34,18 @@ class UserAccountScreen extends ConsumerWidget {
   const UserAccountScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final userProfile = watch(userProfileProvider);
-    final theme = watch(themeProvider);
-    final trancation = watch(transcationProvider);
-    final mf = watch(mfProvider);
-    final portfolio = watch(portfolioProvider);
-    final reportsprovider = watch(ledgerProvider);
-    final auth = watch(authProvider);
-    final indexProvide = watch(indexListProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userProfile = ref.watch(userProfileProvider);
+    final theme = ref.watch(themeProvider);
+    final trancation = ref.watch(transcationProvider);
+    final mf = ref.watch(mfProvider);
+    final portfolio = ref.watch(portfolioProvider);
+    final reportsprovider = ref.watch(ledgerProvider);
+    final auth = ref.watch(authProvider);
+    final indexProvide = ref.watch(indexListProvider);
 
     //  int currentYear = DateTime.now().year;
-    final funds = watch(fundProvider);
+    final funds = ref.watch(fundProvider);
     final Preferences pref = locator<Preferences>();
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
     return userProfile.loading
@@ -183,20 +183,20 @@ class UserAccountScreen extends ConsumerWidget {
                               "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
                             );
                           } else if (acttitle == "Settings") {
-                            await context
+                            await ref
                                 .read(userProfileProvider)
                                 .fetchsetting();
-                            await context
+                            await ref
                                 .read(apikeyprovider)
                                 .fetchapikey(context);
                             Navigator.pushNamed(
                                 context, Routes.profilesettingscreen);
                           } else if (acttitle == "Notification") {
-                            await context
+                            await ref
                                 .read(notificationprovider)
                                 .fetchexchagemsg(context);
 
-                            await context
+                            await ref
                                 .read(notificationprovider)
                                 .fetchbrokermsg(context);
                             Navigator.pushNamed(
@@ -213,7 +213,7 @@ class UserAccountScreen extends ConsumerWidget {
                                   return const NeedHelpScreen();
                                 });
                           } else if (acttitle == "Bonds") {
-                            await context.read(bondsProvider).fetchAllBonds();
+                            await ref.read(bondsProvider).fetchAllBonds();
                             Navigator.pushNamed(context, Routes.bonds);
                           } else if (acttitle == "Rate Us") {
                             String devicesurl = TargetPlatform.iOS ==
@@ -232,7 +232,7 @@ class UserAccountScreen extends ConsumerWidget {
                             // await context
                             //     .read(mfProvider)
                             //     .fetchMFWatchlist(null, "", context, false);
-                            // await context.read(mfProvider).fetchMasterMF();
+                            // await ref.read(mfProvider).fetchMasterMF();
                             // Navigator.pushNamed(context, Routes.mf);
                           }
                         },
@@ -273,7 +273,7 @@ class UserAccountScreen extends ConsumerWidget {
                                               borderRadius:
                                                   BorderRadius.circular(50))),
                                       onPressed: () async {
-                                        context
+                                        ref
                                             .read(transcationProvider)
                                             .fetchValidateToken(context);
                                         Future.delayed(
@@ -456,13 +456,13 @@ class UserAccountScreen extends ConsumerWidget {
                           builder: (BuildContext context) {
                             return AlertDialog(
                               backgroundColor:
-                                  context.read(themeProvider).isDarkMode
+                                  ref.read(themeProvider).isDarkMode
                                       ? const Color.fromARGB(255, 18, 18, 18)
                                       : colors.colorWhite,
                               titleTextStyle: textStyles.appBarTitleTxt
                                   .copyWith(
                                       color:
-                                          context.read(themeProvider).isDarkMode
+                                          ref.read(themeProvider).isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack),
                               contentTextStyle: textStyles.menuTxt,
@@ -491,14 +491,14 @@ class UserAccountScreen extends ConsumerWidget {
                                         Navigator.of(context).pop(),
                                     child: Text("No",
                                         style: textStyles.textBtn.copyWith(
-                                            color: context
+                                            color: ref
                                                     .read(themeProvider)
                                                     .isDarkMode
                                                 ? colors.colorLightBlue
                                                 : colors.colorBlue))),
                                 ElevatedButton(
                                     onPressed: () async {
-                                      context
+                                      ref
                                           .read(authProvider)
                                           .fetchLogout(context);
                                     },
@@ -513,7 +513,7 @@ class UserAccountScreen extends ConsumerWidget {
                                         )),
                                     child: Text("Yes",
                                         style: textStyle(
-                                            !context
+                                            !ref
                                                     .read(themeProvider)
                                                     .isDarkMode
                                                 ? colors.colorWhite

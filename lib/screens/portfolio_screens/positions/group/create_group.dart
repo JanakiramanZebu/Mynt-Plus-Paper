@@ -8,20 +8,20 @@ import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/list_divider.dart';  
 
-class CreateGroupPos extends StatefulWidget {  
+class CreateGroupPos extends ConsumerStatefulWidget {  
  
   const CreateGroupPos({super.key   });
 
   @override
-  State<CreateGroupPos> createState() => _CreateGroupPosState();
+  ConsumerState<CreateGroupPos> createState() => _CreateGroupPosState();
 }
 
-class _CreateGroupPosState extends State<CreateGroupPos> {
+class _CreateGroupPosState extends ConsumerState<CreateGroupPos> {
   TextEditingController textCtrl = TextEditingController();
   String? errorText; 
   @override
   Widget build(BuildContext context) {
-       final theme = context.read(themeProvider);
+       final theme = ref.read(themeProvider);
     return AlertDialog( backgroundColor:theme.isDarkMode? const Color.fromARGB(255, 18, 18, 18):colors.colorWhite,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16))),
@@ -103,7 +103,7 @@ class _CreateGroupPosState extends State<CreateGroupPos> {
                   errorText = "Please enter group name";
                 });
               } else {
-               context.read(portfolioProvider) . fetchGroupName(textCtrl.text,context,true );
+               ref.read(portfolioProvider).fetchGroupName(textCtrl.text,context,true);
               }
               // });
             },
@@ -117,7 +117,7 @@ class _CreateGroupPosState extends State<CreateGroupPos> {
             child: Text("Create",
                 style: GoogleFonts.inter(
                     textStyle: textStyle(
-                     !   theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500))),
+                     !theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500))),
           ),
         ),
       ],

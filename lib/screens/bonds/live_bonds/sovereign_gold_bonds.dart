@@ -18,12 +18,12 @@ class SovereignGoldBondsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final bonds = watch(bondsProvider);
-      // final mainstreamipo = watch(ipoProvide);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final bonds = ref.watch(bondsProvider);
+      // final mainstreamipo = ref.watch(ipoProvide);
       // List<BondsList>? bondsList = bonds.bondsList;
-      // final upi = watch(transcationProvider);
-      final theme = watch(themeProvider);
+      // final upi = ref.watch(transcationProvider);
+      final theme = ref.watch(themeProvider);
       final dev_height = MediaQuery.of(context).size.height;
 
       return bonds.sovereignGoldBonds!.ncbSGB!.isNotEmpty

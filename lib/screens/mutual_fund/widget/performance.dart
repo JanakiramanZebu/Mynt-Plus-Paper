@@ -15,12 +15,12 @@ class MFPerformance extends ConsumerWidget {
   const MFPerformance({super.key, required this.mfStockData});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final mfData = watch(mfProvider);
-    final mfDataprofile = watch(mfProvider).factSheetDataModel?.data!;
-    // final navGraph = watch(mfProvider).navGraph;
-    final mfProvide = watch(mfProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final mfData = ref.watch(mfProvider);
+    final mfDataprofile = ref.watch(mfProvider).factSheetDataModel?.data!;
+    // final navGraph = ref.watch(mfProvider).navGraph;
+    final mfProvide = ref.watch(mfProvider);
     if (mfData.sheetGraph != null) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),

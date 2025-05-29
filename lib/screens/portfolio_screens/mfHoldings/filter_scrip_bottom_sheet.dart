@@ -41,9 +41,9 @@ class _MFHoldingsScripFilterBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      // final watchlist = watch(marketWatchProvider);
-      final theme = context.read(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      // final watchlist = ref.watch(marketWatchProvider);
+      final theme = ref.read(themeProvider);
       return Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
@@ -84,11 +84,11 @@ class _MFHoldingsScripFilterBottomSheetState
               onTap: () {
                 setState(() {
                   if (scripisAscending == true) {
-                    context
+                    ref
                         .read(portfolioProvider)
                         .filterMfHoldings(sorting: "ASC", context: context);
                   } else if (scripisAscending == false) {
-                    context
+                    ref
                         .read(portfolioProvider)
                         .filterMfHoldings(sorting: "DSC", context: context);
                   }
@@ -130,11 +130,11 @@ class _MFHoldingsScripFilterBottomSheetState
               onTap: () {
                 setState(() {
                   if (pricepisAscending == true) {
-                    context
+                    ref
                         .read(portfolioProvider)
                         .filterMfHoldings(sorting: "LTPDSC", context: context);
                   } else if (pricepisAscending == false) {
-                    context
+                    ref
                         .read(portfolioProvider)
                         .filterMfHoldings(sorting: "LTPASC", context: context);
                   }
@@ -176,11 +176,11 @@ class _MFHoldingsScripFilterBottomSheetState
               onTap: () {
                 setState(() {
                   if (qtyisAscending == true) {
-                    context
+                    ref
                         .read(portfolioProvider)
                         .filterMfHoldings(sorting: "QTYDSC", context: context);
                   } else if (qtyisAscending == false) {
-                    context
+                    ref
                         .read(portfolioProvider)
                         .filterMfHoldings(sorting: "QTYASC", context: context);
                   }
@@ -222,11 +222,11 @@ class _MFHoldingsScripFilterBottomSheetState
               onTap: () {
                 setState(() {
                   if (perchangisAscending == true) {
-                    context
+                    ref
                         .read(portfolioProvider)
                         .filterMfHoldings(sorting: "PCDESC", context: context);
                   } else if (perchangisAscending == false) {
-                    context
+                    ref
                         .read(portfolioProvider)
                         .filterMfHoldings(sorting: "PCASC", context: context);
                   }
@@ -268,11 +268,11 @@ class _MFHoldingsScripFilterBottomSheetState
               onTap: () {
                 setState(() {
                   if (investbyisAscending == true) {
-                    context
+                    ref
                         .read(portfolioProvider)
                         .filterMfHoldings(sorting: "INVDESC", context: context);
                   } else if (investbyisAscending == false) {
-                    context
+                    ref
                         .read(portfolioProvider)
                         .filterMfHoldings(sorting: "INVASC", context: context);
                   }

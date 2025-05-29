@@ -7,14 +7,14 @@ import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/functions.dart';
 import 'sector_themeatic_list.dart';
 
-class AllTrade extends StatefulWidget {
+class AllTrade extends ConsumerStatefulWidget {
   const AllTrade({super.key});
 
   @override
-  State<AllTrade> createState() => _AllTradeState();
+  ConsumerState<AllTrade> createState() => _AllTradeState();
 }
 
-class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
+class _AllTradeState extends ConsumerState<AllTrade> with TickerProviderStateMixin {
   late TabController tabCtrl;
 
   List<Tab> tabList = [];
@@ -30,7 +30,7 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
             const SizedBox(width: 10),
-            Text("Sectoral (${context.read(stocksProvide).sectorsData.length})")
+            Text("Sectoral (${ref.read(stocksProvide).sectorsData.length})")
           ])),
       Tab(
           child: Row(
@@ -38,7 +38,7 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
             const SizedBox(width: 10),
-            Text("Thematic (${context.read(stocksProvide).thematicDat.length})")
+            Text("Thematic (${ref.read(stocksProvide).thematicDat.length})")
           ])),
       Tab(
           child: Row(
@@ -47,7 +47,7 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
               children: [
             const SizedBox(width: 10),
             Text(
-                "Strategy (${context.read(stocksProvide).strategicData.length})")
+                "Strategy (${ref.read(stocksProvide).strategicData.length})")
           ])),
       Tab(
           child: Row(
@@ -55,7 +55,7 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
             const SizedBox(width: 10),
-            Text("Nifty (${context.read(stocksProvide).niftyData.length})")
+            Text("Nifty (${ref.read(stocksProvide).niftyData.length})")
           ]))
     ];
     tabCtrl = TabController(
@@ -71,15 +71,15 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
-    final tradeAcrion = context.read(stocksProvide);
+    final theme = ref.read(themeProvider);
+    final tradeAcrion = ref.read(stocksProvide);
     return PopScope(
   canPop: true, // Allows the default back behavior
   onPopInvokedWithResult: (didPop, result) async {
     if (didPop) return; // If system handled back, do nothing
 
-    await context.read(stocksProvide).defaultSectorThemematicData();
-    // await context.read(stocksProvide).fetchIndicesAdvdec(); // Uncomment if needed
+    await ref.read(stocksProvide).defaultSectorThemematicData();
+    // await ref.read(stocksProvide).fetchIndicesAdvdec(); // Uncomment if needed
 
     Navigator.of(context).pop(); // Allow back navigation
   },
@@ -90,10 +90,9 @@ class _AllTradeState extends State<AllTrade> with TickerProviderStateMixin {
             titleSpacing: 0,
             leading: InkWell(
                 onTap: () async {
-                  await context
-                      .read(stocksProvide)
+                  await ref.read(stocksProvide)
                       .defaultSectorThemematicData();
-                  // await context.read(stocksProvide).fetchIndicesAdvdec();
+                  // await ref.read(stocksProvide).fetchIndicesAdvdec();
                   Navigator.pop(context);
                 },
                 child: Padding(

@@ -112,10 +112,10 @@ class _BottomSheetContentState extends State<BottomSheetContent>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
+    return Consumer(builder: (context, ref, child) {
       double screenWidth = MediaQuery.of(context).size.width;
-      final auth = watch(authProvider);
-      final theme = watch(themeProvider);
+      final auth = ref.watch(authProvider);
+      final theme = ref.watch(themeProvider);
       final defaultPinThemes = PinTheme(
         width: 50,
         height: 55,

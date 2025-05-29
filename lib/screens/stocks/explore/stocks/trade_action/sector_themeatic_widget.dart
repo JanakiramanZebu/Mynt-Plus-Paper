@@ -8,14 +8,14 @@ import '../../../../../res/res.dart';
 import '../../../../../routes/route_names.dart';
 import 'sector_themeatic_list.dart';
 
-class SectorThematicWidget extends StatefulWidget {
+class SectorThematicWidget extends ConsumerStatefulWidget {
   const SectorThematicWidget({super.key});
 
   @override
-  State<SectorThematicWidget> createState() => _SectorThematicWidgetState();
+  ConsumerState<SectorThematicWidget> createState() => _SectorThematicWidgetState();
 }
 
-class _SectorThematicWidgetState extends State<SectorThematicWidget>
+class _SectorThematicWidgetState extends ConsumerState<SectorThematicWidget>
     with TickerProviderStateMixin {
   late TabController tabCtrl;
 
@@ -59,8 +59,8 @@ class _SectorThematicWidgetState extends State<SectorThematicWidget>
   @override
   Widget build(BuildContext context) {
 
-    final theme = context.read(themeProvider);
-      final tradeAcrion = context.read(stocksProvide);
+    final theme = ref.read(themeProvider);
+    final tradeAcrion = ref.read(stocksProvide);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,

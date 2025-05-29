@@ -22,14 +22,14 @@ class IndexBottomSheet extends ConsumerWidget {
 
   // int tabIndex = 0;
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
+  Widget build(BuildContext context, WidgetRef ref) {
     double widgetSize = 740;
     final double initialSize = 600.0 / MediaQuery.of(context).size.height;
     double maxSize = widgetSize / MediaQuery.of(context).size.height;
     maxSize = maxSize > 0.9 ? 0.9 : maxSize;
-    final theme = context.read(themeProvider);
-    final indexProvide = watch(indexListProvider);
-    final marketWatch = watch(marketWatchProvider);
+    final theme = ref.read(themeProvider);
+    final indexProvide = ref.watch(indexListProvider);
+    final marketWatch = ref.watch(marketWatchProvider);
     
     // Remove the StreamBuilder and use direct subscription in each item
     return DraggableScrollableSheet(

@@ -14,8 +14,8 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return Consumer(builder: (context, ScopedReader watch, _) {
-//       final theme = watch(themeProvider);
+//     return Consumer(builder: (context, WidgetRef ref, _) {
+//       final theme = ref.watch(themeProvider);
 //       return Container(
 //         decoration: BoxDecoration(
 //             borderRadius: BorderRadius.circular(16),

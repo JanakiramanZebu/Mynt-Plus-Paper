@@ -18,12 +18,12 @@
 
 //   @override
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
+//   Widget build(BuildContext context, WidgetRef ref) {
 //     double screenWidth = MediaQuery.of(context).size.width;
 
-//     final auth = watch(authProvider);
+//     final auth = ref.watch(authProvider);
 
-//     final theme = watch(themeProvider);
+//     final theme = ref.watch(themeProvider);
 
 //     Preferences pref = Preferences();
 //     return GestureDetector(

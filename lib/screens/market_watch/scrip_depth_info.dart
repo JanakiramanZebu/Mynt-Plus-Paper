@@ -29,7 +29,7 @@ import 'over_view/funtamental_data_widget.dart';
 import 'scrip_detail_dialogue.dart';
 import 'set_alert_screen.dart';
 
-class ScripDepthInfo extends StatefulWidget {
+class ScripDepthInfo extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
   final String isBasket;
 
@@ -37,10 +37,10 @@ class ScripDepthInfo extends StatefulWidget {
       {super.key, required this.wlValue, required this.isBasket});
 
   @override
-  State<ScripDepthInfo> createState() => _ScripDepthInfoState();
+  ConsumerState<ScripDepthInfo> createState() => _ScripDepthInfoState();
 }
 
-class _ScripDepthInfoState extends State<ScripDepthInfo> {
+class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo> {
   double initSize = 0.88;
   ChartArgs? chartArgs;
   String regtoken = "";
@@ -93,7 +93,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
   void _initializeSize() {
     setState(() {
-      initSize = (context.read(marketWatchProvider).actDeptBtn != "Overview" ||
+      initSize = (ref.read(marketWatchProvider).actDeptBtn != "Overview" ||
               widget.wlValue.instname != "UNDIND" &&
                   widget.wlValue.instname != "COM")
           ? 0.88
@@ -224,37 +224,37 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
         onPopInvokedWithResult: (didPop, result) async {
           if (didPop) return; // If system handled back, do nothing
 
-          await context.read(marketWatchProvider).chngDephBtn("Overview");
+          await ref.read(marketWatchProvider).chngDephBtn("Overview");
 
           // Initialize and cancel the timer
           ConstantName.charttimer =
               Timer.periodic(const Duration(milliseconds: 0), (timer) {});
           ConstantName.charttimer!.cancel();
 
-          await context
+          await ref
               .read(marketWatchProvider)
               .requestWSOptChain(context: context, isSubscribe: false);
 
-          await context.read(websocketProvider).establishConnection(
+          await ref.read(websocketProvider).establishConnection(
                 channelInput: "${widget.wlValue.exch}|${widget.wlValue.token}",
                 task: "ud",
                 context: context,
               );
 
-          if (context.read(marketWatchProvider).actDeptBtn == "Chart") {
+          if (ref.read(marketWatchProvider).actDeptBtn == "Chart") {
             // Additional logic if needed
           }
 
           Navigator.of(context).pop(); // Proceed with back navigation
         },
-        child: Consumer(builder: (context, ScopedReader watch, _) {
-          final depthData = watch(marketWatchProvider).getQuotes!;
-          final scripInfo = watch(marketWatchProvider);
-          final theme = context.read(themeProvider);
-          final userProfile = watch(userProfileProvider);
+        child: Consumer(builder: (context, WidgetRef ref, _) {
+          final depthData = ref.watch(marketWatchProvider).getQuotes!;
+          final scripInfo = ref.watch(marketWatchProvider);
+          final theme = ref.read(themeProvider);
+          final userProfile = ref.watch(userProfileProvider);
           
           return StreamBuilder<Map>(
-            stream: watch(websocketProvider).socketDataStream,
+            stream: ref.watch(websocketProvider).socketDataStream,
             builder: (context, snapshot) {
               final socketDatas = snapshot.data ?? {};
               
@@ -553,7 +553,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                         } else if (scripInfo
                                                                 .actDeptBtn ==
                                                             "Overview") {
-                                                          await watch(
+                                                          await ref.watch(
                                                                   websocketProvider)
                                                               .establishConnection(
                                                                   channelInput:
@@ -730,8 +730,8 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                             FontWeight.w500)),
                                                     const SizedBox(height: 4),
                                                     lowHighBar(
-                                                        "${depthData.wk52L ?? 0.00}",
-                                                        "${depthData.wk52H ?? 0.00}",
+                                                        "${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
+                                                        "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00}",
                                                         "${depthData.lp ?? depthData.c ?? 0.00}",
                                                         theme),
                                                     Divider(
@@ -742,11 +742,21 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                                 .colorDivider),
                                                     const SizedBox(height: 6)
                                                   ] else ...[
+                                                    if ((depthData.wk52L != "null" && depthData.wk52L != null) &&
+                                                      (depthData.wk52H !=
+                                                              "null" &&
+                                                          depthData.wk52H !=
+                                                              null) &&
+                                                      double.parse(depthData.wk52H
+                                                              .toString()) >
+                                                          0 &&
+                                                      depthData.wk52L !=
+                                                          depthData.wk52H)
                                                     _buildInfoRow(
                                                         "52 Week Low",
-                                                        "${depthData.wk52L}",
+                                                        "${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}",
                                                         "52 Week High",
-                                                        "${depthData.wk52H}",
+                                                        "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00}",
                                                         theme),
                                                   ],
                                                   if (widget.wlValue.instname !=
@@ -1072,7 +1082,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
                                                 ]))
                                       ] else if (scripInfo.actDeptBtn ==
                                           "Fundamental") ...[
-                                        if (context
+                                        if (ref
                                                 .read(marketWatchProvider)
                                                 .fundamentalData!
                                                 .msg
@@ -1196,7 +1206,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
-    await context.read(marketWatchProvider).fetchScripInfo(
+    await ref.read(marketWatchProvider).fetchScripInfo(
         widget.wlValue.token, widget.wlValue.exch, context, true);
     OrderScreenArgs orderArgs = OrderScreenArgs(
         exchange: widget.wlValue.exch,
@@ -1214,7 +1224,7 @@ class _ScripDepthInfoState extends State<ScripDepthInfo> {
     Navigator.pop(ctx);
     Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
-      "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!,
+      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
       "isBskt": widget.isBasket
     });
   }

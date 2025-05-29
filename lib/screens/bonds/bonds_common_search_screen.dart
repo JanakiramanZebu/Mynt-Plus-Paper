@@ -12,9 +12,9 @@ class BondsCommonSearch extends ConsumerWidget {
   const BondsCommonSearch({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final bonds = watch(bondsProvider);
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bonds = ref.watch(bondsProvider);
+    final theme = ref.watch(themeProvider);
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(

@@ -7,16 +7,16 @@ import '../../provider/thems.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 
-class OrderbookSipkFilterBottomSheet extends StatefulWidget {
+class OrderbookSipkFilterBottomSheet extends ConsumerStatefulWidget {
   const OrderbookSipkFilterBottomSheet({super.key});
 
   @override
-  State<OrderbookSipkFilterBottomSheet> createState() =>
+  ConsumerState<OrderbookSipkFilterBottomSheet> createState() =>
       _OrderbookSipkFilterBottomSheetState();
 }
 
 class _OrderbookSipkFilterBottomSheetState
-    extends State<OrderbookSipkFilterBottomSheet> {
+    extends ConsumerState<OrderbookSipkFilterBottomSheet> {
   Preferences pref = Preferences();
   late bool scripisAscending;
   late bool pricepisAscending;
@@ -37,7 +37,7 @@ class _OrderbookSipkFilterBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -74,9 +74,9 @@ class _OrderbookSipkFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (scripisAscending == true) {
-                  context.read(orderProvider).filterSipOrder("ASC");
+                  ref.read(orderProvider).filterSipOrder("ASC");
                 } else if (scripisAscending == false) {
-                  context.read(orderProvider).filterSipOrder("DSC");
+                  ref.read(orderProvider).filterSipOrder("DSC");
                 }
 
                 scripisAscending = !scripisAscending;
@@ -116,9 +116,9 @@ class _OrderbookSipkFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (pricepisAscending == true) {
-                  context.read(orderProvider).filterSipOrder("LTPDSC");
+                  ref.read(orderProvider).filterSipOrder("LTPDSC");
                 } else if (pricepisAscending == false) {
-                  context.read(orderProvider).filterSipOrder("LTPASC");
+                  ref.read(orderProvider).filterSipOrder("LTPASC");
                 }
 
                 pricepisAscending = !pricepisAscending;
@@ -158,9 +158,9 @@ class _OrderbookSipkFilterBottomSheetState
           //   onTap: () {
           //     setState(() {
           //       if (chnageisAscending == true) {
-          //         context.read(orderProvider).filterSipOrder("PRECHANGDSC");
+          //         ref.read(orderProvider).filterSipOrder("PRECHANGDSC");
           //       } else if (chnageisAscending == false) {
-          //         context.read(orderProvider).filterSipOrder("PRECHANGASC");
+          //         ref.read(orderProvider).filterSipOrder("PRECHANGASC");
           //       }
 
           //       chnageisAscending = !chnageisAscending;
@@ -201,9 +201,9 @@ class _OrderbookSipkFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (dateisAscending == true) {
-                  context.read(orderProvider).filterSipOrder("DATEDSC");
+                  ref.read(orderProvider).filterSipOrder("DATEDSC");
                 } else if (dateisAscending == false) {
-                  context.read(orderProvider).filterSipOrder("DATEASC");
+                  ref.read(orderProvider).filterSipOrder("DATEASC");
                 }
 
                 dateisAscending = !dateisAscending;

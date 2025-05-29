@@ -10,8 +10,8 @@ class BankDetail extends ConsumerWidget {
   const BankDetail({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final userProfile = watch(userProfileProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userProfile = ref.watch(userProfileProvider);
     return Scaffold(
       backgroundColor: const Color(0xffFFFFFF),
       appBar: AppBar(

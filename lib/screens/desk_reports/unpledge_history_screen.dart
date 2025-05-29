@@ -36,12 +36,12 @@ class UnpledgeHistoryScreen extends StatelessWidget {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
 
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
       double crdamount = 0.0;
       double dtamount = 0.0;
 
-      final ledgerprovider = watch(ledgerProvider);
+      final ledgerprovider = ref.watch(ledgerProvider);
 
       String opbalance = ledgerprovider.ledgerAllData?.openingBalance ?? '0.0';
       // String tdebit = ledgerprovider.ledgerAllData?.drAmt ?? '0.0';

@@ -16,10 +16,10 @@ class IpoCommonSearch extends ConsumerWidget {
   const IpoCommonSearch({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final ipo = watch(ipoProvide);
-    final theme = watch(themeProvider);
-    final market = watch(marketWatchProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ipo = ref.watch(ipoProvide);
+    final theme = ref.watch(themeProvider);
+    final market = ref.watch(marketWatchProvider);
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(

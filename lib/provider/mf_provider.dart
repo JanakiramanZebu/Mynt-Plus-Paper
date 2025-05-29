@@ -52,13 +52,13 @@ import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/default_change_notifier.dart';
 
-final mfProvider = ChangeNotifierProvider((ref) => MFProvider(ref.read));
+final mfProvider = ChangeNotifierProvider((ref) => MFProvider(ref));
 
 class MFProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
 
-  final Reader ref;
+  final Ref ref;
   MFProvider(this.ref);
 
   MFFactSheetDataModel? _factSheetDataModel;
@@ -287,13 +287,13 @@ class MFProvider extends DefaultChangeNotifier {
 
     await fetchMfOrderbook(ctx);
     // await fetchmfallcatnew();
-    await ref(portfolioProvider).fetchMFHoldings(ctx);
+    await ref.read(portfolioProvider).fetchMFHoldings(ctx);
     // await fetchMFCategoryType();
     // await fetchmfNFO(context);
     await fetchMFWatchlist("", "", ctx, true, "");
     await fetchmfsiplist();
     // await fetchBestMF();
-    // await ref(portfolioProvider).fetchMFHoldings(context);
+    // await ref.read(portfolioProvider).fetchMFHoldings(context);
     // await fetchMFCategoryType();
     // // await fetchmfNFO(context);
     // await fetchMFWatchlist("", "", context, true, "");
@@ -1786,7 +1786,7 @@ class MFProvider extends DefaultChangeNotifier {
           placeorderinput.schemecode);
 
       // } else {
-      //   ref(fundProvider).paymentName == "UPI"
+      //   ref.read(fundProvider).paymentName == "UPI"
       //       ? ScaffoldMessenger.of(context).showSnackBar(successMessage(
       //           context, '${_mfPlaceOrderResponces!.responseMessage}'))
       //       : null;

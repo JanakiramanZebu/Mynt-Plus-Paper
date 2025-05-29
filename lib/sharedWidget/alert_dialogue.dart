@@ -5,7 +5,7 @@ import '../../provider/thems.dart';
 import '../../res/res.dart';
 import 'custom_exch_badge.dart';
 
-class AlertDialogue extends StatelessWidget {
+class AlertDialogue extends ConsumerWidget {
   final String scripName;
   final String exch;
   final String content;
@@ -16,7 +16,8 @@ class AlertDialogue extends StatelessWidget {
       required this.content});
 
   @override
-  Widget build(BuildContext context) {    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     return AlertDialog(
        backgroundColor:theme.isDarkMode? const Color.fromARGB(255, 18, 18, 18):colors.colorWhite,
       shape: const RoundedRectangleBorder(

@@ -18,12 +18,12 @@ class PositionGroupDetail extends ConsumerWidget {
   const PositionGroupDetail({super.key, required this.positionData});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final positions = watch(portfolioProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final positions = ref.watch(portfolioProvider);
+    final theme = ref.read(themeProvider);
     
     return StreamBuilder<Map>(
-      stream: watch(websocketProvider).socketDataStream,
+      stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
         
@@ -564,8 +564,7 @@ class PositionGroupDetail extends ConsumerWidget {
                               width: MediaQuery.of(context).size.width,
                               child: InkWell(
                                 onTap: () async {
-                                  await context
-                                      .read(marketWatchProvider)
+                                  await ref.read(marketWatchProvider)
                                       .fetchScripInfo("${positionData['token']}",
                                           '${positionData['exch']}', context, true);
                                   Navigator.pop(context);
@@ -591,8 +590,7 @@ class PositionGroupDetail extends ConsumerWidget {
                                       context, Routes.placeOrderScreen,
                                       arguments: {
                                         "orderArg": orderArgs,
-                                        "scripInfo": context
-                                            .read(marketWatchProvider)
+                                        "scripInfo": ref.read(marketWatchProvider)
                                             .scripInfoModel!,
                                         "isBskt": ""
                                       });
@@ -617,8 +615,7 @@ class PositionGroupDetail extends ConsumerWidget {
                                   width: MediaQuery.of(context).size.width,
                                   child: InkWell(
                                     onTap: () async {
-                                      await context
-                                          .read(marketWatchProvider)
+                                      await ref.read(marketWatchProvider)
                                           .fetchScripInfo(
                                               "${positionData['token']}",
                                               '${positionData['exch']}',
@@ -648,8 +645,7 @@ class PositionGroupDetail extends ConsumerWidget {
                                           context, Routes.placeOrderScreen,
                                           arguments: {
                                             "orderArg": orderArgs,
-                                            "scripInfo": context
-                                                .read(marketWatchProvider)
+                                            "scripInfo": ref.read(marketWatchProvider)
                                                 .scripInfoModel!,
                                             "isBskt": ""
                                           });

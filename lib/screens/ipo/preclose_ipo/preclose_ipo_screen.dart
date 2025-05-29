@@ -13,14 +13,14 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
-class ClosedIPOScreen extends StatefulWidget {
+class ClosedIPOScreen extends ConsumerStatefulWidget {
   const ClosedIPOScreen({super.key});
 
   @override
-  State<ClosedIPOScreen> createState() => _ClosedIPOScreenState();
+  ConsumerState<ClosedIPOScreen> createState() => _ClosedIPOScreenState();
 }
 
-class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
+class _ClosedIPOScreenState extends ConsumerState<ClosedIPOScreen> {
   late List<Msg> ipoList;
   List<int> years = [];
   int? selectedYear;
@@ -28,9 +28,10 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
 
   @override
   void initState() {
-    ipoList = context.read(ipoProvide).ipoPreClose!.msg;
-    context.read(ipoProvide).sortpreCloseIPOListByDate(ipoList);
     super.initState();
+    ipoList = ref.read(ipoProvide).ipoPreClose!.msg;
+    ref.read(ipoProvide).sortpreCloseIPOListByDate(ipoList);
+    
     var currentYear = DateTime.now().year;
     for (var year = 2000; year <= currentYear; year++) {
       years.add(year);
@@ -40,12 +41,12 @@ class _ClosedIPOScreenState extends State<ClosedIPOScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final preClose = watch(ipoProvide);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final preClose = ref.watch(ipoProvide);
+      final theme = ref.watch(themeProvider);
       final devHeight = MediaQuery.of(context).size.height;
-      // final internet = watch(networkStateProvider);
-      // final market = watch(marketWatchProvider);
+      // final internet = ref.watch(networkStateProvider);
+      // final market = ref.watch(marketWatchProvider);
 
       return SingleChildScrollView(
         // child: Expanded(

@@ -14,15 +14,15 @@ import '../../../provider/auth_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/loader_ui.dart';
 
-class BondsExploreScreens extends StatefulWidget {
+class BondsExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider theme;
   const BondsExploreScreens({super.key, required this.theme});
 
   @override
-  State<BondsExploreScreens> createState() => _ExploreScreensState();
+  ConsumerState<BondsExploreScreens> createState() => _ExploreScreensState();
 }
 
-class _ExploreScreensState extends State<BondsExploreScreens>
+class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
     with SingleTickerProviderStateMixin {
   late  TabController _allBondsTabController;
 
@@ -81,20 +81,20 @@ class _ExploreScreensState extends State<BondsExploreScreens>
 
 
 // TabController(
-//           length: context.read(bondsProvider).tablistitems.length,
+//           length: ref.read(bondsProvider).tablistitems.length,
 //           vsync: this,
-//           initialIndex: context.read(bondsProvider).selectedBondTab["index"])
+//           initialIndex: ref.read(bondsProvider).selectedBondTab["index"])
   
 
   @override
   Widget build(BuildContext context) {
    
     return Consumer(
-      builder: (context, watch, child) {
-        final explore = watch(authProvider);
-        final bonds = watch(bondsProvider);
+      builder: (context, ref, child) {
+        final explore = ref.watch(authProvider);
+        final bonds = ref.watch(bondsProvider);
 
-        final theme = context.read(themeProvider);
+        final theme = ref.read(themeProvider);
         //  List<Map<String, Object>> tablistitems = btablistitems;
         return TransparentLoaderScreen(
           isLoading: explore.loading,

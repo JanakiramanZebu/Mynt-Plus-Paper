@@ -26,8 +26,8 @@ class _IPOmainScreenState extends State<IPOScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
 
       return Scaffold(
         appBar: AppBar(
@@ -241,7 +241,7 @@ class _IPOmainScreenState extends State<IPOScreen> {
       //                               await context
       //                                   .read(ipoProvide)
       //                                   .getipoorderbookmodel(true);
-      //                               // await context.read(ipoProvide).ipotab();
+      //                               // await ref.read(ipoProvide).ipotab();
       //                             });
 
       //                               Navigator.pushNamed(

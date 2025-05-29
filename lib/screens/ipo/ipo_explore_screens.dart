@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/iop_provider.dart';
@@ -13,15 +13,15 @@ import 'ipo_performance/ipo_performance_screen.dart';
 import 'main_sme_list/main_sme_list.dart';
 import 'preclose_ipo/preclose_ipo_screen.dart';
 
-class IpoExploreScreens extends StatefulWidget {
+class IpoExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider theme;
   const IpoExploreScreens({super.key, required this.theme});
 
   @override
-  State<IpoExploreScreens> createState() => _ExploreScreensState();
+  ConsumerState<IpoExploreScreens> createState() => _ExploreScreensState();
 }
 
-class _ExploreScreensState extends State<IpoExploreScreens>
+class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final tablistitems = [
@@ -71,58 +71,54 @@ class _ExploreScreensState extends State<IpoExploreScreens>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, watch, child) {
-        final explore = watch(authProvider);
-        final theme = context.read(themeProvider);
-        final ipo = watch(ipoProvide);
+    final explore = ref.watch(authProvider);
+    final theme = ref.watch(themeProvider);
+    final ipo = ref.watch(ipoProvide);
 
-        return TransparentLoaderScreen(
-          isLoading: explore.loading,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // const CustomDragHandler(),
-              Container(
-                  width: MediaQuery.of(context).size.width,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                      border: Border(
-                    bottom: BorderSide(
-                        color: widget.theme.isDarkMode
-                            ? colors.darkColorDivider
-                            : colors.colorDivider,
-                        width: 0),
-                  )),
-                  child: TabBar(
-                      labelPadding: const EdgeInsets.only(right: 8),
-                      tabAlignment: TabAlignment.start,
-                      indicatorColor: const Color.fromARGB(255, 255, 255, 255),
-                      controller: _tabController,
-                      isScrollable: true,
-                      tabs: List.generate(
-                          tablistitems.length,
-                          (tab) => tabConstruce(
-                              // tablistitems[tab]['imgpath'].toString(),
-                              tablistitems[tab]['title'].toString(),
-                              theme,
-                              tab,
-                              () {})))),
-              Expanded(
-                child: TabBarView(
-                  // physics: const NeverScrollableScrollPhysics(),
+    return TransparentLoaderScreen(
+      isLoading: explore.loading,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // const CustomDragHandler(),
+          Container(
+              width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                  border: Border(
+                bottom: BorderSide(
+                    color: widget.theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider,
+                    width: 0),
+              )),
+              child: TabBar(
+                  labelPadding: const EdgeInsets.only(right: 8),
+                  tabAlignment: TabAlignment.start,
+                  indicatorColor: const Color.fromARGB(255, 255, 255, 255),
                   controller: _tabController,
-                  children: const [
-                    MainSmeListCard(),
-                    UpcomingIpo(),
-                    IpoOrderbookMainScreen()
-                  ],
-                ),
-              ),
-            ],
+                  isScrollable: true,
+                  tabs: List.generate(
+                      tablistitems.length,
+                      (tab) => tabConstruce(
+                          // tablistitems[tab]['imgpath'].toString(),
+                          tablistitems[tab]['title'].toString(),
+                          theme,
+                          tab,
+                          () {})))),
+          Expanded(
+            child: TabBarView(
+              // physics: const NeverScrollableScrollPhysics(),
+              controller: _tabController,
+              children: const [
+                MainSmeListCard(),
+                UpcomingIpo(),
+                IpoOrderbookMainScreen()
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 

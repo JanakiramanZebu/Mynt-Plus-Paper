@@ -9,7 +9,7 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/ipo_error_widget.dart';
 
-class ApplyBondsScreen extends StatefulWidget {
+class ApplyBondsScreen extends ConsumerStatefulWidget {
   final BondsList bondInfo;
   const ApplyBondsScreen({
     required this.bondInfo,
@@ -17,10 +17,10 @@ class ApplyBondsScreen extends StatefulWidget {
   });
 
   @override
-  State<ApplyBondsScreen> createState() => _ApplyBondsScreenState();
+  ConsumerState<ApplyBondsScreen> createState() => _ApplyBondsScreenState();
 }
 
-class _ApplyBondsScreenState extends State<ApplyBondsScreen> {
+class _ApplyBondsScreenState extends ConsumerState<ApplyBondsScreen> {
   // bool ischecked = true;
   // String upierrortext = "Please enter the UPI Id";
   // int required = 0;
@@ -85,10 +85,10 @@ class _ApplyBondsScreenState extends State<ApplyBondsScreen> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Consumer(
-        builder: (context, watch, child) {
-          final bonds = watch(bondsProvider);
-          final theme = watch(themeProvider);
-          // final upiid = watch(transcationProvider);
+        builder: (context, ref, child) {
+          final bonds = ref.watch(bondsProvider);
+          final theme = ref.watch(themeProvider);
+          // final upiid = ref.watch(transcationProvider);
           // if (selectedChip == null && chips.isNotEmpty) {
           //   selectedChip = chips[0]; // Set first item as default
           // }
@@ -342,7 +342,7 @@ class _ApplyBondsScreenState extends State<ApplyBondsScreen> {
   }
 
   ipoplaceorder(BondDetails bondDetails) async {
-    await context.read(bondsProvider).validateClientLedgertoPlaceOrder(context);
+    await ref.read(bondsProvider).validateClientLedgertoPlaceOrder(context);
   }
 }
 

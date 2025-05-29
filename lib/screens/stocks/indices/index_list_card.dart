@@ -11,8 +11,8 @@ class IndexListCard extends ConsumerWidget {
   const IndexListCard({super.key, required this.indicesData});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       dense: true,

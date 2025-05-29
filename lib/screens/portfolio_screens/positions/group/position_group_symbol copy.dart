@@ -15,10 +15,10 @@
 //   const PositionGroupSymbol({super.key});
 
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
-//     final positionBook = watch(portfolioProvider);
-//     final socketDatas = watch(websocketProvider).socketDatas;
-//     final theme = context.read(themeProvider);
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final positionBook = ref.watch(portfolioProvider);
+//     final socketDatas = ref.watch(websocketProvider).socketDatas;
+//     final theme = ref.read(themeProvider);
 //     return positionBook.loading
 //         ? const Center(child: CircularProgressIndicator())
 //         : ExpandedTileList.separated(
@@ -280,12 +280,12 @@
 //                         itemBuilder: (BuildContext context, int ind) {
 //                           return InkWell(
 //                               onTap: () async {
-//                                 await context.read(marketWatchProvider).fetchLinkeScrip(
+//                                 await ref.read(marketWatchProvider).fetchLinkeScrip(
 //                                     "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['token']}",
 //                                     "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",
 //                                     context);
 
-//                                 await watch(marketWatchProvider).fetchScripQuote(
+//                                 await ref.watch(marketWatchProvider).fetchScripQuote(
 //                                     "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['token']}",
 //                                     "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",
 //                                     context);
@@ -308,7 +308,7 @@
 //                                         "Click here to view fundamental data."
 //                                   });
 
-//                                   await context.read(marketWatchProvider).fetchTechData(
+//                                   await ref.read(marketWatchProvider).fetchTechData(
 //                                       context: context,
 //                                       exch:
 //                                           "${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList']![ind]['exch']}",

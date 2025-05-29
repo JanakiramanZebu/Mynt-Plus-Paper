@@ -13,12 +13,12 @@ import 'custom_drag_handler.dart';
 
 // import '../../provider/shocase_provider.dart';
 
-class RiskDisclousreBottomSheet extends StatelessWidget {
+class RiskDisclousreBottomSheet extends ConsumerWidget {
   const RiskDisclousreBottomSheet({super.key});
 
   @override
-  Widget build(BuildContext context) {
-      final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+      final theme = ref.read(themeProvider);
     final Preferences pref = locator<Preferences>();
 
     return Container(
@@ -120,7 +120,7 @@ class RiskDisclousreBottomSheet extends StatelessWidget {
                         // if (ApiLinks.showAppTutorial) {
                         //    WidgetsBinding.instance.addPostFrameCallback((_) =>
                         //     ShowCaseWidget.of(context).startShowCase([
-                        //       context.read(showcaseProvide).createwatchlistcase
+                        //       ref.read(showcaseProvide).createwatchlistcase
                               
                         //     ]));
                         // }

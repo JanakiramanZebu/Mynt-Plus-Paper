@@ -12,9 +12,9 @@ class MFSchemeInfo extends ConsumerWidget {
   const MFSchemeInfo({super.key, required this.mfStockData});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final mfData = watch(mfProvider).factSheetDataModel!.data!;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final mfData = ref.watch(mfProvider).factSheetDataModel!.data!;
  
     return
      Container(

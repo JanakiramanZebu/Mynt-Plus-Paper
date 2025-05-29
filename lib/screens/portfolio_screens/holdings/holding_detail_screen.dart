@@ -69,7 +69,7 @@ class _ScripInfoButtonsWithLockState extends State<ScripInfoButtonsWithLock> {
   }
 }
 
-class HoldingDetailScreen extends StatefulWidget {
+class HoldingDetailScreen extends ConsumerStatefulWidget {
   final ExchTsym exchTsym;
   final HoldingsModel holdingData;
   
@@ -80,10 +80,10 @@ class HoldingDetailScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<HoldingDetailScreen> createState() => _HoldingDetailScreenState();
+  ConsumerState<HoldingDetailScreen> createState() => _HoldingDetailScreenState();
 }
 
-class _HoldingDetailScreenState extends State<HoldingDetailScreen> with SingleTickerProviderStateMixin {
+class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> with SingleTickerProviderStateMixin {
   StreamSubscription? _socketSubscription;
   late ExchTsym _exchTsym;
   late HoldingsModel _holdingData;
@@ -424,7 +424,7 @@ class _HoldingDetailScreenState extends State<HoldingDetailScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     
     // Show loading state during initial load
     if (_isLoading) {

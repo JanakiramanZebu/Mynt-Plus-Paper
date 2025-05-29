@@ -25,12 +25,12 @@ import 'market_watch_provider.dart';
 import 'thems.dart';
 
 final indexListProvider =
-    ChangeNotifierProvider((ref) => IndexListProvider(ref.read));
+    ChangeNotifierProvider((ref) => IndexListProvider(ref));
 
 class IndexListProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
-  final Reader ref;
+  final Ref ref;
   IndexListProvider(this.ref);
 
   bool _isActiveTsym = false;
@@ -104,11 +104,11 @@ class IndexListProvider extends DefaultChangeNotifier {
 
   bottomMenu(int value, BuildContext context) {
     _selectedBtmIndx = value;
-    ref(stocksProvide).requestWSTradeaction(
+    ref.read(stocksProvide).requestWSTradeaction(
         isSubscribe: value == 0 ? true : false, context: context);
-    ref(marketWatchProvider).requestMWScrip(
+    ref.read(marketWatchProvider).requestMWScrip(
         context: context, isSubscribe: value == 1 ? true : false);
-    // ref(indexListProvider).checkSession(context);
+    // ref.read(indexListProvider).checkSession(context);
     notifyListeners();
   }
 
@@ -143,7 +143,7 @@ class IndexListProvider extends DefaultChangeNotifier {
           DropdownMenuItem<String>(
               enabled: false,
               child: Divider(
-                  color: ref(themeProvider).isDarkMode
+                  color: ref.read(themeProvider).isDarkMode
                       ? colors.colorbluegrey
                       : colors.colorDivider))
       ]);
@@ -155,7 +155,7 @@ class IndexListProvider extends DefaultChangeNotifier {
   Future fetchIndexList(String exch, BuildContext context) async {
     try {
       if (_subscr.isNotEmpty) {
-        ref(websocketProvider).establishConnection(
+        ref.read(websocketProvider).establishConnection(
             channelInput: _subscr, task: 'u', context: context);
         _subscr = "";
       }
@@ -172,7 +172,7 @@ class IndexListProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
           _indValuesList = _indexList!.indValues!;
           if (_subscr.isNotEmpty) {
-            ref(websocketProvider).establishConnection(
+            ref.read(websocketProvider).establishConnection(
                 channelInput: _subscr, task: 'u', context: context);
           }
           for (var n = 0; n < _indValuesList.length; n++) {
@@ -191,7 +191,7 @@ class IndexListProvider extends DefaultChangeNotifier {
             }
           }
           if (_subscr.isNotEmpty) {
-            ref(websocketProvider).establishConnection(
+            ref.read(websocketProvider).establishConnection(
                 channelInput: _subscr, task: 't', context: context);
           }
         } else {
@@ -199,7 +199,7 @@ class IndexListProvider extends DefaultChangeNotifier {
               _indexList!.stat == "Not_Ok") {
             pref.clearClientSession();
             ConstantName.sessCheck = false;
-            ref(authProvider).loginMethCtrl.text =
+            ref.read(authProvider).loginMethCtrl.text =
                 localstorage.getString("userId") ?? "";
             ConstantName.timer!.cancel();
             ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
@@ -449,7 +449,7 @@ class IndexListProvider extends DefaultChangeNotifier {
 
     await getIndeexListFromLocal(context);
 
-    ref(marketWatchProvider)
+    ref.read(marketWatchProvider)
         .requestMWScrip(isSubscribe: true, context: context);
     ScaffoldMessenger.of(context)
         .showSnackBar(successMessage(context, "Index scrip modified"));
@@ -510,7 +510,7 @@ class IndexListProvider extends DefaultChangeNotifier {
           (_checkSess!.emsg == "Session Expired :  Invalid Session Key" && 
            _checkSess!.stat == "Not_Ok")) {
         // Directly call ifSessionExpired without waiting, as it handles cleanup
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
         return;
       }
       else {
@@ -525,7 +525,7 @@ class IndexListProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       // In case of any error, assume session is invalid
-      ref(authProvider).ifSessionExpired(context);
+      ref.read(authProvider).ifSessionExpired(context);
     }
   }
 

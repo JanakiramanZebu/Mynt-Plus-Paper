@@ -35,9 +35,9 @@ class _WatchlistsBottomSheetState extends State<ScripFilterBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final watchlist = watch(marketWatchProvider);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final watchlist = ref.watch(marketWatchProvider);
+      final theme = ref.watch(themeProvider);
       return Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
@@ -76,12 +76,12 @@ class _WatchlistsBottomSheetState extends State<ScripFilterBottomSheet> {
               onTap: () {
                 setState(() {
                   if (scripisAscending == true) {
-                    context.read(marketWatchProvider).filterMWScrip(
+                    ref.read(marketWatchProvider).filterMWScrip(
                         sorting: "Scrip - A to Z",
                         wlName: watchlist.wlName,
                         context: context);
                   } else if (scripisAscending == false) {
-                    context.read(marketWatchProvider).filterMWScrip(
+                    ref.read(marketWatchProvider).filterMWScrip(
                         sorting: "Scrip - Z to A",
                         wlName: watchlist.wlName,
                         context: context);
@@ -124,12 +124,12 @@ class _WatchlistsBottomSheetState extends State<ScripFilterBottomSheet> {
               onTap: () {
                 setState(() {
                   if (pricepisAscending == true) {
-                    context.read(marketWatchProvider).filterMWScrip(
+                    ref.read(marketWatchProvider).filterMWScrip(
                         sorting: "Price - High to Low",
                         wlName: watchlist.wlName,
                         context: context);
                   } else if (pricepisAscending == false) {
-                    context.read(marketWatchProvider).filterMWScrip(
+                    ref.read(marketWatchProvider).filterMWScrip(
                         sorting: "Price - Low to High",
                         wlName: watchlist.wlName,
                         context: context);
@@ -172,12 +172,12 @@ class _WatchlistsBottomSheetState extends State<ScripFilterBottomSheet> {
               onTap: () {
                 setState(() {
                   if (perchangisAscending == true) {
-                    context.read(marketWatchProvider).filterMWScrip(
+                    ref.read(marketWatchProvider).filterMWScrip(
                         sorting: "Per.Chng - High to Low",
                         wlName: watchlist.wlName,
                         context: context);
                   } else if (perchangisAscending == false) {
-                    context.read(marketWatchProvider).filterMWScrip(
+                    ref.read(marketWatchProvider).filterMWScrip(
                         sorting: "Per.Chng - Low to High",
                         wlName: watchlist.wlName,
                         context: context);

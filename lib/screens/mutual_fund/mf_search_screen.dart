@@ -13,9 +13,9 @@ class MfCommonSearch extends ConsumerWidget {
   const MfCommonSearch({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final mfData = watch(mfProvider);
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mfData = ref.watch(mfProvider);
+    final theme = ref.watch(themeProvider);
     
     return GestureDetector(
       onTap: () { FocusScope.of(context).unfocus();

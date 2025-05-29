@@ -2,22 +2,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 
-class TotpScreen extends StatefulWidget {
+class TotpScreen extends ConsumerStatefulWidget {
   final String secretKey;
   const TotpScreen({super.key, required this.secretKey});
 
   @override
-  _TotpScreenState createState() => _TotpScreenState();
+  ConsumerState<TotpScreen> createState() => _TotpScreenState();
 }
 
-class _TotpScreenState extends State<TotpScreen> {
+class _TotpScreenState extends ConsumerState<TotpScreen> {
   bool isObscure = true;
   String otp = 'Loading...';
   late Timer timer;
@@ -105,7 +105,7 @@ class _TotpScreenState extends State<TotpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.watch(themeProvider);
 
     return DraggableScrollableSheet(
         expand: false,

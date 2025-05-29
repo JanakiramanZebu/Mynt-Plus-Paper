@@ -13,9 +13,9 @@ class ExitPositionScreen extends ConsumerWidget {
   const ExitPositionScreen({super.key, required this.exitPositionList});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
-    final positions = watch(portfolioProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
+    final positions = ref.watch(portfolioProvider);
     
     return PopScope(
       canPop: true, // Allows back navigation
@@ -84,7 +84,7 @@ class ExitPositionScreen extends ConsumerWidget {
           ],
         ),
         body: StreamBuilder<Map>(
-          stream: watch(websocketProvider).socketDataStream,
+          stream: ref.watch(websocketProvider).socketDataStream,
           builder: (context, snapshot) {
             final socketDatas = snapshot.data ?? {};
             

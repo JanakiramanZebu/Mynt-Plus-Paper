@@ -8,8 +8,8 @@ class InvestIPO extends ConsumerWidget {
   const InvestIPO({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
     return Column(
       children: [
         Container(

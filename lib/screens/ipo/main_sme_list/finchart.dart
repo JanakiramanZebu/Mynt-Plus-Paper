@@ -126,7 +126,7 @@ class _IPOFinancialChartState extends State<IPOFinancialChart> {
             position: LegendPosition.bottom,
             overflowMode: LegendItemOverflowMode.wrap),
         tooltipBehavior: TooltipBehavior(enable: true),
-        series: <ChartSeries>[
+        series: <CartesianSeries>[
           // Assets
           ColumnSeries<IPOFinancialData, String>(
             dataSource: data,

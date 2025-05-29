@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -10,30 +10,30 @@ import '../../../../provider/transcation_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 
-class UpiAppsBottomSheet extends StatefulWidget {
+class UpiAppsBottomSheet extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> upiapps;
   final ThemesProvider theme;
   const UpiAppsBottomSheet(
       {super.key, required this.upiapps, required this.theme});
 
   @override
-  State<UpiAppsBottomSheet> createState() => _UpiAppsBottomSheetState();
+  ConsumerState<UpiAppsBottomSheet> createState() => _UpiAppsBottomSheetState();
 }
 
-class _UpiAppsBottomSheetState extends State<UpiAppsBottomSheet> {
+class _UpiAppsBottomSheetState extends ConsumerState<UpiAppsBottomSheet> {
   Timer? _timer;
   @override
   void initState() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      context.read(transcationProvider).hdfcUPIStatus?.data?.status ==
+      ref.read(transcationProvider).hdfcUPIStatus?.data?.status ==
                   "REJECTED" ||
-              context.read(transcationProvider).hdfcUPIStatus?.data?.status ==
+              ref.read(transcationProvider).hdfcUPIStatus?.data?.status ==
                   "SUCCESS"
           ? null
-          : context.read(transcationProvider).fetchUpiPaymentstatus(
+          : ref.read(transcationProvider).fetchUpiPaymentstatus(
               context,
-              '${context.read(transcationProvider).hdfcdirectpayment!.data!.orderNumber}',
-              '${context.read(transcationProvider).hdfcdirectpayment!.data!.upiTransactionNo}');
+              '${ref.read(transcationProvider).hdfcdirectpayment!.data!.orderNumber}',
+              '${ref.read(transcationProvider).hdfcdirectpayment!.data!.upiTransactionNo}');
     });
     super.initState();
   }
@@ -47,8 +47,8 @@ class _UpiAppsBottomSheetState extends State<UpiAppsBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
-        final fund = watch(transcationProvider);
+      builder: (context, ref, child) {
+        final fund = ref.watch(transcationProvider);
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(

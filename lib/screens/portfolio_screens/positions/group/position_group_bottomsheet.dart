@@ -11,9 +11,9 @@ class PositionGroupBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final positionBook = watch(portfolioProvider);
-      final theme = context.read(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final positionBook = ref.watch(portfolioProvider);
+      final theme = ref.read(themeProvider);
       return Container(
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),

@@ -28,14 +28,14 @@ class UserAccountScreen extends ConsumerWidget {
   const UserAccountScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final userProfile = watch(userProfileProvider);
-    final theme = watch(themeProvider);
-    final trancation = watch(transcationProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userProfile = ref.watch(userProfileProvider);
+    final theme = ref.watch(themeProvider);
+    final trancation = ref.watch(transcationProvider);
     //  int currentYear = DateTime.now().year;
-    final funds = watch(fundProvider);
-    final mf = watch(mfProvider);
-    final portfolio = watch(portfolioProvider);
+    final funds = ref.watch(fundProvider);
+    final mf = ref.watch(mfProvider);
+    final portfolio = ref.watch(portfolioProvider);
     final Preferences pref = locator<Preferences>();
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
     List chips = [
@@ -368,10 +368,10 @@ class UserAccountScreen extends ConsumerWidget {
                         description: "Freeze Account",
                         actiontype: true,
                         action: () async {
-                          await context
+                          await ref
                               .read(userProfileProvider)
                               .fetchsetting();
-                          await context
+                          await ref
                               .read(apikeyprovider)
                               .fetchapikey(context);
                           Navigator.pushNamed(
@@ -383,12 +383,12 @@ class UserAccountScreen extends ConsumerWidget {
                             builder: (BuildContext context) {
                               return AlertDialog(
                                 backgroundColor:
-                                    context.read(themeProvider).isDarkMode
+                                    ref.read(themeProvider).isDarkMode
                                         ? const Color.fromARGB(255, 18, 18, 18)
                                         : colors.colorWhite,
                                 titleTextStyle: textStyles.appBarTitleTxt
                                     .copyWith(
-                                        color: context
+                                        color: ref
                                                 .read(themeProvider)
                                                 .isDarkMode
                                             ? colors.colorWhite
@@ -432,8 +432,7 @@ class UserAccountScreen extends ConsumerWidget {
                                           Navigator.of(context).pop(),
                                       child: Text("Cancel",
                                           style: textStyles.textBtn.copyWith(
-                                              color: context
-                                                      .read(themeProvider)
+                                              color: ref.read(themeProvider)
                                                       .isDarkMode
                                                   ? colors.colorLightBlue
                                                   : colors.colorBlue))),
@@ -451,8 +450,7 @@ class UserAccountScreen extends ConsumerWidget {
                                                   BorderRadius.circular(50))),
                                       child: Text("Continue",
                                           style: textStyle(
-                                              !context
-                                                      .read(themeProvider)
+                                              !ref.read(themeProvider)
                                                       .isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,
@@ -642,15 +640,14 @@ class UserAccountScreen extends ConsumerWidget {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  backgroundColor: context
+                                  backgroundColor: ref
                                           .read(themeProvider)
                                           .isDarkMode
                                       ? const Color.fromARGB(255, 18, 18, 18)
                                       : colors.colorWhite,
                                   titleTextStyle: textStyles.appBarTitleTxt
                                       .copyWith(
-                                          color: context
-                                                  .read(themeProvider)
+                                          color: ref.read(themeProvider)
                                                   .isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack),
@@ -681,14 +678,14 @@ class UserAccountScreen extends ConsumerWidget {
                                             Navigator.of(context).pop(),
                                         child: Text("No",
                                             style: textStyles.textBtn.copyWith(
-                                                color: context
+                                                color: ref
                                                         .read(themeProvider)
                                                         .isDarkMode
                                                     ? colors.colorLightBlue
                                                     : colors.colorBlue))),
                                     ElevatedButton(
                                         onPressed: () async {
-                                          context
+                                          ref
                                               .read(authProvider)
                                               .fetchLogout(context);
                                         },
@@ -703,7 +700,7 @@ class UserAccountScreen extends ConsumerWidget {
                                             )),
                                         child: Text("Yes",
                                             style: textStyle(
-                                                !context
+                                                !ref
                                                         .read(themeProvider)
                                                         .isDarkMode
                                                     ? colors.colorWhite

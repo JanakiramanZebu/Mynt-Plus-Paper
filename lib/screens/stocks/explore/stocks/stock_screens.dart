@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/stocks/explore/stocks/news/news_screen.dart';
 
@@ -17,128 +17,126 @@ import 'trade_action/trade_action_widget.dart';
 // import 'trade_action/corporate_action.dart';
 // import 'trade_action/trade_action_widget.dart';
 
-class StockScreen extends StatelessWidget {
+class StockScreen extends ConsumerWidget {
   const StockScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final funds = ref.watch(fundProvider);
+    final mf = ref.watch(mfProvider);
+    
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(height: 1),
+          Divider(
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+              thickness: 0.6,
+              height: 0),
+          const TopIndices(),
 
-      final funds = watch(fundProvider);
-      final mf = watch(mfProvider);
-      return SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const SizedBox(height: 1),
-            Divider(
-                color: theme.isDarkMode
-                    ? colors.darkColorDivider
-                    : colors.colorDivider,
-                thickness: 0.6,
-                height: 0),
-            const TopIndices(),
+          const SizedBox(
+            height: 16,
+          ),
 
-            const SizedBox(
-              height: 16,
+          // const MyCarousel(),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Products",
+                    style: textStyle(
+                        const Color(0xff000000), 16, FontWeight.w600)),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    productList(
+                        'IPO',
+                        "A company's first public stock offering.",
+                        "assets/profileimage/prd-ipo.svg",
+                        theme, () {
+                      Navigator.pushNamed(context, Routes.ipo);
+                      // launch(
+                      //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                    }),
+                    productList(
+                        'Mutual Funds',
+                        "Invest in experts managed portfolio.",
+                        "assets/profileimage/prd-mf.svg",
+                        theme, () async {
+                      // await portfolio.fetchMFHoldings(context);
+                      // await mf.fetchMFCategoryType();
+                      // await mf.fetchmfNFO(context);
+                      await mf.fetchMFWatchlist("", "", context, true, "");
+                      Navigator.pushNamed(context, Routes.mfmainscreen);
+                      // launch(
+                      //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                    }),
+                    productList('OptionZ', "Options Trading Platform.",
+                        "assets/profileimage/prd-optz.svg", theme, () async {
+                      await funds.fetchHstoken(context);
+                      funds.optionZ(context);
+                    }),
+                    productList(
+                        'All Broker',
+                        "A company's first public stock offering.",
+                        "assets/profileimage/prd-ab.svg",
+                        theme, () {
+                      Navigator.pushNamed(context, Routes.reportWebViewApp);
+                      // launch(
+                      //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
+                    }),
+                  ],
+                ),
+              ],
             ),
+          ),
 
-            // const MyCarousel(),
+          const SizedBox(
+            height: 32,
+          ),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Products",
-                      style: textStyle(
-                          const Color(0xff000000), 16, FontWeight.w600)),
-                  const SizedBox(height: 16),
-                  Row(
+          const TradeAction(),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      productList(
-                          'IPO',
-                          "A company's first public stock offering.",
-                          "assets/profileimage/prd-ipo.svg",
-                          theme, () {
-                        Navigator.pushNamed(context, Routes.ipo);
-                        // launch(
-                        //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
-                      }),
-                      productList(
-                          'Mutual Funds',
-                          "Invest in experts managed portfolio.",
-                          "assets/profileimage/prd-mf.svg",
-                          theme, () async {
-                        // await portfolio.fetchMFHoldings(context);
-                        // await mf.fetchMFCategoryType();
-                        // await mf.fetchmfNFO(context);
-                        await mf.fetchMFWatchlist("", "", context, true, "");
-                        Navigator.pushNamed(context, Routes.mfmainscreen);
-                        // launch(
-                        //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
-                      }),
-                      productList('OptionZ', "Options Trading Platform.",
-                          "assets/profileimage/prd-optz.svg", theme, () async {
-                        await funds.fetchHstoken(context);
-                        funds.optionZ(context);
-                      }),
-                      productList(
-                          'All Broker',
-                          "A company's first public stock offering.",
-                          "assets/profileimage/prd-ab.svg",
-                          theme, () {
-                        Navigator.pushNamed(context, Routes.reportWebViewApp);
-                        // launch(
-                        //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
-                      }),
-                    ],
-                  ),
-                ],
-              ),
+                      Text("Live IPO",
+                          style: textStyle(
+                              const Color(0xff000000), 16, FontWeight.w600)),
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, Routes.ipo);
+                          },
+                          child: const Text('See all',
+                              style: TextStyle(
+                                  color: Color(0xff0037B7),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600)))
+                    ]),
+                const LiveIPOList(),
+              ],
             ),
-
-            const SizedBox(
-              height: 32,
-            ),
-
-            const TradeAction(),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Live IPO",
-                            style: textStyle(
-                                const Color(0xff000000), 16, FontWeight.w600)),
-                        TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, Routes.ipo);
-                            },
-                            child: const Text('See all',
-                                style: TextStyle(
-                                    color: Color(0xff0037B7),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600)))
-                      ]),
-                  const LiveIPOList(),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            const CaEvents(),
-            const SizedBox(height: 24),
-            const NewsScreen(),
-          ],
-        ),
-      );
-    });
+          ),
+          const SizedBox(height: 24),
+          const CaEvents(),
+          const SizedBox(height: 24),
+          const NewsScreen(),
+        ],
+      ),
+    );
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {

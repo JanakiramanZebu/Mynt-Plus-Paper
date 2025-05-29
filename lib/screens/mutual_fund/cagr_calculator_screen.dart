@@ -84,8 +84,8 @@ if(finalval > 0){
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, ref, child) {
+      final theme = ref.watch(themeProvider);
       final List<ChartData> donutChart = [
         ChartData('Initial Investment Value',
             double.tryParse(_principalCtrl.text) ?? 0.0, colors.colorBlack),

@@ -12,17 +12,17 @@ import 'package:mynt_plus/routes/route_names.dart';
 // import 'package:mynt_plus/screens/profile_screen/my_account_screens/bottomsheet_screen.dart';
 import '../../../res/res.dart';
 
-class ProfileDetailsBank extends StatefulWidget {
+class ProfileDetailsBank extends ConsumerStatefulWidget {
   const ProfileDetailsBank({super.key});
 
   @override
-  State<ProfileDetailsBank> createState() => _ProfileDetailsBankState();
+  ConsumerState<ProfileDetailsBank> createState() => _ProfileDetailsBankState();
 }
 
-class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
+class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
   @override
   void initState() {
-    context.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
+    ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
     super.initState();
   }
 
@@ -40,9 +40,9 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, ScopedReader watch, _) {
-        final profileprovider = watch(profileAllDetailsProvider);
-        final theme = watch(themeProvider);
+      builder: (context, WidgetRef ref, _) {
+        final profileprovider = ref.watch(profileAllDetailsProvider);
+        final theme = ref.watch(themeProvider);
 
         final incomeLabels = [
           "Latest 6 months Bank Statement",
@@ -252,7 +252,7 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
                                     "Yes")
                                   InkWell(
                                     onTap: () async {
-                                      await context
+                                      await ref
                                           .read(fundProvider)
                                           .fetchHstoken(context);
                                       Navigator.pushNamed(
@@ -329,7 +329,7 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
                       onPressed: () async {
                         profileprovider.clearProfilePop(context, 'bankifsc');
 
-                        await context.read(fundProvider).fetchHstoken(context);
+                        await ref.read(fundProvider).fetchHstoken(context);
                         Navigator.pushNamed(context, Routes.profileWebViewApp,
                             arguments: "bank");
 
@@ -346,13 +346,13 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
                         //     return Consumer(
                         //       builder: (context, watch, _) {
                         //         // final selectedbankchin =
-                        //         //     watch(selectedbankchipprovi);
-                        //         // final popproprv = watch(profileProvider);
+                        //         //     ref.watch(selectedbankchipprovi);
+                        //         // final popproprv = ref.watch(profileProvider);
 
                         //         // final selectedDropdownValue =
-                        //         //     watch(dropdownProvider).state;
+                        //         //     ref.watch(dropdownProvider).state;
                         //         // final isActive =
-                        //         //     watch(radioButtonProvider).state;
+                        //         //     ref.watch(radioButtonProvider).state;
                         //         return Container(
                         //           padding: EdgeInsets.all(16),
                         //           child: Column(
@@ -853,7 +853,7 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
                 TextFormField(
                   controller: profileprovider.newEmailOTPController,
                   onChanged: (value) {
-                    // context.read(emailotpver).state =
+                    // ref.read(emailotpver).state =
                     //     value;
                   },
                   decoration: const InputDecoration(
@@ -1005,7 +1005,7 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
             TextFormField(
               controller: profileprovider.newMobController,
               onChanged: (value) {
-                // context.read(newmobilno).state =
+                // ref.read(newmobilno).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(
@@ -1026,7 +1026,7 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
               TextFormField(
                 controller: profileprovider.newMobOTPController,
                 onChanged: (value) {
-                  // context.read(mobilotpval).state =
+                  // ref.read(mobilotpval).state =
                   //     value; // Update state
                 },
                 decoration: const InputDecoration(
@@ -1171,7 +1171,7 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
             TextFormField(
               controller: profileprovider.newAddressController,
               onChanged: (value) {
-                // context.read(newaddprov).state =
+                // ref.read(newaddprov).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(
@@ -1332,7 +1332,7 @@ class _ProfileDetailsBankState extends State<ProfileDetailsBank> {
             TextFormField(
               controller: profileprovider.newAddressProofTypeController,
               onChanged: (value) {
-                // context.read(proofprov).state =
+                // ref.read(proofprov).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(

@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,18 +10,18 @@ import '../../../../provider/transcation_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 
-class NoUPIAppsAlert extends StatefulWidget {
+class NoUPIAppsAlert extends ConsumerStatefulWidget {
   const NoUPIAppsAlert({super.key});
 
   @override
-  State<NoUPIAppsAlert> createState() => _NoUPIAppsAlertState();
+  ConsumerState<NoUPIAppsAlert> createState() => _NoUPIAppsAlertState();
 }
 
-class _NoUPIAppsAlertState extends State<NoUPIAppsAlert> {
+class _NoUPIAppsAlertState extends ConsumerState<NoUPIAppsAlert> {
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
-    final fund = context.read(transcationProvider);
+    final theme = ref.read(themeProvider);
+    final fund = ref.read(transcationProvider);
 
     return GestureDetector(
         onTap: () => fund.focusNode.unfocus(),

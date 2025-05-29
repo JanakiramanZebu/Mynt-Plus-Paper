@@ -8,8 +8,8 @@ class ExploreWidget extends ConsumerWidget {
   const ExploreWidget({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final explore = watch(stocksProvide);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final explore = ref.watch(stocksProvide);
     return SizedBox(
       height: 34,
       child: ListView.separated(

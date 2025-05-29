@@ -9,10 +9,10 @@ class CorporateAction extends ConsumerWidget {
   const CorporateAction({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tradeAcrion =
-        watch(stocksProvide).corporateActionModel!.corporateAction;
-    final theme = context.read(themeProvider);
+        ref.watch(stocksProvide).corporateActionModel!.corporateAction;
+    final theme = ref.read(themeProvider);
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

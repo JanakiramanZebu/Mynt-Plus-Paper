@@ -23,7 +23,7 @@ import '../sharedWidget/snack_bar.dart';
 import 'core/default_change_notifier.dart';
 import 'package:intl/intl.dart';
 
-final ipoProvide = ChangeNotifierProvider((ref) => IPOProvider(ref.read));
+final ipoProvide = ChangeNotifierProvider((ref) => IPOProvider(ref));
 
 class IPOProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
@@ -82,7 +82,7 @@ class IPOProvider extends DefaultChangeNotifier {
   bool _isActiveSME = true;
   bool get isActiveSME => _isActiveSME;
 
-  final Reader ref;
+  final Ref ref;
 
   void activeMainStreamBtn(bool val) {
     _isActiveMainStream = val;

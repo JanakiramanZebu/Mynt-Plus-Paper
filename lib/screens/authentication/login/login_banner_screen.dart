@@ -50,9 +50,9 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
         }
       },
       child: Consumer(
-        builder: (context, watch, child) {
-          final theme = watch(themeProvider);
-          final auth = watch(authProvider);
+        builder: (context, ref, child) {
+          final theme = ref.watch(themeProvider);
+          final auth = ref.watch(authProvider);
           return Scaffold(
             extendBodyBehindAppBar: true,
             backgroundColor: Colors.transparent,

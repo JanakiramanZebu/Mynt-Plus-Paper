@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart'; 
@@ -6,13 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../res/res.dart';
 import '../provider/thems.dart';
 
-class ListWidgets extends StatelessWidget {
+class ListWidgets extends ConsumerWidget {
   final String text;
   const ListWidgets({super.key, required this.text});
 
   @override
-  Widget build(BuildContext context) {
-    final theme=context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme=ref.read(themeProvider);
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Padding(
           padding: EdgeInsets.only(top: 2),

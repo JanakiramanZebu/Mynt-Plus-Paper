@@ -18,9 +18,9 @@ class GttCondition extends ConsumerWidget {
       required this.isModify});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final orderInput = watch(ordInputProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orderInput = ref.watch(ordInputProvider);
+    final theme = ref.read(themeProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -188,9 +188,9 @@ class PriceTypeBtn extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final orderInput = watch(ordInputProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orderInput = ref.watch(ordInputProvider);
+    final theme = ref.read(themeProvider);
     return SizedBox(
         height: 38,
         child: ListView.separated(

@@ -10,10 +10,10 @@
 //   const TopSchemeList({super.key});
 
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
-//     final mf = watch(mfProvider);
-//     final theme = watch(themeProvider);
-//     // final fund = watch(fundProvider);
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final mf = ref.watch(mfProvider);
+//     final theme = ref.watch(themeProvider);
+//     // final fund = ref.watch(fundProvider);
 //     return Column(
 //       children: [
 //         ListView.builder(

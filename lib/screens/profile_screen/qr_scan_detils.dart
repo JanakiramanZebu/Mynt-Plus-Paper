@@ -18,8 +18,8 @@ class QrDetails extends ConsumerWidget {
   const QrDetails({super.key, required this.details, required this.camera});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     return details.uniqueId == null
         ? Container(
            decoration: BoxDecoration(
@@ -161,7 +161,7 @@ class QrDetails extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(50),
                             )),
                         onPressed: () async{
-                           await context
+                           await ref
                               .read(userProfileProvider)
                               .fetchQR(context, details.uniqueId.toString(),details.loginSource.toString(),camera);
                         },

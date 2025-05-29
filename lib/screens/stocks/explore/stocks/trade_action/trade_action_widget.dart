@@ -27,10 +27,10 @@ class _TradeActionState extends State<TradeAction> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final actionTrade = watch(stocksProvide);
-      final marketWatch = watch(marketWatchProvider);
-      final socketDatas = watch(websocketProvider).socketDatas;
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final actionTrade = ref.watch(stocksProvide);
+      final marketWatch = ref.watch(marketWatchProvider);
+      final socketDatas = ref.watch(websocketProvider).socketDatas;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -2,7 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_riverpod/all.dart';
+// import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/api/core/api_core.dart';
 import '../../../locator/locator.dart';
@@ -23,13 +25,13 @@ class CDSLWebView extends StatefulWidget {
 class CamsWebViewState extends State<CDSLWebView> {
   double progress = 0;
   late ContextMenu contextMenu;
-  final Preferences pref = locator<Preferences>();
+  // final Preferences pref = ref.read(preferencesProvider);
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
 
-      final ledgerprovider = watch(ledgerProvider);
+      final ledgerprovider = ref.watch(ledgerProvider);
       return Scaffold(
         backgroundColor: const Color(0xffffffff),
         appBar: AppBar(

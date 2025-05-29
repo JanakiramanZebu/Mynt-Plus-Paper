@@ -8,21 +8,21 @@ import '../../res/res.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 
-class CreatewatchList extends StatefulWidget {
+class CreatewatchList extends ConsumerStatefulWidget {
   final List<String> wList;
   const CreatewatchList({super.key, required this.wList});
 
   @override
-  State<CreatewatchList> createState() => _CreatewatchListState();
+  ConsumerState<CreatewatchList> createState() => _CreatewatchListState();
 }
 
-class _CreatewatchListState extends State<CreatewatchList> {
+class _CreatewatchListState extends ConsumerState<CreatewatchList> {
   TextEditingController textCtrl = TextEditingController();
   String? errorText;
   String wlName = "";
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return AlertDialog(
         backgroundColor: theme.isDarkMode
             ? const Color.fromARGB(255, 18, 18, 18)
@@ -119,7 +119,7 @@ class _CreatewatchListState extends State<CreatewatchList> {
                             errorText = "This watchlist name already exist";
                           });
                         } else {
-                          await context
+                          await ref
                               .read(marketWatchProvider)
                               .addWatchList(textCtrl.text, context);
 

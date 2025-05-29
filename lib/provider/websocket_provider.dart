@@ -17,10 +17,10 @@ import '../locator/locator.dart';
 import '../locator/preference.dart';
 
 final websocketProvider =
-    ChangeNotifierProvider((ref) => WebSocketProvider(ref.read));
+    ChangeNotifierProvider((ref) => WebSocketProvider(ref));
 
 class WebSocketProvider extends ChangeNotifier {
-  final Reader ref;
+  final Ref ref;
   WebSocketProvider(this.ref);
 
   // Constants
@@ -196,13 +196,14 @@ class WebSocketProvider extends ChangeNotifier {
   }) async {
     _context = context;
     
-    // Save channel input for reconnection
-    if (task == "t") {
+    // Save channel input for reconnection (only if it's a subscription request)
+    if (task == "t" && channelInput.isNotEmpty) {
       ConstantName.lastSubscribe = channelInput;
-    } else if (task == "d") {
+    } else if (task == "d" && channelInput.isNotEmpty) {
       ConstantName.lastSubscribeDepth = channelInput;
     }
 
+    // If already connected and we have a subscription request, process it
     if (_wsConnected) {
       if (channelInput.isNotEmpty) {
         _handleSubscription(channelInput, task, context);
@@ -210,6 +211,7 @@ class WebSocketProvider extends ChangeNotifier {
       return;
     }
 
+    // If connection already in progress, wait for it to complete
     if (_connecting) {
       try {
         // Use a shorter timeout for waiting on an existing connection attempt in low bandwidth
@@ -221,6 +223,7 @@ class WebSocketProvider extends ChangeNotifier {
           throw TimeoutException('Connection attempt timed out');
         });
         
+        // After connection completes, handle any subscription request
         if (_wsConnected && channelInput.isNotEmpty) {
           _handleSubscription(channelInput, task, context);
         }
@@ -284,12 +287,14 @@ class WebSocketProvider extends ChangeNotifier {
       final res = jsonDecode(event.toString());
 
       if (res['s']?.toString().toLowerCase() == "ok" && res['t']?.toString() == "ck") {
+        log("WebSocket connected successfully");
         _handleConnectionSuccess();
       } else if (res['t']?.toString().toLowerCase() == "tf" || 
                 res['t']?.toString().toLowerCase() == "df") {
         _handleMarketData(res);
       } else if (res['t']?.toString().toLowerCase() == "tk" || 
                 res['t']?.toString().toLowerCase() == "dk") {
+        log("Socket Data: ${res.toString()}");
         _handleTokenData(res);
       } else if (res['t']?.toString().toLowerCase() == "om" && _context != null) {
         _handleOrderMessage(res);
@@ -300,7 +305,8 @@ class WebSocketProvider extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      // Silently handle JSON parsing errors
+      // Log parsing errors for debugging
+      log("WebSocket message parsing error: $e");
     }
   }
 
@@ -349,7 +355,7 @@ class WebSocketProvider extends ChangeNotifier {
       if (_socketDatas[key]['lp'] != null && 
           _socketDatas[key]['lp'] != '0' && 
           _socketDatas[key]['lp'] != '0.00') {
-        ref(portfolioProvider).updateHoldingValues(key, _socketDatas[key]);
+        ref.read(portfolioProvider).updateHoldingValues(key, _socketDatas[key]);
       }
     } else {
       // For existing tokens, use the optimized update method
@@ -371,14 +377,14 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void _refreshData(BuildContext context) {
-                ref(portfolioProvider).fetchHoldings(context, "");
-                ref(orderProvider).fetchOrderBook(context, true);
-                ref(orderProvider).fetchTradeBook(context);
-                ref(orderProvider).fetchGTTOrderBook(context, "");
-                ref(fundProvider).fetchFunds(context);
+                ref.read(portfolioProvider).fetchHoldings(context, "");
+                ref.read(orderProvider).fetchOrderBook(context, true);
+                ref.read(orderProvider).fetchTradeBook(context);
+                ref.read(orderProvider).fetchGTTOrderBook(context, "");
+                ref.read(fundProvider).fetchFunds(context);
     
     Timer(const Duration(seconds: 1), 
-      () => ref(portfolioProvider).fetchPositionBook(context, false));
+      () => ref.read(portfolioProvider).fetchPositionBook(context, false));
   }
 
   void _updateSocketData(String key, Map<String, dynamic> res) {
@@ -436,7 +442,7 @@ class WebSocketProvider extends ChangeNotifier {
       // and only update if we have valid price data
       if ((res.containsKey('lp') || res.containsKey('pc') || res.containsKey('c')) &&
           data["lp"] != null && data["lp"] != "0" && data["lp"] != "0.00") {
-        ref(portfolioProvider).updateHoldingValues(key, data);
+        ref.read(portfolioProvider).updateHoldingValues(key, data);
       }
     }
   }
@@ -515,8 +521,32 @@ class WebSocketProvider extends ChangeNotifier {
     required String input,
     required BuildContext context,
   }) {
-    if (input.isNotEmpty && _wsConnected) {
+    if (input.isEmpty) {
+      print("WebSocket: Empty input provided to connectTouchLine");
+      return;
+    }
+    
+    if (_wsConnected && _channel != null) {
+      print("WebSocket: Sending ${task} request for ${input.split('#').length} symbols");
       _channel?.sink.add(jsonEncode({"t": task, "k": input}));
+    } else {
+      // If socket isn't ready yet, schedule a retry
+      print("WebSocket: Connection not ready, scheduling retry in 500ms");
+      Future.delayed(Duration(milliseconds: 500), () {
+        if (_wsConnected && _channel != null) {
+          print("WebSocket: Retrying subscription after delay");
+          _channel?.sink.add(jsonEncode({"t": task, "k": input}));
+        } else {
+          print("WebSocket: Still not connected after delay, attempting full reconnection");
+          if (_context != null) {
+            establishConnection(
+              channelInput: input,
+              task: task,
+              context: context,
+            );
+          }
+        }
+      });
     }
   }
 
@@ -571,7 +601,7 @@ class WebSocketProvider extends ChangeNotifier {
       _attemptReconnection(context);
     } else {
       _reconnectBackoff = Timer(backoffDelay, () {
-        if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+        if (ref.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
           _attemptReconnection(context);
         } else {
           _reconnecting = false; // Reset flag if network is unavailable
@@ -581,28 +611,41 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void _attemptReconnection(BuildContext context) {
-    if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+    if (ref.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
       // Make sure we only try to refresh data once per reconnection attempt
       if (!_wsConnected) {
         _refreshData(context);
       }
 
+      // First establish a base connection if needed
+      establishConnection(
+        channelInput: "",
+        task: "c",
+        context: context,
+      );
+      
+      // After connection, subscribe to stored channels if they exist
+      // Give a slight delay to ensure connection is established
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (_wsConnected) {
       // Only establish connections if we have data to subscribe to
       if (ConstantName.lastSubscribe.isNotEmpty) {
-        establishConnection(
-          channelInput: ConstantName.lastSubscribe,
+            connectTouchLine(
+              input: ConstantName.lastSubscribe,
           task: "t",
           context: context,
         );
       }
       
       if (ConstantName.lastSubscribeDepth.isNotEmpty) {
-        establishConnection(
-          channelInput: ConstantName.lastSubscribeDepth,
+            connectTouchLine(
+              input: ConstantName.lastSubscribeDepth,
           task: "d",
           context: context,
         );
       }
+        }
+      });
       
       _retryScreen = false;
     } else {

@@ -12,35 +12,35 @@ import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/payment_loader.dart';
 
-class UPIIDPaymentCancelAlert extends StatefulWidget {
+class UPIIDPaymentCancelAlert extends ConsumerStatefulWidget {
   const UPIIDPaymentCancelAlert({
     super.key,
   });
 
   @override
-  State<UPIIDPaymentCancelAlert> createState() =>
+  ConsumerState<UPIIDPaymentCancelAlert> createState() =>
       _UPIIDPaymentCancelAlertState();
 }
 
-class _UPIIDPaymentCancelAlertState extends State<UPIIDPaymentCancelAlert> {
+class _UPIIDPaymentCancelAlertState extends ConsumerState<UPIIDPaymentCancelAlert> {
   Timer? _timer;
 
   @override
   void initState() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      context.read(transcationProvider).hdfcpaymentstatus?.upiId?.status ==
+      ref.read(transcationProvider).hdfcpaymentstatus?.upiId?.status ==
                   "REJECTED" ||
-              context
+              ref
                       .read(transcationProvider)
                       .hdfcpaymentstatus
                       ?.upiId
                       ?.status ==
                   "SUCCESS"
           ? null
-          : context.read(transcationProvider).fetchHdfcpaymetstatus(
+          : ref.read(transcationProvider).fetchHdfcpaymetstatus(
               context,
-              '${context.read(transcationProvider).hdfctranction!.data!.orderNumber}',
-              '${context.read(transcationProvider).hdfctranction!.data!.upiTransactionNo}');
+              '${ref.read(transcationProvider).hdfctranction!.data!.orderNumber}',
+              '${ref.read(transcationProvider).hdfctranction!.data!.upiTransactionNo}');
     });
     super.initState();
   }
@@ -59,8 +59,8 @@ class _UPIIDPaymentCancelAlertState extends State<UPIIDPaymentCancelAlert> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
-    // final upiId = context.read(transcationProvider);
+    final theme = ref.read(themeProvider);
+    // final upiId = ref.read(transcationProvider);
 
     return PopScope(
         canPop: true, // Allows default back navigation

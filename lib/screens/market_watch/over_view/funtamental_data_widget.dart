@@ -14,11 +14,11 @@ class FundamentalDataWidget extends ConsumerWidget {
   const FundamentalDataWidget({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     
     // Get fundamental data - using more focused approach instead of watching entire provider
-    final marketWatchProv = watch(marketWatchProvider);
+    final marketWatchProv = ref.watch(marketWatchProvider);
     final fundamentalData = marketWatchProv.fundamentalData;
     final tsym = marketWatchProv.getQuotes?.tsym;
     

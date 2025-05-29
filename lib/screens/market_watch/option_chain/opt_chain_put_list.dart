@@ -182,7 +182,7 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
             color: Color(theme.isDarkMode ? 0xffcaedc4 : 0xffedf9eb),
             style: _getActionStyle(colors.ltpgreen),
             onTap: (handler) async {
-              await placeOrderInput(scripData, context, widget.option, true);
+              await placeOrderInput(context, widget.option, true);
               handler(false);
             },
           ),
@@ -194,7 +194,7 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
             color: Color(theme.isDarkMode ? 0xfffbbbb6 : 0xfffee8e7),
             style: _getActionStyle(colors.darkred),
             onTap: (handler) async {
-              await placeOrderInput(scripData, context, widget.option, false);
+              await placeOrderInput(context, widget.option, false);
               handler(false);
             },
           ),
@@ -367,12 +367,14 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
 }
 
 Future<void> placeOrderInput(
-  MarketWatchProvider scripInfo,
   BuildContext context,
   OptionValues depthData,
   bool transType,
 ) async {
-  await context.read(marketWatchProvider).fetchScripInfo(
+  // Obtain a WidgetRef from the context
+  final container = ProviderScope.containerOf(context);
+  
+  await container.read(marketWatchProvider).fetchScripInfo(
         depthData.token.toString(),
         depthData.exch.toString(),
         context,
@@ -394,7 +396,7 @@ Future<void> placeOrderInput(
   );
   Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
     "orderArg": orderArgs,
-    "scripInfo": context.read(marketWatchProvider).scripInfoModel!,
+    "scripInfo": container.read(marketWatchProvider).scripInfoModel!,
     "isBskt": "",
   });
 }

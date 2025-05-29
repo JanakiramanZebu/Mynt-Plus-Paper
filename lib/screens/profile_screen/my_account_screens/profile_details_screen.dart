@@ -15,17 +15,17 @@ import '../../../res/res.dart';
 import 'dart:io' show Platform;
 
 
-class ProfileInfoDetails extends StatefulWidget {
+class ProfileInfoDetails extends ConsumerStatefulWidget {
   const ProfileInfoDetails({super.key});
 
   @override
-  State<ProfileInfoDetails> createState() => _ProfileInfoDetailsState();
+  ConsumerState<ProfileInfoDetails> createState() => _ProfileInfoDetailsState();
 }
 
-class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
+class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
   @override
   void initState() {
-    context.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
+    ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
     super.initState();
   }
 
@@ -50,9 +50,9 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, ScopedReader watch, _) {
-        final profileprovider = watch(profileAllDetailsProvider);
-        final theme = watch(themeProvider);
+      builder: (context, WidgetRef ref, _) {
+        final profileprovider = ref.watch(profileAllDetailsProvider);
+        final theme = ref.watch(themeProvider);
         bool DDPIActive =
             profileprovider.clientAllDetails.clientData!.dDPI == 'Y';
         bool POAActive =
@@ -196,7 +196,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                 // SizedBox(height: 8),
                 // Divider(
                 //   thickness: 0.5,
-                //   color: context.read(themeProvider).isDarkMode
+                //   color: ref.read(themeProvider).isDarkMode
                 //           ? colors.colorWhite
                 //           : colors.colorBlack,),
                 UserInfoCard(
@@ -246,7 +246,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                               // ),
                               onPressed: () async{
                                 // if (Platform.isAndroid) {
-                                //     await context.read(fundProvider).fetchHstoken(context);
+                                //     await ref.read(fundProvider).fetchHstoken(context);
                                 //       Navigator.pushNamed(
                                 //           context, Routes.profileWebViewApp,
                                 //           arguments: "deposltory");
@@ -261,7 +261,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                                 elevation: 0,
                                 // minimumSize: Size(double.infinity, 30),
                                 backgroundColor:
-                                    context.read(themeProvider).isDarkMode
+                                    ref.read(themeProvider).isDarkMode
                                         ? colors.colorBlack
                                         : colors.colorWhite,
                                 shape:
@@ -271,7 +271,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                                 ),
                                 side: BorderSide(
                                   width: 1,
-                                  color: context.read(themeProvider).isDarkMode
+                                  color: ref.read(themeProvider).isDarkMode
                                       ? colors.colorWhite
                                       : colors.colorBlack,
                                 ),
@@ -283,7 +283,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
 
                               // Text("Activate DDPI",
                               //     style: textStyle(
-                              //         !context.read(themeProvider).isDarkMode
+                              //         !ref.read(themeProvider).isDarkMode
                               //             ? colors.colorBlack
                               //             : colors.colorWhite,
                               //         14,
@@ -425,7 +425,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                       !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   expansionCallback: (panelIndex, expanded) async {
                               //  if (Platform.isAndroid) {
-                              //       await context.read(fundProvider).fetchHstoken(context);
+                              //       await ref.read(fundProvider).fetchHstoken(context);
                               //         Navigator.pushNamed(
                               //             context, Routes.profileWebViewApp,
                               //             arguments: "formdownload");
@@ -436,7 +436,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
 
 
 
-                    // await context.read(fundProvider).fetchHstoken(context);
+                    // await ref.read(fundProvider).fetchHstoken(context);
                     // Navigator.pushNamed(context, Routes.profileWebViewApp,arguments: "formdownload");
                     //  profileprovider.openInWebURL(context,"formdownload");
                     // formDownActive = !formDownActive;
@@ -623,7 +623,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                                         onPressed: () async {
 
                                 // if (Platform.isAndroid) {
-                                //     await context.read(fundProvider).fetchHstoken(context);
+                                //     await ref.read(fundProvider).fetchHstoken(context);
                                 //       Navigator.pushNamed(
                                 //           context, Routes.profileWebViewApp,
                                 //           arguments: "closure");
@@ -996,7 +996,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
                 TextFormField(
                   controller: profileprovider.newEmailOTPController,
                   onChanged: (value) {
-                    // context.read(emailotpver).state =
+                    // ref.read(emailotpver).state =
                     //     value;
                   },
                   decoration: const InputDecoration(
@@ -1148,7 +1148,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
             TextFormField(
               controller: profileprovider.newMobController,
               onChanged: (value) {
-                // context.read(newmobilno).state =
+                // ref.read(newmobilno).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(
@@ -1169,7 +1169,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
               TextFormField(
                 controller: profileprovider.newMobOTPController,
                 onChanged: (value) {
-                  // context.read(mobilotpval).state =
+                  // ref.read(mobilotpval).state =
                   //     value; // Update state
                 },
                 decoration: const InputDecoration(
@@ -1314,7 +1314,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
             TextFormField(
               controller: profileprovider.newAddressController,
               onChanged: (value) {
-                // context.read(newaddprov).state =
+                // ref.read(newaddprov).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(
@@ -1475,7 +1475,7 @@ class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
             TextFormField(
               controller: profileprovider.newAddressProofTypeController,
               onChanged: (value) {
-                // context.read(proofprov).state =
+                // ref.read(proofprov).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(
@@ -1690,7 +1690,7 @@ class UserInfoCard extends StatelessWidget {
                   splashRadius: 20,
                     onPressed: () async {
                             // if (Platform.isAndroid) {
-                                    // await context.read(fundProvider).fetchHstoken(context);
+                                    // await ref.read(fundProvider).fetchHstoken(context);
                                     //   Navigator.pushNamed(
                                     //       context, Routes.profileWebViewApp,
                                     //       arguments: "profile");
@@ -1702,7 +1702,7 @@ class UserInfoCard extends StatelessWidget {
 
 
 
-                      // await context.read(fundProvider).fetchHstoken(context);
+                      // await ref.read(fundProvider).fetchHstoken(context);
                       // Navigator.pushNamed(context, Routes.profileWebViewApp,
                       //     arguments: "profile");
                       // profileprovider.openInWebURL(context,"profile");
@@ -1721,7 +1721,7 @@ class UserInfoCard extends StatelessWidget {
 
                 // InkWell(
                 //   onTap: () async {
-                //     await context.read(fundProvider).fetchHstoken(context);
+                //     await ref.read(fundProvider).fetchHstoken(context);
                 //     Navigator.pushNamed(context, Routes.profileWebViewApp,
                 //         arguments: "profile");
                 //   },
@@ -1833,7 +1833,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                       // ),
                       onPressed: () async {
                         //  if (Platform.isAndroid) {
-                        //             await context.read(fundProvider).fetchHstoken(context);
+                        //             await ref.read(fundProvider).fetchHstoken(context);
                         //               Navigator.pushNamed(
                         //                   context, Routes.profileWebViewApp,
                         //                   arguments: "nominee");
@@ -1846,14 +1846,14 @@ class UserNomineeInfoCard extends StatelessWidget {
 
 
                         // profileprovider.openInWebURL(context,"nominee");
-                        // await context.read(fundProvider).fetchHstoken(context);
+                        // await ref.read(fundProvider).fetchHstoken(context);
                         // Navigator.pushNamed(context, Routes.profileWebViewApp,
                         //     arguments: "nominee");
                       },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                         minimumSize: Size(double.infinity, 30),
-                        backgroundColor: context.read(themeProvider).isDarkMode
+                        backgroundColor: theme.isDarkMode
                             ? colors.colorBlack
                             : colors.colorWhite,
                         shape:
@@ -1863,7 +1863,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                         ),
                         side: BorderSide(
                           width: 1,
-                          color: context.read(themeProvider).isDarkMode
+                          color: theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack,
                         ),
@@ -1875,7 +1875,7 @@ class UserNomineeInfoCard extends StatelessWidget {
 
                       // Text("Add Nominee",
                       //     style: textStyle(
-                      //         !context.read(themeProvider).isDarkMode
+                      //         !ref.read(themeProvider).isDarkMode
                       //             ? colors.colorBlack
                       //             : colors.colorWhite,
                       //         16,
@@ -1907,7 +1907,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                     onPressed: () async {
 
                       //  if (Platform.isAndroid) {
-                      //               await context.read(fundProvider).fetchHstoken(context);
+                      //               await ref.read(fundProvider).fetchHstoken(context);
                       //                 Navigator.pushNamed(
                       //                     context, Routes.profileWebViewApp,
                       //                     arguments: "nominee");
@@ -1917,7 +1917,7 @@ class UserNomineeInfoCard extends StatelessWidget {
                                   // }
                                 
 
-                    //  await context.read(fundProvider).fetchHstoken(context);
+                    //  await ref.read(fundProvider).fetchHstoken(context);
                     //   Navigator.pushNamed(context, Routes.profileWebViewApp,
                     //       arguments: "nominee");
                     //  profileprovider.openInWebURL(context,"nominee");
@@ -1936,7 +1936,7 @@ class UserNomineeInfoCard extends StatelessWidget {
 
                   // InkWell(
                   //   onTap: () async {
-                  //     await context.read(fundProvider).fetchHstoken(context);
+                  //     await ref.read(fundProvider).fetchHstoken(context);
                   //     Navigator.pushNamed(context, Routes.profileWebViewApp,
                   //         arguments: "nominee");
                   //   },
@@ -2065,7 +2065,7 @@ class DematDetailsCard extends StatelessWidget {
                           horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(2),
-                        color: context.read(themeProvider).isDarkMode
+                        color: theme.isDarkMode
                             ? DDPIActive
                                 ? const Color.fromARGB(255, 9, 163, 17)
                                 : colors.colorGrey
@@ -2077,7 +2077,7 @@ class DematDetailsCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
                           style: textStyle(
-                              context.read(themeProvider).isDarkMode
+                              theme.isDarkMode
                                   ? const Color(0xffFFFFFF)
                                   : const Color(0xff666666),
                               12,
@@ -2089,7 +2089,7 @@ class DematDetailsCard extends StatelessWidget {
                           horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(2),
-                        color: context.read(themeProvider).isDarkMode
+                        color: theme.isDarkMode
                             ? POAActive
                                 ? const Color.fromARGB(255, 9, 163, 17)
                                 : colors.colorGrey
@@ -2101,7 +2101,7 @@ class DematDetailsCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
                           style: textStyle(
-                              context.read(themeProvider).isDarkMode
+                              theme.isDarkMode
                                   ? const Color(0xffFFFFFF)
                                   : const Color(0xff666666),
                               12,
@@ -2157,7 +2157,7 @@ class DematDetailsCard extends StatelessWidget {
           //                     horizontal: 6, vertical: 3),
           //                 decoration: BoxDecoration(
           //                   borderRadius: BorderRadius.circular(2),
-          //                   color: context.read(themeProvider).isDarkMode
+          //                   color: ref.read(themeProvider).isDarkMode
           //                       ? DDPIActive
           //                           ? const Color.fromARGB(255, 9, 163, 17)
           //                           : const Color(0xffF1F3F8)
@@ -2170,7 +2170,7 @@ class DematDetailsCard extends StatelessWidget {
           //                     overflow: TextOverflow.ellipsis,
           //                     // maxLines: 1,
           //                     style: textStyle(
-          //                         context.read(themeProvider).isDarkMode
+          //                         ref.read(themeProvider).isDarkMode
           //                             ? const Color(0xffFFFFFF)
           //                             : const Color(0xff666666),
           //                         10,
@@ -2182,7 +2182,7 @@ class DematDetailsCard extends StatelessWidget {
           //                     horizontal: 6, vertical: 3),
           //                 decoration: BoxDecoration(
           //                   borderRadius: BorderRadius.circular(2),
-          //                   color: context.read(themeProvider).isDarkMode
+          //                   color: ref.read(themeProvider).isDarkMode
           //                       ? POAActive
           //                           ? const Color.fromARGB(255, 9, 163, 17)
           //                           : const Color(0xffF1F3F8)
@@ -2195,7 +2195,7 @@ class DematDetailsCard extends StatelessWidget {
           //                     overflow: TextOverflow.ellipsis,
           //                     // maxLines: 1,
           //                     style: textStyle(
-          //                         context.read(themeProvider).isDarkMode
+          //                         ref.read(themeProvider).isDarkMode
           //                             ? const Color(0xffFFFFFF)
           //                             : const Color(0xff666666),
           //                         10,
@@ -2215,7 +2215,7 @@ class DematDetailsCard extends StatelessWidget {
           //           isDense: true,
           //         ),
           //         style: TextStyle(
-          //           color: context.read(themeProvider).isDarkMode
+          //           color: ref.read(themeProvider).isDarkMode
           //               ? colors.colorWhite
           //               : colors.colorBlack,
           //           fontSize: 15,
@@ -2276,7 +2276,7 @@ class TradingPreferencesCard extends StatelessWidget {
                     onPressed: () async {
 
                       //  if (Platform.isAndroid) {
-                      //               await context.read(fundProvider).fetchHstoken(context);
+                      //               await ref.read(fundProvider).fetchHstoken(context);
                       //                 Navigator.pushNamed(
                       //                     context, Routes.profileWebViewApp,
                       //                     arguments: "segment");
@@ -2286,7 +2286,7 @@ class TradingPreferencesCard extends StatelessWidget {
                                   // }
                                 
 
-                    //  await context.read(fundProvider).fetchHstoken(context);
+                    //  await ref.read(fundProvider).fetchHstoken(context);
                     // Navigator.pushNamed(context, Routes.profileWebViewApp,
                     //     arguments: "segment");
                     //  profileprovider.openInWebURL(context,"segment");
@@ -2305,7 +2305,7 @@ class TradingPreferencesCard extends StatelessWidget {
 
                 // InkWell(
                 //   onTap: () async {
-                //     await context.read(fundProvider).fetchHstoken(context);
+                //     await ref.read(fundProvider).fetchHstoken(context);
                 //     Navigator.pushNamed(context, Routes.profileWebViewApp,
                 //         arguments: "segment");
                 //   },
@@ -2406,7 +2406,7 @@ class UserInfoColumn extends StatelessWidget {
               // suffix: editable
               //     ? InkWell(
               //         onTap: () async {
-              //           await context.read(fundProvider).fetchHstoken(context);
+              //           await ref.read(fundProvider).fetchHstoken(context);
               //           Navigator.pushNamed(context, Routes.profileWebViewApp,
               //               arguments: section);
               //         },
@@ -2420,7 +2420,7 @@ class UserInfoColumn extends StatelessWidget {
             ),
             style: TextStyle(
               overflow: TextOverflow.ellipsis,
-              color: context.read(themeProvider).isDarkMode
+              color: theme.isDarkMode
                   ? colors.colorWhite
                   : colors.colorBlack,
               fontSize: 16,
@@ -2433,14 +2433,14 @@ class UserInfoColumn extends StatelessWidget {
   }
 }
 
-class CustomTFExchBadge extends StatelessWidget {
+class CustomTFExchBadge extends ConsumerWidget {
   final String label;
   final Iterable<SegmentsData> exch;
   const CustomTFExchBadge({super.key, required this.label, required this.exch});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
@@ -2492,7 +2492,7 @@ class CustomTFExchBadge extends StatelessWidget {
   // }
 }
 
-class MTFSection extends StatelessWidget {
+class MTFSection extends ConsumerWidget {
   final ProfileProvider profileprovider;
   final ThemesProvider theme;
 
@@ -2500,8 +2500,7 @@ class MTFSection extends StatelessWidget {
       {super.key, required this.profileprovider, required this.theme});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
     bool DDPIActive = profileprovider.clientAllDetails.clientData!.dDPI == 'Y';
     bool POAActive = profileprovider.clientAllDetails.clientData!.pOA == 'Y';
     bool mtfCl = profileprovider.clientAllDetails.clientData!.mTFCl == 'Y';
@@ -2533,7 +2532,7 @@ class MTFSection extends StatelessWidget {
                           horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(2),
-                        color: context.read(themeProvider).isDarkMode
+                        color: theme.isDarkMode
                             ? DDPIActive
                                 ? const Color.fromARGB(255, 9, 163, 17)
                                 : colors.colorGrey
@@ -2545,7 +2544,7 @@ class MTFSection extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
                           style: textStyle(
-                              context.read(themeProvider).isDarkMode
+                              theme.isDarkMode
                                   ? const Color(0xffFFFFFF)
                                   : const Color(0xff666666),
                               12,
@@ -2557,7 +2556,7 @@ class MTFSection extends StatelessWidget {
                           horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(2),
-                        color: context.read(themeProvider).isDarkMode
+                        color: theme.isDarkMode
                             ? POAActive
                                 ? const Color.fromARGB(255, 9, 163, 17)
                                 : colors.colorGrey
@@ -2569,7 +2568,7 @@ class MTFSection extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           // maxLines: 1,
                           style: textStyle(
-                              context.read(themeProvider).isDarkMode
+                              theme.isDarkMode
                                   ? const Color(0xffFFFFFF)
                                   : const Color(0xff666666),
                               12,
@@ -2623,7 +2622,7 @@ class MTFSection extends StatelessWidget {
                               theme: theme.isDarkMode,
                               fw: 1),
                               // labelPadding:EdgeInsets.symmetric(horizontal: 8,vertical: 5),
-                          backgroundColor: context.read(themeProvider).isDarkMode
+                          backgroundColor: theme.isDarkMode
                               ? mtfCl && mtfClAuto
                                   ? const Color.fromARGB(255, 9, 163, 17)
                                   : colors.colorGrey
@@ -2633,7 +2632,7 @@ class MTFSection extends StatelessWidget {
                                       .withOpacity(.1), // Color(0xffecf8f1),
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
-                              color: context.read(themeProvider).isDarkMode
+                              color: theme.isDarkMode
                                   ? colors.colorBlack
                                   : colors.colorWhite, // Color(0xffc1e7ba),
                             ),
@@ -2668,7 +2667,7 @@ class MTFSection extends StatelessWidget {
                         onPressed: () async {
 
                           //  if (Platform.isAndroid) {
-                          //           await context.read(fundProvider).fetchHstoken(context);
+                          //           await ref.read(fundProvider).fetchHstoken(context);
                           //             Navigator.pushNamed(
                           //                 context, Routes.profileWebViewApp,
                           //                 arguments: "mtf");
@@ -2678,7 +2677,7 @@ class MTFSection extends StatelessWidget {
                                   // }
                                 
 
-                          // await context.read(fundProvider).fetchHstoken(context);
+                          // await ref.read(fundProvider).fetchHstoken(context);
                           // Navigator.pushNamed(context, Routes.profileWebViewApp,
                           //     arguments: "mtf");
                           //  profileprovider.openInWebURL(context,"mtf");
@@ -2686,7 +2685,7 @@ class MTFSection extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
                           
-                          backgroundColor: context.read(themeProvider).isDarkMode
+                          backgroundColor: theme.isDarkMode
                               ? colors.colorBlack
                               : colors.colorWhite,
                           shape:
@@ -2696,7 +2695,7 @@ class MTFSection extends StatelessWidget {
                           ),
                           side: BorderSide(
                             width: 1,
-                            color: context.read(themeProvider).isDarkMode
+                            color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
                           ),

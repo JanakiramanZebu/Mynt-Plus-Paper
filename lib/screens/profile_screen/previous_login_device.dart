@@ -26,7 +26,7 @@ class PreviousLoginDecive extends StatefulWidget {
 class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
   @override
   void initState() {
-    // context.read(networkStateProvider).networkStream();
+    // ref.read(networkStateProvider).networkStream();
     super.initState();
   }
 
@@ -40,10 +40,10 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
 
         await showExitPopup(); // Call the exit popup function
       },
-      child: Consumer(builder: (context, ScopedReader watch, _) {
-        final loggedUser = watch(authProvider);
-        // final user = watch(userProfileProvider);
-        final internet = watch(networkStateProvider);
+      child: Consumer(builder: (context, WidgetRef ref, _) {
+        final loggedUser = ref.watch(authProvider);
+        // final user = ref.watch(userProfileProvider);
+        final internet = ref.watch(networkStateProvider);
         return Scaffold(
           appBar: AppBar(
               elevation: .2,

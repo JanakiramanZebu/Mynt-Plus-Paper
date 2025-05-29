@@ -23,8 +23,8 @@ class _ReportWebViewAppState extends State<ReportWebViewApp> {
   final Preferences pref = locator<Preferences>();
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final hstoken = watch(fundProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final hstoken = ref.watch(fundProvider);
       return Scaffold(
           appBar: AppBar(
               backgroundColor: const Color(0xffffffff),

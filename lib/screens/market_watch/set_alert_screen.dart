@@ -37,10 +37,10 @@ class _SetAlertState extends State<SetAlert> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final scripInfo = watch(marketWatchProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final scripInfo = ref.watch(marketWatchProvider);
 
-      final theme = context.read(themeProvider);
+      final theme = ref.read(themeProvider);
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
@@ -383,7 +383,7 @@ class _SetAlertState extends State<SetAlert> {
                                               BorderRadius.circular(50),
                                         )),
                                     onPressed: () async {
-                                      await context
+                                      await ref
                                           .read(marketWatchProvider)
                                           .fetchSetAlert(
                                               widget.wlvalue.exch,

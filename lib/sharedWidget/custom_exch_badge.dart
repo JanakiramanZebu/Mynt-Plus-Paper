@@ -6,15 +6,15 @@ import '../provider/thems.dart';
 // A cached map of exchange badges to avoid recreating them
 final _exchangeBadgeCache = <String, Widget>{};
 
-class CustomExchBadge extends StatelessWidget {
+class CustomExchBadge extends ConsumerWidget {
   final String exch;
   
   // Constructor with const for optimization
   const CustomExchBadge({super.key, required this.exch});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     
     // Use the cacheKey to identify this specific badge
     final cacheKey = '${exch}_${theme.isDarkMode}';

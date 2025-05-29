@@ -10,29 +10,29 @@ import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/payment_loader.dart';
 
-class PaymentCancelAlert extends StatefulWidget {
+class PaymentCancelAlert extends ConsumerStatefulWidget {
   const PaymentCancelAlert({
     super.key,
   });
 
   @override
-  State<PaymentCancelAlert> createState() => _PaymentCancelAlertState();
+  ConsumerState<PaymentCancelAlert> createState() => _PaymentCancelAlertState();
 }
 
-class _PaymentCancelAlertState extends State<PaymentCancelAlert> {
+class _PaymentCancelAlertState extends ConsumerState<PaymentCancelAlert> {
   Timer? _timer;
   @override
   void initState() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      context.read(transcationProvider).hdfcUPIStatus?.data?.status ==
+      ref.read(transcationProvider).hdfcUPIStatus?.data?.status ==
                   "REJECTED" ||
-              context.read(transcationProvider).hdfcUPIStatus?.data?.status ==
+              ref.read(transcationProvider).hdfcUPIStatus?.data?.status ==
                   "SUCCESS"
           ? null
-          : context.read(transcationProvider).fetchUpiPaymentstatus(
+          : ref.read(transcationProvider).fetchUpiPaymentstatus(
               context,
-              '${context.read(transcationProvider).hdfcdirectpayment!.data!.orderNumber}',
-              '${context.read(transcationProvider).hdfcdirectpayment!.data!.upiTransactionNo}');
+              '${ref.read(transcationProvider).hdfcdirectpayment!.data!.orderNumber}',
+              '${ref.read(transcationProvider).hdfcdirectpayment!.data!.upiTransactionNo}');
     });
     super.initState();
   }
@@ -45,8 +45,8 @@ class _PaymentCancelAlertState extends State<PaymentCancelAlert> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
-    // final fund = context.read(transcationProvider);
+    final theme = ref.read(themeProvider);
+    // final fund = ref.read(transcationProvider);
 
     return PopScope(
         canPop: true, // Allows default back navigation

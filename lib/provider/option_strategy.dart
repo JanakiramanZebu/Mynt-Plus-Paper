@@ -21,12 +21,12 @@ import 'market_watch_provider.dart';
 import 'order_provider.dart';
 
 final optStrategyProvider =
-    ChangeNotifierProvider((ref) => OptionStrategyProvider(ref.read));
+    ChangeNotifierProvider((ref) => OptionStrategyProvider(ref));
 
 class OptionStrategyProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
-  final Reader ref;
+  final Ref ref;
 
   OptionStrategyProvider(this.ref);
   StrategyJosnModel? _strategyData;
@@ -94,17 +94,17 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
             tsym: '${element.tsym}',
             token: '${element.token}');
 
-        await ref(marketWatchProvider)
+        await ref.read(marketWatchProvider)
             .fetchScripQuote("${element.token}", "${element.exch}", context);
-        await ref(marketWatchProvider)
+        await ref.read(marketWatchProvider)
             .fetchLinkeScrip("${element.token}", "${element.exch}", context);
 
-        await ref(marketWatchProvider).fetchOPtionChain(
+        await ref.read(marketWatchProvider).fetchOPtionChain(
             context: context,
-            exchange: ref(marketWatchProvider).optionExch!,
+            exchange: ref.read(marketWatchProvider).optionExch!,
             numofStrike: '10',
-            strPrc: ref(marketWatchProvider).optionStrPrc,
-            tradeSym: ref(marketWatchProvider).selectedTradeSym!.toUpperCase());
+            strPrc: ref.read(marketWatchProvider).optionStrPrc,
+            tradeSym: ref.read(marketWatchProvider).selectedTradeSym!.toUpperCase());
       }
     }
     notifyListeners();
@@ -138,7 +138,7 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
           DropdownMenuItem<String>(
               enabled: false,
               child: Divider(
-                  color: ref(themeProvider).isDarkMode
+                  color: ref.read(themeProvider).isDarkMode
                       ? colors.darkColorDivider
                       : colors.colorDivider))
       ]);
@@ -166,33 +166,33 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
           for (var item in element.data!) {
             if (item.typeof == "ITM") {
               if (item.type == "CE") {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainCallUP[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
-                _optStrgyStrike.add(ref(marketWatchProvider)
+                _optStrgyStrike.add(ref.read(marketWatchProvider)
                     .optChainCallUP[item.letselection!]);
               } else {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainPutUp[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
 
                 _optStrgyStrike.add(
-                    ref(marketWatchProvider).optChainPutUp[item.letselection!]);
+                    ref.read(marketWatchProvider).optChainPutUp[item.letselection!]);
               }
             } else {
               if (item.type == "CE") {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainCallDown[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
 
-                _optStrgyStrike.add(ref(marketWatchProvider)
+                _optStrgyStrike.add(ref.read(marketWatchProvider)
                     .optChainCallDown[item.letselection!]);
               } else {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainPutDown[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
 
-                _optStrgyStrike.add(ref(marketWatchProvider)
+                _optStrgyStrike.add(ref.read(marketWatchProvider)
                     .optChainPutDown[item.letselection!]);
               }
             }
@@ -205,33 +205,33 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
           for (var item in element.data!) {
             if (item.typeof == "ITM") {
               if (item.type == "CE") {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainCallUP[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
-                _optStrgyStrike.add(ref(marketWatchProvider)
+                _optStrgyStrike.add(ref.read(marketWatchProvider)
                     .optChainCallUP[item.letselection!]);
               } else {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainPutUp[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
 
                 _optStrgyStrike.add(
-                    ref(marketWatchProvider).optChainPutUp[item.letselection!]);
+                    ref.read(marketWatchProvider).optChainPutUp[item.letselection!]);
               }
             } else {
               if (item.type == "CE") {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainCallDown[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
 
-                _optStrgyStrike.add(ref(marketWatchProvider)
+                _optStrgyStrike.add(ref.read(marketWatchProvider)
                     .optChainCallDown[item.letselection!]);
               } else {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainPutDown[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
 
-                _optStrgyStrike.add(ref(marketWatchProvider)
+                _optStrgyStrike.add(ref.read(marketWatchProvider)
                     .optChainPutDown[item.letselection!]);
               }
             }
@@ -244,33 +244,33 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
           for (var item in element.data!) {
             if (item.typeof == "ITM") {
               if (item.type == "CE") {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainCallUP[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
-                _optStrgyStrike.add(ref(marketWatchProvider)
+                _optStrgyStrike.add(ref.read(marketWatchProvider)
                     .optChainCallUP[item.letselection!]);
               } else {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainPutUp[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
 
                 _optStrgyStrike.add(
-                    ref(marketWatchProvider).optChainPutUp[item.letselection!]);
+                    ref.read(marketWatchProvider).optChainPutUp[item.letselection!]);
               }
             } else {
               if (item.type == "CE") {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainCallDown[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
 
-                _optStrgyStrike.add(ref(marketWatchProvider)
+                _optStrgyStrike.add(ref.read(marketWatchProvider)
                     .optChainCallDown[item.letselection!]);
               } else {
-                ref(marketWatchProvider)
+                ref.read(marketWatchProvider)
                     .optChainPutDown[item.letselection!]
                     .transType = item.action == "BUY" ? "B" : "S";
 
-                _optStrgyStrike.add(ref(marketWatchProvider)
+                _optStrgyStrike.add(ref.read(marketWatchProvider)
                     .optChainPutDown[item.letselection!]);
               }
             }
@@ -302,14 +302,14 @@ class OptionStrategyProvider extends DefaultChangeNotifier {
             tsym: element.tsym!,
             mktProt: '',
             channel: '');
-        await ref(orderProvider).slicePlaceOrder(context, placeOrderInput);
+        await ref.read(orderProvider).slicePlaceOrder(context, placeOrderInput);
       }
 
       List<OrderBookModel> _orderBookModel =
-          await ref(orderProvider).fetchOrderBook(context, true);
+          await ref.read(orderProvider).fetchOrderBook(context, true);
       if (_orderBookModel.isNotEmpty) {
         if (_orderBookModel[0].stat != "Not_Ok") {
-          ref(indexListProvider).bottomMenu(3, context);
+          ref.read(indexListProvider).bottomMenu(3, context);
           HapticFeedback.heavyImpact();
           SystemSound.play(SystemSoundType.click);
 

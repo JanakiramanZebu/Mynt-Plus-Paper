@@ -3,13 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
+// import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 
 import '../../../provider/auth_provider.dart';
 import '../../../provider/change_password_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
+import '../../../utils/no_emoji_inputformatter.dart';
 
 class ForgotPassUnblockUser extends StatefulWidget {
   const ForgotPassUnblockUser({super.key});
@@ -22,10 +23,10 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
-        final authForgetpassword = watch(changePasswordProvider);
-        final auth = watch(authProvider);
-        final theme = watch(themeProvider);
+      builder: (context, ref, child) {
+        final authForgetpassword = ref.watch(changePasswordProvider);
+        final auth = ref.watch(authProvider);
+        final theme = ref.watch(themeProvider);
         double screenWidth = MediaQuery.of(context).size.width;
         return PopScope(
           canPop: true, // Allows back navigation
@@ -120,7 +121,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                         TextCapitalization.characters,
                                     inputFormatters: [
                                       UpperCaseTextFormatter(),
-                                      RemoveEmojiInputFormatter(),
+                                      NoEmojiInputFormatter(),
                                       FilteringTextInputFormatter.deny(
                                           RegExp('[π£•₹€℅™∆√¶/]')),
                                       FilteringTextInputFormatter.deny(

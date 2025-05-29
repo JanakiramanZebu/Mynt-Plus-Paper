@@ -9,8 +9,8 @@ class CustomBackBtn extends ConsumerWidget {
   const CustomBackBtn({super.key});
 
   @override
-  Widget build(BuildContext context,ScopedReader watch) {
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context,WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
     return InkWell(
         onTap: () {
           Navigator.pop(context);

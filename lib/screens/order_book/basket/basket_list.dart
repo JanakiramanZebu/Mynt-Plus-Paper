@@ -19,9 +19,9 @@ class BasketList extends ConsumerWidget {
   const BasketList({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final basket = watch(orderProvider);
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final basket = ref.watch(orderProvider);
+    final theme = ref.watch(themeProvider);
     return basket.bsktList.isEmpty
         ? const NoDataFound()
         : ListView.separated(
@@ -153,9 +153,9 @@ class BasketScripList extends ConsumerWidget {
   const BasketScripList({super.key, required this.bsktName});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
-    final basket = watch(orderProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
+    final basket = ref.watch(orderProvider);
     
     return Scaffold(
         appBar: AppBar(
@@ -179,7 +179,7 @@ class BasketScripList extends ConsumerWidget {
                             height: 30,
                             child: OutlinedButton(
                                 onPressed: () async {
-                                  await watch(marketWatchProvider)
+                                  await ref.watch(marketWatchProvider)
                                       .searchClear();
                                   Navigator.pushNamed(
                                       context, Routes.searchScrip,
@@ -273,7 +273,7 @@ class BasketScripList extends ConsumerWidget {
               child: basket.bsktScripList.isEmpty
                   ? const NoDataFound()
                   : StreamBuilder<Map>(
-                      stream: watch(websocketProvider).socketDataStream,
+                      stream: ref.watch(websocketProvider).socketDataStream,
                       builder: (context, snapshot) {
                         final socketDatas = snapshot.data ?? {};
                         
@@ -434,7 +434,7 @@ class BasketScripList extends ConsumerWidget {
                                     });
                               },
                               onTap: () async {
-                                await context
+                                await ref
                                     .read(marketWatchProvider)
                                     .fetchScripInfo(
                                         "${basket.bsktScripList[index]['token']}",
@@ -455,7 +455,7 @@ class BasketScripList extends ConsumerWidget {
                                             'B'
                                         ? true
                                         : false,
-                                    lotSize: context
+                                    lotSize: ref
                                         .read(marketWatchProvider)
                                         .scripInfoModel
                                         ?.ls
@@ -470,7 +470,7 @@ class BasketScripList extends ConsumerWidget {
                                     context, Routes.placeOrderScreen,
                                     arguments: {
                                       "orderArg": orderArgs,
-                                      "scripInfo": context
+                                      "scripInfo": ref
                                           .read(marketWatchProvider)
                                           .scripInfoModel!,
                                       "isBskt": 'BasketEdit'

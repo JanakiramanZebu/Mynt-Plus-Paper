@@ -16,9 +16,9 @@
 //   const MutualFundScreen({super.key});
 
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
-//     final theme = watch(themeProvider);
-//     final mfData = watch(mfProvider);
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final theme = ref.watch(themeProvider);
+//     final mfData = ref.watch(mfProvider);
 //     return Scaffold(
 //         appBar: AppBar(
 //             actions: [

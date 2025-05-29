@@ -13,12 +13,12 @@ class FutureScreen extends ConsumerWidget {
   const FutureScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final future = watch(marketWatchProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final future = ref.watch(marketWatchProvider);
+    final theme = ref.read(themeProvider);
     
     return StreamBuilder<Map>(
-      stream: watch(websocketProvider).socketDataStream,
+      stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
         
@@ -66,7 +66,7 @@ class FutureScreen extends ConsumerWidget {
               },
               onTap: () async {
                 Navigator.pop(context);
-                await watch(marketWatchProvider)
+                await ref.watch(marketWatchProvider)
                     .calldepthApis(context, displayData, "");
               },
               child: ListTile(

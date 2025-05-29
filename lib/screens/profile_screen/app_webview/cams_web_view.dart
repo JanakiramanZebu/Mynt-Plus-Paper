@@ -9,15 +9,15 @@ import '../../../provider/portfolio_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/loader_ui.dart';
 
-class CamsWebView extends StatefulWidget {
+class CamsWebView extends ConsumerStatefulWidget {
   final String argument;
   const CamsWebView({super.key, required this.argument});
 
   @override
-  CamsWebViewState createState() => CamsWebViewState();
+  ConsumerState<CamsWebView> createState() => CamsWebViewState();
 }
 
-class CamsWebViewState extends State<CamsWebView> {
+class CamsWebViewState extends ConsumerState<CamsWebView> {
   double progress = 0;
   late ContextMenu contextMenu;
 
@@ -74,7 +74,7 @@ class CamsWebViewState extends State<CamsWebView> {
                       print('web is');
                       if (mounted) {
                         // Future.microtask(() {
-                        context
+                        ref
                             .read(portfolioProvider)
                             .fetchBrokerDetails(context, true, false);
                         // });

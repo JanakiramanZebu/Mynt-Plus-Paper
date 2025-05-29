@@ -16,9 +16,9 @@
 //   });
 
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
-//     final theme = context.read(themeProvider);
-//     final order = watch(orderProvider);
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final theme = ref.read(themeProvider);
+//     final order = ref.watch(orderProvider);
 //     return Container(
 //         padding: const EdgeInsets.all(16),
 //         child: 

@@ -14,15 +14,15 @@ class MFAllocation extends ConsumerWidget {
   const MFAllocation({super.key, required this.mfStockData});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-final mfData = watch(mfProvider).factSheetDataModel?.data;
-if (mfData == null) {
-  return const SizedBox(); // Or show a loader/message
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final mfData = ref.watch(mfProvider).factSheetDataModel?.data;
+    if (mfData == null) {
+      return const SizedBox(); // Or show a loader/message
+    }
 
-    final showMoreSectors = watch(showMoreSectorsProvider).state;
-    final showMoreHoldings = watch(showMoreHoldingsProvider).state;
+    final showMoreSectors = ref.watch(showMoreSectorsProvider);
+    final showMoreHoldings = ref.watch(showMoreHoldingsProvider);
 
     // final List<ChartData> donutChart = [
     //   if (mfData.vEquity != "0")
@@ -85,8 +85,7 @@ if (mfData == null) {
           if (mfData.sectors!.length > 5)
             TextButton(
               onPressed: () {
-                context.read(showMoreSectorsProvider).state =
-                    !showMoreSectors;
+                ref.read(showMoreSectorsProvider.notifier).update((state) => !state);
               },
               child: Text(
                 showMoreSectors ? "Show Less" : "Show More",
@@ -123,8 +122,7 @@ if (mfData == null) {
           if (mfData.holdings!.length > 5)
             TextButton(
               onPressed: () {
-                context.read(showMoreHoldingsProvider).state =
-                    !showMoreHoldings;
+                ref.read(showMoreHoldingsProvider.notifier).update((state) => !state);
               },
               child: Text(
                 showMoreHoldings ? "Show Less" : "Show More",

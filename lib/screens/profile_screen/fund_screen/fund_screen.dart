@@ -9,7 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
-import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
+// import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/transcation_provider.dart';
@@ -18,6 +18,7 @@ import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/custom_switch_btn.dart';
 import '../../../../sharedWidget/fund_function.dart';
 import '../../../sharedWidget/loader_ui.dart';
+import '../../../utils/no_emoji_inputformatter.dart';
 import 'ios_fund_screen/ios_no_upi_apps_ui.dart';
 import 'ios_fund_screen/ios_upi_apps_bottomsheet.dart';
 import 'razorpay/razorpay_failed_ui.dart';
@@ -25,18 +26,18 @@ import 'razorpay/razorpay_success_ui.dart';
 import 'upi_id_screens/upi_id_cancel_alert.dart';
 import 'withdraw/withdraw_screen.dart';
 
-class FundScreen extends StatefulWidget {
+class FundScreen extends ConsumerStatefulWidget {
   final TranctionProvider dd;
   const FundScreen({super.key, required this.dd});
 
   @override
-  _FundScreenState createState() => _FundScreenState();
+  ConsumerState<FundScreen> createState() => _FundScreenState();
 }
 
-class _FundScreenState extends State<FundScreen> {
+class _FundScreenState extends ConsumerState<FundScreen> {
   @override
   void initState() {
-    context.read(transcationProvider).initialdata(context);
+    ref.read(transcationProvider).initialdata(context);
     super.initState();
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       checkIosAvailableApps();
@@ -54,9 +55,9 @@ class _FundScreenState extends State<FundScreen> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
-        final theme = watch(themeProvider);
-        final fund = watch(transcationProvider);
+      builder: (context, ref, child) {
+        final theme = ref.watch(themeProvider);
+        final fund = ref.watch(transcationProvider);
         return TransparentLoaderScreen(
           isLoading: fund.loading,
           child: Scaffold(
@@ -770,7 +771,7 @@ class _FundScreenState extends State<FundScreen> {
                                                         : textStyles
                                                             .textFieldLabelStyle,
                                                     inputFormatters: [
-                                                      RemoveEmojiInputFormatter(),
+                                                      NoEmojiInputFormatter(),
                                                       FilteringTextInputFormatter
                                                           .deny(RegExp(
                                                               '[π£•₹€℅™∆√¶/,.]')),
@@ -1431,13 +1432,13 @@ class _FundScreenState extends State<FundScreen> {
               child: RazorpayFailedUi(
                   acco: widget.dd.accno,
                   ifsc: widget.dd.ifsc,
-                  amount: context.read(transcationProvider).amount.text,
+                  amount: ref.read(transcationProvider).amount.text,
                   bankname: widget.dd.bankname));
         });
   }
 
   handlePaymentSuccessResponse(PaymentSuccessResponse response) {
-    context
+    ref
         .read(transcationProvider)
         .fetchrazorpayStatus("${response.paymentId}");
 
@@ -1458,7 +1459,7 @@ class _FundScreenState extends State<FundScreen> {
                 if (didPop) return;
               },
               child: RazorpaySuccessUi(
-                amount: context.read(transcationProvider).amount.text,
+                amount: ref.read(transcationProvider).amount.text,
               ));
         });
   }

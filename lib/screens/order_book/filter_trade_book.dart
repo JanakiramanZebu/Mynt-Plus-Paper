@@ -7,16 +7,16 @@ import '../../provider/thems.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 
-class OrderbookTradeBookFilterBottomSheet extends StatefulWidget {
+class OrderbookTradeBookFilterBottomSheet extends ConsumerStatefulWidget {
   const OrderbookTradeBookFilterBottomSheet({super.key});
 
   @override
-  State<OrderbookTradeBookFilterBottomSheet> createState() =>
+  ConsumerState<OrderbookTradeBookFilterBottomSheet> createState() =>
       _OrderbookTradeBookFilterBottomSheetState();
 }
 
 class _OrderbookTradeBookFilterBottomSheetState
-    extends State<OrderbookTradeBookFilterBottomSheet> {
+    extends ConsumerState<OrderbookTradeBookFilterBottomSheet> {
   Preferences pref = Preferences();
   late bool scripisAscending;
   late bool pricepisAscending;
@@ -37,7 +37,7 @@ class _OrderbookTradeBookFilterBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -74,9 +74,9 @@ class _OrderbookTradeBookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (scripisAscending == true) {
-                  context.read(orderProvider).filterTradeBook("ASC");
+                  ref.read(orderProvider).filterTradeBook("ASC");
                 } else if (scripisAscending == false) {
-                  context.read(orderProvider).filterTradeBook("DSC");
+                  ref.read(orderProvider).filterTradeBook("DSC");
                 }
 
                 scripisAscending = !scripisAscending;
@@ -116,9 +116,9 @@ class _OrderbookTradeBookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (pricepisAscending == true) {
-                  context.read(orderProvider).filterTradeBook("LTPDSC");
+                  ref.read(orderProvider).filterTradeBook("LTPDSC");
                 } else if (pricepisAscending == false) {
-                  context.read(orderProvider).filterTradeBook("LTPASC");
+                  ref.read(orderProvider).filterTradeBook("LTPASC");
                 }
 
                 pricepisAscending = !pricepisAscending;
@@ -158,9 +158,9 @@ class _OrderbookTradeBookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (buyOrsellisAscending == true) {
-                  context.read(orderProvider).filterTradeBook("BUY");
+                  ref.read(orderProvider).filterTradeBook("BUY");
                 } else if (buyOrsellisAscending == false) {
-                  context.read(orderProvider).filterTradeBook("SELL");
+                  ref.read(orderProvider).filterTradeBook("SELL");
                 }
 
                 buyOrsellisAscending = !buyOrsellisAscending;
@@ -200,9 +200,9 @@ class _OrderbookTradeBookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (timeisAscending == true) {
-                  context.read(orderProvider).filterTradeBook("TIMEHIGH");
+                  ref.read(orderProvider).filterTradeBook("TIMEHIGH");
                 } else if (timeisAscending == false) {
-                  context.read(orderProvider).filterTradeBook("TIMELOW");
+                  ref.read(orderProvider).filterTradeBook("TIMELOW");
                 }
 
                 timeisAscending = !timeisAscending;

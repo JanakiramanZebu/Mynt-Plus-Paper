@@ -13,10 +13,10 @@ import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 
 final changePasswordProvider =
-    ChangeNotifierProvider((ref) => ChangePasswordProvider(ref.read));
+    ChangeNotifierProvider((ref) => ChangePasswordProvider(ref));
 
 class ChangePasswordProvider extends DefaultChangeNotifier {
-  final Reader ref;
+  final Ref ref;
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
 
@@ -188,12 +188,12 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
             .showSnackBar(warningMessage(context, _forgetPasswordModel!.emsg!));
       } else if (_forgetPasswordModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();
     } catch (e) {
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
       notifyListeners();
     } finally {
       toggleLoadingOn(false);
@@ -217,12 +217,12 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
           await api.getChangePasswordProfile(userId, oldpassword, password);
       if (_changepasswordmodel!.stat == "Ok") {
         ConstantName.sessCheck = true;
-        ref(authProvider).clearTextField();
+        ref.read(authProvider).clearTextField();
 
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, '${_changepasswordmodel!.dmsg}'));
         pref.setHideLoginOptBtn(false);
-        ref(authProvider).loginMethCtrl.text = pref.clientId!;
+        ref.read(authProvider).loginMethCtrl.text = pref.clientId!;
         pref.setMobileLogin(false);
 
         Future.delayed(const Duration(seconds: 2), () {
@@ -235,12 +235,12 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
             _changepasswordmodel!.emsg!.replaceAll("Error Occurred :", ""));
       } else if (_changepasswordmodel!.emsg ==
           "Session Expired :  Invalid Session Key") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();
     } catch (e) {
-      ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
       notifyListeners();
     } finally {
       toggleLoadingOn(false);

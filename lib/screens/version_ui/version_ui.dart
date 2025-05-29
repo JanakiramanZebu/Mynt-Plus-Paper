@@ -14,9 +14,9 @@ class VersionBottomSheet extends ConsumerWidget {
   const VersionBottomSheet({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final version = watch(versionProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final version = ref.watch(versionProvider);
     return PopScope(
               canPop: false,
               onPopInvokedWithResult: (didPop, result) async {

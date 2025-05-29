@@ -20,9 +20,9 @@ class GttOrderBook extends ConsumerWidget {
   const GttOrderBook({super.key, required this.gttOrderBook});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final order = watch(orderProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final order = ref.watch(orderProvider);
+    final theme = ref.read(themeProvider);
     return Column(children: [
       if (gttOrderBook.length > 1)
         Container(
@@ -138,7 +138,7 @@ class GttOrderBook extends ConsumerWidget {
         ),
       Expanded(
         child: StreamBuilder<Map>(
-          stream: watch(websocketProvider).socketDataStream,
+          stream: ref.watch(websocketProvider).socketDataStream,
           builder: (context, snapshot) {
             final socketDatas = snapshot.data ?? {};
             
@@ -188,14 +188,14 @@ class GttOrderBook extends ConsumerWidget {
                           itemBuilder: (context, index) {
                             return InkWell(
                                 onTap: () async {
-                                  await context
+                                  await ref
                                       .read(marketWatchProvider)
                                       .fetchLinkeScrip(
                                           "${gttOrderBook[index].token}",
                                           "${gttOrderBook[index].exch}",
                                           context);
 
-                                  await watch(marketWatchProvider).fetchScripQuote(
+                                  await ref.watch(marketWatchProvider).fetchScripQuote(
                                       "${gttOrderBook[index].token}",
                                       "${gttOrderBook[index].exch}",
                                       context);
@@ -203,7 +203,7 @@ class GttOrderBook extends ConsumerWidget {
                                   if ((gttOrderBook[index].exch == "NSE" ||
                                       gttOrderBook[index].exch == "BSE")) {
 
-                                    await context
+                                    await ref
                                         .read(marketWatchProvider)
                                         .fetchTechData(
                                             context: context,
@@ -454,12 +454,12 @@ class GttOrderBook extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       return InkWell(
                           onTap: () async {
-                            await context.read(marketWatchProvider).fetchLinkeScrip(
+                            await ref.read(marketWatchProvider).fetchLinkeScrip(
                                 "${order.gttOrderBookSearch![index].token}",
                                 "${order.gttOrderBookSearch![index].exch}",
                                 context);
 
-                            await watch(marketWatchProvider).fetchScripQuote(
+                            await ref.watch(marketWatchProvider).fetchScripQuote(
                                 "${order.gttOrderBookSearch![index].token}",
                                 "${order.gttOrderBookSearch![index].exch}",
                                 context);
@@ -467,7 +467,7 @@ class GttOrderBook extends ConsumerWidget {
                             if ((order.gttOrderBookSearch![index].exch == "NSE" ||
                                 order.gttOrderBookSearch![index].exch == "BSE")) {
 
-                              await context.read(marketWatchProvider).fetchTechData(
+                              await ref.read(marketWatchProvider).fetchTechData(
                                   context: context,
                                   exch: "${order.gttOrderBookSearch![index].exch}",
                                   tradeSym:

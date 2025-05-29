@@ -13,14 +13,14 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/custom_text_btn.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
-class IPOPerformance extends StatefulWidget {
+class IPOPerformance extends ConsumerStatefulWidget {
   const IPOPerformance({super.key});
 
   @override
-  State<IPOPerformance> createState() => _IPOPerformanceState();
+  ConsumerState<IPOPerformance> createState() => _IPOPerformanceState();
 }
 
-class _IPOPerformanceState extends State<IPOPerformance> {
+class _IPOPerformanceState extends ConsumerState<IPOPerformance> {
   late List<IpoScrip> ipoList;
   List<int> years = [];
   int? selectedYear;
@@ -28,8 +28,8 @@ class _IPOPerformanceState extends State<IPOPerformance> {
 
   @override
   void initState() {
-    ipoList = context.read(ipoProvide).ipoPerformanceModel!.data!;
-    context.read(ipoProvide).sortIPOListByDate(ipoList);
+    ipoList = ref.read(ipoProvide).ipoPerformanceModel!.data!;
+    ref.read(ipoProvide).sortIPOListByDate(ipoList);
     super.initState();
     var currentYear = DateTime.now().year;
     for (var year = 2000; year <= currentYear; year++) {
@@ -40,11 +40,11 @@ class _IPOPerformanceState extends State<IPOPerformance> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final perfomance = watch(ipoProvide);
-      final theme = watch(themeProvider);
-      // final internet = watch(networkStateProvider);
-      final market = watch(marketWatchProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final perfomance = ref.watch(ipoProvide);
+      final theme = ref.watch(themeProvider);
+      // final internet = ref.watch(networkStateProvider);
+      final market = ref.watch(marketWatchProvider);
       return SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,7 +158,7 @@ class _IPOPerformanceState extends State<IPOPerformance> {
                         physics: const ScrollPhysics(),
                         itemBuilder: (context, index) {
                           final ipo = ipoList[index];
-                          DateTime listedDate = context
+                          DateTime listedDate = ref
                               .read(ipoProvide)
                               .convertDatetime(ipo.listedDate);
                           return InkWell(
@@ -189,7 +189,7 @@ class _IPOPerformanceState extends State<IPOPerformance> {
 
                               // market.chngDephBtn("Overview");
                               // if (market.actDeptBtn == "Overview") {
-                              //   await watch(websocketProvider).establishConnection(
+                              //   await ref.watch(websocketProvider).establishConnection(
                               //       channelInput:
                               //           "${market.getQuotes!.exch}|${market.getQuotes!.token}",
                               //       task: "d",

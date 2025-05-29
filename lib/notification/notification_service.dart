@@ -50,10 +50,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final notificationservice =
-    ChangeNotifierProvider((ref) => NotificationService(ref.read));
+    ChangeNotifierProvider((ref) => NotificationService(ref));
 
 class NotificationService extends ChangeNotifier {
-  final Reader ref;
+  final Ref ref;
   NotificationService(this.ref);
   static Future<void> initializeNotification() async {
     await AwesomeNotifications().initialize(

@@ -8,18 +8,18 @@ import 'package:mynt_plus/provider/thems.dart';
 // import 'package:mynt_plus/screens/profile_screen/my_account_screens/bottomsheet_screen.dart';
 import '../../../res/res.dart';
 
-class ProfileInfoDetails extends StatefulWidget {
+class ProfileInfoDetails extends ConsumerStatefulWidget {
   const ProfileInfoDetails({super.key});
 
   @override
-  State<ProfileInfoDetails> createState() => _ProfileInfoDetailsState();
+  ConsumerState<ProfileInfoDetails> createState() => _ProfileInfoDetailsState();
 }
 
-class _ProfileInfoDetailsState extends State<ProfileInfoDetails> {
+class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
 
   @override
   void initState() {
-    context.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
+    ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
     super.initState();
   }
 
@@ -39,9 +39,9 @@ void _submit() {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, ScopedReader watch, _) {
-        final profileprovider = watch(profileAllDetailsProvider);
-        final theme = watch(themeProvider);
+      builder: (context, WidgetRef ref, _) {
+        final profileprovider = ref.watch(profileAllDetailsProvider);
+        final theme = ref.watch(themeProvider);
 
         final incomeLabels = [
           "Latest 6 months Bank Statement",
@@ -1062,8 +1062,8 @@ void _submit() {
                                         ),
                                         builder: (context) {
                                           return Consumer(builder:
-                                              (context, ScopedReader watch, _) {
-                                            // final popproprv = watch(profileProvider);
+                                              (context, WidgetRef ref, _) {
+                                            // final popproprv = ref.watch(profileProvider);
                                             return Container(
                                               padding: EdgeInsets.all(16),
                                               child: Column(
@@ -1676,14 +1676,14 @@ void _submit() {
                                       ),
                                       builder: (context) {
                                         return Consumer(
-                                          builder: (context, watch, child) {
+                                          builder: (context, ref, child) {
                                             // No 'ScopedReader' needed
                                             // final popproprv =
-                                            //     watch(profileProvider);
+                                            //     ref.watch(profileProvider);
                                             // final selectedChipIndex =
-                                            //     watch(selectedChipProvider);
+                                            //     ref.watch(selectedChipProvider);
                                             // final selectedIncomeIndex =
-                                            //     watch(selectedIncomeProvider);
+                                            //     ref.watch(selectedIncomeProvider);
                                             return Container(
                                               padding: const EdgeInsets.all(16),
                                               child: Column(
@@ -1717,7 +1717,7 @@ void _submit() {
                                                   //                           groupValue: selectedIncomeIndex,
                                                   //                           onChanged: (int? newValue) {
                                                   //                             if (newValue != null) {
-                                                  //                               context.read(selectedIncomeProvider.notifier).selectIncome(newValue);
+                                                  //                               ref.read(selectedIncomeProvider.notifier).selectIncome(newValue);
                                                   //                               print('Selected income: ${incomeLabels[newValue]} at index $newValue');
                                                   //                             }
                                                   //                           },
@@ -2420,10 +2420,10 @@ void _submit() {
                                             builder: (context) {
                                               return Consumer(
                                                 builder:
-                                                    (context, ScopedReader watch, _) {
+                                                    (context, WidgetRef ref, _) {
                                                   // final closeselectedval =
-                                                  //     watch(closedroup).state;
-                                                  // final popproprv = watch(profileProvider);
+                                                  //     ref.watch(closedroup).state;
+                                                  // final popproprv = ref.watch(profileProvider);
                                                   return Container(
                                                     padding: EdgeInsets.all(16),
                                                     child: Column(
@@ -3086,7 +3086,7 @@ void _submit() {
                 TextFormField(
                   controller: profileprovider.newEmailOTPController,
                   onChanged: (value) {
-                    // context.read(emailotpver).state =
+                    // ref.read(emailotpver).state =
                     //     value;
                   },
                   decoration: const InputDecoration(
@@ -3238,7 +3238,7 @@ void _submit() {
             TextFormField(
               controller: profileprovider.newMobController,
               onChanged: (value) {
-                // context.read(newmobilno).state =
+                // ref.read(newmobilno).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(
@@ -3259,7 +3259,7 @@ void _submit() {
               TextFormField(
                 controller: profileprovider.newMobOTPController,
                 onChanged: (value) {
-                  // context.read(mobilotpval).state =
+                  // ref.read(mobilotpval).state =
                   //     value; // Update state
                 },
                 decoration: const InputDecoration(
@@ -3404,7 +3404,7 @@ void _submit() {
             TextFormField(
               controller: profileprovider.newAddressController,
               onChanged: (value) {
-                // context.read(newaddprov).state =
+                // ref.read(newaddprov).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(
@@ -3565,7 +3565,7 @@ void _submit() {
             TextFormField(
               controller: profileprovider.newAddressProofTypeController,
               onChanged: (value) {
-                // context.read(proofprov).state =
+                // ref.read(proofprov).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(

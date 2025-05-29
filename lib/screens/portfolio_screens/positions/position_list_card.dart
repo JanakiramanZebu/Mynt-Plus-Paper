@@ -2,22 +2,24 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
+import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
+import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
 
-class PositionListCard extends StatefulWidget {
+class PositionListCard extends ConsumerStatefulWidget {
   final PositionBookModel positionList;
 
   const PositionListCard({super.key, required this.positionList});
 
   @override
-  State<PositionListCard> createState() => _PositionListCardState();
+  ConsumerState<PositionListCard> createState() => _PositionListCardState();
 }
 
-class _PositionListCardState extends State<PositionListCard> {
+class _PositionListCardState extends ConsumerState<PositionListCard> {
   StreamSubscription? _socketSubscription;
   late String _currentLp;
   bool _needsUpdate = false;
@@ -41,8 +43,8 @@ class _PositionListCardState extends State<PositionListCard> {
   void _setupSocketSubscription() {
     // Slight delay to ensure context is available
     Future.microtask(() {
-      final websocket = context.read(websocketProvider);
-      final positions = context.read(portfolioProvider);
+      final websocket = ref.read(websocketProvider);
+      final positions = ref.read(portfolioProvider);
       
       _socketSubscription = websocket.socketDataStream.listen((socketData) {
         // Only process if this position's token is in the update
@@ -86,8 +88,8 @@ class _PositionListCardState extends State<PositionListCard> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, watch, _) {
-      final positions = watch(portfolioProvider);
-      final theme = context.read(themeProvider);
+      final positions = ref.watch(portfolioProvider);
+      final theme = ref.read(themeProvider);
       
       // Calculate colors and values once
       final isZeroQty = widget.positionList.qty == "0";
@@ -267,5 +269,100 @@ class _PositionListCardState extends State<PositionListCard> {
         ),
       ],
     );
+  }
+}
+
+// Position item widget
+class _PositionItem extends ConsumerStatefulWidget {
+  final PositionBookModel position;
+  final bool isSearchItem;
+  final bool showLongPressOption;
+  
+  const _PositionItem({
+    required this.position,
+    required this.isSearchItem,
+    required this.showLongPressOption,
+  });
+  
+  @override
+  ConsumerState<_PositionItem> createState() => _PositionItemState();
+}
+
+class _PositionItemState extends ConsumerState<_PositionItem> {
+  // Add navigation lock to prevent multiple taps
+  bool _isNavigating = false;
+  
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onLongPress: widget.showLongPressOption 
+        ? () {
+            Navigator.pushNamed(
+              context,
+              Routes.positionExit,
+              arguments: ref.read(portfolioProvider).postionBookModel
+            );
+          }
+        : null,
+      onTap: () async {
+        // Prevent multiple navigation events on rapid taps
+        if (_isNavigating) return;
+        
+        try {
+          setState(() {
+            _isNavigating = true;
+          });
+          
+          await _handlePositionTap(context);
+        } finally {
+          // Reset navigation lock after some delay
+          if (mounted) {
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                setState(() {
+                  _isNavigating = false;
+                });
+              }
+            });
+          }
+        }
+      },
+      child: PositionListCard(positionList: widget.position),
+    );
+  }
+  
+  Future<void> _handlePositionTap(BuildContext context) async {
+    final marketWatch = ref.read(marketWatchProvider);
+    
+    // Fetch linked scrip data
+    await marketWatch.fetchLinkeScrip(
+      "${widget.position.token}",
+      "${widget.position.exch}",
+      context
+    );
+
+    // Fetch scrip quote
+    await ref.read(marketWatchProvider).fetchScripQuote(
+      "${widget.position.token}",
+      "${widget.position.exch}",
+      context
+    );
+
+    // Handle NSE/BSE specific data
+    if (widget.position.exch == "NSE" || widget.position.exch == "BSE") {
+     
+
+      await marketWatch.fetchTechData(
+        context: context,
+        exch: "${widget.position.exch}",
+        tradeSym: "${widget.position.tsym}",
+        lastPrc: "${widget.position.lp}"
+      );
+    }
+    
+    // Navigate to position detail
+    if (mounted) {
+      Navigator.pushNamed(context, Routes.positionDetail, arguments: widget.position);
+    }
   }
 }

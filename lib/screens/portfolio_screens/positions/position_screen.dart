@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:google_fonts/google_fonts.dart';
-import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
+// import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -18,20 +18,21 @@ import '../../../sharedWidget/custom_text_btn.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/no_data_found.dart';
+import '../../../utils/no_emoji_inputformatter.dart';
 import 'filter_scrip_bottom_sheet.dart';
 import 'group/create_group.dart';
 import 'group/position_group_symbol.dart';
 import 'position_list_card.dart';
 
-class PositionScreen extends StatefulWidget {
+class PositionScreen extends ConsumerStatefulWidget {
   final List<PositionBookModel> listofPosition;
   const PositionScreen({super.key, required this.listofPosition});
 
   @override
-  State<PositionScreen> createState() => _PositionScreenState();
+  ConsumerState<PositionScreen> createState() => _PositionScreenState();
 }
 
-class _PositionScreenState extends State<PositionScreen> {
+class _PositionScreenState extends ConsumerState<PositionScreen> {
   // Cache SVG icons to avoid rebuilds
   final Map<String, Widget> _cachedIcons = {};
   StreamSubscription? _socketSubscription;
@@ -51,8 +52,8 @@ class _PositionScreenState extends State<PositionScreen> {
   void _setupSocketSubscription() {
     // Delayed to ensure context is available
     Future.microtask(() {
-      final websocket = context.read(websocketProvider);
-      final positionBook = context.read(portfolioProvider);
+      final websocket = ref.read(websocketProvider);
+      final positionBook = ref.read(portfolioProvider);
       
       _socketSubscription = websocket.socketDataStream.listen((socketDatas) {
         bool needsUpdate = false;
@@ -101,8 +102,8 @@ class _PositionScreenState extends State<PositionScreen> {
   Widget build(BuildContext context) {
     // Only consume the necessary providers at the top level
     return Consumer(builder: (context, watch, _) {
-      final positionBook = watch(portfolioProvider);
-      final theme = context.read(themeProvider);
+      final positionBook = ref.watch(portfolioProvider);
+      final theme = ref.read(themeProvider);
       
       if (positionBook.posloader) {
         return const Center(child: CircularProgressIndicator());
@@ -169,7 +170,7 @@ class _PositionScreenState extends State<PositionScreen> {
                                   try {
                                     positionBook.setFilterNavigating(true);
                                     
-                                    showModalBottomSheet(
+                                  showModalBottomSheet(
                                       useSafeArea: true,
                                       isScrollControlled: true,
                                       shape: const RoundedRectangleBorder(
@@ -189,8 +190,8 @@ class _PositionScreenState extends State<PositionScreen> {
                                   padding: const EdgeInsets.only(right: 12),
                                   child: _getCachedIcon(
                                     assets.filterLines,
-                                    color: theme.isDarkMode
-                                        ? const Color(0xffBDBDBD)
+                                      color: theme.isDarkMode
+                                          ? const Color(0xffBDBDBD)
                                         : colors.colorGrey,
                                   ),
                                 )
@@ -225,7 +226,7 @@ class _PositionScreenState extends State<PositionScreen> {
                               try {
                                 positionBook.setFilterNavigating(true);
                                 
-                                showDialog(
+                              showDialog(
                                   context: context,
                                   builder: (BuildContext context) => const CreateGroupPos(),
                                 ).then((_) {
@@ -268,7 +269,7 @@ class _PositionScreenState extends State<PositionScreen> {
                           textCapitalization: TextCapitalization.characters,
                           inputFormatters: [
                             UpperCaseTextFormatter(),
-                            RemoveEmojiInputFormatter(),
+                            NoEmojiInputFormatter(),
                 FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/.,]'))
                           ],
                           decoration: InputDecoration(
@@ -387,7 +388,7 @@ class _PositionScreenState extends State<PositionScreen> {
 }
 
 // Header section with P&L info
-class _PositionHeaderSection extends StatelessWidget {
+class _PositionHeaderSection extends ConsumerWidget {
   final ThemesProvider theme;
   final PortfolioProvider positionBook;
   final List<PositionBookModel> listofPosition;
@@ -399,7 +400,7 @@ class _PositionHeaderSection extends StatelessWidget {
   });
   
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       color: theme.isDarkMode
         ? const Color(0xffB5C0CF).withOpacity(.15)
@@ -534,7 +535,7 @@ class _PnLDisplay extends StatelessWidget {
 }
 
 // Position item widget
-class _PositionItem extends StatefulWidget {
+class _PositionItem extends ConsumerStatefulWidget {
   final PositionBookModel position;
   final bool isSearchItem;
   final bool showLongPressOption;
@@ -546,26 +547,26 @@ class _PositionItem extends StatefulWidget {
   });
   
   @override
-  State<_PositionItem> createState() => _PositionItemState();
+  ConsumerState<_PositionItem> createState() => _PositionItemState();
 }
 
-class _PositionItemState extends State<_PositionItem> {
+class _PositionItemState extends ConsumerState<_PositionItem> {
   // Add navigation lock to prevent multiple taps
   bool _isNavigating = false;
   
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+                                return InkWell(
       onLongPress: widget.showLongPressOption 
         ? () {
             Navigator.pushNamed(
               context,
               Routes.positionExit,
-              arguments: context.read(portfolioProvider).postionBookModel
+              arguments: ref.read(portfolioProvider).postionBookModel
             );
           }
         : null,
-      onTap: () async {
+                                  onTap: () async {
         // Prevent multiple navigation events on rapid taps
         if (_isNavigating) return;
         
@@ -593,7 +594,7 @@ class _PositionItemState extends State<_PositionItem> {
   }
   
   Future<void> _handlePositionTap(BuildContext context) async {
-    final marketWatch = context.read(marketWatchProvider);
+    final marketWatch = ref.read(marketWatchProvider);
     
     // Fetch linked scrip data
     await marketWatch.fetchLinkeScrip(
@@ -603,7 +604,7 @@ class _PositionItemState extends State<_PositionItem> {
     );
 
     // Fetch scrip quote
-    await context.read(marketWatchProvider).fetchScripQuote(
+    await ref.read(marketWatchProvider).fetchScripQuote(
       "${widget.position.token}",
       "${widget.position.exch}",
       context
@@ -612,7 +613,6 @@ class _PositionItemState extends State<_PositionItem> {
     // Handle NSE/BSE specific data
     if (widget.position.exch == "NSE" || widget.position.exch == "BSE") {
      
-
       await marketWatch.fetchTechData(
         context: context,
         exch: "${widget.position.exch}",

@@ -13,10 +13,10 @@ class ExchangeMessage extends ConsumerWidget {
 
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final noftification = watch(notificationprovider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final noftification = ref.watch(notificationprovider);
 
-   final theme =context.read(themeProvider);
+   final theme =ref.read(themeProvider);
     return noftification.loading
         ? const Center(child: CircularProgressIndicator())
         : SingleChildScrollView(

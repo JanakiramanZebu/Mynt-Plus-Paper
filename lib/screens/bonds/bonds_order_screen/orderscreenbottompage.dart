@@ -12,17 +12,17 @@ import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_us
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/ipo_error_widget.dart';
 
-class BondOrderScreenbottomPage extends StatefulWidget {
+class BondOrderScreenbottomPage extends ConsumerStatefulWidget {
   final BondsList bondInfo;
 
   const BondOrderScreenbottomPage({super.key, required this.bondInfo});
 
   @override
-  State<BondOrderScreenbottomPage> createState() =>
+  ConsumerState<BondOrderScreenbottomPage> createState() =>
       _BondOrderScreenbottomPageState();
 }
 
-class _BondOrderScreenbottomPageState extends State<BondOrderScreenbottomPage> {
+class _BondOrderScreenbottomPageState extends ConsumerState<BondOrderScreenbottomPage> {
   // String upierrortext = "Please enter the UPI Id";
   late BondDetails bondDetails;
 
@@ -51,7 +51,7 @@ class _BondOrderScreenbottomPageState extends State<BondOrderScreenbottomPage> {
                   double.parse(widget.bondInfo.faceValue!))
               .toInt(),
           faceValue: double.parse(widget.bondInfo.faceValue!).toInt(),
-          // availableLedgerBalance: double.parse(context.read(bondsProvider).ledgerBalModel?.total?? "0.00"),
+          // availableLedgerBalance: double.parse(ref.read(bondsProvider).ledgerBalModel?.total?? "0.00"),
           minrequriedprice:
               (double.parse(widget.bondInfo.cutoffPrice!).toInt() *
                       (int.parse(widget.bondInfo.minBidQuantity!) /
@@ -74,10 +74,10 @@ class _BondOrderScreenbottomPageState extends State<BondOrderScreenbottomPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final bonds = watch(bondsProvider);
-      // final upiid = watch(transcationProvider);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, ref, child) {
+      final bonds = ref.watch(bondsProvider);
+      // final upiid = ref.watch(transcationProvider);
+      final theme = ref.watch(themeProvider);
 
       if (bonds.checkForErrorsInBondPlaceOrder(bondDetails)) {
         bonds.setisBondPlaceOrderBtnActiveValue = true;
@@ -383,7 +383,7 @@ class _BondOrderScreenbottomPageState extends State<BondOrderScreenbottomPage> {
                                 : () async {
                                   // insufficeint fund redirect fund screen
                                   TranctionProvider transaction;
-                                  transaction = context.read(transcationProvider);
+                                  transaction = ref.read(transcationProvider);
                                     await transaction
                                             .fetchValidateToken(context);
                                         Future.delayed(

@@ -16,11 +16,11 @@ class StocksHoldingsWidget extends ConsumerWidget {
   const StocksHoldingsWidget({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
     final stockHold =
-        watch(marketWatchProvider).fundamentalData!.shareholdings!;
-    final shareHoldings = watch(marketWatchProvider);
+        ref.watch(marketWatchProvider).fundamentalData!.shareholdings!;
+    final shareHoldings = ref.watch(marketWatchProvider);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text("Holdings",
           style: textStyle(

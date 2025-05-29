@@ -23,11 +23,11 @@ class StocksScreen extends StatefulWidget {
 class _StocksScreenState extends State<StocksScreen> {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final holdingProvide = watch(portfolioProvider).holdingsModel;
-      final marketWatch = watch(marketWatchProvider);
-      final theme = context.read(themeProvider);
-      return watch(portfolioProvider).loading
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final holdingProvide = ref.watch(portfolioProvider).holdingsModel;
+      final marketWatch = ref.watch(marketWatchProvider);
+      final theme = ref.read(themeProvider);
+      return ref.watch(portfolioProvider).loading
           ? const Center(child: CircularProgressIndicator())
           : holdingProvide!.isEmpty
               ? const Center(child: NoDataFound())
@@ -42,7 +42,7 @@ class _StocksScreenState extends State<StocksScreen> {
                       return const ListDivider();
                     }
                     return StreamBuilder<Map>(
-                      stream: watch(websocketProvider).socketDataStream,
+                      stream: ref.watch(websocketProvider).socketDataStream,
                       builder: (context, snapshot) {
                         final socketDatas = snapshot.data ?? {};
 

@@ -11,10 +11,10 @@ import '../../ipo/main_sme_list/single_page.dart';
 class LiveIPOList extends ConsumerWidget {
   const LiveIPOList({super.key});
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final ipos = watch(ipoProvide);
-    final ipo = watch(ipoProvide).dashboardIpoModel?.data;
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ipos = ref.watch(ipoProvide);
+    final ipo = ref.watch(ipoProvide).dashboardIpoModel?.data;
+    final theme = ref.read(themeProvider);
     return ipo!.isNotEmpty ? Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       height: 110,

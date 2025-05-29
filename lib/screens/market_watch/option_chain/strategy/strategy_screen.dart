@@ -15,9 +15,9 @@
 //   const StrategyScreen({super.key, required this.chartArgs});
 
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
-//     final optStrgy = watch(optStrategyProvider);
-//     final theme = watch(themeProvider);
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final optStrgy = ref.watch(optStrategyProvider);
+//     final theme = ref.watch(themeProvider);
 //     return Column(children: [
 //       ChartScreenWebView(chartArgs: chartArgs, cHeight: 1.8),
 //       Row(

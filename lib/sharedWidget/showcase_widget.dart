@@ -49,14 +49,14 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     return Consumer(
-//       builder: (context, watch, child) {
-//         final marketWatchScrip = watch(marketWatchProvider).watchListValues;
-//         final marketWatchList = watch(marketWatchProvider);
-//         final indexProvide = watch(indexListProvider);
+//       builder: (context, ref, child) {
+//         final marketWatchScrip = ref.watch(marketWatchProvider).watchListValues;
+//         final marketWatchList = ref.watch(marketWatchProvider);
+//         final indexProvide = ref.watch(indexListProvider);
 
-//         final orderbook = watch(orderProvider);
-//         final portfolio = watch(portfolioProvider);
-//         final holdingProvide = watch(portfolioProvider);
+//         final orderbook = ref.watch(orderProvider);
+//         final portfolio = ref.watch(portfolioProvider);
+//         final holdingProvide = ref.watch(portfolioProvider);
 //         return Showcase.withWidget(
 //             // disableMovingAnimation: true,
 //             tooltipPosition: widget.postion,
@@ -245,7 +245,7 @@
 //                                   // _showSimpleDialog(context, widget.indexProvide, index);
 //                                   showModalBottomSheet(
 //                                       context: context,
-//                                       // backgroundColor: context.read(themeProvider).isDarkMode
+//                                       // backgroundColor: ref.read(themeProvider).isDarkMode
 //                                       //     ? colors.kColorDarkThemeBackground
 //                                       //     : colors.kColorlightThemeBackground,
 //                                       isScrollControlled: true,
@@ -321,12 +321,12 @@
 //                                                 .placebuybutton,
 //                                           ]));
 
-//                                   await watch(marketWatchProvider).fetchScripQuote(
+//                                   await ref.watch(marketWatchProvider).fetchScripQuote(
 //                                       "${marketWatchScrip[widget.index].token}",
 //                                       "${marketWatchScrip[widget.index].exch}",
 //                                       context);
 
-//                                   await watch(websocketProvider)
+//                                   await ref.watch(websocketProvider)
 //                                       .establishConnection(
 //                                           channelInput:
 //                                               "${marketWatchScrip[widget.index].exch}|${marketWatchScrip[widget.index].token}",

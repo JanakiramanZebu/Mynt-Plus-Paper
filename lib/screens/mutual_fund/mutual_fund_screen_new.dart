@@ -15,10 +15,10 @@ class MutualFundNewScreen extends ConsumerWidget {
   // final bestMFList;
   MutualFundNewScreen({super.key, required this.tabController});
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final mfData = watch(mfProvider);
-    final portfolio = watch(portfolioProvider);
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mfData = ref.watch(mfProvider);
+    final portfolio = ref.watch(portfolioProvider);
+    final theme = ref.watch(themeProvider);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,7 +369,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                           description: mfData.mFCategoryTypesStatic[index]
                               ['description'],
                           chips: mfData.mFCategoryTypesStatic[index]['sub'],
-                          watch: watch,
+                          ref: ref,
                           theme: theme);
                     },
                     separatorBuilder: (BuildContext context, int index) {
@@ -610,9 +610,9 @@ class MutualFundNewScreen extends ConsumerWidget {
       required String title,
       required String description,
       required List<dynamic> chips,
-      required ScopedReader watch,
-      theme}) {
-    final mfData = watch(mfProvider);
+      required WidgetRef ref,
+      required theme}) {
+    final mfData = ref.watch(mfProvider);
     return InkWell(
       onTap: () async {
         mfData.fetchcatdatanew(title, chips[0]);

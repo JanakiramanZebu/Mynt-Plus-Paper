@@ -20,12 +20,12 @@ import '../models/explore_model/stocks_model/action_trade_model.dart';
 import '../models/explore_model/stocks_model/toplist_stocks.dart';
 import 'core/default_change_notifier.dart';
 
-final stocksProvide = ChangeNotifierProvider((ref) => StocksProvider(ref.read));
+final stocksProvide = ChangeNotifierProvider((ref) => StocksProvider(ref));
 
 class StocksProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
 
-  final Reader ref;
+  final Ref ref;
 
   NewsModel? _newsModel;
   NewsModel? get newsModel => _newsModel;
@@ -912,7 +912,7 @@ class StocksProvider extends DefaultChangeNotifier {
 
       if (input.isNotEmpty) {
         // ConstantName.lastSubscribe = input;
-        ref(websocketProvider).establishConnection(
+        ref.read(websocketProvider).establishConnection(
             channelInput: input,
             task: isSubscribe ? "t" : "u",
             context: context);

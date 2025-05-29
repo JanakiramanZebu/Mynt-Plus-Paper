@@ -34,9 +34,9 @@ class MfSipCancelalert extends ConsumerWidget {
 
   });
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final mfData = watch(mfProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final mfData = ref.watch(mfProvider);
 
     return AlertDialog(
       backgroundColor: theme.isDarkMode
@@ -224,7 +224,7 @@ class MfSipCancelalert extends ConsumerWidget {
 
 // String? selectedValue;
   Widget droupdowntest(MFProvider mfData, ThemesProvider theme) {
-    // final theme = watch(themeProvider);
+    // final theme = ref.watch(themeProvider);
     return Column(
       children: [
         DropdownButtonHideUnderline(

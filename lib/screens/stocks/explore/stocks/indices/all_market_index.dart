@@ -37,8 +37,8 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return Consumer(builder: (context, ScopedReader watch, _) {
-//       final indices = watch(indexListProvider);
+//     return Consumer(builder: (context, WidgetRef ref, _) {
+//       final indices = ref.watch(indexListProvider);
 //       return Scaffold(
 //         body: Column(
 //           children: [

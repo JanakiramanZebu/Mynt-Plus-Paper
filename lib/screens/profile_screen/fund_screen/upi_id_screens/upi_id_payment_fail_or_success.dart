@@ -29,9 +29,9 @@ class _UpiIdSucessorFaliureScreenState
                 if (didPop) return;
               },
       child: Consumer(
-        builder: (context, watch, child) {
-          final fund = watch(transcationProvider);
-          final theme = watch(themeProvider);
+        builder: (context, ref, child) {
+          final fund = ref.watch(transcationProvider);
+          final theme = ref.watch(themeProvider);
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(

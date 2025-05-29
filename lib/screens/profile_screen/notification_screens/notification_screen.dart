@@ -10,30 +10,30 @@ import 'tabs/exchange_message.dart';
 
 
 
-class Notificationpage extends StatefulWidget {
+class Notificationpage extends ConsumerStatefulWidget {
   const Notificationpage({super.key});
 
 
   @override
-  State<Notificationpage> createState() => _NotificationpageState();
+  ConsumerState<Notificationpage> createState() => _NotificationpageState();
 }
 
 
-class _NotificationpageState extends State<Notificationpage>
+class _NotificationpageState extends ConsumerState<Notificationpage>
     with TickerProviderStateMixin {
   @override
   void initState() {
-    context.read(notificationprovider).notifytab = TabController(
-        length: context.read(notificationprovider).notifyTabName.length,
+    ref.read(notificationprovider).notifytab = TabController(
+        length: ref.read(notificationprovider).notifyTabName.length,
         vsync: this,
-        initialIndex: context.read(notificationprovider).selectedTab);
+        initialIndex: ref.read(notificationprovider).selectedTab);
 
 
-    context.read(notificationprovider).notifytab.addListener(() {
-      context
+    ref.read(notificationprovider).notifytab.addListener(() {
+      ref
           .read(notificationprovider)
-          .changeTabIndex(context.read(notificationprovider).notifytab.index);
-      context.read(notificationprovider).tabSize();
+          .changeTabIndex(ref.read(notificationprovider).notifytab.index);
+      ref.read(notificationprovider).tabSize();
     });
 
 
@@ -43,7 +43,7 @@ class _NotificationpageState extends State<Notificationpage>
 
   @override
   Widget build(BuildContext context) {
-      final theme =context.read(themeProvider);
+      final theme =ref.read(themeProvider);
     return Scaffold(
      
       appBar: AppBar(
@@ -54,8 +54,8 @@ class _NotificationpageState extends State<Notificationpage>
           leading: const CustomBackBtn(),
           
           title: Text("Notificaton", style: textStyles.appBarTitleTxt.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack))),
-      body: Consumer(builder: (context, ScopedReader watch, _) {
-        final notification = watch(notificationprovider);
+      body: Consumer(builder: (context, WidgetRef ref, _) {
+        final notification = ref.watch(notificationprovider);
         return Column(
           children: [
             Container(

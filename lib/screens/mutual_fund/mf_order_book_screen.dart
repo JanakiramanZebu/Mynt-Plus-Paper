@@ -38,9 +38,9 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final theme = watch(themeProvider);
-      final mforderbook = watch(mfProvider);
+    return Consumer(builder: (context, ref, child) {
+      final theme = ref.watch(themeProvider);
+      final mforderbook = ref.watch(mfProvider);
       return Scaffold(
         body: Stack(
           children: [

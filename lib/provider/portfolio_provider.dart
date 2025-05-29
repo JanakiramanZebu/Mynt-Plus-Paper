@@ -30,14 +30,14 @@ import 'index_list_provider.dart';
 import 'websocket_provider.dart';
 
 final portfolioProvider =
-    ChangeNotifierProvider((ref) => PortfolioProvider(ref.read));
+    ChangeNotifierProvider((ref) => PortfolioProvider(ref));
 
 class PortfolioProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
-  final Reader ref;
+  final Ref ref;
   late TabController portTab;
   final TextEditingController holdingSearchCtrl = TextEditingController();
   final TextEditingController holdingMFSearchCtrl = TextEditingController();
@@ -269,7 +269,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       Navigator.pushNamed(context, Routes.camsWebView,
           arguments: _camsrespons!.redirectionurl);
     } catch (e) {
-      ref(indexListProvider).logError.add({"type": "Fetch API", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "Fetch API", "Error": "$e"});
       notifyListeners();
     } finally {
       toggleLoadingOn(false);
@@ -558,10 +558,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.usedqty ?? 0}");
             element.currentQty = qty;
-            ref(websocketProvider)
+            ref.read(websocketProvider)
                 .socketDatas["${element.exchTsym![0].token}"] = {'holdQty': ""};
 
-            ref(websocketProvider).socketDatas["${element.exchTsym![0].token}"]
+            ref.read(websocketProvider).socketDatas["${element.exchTsym![0].token}"]
                 ['holdQty'] = "${element.currentQty}";
 
             double avgCost = double.parse(
@@ -596,7 +596,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           if (_holdingsModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _holdingsModel![0].stat == "Not_Ok") {
-            ref(authProvider).ifSessionExpired(context);
+            ref.read(authProvider).ifSessionExpired(context);
           }
           // _holdingsModel = [];
         }
@@ -604,7 +604,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       print("qwqwqw hold sw catch ${e}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Holdings", "Error": "$e"});
       notifyListeners();
@@ -671,7 +671,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           if (_postionBookModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _postionBookModel![0].stat == "Not_Ok") {
-            ref(authProvider).ifSessionExpired(context);
+            ref.read(authProvider).ifSessionExpired(context);
           }
           _openPosition = [];
           // _postionBookModel = [];
@@ -681,7 +681,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       return _postionBookModel;
     } catch (e) {
       print("qwqwqw pos sw catch ${e}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Position Book", "Error": "$e"});
       notifyListeners();
@@ -753,13 +753,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
           if (_mfHoldingsModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _mfHoldingsModel![0].stat == "Not_Ok") {
-            ref(authProvider).ifSessionExpired(context);
+            ref.read(authProvider).ifSessionExpired(context);
           }
         }
       }
       notifyListeners();
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API MF Holdings", "Error": "$e"});
       notifyListeners();
@@ -1057,7 +1057,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
       if (input.isNotEmpty) {
         // ConstantName.lastSubscribe = input;
-        ref(websocketProvider).establishConnection(
+        ref.read(websocketProvider).establishConnection(
             channelInput: input,
             task: isSubscribe ? "t" : "u",
             context: context);
@@ -1084,7 +1084,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
       if (input.isNotEmpty) {
         // ConstantName.lastSubscribe = input;
-        ref(websocketProvider).establishConnection(
+        ref.read(websocketProvider).establishConnection(
             channelInput: input,
             task: isSubscribe ? "t" : "u",
             context: context);
@@ -1096,7 +1096,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       {required bool isSubscribe, required BuildContext context}) {
     try {
       if (_subscr.isNotEmpty) {
-        ref(websocketProvider).establishConnection(
+        ref.read(websocketProvider).establishConnection(
             channelInput: _subscr, task: 't', context: context);
       }
     } catch (e) {}
@@ -1126,10 +1126,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 tsym: "${element['tsym']}",
                 mktProt: '',
                 channel: defaultTargetPlatform == TargetPlatform.android
-                    ? '${ref(authProvider).deviceInfo["brand"]}'
-                    : "${ref(authProvider).deviceInfo["model"]}");
+                    ? '${ref.read(authProvider).deviceInfo["brand"]}'
+                    : "${ref.read(authProvider).deviceInfo["model"]}");
             _placeOrderModel =
-                await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
+                await api.getPlaceOrder(placeOrderInput, ref.read(orderProvider).ip);
 
             if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
               break;
@@ -1413,10 +1413,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 tsym: "${element.tsym}",
                 mktProt: '',
                 channel: defaultTargetPlatform == TargetPlatform.android
-                    ? '${ref(authProvider).deviceInfo["brand"]}'
-                    : "${ref(authProvider).deviceInfo["model"]}");
+                    ? '${ref.read(authProvider).deviceInfo["brand"]}'
+                    : "${ref.read(authProvider).deviceInfo["model"]}");
             _placeOrderModel =
-                await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
+                await api.getPlaceOrder(placeOrderInput, ref.read(orderProvider).ip);
 
             if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
               break;
@@ -1440,8 +1440,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
                   tsym: "${element.tsym}",
                   mktProt: '',
                   channel: defaultTargetPlatform == TargetPlatform.android
-                      ? '${ref(authProvider).deviceInfo["brand"]}'
-                      : "${ref(authProvider).deviceInfo["model"]}",
+                      ? '${ref.read(authProvider).deviceInfo["brand"]}'
+                      : "${ref.read(authProvider).deviceInfo["model"]}",
                   frzqty: ((int.parse(element.frzqty.toString()) /
                               int.parse(element.ls.toString()))
                           .floor() *
@@ -1453,7 +1453,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
     }
 
-    // ref(indexListProvider).bottomMenu(2);
+    // ref.read(indexListProvider).bottomMenu(2);
     // Navigator.pop(context);
   }
 
@@ -1476,8 +1476,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
           tsym: "${element.exchTsym![0].tsym}",
           mktProt: '',
           channel: defaultTargetPlatform == TargetPlatform.android
-              ? '${ref(authProvider).deviceInfo["brand"]}'
-              : "${ref(authProvider).deviceInfo["model"]}");
+              ? '${ref.read(authProvider).deviceInfo["brand"]}'
+              : "${ref.read(authProvider).deviceInfo["model"]}");
       await fetchExitPosition(context, placeOrderInput, false);
     }
   }
@@ -1575,7 +1575,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _groupName = await api.createGroupName(name);
 
       if (_groupName!.status == "Data inserted") {
-        //  ref(indexListProvider).bottomMenu(1);
+        //  ref.read(indexListProvider).bottomMenu(1);
         await fetchPosGroupSymbol(name, isCreateGrp);
 
         Navigator.pop(c);
@@ -1781,7 +1781,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       List oplist = await api.getOptionlist();
       _oplists = oplist;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API OPlist", "Error": "$e"});
       notifyListeners();
@@ -1940,17 +1940,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
         for (int i = 0; i < fullOrders; i++) {
           placeOrderInput.qty = frzqty.toString();
           _placeOrderModel =
-              await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
+              await api.getPlaceOrder(placeOrderInput, ref.read(orderProvider).ip);
         }
 
         if (remainingQty > 0) {
           placeOrderInput.qty = remainingQty.toString();
           _placeOrderModel =
-              await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
+              await api.getPlaceOrder(placeOrderInput, ref.read(orderProvider).ip);
         }
       } else {
         _placeOrderModel =
-            await api.getPlaceOrder(placeOrderInput, ref(orderProvider).ip);
+            await api.getPlaceOrder(placeOrderInput, ref.read(orderProvider).ip);
       }
 
       if (_placeOrderModel!.stat == "Ok") {
@@ -1965,7 +1965,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         if (_placeOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _placeOrderModel!.stat == "Not_Ok") {
-          ref(authProvider).ifSessionExpired(context);
+          ref.read(authProvider).ifSessionExpired(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
               successMessage(context, "${_placeOrderModel!.emsg}"));
@@ -1974,7 +1974,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       return _placeOrderModel;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Place Order", "Error": "$e"});
       notifyListeners();
@@ -2064,7 +2064,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             warningMessage(context, "${_positionConvertionModel!.emsg}"));
       }
     } catch (e) {
-      ref(indexListProvider).logError.add({"type": "Position Conversion", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "Position Conversion", "Error": "$e"});
       ScaffoldMessenger.of(context).showSnackBar(
           warningMessage(context, "Failed to convert position: $e"));
     } finally {

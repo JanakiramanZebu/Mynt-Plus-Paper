@@ -15,11 +15,11 @@ class TradeBookDetail extends ConsumerWidget {
   const TradeBookDetail({super.key, required this.tradeData});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     
     return StreamBuilder<Map>(
-      stream: watch(websocketProvider).socketDataStream,
+      stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         // Create a copy of trade data to avoid directly modifying the original
         var displayData = tradeData;

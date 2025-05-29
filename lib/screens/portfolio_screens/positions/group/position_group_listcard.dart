@@ -11,9 +11,9 @@ class PositionListGrpCard extends ConsumerWidget {
   const PositionListGrpCard({super.key, required this. groupData});
 
   @override
-  Widget build(BuildContext context, watch) {
-    final positions = watch(portfolioProvider); 
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, ref) {
+    final positions = ref.watch(portfolioProvider); 
+    final theme = ref.read(themeProvider);
     return Container(
         color: theme.isDarkMode
             ? groupData['qty'] == "0"

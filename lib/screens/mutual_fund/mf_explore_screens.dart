@@ -15,15 +15,15 @@ import 'mf_sip_screen.dart';
 import 'mf_watchlist.dart';
 import 'mutual_fund_screen_new.dart';
 
-class MFExploreScreens extends StatefulWidget {
+class MFExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider theme;
   const MFExploreScreens({super.key, required this.theme});
 
   @override
-  State<MFExploreScreens> createState() => _ExploreScreensState();
+  ConsumerState<MFExploreScreens> createState() => _ExploreScreensState();
 }
 
-class _ExploreScreensState extends State<MFExploreScreens>
+class _ExploreScreensState extends ConsumerState<MFExploreScreens>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final tablistitems = [
@@ -83,72 +83,68 @@ class _ExploreScreensState extends State<MFExploreScreens>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this, initialIndex: context.read(mfProvider).activeTab ?? 0);
+    _tabController = TabController(length: 4, vsync: this, initialIndex: ref.read(mfProvider).activeTab ?? 0);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, watch, child) {
-        final explore = watch(authProvider);
-        final theme = context.read(themeProvider);
-        final mfData = watch(mfProvider);
+    final explore = ref.watch(authProvider);
+    final theme = ref.read(themeProvider);
+    final mfData = ref.watch(mfProvider);
 
-        return TransparentLoaderScreen(
-          isLoading: explore.loading,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // const CustomDragHandler(),
-              Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.only(bottom: 0, left: 15, top: 2),
-                  decoration: BoxDecoration(
-                      border: Border(
-                          bottom: BorderSide(
-                              color: widget.theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : colors.colorDivider,
-                              width: 0),
-                              )),
-                  // height: 60,
-                  child: TabBar(
-                    indicator: BoxDecoration(),
-                      labelPadding: const EdgeInsets.only(right: 8, bottom: 8),
-                      tabAlignment: TabAlignment.start,
-                      indicatorColor: theme.isDarkMode ? colors.colorBlack :const Color.fromARGB(255, 255, 255, 255),
-                      controller: _tabController,
-                      isScrollable: true,
-                      tabs: List.generate(
-                          tablistitems.length,
-                          (tab) => tabConstruce(
-                              // tablistitems[tab]['imgpath'].toString(),
-                              tablistitems[tab]['title'].toString(),
-                              
-                              theme,
-                              tab,
-                              () {},
-                              mfData)))),
-              Expanded(
-                child: TabBarView(
-                
-                  physics: const NeverScrollableScrollPhysics(),
+    return TransparentLoaderScreen(
+      isLoading: explore.loading,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // const CustomDragHandler(),
+          Container(
+              width: MediaQuery.of(context).size.width,
+              padding: const EdgeInsets.only(bottom: 0, left: 15, top: 2),
+              decoration: BoxDecoration(
+                  border: Border(
+                      bottom: BorderSide(
+                          color: widget.theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider,
+                          width: 0),
+                          )),
+              // height: 60,
+              child: TabBar(
+                indicator: BoxDecoration(),
+                  labelPadding: const EdgeInsets.only(right: 8, bottom: 8),
+                  tabAlignment: TabAlignment.start,
+                  indicatorColor: theme.isDarkMode ? colors.colorBlack :const Color.fromARGB(255, 255, 255, 255),
                   controller: _tabController,
-                  children: [
-                    MutualFundNewScreen(
-                      tabController: _tabController,
-                    ),
-                    const MFWatchlistScreen(),
-                    const MfOrderBookScreen(),
-                    const MFSipdetScreen()
-                  ],
+                  isScrollable: true,
+                  tabs: List.generate(
+                      tablistitems.length,
+                      (tab) => tabConstruce(
+                          // tablistitems[tab]['imgpath'].toString(),
+                          tablistitems[tab]['title'].toString(),
+                          
+                          theme,
+                          tab,
+                          () {},
+                          mfData)))),
+          Expanded(
+            child: TabBarView(
+            
+              physics: const NeverScrollableScrollPhysics(),
+              controller: _tabController,
+              children: [
+                MutualFundNewScreen(
+                  tabController: _tabController,
                 ),
-              ),
-              
-            ],
+                const MFWatchlistScreen(),
+                const MfOrderBookScreen(),
+                const MFSipdetScreen()
+              ],
+            ),
           ),
-        );
-      },
+          
+        ],
+      ),
     );
   }
 

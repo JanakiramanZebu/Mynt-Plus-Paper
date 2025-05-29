@@ -8,19 +8,19 @@ import '../provider/stocks_provider.dart';
 import '../provider/transcation_provider.dart';
 import 'stocks/explore/stocks/stock_screens.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     setState(() {
-      context.read(stocksProvide).chngTradeAction("init");
-      context
+      ref.read(stocksProvide).chngTradeAction("init");
+      ref
           .read(stocksProvide)
           .requestWSTradeaction(isSubscribe: true, context: context);
     });
@@ -29,9 +29,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final trancation = watch(transcationProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+      final trancation = ref.watch(transcationProvider);
 
       return Scaffold(
         appBar: AppBar(
@@ -218,67 +218,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 ),
                               ),
-                              // Row(
-                              //   mainAxisAlignment:
-                              //       MainAxisAlignment.spaceBetween,
-                              //   children: [
-                              //     Flexible(
-                              //       child: SizedBox(
-                              //         width: double.infinity,
-                              //         height: 40,
-                              //         child: OutlinedButton.icon(
-                              //           onPressed: () async {},
-                              //           style: OutlinedButton.styleFrom(
-                              //             backgroundColor: Colors.transparent,
-                              //             side: BorderSide(
-                              //               color: theme.isDarkMode
-                              //                   ? const Color(0xFFffffff)
-                              //                   : const Color(0xFF000000),
-                              //             ),
-                              //             shape: const RoundedRectangleBorder(
-                              //                 borderRadius: BorderRadius.all(
-                              //                     Radius.circular(60))),
-                              //           ),
-                              //           label: Text("Add Fund",
-                              //               style: textStyle(
-                              //                   theme.isDarkMode
-                              //                       ? const Color(0xFFffffff)
-                              //                       : const Color(0xFF000000),
-                              //                   14,
-                              //                   FontWeight.w600)),
-                              //         ),
-                              //       ),
-                              //     ),
-                              //     const SizedBox(width: 24),
-                              //     Flexible(
-                              //       child: SizedBox(
-                              //         height: 40,
-                              //         width: double.infinity,
-                              //         child: OutlinedButton.icon(
-                              //           onPressed: () async {},
-                              //           style: OutlinedButton.styleFrom(
-                              //             backgroundColor: Colors.transparent,
-                              //             side: BorderSide(
-                              //               color: theme.isDarkMode
-                              //                   ? const Color(0xFFffffff)
-                              //                   : const Color(0xFF000000),
-                              //             ),
-                              //             shape: const RoundedRectangleBorder(
-                              //                 borderRadius: BorderRadius.all(
-                              //                     Radius.circular(60))),
-                              //           ),
-                              //           label: Text("Withdraw",
-                              //               style: textStyle(
-                              //                   theme.isDarkMode
-                              //                       ? const Color(0xFFffffff)
-                              //                       : const Color(0xFF000000),
-                              //                   14,
-                              //                   FontWeight.w500)),
-                              //         ),
-                              //       ),
-                              //     )
-                              //   ],
-                              // ),
                             ],
                           )),
                     ),
@@ -287,20 +226,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
               body: const StockScreen()),
         ),
-        // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () {
-        //     Navigator.pop(context);
-        //   },
-        //   elevation: 0,
-        //   // foregroundColor: customizations[index].$1,
-        //   backgroundColor: Colors.black.withOpacity(0.2),
-        //   child: const Icon(
-        //     Icons.arrow_back_rounded,
-        //     color: Colors.black,
-        //     weight: 10,
-        //   ),
-        // )
       );
     });
   }
@@ -324,7 +249,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               icon,
               width: 16,
             ),
-            // Icon(icon, color: iconColor),
             const SizedBox(width: 5),
             Text(
               label,

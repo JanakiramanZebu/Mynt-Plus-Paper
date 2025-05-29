@@ -51,15 +51,15 @@
 //   @override
 //   void initState() {
 //     WidgetsBinding.instance.addPostFrameCallback((_) {
-//       context.read(ordInputProvider).chngInvesType(
+//       ref.read(ordInputProvider).chngInvesType(
 //           widget.scripInfo.seg == "EQT"
 //               ? InvestType.delivery
 //               : InvestType.carryForward,
 //           "GTT");
-//       context.read(ordInputProvider).updatePrcCtrl("${widget.orderArg.ltp}",
+//       ref.read(ordInputProvider).updatePrcCtrl("${widget.orderArg.ltp}",
 //           widget.orderArg.lotSize!.replaceAll("-", ""));
-//       context.read(ordInputProvider).chngGTTPriceType("Limit");
-//       context.read(ordInputProvider).disableCondGTT(false);
+//       ref.read(ordInputProvider).chngGTTPriceType("Limit");
+//       ref.read(ordInputProvider).disableCondGTT(false);
 //     });
 
 //     setState(() {
@@ -67,7 +67,7 @@
 //       isBuy = widget.orderArg.transType;
 
 //       product = widget.orderArg.orderTpye == "CNC" ? "C" : "I";
-//       // context.read(networkStateProvider).networkStream();
+//       // ref.read(networkStateProvider).networkStream();
 //     });
 //     super.initState();
 //   }
@@ -76,17 +76,17 @@
 //   Widget build(BuildContext context) {
 //     return WillPopScope(
 //       onWillPop: () async {
-//         context.read(ordInputProvider).clearTextField();
+//         ref.read(ordInputProvider).clearTextField();
 //         await context
 //             .read(marketWatchProvider)
 //             .requestMWScrip(context: context, isSubscribe: true);
 
 //         return true;
 //       },
-//       child: Consumer(builder: (context, ScopedReader watch, _) {
-//         final orderInput = watch(ordInputProvider);
-//         final internet = watch(networkStateProvider);
-//         final theme = watch(themeProvider);
+//       child: Consumer(builder: (context, WidgetRef ref, _) {
+//         final orderInput = ref.watch(ordInputProvider);
+//         final internet = ref.watch(networkStateProvider);
+//         final theme = ref.watch(themeProvider);
 //         return GestureDetector(
 //             onTap: () => FocusScope.of(context).unfocus(),
 //             child: Scaffold(
@@ -1079,7 +1079,7 @@
 //             ? orderInput.trgPrcCtrl.text
 //             : "",
 //         alid: '');
-//     await context.read(orderProvider).fetchGttPlaceOrder(input, context);
+//     await ref.read(orderProvider).fetchGttPlaceOrder(input, context);
 //   }
 
 //   placeOCOOrder(OrderInputProvider orderInput) async {
@@ -1109,6 +1109,6 @@
 //             ? orderInput.ocoTrgPrcCtrl.text
 //             : "",
 //         alid: '');
-//     await context.read(orderProvider).fetchOCOPlaceOrder(input, context);
+//     await ref.read(orderProvider).fetchOCOPlaceOrder(input, context);
 //   }
 // }

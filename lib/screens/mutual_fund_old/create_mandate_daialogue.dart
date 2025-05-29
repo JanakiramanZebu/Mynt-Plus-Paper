@@ -12,18 +12,18 @@ import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/snack_bar.dart';
 
-class CreateMandateDialogue extends StatefulWidget {
+class CreateMandateDialogue extends ConsumerStatefulWidget {
   const CreateMandateDialogue({super.key});
 
   @override
-  State<CreateMandateDialogue> createState() => _CreateMandateDialogueState();
+  ConsumerState<CreateMandateDialogue> createState() => _CreateMandateDialogueState();
 }
 
-class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
+class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read(mfProvider).getCurrentDate();
+      ref.read(mfProvider).getCurrentDate();
     });
 
     super.initState();
@@ -31,31 +31,30 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final fund = watch(fundProvider);
-      final mfOrder = watch(mfProvider);
-      return AlertDialog(
-          backgroundColor: theme.isDarkMode
-              ? const Color.fromARGB(255, 18, 18, 18)
-              : colors.colorWhite,
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(16))),
-          actionsPadding:
-              const EdgeInsets.only(left: 16, right: 16, bottom: 4, top: 4),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-          titlePadding: const EdgeInsets.only(left: 16, top: 16),
-          title: Text("Create Mandate",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w500)),
-          content: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: ListView(
+    final theme = ref.watch(themeProvider);
+    final fund = ref.watch(fundProvider);
+    final mfOrder = ref.watch(mfProvider);
+    return AlertDialog(
+        backgroundColor: theme.isDarkMode
+            ? const Color.fromARGB(255, 18, 18, 18)
+            : colors.colorWhite,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16))),
+        actionsPadding:
+            const EdgeInsets.only(left: 16, right: 16, bottom: 4, top: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+        titlePadding: const EdgeInsets.only(left: 16, top: 16),
+        title: Text("Create Mandate",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textStyle(
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                14,
+                FontWeight.w500)),
+        content: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: ListView(
                 shrinkWrap: true,
                 children: [
                   const ListDivider(),
@@ -253,6 +252,5 @@ class _CreateMandateDialogueState extends State<CreateMandateDialogue> {
                             14,
                             FontWeight.w500))))
           ]);
-    });
   }
 }

@@ -11,10 +11,10 @@ class MFComparison extends ConsumerWidget {
   const MFComparison({super.key, required this.mfStockData});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final mfData = watch(mfProvider).schemePeers!;
-    final mfProvide = watch(mfProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final mfData = ref.watch(mfProvider).schemePeers!;
+    final mfProvide = ref.watch(mfProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(

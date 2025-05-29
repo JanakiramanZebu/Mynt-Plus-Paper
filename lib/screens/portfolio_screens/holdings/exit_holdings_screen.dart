@@ -15,9 +15,9 @@ class ExitHoldingsScreen extends ConsumerWidget {
   const ExitHoldingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
-    final holdings = watch(portfolioProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
+    final holdings = ref.watch(portfolioProvider);
     
     return PopScope(
       canPop: true, // Allows back navigation
@@ -86,7 +86,7 @@ class ExitHoldingsScreen extends ConsumerWidget {
           ],
         ),
         body: StreamBuilder<Map>(
-          stream: watch(websocketProvider).socketDataStream,
+          stream: ref.watch(websocketProvider).socketDataStream,
           builder: (context, snapshot) {
             final socketDatas = snapshot.data ?? {};
             
@@ -419,10 +419,10 @@ class ExitHoldingsScreen extends ConsumerWidget {
                                             borderRadius: BorderRadius.all(
                                                 Radius.circular(32)))),
                                     onPressed: () async {
-                                      await context
+                                      await ref
                                           .read(fundProvider)
                                           .fetchHstoken(context);
-                                      await context
+                                      await ref
                                           .read(fundProvider)
                                           .eDis(context);
                                     },
@@ -524,17 +524,17 @@ class ExitHoldingsScreen extends ConsumerWidget {
                                                                         index]
                                                                     .brkcolqty ==
                                                                 "0") {
-                                                          await context
+                                                          await ref
                                                               .read(fundProvider)
                                                               .fetchHstoken(
                                                                   context);
 
                                                           Navigator.pop(context);
-                                                          await context
+                                                          await ref
                                                               .read(fundProvider)
                                                               .eDis(context);
                                                         } else {
-                                                          await context
+                                                          await ref
                                                               .read(fundProvider)
                                                               .fetchHstoken(
                                                                   context);

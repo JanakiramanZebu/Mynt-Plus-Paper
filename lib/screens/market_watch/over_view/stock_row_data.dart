@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 
-class StockRowTable extends StatelessWidget {
+class StockRowTable extends ConsumerWidget {
   final String title;
   final String value;
   final bool showIcon;
@@ -17,8 +17,8 @@ class StockRowTable extends StatelessWidget {
       required this.showIcon});
 
   @override
-  Widget build(BuildContext context) {
- final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),

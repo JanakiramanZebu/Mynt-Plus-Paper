@@ -29,11 +29,11 @@ class _BondsSinglePageState extends State<BondsSinglePage> {
   Widget build(BuildContext context) {
     // int? maxLines = _isExpanded ? null : 3;
     return Consumer(
-      builder: (context, watch, child) {
-        final theme = watch(themeProvider);
-        final singlepage = watch(ipoProvide);
-        final upi = watch(transcationProvider);
-        //final ipoLtp = watch(marketWatchProvider);
+      builder: (context, ref, child) {
+        final theme = ref.watch(themeProvider);
+        final singlepage = ref.watch(ipoProvide);
+        final upi = ref.watch(transcationProvider);
+        //final ipoLtp = ref.watch(marketWatchProvider);
         // print("iposymbol ::: ${iposymbol}");
         return DraggableScrollableSheet(
           initialChildSize: 0.88,

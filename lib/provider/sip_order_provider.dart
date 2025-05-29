@@ -10,12 +10,12 @@ import '../locator/preference.dart';
 import '../res/res.dart';
 import 'core/default_change_notifier.dart';
 
-final siprovider = ChangeNotifierProvider((ref) => SipProvider(ref.read));
+final siprovider = ChangeNotifierProvider((ref) => SipProvider(ref));
 
 class SipProvider extends DefaultChangeNotifier {
   final Preferences pref = locator<Preferences>();
   final api = locator<ApiExporter>();
-  final Reader ref;
+  final Ref ref;
   SipProvider(this.ref);
 
   final TextEditingController datefield = TextEditingController();

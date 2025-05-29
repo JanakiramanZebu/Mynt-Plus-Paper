@@ -11,22 +11,22 @@ import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/snack_bar.dart';
 import 'edit_scrip.dart';
 
-class WatchlistCard extends StatefulWidget {
+class WatchlistCard extends ConsumerStatefulWidget {
   final dynamic watchListData;
   const WatchlistCard({super.key, required this.watchListData});
 
   @override
-  State<WatchlistCard> createState() => _WatchlistCardState();
+  ConsumerState<WatchlistCard> createState() => _WatchlistCardState();
 }
 
-class _WatchlistCardState extends State<WatchlistCard> {
+class _WatchlistCardState extends ConsumerState<WatchlistCard> {
   // Add navigation lock to prevent multiple navigation events
   bool _isNavigating = false;
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
-    final marketWatch = context.read(marketWatchProvider);
+    final theme = ref.read(themeProvider);
+    final marketWatch = ref.read(marketWatchProvider);
     
     return ListTile(
         onLongPress: () {
@@ -34,7 +34,7 @@ class _WatchlistCardState extends State<WatchlistCard> {
           ScaffoldMessenger.of(context).showSnackBar(warningMessage(
               context, "This is a pre-defined watchlist that cannot be edited!"));
           } else {
-            context
+            ref
                 .read(marketWatchProvider)
                 .requestMWScrip(context: context, isSubscribe: false);
             Navigator.push(
@@ -128,7 +128,7 @@ class _WatchlistCardState extends State<WatchlistCard> {
   }
 }
 
-class _PriceDataWidget extends StatefulWidget {
+class _PriceDataWidget extends ConsumerStatefulWidget {
   final String token;
   final Map<String, dynamic> initialData;
 
@@ -138,10 +138,10 @@ class _PriceDataWidget extends StatefulWidget {
   });
 
   @override
-  State<_PriceDataWidget> createState() => _PriceDataWidgetState();
+  ConsumerState<_PriceDataWidget> createState() => _PriceDataWidgetState();
 }
 
-class _PriceDataWidgetState extends State<_PriceDataWidget> {
+class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
   late String ltp;
   late String change;
   late String perChange;
@@ -158,8 +158,7 @@ class _PriceDataWidgetState extends State<_PriceDataWidget> {
     perChange = widget.initialData['perChange']?.toString() ?? '0.00';
     
     // Pre-load from current socket data if available
-    final websocket = context.read(websocketProvider);
-    final socketData = websocket.socketDatas[widget.token];
+    final socketData = ref.read(websocketProvider).socketDatas[widget.token];
     if (socketData != null) {
       ltp = socketData['lp']?.toString() ?? ltp;
       change = socketData['chng']?.toString() ?? change;
@@ -171,9 +170,11 @@ class _PriceDataWidgetState extends State<_PriceDataWidget> {
   }
   
   void _setupSubscription() {
-    final websocket = context.read(websocketProvider);
-    
-    _subscription = websocket.socketDataStream.listen((data) {
+    // Using a more efficient approach to listen to only the relevant token's data
+    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
+      // Skip processing if widget is in the process of disposal
+      if (!mounted) return;
+      
       // Only process if data contains our token
       if (!data.containsKey(widget.token)) return;
       
@@ -183,23 +184,27 @@ class _PriceDataWidgetState extends State<_PriceDataWidget> {
       // Only update state if values actually changed
       bool valueChanged = false;
       
-      if (newData['lp'] != null && newData['lp'].toString() != ltp) {
-        ltp = newData['lp'].toString();
+      final newLtp = newData['lp']?.toString();
+      final newChange = newData['chng']?.toString();
+      final newPerChange = newData['pc']?.toString();
+      
+      if (newLtp != null && newLtp != ltp && newLtp != '0.00') {
+        ltp = newLtp;
         valueChanged = true;
       }
       
-      if (newData['chng'] != null && newData['chng'].toString() != change) {
-        change = newData['chng'].toString();
+      if (newChange != null && newChange != change) {
+        change = newChange;
         valueChanged = true;
       }
       
-      if (newData['pc'] != null && newData['pc'].toString() != perChange) {
-        perChange = newData['pc'].toString();
+      if (newPerChange != null && newPerChange != perChange) {
+        perChange = newPerChange;
         valueChanged = true;
       }
       
       // Only rebuild if values actually changed and not already rebuilding
-      if (valueChanged && mounted && !_shouldUpdate) {
+      if (valueChanged && !_shouldUpdate) {
         _shouldUpdate = true;
         
         // Debounce updates to avoid rapid UI rebuilds
@@ -215,13 +220,20 @@ class _PriceDataWidgetState extends State<_PriceDataWidget> {
   
   @override
   void dispose() {
+    // Ensure subscription is properly cleaned up
     _subscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    // Don't read theme on every rebuild - cache it once per build
+    final theme = ref.read(themeProvider);
+    
+    // Format price values and handle invalid data
+    final displayLtp = ltp == 'null' || ltp.isEmpty ? '0.00' : ltp;
+    final displayChange = change == 'null' || change.isEmpty ? '0.00' : change;
+    final displayPerChange = perChange == 'null' || perChange.isEmpty ? '0.00' : perChange;
     
     // Use cached text styles to avoid creating new objects
     final priceTextStyle = textStyle(
@@ -229,10 +241,9 @@ class _PriceDataWidgetState extends State<_PriceDataWidget> {
         14,
         FontWeight.w600);
         
-    final changeColor = change.startsWith("-") || perChange.startsWith('-')
+    final changeColor = displayChange.startsWith("-") || displayPerChange.startsWith('-')
         ? colors.darkred
-        : (change == "null" || perChange == "null" || 
-           change == "0.00" || perChange == "0.00")
+        : (displayChange == "0.00" || displayPerChange == "0.00")
             ? colors.ltpgrey
             : colors.ltpgreen;
             
@@ -243,10 +254,10 @@ class _PriceDataWidgetState extends State<_PriceDataWidget> {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-        Text("₹$ltp", style: priceTextStyle),
+        Text("₹$displayLtp", style: priceTextStyle),
               const SizedBox(height: 4),
               Text(
-          "$change ($perChange%)",
+          "$displayChange ($displayPerChange%)",
           style: changeTextStyle,
               )
       ]

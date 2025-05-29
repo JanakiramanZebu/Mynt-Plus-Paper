@@ -25,10 +25,10 @@ class MFHoldingScreen extends StatefulWidget {
 class _MFHoldingScreen extends State<MFHoldingScreen> {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final mfHolding = watch(portfolioProvider);
-      final theme = watch(themeProvider);
-      // final mforderbook = watch(mfProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final mfHolding = ref.watch(portfolioProvider);
+      final theme = ref.watch(themeProvider);
+      // final mforderbook = ref.watch(mfProvider);
 
       return GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),

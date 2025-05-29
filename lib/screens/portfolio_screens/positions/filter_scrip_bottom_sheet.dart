@@ -41,9 +41,9 @@ class _PositionScripBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      // final watchlist = watch(marketWatchProvider);
-      final theme = context.read(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      // final watchlist = ref.watch(marketWatchProvider);
+      final theme = ref.read(themeProvider);
       return Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
@@ -84,12 +84,10 @@ class _PositionScripBottomSheetState
               onTap: () {
                 setState(() {
                   if (scripisAscending == true) {
-                    context
-                        .read(portfolioProvider)
+                    ref.read(portfolioProvider)
                         .sortPositions(sorting: "ASC");
                   } else if (scripisAscending == false) {
-                    context
-                        .read(portfolioProvider)
+                    ref.read(portfolioProvider)
                         .sortPositions(sorting: "DSC");
                   }
 
@@ -130,12 +128,10 @@ class _PositionScripBottomSheetState
               onTap: () {
                 setState(() {
                   if (pricepisAscending == true) {
-                    context
-                        .read(portfolioProvider)
+                    ref.read(portfolioProvider)
                         .sortPositions(sorting: "LTPDSC");
                   } else if (pricepisAscending == false) {
-                    context
-                        .read(portfolioProvider)
+                    ref.read(portfolioProvider)
                         .sortPositions(sorting: "LTPASC");
                   }
 
@@ -176,12 +172,10 @@ class _PositionScripBottomSheetState
               onTap: () {
                 setState(() {
                   if (qtyisAscending == true) {
-                    context
-                        .read(portfolioProvider)
+                    ref.read(portfolioProvider)
                         .sortPositions(sorting: "QTYDSC");
                   } else if (qtyisAscending == false) {
-                    context
-                        .read(portfolioProvider)
+                    ref.read(portfolioProvider)
                         .sortPositions(sorting: "QTYASC");
                   }
 
@@ -222,12 +216,10 @@ class _PositionScripBottomSheetState
               onTap: () {
                 setState(() {
                   if (perchangisAscending == true) {
-                    context
-                        .read(portfolioProvider)
+                    ref.read(portfolioProvider)
                         .sortPositions(sorting: "PCDESC");
                   } else if (perchangisAscending == false) {
-                    context
-                        .read(portfolioProvider)
+                    ref.read(portfolioProvider)
                         .sortPositions(sorting: "PCASC");
                   }
 
@@ -270,12 +262,10 @@ class _PositionScripBottomSheetState
               onTap: () {
                 setState(() {
                   if (postion == true) {
-                    context
-                        .read(portfolioProvider)
+                    ref.read(portfolioProvider)
                         .sortPositions(sorting: "Open");
                   } else if (postion == false) {
-                    context
-                        .read(portfolioProvider)
+                    ref.read(portfolioProvider)
                         .sortPositions(sorting: "Close");
                   }
 

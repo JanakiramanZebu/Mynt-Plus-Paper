@@ -5,15 +5,15 @@ import '../../../../../models/indices/index_list_model.dart';
 import '../../../../../provider/index_list_provider.dart';
 import 'index_list_card.dart';
 
-class IndexScreen extends StatelessWidget {
+class IndexScreen extends ConsumerWidget {
   final List<IndexValue> indexData;
   const IndexScreen({super.key, required this.indexData});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return RefreshIndicator(
       onRefresh: () async {
-        await context.read(indexListProvider).fetchAllIndex();
+        await ref.read(indexListProvider).fetchAllIndex();
       },
       child: ListView.separated(
         shrinkWrap: true,

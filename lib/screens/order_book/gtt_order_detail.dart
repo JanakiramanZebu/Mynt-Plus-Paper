@@ -17,12 +17,12 @@ class GttOrderDetail extends ConsumerWidget {
   const GttOrderDetail({super.key, required this.gttOrderBook});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final scripInfo = watch(marketWatchProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scripInfo = ref.watch(marketWatchProvider);
+    final theme = ref.read(themeProvider);
 
     return StreamBuilder<Map>(
-      stream: watch(websocketProvider).socketDataStream,
+      stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
 
@@ -171,7 +171,7 @@ class GttOrderDetail extends ConsumerWidget {
                             Navigator.pushNamed(context, Routes.modifyGtt,
                                 arguments: {
                                   "gttOrderBook": displayData,
-                                  "scripInfo": context
+                                  "scripInfo": ref
                                       .read(marketWatchProvider)
                                       .scripInfoModel!
                                 });
@@ -272,7 +272,7 @@ class GttOrderDetail extends ConsumerWidget {
                                                   BorderRadius.circular(50),
                                             )),
                                         onPressed: () async {
-                                          await context
+                                          await ref
                                               .read(orderProvider)
                                               .fetchGttCancelOrder(
                                                   "${displayData.alId}",

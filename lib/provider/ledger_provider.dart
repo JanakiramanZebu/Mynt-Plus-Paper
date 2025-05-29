@@ -35,12 +35,12 @@ import '../sharedWidget/fund_function.dart';
 import 'core/default_change_notifier.dart';
 import 'package:intl/intl.dart';
 
-final ledgerProvider = ChangeNotifierProvider((ref) => LDProvider(ref.read));
+final ledgerProvider = ChangeNotifierProvider((ref) => LDProvider(ref));
 
 class LDProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
-  final Reader ref;
+  final Ref ref;
   LDProvider(this.ref);
   List<dynamic> _taxpnlyeararray = [];
   List<dynamic> get taxpnlyeararray => _taxpnlyeararray;
@@ -740,7 +740,7 @@ class LDProvider extends DefaultChangeNotifier {
 
     if (input.isNotEmpty) {
       // lastScbTok(input);
-      await ref(websocketProvider).establishConnection(
+      await ref.read(websocketProvider).establishConnection(
           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
     }
   }

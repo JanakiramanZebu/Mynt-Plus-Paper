@@ -52,11 +52,11 @@
 // // This is a websockt heartbeat connection that reconnects every two seconds only.
 //     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
 //       if (mounted) {
-//         context.read(websocketProvider).reconnectWS();
+//         ref.read(websocketProvider).reconnectWS();
 //       }
 //     });
-//     context.read(networkStateProvider).networkStream();
-//     context.read(marketWatchProvider).fToast.init(context);
+//     ref.read(networkStateProvider).networkStream();
+//     ref.read(marketWatchProvider).fToast.init(context);
 //     super.initState();
 //   }
 
@@ -72,24 +72,24 @@
 //   void didChangeAppLifecycleState(AppLifecycleState state) async {
 //     switch (state) {
 //       case AppLifecycleState.resumed:
-//         // await context.read(portfolioProvider).fetchPositionBook(context, false);
+//         // await ref.read(portfolioProvider).fetchPositionBook(context, false);
 
-//         // if (context.read(portfolioProvider).postionBookModel![0].stat == "Ok") {
-//         //   context.read(portfolioProvider).fetchHoldings(context, "");
-//         //   context.read(orderProvider).fetchOrderBook(context, false);
-//         //   context.read(orderProvider).fetchTradeBook(context);
+//         // if (ref.read(portfolioProvider).postionBookModel![0].stat == "Ok") {
+//         //   ref.read(portfolioProvider).fetchHoldings(context, "");
+//         //   ref.read(orderProvider).fetchOrderBook(context, false);
+//         //   ref.read(orderProvider).fetchTradeBook(context);
 //         // }
 
-//         if (context.read(websocketProvider).wsConnected == false ||
-//             context.read(websocketProvider).wsConnected == true) {
-//           if (context.read(networkStateProvider).connectionStatus !=
+//         if (ref.read(websocketProvider).wsConnected == false ||
+//             ref.read(websocketProvider).wsConnected == true) {
+//           if (ref.read(networkStateProvider).connectionStatus !=
 //               ConnectivityResult.none) {
-//             if (context.read(indexListProvider).selectedBtmIndx == 1) {
+//             if (ref.read(indexListProvider).selectedBtmIndx == 1) {
 //               context
 //                   .read(marketWatchProvider)
 //                   .requestMWScrip(context: context, isSubscribe: true);
 //             }
-//             if (context.read(indexListProvider).selectedBtmIndx == 2) {
+//             if (ref.read(indexListProvider).selectedBtmIndx == 2) {
 //               context
 //                   .read(portfolioProvider)
 //                   .requestWSHoldings(context: context, isSubscribe: true);
@@ -97,7 +97,7 @@
 //                   .read(portfolioProvider)
 //                   .requestWSPosition(context: context, isSubscribe: true);
 //             }
-//             if (context.read(indexListProvider).selectedBtmIndx == 3) {
+//             if (ref.read(indexListProvider).selectedBtmIndx == 3) {
 //               context
 //                   .read(orderProvider)
 //                   .requestWSOrderBook(context: context, isSubscribe: true);
@@ -129,14 +129,14 @@
 
 //     return WillPopScope(
 //         onWillPop: showExitPopup,
-//         child: Consumer(builder: (context, ScopedReader watch, _) {
-//           final marketWatchList = watch(marketWatchProvider);
-//           final explore = watch(authProvider);
-//           final indexProvide = watch(indexListProvider);
-//           final internet = watch(networkStateProvider);
-//           final portfolio = watch(portfolioProvider);
-//           final userProfile = watch(userProfileProvider);
-//           final theme = context.read(themeProvider);
+//         child: Consumer(builder: (context, WidgetRef ref, _) {
+//           final marketWatchList = ref.watch(marketWatchProvider);
+//           final explore = ref.watch(authProvider);
+//           final indexProvide = ref.watch(indexListProvider);
+//           final internet = ref.watch(networkStateProvider);
+//           final portfolio = ref.watch(portfolioProvider);
+//           final userProfile = ref.watch(userProfileProvider);
+//           final theme = ref.read(themeProvider);
 //           return GestureDetector(
 //               onTap: () => FocusScope.of(context).unfocus(),
 //               child: UpgradeAlert(
@@ -232,7 +232,7 @@
 //                                                           2
 //                                                       ? "Portfolio"
 //                                                       : "Dashboard",
-//                                               // watch(stocksProvide)
+//                                               // ref.watch(stocksProvide)
 //                                               //     .exploreName,
 //                                               style: textStyle(
 //                                                   theme.isDarkMode
@@ -517,7 +517,7 @@
 //                                         )
 //                                       ] else if (indexProvide.selectedBtmIndx ==
 //                                               3 &&
-//                                           watch(orderProvider).selectedTab ==
+//                                           ref.watch(orderProvider).selectedTab ==
 //                                               4) ...[
 //                                         Row(children: [
 //                                           Container(
@@ -1269,11 +1269,11 @@
 //             context: context,
 //             builder: (BuildContext context) {
 //               return AlertDialog(
-//                   backgroundColor: context.read(themeProvider).isDarkMode
+//                   backgroundColor: ref.read(themeProvider).isDarkMode
 //                       ? const Color.fromARGB(255, 18, 18, 18)
 //                       : colors.colorWhite,
 //                   titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-//                       color: context.read(themeProvider).isDarkMode
+//                       color: ref.read(themeProvider).isDarkMode
 //                           ? colors.colorWhite
 //                           : colors.colorBlack),
 //                   contentTextStyle: textStyles.menuTxt,
@@ -1295,7 +1295,7 @@
 //                         onPressed: () => Navigator.of(context).pop(false),
 //                         child: Text("No",
 //                             style: textStyles.textBtn.copyWith(
-//                                 color: context.read(themeProvider).isDarkMode
+//                                 color: ref.read(themeProvider).isDarkMode
 //                                     ? colors.colorLightBlue
 //                                     : colors.colorBlue))),
 //                     ElevatedButton(
@@ -1303,7 +1303,7 @@
 //                         style: ElevatedButton.styleFrom(
 //                             elevation: 0,
 //                             backgroundColor:
-//                                 context.read(themeProvider).isDarkMode
+//                                 ref.read(themeProvider).isDarkMode
 //                                     ? colors.colorbluegrey
 //                                     : colors.colorBlack,
 //                             shape: RoundedRectangleBorder(
@@ -1311,7 +1311,7 @@
 //                             )),
 //                         child: Text("Yes",
 //                             style: textStyle(
-//                                 !context.read(themeProvider).isDarkMode
+//                                 !ref.read(themeProvider).isDarkMode
 //                                     ? colors.colorWhite
 //                                     : colors.colorBlack,
 //                                 14,

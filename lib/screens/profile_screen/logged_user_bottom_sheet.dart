@@ -21,13 +21,13 @@ class LoggedUserBottomSheet extends ConsumerWidget {
   const LoggedUserBottomSheet({super.key, required this.initRoute});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final loggedUser = watch(authProvider);
-    final theme = watch(themeProvider);
-    final portfolio = watch(portfolioProvider);
-    final orders = watch(orderProvider);
-    final userProfile = watch(userProfileProvider);
-    final ledgerprovider = watch(ledgerProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loggedUser = ref.watch(authProvider);
+    final theme = ref.watch(themeProvider);
+    final portfolio = ref.watch(portfolioProvider);
+    final orders = ref.watch(orderProvider);
+    final userProfile = ref.watch(userProfileProvider);
+    final ledgerprovider = ref.watch(ledgerProvider);
 
     final Preferences pref = locator<Preferences>();
     return DraggableScrollableSheet(
@@ -98,7 +98,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                           loggedUser.loggedMobile[index].imei);
                                       pref.setMobileLogin(true);
 
-                                      await context
+                                      await ref
                                           .read(authProvider)
                                           .fetchMobileLogin(
                                               context,
@@ -160,7 +160,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                               pref.setMobileLogin(true);
                               pref.setLogout(false);
                               pref.setHideLoginOptBtn(true);
-                              watch(websocketProvider).closeSocket(true);
+                              ref.watch(websocketProvider).closeSocket(true);
                               loggedUser.addClient(true);
                               loggedUser.clearError();
                               loggedUser.clearTextField();

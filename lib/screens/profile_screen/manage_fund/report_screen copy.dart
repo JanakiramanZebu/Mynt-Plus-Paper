@@ -18,12 +18,12 @@ class ReportsScreen extends ConsumerWidget {
   const ReportsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final userProfile = watch(userProfileProvider);
-    final hstoken = watch(fundProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userProfile = ref.watch(userProfileProvider);
+    final hstoken = ref.watch(fundProvider);
     final Preferences pref = locator<Preferences>();
-    final theme = context.read(themeProvider);
-    final ledgerdate = watch(ledgerProvider);
+    final theme = ref.read(themeProvider);
+    final ledgerdate = ref.watch(ledgerProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -43,7 +43,7 @@ class ReportsScreen extends ConsumerWidget {
         itemBuilder: (context, int index) {
           return ListTile(
             onTap: () async {
-              await context.read(fundProvider).fetchHstoken(context);
+              await ref.read(fundProvider).fetchHstoken(context);
 
               if (index == 0) {
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,

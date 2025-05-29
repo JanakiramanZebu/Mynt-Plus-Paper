@@ -11,9 +11,9 @@ class ScripDetailDialogue extends ConsumerWidget {
   const ScripDetailDialogue({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final scripInfo = watch(marketWatchProvider).scripInfoModel!;
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scripInfo = ref.watch(marketWatchProvider).scripInfoModel!;
+    final theme = ref.watch(themeProvider);
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),

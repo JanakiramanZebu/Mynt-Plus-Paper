@@ -19,10 +19,10 @@ class MFCategoryListScreen extends ConsumerWidget {
   const MFCategoryListScreen({super.key, required this.title});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final fund = watch(fundProvider);
-    final mfData = watch(mfProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final fund = ref.watch(fundProvider);
+    final mfData = ref.watch(mfProvider);
 
     // Sort the list based on s3Year in descending order
     final sortedList = mfData.catnewlist?.toList()
@@ -72,8 +72,9 @@ class MFCategoryListScreen extends ConsumerWidget {
                               mfData.mFCategoryTypesStatic[index]['title']
                           ? buildCategoryCard(
                               chips: mfData.mFCategoryTypesStatic[index]['sub'],
-                              watch: watch,
-                              themee:theme,
+                              ref: ref,
+                              themee: theme,
+                              title: title,
                             )
                           : const SizedBox.shrink();
                     },
@@ -248,10 +249,11 @@ class MFCategoryListScreen extends ConsumerWidget {
 
   Widget buildCategoryCard({
     required List<dynamic> chips,
-    required ScopedReader watch,
+    required WidgetRef ref,
     required ThemesProvider themee,
+    required String title,
   }) {
-    final mfData = watch(mfProvider);
+    final mfData = ref.watch(mfProvider);
 
     return Container(
       padding: const EdgeInsets.all(8),

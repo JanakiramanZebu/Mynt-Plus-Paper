@@ -36,14 +36,22 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   double progress = 0;
   final Preferences prefs = locator<Preferences>();
   SharedPreferences? sharedPrefs;
+  late WidgetRef ref;
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read(marketWatchProvider).loadDefaultTabs();
+      // Will be initialized in build method via Consumer
+      // ref initialization happens in build method now
     });
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => context.read(marketWatchProvider).scrollToSelectedTab(false));
+    // WidgetsBinding post-frame callback will be handled in didChangeDependencies
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Any post-frame operations can be moved here if needed
   }
 
   // @override
@@ -53,7 +61,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   // }
 
   // void _scrollToSelectedTab() {
-  //   final tvChart = context.read(marketWatchProvider);
+  //   final tvChart = ref.read(marketWatchProvider);
 
   //   final selectedIndex = tvChart.chartTabs
   //       .indexWhere((tab) => tab.token == tvChart.activeTab?.token);
@@ -76,11 +84,21 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, ScopedReader watch, _) {
-        final tvChart = watch(marketWatchProvider);
-        final theme = watch(themeProvider);
-        final userProfile = watch(userProfileProvider);
-        final chartUpdate = context.read(chartUpdateProvider);
+      builder: (context, WidgetRef widgetRef, _) {
+        // Store ref for use in other methods
+        ref = widgetRef;
+        
+        final tvChart = ref.watch(marketWatchProvider);
+        final theme = ref.watch(themeProvider);
+        final userProfile = ref.watch(userProfileProvider);
+        final chartUpdate = ref.watch(chartUpdateProvider);
+        
+        // Load tabs and scroll on first build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(marketWatchProvider).loadDefaultTabs();
+          ref.read(marketWatchProvider).scrollToSelectedTab(false);
+        });
+        
         bool transbtn = tvChart.getQuotes?.instname != "UNDIND" &&
             tvChart.getQuotes?.instname != "COM";
         return Column(
@@ -301,18 +319,12 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
             ),
             IconButton(
               padding: const EdgeInsets.all(0),
-              icon:
-                  // Text("+",
-                  //     style: textStyle(
-                  //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  //         32,
-                  //         FontWeight.normal)),
-                  Icon(Icons.add_circle_outline,
-                      color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack),
+              icon: Icon(Icons.search,
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.colorBlack), // Back icon
               onPressed: () async {
-                context
+                ref
                     .read(marketWatchProvider)
                     .requestMWScrip(context: context, isSubscribe: false);
                 Navigator.pushNamed(
@@ -349,7 +361,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       height: (MediaQuery.of(context).size.height -
           (TargetPlatform.iOS == defaultTargetPlatform ? 180 : 150)),
       child: InAppWebView(
-        key: context.read(userProfileProvider).webViewKey,
+        key: ref.read(userProfileProvider).webViewKey,
         gestureRecognizers: {
           // Factory<VerticalDragGestureRecognizer>(
           //     () => VerticalDragGestureRecognizer()),
@@ -385,7 +397,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
           if (error.description.contains('recreating_view')) {
             setState(() {
-              context.read(userProfileProvider).setonloadChartdialog(true);
+              ref.read(userProfileProvider).setonloadChartdialog(true);
             });
           }
         },
@@ -394,9 +406,9 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
           setState(() {
             this.progress = progress / 100;
-            if (context.read(userProfileProvider).showchartof &&
+            if (ref.read(userProfileProvider).showchartof &&
                 progress == 100) {
-              final mktpro = context.read(marketWatchProvider).getQuotes;
+              final mktpro = ref.read(marketWatchProvider).getQuotes;
 
               String redirUrl = currentUrl.toString();
               Uri url = Uri.parse(redirUrl);
@@ -417,8 +429,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
   Future<void> placeOrderInput(MarketWatchProvider scripInfo, BuildContext ctx,
       GetQuotes depthData, bool transType) async {
-    final raw = context.read(marketWatchProvider).getQuotes;
-    await context
+    final raw = ref.read(marketWatchProvider).getQuotes;
+    await ref
         .read(marketWatchProvider)
         .fetchScripInfo(raw!.token.toString(), raw.exch.toString(), ctx, true);
     OrderScreenArgs orderArgs = OrderScreenArgs(
@@ -438,7 +450,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
     // Navigator.pop(context);
     Navigator.pushNamed(ctx, Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
-      "scripInfo": ctx.read(marketWatchProvider).scripInfoModel!,
+      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
       "isBskt": ''
     });
   }

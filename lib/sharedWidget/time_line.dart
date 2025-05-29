@@ -8,7 +8,7 @@ import '../models/order_book_model/order_history_model.dart';
 import '../res/res.dart';
 import 'functions.dart';
 
-class TimeLineWidget extends StatelessWidget {
+class TimeLineWidget extends ConsumerWidget {
   final bool isfFrist;
   final bool isLast;
   final OrderHistoryModel orderHistoryData;
@@ -20,8 +20,8 @@ class TimeLineWidget extends StatelessWidget {
       required this.orderHistoryData});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       height: 65,

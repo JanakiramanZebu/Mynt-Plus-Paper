@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -13,30 +11,30 @@ import '../../../sharedWidget/functions.dart';
 import 'bonds_order_book_tab/close_bonds_tab.dart';
 import 'bonds_order_book_tab/open_bonds_tab.dart';
 
-class BondsOrderbookMainScreen extends StatefulWidget {
+class BondsOrderbookMainScreen extends ConsumerStatefulWidget {
   const BondsOrderbookMainScreen({super.key});
 
   @override
-  State<BondsOrderbookMainScreen> createState() =>
+  ConsumerState<BondsOrderbookMainScreen> createState() =>
       _BondsOrderbookMainScreenState();
 }
 
-class _BondsOrderbookMainScreenState extends State<BondsOrderbookMainScreen>
+class _BondsOrderbookMainScreenState extends ConsumerState<BondsOrderbookMainScreen>
     with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read(bondsProvider).fetchBondsOrderBook();
+      ref.read(bondsProvider).fetchBondsOrderBook();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final bonds = watch(bondsProvider);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final bonds = ref.watch(bondsProvider);
+      final theme = ref.watch(themeProvider);
       final dev_height = MediaQuery.of(context).size.height;
 
       return LogoLoaderScreen(

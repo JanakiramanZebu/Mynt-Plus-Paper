@@ -63,9 +63,9 @@ class _AllIndicesScreenState extends State<AllIndicesScreen>
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return; // If system handled back, do nothing
         },
-        child: Consumer(builder: (context, ScopedReader watch, _) {
-          final allIndices = watch(stocksProvide);
-          final indexData = watch(indexListProvider);
+        child: Consumer(builder: (context, WidgetRef ref, _) {
+          final allIndices = ref.watch(stocksProvide);
+          final indexData = ref.watch(indexListProvider);
 
           return GestureDetector(
               onTap: () => FocusManager.instance.primaryFocus!.unfocus(),

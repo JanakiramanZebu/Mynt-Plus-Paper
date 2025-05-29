@@ -375,7 +375,10 @@ Future<void> placeOrderInput(
   OptionValues depthData,
   bool transType,
 ) async {
-  await context.read(marketWatchProvider).fetchScripInfo(
+  // Obtain a WidgetRef from the context
+  final container = ProviderScope.containerOf(context);
+  
+  await container.read(marketWatchProvider).fetchScripInfo(
         depthData.token.toString(),
         depthData.exch.toString(),
         context,
@@ -397,7 +400,7 @@ Future<void> placeOrderInput(
   );
   Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
     "orderArg": orderArgs,
-    "scripInfo": context.read(marketWatchProvider).scripInfoModel!,
+    "scripInfo": container.read(marketWatchProvider).scripInfoModel!,
     "isBskt": "",
   });
 }

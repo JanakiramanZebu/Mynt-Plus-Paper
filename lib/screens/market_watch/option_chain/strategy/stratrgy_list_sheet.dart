@@ -10,9 +10,9 @@ class StrategyListBottomSheet extends ConsumerWidget {
   const StrategyListBottomSheet({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final optStrgy = watch(optStrategyProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final optStrgy = ref.watch(optStrategyProvider);
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),

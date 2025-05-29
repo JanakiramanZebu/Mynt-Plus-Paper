@@ -13,15 +13,15 @@ import '../../../provider/websocket_provider.dart';
 import '../../../sharedWidget/functions.dart';
 import 'index_bottom_sheet.dart';
 
-class DefaultIndexList extends StatefulWidget {
+class DefaultIndexList extends ConsumerStatefulWidget {
   final bool src;
   const DefaultIndexList({super.key, required this.src});
 
   @override
-  State<DefaultIndexList> createState() => _DefaultIndexListState();
+  ConsumerState<DefaultIndexList> createState() => _DefaultIndexListState();
 }
 
-class _DefaultIndexListState extends State<DefaultIndexList> with AutomaticKeepAliveClientMixin {
+class _DefaultIndexListState extends ConsumerState<DefaultIndexList> with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   
   // Keep this alive to prevent rebuilds when switching tabs
@@ -38,7 +38,7 @@ class _DefaultIndexListState extends State<DefaultIndexList> with AutomaticKeepA
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     
-    final indexProvider = context.read(indexListProvider);
+    final indexProvider = ref.read(indexListProvider);
     
     final indexValues = indexProvider.defaultIndexList?.indValues;
     if (indexValues == null || indexValues.isEmpty) {
@@ -83,7 +83,7 @@ class _DefaultIndexListState extends State<DefaultIndexList> with AutomaticKeepA
 }
 
 // A completely static wrapper to prevent rebuilds
-class OptimizedIndexItem extends StatelessWidget {
+class OptimizedIndexItem extends ConsumerWidget {
   final dynamic indexItem;
   final bool src;
   final double itemWidth;
@@ -96,11 +96,11 @@ class OptimizedIndexItem extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Store providers as locals to avoid reference in nested closures
-    final theme = context.read(themeProvider);
-    final marketWatch = context.read(marketWatchProvider);
-    final indexProvider = context.read(indexListProvider);
+    final theme = ref.read(themeProvider);
+    final marketWatch = ref.read(marketWatchProvider);
+    final indexProvider = ref.read(indexListProvider);
     final token = indexItem.token?.toString();
     final exch = indexItem.exch?.toString();
     
@@ -108,26 +108,26 @@ class OptimizedIndexItem extends StatelessWidget {
       child: InkWell(
         onTap: () => _handleTap(context, marketWatch, token, exch),
         onLongPress: () => _handleLongPress(context, indexProvider, marketWatch),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: theme.isDarkMode
-                  ? colors.darkColorDivider
-                  : colors.colorDivider,
-              width: src ? 0.6 : 0
-            ),
-            color: src
-                ? Colors.transparent
-                : theme.isDarkMode
-                    ? const Color(0xffB5C0CF).withOpacity(.15)
-                    : const Color(0xffF1F3F8),
-            borderRadius: BorderRadius.circular(5)
-          ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider,
+                      width: src ? 0.6 : 0
+                    ),
+                    color: src
+                        ? Colors.transparent
+                        : theme.isDarkMode
+                            ? const Color(0xffB5C0CF).withOpacity(.15)
+                            : const Color(0xffF1F3F8),
+                    borderRadius: BorderRadius.circular(5)
+                  ),
           width: itemWidth,
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
               // Static part that never changes
               Expanded(
                 child: RepaintBoundary(
@@ -351,54 +351,54 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
+                              children: [
+                                Text(
                     "₹$_ltp", 
                     style: _getTextStyle(
                       widget.isDarkMode ? const Color(0xffE5E5E5) : widget.isSrc ? const Color(0xff666666) : const Color(0xff000000),
                       13,
                       FontWeight.w600
                     )
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
                     "$_change ", 
                     style: _getTextStyle(changeColor, 12, FontWeight.w600)
-                  ),
-                  Text(
+                                ),
+                                Text(
                     "($_perChange%)", 
                     style: _getTextStyle(changeColor, 12, FontWeight.w600)
                   )
                 ]
-              ),
-            ],
-          )
+                          ),
+                        ],
+                      )
         : Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
                 "₹$_ltp", 
                 style: _getTextStyle(
                   widget.isDarkMode ? const Color(0xffE5E5E5) : const Color(0xff000000),
                   13,
                   FontWeight.w600
                 )
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Text(
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Text(
                     "$_change ", 
                     style: _getTextStyle(changeColor, 12, FontWeight.w600)
-                  ),
-                  Text(
+                                  ),
+                                  Text(
                     "($_perChange%)", 
                     style: _getTextStyle(changeColor, 12, FontWeight.w600)
-                  ),
-                ],
-              )
-            ],
+                                  ),
+                                ],
+                              )
+                            ],
           ),
     );
   }

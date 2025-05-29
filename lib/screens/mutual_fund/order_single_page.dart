@@ -29,9 +29,9 @@ class _mforderdetscreen extends State<mforderdetscreen>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final theme = watch(themeProvider);
-      final mfdata = watch(mfProvider);
+    return Consumer(builder: (context, ref, child) {
+      final theme = ref.watch(themeProvider);
+      final mfdata = ref.watch(mfProvider);
       // print("11111111111111111${mfdata.mfsinglepageres!.invList}");
 
       return Scaffold(

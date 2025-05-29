@@ -11,25 +11,25 @@ import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_us
 import 'package:mynt_plus/sharedWidget/ipo_error_widget.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 
-class OrderScreenbottomPage extends StatefulWidget {
+class OrderScreenbottomPage extends ConsumerStatefulWidget {
   final List<IpoDetails> addIpo;
   final mainstream;
   const OrderScreenbottomPage(
       {super.key,required this.addIpo, required this.mainstream});
 
   @override
-  State<OrderScreenbottomPage> createState() => _OrderScreenbottomPage();
+  ConsumerState<OrderScreenbottomPage> createState() => _OrderScreenbottomPage();
 }
 
-class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
+class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
   String upierrortext = "Please enter the UPI Id";
   var ischecked = false;
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final ipo = watch(ipoProvide);
-      final upiid = watch(transcationProvider);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, ref, child) {
+      final ipo = ref.watch(ipoProvide);
+      final upiid = ref.watch(transcationProvider);
+      final theme = ref.watch(themeProvider);
       return Padding(
         padding: const EdgeInsets.only(
           left: 0,
@@ -294,7 +294,7 @@ class _OrderScreenbottomPage extends State<OrderScreenbottomPage> {
     //   print(
     //       "Text: ${iposbids[i].bitis} Checkbox: ${iposbids[i].qty}, requried:${iposbids[i].cutoff},bidprice:${iposbids[i].price} value Total: ${iposbids[i].total}");
     // }
-    await context.read(ipoProvide).fetchupiidvalidation(
+    await ref.read(ipoProvide).fetchupiidvalidation(
         context, upiid.upiid.text, "343245", menudata, iposbids, iposupiid);
   }
 }

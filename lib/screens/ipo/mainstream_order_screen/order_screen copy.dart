@@ -13,7 +13,7 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/ipo_error_widget.dart';
 import '../../../sharedWidget/snack_bar.dart';
 
-class ApplyIpoScreen extends StatefulWidget {
+class ApplyIpoScreen extends ConsumerStatefulWidget {
   final MainIPO mainstream;
   const ApplyIpoScreen({
     super.key,
@@ -21,10 +21,10 @@ class ApplyIpoScreen extends StatefulWidget {
   });
 
   @override
-  State<ApplyIpoScreen> createState() => _ApplyIpoScreenState();
+  ConsumerState<ApplyIpoScreen> createState() => _ApplyIpoScreenState();
 }
 
-class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
+class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
   bool ischecked = false;
   String upierrortext = "Please enter the UPI Id";
   int required = 0;
@@ -69,10 +69,10 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Consumer(
-        builder: (context, watch, child) {
-          final ipo = watch(ipoProvide);
-          final theme = watch(themeProvider);
-          final upiid = watch(transcationProvider);
+        builder: (context, ref, child) {
+          final ipo = ref.watch(ipoProvide);
+          final theme = ref.watch(themeProvider);
+          final upiid = ref.watch(transcationProvider);
           return Scaffold(
            
               appBar: AppBar(
@@ -883,78 +883,6 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
                                         ischecked = false;
                                       }
                                       }
-                                      // if (addIpo[addIpo.length - 1].requriedprice >
-                                      //     ipo.maxUPIAmt) {
-                                      //   ScaffoldMessenger.of(context)
-                                      //       .showSnackBar(warningMessage(
-                                      //           context,
-                                      //           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only "));
-
-                                      //   ischecked = false;
-                                      // } else if (addIpo[addIpo.length - 1]
-                                      //         .bidpricecontroller
-                                      //         .text
-                                      //         .isEmpty ||
-                                      //     addIpo[addIpo.length - 1]
-                                      //             .bidpricecontroller
-                                      //             .text ==
-                                      //         "0") {
-                                      //   ScaffoldMessenger.of(context)
-                                      //       .showSnackBar(warningMessage(
-                                      //           context,
-                                      //           addIpo[addIpo.length - 1]
-                                      //                       .bidpricecontroller
-                                      //                       .text ==
-                                      //                   "0"
-                                      //               ? "*Bid Price Value cannot be 0"
-                                      //               : "*Bid Price Value is required"));
-
-                                      //   ischecked = false;
-                                      // } else if ((int.parse(addIpo[addIpo.length - 1].bidpricecontroller.text.toString())) >
-                                      //         double.parse(widget.mainstream.maxPrice.toString())
-                                      //             .toInt() ||
-                                      //     (int.parse(addIpo[addIpo.length - 1].bidpricecontroller.text)) <
-                                      //         double.parse(widget.mainstream.minPrice.toString())
-                                      //             .toInt()) {
-                                      //   ScaffoldMessenger.of(context)
-                                      //       .showSnackBar(warningMessage(
-                                      //           context,
-                                      //           "Your bid price ranges between ₹${double.parse(widget.mainstream.minPrice!).toInt()}-₹${double.parse(widget.mainstream.maxPrice!).toInt()}"));
-                                      //   ischecked = false;
-                                      // } else if (addIpo[addIpo.length - 1]
-                                      //         .qualityController
-                                      //         .text
-                                      //         .isEmpty ||
-                                      //     addIpo[addIpo.length - 1].qualityController.text ==
-                                      //         "0") {
-                                      //   ScaffoldMessenger.of(context)
-                                      //       .showSnackBar(warningMessage(
-                                      //           context,
-                                      //           addIpo[addIpo.length - 1]
-                                      //                       .qualityController
-                                      //                       .text ==
-                                      //                   "0"
-                                      //               ? '* Quantity cannot be 0'
-                                      //               : '* Quantity cannot be empty'));
-                                      //   ischecked = false;
-                                      // } else if ((int.parse(addIpo[addIpo.length - 1].qualityController.text)) <
-                                      //     int.parse(widget.mainstream.minBidQuantity.toString())
-                                      //         .toInt()) {
-                                      //   ScaffoldMessenger.of(context)
-                                      //       .showSnackBar(warningMessage(
-                                      //           context,
-                                      //           "Minimum Bid quantity is ${widget.mainstream.minBidQuantity.toString()} only "));
-                                      //   ischecked = false;
-                                      // } else if (upiid.upiid.text.isEmpty) {
-                                      //   ScaffoldMessenger.of(context)
-                                      //       .showSnackBar(warningMessage(
-                                      //           context,
-                                      //           "UPI ID cannot be empty"));
-                                      //   ischecked = false;
-                                      // } else if (!RegExp(r'^[\w.-]+@[\w]+$')
-                                      //     .hasMatch(upiid.upiid.text)) {
-                                      //   ischecked = false;
-                                      // }
                                     });
                                   },
                             icon: SvgPicture.asset(theme.isDarkMode
@@ -1152,7 +1080,7 @@ class _ApplyIpoScreenState extends State<ApplyIpoScreen> {
     //   print(
     //       "Text: ${iposbids[i].bitis} Checkbox: ${iposbids[i].qty}, requried:${iposbids[i].cutoff},bidprice:${iposbids[i].price} value Total: ${iposbids[i].total}");
     // }
-    await context.read(ipoProvide).fetchupiidvalidation(
+    await ref.read(ipoProvide).fetchupiidvalidation(
         context, upiid.upiid.text, "343245", menudata, iposbids, iposupiid);
   }
 }

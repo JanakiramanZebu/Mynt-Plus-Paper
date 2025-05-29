@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
+// import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../provider/network_state_provider.dart';
 import '../../provider/thems.dart';
@@ -13,18 +13,19 @@ import '../../routes/app_routes.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_internet_widget.dart';
+import '../../utils/no_emoji_inputformatter.dart';
 import 'search_scrip_list.dart';
 
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   final String wlName;
   final String isBasket;
   const SearchScreen({super.key, required this.wlName, required this.isBasket});
 
   @override
-  State<SearchScreen> createState() => _AddScripState();
+  ConsumerState<SearchScreen> createState() => _AddScripState();
 }
 
-class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
+class _AddScripState extends ConsumerState<SearchScreen> with TickerProviderStateMixin {
   late TabController tabCtrl;
   String _searchvalue = "";
   int tabcount = 5;
@@ -37,8 +38,8 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
 
     tabCtrl.addListener(() {
       if (tabCtrl.indexIsChanging) {
-        context.read(marketWatchProvider).searchClear();
-        context
+        ref.read(marketWatchProvider).searchClear();
+        ref
             .read(marketWatchProvider)
             .scripSearch(_searchvalue, context, tabCtrl.index, widget.isBasket);
       }
@@ -48,17 +49,17 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
   TextEditingController textCtrl = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final searchScrip = watch(marketWatchProvider);
-      final internet = watch(networkStateProvider);
-      final theme = context.read(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final searchScrip = ref.watch(marketWatchProvider);
+      final internet = ref.watch(networkStateProvider);
+      final theme = ref.read(themeProvider);
       return PopScope(
           canPop: true, // Allows back navigation
           onPopInvokedWithResult: (didPop, result) async {
             // if (didPop) return; // If system handled back, do nothing
 
             if (!(["Option||Is", "Chart||Is"].contains(widget.isBasket))) {
-              context
+              ref
                   .read(marketWatchProvider)
                   .requestMWScrip(context: context, isSubscribe: true);
             }
@@ -77,7 +78,7 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                           onTap: () {
                             if (!(["Option||Is", "Chart||Is"]
                                 .contains(widget.isBasket))) {
-                              context.read(marketWatchProvider).requestMWScrip(
+                              ref.read(marketWatchProvider).requestMWScrip(
                                   context: context, isSubscribe: true);
                             }
                             searchScrip.searchClear();
@@ -106,7 +107,7 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                               textCapitalization: TextCapitalization.characters,
                               inputFormatters: [
                                 UpperCaseTextFormatter(),
-                                RemoveEmojiInputFormatter(),
+                                NoEmojiInputFormatter(),
                                 FilteringTextInputFormatter.deny(
                                     RegExp('[π£•₹€℅™∆√¶/.,]'))
                               ],
@@ -201,7 +202,7 @@ class _AddScripState extends State<SearchScreen> with TickerProviderStateMixin {
                                       fontSize: 15,
                                       fontWeight: FontWeight.w600)),
                               controller: tabCtrl,
-                              tabs: context
+                              tabs: ref
                                   .read(marketWatchProvider)
                                   .searchTabList
                                   .sublist(0, tabcount))),

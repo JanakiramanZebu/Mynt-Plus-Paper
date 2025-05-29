@@ -37,7 +37,7 @@ import 'index_list_provider.dart';
 // import 'package:http/http.dart' as http;
 
 final transcationProvider =
-    ChangeNotifierProvider((ref) => TranctionProvider(ref.read));
+    ChangeNotifierProvider((ref) => TranctionProvider(ref));
 
 class TranctionProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
@@ -313,7 +313,7 @@ class TranctionProvider extends DefaultChangeNotifier {
   FundTokenValidation? _fundTokenValidation;
   FundTokenValidation? get fundTokenValidation => _fundTokenValidation;
 
-  final Reader ref;
+  final Ref ref;
 
   TranctionProvider(this.ref);
 
@@ -329,14 +329,14 @@ class TranctionProvider extends DefaultChangeNotifier {
 
       _fundTokenValidation = await api.getFundvalidateSession();
       if (_fundTokenValidation!.emsg == "invalid token") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
         notifyListeners();
       }
       notifyListeners();
       //  print("------------ ${_fundTokenValidation!.msg}}");
     } catch (e) {
       //  log("validate session:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchValidateToken", "Error": "$e"});
       notifyListeners();
@@ -379,7 +379,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       // log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchUpiPaymentstatus", "Error": "$e"});
       notifyListeners();
@@ -399,7 +399,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       //   print("------------ ${_decryptclientcheck!.companyCode!}");
     } catch (e) {
       //log("Failed to fetch Profile Data:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchclient", "Error": "$e"});
       notifyListeners();
@@ -455,7 +455,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       // print("WITHDRAW PAYOUT ${_payoutdetails!.cash}.");
     } catch (e) {
       // log("Failed to Get Payout Detial:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchcwithdraw", "Error": "$e"});
       notifyListeners();
@@ -472,7 +472,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       // print("------------ ${_bankdetails!}");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchfundbank", "Error": "$e"});
       notifyListeners();
@@ -495,7 +495,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       //log("HDFC BANK $hdfcpaymentdata");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetcUPIIDPayment", "Error": "$e"});
       notifyListeners();
@@ -521,7 +521,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       //print("HDFC BANK ${hdfcpaymentdata!.data!.clientVPA![0]}");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchHdfctranction", "Error": "$e"});
       notifyListeners();
@@ -546,7 +546,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchUPIPaymet", "Error": "$e"});
       notifyListeners();
@@ -653,7 +653,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       //print("HDFC PAYMENTSTATUS ${_hdfcpaymentstatus!.upiId!.clientVPA}");
     } catch (e) {
       // log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchHdfcpaymetstatus", "Error": "$e"});
       notifyListeners();
@@ -713,7 +713,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       //  log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider).logError.add({"type": "RAZORPAY", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "RAZORPAY", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoadingOn(false);
@@ -727,7 +727,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       // log("PAYMENT ID${_razorpayTranstationRes?.id} $paymentid");
     } catch (e) {
       // log("Failed to Razorpay Status:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchrazorpayStatus", "Error": "$e"});
       notifyListeners();
@@ -744,13 +744,13 @@ class TranctionProvider extends DefaultChangeNotifier {
       amount.clear();
       if (_viewUpiIdModel!.isNotEmpty) {
         upiid.text = "${_viewUpiIdModel![0].upiId}";
-        ref(ipoProvide).viewupiid.text = "${_viewUpiIdModel![0].upiId}";
+        ref.read(ipoProvide).viewupiid.text = "${_viewUpiIdModel![0].upiId}";
       } else {
         upiid.clear();
       }
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchupiIdView", "Error": "$e"});
       notifyListeners();
@@ -771,7 +771,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       //log("Failed to Payment withdraw:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchPaymentWithDraw", "Error": "$e"});
       notifyListeners();
@@ -789,7 +789,7 @@ class TranctionProvider extends DefaultChangeNotifier {
       // print("${_withdrawstatus?[0].msg}");
     } catch (e) {
       //log("Failed to Payment withdraw:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "fetchPaymentWithDrawStatus", "Error": "$e"});
       notifyListeners();

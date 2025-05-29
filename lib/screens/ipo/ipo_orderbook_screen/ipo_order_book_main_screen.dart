@@ -10,28 +10,28 @@ import '../../../sharedWidget/functions.dart';
 import 'ipo_order_book_tab/close_ipo_tab.dart';
 import 'ipo_order_book_tab/open_ipo_tab.dart';
 
-class IpoOrderbookMainScreen extends StatefulWidget {
+class IpoOrderbookMainScreen extends ConsumerStatefulWidget {
   const IpoOrderbookMainScreen({super.key});
 
   @override
-  State<IpoOrderbookMainScreen> createState() => _IpoOrderbookMainScreenState();
+  ConsumerState<IpoOrderbookMainScreen> createState() => _IpoOrderbookMainScreenState();
 }
 
-class _IpoOrderbookMainScreenState extends State<IpoOrderbookMainScreen>
+class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read(ipoProvide).getipoorderbookmodel(true);
+      ref.read(ipoProvide).getipoorderbookmodel(true);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final ipo = watch(ipoProvide);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final ipo = ref.watch(ipoProvide);
+      final theme = ref.watch(themeProvider);
       final dev_height = MediaQuery.of(context).size.height;
 
       return Scaffold(

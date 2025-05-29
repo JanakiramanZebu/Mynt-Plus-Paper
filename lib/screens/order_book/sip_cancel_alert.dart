@@ -14,8 +14,8 @@ class SipCancelAlert extends ConsumerWidget {
     required this.sipdetails,
   });
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
     return AlertDialog(
       backgroundColor: theme.isDarkMode
           ? const Color.fromARGB(255, 18, 18, 18)
@@ -71,7 +71,7 @@ class SipCancelAlert extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(50),
                       )),
                   onPressed: () async {
-                    context.read(orderProvider).fetchSipOrderCancel(
+                    ref.read(orderProvider).fetchSipOrderCancel(
                         "${sipdetails.internal!.sipId}", context);
                   },
                   child: Text("Yes",

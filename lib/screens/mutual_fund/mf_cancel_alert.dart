@@ -17,9 +17,9 @@ class MfCancelAlert extends ConsumerWidget {
   final String message; 
   const MfCancelAlert({super.key, required this.mfcancel,required this.message});
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-      final mfData = watch(mfProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+      final mfData = ref.watch(mfProvider);
     return AlertDialog(
       backgroundColor: theme.isDarkMode
           ? const Color.fromARGB(255, 18, 18, 18)

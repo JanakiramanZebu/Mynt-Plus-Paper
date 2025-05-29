@@ -70,10 +70,10 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final fund = watch(fundProvider);
-      final mfData = watch(mfProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+      final fund = ref.watch(fundProvider);
+      final mfData = ref.watch(mfProvider);
 
       return Scaffold(
         backgroundColor: Colors.white,

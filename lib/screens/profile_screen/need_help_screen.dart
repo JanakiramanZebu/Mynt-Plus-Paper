@@ -9,13 +9,18 @@ import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart'; 
 
-class NeedHelpScreen extends StatelessWidget {
+class NeedHelpScreen extends ConsumerStatefulWidget {
   const NeedHelpScreen({super.key});
 
   @override
+  ConsumerState<NeedHelpScreen> createState() => _NeedHelpScreenState();
+}
+
+class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
+  @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
-    final help = context.read(userProfileProvider);
+    final theme = ref.read(themeProvider);
+    final help = ref.read(userProfileProvider);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(

@@ -11,13 +11,13 @@ import 'network_state_provider.dart';
 import 'websocket_provider.dart';
 
 final showcaseProvide =
-    ChangeNotifierProvider((ref) => ShowCaseProvider(ref.read));
+    ChangeNotifierProvider((ref) => ShowCaseProvider(ref));
 
 class ShowCaseProvider extends DefaultChangeNotifier {
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
   final ScrollController depthScrolCtrl = ScrollController();
-  final Reader ref;
+  final Ref ref;
   ShowCaseProvider(this.ref);
 
   showToast(String content, BuildContext context) {
@@ -40,13 +40,13 @@ class ShowCaseProvider extends DefaultChangeNotifier {
       toastDuration: const Duration(minutes: 5),
     );
 
-    if (ref(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+    if (ref.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
       Future.delayed(const Duration(seconds: 3), () {
-        ref(websocketProvider).establishConnection(
+        ref.read(websocketProvider).establishConnection(
             channelInput: ConstantName.lastSubscribe,
             task: "t",
             context: context);
-        ref(websocketProvider).establishConnection(
+        ref.read(websocketProvider).establishConnection(
             channelInput: ConstantName.lastSubscribeDepth,
             task: "d",
             context: context);

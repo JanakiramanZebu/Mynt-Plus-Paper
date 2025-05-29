@@ -43,7 +43,7 @@ import 'margin_charges_bottom_sheet.dart';
 import 'order_screen_header.dart';
 import 'package:intl/intl.dart';
 
-class PlaceOrderScreen extends StatefulWidget {
+class PlaceOrderScreen extends ConsumerStatefulWidget {
   final OrderScreenArgs orderArg;
   final ScripInfoModel scripInfo;
   final String isBasket;
@@ -54,11 +54,11 @@ class PlaceOrderScreen extends StatefulWidget {
       required this.isBasket});
 
   @override
-  State<PlaceOrderScreen> createState() => _PlaceOrderScreenState();
+  ConsumerState<PlaceOrderScreen> createState() => _PlaceOrderScreenState();
 }
 
-class _PlaceOrderScreenState extends State<PlaceOrderScreen>
-    with SingleTickerProviderStateMixin {
+class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
+    with TickerProviderStateMixin {
   bool? isBuy;
   bool addStoploss = false;
   bool isAgree = false;
@@ -122,7 +122,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
   @override
   void initState() {
-    localdata = context.read(authProvider).ordgrefis;
+    localdata = ref.read(authProvider).ordgrefis;
     if (localdata.isNotEmpty && !widget.orderArg.isModify) {
       defaultparams = true;
     }
@@ -147,10 +147,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
     if (widget.isBasket != "Basket" && widget.isBasket != "BasketEdit") {
       if (widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE") {
-        if (context.read(userProfileProvider).userDetailModel != null &&
-            context.read(userProfileProvider).userDetailModel!.stat == "Ok") {
+        if (ref.read(userProfileProvider).userDetailModel != null &&
+            ref.read(userProfileProvider).userDetailModel!.stat == "Ok") {
           for (var element
-              in context.read(userProfileProvider).userDetailModel!.prarr!) {
+              in ref.read(userProfileProvider).userDetailModel!.prarr!) {
             if (element.sPrdtAli == "MTF") {
               orderTypes.add({"type": "MTF"});
             }
@@ -162,7 +162,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           widget.scripInfo.instname != "COM") {
         orderTypes.add({
           "type": "GTT",
-          "key": context.read(showcaseProvide).orderscreenBracketcase,
+          "key": ref.read(showcaseProvide).orderscreenBracketcase,
           "case": "Click here to view GTT order details."
         });
       }
@@ -170,7 +170,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       if (widget.scripInfo.instname == "EQ") {
         orderTypes.add({
           "type": "SIP",
-          "key": context.read(showcaseProvide).sip,
+          "key": ref.read(showcaseProvide).sip,
           "case": "Click here to view SIP order details."
         });
       }
@@ -198,22 +198,22 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
     priceTypes = [
       {
         "type": "Limit",
-        "key": context.read(showcaseProvide).limitprctype,
+        "key": ref.read(showcaseProvide).limitprctype,
         "case": "Click here to set your order type to Limit."
       },
       {
         "type": "Market",
-        "key": context.read(showcaseProvide).marketprctype,
+        "key": ref.read(showcaseProvide).marketprctype,
         "case": "Click here to set your order type to Market."
       },
       {
         "type": "SL Limit",
-        "key": context.read(showcaseProvide).sllimitprctype,
+        "key": ref.read(showcaseProvide).sllimitprctype,
         "case": "Click here to set your order type to SL Limit."
       },
       {
         "type": "SL MKT",
-        "key": context.read(showcaseProvide).sllimktprctype,
+        "key": ref.read(showcaseProvide).sllimktprctype,
         "case": "Click here to set your order type to SL MKT."
       },
     ];
@@ -245,14 +245,13 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                       ? InvestType.delivery
                       : InvestType.carryForward;
 
-      context.read(ordInputProvider).chngInvesType(invesType, "PlcOrder");
+      ref.read(ordInputProvider).chngInvesType(invesType, "PlcOrder");
 
-      context
-          .read(ordInputProvider)
+      ref.read(ordInputProvider)
           .chngPriceType(priceType, widget.orderArg.exchange);
       marginUpdate();
       if (orderType != "Regular") {
-        context.read(ordInputProvider).chngOrderType(orderType);
+        ref.read(ordInputProvider).chngOrderType(orderType);
       }
     });
 
@@ -301,12 +300,11 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
           text: defaultparams ? localdata['mrkprot'] : "5");
       discQtyCtrl = TextEditingController(text: "0");
 
-      if (context
-          .read(websocketProvider)
+      if (ref.read(websocketProvider)
           .socketDatas
           .containsKey(widget.scripInfo.token)) {
         ordPrice =
-            "${context.read(websocketProvider).socketDatas["${widget.scripInfo.token}"]['lp']}";
+            "${ref.read(websocketProvider).socketDatas["${widget.scripInfo.token}"]['lp']}";
 
         priceCtrl.text = priceType == "Market" || priceType == "SL MKT"
             ? "Market"
@@ -314,7 +312,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
       }
     });
 
-    final quote = context.read(marketWatchProvider).getQuotes?.ordMsg;
+    final quote = ref.read(marketWatchProvider).getQuotes?.ordMsg;
 
     if (widget.isBasket == "Basket" ||
         widget.isBasket == "BasketEdit" ||
@@ -355,7 +353,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                   5)
               .toString();
     }
-    context.read(orderProvider).setDOrderloader(false);
+    ref.read(orderProvider).setDOrderloader(false);
     super.initState();
     anibuildctrl = AnimationController(
       vsync: this,
@@ -384,18 +382,17 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         onPopInvokedWithResult: (didPop, result) async {
           if (didPop) return; // If system handled back, do nothing
 
-          context.read(ordInputProvider).clearTextField();
-          await context
-              .read(marketWatchProvider)
+          ref.read(ordInputProvider).clearTextField();
+          await ref.read(marketWatchProvider)
               .requestMWScrip(context: context, isSubscribe: true);
         },
-        child: Consumer(builder: (context, ScopedReader watch, _) {
-          final orderProvide = watch(orderProvider);
-          final orderInput = watch(ordInputProvider);
-          final internet = watch(networkStateProvider);
-          final theme = context.read(themeProvider);
+        child: Consumer(builder: (context, WidgetRef ref, _) {
+          final orderProvide = ref.watch(orderProvider);
+          final orderInput = ref.watch(ordInputProvider);
+          final internet = ref.watch(networkStateProvider);
+          final theme = ref.read(themeProvider);
 
-          final sip = watch(siprovider);
+          final sip = ref.watch(siprovider);
 
           return GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
@@ -407,7 +404,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                       titleSpacing: 0,
                       leading: InkWell(
                           onTap: () {
-                            context.read(ordInputProvider).clearTextField();
+                            ref.read(ordInputProvider).clearTextField();
                             Navigator.pop(context);
                           },
                           child: Padding(
@@ -544,7 +541,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                               if (orderType != "GTT") {
                                                 marginUpdate();
                                               } else {
-                                                context
+                                                ref
                                                     .read(ordInputProvider)
                                                     .chngInvesType(
                                                         widget.scripInfo.seg ==
@@ -554,17 +551,17 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                             : InvestType
                                                                 .carryForward,
                                                         "GTT");
-                                                context
+                                                ref
                                                     .read(ordInputProvider)
                                                     .updatePrcCtrl(
                                                         "${widget.orderArg.ltp}",
                                                         widget.orderArg.lotSize!
                                                             .replaceAll(
                                                                 "-", ""));
-                                                context
+                                                ref
                                                     .read(ordInputProvider)
                                                     .chngGTTPriceType("Limit");
-                                                context
+                                                ref
                                                     .read(ordInputProvider)
                                                     .disableCondGTT(false);
                                               }
@@ -1379,7 +1376,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                     }
                                                   });
 
-                                                  context
+                                                  ref
                                                       .read(ordInputProvider)
                                                       .chngInvesType(
                                                           widget.scripInfo
@@ -1390,7 +1387,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                               : InvestType
                                                                   .carryForward,
                                                           "OCO");
-                                                  context
+                                                  ref
                                                       .read(ordInputProvider)
                                                       .updateOcoPrcQtyCtrl(
                                                           "${widget.orderArg.ltp}",
@@ -1500,9 +1497,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                         .ocoQtyCtrl
                                                                         .text
                                                                         .isNotEmpty) {
-                                                                      if (int.parse(orderInput
-                                                                              .ocoQtyCtrl
-                                                                              .text) >
+                                                                      if (int.parse(orderInput.ocoQtyCtrl.text) >
                                                                           multiplayer) {
                                                                         orderInput
                                                                             .ocoQtyCtrl
@@ -1598,10 +1593,10 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                             .selection =
                                                                         TextSelection
                                                                             .fromPosition(
-                                                                      TextPosition(
-                                                                          offset:
-                                                                              newValue.length),
-                                                                    );
+                                                                TextPosition(
+                                                                    offset: newValue
+                                                                        .length),
+                                                              );
                                                                   }
                                                                 }
                                                               }))
@@ -2930,8 +2925,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                     setState(
                                                                         () {
                                                                       int number =
-                                                                          int.parse(
-                                                                              discQtyCtrl.text);
+                                                                          int.parse(discQtyCtrl.text);
                                                                       if (discQtyCtrl
                                                                           .text
                                                                           .isNotEmpty) {
@@ -3384,7 +3378,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                             : "S",
                                                                         tsym:
                                                                             "${widget.scripInfo.tsym}");
-                                                                    context
+                                                                    ref
                                                                         .read(
                                                                             orderProvider)
                                                                         .fetchGetBrokerage(
@@ -3498,7 +3492,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                                                                           ? "Number of SIP can not be empty"
                                                                           : "Number of SIP can not be 0"));
                                                             } else {
-                                                              sipOrder(watch);
+                                                              sipOrder(ref);
                                                             }
                                                           } else if (orderType ==
                                                               "GTT") {
@@ -4445,8 +4439,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
             ]));
   }
 
-  sipOrder(ScopedReader watch) async {
-    final sip = watch(siprovider);
+  sipOrder(WidgetRef ref) async {
+    final sip = ref.watch(siprovider);
     SipInputField sipOrderInput = SipInputField(
         regdate: sipdateformat(formattedDate),
         startdate: sipdateformat(sip.datefield.text),
@@ -4464,17 +4458,17 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         prd: "C",
         token: widget.scripInfo.token,
         qty: sipqtyctrl.text);
-    await context
+    await ref
         .read(orderProvider)
         .fetchSipPlaceOrder(context, sipOrderInput);
   }
 
   placeOrder(OrderInputProvider orderInput, bool isSliceOrd,
       ThemesProvider theme) async {
-    String bsktName = context.read(orderProvider).selectedBsktName;
+    String bsktName = ref.read(orderProvider).selectedBsktName;
     if (widget.isBasket == "Basket" || widget.isBasket == "BasketEdit") {
       if (widget.isBasket == "BasketEdit") {
-        await context
+        await ref
             .read(orderProvider)
             .removeBsktScrip(widget.orderArg.raw['index'], bsktName);
       }
@@ -4520,7 +4514,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         }
 
         if (placeorder) {
-          context.read(orderProvider).setOrderloader(true);
+          ref.read(orderProvider).setOrderloader(true);
           PlaceOrderInput placeOrderInput = PlaceOrderInput(
               amo: isAmo ? "Yes" : "",
               blprc: orderType == "Cover" || orderType == "Bracket"
@@ -4546,9 +4540,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
                   ? mktProtCtrl.text
                   : '',
               channel: '');
-          await context.read(orderProvider).fetchPlaceOrder(
+          await ref.read(orderProvider).fetchPlaceOrder(
               context, placeOrderInput, widget.orderArg.isExit);
-          context.read(orderProvider).setOrderloader(false);
+          ref.read(orderProvider).setOrderloader(false);
         }
       } else {
         int q = ((int.parse(qtyCtrl.text) / lotSize).round() * lotSize);
@@ -4601,8 +4595,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
     OrderMarginInput input = OrderMarginInput(
         exch: "${widget.scripInfo.exch}",
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
-        prctyp: context.read(ordInputProvider).prcType,
-        prd: context.read(ordInputProvider).orderType,
+        prctyp: ref.read(ordInputProvider).prcType,
+        prd: ref.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
             ? (double.parse(qtyCtrl.text).toInt() * lotSize).toString()
             : qtyCtrl.text,
@@ -4616,17 +4610,17 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
         trgprc: priceType == "SL Limit" || priceType == "SL MKT"
             ? triggerPriceCtrl.text
             : "");
-    context.read(orderProvider).fetchOrderMargin(input, context);
+    ref.read(orderProvider).fetchOrderMargin(input, context);
     BrokerageInput brokerageInput = BrokerageInput(
         exch: "${widget.scripInfo.exch}",
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
-        prd: context.read(ordInputProvider).orderType,
+        prd: ref.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
             ? (double.parse(qtyCtrl.text).toInt() * lotSize).toString()
             : qtyCtrl.text,
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}");
-    context.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
+    ref.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
   }
 
   placeGttOrder(OrderInputProvider orderInput) async {
@@ -4648,7 +4642,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
             ? orderInput.trgPrcCtrl.text
             : "",
         alid: '');
-    await context.read(orderProvider).fetchGttPlaceOrder(input, context);
+    await ref.read(orderProvider).fetchGttPlaceOrder(input, context);
   }
 
   placeOCOOrder(OrderInputProvider orderInput) async {
@@ -4678,7 +4672,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
             ? orderInput.ocoTrgPrcCtrl.text
             : "",
         alid: '');
-    await context.read(orderProvider).fetchOCOPlaceOrder(input, context);
+    await ref.read(orderProvider).fetchOCOPlaceOrder(input, context);
   }
 
   addBasketScrip(
@@ -4730,9 +4724,9 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen>
 
     pref.setBasketScrip(jsonData);
 
-    await context.read(orderProvider).getBasketName();
+    await ref.read(orderProvider).getBasketName();
 
-    await context.read(orderProvider).fetchBasketMargin();
+    await ref.read(orderProvider).fetchBasketMargin();
     Navigator.pop(context);
     if (stay) {
       Navigator.pop(context);

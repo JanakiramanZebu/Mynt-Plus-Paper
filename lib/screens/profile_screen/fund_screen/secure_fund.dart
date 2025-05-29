@@ -13,10 +13,10 @@ class SecureFund extends ConsumerWidget {
   const SecureFund({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final funds = watch(fundProvider);
-    final theme = watch(themeProvider);
-    final trancation = watch(transcationProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final funds = ref.watch(fundProvider);
+    final theme = ref.watch(themeProvider);
+    final trancation = ref.watch(transcationProvider);
     // Preferences pref = Preferences();
     final List<ChartData> donutChart = [
       if (funds.fundDetailModel?.margincurper != null)

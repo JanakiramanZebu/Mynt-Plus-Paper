@@ -7,16 +7,16 @@ import '../../provider/thems.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 
-class OrderbookPendingAlertkFilterBottomSheet extends StatefulWidget {
+class OrderbookPendingAlertkFilterBottomSheet extends ConsumerStatefulWidget {
   const OrderbookPendingAlertkFilterBottomSheet({super.key});
 
   @override
-  State<OrderbookPendingAlertkFilterBottomSheet> createState() =>
+  ConsumerState<OrderbookPendingAlertkFilterBottomSheet> createState() =>
       _OrderbookPendingAlertkFilterBottomSheetState();
 }
 
 class _OrderbookPendingAlertkFilterBottomSheetState
-    extends State<OrderbookPendingAlertkFilterBottomSheet> {
+    extends ConsumerState<OrderbookPendingAlertkFilterBottomSheet> {
   Preferences pref = Preferences();
   late bool scripisAscending;
   late bool pricepisAscending;
@@ -35,7 +35,7 @@ class _OrderbookPendingAlertkFilterBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -72,9 +72,9 @@ class _OrderbookPendingAlertkFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (scripisAscending == true) {
-                  context.read(marketWatchProvider).filterPendingAlert("DSC");
+                  ref.read(marketWatchProvider).filterPendingAlert("DSC");
                 } else if (scripisAscending == false) {
-                  context.read(marketWatchProvider).filterPendingAlert("ASC");
+                  ref.read(marketWatchProvider).filterPendingAlert("ASC");
                 }
 
                 scripisAscending = !scripisAscending;
@@ -114,13 +114,9 @@ class _OrderbookPendingAlertkFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (pricepisAscending == true) {
-                  context
-                      .read(marketWatchProvider)
-                      .filterPendingAlert("LTPASC");
+                  ref.read(marketWatchProvider).filterPendingAlert("LTPASC");
                 } else if (pricepisAscending == false) {
-                  context
-                      .read(marketWatchProvider)
-                      .filterPendingAlert("LTPDSC");
+                  ref.read(marketWatchProvider).filterPendingAlert("LTPDSC");
                 }
 
                 pricepisAscending = !pricepisAscending;
@@ -160,13 +156,9 @@ class _OrderbookPendingAlertkFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (alertvalueisAscending == true) {
-                  context
-                      .read(marketWatchProvider)
-                      .filterPendingAlert("ALERTVALUEASC");
+                  ref.read(marketWatchProvider).filterPendingAlert("ALERTVALUEASC");
                 } else if (alertvalueisAscending == false) {
-                  context
-                      .read(marketWatchProvider)
-                      .filterPendingAlert("ALERTVALUEDSC");
+                  ref.read(marketWatchProvider).filterPendingAlert("ALERTVALUEDSC");
                 }
 
                 alertvalueisAscending = !alertvalueisAscending;

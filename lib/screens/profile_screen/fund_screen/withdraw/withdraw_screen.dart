@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/all.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -10,7 +10,7 @@ import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import 'withdraw_break_up.dart';
 
-class WithdrawScreen extends StatefulWidget {
+class WithdrawScreen extends ConsumerStatefulWidget {
   final TranctionProvider withdarw;
   final FocusNode foucs;
   final ThemesProvider theme;
@@ -24,16 +24,16 @@ class WithdrawScreen extends StatefulWidget {
   });
 
   @override
-  State<WithdrawScreen> createState() => _WithdrawScreenState();
+  ConsumerState<WithdrawScreen> createState() => _WithdrawScreenState();
 }
 
-class _WithdrawScreenState extends State<WithdrawScreen> {
+class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
   String withdarwerror = "";
   late bool _isVisible;
   bool disable = false;
   @override
   void initState() {
-    context.read(transcationProvider).withdrawstatus![0].msg == "no data found"
+    ref.read(transcationProvider).withdrawstatus![0].msg == "no data found"
         ? _isVisible = false
         : _isVisible = true;
 

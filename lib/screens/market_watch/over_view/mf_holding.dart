@@ -12,9 +12,9 @@ class MutualFundholdings extends ConsumerWidget {
   const MutualFundholdings({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = context.read(themeProvider);
-    final shareHoldings = watch(marketWatchProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
+    final shareHoldings = ref.watch(marketWatchProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -17,8 +17,8 @@ class StrikePriceListCard extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
     final textColor = theme.isDarkMode ? colors.colorWhite : colors.colorBlack;
     
     return ListView.separated(

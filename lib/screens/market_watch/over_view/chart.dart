@@ -24,10 +24,10 @@ class MyHomePageState extends State<ShareHoldChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final funData = watch(marketWatchProvider).fundamentalData!.shareholdings;
-      final theme = context.read(themeProvider);
-      final selctedShareHold = watch(marketWatchProvider).selctedShareHold;
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final funData = ref.watch(marketWatchProvider).fundamentalData!.shareholdings;
+      final theme = ref.read(themeProvider);
+      final selctedShareHold = ref.watch(marketWatchProvider).selctedShareHold;
       return SizedBox(
           height: 320,
           width: MediaQuery.of(context).size.width,
@@ -113,18 +113,18 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
+    return Consumer(builder: (context, WidgetRef ref, _) {
       final balanceSheet =
-          watch(marketWatchProvider).selcteFinType == "Standalone"
-              ? watch(marketWatchProvider)
+          ref.watch(marketWatchProvider).selcteFinType == "Standalone"
+              ? ref.watch(marketWatchProvider)
                   .fundamentalData!
                   .stockFinancialsStandalone!
                   .balanceSheet
-              : watch(marketWatchProvider)
+              : ref.watch(marketWatchProvider)
                   .fundamentalData!
                   .stockFinancialsConsolidated!
                   .balanceSheet;
-      final theme = context.read(themeProvider);
+      final theme = ref.read(themeProvider);
       return SizedBox(
           height: 320,
           width: MediaQuery.of(context).size.width,
@@ -203,18 +203,18 @@ class FIncomeChartState extends State<FIncomeChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
+    return Consumer(builder: (context, WidgetRef ref, _) {
       final incomeSheet =
-          watch(marketWatchProvider).selcteFinType == "Standalone"
-              ? watch(marketWatchProvider)
+          ref.watch(marketWatchProvider).selcteFinType == "Standalone"
+              ? ref.watch(marketWatchProvider)
                   .fundamentalData!
                   .stockFinancialsStandalone!
                   .incomeSheet
-              : watch(marketWatchProvider)
+              : ref.watch(marketWatchProvider)
                   .fundamentalData!
                   .stockFinancialsConsolidated!
                   .incomeSheet;
-      final theme = context.read(themeProvider);
+      final theme = ref.read(themeProvider);
       return SizedBox(
           height: 320,
           width: MediaQuery.of(context).size.width,
@@ -267,7 +267,7 @@ class FIncomeChartState extends State<FIncomeChart> {
                 ),
                 LineSeries(
                     isVisibleInLegend: true,
-                    isVisible: true,
+                    // isVisible: true,
                     enableTooltip: true,
                     legendItemText: "Profit After Tax",
                     legendIconType: LegendIconType.image,
@@ -305,15 +305,15 @@ class FCashFlowChartState extends State<FCashFlowChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = context.read(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.read(themeProvider);
       final cashflowSheet =
-          watch(marketWatchProvider).selcteFinType == "Standalone"
-              ? watch(marketWatchProvider)
+          ref.watch(marketWatchProvider).selcteFinType == "Standalone"
+              ? ref.watch(marketWatchProvider)
                   .fundamentalData!
                   .stockFinancialsStandalone!
                   .cashflowSheet
-              : watch(marketWatchProvider)
+              : ref.watch(marketWatchProvider)
                   .fundamentalData!
                   .stockFinancialsConsolidated!
                   .cashflowSheet;
@@ -406,9 +406,9 @@ class PriceComChartState extends State<PriceComChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final priceCompare = watch(marketWatchProvider);
-      final theme = context.read(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final priceCompare = ref.watch(marketWatchProvider);
+      final theme = ref.read(themeProvider);
       return SizedBox(
           height: 320,
           width: MediaQuery.of(context).size.width,
@@ -452,7 +452,7 @@ class PriceComChartState extends State<PriceComChart> {
                           1
                         ]),
                     isVisibleInLegend: true,
-                    isVisible: true,
+                    // isVisible: true,
                     enableTooltip: true,
                     legendItemText: priceCompare.peersChartKeys.isNotEmpty?
                         priceCompare.peersChartKeys[0].toString().substring(4) : '',
@@ -480,7 +480,7 @@ class PriceComChartState extends State<PriceComChart> {
                           1
                         ]),
                     isVisibleInLegend: true,
-                    isVisible: true,
+                    // isVisible: true,
                     enableTooltip: true,
                     legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
                         priceCompare.peersChartKeys[1].toString().substring(4) : '',
@@ -508,7 +508,7 @@ class PriceComChartState extends State<PriceComChart> {
                           1
                         ]),
                     isVisibleInLegend: true,
-                    isVisible: true,
+                    // isVisible: true,
                     enableTooltip: true,
                     legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
                         priceCompare.peersChartKeys[2].toString().substring(4) : '',
@@ -535,7 +535,7 @@ class PriceComChartState extends State<PriceComChart> {
                           1
                         ]),
                     isVisibleInLegend: true,
-                    isVisible: true,
+                    // isVisible: true,
                     enableTooltip: true,
                     legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
                         priceCompare.peersChartKeys[3].toString().substring(4) : '',
@@ -563,7 +563,7 @@ class PriceComChartState extends State<PriceComChart> {
                           1
                         ]),
                     isVisibleInLegend: true,
-                    isVisible: true,
+                    // isVisible: true,
                     enableTooltip: true,
                     legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
                         priceCompare.peersChartKeys[4].toString().substring(4) : '',

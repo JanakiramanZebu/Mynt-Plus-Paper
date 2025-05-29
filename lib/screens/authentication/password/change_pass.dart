@@ -13,11 +13,11 @@ class ChangePass extends ConsumerWidget {
   const ChangePass({super.key, required this.isChangePass});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
+  Widget build(BuildContext context, WidgetRef ref) {
     double screenWidth = MediaQuery.of(context).size.width;
-    final changepassword = watch(changePasswordProvider);
-    // final loginAuth = watch(authProvider);
-    final theme = watch(themeProvider);
+    final changepassword = ref.watch(changePasswordProvider);
+    // final loginAuth = ref.watch(authProvider);
+    final theme = ref.watch(themeProvider);
     return Scaffold(
      
       appBar: AppBar(

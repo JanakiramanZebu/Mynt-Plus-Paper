@@ -21,11 +21,11 @@ class WatchlistsBottomSheet extends StatefulWidget {
 class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final marketWatch = watch(marketWatchProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final marketWatch = ref.watch(marketWatchProvider);
       final watchlist = marketWatch.marketWatchlist!.values!;
       final preDefWl = marketWatch.preDefWL;
-      final theme = watch(themeProvider);
+      final theme = ref.watch(themeProvider);
       return Container(
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -95,14 +95,14 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                         itemBuilder: (BuildContext context, int index) {
                           return ElevatedButton(
                               onPressed: () async {
-                                context
+                                ref
                                     .read(marketWatchProvider)
                                     .changeWlName(preDefWl[index], "Yes");
                                 if (preDefWl[index] == "My Stocks") {
                                   // await context
                                   //     .read(portfolioProvider)
                                   //     .fetchHoldings(context,"");
-                                  context
+                                  ref
                                       .read(portfolioProvider)
                                       .requestWSHoldings(
                                           context: context, isSubscribe: true);
@@ -159,7 +159,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                       return ListTile(
                           onTap: () async {
                             // click to switch watch list
-                            context
+                            ref
                                 .read(marketWatchProvider)
                                 .changeWlName(watchlist[index], "No");
 

@@ -21,7 +21,7 @@ import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
 
-final fundProvider = ChangeNotifierProvider((ref) => FundProvider(ref.read));
+final fundProvider = ChangeNotifierProvider((ref) => FundProvider(ref));
 
 class FundProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
@@ -41,7 +41,7 @@ class FundProvider extends DefaultChangeNotifier {
   final List _utlization = [];
   List get margin => _margin;
   List get utlization => _utlization;
-  final Reader ref;
+  final Ref ref;
 
   List _listOfCredits = [];
   List get listOfCredits => _listOfCredits;
@@ -162,11 +162,11 @@ class FundProvider extends DefaultChangeNotifier {
       ConstantName.sessCheck = true;
       if (_getHsTokenModel!.emsg == "Session Expired :  Invalid Session Key" &&
           _getHsTokenModel!.stat == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
     } catch (e) {
       log("Failed to fetch Profile Data:: ${e.toString()}");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API HS Token", "Error": "$e"});
       notifyListeners();
@@ -183,7 +183,7 @@ class FundProvider extends DefaultChangeNotifier {
       _fundDetailModel = await api.getFunds();
 
       if (_fundDetailModel!.emsg == "Session Expired :  Invalid Session Key") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       } else {
 // Calculating funds
 
@@ -296,7 +296,7 @@ class FundProvider extends DefaultChangeNotifier {
       return _fundDetailModel;
     } catch (e) {
       print(e);
-      ref(indexListProvider).logError.add({"type": "API Funds", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Funds", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
@@ -318,7 +318,7 @@ class FundProvider extends DefaultChangeNotifier {
   //     log("view upi id ${_viewUpiIdModel!.data![0].upiId}.");
   //   } catch (e) {
   //     log("Failed to fetch bank Data:: ${e.toString()}");
-  //     ref(indexListProvider)
+  //     ref.read(indexListProvider)
   //         .logError
   //         .add({"type": "View upi id", "Error": "$e"});
   //     notifyListeners();

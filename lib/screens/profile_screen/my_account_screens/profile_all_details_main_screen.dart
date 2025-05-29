@@ -9,15 +9,15 @@ import 'package:mynt_plus/screens/profile_screen/my_account_screens/profile_deta
 import 'package:mynt_plus/screens/profile_screen/my_account_screens/profile_details_screen.dart';
 import '../../../res/res.dart';
 
-class ProfileDetailsMainScreen extends StatefulWidget {
+class ProfileDetailsMainScreen extends ConsumerStatefulWidget {
   const ProfileDetailsMainScreen({super.key});
 
   @override
-  State<ProfileDetailsMainScreen> createState() =>
+  ConsumerState<ProfileDetailsMainScreen> createState() =>
       _ProfileDetailsMainScreenState();
 }
 
-class _ProfileDetailsMainScreenState extends State<ProfileDetailsMainScreen>
+class _ProfileDetailsMainScreenState extends ConsumerState<ProfileDetailsMainScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
@@ -51,8 +51,8 @@ class _ProfileDetailsMainScreenState extends State<ProfileDetailsMainScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
       
       return Scaffold(
         appBar: AppBar(
@@ -206,7 +206,7 @@ class _ProfileDetailsMainScreenState extends State<ProfileDetailsMainScreen>
             shape: const StadiumBorder(),
             side: BorderSide(
                               width: 1,
-                              color: context.read(themeProvider).isDarkMode
+                              color: ref.read(themeProvider).isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
                             ),),

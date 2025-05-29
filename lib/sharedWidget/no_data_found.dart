@@ -6,11 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 
-class NoDataFound extends StatelessWidget {
+class NoDataFound extends ConsumerWidget {
   const NoDataFound({super.key});
 
   @override
-  Widget build(BuildContext context) {final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(themeProvider);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,

@@ -8,12 +8,12 @@ import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-final profileAllDetailsProvider = ChangeNotifierProvider((ref) => ProfileProvider(ref.read));
+final profileAllDetailsProvider = ChangeNotifierProvider((ref) => ProfileProvider(ref));
 
 class ProfileProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
-  final Reader ref;
+  final Ref ref;
   ProfileProvider(this.ref);
 
 
@@ -198,9 +198,9 @@ formateDataToDisplay(String data,int firstPart,int lastPart){
 
 
 void openInWebURL(BuildContext context,String urlArgs) async {
-   await context.read(fundProvider).fetchHstoken(context);
-  debugPrint('$urlArgs  ==== ${pref.clientId} =====  ${context.read(fundProvider).fundHstoken!.hstk}');
-    Uri uri = Uri.parse('https://profile.mynt.in/${urlArgs}/?sAccountId=${pref.clientId}&sToken=${context.read(fundProvider).fundHstoken!.hstk}&src=app');
+   await ref.read(fundProvider).fetchHstoken(context);
+  debugPrint('$urlArgs  ==== ${pref.clientId} =====  ${ref.read(fundProvider).fundHstoken!.hstk}');
+    Uri uri = Uri.parse('https://profile.mynt.in/${urlArgs}/?sAccountId=${pref.clientId}&sToken=${ref.read(fundProvider).fundHstoken!.hstk}&src=app');
     // debugPrint('$uri');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);

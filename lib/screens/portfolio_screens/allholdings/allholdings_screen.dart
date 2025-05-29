@@ -19,12 +19,12 @@ class _Allholdings extends State<Allholdings> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = context.read(themeProvider);
-      final asa = watch(portfolioProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.read(themeProvider);
+      final asa = ref.watch(portfolioProvider);
 
       return StreamBuilder<Map>(
-        stream: watch(websocketProvider).socketDataStream,
+        stream: ref.watch(websocketProvider).socketDataStream,
         builder: (context, snapshot) {
           final socketDatas = snapshot.data ?? {};
           double totvalcurr = 0.00;

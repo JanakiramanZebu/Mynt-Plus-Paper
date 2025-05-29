@@ -20,9 +20,9 @@ class BondsOpenOrderDetails extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    // final upi = watch(transcationProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    // final upi = ref.watch(transcationProvider);
     return Scaffold(
       appBar: AppBar(
           elevation: .2,

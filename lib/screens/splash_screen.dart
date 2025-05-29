@@ -13,14 +13,14 @@ import '../sharedWidget/internet_widget.dart';
 import '../sharedWidget/snack_bar.dart';
 import '../sharedWidget/splash_loader.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -28,8 +28,8 @@ class _SplashScreenState extends State<SplashScreen> {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       initializeResources(context: context);
       initialRoute();
-      context.read(networkStateProvider).networkStream();
-      context.read(networkStateProvider).getContext(context);
+      ref.read(networkStateProvider).networkStream();
+      ref.read(networkStateProvider).getContext(context);
     });
   }
 
@@ -44,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
         backgroundColor: Color(0xffE5EBEC),
         body: Stack(children: [
           CircularLoaderImage(),
-          if (context.read(networkStateProvider).connectionStatus ==
+          if (ref.read(networkStateProvider).connectionStatus ==
               ConnectivityResult.none)
             const NoInternetScreen()
         ]));
@@ -55,13 +55,13 @@ class _SplashScreenState extends State<SplashScreen> {
     final Preferences pref = locator<Preferences>();
     try {
       print(
-          "Device  Name  ${pref.deviceName!} - ${pref.clientSession} ----  ${context.read(networkStateProvider).connectionStatus} ");
-      context.read(authProvider).loginMethCtrl.text = pref.clientId!;
-      context
+          "Device  Name  ${pref.deviceName!} - ${pref.clientSession} ----  ${ref.read(networkStateProvider).connectionStatus} ");
+      ref.read(authProvider).loginMethCtrl.text = pref.clientId!;
+      ref
           .read(authProvider)
           .switchMobToClinent(pref.clientId!.isEmpty ? false : true);
       if (pref.deviceName!.isEmpty) {
-        await context.read(authProvider).getDeviceDetails();
+        await ref.read(authProvider).getDeviceDetails();
       }
       if (pref.clientSession!.isEmpty && pref.clientId!.isNotEmpty) {
         pref.setMobileLogin(false);
@@ -79,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 context, Routes.loginScreenBanner, (route) => false);
       } else {
         pref.setMobileLogin(true);
-        await context
+        await ref
             .read(authProvider)
             .fetchMobileLogin(context, "", pref.clientId!, "", pref.imei!, true);
       }

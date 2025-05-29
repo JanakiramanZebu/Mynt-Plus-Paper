@@ -39,8 +39,8 @@ class IpoTimeLineWidget extends StatelessWidget {
       indicatorColor = const Color(0xff2DB266);
     }
     return Consumer(
-      builder: (context, watch, child) {
-        final theme = watch(themeProvider);
+      builder: (context, ref, child) {
+        final theme = ref.watch(themeProvider);
 
          return Container(
       padding: const EdgeInsets.symmetric(),

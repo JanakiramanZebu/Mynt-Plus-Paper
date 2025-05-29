@@ -7,16 +7,16 @@ import '../../provider/thems.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 
-class OrderbookFilterBottomSheet extends StatefulWidget {
+class OrderbookFilterBottomSheet extends ConsumerStatefulWidget {
   const OrderbookFilterBottomSheet({super.key});
 
   @override
-  State<OrderbookFilterBottomSheet> createState() =>
+  ConsumerState<OrderbookFilterBottomSheet> createState() =>
       _OrderbookFilterBottomSheetState();
 }
 
 class _OrderbookFilterBottomSheetState
-    extends State<OrderbookFilterBottomSheet> {
+    extends ConsumerState<OrderbookFilterBottomSheet> {
   Preferences pref = Preferences();
   late bool scripisAscending;
   late bool pricepisAscending;
@@ -39,7 +39,7 @@ class _OrderbookFilterBottomSheetState
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -76,9 +76,9 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (scripisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "ASC");
+                  ref.read(orderProvider).filterOrders(sorting: "ASC");
                 } else if (scripisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "DSC");
+                  ref.read(orderProvider).filterOrders(sorting: "DSC");
                 }
 
                 scripisAscending = !scripisAscending;
@@ -118,13 +118,9 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (productisAscending == true) {
-                  context
-                      .read(orderProvider)
-                      .filterOrders(sorting: "PRODUCTASC");
+                  ref.read(orderProvider).filterOrders(sorting: "PRODUCTASC");
                 } else if (productisAscending == false) {
-                  context
-                      .read(orderProvider)
-                      .filterOrders(sorting: "PRODUCTDSC");
+                  ref.read(orderProvider).filterOrders(sorting: "PRODUCTDSC");
                 }
 
                 productisAscending = !productisAscending;
@@ -164,9 +160,9 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (qtyisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "QTYDSC");
+                  ref.read(orderProvider).filterOrders(sorting: "QTYDSC");
                 } else if (qtyisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "QTYASC");
+                  ref.read(orderProvider).filterOrders(sorting: "QTYASC");
                 }
 
                 qtyisAscending = !qtyisAscending;
@@ -206,9 +202,9 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (pricepisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "LTPDSC");
+                  ref.read(orderProvider).filterOrders(sorting: "LTPDSC");
                 } else if (pricepisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "LTPASC");
+                  ref.read(orderProvider).filterOrders(sorting: "LTPASC");
                 }
 
                 pricepisAscending = !pricepisAscending;
@@ -248,9 +244,9 @@ class _OrderbookFilterBottomSheetState
             onTap: () {
               setState(() {
                 if (timeisAscending == true) {
-                  context.read(orderProvider).filterOrders(sorting: "TIMEDSC");
+                  ref.read(orderProvider).filterOrders(sorting: "TIMEDSC");
                 } else if (timeisAscending == false) {
-                  context.read(orderProvider).filterOrders(sorting: "TIMEASC");
+                  ref.read(orderProvider).filterOrders(sorting: "TIMEASC");
                 }
 
                 timeisAscending = !timeisAscending;

@@ -115,7 +115,7 @@
 //         crossAxisAlignment: CrossAxisAlignment.end,
 //         children: [
 //           Text("${ exchTsym.symbol} ",
-//               style: textStyles.scripNameTxtStyle.copyWith(color:  context.read(themeProvider) .isDarkMode?colors.colorWhite:colors.colorBlack)),
+//               style: textStyles.scripNameTxtStyle.copyWith(color:  ref.read(themeProvider) .isDarkMode?colors.colorWhite:colors.colorBlack)),
 //           if ( exchTsym.option!.isNotEmpty)
 //             Text("${ exchTsym.option}",
 //                 style: textStyles.scripNameTxtStyle

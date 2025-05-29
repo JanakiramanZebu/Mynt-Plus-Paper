@@ -35,13 +35,13 @@
 // import 'order_input_provider.dart';
 // import 'websocket_provider.dart';
 
-// final orderProvider = ChangeNotifierProvider((ref) => OrderProvider(ref.read));
+// final orderProvider = ChangeNotifierProvider((ref) => OrderProvider(ref));
 
 // class OrderProvider extends DefaultChangeNotifier {
-//   final api = locator<ApiExporter>();
+//   final api = ref.read(apiExporterProvider);
 //   final FToast _fToast = FToast();
 //   FToast get fToast => _fToast;
-//   final Reader ref;
+//   final Ref ref;
 //   late TabController tabCtrl;
 //   PlaceOrderModel? _placeOrderModel;
 //   PlaceOrderModel? get placeOrderModel => _placeOrderModel;
@@ -64,7 +64,7 @@
 //   List<OrderBookModel>? get orderBookModel => _orderBookModel;
 //   List<GttOrderBookModel>? _gttOrderBookModel = [];
 //   List<GttOrderBookModel>? get gttOrderBookModel => _gttOrderBookModel;
-//   final Preferences pref = locator<Preferences>();
+//   final Preferences pref = ref.read(preferencesProvider);
 //   List<TradeBookModel>? _tradeBook;
 //   List<TradeBookModel>? get tradeBook => _tradeBook;
 //   List<OrderBookModel>? _allOrder = [];
@@ -152,7 +152,7 @@
 //         input += "${_bsktScripList[i]['exch']}|${_bsktScripList[i]['token']}#";
 //       }
 //       if (input.isNotEmpty) {
-//         ref(websocketProvider).establishConnection(
+//         ref.read(websocketProvider).establishConnection(
 //             channelInput: input, task: "t", context: context);
 //       }
 //     }
@@ -175,7 +175,7 @@
 //       Tab(text: "Trade Book (${_tradeBook == null ? 0 : _tradeBook!.length})"),
 //       Tab(
 //           text:
-//               "Alert (${ref(marketWatchProvider).alertPendingModel!.length})"),
+//               "Alert (${ref.read(marketWatchProvider).alertPendingModel!.length})"),
 //       Tab(
 //           text:
 //               "SIP Order(${_siporderBookModel?.sipDetails?.length == null ? 0 : _siporderBookModel!.sipDetails!.length})"),
@@ -223,16 +223,16 @@
 //       bool isExit) async {
 //     try {
 //       placeOrderInput.channel = defaultTargetPlatform == TargetPlatform.android
-//           ? '${ref(authProvider).deviceInfo["brand"]}'
-//           : "${ref(authProvider).deviceInfo["model"]}";
+//           ? '${ref.read(authProvider).deviceInfo["brand"]}'
+//           : "${ref.read(authProvider).deviceInfo["model"]}";
 //       placeOrderInput.userAgent =
 //           defaultTargetPlatform == TargetPlatform.android
-//               ? '${ref(authProvider).deviceInfo["model"]}'
-//               : "${ref(authProvider).deviceInfo["name"]}";
+//               ? '${ref.read(authProvider).deviceInfo["model"]}'
+//               : "${ref.read(authProvider).deviceInfo["name"]}";
 //       placeOrderInput.appInstaId =
 //           defaultTargetPlatform == TargetPlatform.android
-//               ? '${ref(authProvider).deviceInfo["id"]}'
-//               : "${ref(authProvider).deviceInfo["identifierForVendor"]}";
+//               ? '${ref.read(authProvider).deviceInfo["id"]}'
+//               : "${ref.read(authProvider).deviceInfo["identifierForVendor"]}";
 
 //       _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
@@ -254,7 +254,7 @@
 //             if (_orderBookModel![0].emsg ==
 //                     "Session Expired :  Invalid Session Key" &&
 //                 _orderBookModel![0].stat == "Not_Ok") {
-//               ref(authProvider).ifSessionExpired(context);
+//               ref.read(authProvider).ifSessionExpired(context);
 //             }
 //           }
 //         }
@@ -264,14 +264,14 @@
 //         } else {
 //           Navigator.pop(context);
 //         }
-//         ref(indexListProvider).bottomMenu(3);
+//         ref.read(indexListProvider).bottomMenu(3);
 //         HapticFeedback.heavyImpact();
 //         SystemSound.play(SystemSoundType.click);
 //       } else {
 //         if (_placeOrderModel!.emsg ==
 //                 "Session Expired :  Invalid Session Key" &&
 //             _placeOrderModel!.stat == "Not_Ok") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         } else {
 //           ScaffoldMessenger.of(context).showSnackBar(
 //               successMessage(context, "${_placeOrderModel!.emsg}"));
@@ -280,7 +280,7 @@
 
 //       return _placeOrderModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Place Order", "Error": "$e"});
 //       notifyListeners();
@@ -291,29 +291,29 @@
 //       BuildContext context, PlaceOrderInput placeOrderInput) async {
 //     try {
 //       placeOrderInput.channel = defaultTargetPlatform == TargetPlatform.android
-//           ? '${ref(authProvider).deviceInfo["brand"]}'
-//           : "${ref(authProvider).deviceInfo["model"]}";
+//           ? '${ref.read(authProvider).deviceInfo["brand"]}'
+//           : "${ref.read(authProvider).deviceInfo["model"]}";
 //       placeOrderInput.userAgent =
 //           defaultTargetPlatform == TargetPlatform.android
-//               ? '${ref(authProvider).deviceInfo["model"]}'
-//               : "${ref(authProvider).deviceInfo["name"]}";
+//               ? '${ref.read(authProvider).deviceInfo["model"]}'
+//               : "${ref.read(authProvider).deviceInfo["name"]}";
 //       placeOrderInput.appInstaId =
 //           defaultTargetPlatform == TargetPlatform.android
-//               ? '${ref(authProvider).deviceInfo["id"]}'
-//               : "${ref(authProvider).deviceInfo["identifierForVendor"]}";
+//               ? '${ref.read(authProvider).deviceInfo["id"]}'
+//               : "${ref.read(authProvider).deviceInfo["identifierForVendor"]}";
 
 //       _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
 //       if (_placeOrderModel!.emsg == "Session Expired :  Invalid Session Key" &&
 //           _placeOrderModel!.stat == "Not_Ok") {
-//         ref(authProvider).ifSessionExpired(context);
+//         ref.read(authProvider).ifSessionExpired(context);
 //       } else {
 //         ConstantName.sessCheck = true;
 //       }
 
 //       return _placeOrderModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Place Slice  Order", "Error": "$e"});
 //       notifyListeners();
@@ -376,13 +376,13 @@
 //           if (_orderBookModel![0].emsg ==
 //                   "Session Expired :  Invalid Session Key" &&
 //               _orderBookModel![0].stat == "Not_Ok") {
-//             ref(authProvider).ifSessionExpired(context);
+//             ref.read(authProvider).ifSessionExpired(context);
 //           }
 //         }
 //       }
 //       return _orderBookModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Order Book", "Error": "$e"});
 //       notifyListeners();
@@ -421,7 +421,7 @@
 //         }
 //         if (_tradeBook![0].emsg == "Session Expired :  Invalid Session Key" &&
 //             _tradeBook![0].stat == "Not_Ok") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         }
 //         if (_tradeBook![0].stat == "Not_Ok") {
 //           _tradeBook = [];
@@ -433,7 +433,7 @@
 //       return _tradeBook;
 //     } catch (e) {
 //       print("Trade book $e");
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Trade Book", "Error": "$e"});
 //       notifyListeners();
@@ -466,7 +466,7 @@
 //         if (_gttOrderBookModel![0].emsg ==
 //                 "Session Expired :  Invalid Session Key" &&
 //             _gttOrderBookModel![0].stat == "Not_Ok") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         }
 
 //         if (_gttOrderBookModel![0].stat == "Not_Ok") {
@@ -479,7 +479,7 @@
 //       return _gttOrderBookModel;
 //     } catch (e) {
 //       print("GTT Order book $e");
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API GTT Order Book", "Error": "$e"});
 //       notifyListeners();
@@ -493,7 +493,7 @@
 //       if (_orderHistoryModel[0].stat == "Not_Ok" &&
 //           _orderHistoryModel[0].emsg ==
 //               "Session Expired :  Invalid Session Key") {
-//         ref(authProvider).ifSessionExpired(context);
+//         ref.read(authProvider).ifSessionExpired(context);
 //       } else {
 //         ConstantName.sessCheck = true;
 //       }
@@ -502,7 +502,7 @@
 
 //       return _orderHistoryModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Single Order His", "Error": "$e"});
 //       notifyListeners();
@@ -542,12 +542,12 @@
 
 //         Navigator.pop(context);
 //       } else {
-//         ref(authProvider).ifSessionExpired(context);
+//         ref.read(authProvider).ifSessionExpired(context);
 //       }
 
 //       return _cancelOrderModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Order Canl", "Error": "$e"});
 //       notifyListeners();
@@ -566,12 +566,12 @@
 //             .showSnackBar(successMessage(context, 'Order Exited'));
 //         Navigator.pop(context);
 //       } else {
-//         ref(authProvider).ifSessionExpired(context);
+//         ref.read(authProvider).ifSessionExpired(context);
 //       }
 
 //       return _cancelOrderModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Order Canl", "Error": "$e"});
 //       notifyListeners();
@@ -591,7 +591,7 @@
 //       } else {
 //         if (_modifyOrderModel!.emsg ==
 //             "Session Expired :  Invalid Session Key") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         } else {
 //           ScaffoldMessenger.of(context).showSnackBar(
 //               successMessage(context, '${_modifyOrderModel!.emsg}'));
@@ -600,7 +600,7 @@
 //       notifyListeners();
 //       return _modifyOrderModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Modify Order", "Error": "$e"});
 //       notifyListeners();
@@ -613,7 +613,7 @@
 //       _orderMarginModel = await api.getOrderMargin(input);
 //       if (_orderMarginModel!.emsg == "Session Expired :  Invalid Session Key" &&
 //           _orderMarginModel!.stat == "Not_Ok") {
-//         ref(authProvider).ifSessionExpired(context);
+//         ref.read(authProvider).ifSessionExpired(context);
 //       } else {
 //         ConstantName.sessCheck = true;
 //       }
@@ -621,7 +621,7 @@
 //       notifyListeners();
 //       return _orderMarginModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Order Margin", "Error": "$e"});
 //       notifyListeners();
@@ -635,7 +635,7 @@
 //       if (_getBrokerageModel!.emsg ==
 //               "Session Expired :  Invalid Session Key" &&
 //           _getBrokerageModel!.stat == "Not_Ok") {
-//         ref(authProvider).ifSessionExpired(context);
+//         ref.read(authProvider).ifSessionExpired(context);
 //       } else {
 //         ConstantName.sessCheck = true;
 //       }
@@ -643,7 +643,7 @@
 //       notifyListeners();
 //       return _getBrokerageModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Brokerage", "Error": "$e"});
 //       notifyListeners();
@@ -670,7 +670,7 @@
 
 //     if (input.isNotEmpty) {
 //       // ConstantName.lastSubscribe = input;
-//       ref(websocketProvider).establishConnection(
+//       ref.read(websocketProvider).establishConnection(
 //           channelInput: input, task: isSubscribe ? "t" : "u", context: context);
 //     }
 //     // notifyListeners();
@@ -767,23 +767,23 @@
 
 //       if (_placeGttOrderModel!.stat == "OI created") {
 //         ConstantName.sessCheck = true;
-//         ref(ordInputProvider).clearTextField();
+//         ref.read(ordInputProvider).clearTextField();
 //         await fetchGTTOrderBook(context, "");
 
 //         Navigator.pop(context);
-//         ref(indexListProvider).bottomMenu(3);
+//         ref.read(indexListProvider).bottomMenu(3);
 //         HapticFeedback.heavyImpact();
 //         SystemSound.play(SystemSoundType.click);
 //       } else {
 //         if (_placeGttOrderModel!.emsg ==
 //                 "Session Expired :  Invalid Session Key" &&
 //             _placeGttOrderModel!.stat == "Not_Ok") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         }
 //       }
 //       notifyListeners();
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API GTT Order ", "Error": "$e"});
 //       notifyListeners();
@@ -798,23 +798,23 @@
 //         ConstantName.sessCheck = true;
 //         ScaffoldMessenger.of(context)
 //             .showSnackBar(successMessage(context, "Modified Order"));
-//         ref(ordInputProvider).clearTextField();
+//         ref.read(ordInputProvider).clearTextField();
 //         await fetchGTTOrderBook(context, "");
 
 //         Navigator.pop(context);
-//         ref(indexListProvider).bottomMenu(3);
+//         ref.read(indexListProvider).bottomMenu(3);
 //         HapticFeedback.heavyImpact();
 //         SystemSound.play(SystemSoundType.click);
 //       } else {
 //         if (_modifyGttOrderModel!.emsg ==
 //                 "Session Expired :  Invalid Session Key" &&
 //             _modifyGttOrderModel!.stat == "Not_Ok") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         }
 //       }
 //       notifyListeners();
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Modify GTT Order ", "Error": "$e"});
 //       notifyListeners();
@@ -835,12 +835,12 @@
 //         if (_placeGttOrderModel!.emsg ==
 //                 "Session Expired :  Invalid Session Key" &&
 //             _placeGttOrderModel!.stat == "Not_Ok") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         }
 //       }
 //       notifyListeners();
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API GTT Order  CANCEL", "Error": "$e"});
 //       notifyListeners();
@@ -853,23 +853,23 @@
 
 //       if (_placeGttOrderModel!.stat == "OI created") {
 //         ConstantName.sessCheck = true;
-//         ref(ordInputProvider).clearTextField();
+//         ref.read(ordInputProvider).clearTextField();
 //         await fetchGTTOrderBook(context, "");
 
 //         Navigator.pop(context);
-//         ref(indexListProvider).bottomMenu(3);
+//         ref.read(indexListProvider).bottomMenu(3);
 //         HapticFeedback.heavyImpact();
 //         SystemSound.play(SystemSoundType.click);
 //       } else {
 //         if (_placeGttOrderModel!.emsg ==
 //                 "Session Expired :  Invalid Session Key" &&
 //             _placeGttOrderModel!.stat == "Not_Ok") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         }
 //       }
 //       notifyListeners();
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API OCO Order ", "Error": "$e"});
 //       notifyListeners();
@@ -884,23 +884,23 @@
 //         ConstantName.sessCheck = true;
 //         ScaffoldMessenger.of(context)
 //             .showSnackBar(successMessage(context, "Modified Order"));
-//         ref(ordInputProvider).clearTextField();
+//         ref.read(ordInputProvider).clearTextField();
 //         await fetchGTTOrderBook(context, "");
 
 //         Navigator.pop(context);
-//         ref(indexListProvider).bottomMenu(3);
+//         ref.read(indexListProvider).bottomMenu(3);
 //         HapticFeedback.heavyImpact();
 //         SystemSound.play(SystemSoundType.click);
 //       } else {
 //         if (_modifyGttOrderModel!.emsg ==
 //                 "Session Expired :  Invalid Session Key" &&
 //             _modifyGttOrderModel!.stat == "Not_Ok") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //         }
 //       }
 //       notifyListeners();
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Modify OCO Order ", "Error": "$e"});
 //       notifyListeners();
@@ -1048,7 +1048,7 @@
 //       _sipPlaceOrder = await api.getPlaceSipOrder(sipOrderInput);
 //       if (_sipPlaceOrder!.reqStatus == "OK") {
 //         changeTabIndex(6, context);
-//         ref(indexListProvider).bottomMenu(3);
+//         ref.read(indexListProvider).bottomMenu(3);
 //         fetchSipOrderHistory(context);
 //         tabSize();
 //         Navigator.pop(context);
@@ -1057,12 +1057,12 @@
 //         notifyListeners();
 //       } else if (_sipPlaceOrder!.emsg ==
 //           "Session Expired :  Invalid Session Key") {
-//         ref(authProvider).ifSessionExpired(context);
+//         ref.read(authProvider).ifSessionExpired(context);
 //       }
 
 //       notifyListeners();
 //     } catch (e) {
-//       ref(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+//       ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
 //       notifyListeners();
 //     } finally {
 //       toggleLoadingOn(false);
@@ -1086,12 +1086,12 @@
 //             successMessage(context, "${_modifySipModel!.rejreason}"));
 //       } else if (_modifySipModel!.emsg ==
 //           "Session Expired :  Invalid Session Key") {
-//         ref(authProvider).ifSessionExpired(context);
+//         ref.read(authProvider).ifSessionExpired(context);
 //       }
 //       notifyListeners();
 //       return _modifySipModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "MODIFYSIP API", "Error": "$e"});
 //       notifyListeners();
@@ -1155,14 +1155,14 @@
 //         } else {
 //           if (_siporderBookModel!.emsg ==
 //               "Session Expired :  Invalid Session Key") {
-//             ref(authProvider).ifSessionExpired(context);
+//             ref.read(authProvider).ifSessionExpired(context);
 //           }
 //         }
 //       }
 //       notifyListeners();
 //       return _siporderBookModel;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "SIP ORDER HISTORY API", "Error": "$e"});
 //       notifyListeners();
@@ -1181,12 +1181,12 @@
 //             .showSnackBar(successMessage(context, "Order Sucessfully Cancled"));
 //       } else if (cancleSipOrder!.emsg ==
 //           "Session Expired :  Invalid Session Key") {
-//         ref(authProvider).ifSessionExpired(context);
+//         ref.read(authProvider).ifSessionExpired(context);
 //       }
 //       notifyListeners();
 //       return _cancleSipOrder;
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "SIP CANCEL API", "Error": "$e"});
 //       notifyListeners();
@@ -1215,37 +1215,37 @@
 //             tsym: element['tsym'],
 //             mktProt: element['mktProt'],
 //             channel: defaultTargetPlatform == TargetPlatform.android
-//                 ? '${ref(authProvider).deviceInfo["brand"]}'
-//                 : "${ref(authProvider).deviceInfo["model"]}",
+//                 ? '${ref.read(authProvider).deviceInfo["brand"]}'
+//                 : "${ref.read(authProvider).deviceInfo["model"]}",
 //             userAgent: defaultTargetPlatform == TargetPlatform.android
-//                 ? '${ref(authProvider).deviceInfo["model"]}'
-//                 : "${ref(authProvider).deviceInfo["name"]}",
+//                 ? '${ref.read(authProvider).deviceInfo["model"]}'
+//                 : "${ref.read(authProvider).deviceInfo["name"]}",
 //             appInstaId: defaultTargetPlatform == TargetPlatform.android
-//                 ? '${ref(authProvider).deviceInfo["id"]}'
-//                 : "${ref(authProvider).deviceInfo["identifierForVendor"]}");
+//                 ? '${ref.read(authProvider).deviceInfo["id"]}'
+//                 : "${ref.read(authProvider).deviceInfo["identifierForVendor"]}");
 
 //         _placeOrderModel = await api.getPlaceOrder(placeOrderInput);
 
 //         if (_placeOrderModel!.emsg ==
 //                 "Session Expired :  Invalid Session Key" &&
 //             _placeOrderModel!.stat == "Not_Ok") {
-//           ref(authProvider).ifSessionExpired(context);
+//           ref.read(authProvider).ifSessionExpired(context);
 //           break;
 //         } else {
 //           ConstantName.sessCheck = true;
 //         }
 //       }
-//       ref(indexListProvider).bottomMenu(2);
+//       ref.read(indexListProvider).bottomMenu(2);
 
 //       await fetchOrderBook(context, false);
 //       await changeTabIndex(0, context);
-//       ref(indexListProvider).bottomMenu(3);
+//       ref.read(indexListProvider).bottomMenu(3);
 
 //       Navigator.pop(context);
 //       ScaffoldMessenger.of(context).showSnackBar(
 //           successMessage(context, "Basket Order Sucessfully Placed"));
 //     } catch (e) {
-//       ref(indexListProvider)
+//       ref.read(indexListProvider)
 //           .logError
 //           .add({"type": "API Place Slice  Order", "Error": "$e"});
 //       notifyListeners();

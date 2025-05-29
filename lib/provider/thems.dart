@@ -10,7 +10,7 @@ import '../themes/theme.dart';
 import 'core/default_change_notifier.dart';
 import 'user_profile_provider.dart';
 
-final themeProvider = ChangeNotifierProvider((ref) => ThemesProvider(ref.read));
+final themeProvider = ChangeNotifierProvider((ref) => ThemesProvider(ref));
 
 class ThemesProvider extends DefaultChangeNotifier {
   final pref = locator<Preferences>();
@@ -129,10 +129,10 @@ class ThemesProvider extends DefaultChangeNotifier {
 
     //          pref.setTheme(brightness == Brightness.dark);
     // }
-    ref(userProfileProvider).fetchsetting();
+    ref.read(userProfileProvider).fetchsetting();
     notifyListeners();
   }
 
-  final Reader ref;
+  final Ref ref;
   ThemesProvider(this.ref);
 }

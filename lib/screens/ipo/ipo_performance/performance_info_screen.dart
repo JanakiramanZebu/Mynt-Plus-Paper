@@ -29,9 +29,9 @@ class _PerformanceInfoScreenState extends State<PerformanceInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
-        final theme = watch(themeProvider);
-        //final ipoLtp = watch(marketWatchProvider);
+      builder: (context, ref, child) {
+        final theme = ref.watch(themeProvider);
+        //final ipoLtp = ref.watch(marketWatchProvider);
         return DraggableScrollableSheet(
           initialChildSize: 0.88,
           maxChildSize: .99,

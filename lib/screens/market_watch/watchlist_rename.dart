@@ -7,15 +7,15 @@ import '../../res/res.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 
-class WatchListRename extends StatefulWidget {
+class WatchListRename extends ConsumerStatefulWidget {
   final String wlname;
   const WatchListRename({super.key, required this.wlname});
 
   @override
-  State<WatchListRename> createState() => _WatchListRenameState();
+  ConsumerState<WatchListRename> createState() => _WatchListRenameState();
 }
 
-class _WatchListRenameState extends State<WatchListRename> {
+class _WatchListRenameState extends ConsumerState<WatchListRename> {
   TextEditingController textCtrl = TextEditingController();
   String? errorText;
   String wlName = "";
@@ -29,7 +29,7 @@ class _WatchListRenameState extends State<WatchListRename> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return AlertDialog(
         backgroundColor: theme.isDarkMode
             ? const Color.fromARGB(255, 18, 18, 18)
@@ -109,7 +109,7 @@ class _WatchListRenameState extends State<WatchListRename> {
               width: MediaQuery.of(context).size.width,
               child: ElevatedButton(
                   onPressed: () async {
-                    await context
+                    await ref
                         .read(marketWatchProvider)
                         .fetchWatchListRename(
                             widget.wlname, textCtrl.text, context);

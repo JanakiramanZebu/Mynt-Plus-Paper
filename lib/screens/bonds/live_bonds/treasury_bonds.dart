@@ -18,9 +18,9 @@ class TreasuryBondsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final bonds = watch(bondsProvider);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final bonds = ref.watch(bondsProvider);
+      final theme = ref.watch(themeProvider);
       final dev_height = MediaQuery.of(context).size.height;
       return bonds.treasuryBonds!.ncbTBill!.isNotEmpty
           ? Column(

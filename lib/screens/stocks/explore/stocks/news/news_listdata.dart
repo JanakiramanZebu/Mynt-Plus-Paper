@@ -12,8 +12,8 @@ class NewsListData extends ConsumerWidget {
   const NewsListData({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final news = watch(stocksProvide).newsModel!.data;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final news = ref.watch(stocksProvide).newsModel!.data;
     return Scaffold(
       appBar: AppBar(
         leadingWidth: 41,

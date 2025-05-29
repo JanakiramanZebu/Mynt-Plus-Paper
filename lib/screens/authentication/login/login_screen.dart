@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
+// import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/change_password_provider.dart';
@@ -14,19 +14,20 @@ import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../sharedWidget/splash_loader.dart';
+import '../../../utils/no_emoji_inputformatter.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
-    context.read(versionProvider).checkVersion(context);
-    context.read(authProvider).setChangetotp(true);
+    ref.read(versionProvider).checkVersion(context);
+    ref.read(authProvider).setChangetotp(true);
     super.initState();
   }
 
@@ -35,11 +36,11 @@ class _LoginScreenState extends State<LoginScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     Preferences pref = Preferences();
-    return Consumer(builder: ((context, ScopedReader watch, _) {
-      final auth = watch(authProvider);
-      final forpass = watch(changePasswordProvider);
-      final theme = watch(themeProvider);
-      final ledgerprovider = context.read(ledgerProvider);
+    return Consumer(builder: ((context, WidgetRef ref, _) {
+      final auth = ref.watch(authProvider);
+      final forpass = ref.watch(changePasswordProvider);
+      final theme = ref.watch(themeProvider);
+      final ledgerprovider = ref.read(ledgerProvider);
 
       return GestureDetector(
         onTap: () {
@@ -190,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                               ? [UpperCaseTextFormatter()]
                                               : [
                                                   UpperCaseTextFormatter(),
-                                                  RemoveEmojiInputFormatter(),
+                                                  NoEmojiInputFormatter(),
                                                   FilteringTextInputFormatter
                                                       .deny(RegExp(
                                                           '[π£•₹€℅™∆√¶/.,]')),
@@ -358,7 +359,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                             Color(0xff666666))),
                                           ),
                                           inputFormatters: [
-                                            RemoveEmojiInputFormatter(),
+                                            NoEmojiInputFormatter(),
                                             FilteringTextInputFormatter.deny(
                                                 RegExp('[π£•₹€℅™∆√¶/,.]')),
                                             FilteringTextInputFormatter.deny(

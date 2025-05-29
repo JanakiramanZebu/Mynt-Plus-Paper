@@ -20,12 +20,12 @@ import 'shocase_provider.dart';
 import '../models/profile_model/qr_login_res.dart';
 
 final userProfileProvider =
-    ChangeNotifierProvider((ref) => UserProfileProvider(ref.read));
+    ChangeNotifierProvider((ref) => UserProfileProvider(ref));
 
 class UserProfileProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
-  final Reader ref;
+  final Ref ref;
 
   UserDetailModel? _userDetailModel;
   UserDetailModel? get userDetailModel => _userDetailModel;
@@ -124,13 +124,13 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
       if (_userDetailModel!.emsg == "Session Expired :  Invalid Session Key" &&
           _userDetailModel!.stat == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();
       return _userDetailModel;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API User Detail", "Error": "$e"});
       notifyListeners();
@@ -146,14 +146,14 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
       if (_clientDetailModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
       }
       notifyListeners();
       return _clientDetailModel;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Client Detail", "Error": "$e"});
       notifyListeners();
@@ -178,7 +178,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Theme",
-        "subTitle": ref(themeProvider).deviceTheme,
+        "subTitle": ref.read(themeProvider).deviceTheme,
         "leading": "assets/icon/theme_icon.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
@@ -215,7 +215,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //   "subTitle": "Add Fund, Withdraw",
       //   "leading": "assets/profileimage/wallet.svg",
       //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).fundcase,
+      //   "key": ref.read(showcaseProvide).fundcase,
       //   "case": "Click here to view the fund information page."
       // },
       {
@@ -223,7 +223,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "subTitle": "Profile Details, Bank Accounts",
         "leading": "assets/profileimage/user_logo.svg",
         "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref(showcaseProvide).accountcase,
+        "key": ref.read(showcaseProvide).accountcase,
         "case": "Click here to view the account page."
       },
       {
@@ -231,7 +231,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "subTitle": "Ledger, Holdings, Profit&Loss",
         "leading": "assets/profileimage/reports.svg",
         "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref(showcaseProvide).reportcase,
+        "key": ref.read(showcaseProvide).reportcase,
         "case": "Click here to view the report page."
       },
       {
@@ -247,7 +247,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "subTitle": "Corporate Action",
         "leading": "assets/profileimage/coa_edited.svg",
         "trailing": "assets/profile/ex-link.svg",
-        "key": ref(showcaseProvide).corporateactioncase,
+        "key": ref.read(showcaseProvide).corporateactioncase,
         "case": "Click here to view the Corporate Action page."
       },
       {
@@ -263,7 +263,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "subTitle": "Pledge & Unpledge",
         "leading": "assets/profileimage/pledge.svg",
         "trailing": "assets/profile/ex-link.svg",
-        "key": ref(showcaseProvide).pledgeunpcase,
+        "key": ref.read(showcaseProvide).pledgeunpcase,
         "case": "Click here to view the Pledge & Unpledge page."
       },
       // {
@@ -287,7 +287,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //   "subTitle": "OptionZ",
       //   "leading": "assets/profileimage/pledge.svg",
       //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).pledgeunpcase,
+      //   "key": ref.read(showcaseProvide).pledgeunpcase,
       //   "case": "Click here to view the OptionZ."
       // },
       //  {
@@ -295,7 +295,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //   "subTitle": "KRA",
       //   "leading": "assets/profileimage/pledge.svg",
       //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).pledgeunpcase,
+      //   "key": ref.read(showcaseProvide).pledgeunpcase,
       //   "case": "Click here to view the Pledge & Unpledge page."
       // },
       // {
@@ -303,7 +303,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //   "subTitle": "Refer your family and friends",
       //   "leading": "assets/profileimage/Referal_Incentive.svg",
       //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).apikeycase,
+      //   "key": ref.read(showcaseProvide).apikeycase,
       //   "case": "Click here to Refer your family and friends."
       // },
        {
@@ -311,7 +311,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "subTitle": "Message, Exchange Status",
         "leading": "assets/icon/appbarIcon/bell.svg",
         "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref(showcaseProvide).notificationcase,
+        "key": ref.read(showcaseProvide).notificationcase,
         "case": "Click here to view the notification."
       },
       {
@@ -319,7 +319,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "subTitle": "Change Password, API key, Theme",
         "leading": "assets/profileimage/privacy_settings.svg",
         "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref(showcaseProvide).logcase,
+        "key": ref.read(showcaseProvide).logcase,
         "case": "Click here to view Settings."
       },
       // {
@@ -328,7 +328,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       //       "Share your experience! Rate us to help others discover our great service.",
       //   "leading": "assets/icon/appbarIcon/star.svg",
       //   "trailing": "assets/profile/greater_arrow.svg",
-      //   "key": ref(showcaseProvide).notificationcase,
+      //   "key": ref.read(showcaseProvide).notificationcase,
       //   "case": "Click here to Share your experience!."
       // },
      
@@ -406,15 +406,15 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
         pref.clearClientSession();
         pref.setLogout(true);
-        ref(indexListProvider).bottomMenu(1, context);
-        ref(authProvider).loginMethCtrl.text =
+        ref.read(indexListProvider).bottomMenu(1, context);
+        ref.read(authProvider).loginMethCtrl.text =
             pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
         notifyListeners();
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, 'The Account has been deactivated'));
 
         Navigator.of(context).pop();
-        // ref(websocketProvider).closeSocket();
+        // ref.read(websocketProvider).closeSocket();
         Navigator.pushNamedAndRemoveUntil(
             context, Routes.loginScreen, (route) => false);
       } else {

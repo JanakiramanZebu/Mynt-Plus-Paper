@@ -12,9 +12,9 @@ class GttBottomSheet extends ConsumerWidget {
   const GttBottomSheet({super.key, required this.data});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final orderInput = watch(ordInputProvider);
-    final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orderInput = ref.watch(ordInputProvider);
+    final theme = ref.read(themeProvider);
     return Container(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),

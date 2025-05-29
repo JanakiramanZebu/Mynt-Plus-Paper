@@ -42,12 +42,12 @@ import 'portfolio_provider.dart';
 import 'websocket_provider.dart';
 
 final marketWatchProvider =
-    ChangeNotifierProvider((ref) => MarketWatchProvider(ref.read));
+    ChangeNotifierProvider((ref) => MarketWatchProvider(ref));
 
 class MarketWatchProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
-  final Reader ref;
+  final Ref ref;
 
   String _searchErrorText = "Enter more than TWO letters";
   String get searchErrorText => _searchErrorText;
@@ -353,14 +353,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   getOptionawait(String exch, String token) {
-    final portfolios = ref(portfolioProvider).oplists;
+    final portfolios = ref.read(portfolioProvider).oplists;
     bool value = (linkedscript.contains(exch) ||
         (portfolios.isNotEmpty && portfolios.contains(int.parse(token))));
     return value;
   }
 
   calldepthApis(BuildContext context, raw, basket) async {
-    ref(userProfileProvider).setonloadChartdialog(true);
+    ref.read(userProfileProvider).setonloadChartdialog(true);
     chngDephBtn(basket == "Option|-|Deph" ? "Option" : "Overview");
     singlePageloader(true);
     bool flow = raw.runtimeType.toString() == '_Map<String, dynamic>';
@@ -387,7 +387,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             ),
             child: ScripDepthInfo(wlValue: depthArgs, isBasket: basket)));
 
-    await ref(websocketProvider).establishConnection(
+    await ref.read(websocketProvider).establishConnection(
         channelInput:
             "${flow ? raw['exch'] : raw.exch}|${flow ? raw['token'] : raw.token}",
         task: "d",
@@ -588,7 +588,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             DropdownMenuItem<String>(
               enabled: false,
               child: Divider(
-                  color: ref(themeProvider).isDarkMode
+                  color: ref.read(themeProvider).isDarkMode
                       ? colors.darkColorDivider
                       : colors.colorDivider),
             ),
@@ -724,7 +724,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   void setChartScript(String exch, String token, String tsym) async {
     await ConstantName.chartwebViewController!.evaluateJavascript(
         source:
-            "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref(themeProvider).isDarkMode}')");
+            "window.changeScript([{exch: '$exch', token: '$token', tsym: '$tsym'}], '${ref.read(themeProvider).isDarkMode}')");
     if (_chartTabs.length == 5 &&
         (_chartTabs.any((t) => t.token == token)) != true) {
       removeChartTab(_chartTabs.last, false);
@@ -752,7 +752,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       updateOptStrPrc(_getQuotes.lp.toString());
     }
 
-    await ref(websocketProvider).establishConnection(
+    await ref.read(websocketProvider).establishConnection(
         channelInput: (_getQuotes.exch == "BFO" ||
                 _getQuotes.exch == "NFO" ||
                 (_getQuotes.exch == "MCX" && _getQuotes.instname == "OPTFUT"))
@@ -914,20 +914,20 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _marketWatchlist!.values!.addAll(_preDefWL);
         fetchPreDefMWScrip(context);
         if (swit == false) {
-          await changeWLScrip(_wlName, context);
+        await changeWLScrip(_wlName, context);
         }
       } else {
         if (_marketWatchlist!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _marketWatchlist!.stat == "Not_Ok") {
-          ref(authProvider).ifSessionExpired(context);
+          ref.read(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
       return _marketWatchlist;
     } catch (e) {
       print("Failed $e");
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Market WL", "Error": "$e"});
       notifyListeners();
@@ -971,8 +971,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             }
 
             // Holdings Qty add to market watch scrip
-            if (ref(portfolioProvider).holdingsModel!.isNotEmpty) {
-              for (var holding in ref(portfolioProvider).holdingsModel!) {
+            if (ref.read(portfolioProvider).holdingsModel!.isNotEmpty) {
+              for (var holding in ref.read(portfolioProvider).holdingsModel!) {
                 if (holding.exchTsym![0].exch == "NSE" ||
                     holding.exchTsym![0].exch == "BSE") {
                   if (element.token == holding.exchTsym![0].token) {
@@ -993,14 +993,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         if (_marketWatchScrip!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _marketWatchScrip!.stat == "Not_Ok") {
-          ref(authProvider).ifSessionExpired(context);
+          ref.read(authProvider).ifSessionExpired(context);
         }
         _watchListValues = [];
       }
 
       return _marketWatchScrip;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Market Watch Scrip", "Error": "$e"});
       notifyListeners();
@@ -1043,8 +1043,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 element.expDate = "${spilitSymbol["expDate"]}";
                 element.option = "${spilitSymbol["option"]}";
               }
-              if (ref(portfolioProvider).holdingsModel!.isNotEmpty) {
-                for (var holding in ref(portfolioProvider).holdingsModel!) {
+              if (ref.read(portfolioProvider).holdingsModel!.isNotEmpty) {
+                for (var holding in ref.read(portfolioProvider).holdingsModel!) {
                   if (holding.exchTsym![0].exch == "NSE" ||
                       holding.exchTsym![0].exch == "BSE") {
                     if (element.token == holding.exchTsym![0].token) {
@@ -1077,8 +1077,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 element.expDate = "${spilitSymbol["expDate"]}";
                 element.option = "${spilitSymbol["option"]}";
               }
-              if (ref(portfolioProvider).holdingsModel!.isNotEmpty) {
-                for (var holding in ref(portfolioProvider).holdingsModel!) {
+              if (ref.read(portfolioProvider).holdingsModel!.isNotEmpty) {
+                for (var holding in ref.read(portfolioProvider).holdingsModel!) {
                   if (holding.exchTsym![0].exch == "NSE" ||
                       holding.exchTsym![0].exch == "BSE") {
                     if (element.token == holding.exchTsym![0].token) {
@@ -1110,8 +1110,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 element.expDate = "${spilitSymbol["expDate"]}";
                 element.option = "${spilitSymbol["option"]}";
               }
-              if (ref(portfolioProvider).holdingsModel!.isNotEmpty) {
-                for (var holding in ref(portfolioProvider).holdingsModel!) {
+              if (ref.read(portfolioProvider).holdingsModel!.isNotEmpty) {
+                for (var holding in ref.read(portfolioProvider).holdingsModel!) {
                   if (holding.exchTsym![0].exch == "NSE" ||
                       holding.exchTsym![0].exch == "BSE") {
                     if (element.token == holding.exchTsym![0].token) {
@@ -1136,13 +1136,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           if (_marketWatchScrip!.emsg ==
                   "Session Expired :  Invalid Session Key" &&
               _marketWatchScrip!.stat == "Not_Ok") {
-            ref(authProvider).ifSessionExpired(context);
+            ref.read(authProvider).ifSessionExpired(context);
           }
           // _watchListValues = [];
         }
       }
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Market Watch Scrip", "Error": "$e"});
       notifyListeners();
@@ -1191,7 +1191,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         if (_scripInfoModel!.emsg == "Session Expired :  Invalid Session Key" &&
             _scripInfoModel!.stat == "Not_Ok") {
-          ref(authProvider).ifSessionExpired(context);
+          ref.read(authProvider).ifSessionExpired(context);
         }
       }
 
@@ -1199,7 +1199,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       return _scripInfoModel;
     } catch (e) {
       print(e);
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Scrip Info", "Error": "$e"});
       notifyListeners();
@@ -1245,13 +1245,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
         if (_getQuotes.emsg == "Session Expired :  Invalid Session Key" &&
             _getQuotes.stat == "Not_Ok") {
-          ref(authProvider).ifSessionExpired(context);
+          ref.read(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
       return _getQuotes;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Scrip Quote", "Error": "$e"});
       notifyListeners();
@@ -1336,13 +1336,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
         if (_getQuotes.emsg == "Session Expired :  Invalid Session Key" &&
             _getQuotes.stat == "Not_Ok") {
-          ref(authProvider).ifSessionExpired(context);
+          ref.read(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
       return _getQuotes;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Scrip Quote", "Error": "$e"});
       notifyListeners();
@@ -1363,18 +1363,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 _getStikePrc!.instname == "FUTCOM")) {
           _optionStrPrc = "${_getStikePrc!.lp}";
         }
-        await ref(websocketProvider).establishConnection(
+        await ref.read(websocketProvider).establishConnection(
             channelInput: '${_getStikePrc!.exch}|${_getStikePrc!.token!}',
             task: "t",
             context: context);
       }
       if (_getStikePrc!.emsg == "Session Expired :  Invalid Session Key" &&
           _getStikePrc!.stat == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Scrip Quote", "Error": "$e"});
       notifyListeners();
@@ -1443,7 +1443,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       if (_exarr.isEmpty) {
         List<String> rawList =
-            ref(userProfileProvider).userDetailModel?.exarr ?? [];
+            ref.read(userProfileProvider).userDetailModel?.exarr ?? [];
         _exarr = rawList.map((e) => '"${e.toString()}"').toList();
       } // _searchScripModel = await api.getSearchScrip(searchText: searchText);
       _searchScripModel = await api.getSearchScripNew(
@@ -1528,14 +1528,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         if (_searchScripModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _searchScripModel!.stat == "Not_Ok") {
-          ref(authProvider).ifSessionExpired(context);
+          ref.read(authProvider).ifSessionExpired(context);
         }
       }
 
       notifyListeners();
       return _searchScripModel;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Search", "Error": "$e"});
       notifyListeners();
@@ -1674,13 +1674,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             'selectedTradeSym': _selectedTradeSym,
           };
         } else {
-          ref(authProvider).ifSessionExpired(context);
+          ref.read(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
       return _linkedScrips;
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Linked Scrip", "Error": "$e"});
       notifyListeners();
@@ -1718,13 +1718,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         if (_optionChainModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _searchScripModel!.stat == "Not_Ok") {
-          ref(authProvider).ifSessionExpired(context);
+          ref.read(authProvider).ifSessionExpired(context);
         }
       }
 
       notifyListeners();
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Option Chain", "Error": "$e"});
       notifyListeners();
@@ -1758,14 +1758,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         if (_techData!.emsg == "Session Expired :  Invalid Session Key" &&
             _techData!.stat == "Not_Ok") {
-          ref(authProvider).ifSessionExpired(context);
+          ref.read(authProvider).ifSessionExpired(context);
         }
       }
       techDataCalc(lastPrc);
 
       notifyListeners();
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Tech Data", "Error": "$e"});
       notifyListeners();
@@ -1907,7 +1907,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      ref(indexListProvider)
+      ref.read(indexListProvider)
           .logError
           .add({"type": "API Fundamental ", "Error": "$e"});
       notifyListeners();
@@ -2065,7 +2065,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     if (input.isNotEmpty) {
       // lastScbTok(input);
-      ref(websocketProvider).establishConnection(
+      ref.read(websocketProvider).establishConnection(
           channelInput: input.substring(0, input.length - 1),
           task: isSubscribe ? "t" : "u",
           context: context);
@@ -2086,7 +2086,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     if (input.isNotEmpty) {
       // lastScbTok(input);
-      ref(websocketProvider).establishConnection(
+      ref.read(websocketProvider).establishConnection(
           channelInput: input.substring(0, input.length - 1),
           task: isSubscribe ? "t" : "u",
           context: context);
@@ -2113,20 +2113,36 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   changeWLScrip(String wName, BuildContext context) async {
     try {
+      // Check if we have cached data for this watchlist
       bool wlis = _marketWatchScripData.containsKey(wName);
+      
+      // Handle special cases or use cached data
       _scrips = wName == "My Stocks"
-          ? []
+          ? [] // My Stocks is handled specially through portfolio
           : wlis
               ? await jsonDecode(_marketWatchScripData[wName]) ?? []
               : [];
+              
+      // Log the number of symbols for debugging
+      print("Watchlist change: $wName with ${_scrips.length} symbols");
+      
+      // Handle portfolio holdings data if "My Stocks" watchlist
       if (wName == "My Stocks") {
-        await ref(portfolioProvider)
+        // Portfolio holdings need different subscription handling
+        await ref.read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: true);
       } else {
+        // Standard watchlist - subscribe to the scrips
+        if (_scrips.isNotEmpty) {
         await requestMWScrip(context: context, isSubscribe: true);
+        } else {
+          // If no symbols in watchlist, still ensure we're unsubscribed from previous
+          await requestMWScrip(context: context, isSubscribe: false);
+          print("No symbols in watchlist: $wName");
+        }
       }
     } catch (e) {
-      print("object  - $e");
+      print("Watchlist change error: $e");
     }
 
     notifyListeners();
@@ -2145,7 +2161,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
       if (walName == _wlName) {
-        await changeWlName("", "No");
+      await changeWlName("", "No");
       }
       await fetchMWList(context, false, walName == _wlName);
     }
@@ -2160,7 +2176,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       await changeWlName(wlName, "No");
       await fetchMWList(context, false);
     } else {
-      ref(authProvider).ifSessionExpired(context);
+      ref.read(authProvider).ifSessionExpired(context);
     }
   }
 
@@ -2198,7 +2214,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       }
     } else if (_addDeleteScripModel!.emsg ==
         "Session Expired :  Invalid Session Key") {
-      ref(authProvider).ifSessionExpired(context);
+      ref.read(authProvider).ifSessionExpired(context);
     }
   }
 
@@ -2209,11 +2225,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       String input = "";
       _delScripQty = 0;
-      await ref(indexListProvider).requestdefaultIndex();
-      if (ref(indexListProvider).indexToken.isNotEmpty) {
-        input = ref(indexListProvider).indexToken;
+      
+      // Get index tokens first for market indices
+      await ref.read(indexListProvider).requestdefaultIndex();
+      if (ref.read(indexListProvider).indexToken.isNotEmpty) {
+        input = ref.read(indexListProvider).indexToken;
       }
 
+      // Add all scrips from current watchlist to the subscription
       if (_scrips.isNotEmpty) {
         for (var element in _scrips) {
           element['isSelected'] = false;
@@ -2221,13 +2240,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
       }
 
+      // Only attempt subscription if we have valid tokens
       if (input.isNotEmpty) {
-        await ref(websocketProvider).establishConnection(
+        print("WebSocket: Subscribing to ${input.split('#').length} symbols");
+        await ref.read(websocketProvider).establishConnection(
             channelInput: input,
             task: isSubscribe ? "t" : "u",
             context: context);
+      } else {
+        print("WebSocket: No symbols to subscribe");
       }
     } catch (e) {
+      print("WebSocket subscription error: $e");
     } finally {
       toggleLoadingOn(false);
     }
@@ -2481,7 +2505,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       _setAlertModel =
           await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
-      ref(orderProvider).changeTabIndex(6, context);
+      ref.read(orderProvider).changeTabIndex(6, context);
 
       if (_setAlertModel!.stat! == "OI created") {
         fetchPendingAlert(context);
@@ -2490,7 +2514,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         Navigator.pop(context);
         Navigator.pop(context);
       } else if (_setAlertModel!.stat! == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();
@@ -2508,7 +2532,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_alertPendingModel!.isNotEmpty) {
         if (_alertPendingModel![0].stat != "Not_Ok") {
-          ref(indexListProvider).bottomMenu(3, context);
+          ref.read(indexListProvider).bottomMenu(3, context);
           ConstantName.sessCheck = true;
           for (var element in _alertPendingModel!) {
             ltpArgs
@@ -2554,7 +2578,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _cancelalert = await api.getCancelAlert(alid);
       ConstantName.sessCheck = true;
       if (_cancelalert!.stat == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
       return _cancelalert;
@@ -2575,7 +2599,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_modifyalertmodel?.stat}"));
       } else if (_modifyalertmodel!.stat == "Not_Ok") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
 
       notifyListeners();
@@ -2605,7 +2629,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             warningMessage(context, "${_watchlistRenameModel!.emsg}"));
       } else if (_watchlistRenameModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
-        ref(authProvider).ifSessionExpired(context);
+        ref.read(authProvider).ifSessionExpired(context);
       }
     } catch (e) {
       print(e);

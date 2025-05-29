@@ -6,18 +6,18 @@ import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../../../res/res.dart';
 
-class ProfileDetailsNominee extends StatefulWidget {
+class ProfileDetailsNominee extends ConsumerStatefulWidget {
   const ProfileDetailsNominee({super.key});
 
   @override
-  State<ProfileDetailsNominee> createState() => _ProfileDetailsNomineeState();
+  ConsumerState<ProfileDetailsNominee> createState() => _ProfileDetailsNomineeState();
 }
 
-class _ProfileDetailsNomineeState extends State<ProfileDetailsNominee> {
+class _ProfileDetailsNomineeState extends ConsumerState<ProfileDetailsNominee> {
 
   @override
   void initState() {
-    context.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
+    ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
     super.initState();
   }
 
@@ -37,9 +37,9 @@ void _submit() {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, ScopedReader watch, _) {
-        final profileprovider = watch(profileAllDetailsProvider);
-        final theme = watch(themeProvider);
+      builder: (context, WidgetRef ref, _) {
+        final profileprovider = ref.watch(profileAllDetailsProvider);
+        final theme = ref.watch(themeProvider);
 
         return Scaffold(
           backgroundColor:
@@ -281,7 +281,7 @@ void _submit() {
                 TextFormField(
                   controller: profileprovider.newEmailOTPController,
                   onChanged: (value) {
-                    // context.read(emailotpver).state =
+                    // ref.read(emailotpver).state =
                     //     value;
                   },
                   decoration: const InputDecoration(
@@ -433,7 +433,7 @@ void _submit() {
             TextFormField(
               controller: profileprovider.newMobController,
               onChanged: (value) {
-                // context.read(newmobilno).state =
+                // ref.read(newmobilno).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(
@@ -454,7 +454,7 @@ void _submit() {
               TextFormField(
                 controller: profileprovider.newMobOTPController,
                 onChanged: (value) {
-                  // context.read(mobilotpval).state =
+                  // ref.read(mobilotpval).state =
                   //     value; // Update state
                 },
                 decoration: const InputDecoration(
@@ -599,7 +599,7 @@ void _submit() {
             TextFormField(
               controller: profileprovider.newAddressController,
               onChanged: (value) {
-                // context.read(newaddprov).state =
+                // ref.read(newaddprov).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(
@@ -760,7 +760,7 @@ void _submit() {
             TextFormField(
               controller: profileprovider.newAddressProofTypeController,
               onChanged: (value) {
-                // context.read(proofprov).state =
+                // ref.read(proofprov).state =
                 //     value; // Update state
               },
               decoration: const InputDecoration(

@@ -32,7 +32,7 @@
 //   @override
 //   void initState() {
 //     setState(() {
-//       context.read(fundProvider).invAmt.text =
+//       ref.read(fundProvider).invAmt.text =
 //           "${widget.mfData.minimumPurchaseAmount}";
 
 //       invAmt = double.parse("${widget.mfData.minimumPurchaseAmount ?? 0.00}");
@@ -42,10 +42,10 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     return Consumer(builder: (context, ScopedReader watch, _) {
-//       final theme = watch(themeProvider);
-//       final fund = watch(fundProvider);
-//       final mfOrder = watch(mfProvider);
+//     return Consumer(builder: (context, WidgetRef ref, _) {
+//       final theme = ref.watch(themeProvider);
+//       final fund = ref.watch(fundProvider);
+//       final mfOrder = ref.watch(mfProvider);
 //       return AlertDialog(
 //           backgroundColor: theme.isDarkMode
 //               ? const Color.fromARGB(255, 18, 18, 18)

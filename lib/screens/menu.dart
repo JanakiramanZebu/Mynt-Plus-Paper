@@ -20,9 +20,9 @@ class MoreMenuBottomSheet extends StatefulWidget {
 class _MoreMenuBottomSheetState extends State<MoreMenuBottomSheet> {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final menus = watch(indexListProvider);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final menus = ref.watch(indexListProvider);
+      final theme = ref.watch(themeProvider);
       int currentYear = DateTime.now().year;
       return Container(
         decoration: BoxDecoration(
@@ -65,19 +65,19 @@ class _MoreMenuBottomSheetState extends State<MoreMenuBottomSheet> {
                 return ListTile(
                     onTap: () async {
                       if (index == 0) {
-                        await context.read(ipoProvide).getSmeIpo();
-                        await context.read(ipoProvide).getmainstreamipo();
-                        await context
+                        await ref.read(ipoProvide).getSmeIpo();
+                        await ref.read(ipoProvide).getmainstreamipo();
+                        await ref
                             .read(ipoProvide)
                             .getipoperfomance(currentYear);
                       } else if (index == 1) {
-                        await context.read(bondsProvider).fetchAllBonds();
+                        await ref.read(bondsProvider).fetchAllBonds();
                       } else {
-                        await context
+                        await ref
                             .read(mfProvider)
                             .fetchMFWatchlist("", "", context, false,"");
                             
-                        // await context.read(mfProvider).fetchMasterMF();
+                        // await ref.read(mfProvider).fetchMasterMF();
                       }
                       menus.bottomMenu(5 + index, context);
                       Navigator.pop(context);

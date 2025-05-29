@@ -12,9 +12,9 @@ class StockEvents extends ConsumerWidget {
   const StockEvents({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final funData = watch(marketWatchProvider);final theme =  watch(themeProvider);
-    final stockEve = watch(stocksProvide);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final funData = ref.watch(marketWatchProvider);final theme =  ref.watch(themeProvider);
+    final stockEve = ref.watch(stocksProvide);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

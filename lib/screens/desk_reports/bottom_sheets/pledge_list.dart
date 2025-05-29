@@ -13,11 +13,11 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
-class PledgeList extends StatefulWidget {
+class PledgeList extends ConsumerStatefulWidget {
   const PledgeList({super.key, required});
 
   @override
-  State<PledgeList> createState() => _PledgeList();
+  ConsumerState<PledgeList> createState() => _PledgeList();
 }
 
 class DropdownItem {
@@ -32,15 +32,15 @@ class DropdownItem {
   });
 }
 
-class _PledgeList extends State<PledgeList> {
+class _PledgeList extends ConsumerState<PledgeList> {
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
     double notional = 0.0;
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final ledgerprovider = watch(ledgerProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final ledgerprovider = ref.watch(ledgerProvider);
       String selectedValue = ledgerprovider.segmentvalue;
 
       List<DropdownItem> dropdownItems = [];

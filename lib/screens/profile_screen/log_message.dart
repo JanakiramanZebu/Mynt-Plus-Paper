@@ -12,9 +12,9 @@ class LogMessage extends ConsumerWidget {
   const LogMessage({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final logMessage = watch(indexListProvider).logError;
- final theme =context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final logMessage = ref.watch(indexListProvider).logError;
+ final theme =ref.read(themeProvider);
     return Scaffold(
     
       appBar: AppBar(

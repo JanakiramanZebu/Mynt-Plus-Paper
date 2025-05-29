@@ -12,18 +12,19 @@ import '../../res/res.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart'; 
-class PendingAlertDetails extends StatefulWidget {
+
+class PendingAlertDetails extends ConsumerStatefulWidget {
   final AlertPendingModel alert;
   const PendingAlertDetails({super.key, required this.alert});
 
   @override
-  State<PendingAlertDetails> createState() => _PendingAlertDetailsState();
+  ConsumerState<PendingAlertDetails> createState() => _PendingAlertDetailsState();
 }
 
-class _PendingAlertDetailsState extends State<PendingAlertDetails> {
+class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     TextEditingController valueCtrl =
         TextEditingController(text: widget.alert.d);
     return Scaffold(
@@ -46,10 +47,10 @@ class _PendingAlertDetailsState extends State<PendingAlertDetails> {
                 child: ElevatedButton(
                     onPressed: () async {
                       Navigator.pop(context);
-                      context
+                      ref
                           .read(marketWatchProvider)
                           .fetchPendingAlert(context);
-                      context.read(marketWatchProvider).fetchmodifyalert(
+                      ref.read(marketWatchProvider).fetchmodifyalert(
                           "${widget.alert.exch}",
                           "${widget.alert.tsym}",
                           valueCtrl.text,
@@ -76,10 +77,10 @@ class _PendingAlertDetailsState extends State<PendingAlertDetails> {
                 child: ElevatedButton(
                     onPressed: () async {
                       Navigator.pop(context);
-                      context
+                      ref
                           .read(marketWatchProvider)
                           .fetchCancelAlert("${widget.alert.alId}", context);
-                      context
+                      ref
                           .read(marketWatchProvider)
                           .fetchPendingAlert(context);
                     },

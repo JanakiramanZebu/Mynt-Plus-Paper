@@ -16,9 +16,9 @@ class UpcomingIpo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final ipos = watch(ipoProvide);
-      final theme = watch(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final ipos = ref.watch(ipoProvide);
+      final theme = ref.watch(themeProvider);
       final dev_height = MediaQuery.of(context).size.height;
 
       void _launchURL(String url) async {

@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 
-class CustomTextBtn extends StatelessWidget {
+class CustomTextBtn extends ConsumerWidget {
   final String label;
   final Function onPress;
   final String icon;
@@ -17,8 +17,8 @@ class CustomTextBtn extends StatelessWidget {
       required this.icon});
 
   @override
-  Widget build(BuildContext context) {
-     final theme = context.read(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+     final theme = ref.read(themeProvider);
     return InkWell(
       borderRadius: BorderRadius.circular(32),
       onTap: () {

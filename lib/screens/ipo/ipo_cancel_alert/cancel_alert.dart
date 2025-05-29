@@ -14,8 +14,8 @@ class IpoCancelAlert extends ConsumerWidget {
   final IpoOrderBookModel ipocancel;
   const IpoCancelAlert({super.key, required this.ipocancel});
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
     return AlertDialog(
       backgroundColor: theme.isDarkMode
           ? const Color.fromARGB(255, 18, 18, 18)
@@ -88,7 +88,7 @@ class IpoCancelAlert extends ConsumerWidget {
 
                     List<IposBid> iposbids = [];
 
-                    await context
+                    await ref
                         .read(ipoProvide)
                         .getipoplaceorder(context, menudata, iposbids, "");
                     Navigator.pop(context);

@@ -13,9 +13,9 @@ class IpoCloseOrder extends ConsumerWidget {
   const IpoCloseOrder({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final ipo = watch(ipoProvide);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final ipo = ref.watch(ipoProvide);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

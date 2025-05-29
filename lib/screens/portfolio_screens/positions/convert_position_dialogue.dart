@@ -12,16 +12,16 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/snack_bar.dart';
 
-class ConvertPositionDialogue extends StatefulWidget {
+class ConvertPositionDialogue extends ConsumerStatefulWidget {
   final PositionBookModel convertPosition;
   const ConvertPositionDialogue({super.key, required this.convertPosition});
 
   @override
-  State<ConvertPositionDialogue> createState() =>
+  ConsumerState<ConvertPositionDialogue> createState() =>
       _ConvertPositionDialogueState();
 }
 
-class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
+class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogue> {
   TextEditingController qty = TextEditingController();
   TextEditingController maxQty = TextEditingController();
 
@@ -47,7 +47,7 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return AlertDialog(
       backgroundColor: theme.isDarkMode
           ? const Color.fromARGB(255, 18, 18, 18)
@@ -118,7 +118,7 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
                         borderRadius: BorderRadius.circular(5)),
                     child: Text("${widget.convertPosition.sPrdtAli}",
                         style: textStyles.scripNameTxtStyle.copyWith(
-                            color: context.read(themeProvider).isDarkMode
+                            color: ref.read(themeProvider).isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack))),
                 const Icon(Icons.double_arrow_sharp),
@@ -141,7 +141,7 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
                                     ? "MIS"
                                     : "MIS",
                         style: textStyles.scripNameTxtStyle.copyWith(
-                            color: context.read(themeProvider).isDarkMode
+                            color: ref.read(themeProvider).isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack))),
               ],
@@ -265,7 +265,7 @@ class _ConvertPositionDialogueState extends State<ConvertPositionDialogue> {
                             ? "S"
                             : "B",
                         tsym: "${widget.convertPosition.tsym}");
-                context
+                ref
                     .read(portfolioProvider)
                     .fetchPositionConverstion(positionConvertionInput, context);
               }

@@ -13,9 +13,9 @@ class BondsOpenOrder extends ConsumerWidget {
   const BondsOpenOrder({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final theme = watch(themeProvider);
-    final bonds = watch(bondsProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final bonds = ref.watch(bondsProvider);
 
     return SingleChildScrollView(
       child: Column(

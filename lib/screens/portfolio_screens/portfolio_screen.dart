@@ -11,76 +11,76 @@ import 'allholdings/allholdings_screen.dart';
 import 'holdings/holding_screen.dart';
 import 'positions/position_screen.dart';
 
-class PortfolioScreen extends StatefulWidget {
+class PortfolioScreen extends ConsumerStatefulWidget {
   const PortfolioScreen({super.key});
 
   @override
-  State<PortfolioScreen> createState() => _PortfolioScreenState();
+  ConsumerState<PortfolioScreen> createState() => _PortfolioScreenState();
 }
 
-class _PortfolioScreenState extends State<PortfolioScreen>
+class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
     with TickerProviderStateMixin {
   @override
   void initState() {
     //  await
-    context.read(portfolioProvider).fetchBrokerDetails(context, false, false);
+    ref.read(portfolioProvider).fetchBrokerDetails(context, false, false);
 
-    context.read(portfolioProvider).portTab = TabController(
-        length: context.read(portfolioProvider).portTabName.length,
+    ref.read(portfolioProvider).portTab = TabController(
+        length: ref.read(portfolioProvider).portTabName.length,
         vsync: this,
-        initialIndex: context.read(portfolioProvider).selectedTab);
+        initialIndex: ref.read(portfolioProvider).selectedTab);
 
-    context.read(portfolioProvider).portTab.addListener(() {
-      context
+    ref.read(portfolioProvider).portTab.addListener(() {
+      ref
           .read(portfolioProvider)
-          .changeTabIndex(context.read(portfolioProvider).portTab.index);
+          .changeTabIndex(ref.read(portfolioProvider).portTab.index);
 
-      context.read(portfolioProvider).tabSize();
-      if (context.read(portfolioProvider).selectedTab == 0) {
-        context.read(portfolioProvider).cancelTimer();
-        context
+      ref.read(portfolioProvider).tabSize();
+      if (ref.read(portfolioProvider).selectedTab == 0) {
+        ref.read(portfolioProvider).cancelTimer();
+        ref
             .read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: false);
-        context
+        ref
             .read(portfolioProvider)
             .requestWSPosition(context: context, isSubscribe: true);
-        context
+        ref
             .read(portfolioProvider)
             .requestallHoldings(context: context, isSubscribe: false);
-      } else if (context.read(portfolioProvider).selectedTab == 1) {
-        context
+      } else if (ref.read(portfolioProvider).selectedTab == 1) {
+        ref
             .read(portfolioProvider)
             .requestWSPosition(context: context, isSubscribe: false);
-        context
+        ref
             .read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: true);
-        context
+        ref
             .read(portfolioProvider)
             .requestallHoldings(context: context, isSubscribe: false);
 
-        context.read(portfolioProvider).timerfunc();
-      } else if (context.read(portfolioProvider).selectedTab == 3) {
-        context.read(portfolioProvider).cancelTimer();
+        ref.read(portfolioProvider).timerfunc();
+      } else if (ref.read(portfolioProvider).selectedTab == 3) {
+        ref.read(portfolioProvider).cancelTimer();
 
-        context
+        ref
             .read(portfolioProvider)
             .requestWSPosition(context: context, isSubscribe: false);
-        context
+        ref
             .read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: false);
-        context.read(fundProvider).fetchFunds(context);
+        ref.read(fundProvider).fetchFunds(context);
         // context
         //     .read(portfolioProvider)
         //     .requestallHoldings(context: context, isSubscribe: true);
       } else {
-        context.read(portfolioProvider).cancelTimer();
-        context
+        ref.read(portfolioProvider).cancelTimer();
+        ref
             .read(portfolioProvider)
             .requestWSPosition(context: context, isSubscribe: false);
-        context
+        ref
             .read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: false);
-        context
+        ref
             .read(portfolioProvider)
             .requestallHoldings(context: context, isSubscribe: false);
       }
@@ -95,9 +95,9 @@ class _PortfolioScreenState extends State<PortfolioScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final portfolio = watch(portfolioProvider);
-      final theme = context.read(themeProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final portfolio = ref.watch(portfolioProvider);
+      final theme = ref.read(themeProvider);
       return Column(children: [
         SizedBox(
             width: MediaQuery.of(context).size.width,

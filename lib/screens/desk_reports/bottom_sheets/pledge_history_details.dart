@@ -9,22 +9,22 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
-class PledgeHistoryDetails extends StatefulWidget {
+class PledgeHistoryDetails extends ConsumerStatefulWidget {
   final PledgeData data;
   const PledgeHistoryDetails({super.key, required this.data});
 
   @override
-  State<PledgeHistoryDetails> createState() => _PledgeHistoryDetails();
+  ConsumerState<PledgeHistoryDetails> createState() => _PledgeHistoryDetails();
 }
 
-class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
+class _PledgeHistoryDetails extends ConsumerState<PledgeHistoryDetails> {
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
+    final theme = ref.read(themeProvider);
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final ledgerdata = watch(ledgerProvider);
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final ledgerdata = ref.watch(ledgerProvider);
 
       return DraggableScrollableSheet(
         initialChildSize: 0.88,

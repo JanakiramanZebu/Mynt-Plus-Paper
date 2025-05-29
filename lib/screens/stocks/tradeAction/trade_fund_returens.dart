@@ -8,8 +8,8 @@ class FundReturns extends ConsumerWidget {
   const FundReturns({super.key});
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    //  final  fundReturn = watch();
+  Widget build(BuildContext context, WidgetRef ref) {
+    //  final  fundReturn = ref.watch();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(

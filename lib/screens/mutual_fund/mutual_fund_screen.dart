@@ -16,10 +16,10 @@
   
 
 //   @override
-//   Widget build(BuildContext context, ScopedReader watch) {
-//     final theme = watch(themeProvider);
-//     final mfData = watch(mfProvider);
-//     final portfolio = watch(portfolioProvider);
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final theme = ref.watch(themeProvider);
+//     final mfData = ref.watch(mfProvider);
+//     final portfolio = ref.watch(portfolioProvider);
     
 //     // print("mf data ${portfolio.mfHoldingsModel![0]}");
 

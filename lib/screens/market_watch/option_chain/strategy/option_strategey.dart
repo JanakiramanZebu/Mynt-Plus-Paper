@@ -26,11 +26,11 @@ class OptionStrategey extends StatefulWidget {
 class _OptionStrategeyState extends State<OptionStrategey> {
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ScopedReader watch, _) {
-      final theme = watch(themeProvider);
-      final marketWatch = watch(marketWatchProvider);
-      final optStrgy = watch(optStrategyProvider);
-      final socketDatas = watch(websocketProvider).socketDatas;
+    return Consumer(builder: (context, WidgetRef ref, _) {
+      final theme = ref.watch(themeProvider);
+      final marketWatch = ref.watch(marketWatchProvider);
+      final optStrgy = ref.watch(optStrategyProvider);
+      final socketDatas = ref.watch(websocketProvider).socketDatas;
       return Scaffold(
         appBar: AppBar(
             shadowColor: theme.isDarkMode

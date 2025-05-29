@@ -12,21 +12,21 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 
-class CreateBasket extends StatefulWidget {
+class CreateBasket extends ConsumerStatefulWidget {
   const CreateBasket({super.key});
 
   @override
-  State<CreateBasket> createState() => _CreateBasketState();
+  ConsumerState<CreateBasket> createState() => _CreateBasketState();
 }
 
-class _CreateBasketState extends State<CreateBasket> {
+class _CreateBasketState extends ConsumerState<CreateBasket> {
   final Preferences pref = locator<Preferences>();
   TextEditingController textCtrl = TextEditingController();
   String? errorText;
   @override
   Widget build(BuildContext context) {
-    final theme = context.read(themeProvider);
-    final basket = context.read(orderProvider);
+    final theme = ref.read(themeProvider);
+    final basket = ref.read(orderProvider);
 
     return AlertDialog(
         backgroundColor: theme.isDarkMode
