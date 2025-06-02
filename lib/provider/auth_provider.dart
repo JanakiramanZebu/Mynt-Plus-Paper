@@ -1047,7 +1047,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
         // ref.read(mfProvider).fetchMfOrderbook(context);
         setProfileAPicalls();
-        setPrefOrderPrefer();
+        setPrefOrderPrefer(context);
         ref.read(orderProvider).setOrderIp();
         // End Explore
         if (s.isEmpty) {
@@ -1087,7 +1087,7 @@ class AuthProvider extends DefaultChangeNotifier {
             "date": DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())
           }
         };
-        api.setAppversion(data);
+        api.setAppversion(data, context);
         // }
       }
     } finally {
@@ -1112,8 +1112,8 @@ class AuthProvider extends DefaultChangeNotifier {
     // ref.read(mfProvider).fetchmfNFO(context);
   }
 
-  setPrefOrderPrefer() async {
-    Map getlocal = await api.setOrderprefer({}, false);
+  setPrefOrderPrefer(BuildContext context) async {
+    Map getlocal = await api.setOrderprefer({}, false, context);
     Map local = {};
     String getapplocal = "";
     if (pref.showOrderpref != null) {
@@ -1131,7 +1131,7 @@ class AuthProvider extends DefaultChangeNotifier {
         "source": "MOB"
       };
       _ordgrefis = jsonDecode(getapplocal);
-      await api.setOrderprefer(local, true);
+      await api.setOrderprefer(local, true, context);
     } else {
       local = {
         "clientid": pref.clientId,
@@ -1147,14 +1147,14 @@ class AuthProvider extends DefaultChangeNotifier {
         "source": "MOB"
       };
       _ordgrefis = local['metadata'];
-      await api.setOrderprefer(local, true);
+      await api.setOrderprefer(local, true, context);
       // String jsonString = jsonEncode(local);
       // await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
     }
   }
 
-  getPrefOrderPrefer(Map data, bool url) async {
-    await api.setOrderprefer(data, url);
+  getPrefOrderPrefer(Map data, bool url, BuildContext context) async {
+    await api.setOrderprefer(data, url, context);
   }
 
   setProfileAPicalls() async {

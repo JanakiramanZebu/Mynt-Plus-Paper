@@ -24,11 +24,35 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
+  bool _isProcessing = false;
+
   @override
   void initState() {
     ref.read(versionProvider).checkVersion(context);
     ref.read(authProvider).setChangetotp(true);
     super.initState();
+  }
+
+  Future<void> _handleContinue() async {
+    if (_isProcessing) return;
+    
+    setState(() => _isProcessing = true);
+    
+    try {
+      HapticFeedback.heavyImpact();
+      SystemSound.play(SystemSoundType.click);
+      
+      final auth = ref.read(authProvider);
+      final ledgerprovider = ref.read(ledgerProvider);
+      
+      auth.optError = "";
+      await auth.submitLogin(context, false);
+      ledgerprovider.setterfornullallSwitch = null;
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
   }
 
   @override
@@ -458,15 +482,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             // ||
                             //     internet.connectionStatus ==
                             //         ConnectivityResult.none)
-                            ? () {}
-                            : () {
-                                HapticFeedback.heavyImpact();
-                                SystemSound.play(SystemSoundType.click);
-                                auth.optError = "";
-                                auth.submitLogin(context, false);
-                                ledgerprovider.setterfornullallSwitch = null;
-                              },
-                        child: auth.loading
+                            ? null
+                            : (_isProcessing || auth.loading) 
+                              ? null 
+                              : _handleContinue,
+                        child: (_isProcessing || auth.loading)
                             ? const SizedBox(
                                 width: 18,
                                 height: 20,

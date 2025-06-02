@@ -242,6 +242,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               child: Pinput(
+                                
                                 enabled: !auth.loading,
                                 autofocus: false,
                                 focusNode: _focusNode,
@@ -269,6 +270,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                     auth.submitOtp(context, otpController.text);
                                   }
                                 },
+                                toolbarEnabled: false,
                               ),
                             ),
                           ),

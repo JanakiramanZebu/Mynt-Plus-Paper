@@ -299,8 +299,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
         ? () {
             Navigator.pushNamed(
               context,
-              Routes.positionExit,
-              arguments: ref.read(portfolioProvider).postionBookModel
+              Routes.positionExit
             );
           }
         : null,

@@ -634,13 +634,13 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
     };
     
     final authProv = ref.read(authProvider);
-    await authProv.getPrefOrderPrefer(local, true);
+    await authProv.getPrefOrderPrefer(local, true, context);
 
     // await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
     ScaffoldMessenger.of(context).showSnackBar(
         successMessage(context, "Order Preference hav been saved"));
     // await pref.init();
-    await authProv.setPrefOrderPrefer();
+    await authProv.setPrefOrderPrefer(context);
     Navigator.pop(context);
     if (gobackOP) {
       Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {

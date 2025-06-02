@@ -24,10 +24,23 @@ class TradeBookDetail extends ConsumerWidget {
         // Create a copy of trade data to avoid directly modifying the original
         var displayData = tradeData;
         
+        // Ensure initial values are not null (using safe defaults)
+        if (displayData.ltp == null || displayData.ltp == "null" || displayData.ltp == "0" || displayData.ltp == "0.00") {
+          // Try to use any available price in a specific priority order
+          if (displayData.avgprc != null && displayData.avgprc != "null" && displayData.avgprc != "0" && displayData.avgprc != "0.00") {
+            displayData.ltp = displayData.avgprc;
+          } else if (displayData.prc != null && displayData.prc != "null" && displayData.prc != "0" && displayData.prc != "0.00") {
+            displayData.ltp = displayData.prc;
+          } else {
+            // If no valid price is available, use a default
+            displayData.ltp = "0.00";
+          }
+        }
+        
         // Update with WebSocket data if available
         final socketDatas = snapshot.data ?? {};
-        if (socketDatas.containsKey(tradeData.token)) {
-          final socketData = socketDatas[tradeData.token];
+        if (socketDatas.containsKey(displayData.token)) {
+          final socketData = socketDatas[displayData.token];
           
           // Only update with non-zero values
           final lp = socketData['lp']?.toString();
@@ -46,6 +59,23 @@ class TradeBookDetail extends ConsumerWidget {
           }
         }
         
+        // Safety: ensure percent change is not null
+        if (displayData.perChange == null || displayData.perChange == "null") {
+          displayData.perChange = "0.00";
+        }
+        
+        // Safety: ensure change is not null
+        if (displayData.change == null || displayData.change == "null") {
+          displayData.change = "0.00";
+        }
+        
+        // Format the LTP for display (handles null safely)
+        String formattedLTP = "0.00";
+        if (displayData.ltp != null && displayData.ltp != "null") {
+          final ltpValue = double.tryParse(displayData.ltp!) ?? 0.0;
+          formattedLTP = ltpValue.toStringAsFixed(2);
+        }
+        
         return Scaffold(
           appBar: AppBar(
               elevation: .2,
@@ -60,12 +90,12 @@ class TradeBookDetail extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Text("${displayData.symbol}",
+                        Text("${displayData.symbol ?? ''}",
                             style: textStyles.appBarTitleTxt.copyWith(
                                 color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack)),
-                        Text(" ${displayData.option} ",
+                        Text(" ${displayData.option ?? ''} ",
                             overflow: TextOverflow.ellipsis,
                             style: textStyles.scripNameTxtStyle.copyWith(
                                 color: theme.isDarkMode
@@ -73,7 +103,7 @@ class TradeBookDetail extends ConsumerWidget {
                                     : colors.colorBlack)),
                       ],
                     ),
-                    Text("₹${displayData.ltp}",
+                    Text("₹$formattedLTP",
                         style: textStyle(
                             theme.isDarkMode
                                 ? colors.colorWhite
@@ -88,8 +118,8 @@ class TradeBookDetail extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Row(children: [
-                        CustomExchBadge(exch: displayData.exch!),
-                        Text("  ${displayData.expDate}",
+                        CustomExchBadge(exch: displayData.exch ?? ""),
+                        Text("  ${displayData.expDate ?? ''}",
                             style: textStyle(
                                 theme.isDarkMode
                                     ? colors.colorWhite
@@ -97,28 +127,16 @@ class TradeBookDetail extends ConsumerWidget {
                                 12,
                                 FontWeight.w600))
                       ]),
-                      Text(
-                          "${double.parse("${displayData.change != "null" ? displayData.change ?? 0.00 : 0.0} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
-                          style: textStyle(
-                              (displayData.change == "null" ||
-                                          displayData.change == null) ||
-                                      displayData.change == "0.00"
-                                  ? colors.ltpgrey
-                                  : displayData.change!.startsWith("-") ||
-                                          displayData.perChange!.startsWith("-")
-                                      ? colors.darkred
-                                      : colors.ltpgreen,
-                              12,
-                              FontWeight.w500))
+                      _buildChangeIndicator(displayData, theme)
                     ])
               ])),
           body: ListView(
             children: [
               ScripInfoBtns(
-                  exch: '${displayData.exch}',
-                  token: '${displayData.token}',
+                  exch: '${displayData.exch ?? ""}',
+                  token: '${displayData.token ?? ""}',
                   insName: '',
-                  tsym: '${displayData.tsym}'),
+                  tsym: '${displayData.tsym ?? ""}'),
               Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
@@ -137,24 +155,32 @@ class TradeBookDetail extends ConsumerWidget {
                             "Transaction Type",
                             displayData.trantype == "B" ? "Buy" : "Sell",
                             "Price Type",
-                            "${displayData.prctyp}",
+                            "${displayData.prctyp ?? ''}",
                             theme),
                         const SizedBox(height: 4),
                         rowOfInfoData(
-                            "Price", "${displayData.avgprc}", "", "", theme),
+                            "Price", 
+                            displayData.avgprc != null && displayData.avgprc != "null" 
+                                ? displayData.avgprc! 
+                                : displayData.prc != null && displayData.prc != "null"
+                                    ? displayData.prc!
+                                    : "0.00", 
+                            "", "", theme),
                         const SizedBox(height: 4),
-                        rowOfInfoData("Filled Qty", "${displayData.flqty}", "Fill Id",
+                        rowOfInfoData("Filled Qty", "${displayData.flqty ?? ''}", "Fill Id",
                             displayData.flid ?? "-", theme),
                         const SizedBox(height: 4),
-                        rowOfInfoData("Validity", "${displayData.ret}", "Product",
-                            "${displayData.sPrdtAli}", theme),
+                        rowOfInfoData("Validity", "${displayData.ret ?? ''}", "Product",
+                            "${displayData.sPrdtAli ?? ''}", theme),
                         const SizedBox(height: 4),
 
                         rowOfInfoData(
                             "Order Id",
-                            "${displayData.norenordno}",
+                            "${displayData.norenordno ?? ''}",
                             "Date & Time",
-                            formatDateTime(value: displayData.norentm!),
+                            displayData.norentm != null 
+                                ? formatDateTime(value: displayData.norentm!)
+                                : "-",
                             theme),
                         //
                       ])),
@@ -162,6 +188,30 @@ class TradeBookDetail extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  // Extracted method to build the change indicator with proper null handling
+  Widget _buildChangeIndicator(TradeBookModel data, ThemesProvider theme) {
+    final changeValue = data.change != null && data.change != "null" 
+        ? double.tryParse(data.change!) ?? 0.0 
+        : 0.0;
+    
+    final formattedChange = changeValue.toStringAsFixed(2);
+    final formattedPercentage = data.perChange ?? "0.00";
+    
+    final isNegative = changeValue < 0 || (data.perChange != null && data.perChange!.startsWith("-"));
+    final isZero = changeValue == 0 || formattedChange == "0.00";
+    
+    final textColor = isZero 
+        ? colors.ltpgrey 
+        : isNegative 
+            ? colors.darkred 
+            : colors.ltpgreen;
+    
+    return Text(
+        "$formattedChange ($formattedPercentage%)",
+        style: textStyle(textColor, 12, FontWeight.w500)
     );
   }
 

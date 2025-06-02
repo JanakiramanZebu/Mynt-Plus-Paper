@@ -22,7 +22,6 @@ import '../../../utils/no_emoji_inputformatter.dart';
 import 'filter_scrip_bottom_sheet.dart';
 import 'group/create_group.dart';
 import 'group/position_group_symbol.dart';
-import 'position_list_card.dart';
 
 class PositionScreen extends ConsumerStatefulWidget {
   final List<PositionBookModel> listofPosition;
@@ -534,7 +533,7 @@ class _PnLDisplay extends StatelessWidget {
   }
 }
 
-// Position item widget
+// Position item widget with integrated card functionality
 class _PositionItem extends ConsumerStatefulWidget {
   final PositionBookModel position;
   final bool isSearchItem;
@@ -553,20 +552,83 @@ class _PositionItem extends ConsumerStatefulWidget {
 class _PositionItemState extends ConsumerState<_PositionItem> {
   // Add navigation lock to prevent multiple taps
   bool _isNavigating = false;
+  StreamSubscription? _socketSubscription;
+  late String _currentLp;
+  bool _needsUpdate = false;
+  
+  // Cache text styles to avoid rebuilds
+  final Map<String, TextStyle> _cachedStyles = {};
+  
+  @override
+  void initState() {
+    super.initState();
+    _currentLp = widget.position.lp ?? '0.00';
+    _setupSocketSubscription();
+  }
+  
+  @override
+  void dispose() {
+    _socketSubscription?.cancel();
+    super.dispose();
+  }
+  
+  void _setupSocketSubscription() {
+    // Slight delay to ensure context is available
+    Future.microtask(() {
+      final websocket = ref.read(websocketProvider);
+      final positions = ref.read(portfolioProvider);
+      
+      _socketSubscription = websocket.socketDataStream.listen((socketData) {
+        // Only process if this position's token is in the update
+        if (!socketData.containsKey(widget.position.token)) return;
+        
+        final data = socketData[widget.position.token];
+        if (data == null) return;
+        
+        // Check if LTP actually changed
+        final lp = data['lp']?.toString();
+        if (lp != null && lp != "null" && lp != "0" && lp != "0.00" && lp != _currentLp) {
+          widget.position.lp = lp;
+          _currentLp = lp;
+          _needsUpdate = true;
+          
+          // Update PNL calculations if needed
+          if (positions.isDay) {
+            positions.positionCal(positions.isDay);
+          }
+          
+          // Debounce multiple rapid updates
+          if (mounted) {
+            setState(() {
+              _needsUpdate = false;
+            });
+          }
+        }
+      });
+    });
+  }
+  
+  // Get cached text style to avoid rebuilding styles
+  TextStyle _getStyle(Color color, double size, FontWeight weight, {String? key}) {
+    final cacheKey = key ?? '${color.value}|$size|${weight.index}';
+    if (!_cachedStyles.containsKey(cacheKey)) {
+      _cachedStyles[cacheKey] = textStyle(color, size, weight);
+    }
+    return _cachedStyles[cacheKey]!;
+  }
   
   @override
   Widget build(BuildContext context) {
-                                return InkWell(
+    return InkWell(
       onLongPress: widget.showLongPressOption 
         ? () {
             Navigator.pushNamed(
               context,
-              Routes.positionExit,
-              arguments: ref.read(portfolioProvider).postionBookModel
+              Routes.positionExit
             );
           }
         : null,
-                                  onTap: () async {
+      onTap: () async {
         // Prevent multiple navigation events on rapid taps
         if (_isNavigating) return;
         
@@ -589,10 +651,195 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
           }
         }
       },
-      child: PositionListCard(positionList: widget.position),
+      child: _buildPositionCard(),
     );
   }
   
+  Widget _buildPositionCard() {
+    return Consumer(builder: (context, watch, _) {
+      final positions = ref.watch(portfolioProvider);
+      final theme = ref.read(themeProvider);
+      
+      // Calculate colors and values once
+      final isZeroQty = widget.position.qty == "0";
+      final netQtyZero = widget.position.netqty == "0";
+      final bgColor = theme.isDarkMode
+          ? isZeroQty ? colors.darkGrey : colors.colorBlack
+          : Color(isZeroQty ? 0xffF1F3F8 : 0xffffffff);
+      
+      final containerColor = theme.isDarkMode
+          ? isZeroQty ? colors.colorBlack : const Color(0xff666666).withOpacity(.2)
+          : isZeroQty ? colors.colorWhite : const Color(0xffECEDEE);
+      
+      final dividerColor = theme.isDarkMode
+          ? colors.darkGrey
+          : Color(netQtyZero ? 0xffffffff : 0xffECEDEE);
+      
+      final txtColor = theme.isDarkMode
+          ? colors.colorWhite
+          : colors.colorBlack;
+      
+      // Get formatted quantity value
+      final qty = "${((int.tryParse(widget.position.qty.toString()) ?? 0) / 
+          (widget.position.exch == 'MCX' ? 
+           (int.tryParse(widget.position.ls.toString()) ?? 1) : 1)).toInt()}";
+      
+      // Get PNL and determine its color
+      final pnlValue = positions.isNetPnl
+          ? "₹${widget.position.profitNloss ?? widget.position.rpnl}"
+          : "₹${widget.position.mTm}";
+          
+      final pnlColor = _getPnlColor(positions.isNetPnl 
+          ? (widget.position.profitNloss ?? widget.position.rpnl)
+          : widget.position.mTm);
+      
+      // Get average price display value
+      final avgPrice = positions.isDay
+          ? "${widget.position.avgPrc}"
+          : positions.isNetPnl
+              ? "${widget.position.netupldprc}"
+              : "${widget.position.netavgprc}";
+      
+      return Container(
+        color: bgColor,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildHeaderRow(theme, txtColor, containerColor),
+              const SizedBox(height: 4),
+              Divider(color: dividerColor, thickness: 1.2),
+              const SizedBox(height: 2),
+              _buildQuantityRow(txtColor, qty, pnlValue, pnlColor),
+              const SizedBox(height: 10),
+              _buildAveragePriceRow(txtColor, avgPrice),
+            ]),
+      );
+    });
+  }
+  
+  Color _getPnlColor(String? value) {
+    if (value == null) return colors.ltpgrey;
+    if (value.startsWith("-")) return colors.darkred;
+    if (value == "0.00") return colors.ltpgrey;
+    return colors.ltpgreen;
+  }
+  
+  Widget _buildHeaderRow(ThemesProvider theme, Color txtColor, Color containerColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+      children: [
+        Row(children: [
+          Text(
+            "${widget.position.symbol} ${widget.position.expDate} ",
+            overflow: TextOverflow.ellipsis,
+            style: textStyles.scripNameTxtStyle.copyWith(color: txtColor),
+          ),
+          Text(
+            "${widget.position.option} ",
+            overflow: TextOverflow.ellipsis,
+            style: textStyles.scripNameTxtStyle.copyWith(color: txtColor),
+          ),
+        ]),
+        Row(children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2),
+              color: containerColor,
+            ),
+            child: Text(
+              "${widget.position.exch}",
+              overflow: TextOverflow.ellipsis,
+              style: _getStyle(
+                theme.isDarkMode ? colors.colorWhite : const Color(0xff666666),
+                10,
+                FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: 9),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2),
+              color: containerColor,
+            ),
+            child: Text(
+              "${widget.position.sPrdtAli}",
+              overflow: TextOverflow.ellipsis,
+              style: _getStyle(
+                theme.isDarkMode ? colors.colorWhite : const Color(0xff666666),
+                10,
+                FontWeight.w500,
+              ),
+            ),
+          ),
+        ])
+      ],
+    );
+  }
+  
+  Widget _buildQuantityRow(Color txtColor, String qty, String pnlValue, Color pnlColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+      children: [
+        Row(children: [
+          Text(
+            "Qty: ",
+            style: _getStyle(const Color(0xff5E6B7D), 14, FontWeight.w500, key: 'qty-label'),
+          ),
+          Text(
+            qty,
+            style: _getStyle(txtColor, 14, FontWeight.w500, key: 'qty-value'),
+          )
+        ]),
+        // Wrap the PNL in RepaintBoundary as it changes frequently
+        RepaintBoundary(
+          child: Text(
+            pnlValue,
+            style: _getStyle(pnlColor, 15, FontWeight.w600),
+          ),
+        )
+      ],
+    );
+  }
+  
+  Widget _buildAveragePriceRow(Color txtColor, String avgPrice) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+      children: [
+        Row(children: [
+          Text(
+            "Avg: ",
+            style: _getStyle(const Color(0xff5E6B7D), 14, FontWeight.w500, key: 'avg-label'),
+          ),
+          Text(
+            avgPrice,
+            style: _getStyle(txtColor, 14, FontWeight.w500, key: 'avg-value'),
+          )
+        ]),
+        // Wrap LTP in RepaintBoundary as it changes frequently
+        RepaintBoundary(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end, 
+            children: [
+              Text(
+                " LTP: ",
+                style: _getStyle(const Color(0xff5E6B7D), 13, FontWeight.w600, key: 'ltp-label'),
+              ),
+              Text(
+                "₹${widget.position.lp}",
+                style: _getStyle(txtColor, 14, FontWeight.w500, key: 'ltp-value'),
+              )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _handlePositionTap(BuildContext context) async {
     final marketWatch = ref.read(marketWatchProvider);
     

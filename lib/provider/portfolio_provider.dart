@@ -2003,11 +2003,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
       
       // Recalculate total selected quantity
       _exitHoldingsQty = 0;
+      bool allSelected = true;
+      
       for (var holding in _sealableHoldings) {
         if (holding.isExitHoldings!) {
           _exitHoldingsQty += holding.saleableQty ?? 0;
+        } else {
+          allSelected = false;
         }
       }
+      
+      // Update "Select All" state based on individual selections
+      _isExitAllHoldings = allSelected && _sealableHoldings.isNotEmpty;
       
       notifyListeners();
     }
@@ -2018,30 +2025,41 @@ class PortfolioProvider extends DefaultChangeNotifier {
     _isExitAllPosition = value;
     
     // Update selection status for all positions
-    for (var position in _allPostionList) {
-      position.isExitSelection = value;
+    if (_openPosition != null) {
+      for (var position in _openPosition!) {
+        position.isExitSelection = value;
+      }
+      
+      // Update exit quantity count
+      _exitPositionQty = value 
+          ? _openPosition!.where((p) => p.qty != "0").length 
+          : 0;
     }
-    
-    // Update exit quantity count
-    _exitPositionQty = value 
-        ? _allPostionList.where((p) => p.qty != "0").length 
-        : 0;
     
     notifyListeners();
   }
   
   void selectExitPosition(int index) {
-    if (index < _allPostionList.length) {
+    if (_openPosition != null && index < _openPosition!.length) {
       // Toggle selection for specific position
-      _allPostionList[index].isExitSelection = !_allPostionList[index].isExitSelection!;
+      _openPosition![index].isExitSelection = !_openPosition![index].isExitSelection!;
       
       // Recalculate total selected positions
       _exitPositionQty = 0;
-      for (var position in _allPostionList) {
+      bool allSelected = true;
+      
+      for (var position in _openPosition!) {
         if (position.isExitSelection! && position.qty != "0") {
           _exitPositionQty++;
         }
+        
+        if (!position.isExitSelection! && position.qty != "0") {
+          allSelected = false;
+        }
       }
+      
+      // Update "Select All" state based on individual selections
+      _isExitAllPosition = allSelected && _openPosition!.where((p) => p.qty != "0").isNotEmpty;
       
       notifyListeners();
     }

@@ -56,7 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     //   screenName: 'HomeScreen',
     //   screenClass: 'HomeScreen', // Customize if needed.
     // );
-// This is a websockt heartbeat connection that reconnects every two seconds only.
+    // This is a websocket heartbeat connection that reconnects every two seconds only.
     ConstantName.timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
         ref.read(websocketProvider).reconnect(context);
@@ -78,7 +78,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    ConstantName.timer!.cancel();
+    // Cancel the timer before disposing
+    if (ConstantName.timer != null) {
+      ConstantName.timer!.cancel();
+      ConstantName.timer = null;
+    }
+    // Close socket but don't attempt to reconnect since we're disposing
     socketProvider.closeSocket(false);
     ConstantName.chartwebViewController?.dispose();
     super.dispose();
@@ -244,24 +249,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
 
   // Main scaffold with navigation and content
   Widget _buildMainScaffold() {
-    final internet = ref.read(networkStateProvider);
-    final websocket = ref.read(websocketProvider);
-    
-    // Show no internet screen if needed
-    if (internet.connectionStatus == ConnectivityResult.none ||
-        websocket.connectioncount >= 5) {
-      return Scaffold(
-                          appBar: AppBar(
-                            elevation: 0,
-                            backgroundColor: Color(0xffFFFFFF),
-                          ),
-                          body: NoInternetScreen(),
-      );
-    }
-    
-    // Otherwise show the main app content
+    // Watch network and websocket state to respond to changes
     return Consumer(
       builder: (context, ref, _) {
+        final internet = ref.watch(networkStateProvider);
+        final websocket = ref.watch(websocketProvider);
+        
+        // Show no internet screen if needed - only when there's truly no connection or 
+        // maximum reconnection attempts reached without successful reconnection
+        if ((internet.connectionStatus == ConnectivityResult.none || 
+             websocket.connectioncount >= 5) && 
+             !websocket.reconnectionSuccess && 
+             !websocket.wsConnected) {
+          
+          // Pass the context to the network provider to enable reconnection attempts
+          ref.read(networkStateProvider).getContext(context);
+          
+          return Scaffold(
+            appBar: AppBar(
+              elevation: 0,
+              backgroundColor: Colors.white,
+            ),
+            body: const NoInternetScreen(),
+          );
+        }
+        
+        // Otherwise show the main app content
         // Use select to listen only to the selected bottom index
         final selectedBtmIndx = ref.watch(indexListProvider.select((indexProvide) => indexProvide.selectedBtmIndx));
         final theme = ref.watch(themeProvider); // Theme is used throughout, so watching the whole provider is acceptable here

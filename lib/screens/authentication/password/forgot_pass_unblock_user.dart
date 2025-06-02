@@ -20,6 +20,22 @@ class ForgotPassUnblockUser extends StatefulWidget {
 }
 
 class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
+  bool _isProcessing = false;
+
+  Future<void> _handleContinue(ChangePasswordProvider authForgetpassword) async {
+    if (_isProcessing) return;
+    
+    setState(() => _isProcessing = true);
+    
+    try {
+      await authForgetpassword.submitForgetPassword(context);
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Consumer(
@@ -194,12 +210,11 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                 )),
                             onPressed: authForgetpassword
                                     .forGetloginMethCtrl.text.isEmpty
-                                ? () {}
-                                : () {
-                                    authForgetpassword
-                                        .submitForgetPassword(context);
-                                  },
-                            child: authForgetpassword.loading
+                                ? null
+                                : (_isProcessing || authForgetpassword.loading)
+                                  ? null
+                                  : () => _handleContinue(authForgetpassword),
+                            child: (_isProcessing || authForgetpassword.loading)
                                 ? const SizedBox(
                                     width: 18,
                                     height: 20,

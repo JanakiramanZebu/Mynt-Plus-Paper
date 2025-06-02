@@ -8,6 +8,7 @@ import '../../res/res.dart';
 import '../models/marketwatch_model/get_quotes.dart';
 import '../provider/market_watch_provider.dart';
 import '../provider/user_profile_provider.dart';
+import '../routes/route_names.dart';
 import '../screens/market_watch/scrip_depth_info.dart';
 
 // Common methods for visible scrip information buttons, such as overview, chart, option chain, and others, are covered in this class.
@@ -27,160 +28,178 @@ class ScripInfoBtns extends ConsumerWidget {
       required this.tsym,
       this.navigationLock});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final marketwatch = ref.watch(marketWatchProvider);
-    final userProfile = ref.watch(userProfileProvider);
-    final theme = ref.read(themeProvider);
-    return Container(
-        padding: const EdgeInsets.only(left: 14, top: 8, bottom: 8),
-        height: 50,
-        decoration: BoxDecoration(
-            border: Border(
-                top: BorderSide(
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,
-                    width: 0),
-                bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,
-                    width: 0))),
-        child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: marketwatch.depthBtns.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                    color: theme.isDarkMode
-                        ? const Color(0xffB5C0CF).withOpacity(.15)
-                        : const Color(0xffF1F3F8),
-                    borderRadius: BorderRadius.circular(98)),
-                child: InkWell(
-                    onTap: () async {
-                      // Use navigation lock if provided, otherwise execute directly
-                      action() async {
-                        userProfile.setonloadChartdialog(true);
-                        marketwatch.singlePageloader(true);
-
-                        if (marketwatch.depthBtns[index]['btnName'] != "Chart") {
-                          DepthInputArgs depthArgs = DepthInputArgs(
-                              exch: exch,
-                              token: token,
-                              tsym: '${marketwatch.getQuotes!.tsym}',
-                              instname: marketwatch.getQuotes!.instname ?? "",
-                              symbol: '${marketwatch.getQuotes!.symbol}',
-                              expDate: '${marketwatch.getQuotes!.expDate}',
-                              option: '${marketwatch.getQuotes!.option}');
-                          Navigator.pop(context);
-
-                          showModalBottomSheet(
-                              barrierColor: Colors.transparent,
-                              isScrollControlled: true,
-                              useSafeArea: true,
-                              isDismissible: true,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(16))),
-                              backgroundColor: const Color(0xffffffff),
-                              context: context,
-                              builder: (context) => ScripDepthInfo(
-                                  wlValue: depthArgs, isBasket: ''));
-                        }
-                        if (marketwatch.depthBtns[index]['btnName'] == "Option") {
-                          if (exch == "NFO" ||
-                              (exch == "MCX" && insName == "OPTFUT")) {
-                            await marketwatch.fetchStikePrc(
-                                "${marketwatch.getQuotes!.undTk}",
-                                "${marketwatch.getQuotes!.undExch}",
-                                context);
-                          }
-
-                          await ref.read(websocketProvider).establishConnection(
-                              channelInput: (exch == "NFO" ||
-                                      (exch == "MCX" && insName == "OPTFUT"))
-                                  ? '${marketwatch.getQuotes!.undExch ?? marketwatch.getQuotes!.exch}|${marketwatch.getQuotes!.undTk ?? marketwatch.getQuotes!.token}'
-                                  : '${marketwatch.getQuotes!.exch}|${marketwatch.getQuotes!.token!}',
-                              task: "t",
-                              context: context);
-
-                          await marketwatch.fetchOPtionChain(
-                              context: context,
-                              exchange: marketwatch.optionExch!,
-                              numofStrike: marketwatch.numStrike,
-                              strPrc: marketwatch.optionStrPrc,
-                              tradeSym: marketwatch.selectedTradeSym!);
-                        } else if (marketwatch.depthBtns[index]['btnName'] ==
-                            "Future") {
-                          await marketwatch.requestWSFut(
-                              context: context, isSubscribe: true);
-                        } else if (marketwatch.depthBtns[index]['btnName'] ==
-                            "Chart") {
-                          Navigator.pop(context);
-                          userProfile.setChartdialog(true);
-                          marketwatch.setChartScript(exch, token, tsym);
-                        }
-
-                        marketwatch
-                            .chngDephBtn(marketwatch.depthBtns[index]['btnName']);
-
-                        if (marketwatch.actDeptBtn == "Overview") {
-                          await ref.watch(websocketProvider).establishConnection(
-                              channelInput: "$exch|$token",
-                              task: "d",
-                              context: context);
-                        }
-
-                        if (marketwatch.actDeptBtn == "Fundamental") {
-                          if ((exch == "NSE" || exch == "BSE") &&
-                              (insName != "UNDIND")) {
-                            await ref
-                                .read(marketWatchProvider)
-                                .fetchFundamentalData(
-                                    tradeSym:
-                                        "${ref.read(marketWatchProvider).getQuotes!.exch}:${ref.read(marketWatchProvider).getQuotes!.tsym}");
-                          }
-                          marketwatch.chngshareHold("Promoter Holding");
-                        }
-                        marketwatch.singlePageloader(false);
-                      }
-                      
-                      if (navigationLock != null) {
-                        navigationLock!(action);
-                      } else {
-                        await action();
-                      }
-                    },
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(
-                          "${marketwatch.depthBtns[index]['imgPath']}",
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                        ),
-                        const SizedBox(width: 8),
-                        Text("${marketwatch.depthBtns[index]['btnName']}",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                12.5,
-                                FontWeight.w500))
-                      ],
-                    )),
-              );
-            },
-            separatorBuilder: (BuildContext context, int index) {
-              return const SizedBox(width: 10);
-            }));
-  }
-
   TextStyle textStyle(Color color, double fontSize, fWeight) {
     return GoogleFonts.inter(
         textStyle:
             TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final marketwatch = ref.watch(marketWatchProvider);
+    final theme = ref.read(themeProvider);
+    final userProfile = ref.watch(userProfileProvider);
+
+    return Container(
+      padding: const EdgeInsets.only(left: 14, top: 8, bottom: 8),
+      height: 50,
+      decoration: BoxDecoration(
+          border: Border(
+              bottom: BorderSide(
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider),
+              top: BorderSide(
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider))),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: marketwatch.depthBtns.length,
+        itemBuilder: (BuildContext context, int index) {
+          final bool isActive = 
+              marketwatch.actDeptBtn == marketwatch.depthBtns[index]['btnName'];
+          
+          return ElevatedButton(
+            onPressed: () async {
+              if (navigationLock != null) {
+                // Use the navigation lock to prevent multiple navigation events
+                navigationLock!(() async {
+                  await _handleButtonPress(
+                      context, ref, marketwatch, index);
+                });
+              } else {
+                await _handleButtonPress(context, ref, marketwatch, index);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              backgroundColor: theme.isDarkMode
+                  ? isActive
+                      ? const Color(0xff212121)
+                      : const Color(0xffB5C0CF).withOpacity(.15)
+                  : isActive
+                      ? const Color(0xff000000)
+                      : const Color(0xffF1F3F8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  "${marketwatch.depthBtns[index]['imgPath']}",
+                  width: 16,
+                  height: 16,
+                  color: theme.isDarkMode
+                      ? isActive
+                          ? Colors.white
+                          : Colors.white
+                      : isActive
+                          ? Colors.white
+                          : Colors.black,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  "${marketwatch.depthBtns[index]['btnName']}",
+                  style: textStyle(
+                    theme.isDarkMode
+                        ? isActive
+                            ? Colors.white
+                            : Colors.white
+                        : isActive
+                            ? Colors.white
+                            : Colors.black,
+                    12,
+                    FontWeight.w500
+                  ),
+                )
+              ],
+            ),
+          );
+        },
+        separatorBuilder: (BuildContext context, int index) {
+          return const SizedBox(width: 10);
+        },
+      ),
+    );
+  }
+
+  Future<void> _handleButtonPress(BuildContext context, WidgetRef ref,
+      MarketWatchProvider marketwatch, int index) async {
+    // Set to initial loading state
+    marketwatch.singlePageloader(true);
+
+    try {
+      if (marketwatch.depthBtns[index]['btnName'] == "Chart") {
+        // Chart button logic
+        ref.read(userProfileProvider).setChartdialog(true);
+        marketwatch.setChartScript(exch, token, tsym);
+      } else if (marketwatch.depthBtns[index]['btnName'] == "Option") {
+        // Option button logic - direct navigation
+        if (exch == "NFO" || (exch == "MCX" && insName == "OPTFUT")) {
+          await marketwatch.fetchStikePrc(
+              "${marketwatch.getQuotes!.undTk}",
+              "${marketwatch.getQuotes!.undExch}",
+              context);
+        }
+        
+        // First set up the option script data
+        marketwatch.setOptionScript(
+            context,
+            exch,
+            token,
+            tsym);
+        
+        // Wait a small amount of time to ensure data is processed
+        await Future.delayed(const Duration(milliseconds: 100));
+        
+        // Create depth args for navigation
+        DepthInputArgs depthArgs = DepthInputArgs(
+            exch: exch,
+            token: token,
+            tsym: marketwatch.getQuotes!.tsym ?? '',
+            instname: marketwatch.getQuotes!.instname ?? "",
+            symbol: marketwatch.getQuotes!.symbol ?? '',
+            expDate: marketwatch.getQuotes!.expDate ?? '',
+            option: marketwatch.getQuotes!.option ?? '');
+        
+        // Navigate directly to option chain screen
+        Navigator.pop(context);
+        Navigator.pushNamed(
+            context,
+            Routes.optionChain,
+            arguments: depthArgs);
+      } else {
+        // For other buttons, show the depth info in a bottom sheet
+        DepthInputArgs depthArgs = DepthInputArgs(
+            exch: exch,
+            token: token,
+            tsym: '${marketwatch.getQuotes!.tsym}',
+            instname: marketwatch.getQuotes!.instname ?? "",
+            symbol: '${marketwatch.getQuotes!.symbol}',
+            expDate: '${marketwatch.getQuotes!.expDate}',
+            option: '${marketwatch.getQuotes!.option}');
+        Navigator.pop(context);
+
+        showModalBottomSheet(
+            barrierColor: Colors.transparent,
+            isScrollControlled: true,
+            useSafeArea: true,
+            isDismissible: true,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(16))),
+            backgroundColor: const Color(0xffffffff),
+            context: context,
+            builder: (context) => ScripDepthInfo(
+                wlValue: depthArgs, isBasket: ''));
+      }
+    } finally {
+      // Ensure we turn off loading regardless of success/failure
+      marketwatch.singlePageloader(false);
+    }
   }
 }

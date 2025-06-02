@@ -1,25 +1,114 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:mynt_plus/provider/network_state_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'functions.dart';
+import 'dart:async';
 
 //  If there is no internet, it will show on the screen.
 
-class NoInternetScreen extends StatefulWidget {
+class NoInternetScreen extends ConsumerStatefulWidget {
   const NoInternetScreen({
     super.key,
   });
 
   @override
-  State<NoInternetScreen> createState() => _NoInternetScreenState();
+  ConsumerState<NoInternetScreen> createState() => _NoInternetScreenState();
 }
 
-class _NoInternetScreenState extends State<NoInternetScreen> {
+class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
+  bool _isReconnecting = false;
+  bool _isCheckingConnection = false;
+  Timer? _connectionCheckTimer;
+  bool _disposed = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _checkConnectionState();
+  }
+  
+  // Check connection state periodically to detect auto-reconnection
+  void _checkConnectionState() {
+    // Don't start another check if one is already in progress
+    // or if the widget has been disposed
+    if (_isCheckingConnection || _disposed) return;
+    
+    // Cancel any existing timer
+    _connectionCheckTimer?.cancel();
+    
+    if (mounted) {
+      setState(() {
+        _isCheckingConnection = true;
+      });
+    }
+    
+    // Check current connection state
+    Connectivity().checkConnectivity().then((result) {
+      if (_disposed) return;
+      
+      if (result != ConnectivityResult.none) {
+        // If network is available but websocket is not connected, try reconnecting
+        final webSocket = ref.read(websocketProvider);
+        if (!webSocket.wsConnected && webSocket.connectioncount < 5) {
+          _attemptReconnection();
+        }
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isCheckingConnection = false;
+        });
+      }
+      
+      // Schedule next check after 5 seconds, but only if widget is still mounted
+      if (!_disposed) {
+        _connectionCheckTimer = Timer(const Duration(seconds: 5), _checkConnectionState);
+      }
+    });
+  }
+  
+  // Handle reconnection attempt
+  Future<void> _attemptReconnection() async {
+    if (_isReconnecting || _disposed) return;
+    
+    if (mounted) {
+      setState(() {
+        _isReconnecting = true;
+      });
+    }
+    
+    try {
+      final webSocket = ref.read(websocketProvider);
+      
+      // Reset connection count if it's at max attempts
+      if (webSocket.connectioncount >= 5) {
+        webSocket.changeconnectioncount();
+      }
+      
+      // Start reconnection process
+      webSocket.closeSocket(true);
+      webSocket.changeretryscreen(true);
+      webSocket.reconnect(context);
+      
+      // Wait for reconnection to complete or timeout
+      await Future.delayed(const Duration(seconds: 5));
+    } finally {
+      if (!_disposed && mounted) {
+        setState(() {
+          _isReconnecting = false;
+        });
+      }
+    }
+  }
 
-@override
+  @override
   void dispose() {
+    _disposed = true;
+    _connectionCheckTimer?.cancel();
     super.dispose();
   }
 
@@ -27,7 +116,23 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
       final webSocket = ref.watch(websocketProvider);
+      final networkState = ref.watch(networkStateProvider);
       final theme = ref.watch(themeProvider);
+      
+      // Check if we should still show this screen
+      // If websocket is connected or connectioncount is reset and network is available
+      if ((webSocket.wsConnected || 
+          (webSocket.reconnectionSuccess && networkState.connectionStatus != ConnectivityResult.none)) && 
+          webSocket.connectioncount < 5) {
+        // Return empty container as this screen should be dismissed
+        return Container();
+      }
+      
+      final isNetworkAvailable = networkState.connectionStatus != ConnectivityResult.none;
+      final statusMessage = isNetworkAvailable 
+          ? "Connection issues detected. Please try reconnecting."
+          : "It seems like you are offline. Please check your network connection.";
+      
       return Scaffold(
         body: SafeArea(
           child: Column(
@@ -42,56 +147,67 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
                             height: 80,
                             width: 150,
                             fit: BoxFit.contain)),
+                    const SizedBox(height: 20),
+                    if (isNetworkAvailable && webSocket.connectioncount >= 5)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Text(
+                          "Multiple connection attempts failed. Please try reconnecting manually.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: theme.isDarkMode ? Colors.white70 : Colors.black54,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 width: MediaQuery.of(context).size.width,
                 height: 46,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: theme.isDarkMode
-                          ? Color(0xffB0BEC5)
-                          : Color(0xff000000),
+                          ? const Color(0xffB0BEC5)
+                          : const Color(0xff000000),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       )),
-                  onPressed: () {
-                    // ref.read(indexListProvider).checkSession(context);
-                    webSocket.closeSocket(true);
-                    webSocket.changeretryscreen(true);
-                    webSocket.reconnect(context);
-                  },
-                  child: webSocket.retryscreen == true ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  ) : 
-                          Text("Connect Again",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? const Color(0xff000000)
-                              : const Color(0xffFFFFFF),
-                          15,
-                          FontWeight.w500)),
+                  onPressed: (_isReconnecting || webSocket.retryscreen) 
+                      ? null 
+                      : _attemptReconnection,
+                  child: (_isReconnecting || webSocket.retryscreen) 
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ) 
+                      : Text("Connect Again",
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? const Color(0xff000000)
+                                  : const Color(0xffFFFFFF),
+                              15,
+                              FontWeight.w500)),
                 ),
               ),
               Container(
                   color: Colors.black,
-                  child: const ListTile(
+                  child: ListTile(
                       minLeadingWidth: 10,
-                      leading: Padding(
+                      leading: const Padding(
                           padding: EdgeInsets.only(top: 3.5),
                           child: Icon(Icons.warning_amber_outlined,
                               size: 15, color: Colors.amber)),
                       title: Text(
-                          'It seems like you are offline.Please check your network connection.',
-                          style: TextStyle(fontSize: 12, color: Colors.white))))
+                          statusMessage,
+                          style: const TextStyle(fontSize: 12, color: Colors.white))))
             ],
           ),
         ),

@@ -145,9 +145,9 @@ class OptimizedIndexItem extends ConsumerWidget {
               // Dynamic part that updates with WebSocket data
               _LivePriceWidget(
                 token: token ?? "",
-                initialLtp: indexItem.ltp ?? "0.00",
-                initialChange: indexItem.change ?? "0.00", 
-                initialPerChange: indexItem.perChange ?? "0.00",
+                initialLtp: indexItem.ltp == null || indexItem.ltp == "null" ? "0.00" : indexItem.ltp,
+                initialChange: indexItem.change == null || indexItem.change == "null" ? "0.00" : indexItem.change, 
+                initialPerChange: indexItem.perChange == null || indexItem.perChange == "null" ? "0.00" : indexItem.perChange,
                 isDarkMode: theme.isDarkMode,
                 isSrc: src,
               ),
@@ -259,10 +259,10 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
   @override
   void initState() {
     super.initState();
-    _ltp = widget.initialLtp;
-    _change = widget.initialChange;
-    _perChange = widget.initialPerChange;
-    // Don't access providers in initState
+    // Fix null display by ensuring proper default values
+    _ltp = widget.initialLtp == "null" ? "0.00" : widget.initialLtp;
+    _change = widget.initialChange == "null" ? "0.00" : widget.initialChange;
+    _perChange = widget.initialPerChange == "null" ? "0.00" : widget.initialPerChange;
   }
   
   @override
@@ -320,18 +320,22 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
   bool _updateFromSocketData(dynamic data) {
     bool hasChanged = false;
     
-    if (data['lp'] != null && data['lp'].toString() != _ltp) {
-      _ltp = data['lp'].toString();
+    // Handle null values from socket data
+    final newLtp = data['lp']?.toString() ?? "0.00";
+    if (newLtp != "null" && newLtp != _ltp) {
+      _ltp = newLtp;
       hasChanged = true;
     }
     
-    if (data['chng'] != null && data['chng'].toString() != _change) {
-      _change = data['chng'].toString();
+    final newChange = data['chng']?.toString() ?? "0.00";
+    if (newChange != "null" && newChange != _change) {
+      _change = newChange;
       hasChanged = true;
     }
     
-    if (data['pc'] != null && data['pc'].toString() != _perChange) {
-      _perChange = data['pc'].toString();
+    final newPerChange = data['pc']?.toString() ?? "0.00";
+    if (newPerChange != "null" && newPerChange != _perChange) {
+      _perChange = newPerChange;
       hasChanged = true;
     }
     
