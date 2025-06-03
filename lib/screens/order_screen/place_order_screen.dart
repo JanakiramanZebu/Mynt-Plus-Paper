@@ -393,6 +393,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
           final theme = ref.read(themeProvider);
 
           final sip = ref.watch(siprovider);
+          int frezQtyOrderSliceMaxLimit=ref.read(orderProvider).frezQtyOrderSliceMaxLimit;
 
           return GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
@@ -1087,17 +1088,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                         suffixIcon: InkWell(
                                                           onTap: () {
                                                             setState(() {
-                                                              int number =
-                                                                  int.parse(
-                                                                      orderInput
-                                                                          .qtyCtrl
-                                                                          .text);
                                                               if (orderInput
                                                                   .qtyCtrl
                                                                   .text
                                                                   .isNotEmpty) {
-                                                                if (number <
-                                                                    999999) {
+                                                                if (int.parse(
+                                                                      orderInput
+                                                                          .qtyCtrl
+                                                                          .text) <
+                                                                    ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
                                                                   orderInput
                                                                       .qtyCtrl
                                                                       .text = (int.parse(orderInput
@@ -1137,7 +1136,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                 .showSnackBar(
                                                                     warningMessage(
                                                                         context,
-                                                                        "Quntity can not be empty"));
+                                                                        "Quantity can not be empty"));
                                                           } else {
                                                             String newValue =
                                                                 value.replaceAll(
@@ -1525,17 +1524,14 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   InkWell(
                                                                 onTap: () {
                                                                   setState(() {
-                                                                    int number =
-                                                                        int.parse(orderInput
-                                                                            .ocoQtyCtrl
-                                                                            .text);
-
                                                                     if (orderInput
                                                                         .ocoQtyCtrl
                                                                         .text
                                                                         .isNotEmpty) {
-                                                                      if (number <
-                                                                          999999) {
+                                                                      if ( int.parse(orderInput
+                                                                            .ocoQtyCtrl
+                                                                            .text) <
+                                                                          ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
                                                                         orderInput
                                                                             .ocoQtyCtrl
                                                                             .text = (int.parse(orderInput.ocoQtyCtrl.text) +
@@ -1574,7 +1570,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                           context)
                                                                       .showSnackBar(warningMessage(
                                                                           context,
-                                                                          "Quntity can not be empty"));
+                                                                          "Quantity can not be empty"));
                                                                 } else {
                                                                   String
                                                                       newValue =
@@ -2295,14 +2291,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   InkWell(
                                                                 onTap: () {
                                                                   setState(() {
-                                                                    int number =
-                                                                        int.parse(
-                                                                            qtyCtrl.text);
                                                                     if (qtyCtrl
                                                                         .text
                                                                         .isNotEmpty) {
-                                                                      if (number <
-                                                                          999999) {
+                                                                      if (int.parse(
+                                                                            qtyCtrl.text) <
+                                                                          ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
                                                                         qtyCtrl
                                                                             .text = (int.parse(qtyCtrl.text) +
                                                                                 multiplayer)
@@ -2339,7 +2333,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                           context)
                                                                       .showSnackBar(warningMessage(
                                                                           context,
-                                                                          "Quntity can not be empty"));
+                                                                          "Quantity can not be empty"));
                                                                 } else {
                                                                   int number =
                                                                       int.tryParse(
@@ -2347,12 +2341,19 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                           0;
 
                                                                   if (number >
-                                                                      999999) {
+                                                                      ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
                                                                     qtyCtrl.text = qtyCtrl
-                                                                        .text
-                                                                        .substring(
-                                                                            0,
-                                                                            6); // Restrict max value
+                                                                        .text;
+
+                                                                        // .substring(
+                                                                        //     0,
+                                                                        //     10); // Restrict max value
+
+                                                                        ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
                                                                   }
 
                                                                   String
@@ -2930,7 +2931,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                           .text
                                                                           .isNotEmpty) {
                                                                         if (number <
-                                                                            999999) {
+                                                                            9999999999) {
                                                                           discQtyCtrl.text =
                                                                               (int.parse(discQtyCtrl.text) + 1).toString();
                                                                         }
@@ -3626,7 +3627,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   (frezQty *
                                                                       quantity);
                                                               maxQty =
-                                                                  frezQty * 20;
+                                                                  frezQty * frezQtyOrderSliceMaxLimit;
                                                               print(
                                                                   "objectobject{$quantity | $reminder | $maxQty}");
                                                             });
@@ -3657,10 +3658,19 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                               "0"
                                                                           ? "Quantity can not be 0"
                                                                           : "Price can not be 0"));
-                                                            } else if ((priceType == "Limit" || priceType == "SL Limit") && (double.parse(ordPrice) < double.parse("${widget.scripInfo.lc ?? 0.00}")) ||
-                                                                (double.parse(ordPrice) >
-                                                                    double.parse(
-                                                                        "${widget.scripInfo.uc ?? 0.00}"))) {
+
+                                                            }else if(int.parse(qtyCtrl.text.trim()) >
+                                                                      ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)){
+                                                                           ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
+
+                                                                          // 288192460  288192460
+                                                                          // 14409623
+                                                             }else if ((priceType == "Limit" || priceType == "SL Limit") && (double.parse(ordPrice) < double.parse("${widget.scripInfo.lc ?? 0.00}")) ||
+                                                                (double.parse(ordPrice) > double.parse("${widget.scripInfo.uc ?? 0.00}"))) {
                                                               ScaffoldMessenger
                                                                       .of(
                                                                           context)
@@ -3670,10 +3680,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                               double.parse("${widget.scripInfo.lc ?? 0.00}")
                                                                           ? "Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc ?? 0.00}"
                                                                           : "Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc ?? 0.00}"));
-                                                            } else if (orderType == "Regular" &&
-                                                                (priceType == "SL Limit" ||
-                                                                    priceType ==
-                                                                        "SL MKT")) {
+
+                                                            } else if (orderType == "Regular" &&  (priceType == "SL Limit" || priceType == "SL MKT")) {
                                                               if (triggerPriceCtrl
                                                                       .text
                                                                       .isEmpty ||
@@ -3836,10 +3844,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   }
                                                                 }
                                                               }
-                                                            } else if (orderType == "Cover" &&
-                                                                (priceType == "Limit" ||
-                                                                    priceType ==
-                                                                        "Market")) {
+                                                            } else if (orderType == "Cover" &&  (priceType == "Limit" || priceType == "Market")) {
                                                               if (stopLossCtrl
                                                                       .text
                                                                       .isEmpty ||
@@ -3916,9 +3921,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   }
                                                                 }
                                                               }
-                                                            } else if (orderType == "Cover" &&
-                                                                (priceType ==
-                                                                    "SL Limit")) {
+                                                            } else if (orderType == "Cover" && (priceType == "SL Limit")) {
                                                               if (stopLossCtrl
                                                                       .text
                                                                       .isEmpty ||
@@ -4074,9 +4077,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   }
                                                                 }
                                                               }
-                                                            } else if (orderType == "Bracket" &&
-                                                                (priceType == "Limit" ||
-                                                                    priceType == "Market")) {
+                                                            } else if (orderType == "Bracket" && (priceType == "Limit" || priceType == "Market")) {
                                                               if (stopLossCtrl
                                                                       .text
                                                                       .isEmpty ||
@@ -4466,6 +4467,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
   placeOrder(OrderInputProvider orderInput, bool isSliceOrd,
       ThemesProvider theme) async {
     String bsktName = ref.read(orderProvider).selectedBsktName;
+    int frezQtyOrderSliceMaxLimit=ref.read(orderProvider).frezQtyOrderSliceMaxLimit;
     if (widget.isBasket == "Basket" || widget.isBasket == "BasketEdit") {
       if (widget.isBasket == "BasketEdit") {
         await ref
@@ -4549,9 +4551,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
         if (int.parse(qtyCtrl.text) != q && widget.scripInfo.exch != 'MCX') {
           ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
               "Quantity should be multiple of lot size $lotSize => $q"));
-        } else if (20 < quantity) {
+        } else if (frezQtyOrderSliceMaxLimit < quantity) {
           ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              "Quantity can only be split into a maximum of 20 slice. (Ex: $frezQty x 20 = ${frezQty * 20})"));
+              "Quantity can only be split into a maximum of $frezQtyOrderSliceMaxLimit slice. (Ex: $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQty * frezQtyOrderSliceMaxLimit})"));
         } else {
           showModalBottomSheet(
             isScrollControlled: true,

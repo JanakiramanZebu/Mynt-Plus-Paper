@@ -39,6 +39,9 @@ final orderProvider = ChangeNotifierProvider((ref) => OrderProvider(ref));
 
 class OrderProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
+
+  int frezQtyOrderSliceMaxLimit = 20;
+
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
   final Ref ref;

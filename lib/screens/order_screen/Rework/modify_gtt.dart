@@ -314,7 +314,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                           .showSnackBar(
                                                               warningMessage(
                                                                   context,
-                                                                  "Quntity can not be empty"));
+                                                                  "Quantity can not be empty"));
                                                     } else {
                                                       String newValue =
                                                           value.replaceAll(
@@ -785,7 +785,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Quntity can not be empty"));
+                                                                    "Quantity can not be empty"));
                                                       } else {
                                                         String newValue =
                                                             value.replaceAll(
