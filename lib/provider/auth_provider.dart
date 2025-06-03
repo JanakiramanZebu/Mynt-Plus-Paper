@@ -389,16 +389,22 @@ class AuthProvider extends DefaultChangeNotifier {
     Map<String, dynamic>? deviceData = <String, dynamic>{};
 
     try {
-      deviceData = switch (defaultTargetPlatform) {
-        TargetPlatform.android =>
-          _readAndroidDeviceInfo(await deviceInfoPlugin.androidInfo),
-        TargetPlatform.iOS =>
-          _readIosDeviceInfo(await deviceInfoPlugin.iosInfo),
-        TargetPlatform.fuchsia => null,
-        TargetPlatform.linux => null,
-        TargetPlatform.macOS => null,
-        TargetPlatform.windows => null
-      };
+      if (TargetPlatform.android == defaultTargetPlatform) {
+         deviceData =
+          _readAndroidDeviceInfo(await deviceInfoPlugin.androidInfo);
+      }else if( TargetPlatform.iOS == defaultTargetPlatform){
+          deviceData = _readIosDeviceInfo(await deviceInfoPlugin.iosInfo);
+          }
+          else{
+              deviceData = <String, dynamic>{
+              'Error:': 'Unsupported platform'
+            };
+          }
+        // TargetPlatform.fuchsia => null,
+        // TargetPlatform.linux => null,
+        // TargetPlatform.macOS => null,
+        // TargetPlatform.windows => null
+     
     } on PlatformException {
       deviceData = <String, dynamic>{
         'Error:': 'Failed to get platform version.'

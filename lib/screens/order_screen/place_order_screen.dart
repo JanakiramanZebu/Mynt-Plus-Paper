@@ -4504,8 +4504,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
               "Quantity should be multiple of lot size $lotSize => $q"));
         }
 
-        if (mktProtCtrl.text.isEmpty ||
-            int.parse(mktProtCtrl.text.toString()) > 20) {
+        if ((priceType == "Market" || priceType == "SL MKT") && (mktProtCtrl.text.isEmpty ||
+            int.parse(mktProtCtrl.text.toString()) > 20)) {
           placeorder = false;
           ScaffoldMessenger.of(context).showSnackBar(
               warningMessage(context, "Market Protection between 1% to 20%"));
