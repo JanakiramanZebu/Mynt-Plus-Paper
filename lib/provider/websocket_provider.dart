@@ -44,6 +44,7 @@ class WebSocketProvider extends ChangeNotifier {
   bool _wsMount = true;
   BuildContext? _context;
   bool _reconnecting = false; // Track if we're already in the reconnection process
+  bool _reconnectionSuccess = false; // Track if we've successfully reconnected
 
   // WebSocket and subscription management
   WebSocketChannel? _channel;
@@ -61,6 +62,7 @@ class WebSocketProvider extends ChangeNotifier {
   bool get wsConnected => _wsConnected;
   bool get retryScreen => _retryScreen;
   Map get socketDatas => _socketDatas;
+  bool get reconnectionSuccess => _reconnectionSuccess;
 
   // Preferences
   final Preferences _pref = locator<Preferences>();
@@ -73,10 +75,26 @@ class WebSocketProvider extends ChangeNotifier {
 
   void changeretryscreen(bool value) {
     _retryScreen = value;
+    notifyListeners();
   }
 
   void changeconnectioncount() {
     _connectionCount = 0;
+    notifyListeners();
+  }
+
+  void resetConnectionCount() {
+    _connectionCount = 0;
+    _reconnectionSuccess = true;
+    
+    // Notify immediately to update UI
+    notifyListeners();
+    
+    // Reset reconnection success flag after a delay to allow UI to update
+    Future.delayed(const Duration(seconds: 1), () {
+      _reconnectionSuccess = false;
+      notifyListeners();
+    });
   }
 
   void closeSocket(bool mounted) {
@@ -291,6 +309,7 @@ class WebSocketProvider extends ChangeNotifier {
         _handleConnectionSuccess();
       } else if (res['t']?.toString().toLowerCase() == "tf" || 
                 res['t']?.toString().toLowerCase() == "df") {
+        log("Socket Data: ${res.toString()}");
         _handleMarketData(res);
       } else if (res['t']?.toString().toLowerCase() == "tk" || 
                 res['t']?.toString().toLowerCase() == "dk") {
@@ -313,8 +332,9 @@ class WebSocketProvider extends ChangeNotifier {
   void _handleConnectionSuccess() {
     _wsConnected = true;
     _connecting = false;
-    _connectionCount = 0;
+    resetConnectionCount(); // Reset connection count properly
     _reconnecting = false;
+    _retryScreen = false; // Ensure retry screen is not shown
     
     // Reset low bandwidth mode on successful connection
     _isLowBandwidth = false;
@@ -553,6 +573,7 @@ class WebSocketProvider extends ChangeNotifier {
   void _handleConnectionClosed(BuildContext context) {
     if (!_reconnecting) {
       _connectionCount++;
+      notifyListeners(); // Notify to update UI with new connection count
     }
     
     closeSocket(true);
@@ -569,6 +590,7 @@ class WebSocketProvider extends ChangeNotifier {
   void _handleConnectionError(dynamic error, BuildContext context) {
     if (!_reconnecting) {
       _connectionCount++;
+      notifyListeners(); // Notify to update UI with new connection count
     }
     
     closeSocket(true);
@@ -597,21 +619,32 @@ class WebSocketProvider extends ChangeNotifier {
       seconds: _reconnectDelay.inSeconds * (_connectionCount + 1) * multiplier
     );
     
+    // If retry screen is active, attempt immediate reconnection
     if (_retryScreen) {
       _attemptReconnection(context);
     } else {
-      _reconnectBackoff = Timer(backoffDelay, () {
-        if (ref.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+      // Check if we're connected to a network before scheduling reconnection
+      final connectionStatus = ref.read(networkStateProvider).connectionStatus;
+      
+      if (connectionStatus != ConnectivityResult.none) {
+        _reconnectBackoff = Timer(backoffDelay, () {
           _attemptReconnection(context);
-        } else {
-          _reconnecting = false; // Reset flag if network is unavailable
-        }
-      });
+        });
+      } else {
+        // Reset reconnecting flag if no network is available
+        _reconnecting = false;
+        notifyListeners();
+      }
     }
   }
 
   void _attemptReconnection(BuildContext context) {
-    if (ref.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+    final connectionStatus = ref.read(networkStateProvider).connectionStatus;
+    
+    if (connectionStatus != ConnectivityResult.none) {
+      // Reset retry screen flag as we're attempting reconnection
+      _retryScreen = false;
+      
       // Make sure we only try to refresh data once per reconnection attempt
       if (!_wsConnected) {
         _refreshData(context);
@@ -627,36 +660,56 @@ class WebSocketProvider extends ChangeNotifier {
       // After connection, subscribe to stored channels if they exist
       // Give a slight delay to ensure connection is established
       Future.delayed(const Duration(milliseconds: 500), () {
-        if (_wsConnected) {
-      // Only establish connections if we have data to subscribe to
-      if (ConstantName.lastSubscribe.isNotEmpty) {
+        // Verify we're still in reconnection process before continuing
+        if (_reconnecting && !_wsConnected) {
+          if (ConstantName.lastSubscribe.isNotEmpty) {
             connectTouchLine(
               input: ConstantName.lastSubscribe,
-          task: "t",
-          context: context,
-        );
-      }
-      
-      if (ConstantName.lastSubscribeDepth.isNotEmpty) {
+              task: "t",
+              context: context,
+            );
+          }
+          
+          if (ConstantName.lastSubscribeDepth.isNotEmpty) {
             connectTouchLine(
               input: ConstantName.lastSubscribeDepth,
-          task: "d",
-          context: context,
-        );
-      }
+              task: "d",
+              context: context,
+            );
+          }
         }
+        
+        // Reset reconnecting flag after attempt, regardless of success
+        // The actual connection state is tracked by _wsConnected
+        _reconnecting = false;
+        notifyListeners();
       });
-      
-      _retryScreen = false;
     } else {
-      _reconnecting = false; // Reset flag if network is unavailable
+      // Reset reconnecting flag if no network is available
+      _reconnecting = false;
+      notifyListeners();
     }
   }
 
   @override
   void dispose() {
+    // Ensure all timers are canceled
     _stopPingTimer();
+    _holdStartTime?.cancel();
+    _reconnectBackoff?.cancel();
+    
+    // Cancel all subscription timers
+    for (var timer in _subscriptionTimers.values) {
+      timer.cancel();
+    }
+    _subscriptionTimers.clear();
+    
+    // Close socket channel
+    _channel?.sink.close();
+    
+    // Close data stream
     _socketDataController.close();
+    
     super.dispose();
   }
 }

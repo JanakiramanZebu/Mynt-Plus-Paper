@@ -104,6 +104,14 @@ class _OrderBookState extends ConsumerState<OrderBook> {
     bool hasUpdates = false;
     final items = _getActiveOrders();
 
+    // Helper function to check if a string is a valid numeric price
+    bool isValidNumeric(String? value) {
+      if (value == null || value == "null" || value == "0" || value == "0.00") {
+        return false;
+      }
+      return double.tryParse(value) != null;
+    }
+
     for (var order in items) {
       if (order.token == null || order.token!.isEmpty) continue;
 
@@ -119,29 +127,21 @@ class _OrderBookState extends ConsumerState<OrderBook> {
 
       // Only update LTP if it has a valid value and has changed
       final lp = socketData['lp']?.toString();
-      if (lp != null &&
-          lp != "null" &&
-          lp != "0" &&
-          lp != "0.00" &&
-          lp != currentLtp) {
+      if (isValidNumeric(lp) && lp != currentLtp) {
         order.ltp = lp;
         hasUpdates = true;
       }
 
       // Only update percent change if it has a valid value and has changed
       final pc = socketData['pc']?.toString();
-      if (pc != null &&
-          pc != "null" &&
-          pc != "0" &&
-          pc != "0.00" &&
-          pc != currentPerChange) {
+      if (isValidNumeric(pc) && pc != currentPerChange) {
         order.perChange = pc;
         hasUpdates = true;
       }
 
       // Update change value too if available
       final chng = socketData['chng']?.toString();
-      if (chng != null && chng != "null" && chng != order.change) {
+      if (isValidNumeric(chng) && chng != order.change) {
         order.change = chng;
         hasUpdates = true;
       }
@@ -443,31 +443,25 @@ class _OrderBookState extends ConsumerState<OrderBook> {
 
   // Get valid price (fixing null/0 LTP issue)
   String _getValidPrice(OrderBookModel order) {
+    // Helper function to check if a string is a valid numeric price
+    bool isValidPrice(String? value) {
+      if (value == null || value == "null" || value == "0" || value == "0.00") {
+        return false;
+      }
+      // Check if the value is a valid numeric string
+      return double.tryParse(value) != null;
+    }
+
     // First try LTP, then avgprc, then prc, then close, then default to "0.00"
-    if (order.ltp != null &&
-        order.ltp != "null" &&
-        order.ltp != "0" &&
-        order.ltp != "0.00") {
+    if (isValidPrice(order.ltp)) {
       return order.ltp!;
-    } else if (order.avgprc != null &&
-        order.avgprc != "null" &&
-        order.avgprc != "0" &&
-        order.avgprc != "0.00") {
+    } else if (isValidPrice(order.avgprc)) {
       return order.avgprc!;
-    } else if (order.prc != null &&
-        order.prc != "null" &&
-        order.prc != "0" &&
-        order.prc != "0.00") {
+    } else if (isValidPrice(order.prc)) {
       return order.prc!;
-    } else if (order.c != null &&
-        order.c != "null" &&
-        order.c != "0" &&
-        order.c != "0.00") {
+    } else if (isValidPrice(order.c)) {
       return order.c!;
-    } else if (order.close != null &&
-        order.close != "null" &&
-        order.close != "0" &&
-        order.close != "0.00") {
+    } else if (isValidPrice(order.close)) {
       return order.close!;
     }
     return "0.00";
@@ -741,31 +735,25 @@ class _OrderItemState extends State<_OrderItem> {
 
   // Get valid price for display (fixing null/0 LTP issue)
   String _getValidPrice() {
+    // Helper function to check if a string is a valid numeric price
+    bool isValidPrice(String? value) {
+      if (value == null || value == "null" || value == "0" || value == "0.00") {
+        return false;
+      }
+      // Check if the value is a valid numeric string
+      return double.tryParse(value) != null;
+    }
+
     // First try LTP, then avgprc, then prc, then close, then default to "0.00"
-    if (widget.orderItem.ltp != null &&
-        widget.orderItem.ltp != "null" &&
-        widget.orderItem.ltp != "0" &&
-        widget.orderItem.ltp != "0.00") {
+    if (isValidPrice(widget.orderItem.ltp)) {
       return widget.orderItem.ltp!;
-    } else if (widget.orderItem.avgprc != null &&
-        widget.orderItem.avgprc != "null" &&
-        widget.orderItem.avgprc != "0" &&
-        widget.orderItem.avgprc != "0.00") {
+    } else if (isValidPrice(widget.orderItem.avgprc)) {
       return widget.orderItem.avgprc!;
-    } else if (widget.orderItem.prc != null &&
-        widget.orderItem.prc != "null" &&
-        widget.orderItem.prc != "0" &&
-        widget.orderItem.prc != "0.00") {
+    } else if (isValidPrice(widget.orderItem.prc)) {
       return widget.orderItem.prc!;
-    } else if (widget.orderItem.c != null &&
-        widget.orderItem.c != "null" &&
-        widget.orderItem.c != "0" &&
-        widget.orderItem.c != "0.00") {
+    } else if (isValidPrice(widget.orderItem.c)) {
       return widget.orderItem.c!;
-    } else if (widget.orderItem.close != null &&
-        widget.orderItem.close != "null" &&
-        widget.orderItem.close != "0" &&
-        widget.orderItem.close != "0.00") {
+    } else if (isValidPrice(widget.orderItem.close)) {
       return widget.orderItem.close!;
     }
     return "0.00";

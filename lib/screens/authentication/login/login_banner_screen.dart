@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../provider/auth_provider.dart';
+import '../../../provider/version_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
@@ -16,6 +17,58 @@ class LoginBannerScreen extends StatefulWidget {
 }
 
 class _LoginBannerScreenState extends State<LoginBannerScreen> {
+  bool _isProcessing = false;
+  bool _isLoginProcessing = false;
+
+  Future<void> _handleLogin() async {
+    if (_isProcessing) return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      // Perform login logic
+      // await Future.delayed(const Duration(seconds: 1)); // Simulate API call
+
+      // Navigate to home screen if successful
+      launch('https://oa.mynt.in/?ref=zws');
+    } catch (e) {
+      // Handle error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  Future<void> _handleLoginToMynt(WidgetRef ref) async {
+    if (_isLoginProcessing) return;
+    
+    setState(() => _isLoginProcessing = true);
+    
+    try {
+      final theme = ref.read(themeProvider);
+      final auth = ref.read(authProvider);
+      
+      theme.navigateToNewPage(context);
+      auth.clearError();
+      
+      await Future.delayed(const Duration(milliseconds: 200));
+      Navigator.pushNamed(context, Routes.loginScreen);
+    } catch (e) {
+      // Handle any errors
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Navigation failed: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoginProcessing = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -144,16 +197,19 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                                             borderRadius:
                                                 BorderRadius.circular(30),
                                           )),
-                                      onPressed: () {
-                                        theme.navigateToNewPage(context);
-                                        auth.clearError();
-                                        Future.delayed(
-                                            Duration(milliseconds: 200), () {
-                                          Navigator.pushNamed(
-                                              context, Routes.loginScreen);
-                                        });
-                                      },
-                                      child: Text("Login to MYNT",
+                                      onPressed: _isLoginProcessing 
+                                        ? null 
+                                        : () => _handleLoginToMynt(ref),
+                                      child: _isLoginProcessing
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : Text("Login to MYNT",
                                           style: textStylebanner(
                                               colors.colorWhite,
                                               17,
@@ -180,14 +236,20 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                                             borderRadius:
                                                 BorderRadius.circular(30),
                                           )),
-                                      onPressed: () {
-                                        launch('https://oa.mynt.in/?ref=zws');
-                                      },
-                                      child: Text("Open a free account",
-                                          style: textStylebanner(
-                                              colors.colorWhite,
-                                              17,
-                                              FontWeight.w500)),
+                                      onPressed:
+                                          _isProcessing ? null : _handleLogin,
+                                      child: _isProcessing
+                                          ? const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2),
+                                            )
+                                          : Text("Open a free account",
+                                              style: textStylebanner(
+                                                  colors.colorWhite,
+                                                  17,
+                                                  FontWeight.w500)),
                                     ),
                                   ),
                                 ),

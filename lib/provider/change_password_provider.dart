@@ -170,7 +170,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
   fetchForgetPassword(String field, String value, BuildContext context) async {
     try {
       toggleLoadingOn(true);
-      _forgetPasswordModel = await api.getForgetPassword(field, value);
+      _forgetPasswordModel = await api.getForgetPassword(field, value, context);
       if (_forgetPasswordModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         ScaffoldMessenger.of(context).showSnackBar(successMessage(

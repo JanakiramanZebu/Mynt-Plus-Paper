@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
@@ -215,12 +216,40 @@ class _OptionTopBar extends ConsumerWidget {
                 final isSelected = tab.token == tvChart.oactiveTab?.token;
                 return InkWell(
                   onTap: () async {
-                    tvChart.setOptionScript(context, tab.exch.toString(),
-                        tab.token.toString(), tab.tsym.toString());
+                    // Show loading indicator immediately
+                    tvChart.singlePageloader(true);
+                    
+                    // Set the script with a catch for error handling
+                    try {
+                      tvChart.setOptionScript(context, tab.exch.toString(),
+                          tab.token.toString(), tab.tsym.toString());
 
-                         Future.delayed(const Duration(milliseconds: 500), () {
-                        scrollToStrikePrice();
-                                                                          });
+                      // Force reload if data doesn't appear within 1 second
+                      Future.delayed(const Duration(milliseconds: 1000), () {
+                        if (tvChart.optChainCallUP.isEmpty || 
+                            tvChart.optChainPutUp.isEmpty) {
+                          // Trigger a reload if data isn't loaded yet
+                          tvChart.fetchOPtionChain(
+                            context: context,
+                            exchange: tvChart.optionExch ?? tab.exch.toString(),
+                            numofStrike: tvChart.numStrike,
+                            strPrc: tvChart.optionStrPrc,
+                            tradeSym: tvChart.selectedTradeSym ?? tab.tsym.toString()
+                          );
+                        }
+                      });
+                    } catch (e) {
+                      // Handle any errors during script setting
+                      debugPrint("Error loading option chain: $e");
+                      
+                      // Ensure loading indicator is turned off in case of error
+                      tvChart.singlePageloader(false);
+                    }
+
+                    // Scroll to the current strike price after a delay
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      scrollToStrikePrice();
+                    });
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Chip(
@@ -665,10 +694,59 @@ class _OptionChainContent extends ConsumerWidget {
                         scripInfo.optChainPutDown.isEmpty;
                         
     if (isLoading) {
-      return const Expanded(
-        child: Center(
-          child: CircularProgressIndicator(color: Color(0xff0037B7))
-        )
+      // Create a timeout to handle cases where loading gets stuck
+      return FutureBuilder(
+        future: Future.delayed(const Duration(seconds: 5)),
+        builder: (context, snapshot) {
+          // If the timeout completes and we're still loading, show a retry option
+          if (snapshot.connectionState == ConnectionState.done) {
+            return Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Data loading is taking longer than expected",
+                      style: TextStyle(fontSize: 14, color: Color(0xff666666)),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () async {
+                        // Reset loading state
+                        ref.read(marketWatchProvider).singlePageloader(true);
+                        
+                        // Retry fetching data
+                        if (scripInfo.oactiveTab != null) {
+                          ref.read(marketWatchProvider).setOptionScript(
+                            context,
+                            scripInfo.oactiveTab!.exch.toString(),
+                            scripInfo.oactiveTab!.token.toString(),
+                            scripInfo.oactiveTab!.tsym.toString(),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xff0037B7),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                      child: const Text(
+                        "Retry",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          
+          // Show loading indicator while waiting
+          return const Expanded(
+            child: Center(
+              child: CircularProgressIndicator(color: Color(0xff0037B7))
+            )
+          );
+        }
       );
     }
     

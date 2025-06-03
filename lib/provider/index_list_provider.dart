@@ -525,7 +525,7 @@ class IndexListProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       // In case of any error, assume session is invalid
-      ref.read(authProvider).ifSessionExpired(context);
+      // ref.read(authProvider).ifSessionExpired(context);
     }
   }
 

@@ -72,7 +72,7 @@ class ExitHoldingsScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    holdings.isExitAllPosition ? "Cancel" : "Select All",
+                    holdings.isExitAllHoldings ? "Cancel" : "Select All",
                     style: textStyle(
                         theme.isDarkMode
                             ? colors.colorLightBlue

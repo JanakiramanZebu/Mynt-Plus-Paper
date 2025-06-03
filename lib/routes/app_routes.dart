@@ -102,6 +102,7 @@ import '../screens/stocks/explore/stocks/stock_screens.dart';
 import '../screens/stocks/explore/stocks/trade_action/all_trade.dart';
 import '../screens/stocks/explore/stocks/trade_action/sector_themeatic_details.dart';
 import '../sharedWidget/internet_widget.dart';
+import '../provider/version_provider.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../screens/mutual_fund/sip_calculator_screen.dart';
@@ -378,7 +379,7 @@ static PageRouteBuilder _createRoute({
 
       case Routes.positionExit:
         return _createRoute(
-          pageBuilder: (_, __, ___) => ExitPositionScreen(exitPositionList: args),
+          pageBuilder: (_, __, ___) => const ExitPositionScreen(),
           beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.orderExit:

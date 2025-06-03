@@ -530,17 +530,26 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo> {
                                                           scripInfo
                                                               .singlePageloader(
                                                                   true);
-                                                          Navigator.pop(context);
-                                                          Navigator.pushNamed(
-                                                              context,
-                                                              Routes.optionChain,
-                                                              arguments:
-                                                                  widget.wlValue);
+                                                          
+                                                          // First set up the option script data
                                                           scripInfo.setOptionScript(
                                                               context,
                                                               widget.wlValue.exch,
                                                               widget.wlValue.token,
                                                               widget.wlValue.tsym);
+                                                          
+                                                          // Wait a small amount of time to ensure data is processed
+                                                          await Future.delayed(const Duration(milliseconds: 100));
+                                                          
+                                                          // Then navigate to the option chain screen
+                                                          if (mounted) {
+                                                            Navigator.pop(context);
+                                                            Navigator.pushNamed(
+                                                                context,
+                                                                Routes.optionChain,
+                                                                arguments:
+                                                                    widget.wlValue);
+                                                          }
                                                         } else if (scripInfo
                                                                     .depthBtns[
                                                                 index]['btnName'] ==
