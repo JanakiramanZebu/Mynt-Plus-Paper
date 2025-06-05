@@ -486,7 +486,7 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                                             .showSnackBar(
                                                                 warningMessage(
                                                                     context,
-                                                                    "Quntity can not be empty"));
+                                                                    "Quantity can not be empty"));
                                                       } else {
                                                         String newValue =
                                                             value.replaceAll(

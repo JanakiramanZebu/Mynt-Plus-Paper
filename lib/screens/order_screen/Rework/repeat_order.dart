@@ -621,7 +621,7 @@ class _RepeatOrderState extends ConsumerState<RepeatOrder> {
                                                           .showSnackBar(
                                                               warningMessage(
                                                                   context,
-                                                                  "Quntity can not be empty"));
+                                                                  "Quantity can not be empty"));
                                                     }
                                                   },
                                                 )),

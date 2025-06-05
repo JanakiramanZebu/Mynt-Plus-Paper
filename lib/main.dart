@@ -179,7 +179,9 @@ void main() async {
   print("App startup began at: $startTime");
   
   WidgetsFlutterBinding.ensureInitialized();
+  if (TargetPlatform.android == defaultTargetPlatform) {
   await FlutterDisplayMode.setHighRefreshRate();
+  }
   HttpOverrides.global = MyHttpOverrides();
   setupLocator();
   await NotificationService.initializeNotification();
