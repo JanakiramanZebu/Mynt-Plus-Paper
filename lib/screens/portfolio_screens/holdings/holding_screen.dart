@@ -419,9 +419,10 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   // Method to calculate summary values from holdings data
   void _calculateSummaryValues() {
     final holdingProvider = ref.read(portfolioProvider);
-    final holdings = holdingProvider.showSearchHold
-        ? holdingProvider.holdingSearchItem!
-        : holdingProvider.holdingsModel!;
+    final holdings = holdingProvider.holdingsModel!;
+    // holdingProvider.showSearchHold
+    //     ? holdingProvider.holdingSearchItem!
+    //     : holdingProvider.holdingsModel!;
     
     if (holdings.isEmpty) {
       _totalPnlHolding = 0.0;

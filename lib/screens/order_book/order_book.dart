@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -36,17 +37,27 @@ class _OrderBookState extends ConsumerState<OrderBook> {
   // Cache of items needing updates
   final Map<String, Map<String, dynamic>> _pendingUpdates = {};
   Timer? _batchUpdateTimer;
+  
+  // Timer for periodic data refresh - especially useful after market hours
+  Timer? _periodicRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _setupSocketSubscription();
+    
+    // Schedule initial data fetch for any missing LTPs
+    _scheduleDataFetch();
+    
+    // Set up periodic refresh to keep data fresh even without socket updates
+    _setupPeriodicRefresh();
   }
 
   @override
   void dispose() {
     _socketSubscription?.cancel();
     _batchUpdateTimer?.cancel();
+    _periodicRefreshTimer?.cancel();
     super.dispose();
   }
 
@@ -164,6 +175,131 @@ class _OrderBookState extends ConsumerState<OrderBook> {
     return orderProv.showSearchHold
         ? orderProv.orderSearchItem ?? []
         : widget.orderBook;
+  }
+
+  void _setupPeriodicRefresh() {
+    // Refresh LTP data every 60 seconds (or adjust as needed)
+    // This ensures we get updated data even when socket updates are sparse
+    _periodicRefreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) {
+        _scheduleDataFetch();
+      }
+    });
+  }
+
+  void _scheduleDataFetch() {
+    // Delay the fetch to allow for widget initialization
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      
+      // Get order items that need updating
+      final itemsToUpdate = _getItemsWithMissingData();
+      if (itemsToUpdate.isEmpty) return;
+      
+      // Fetch LTP data for these orders
+      _fetchCurrentLtpData(itemsToUpdate);
+    });
+  }
+  
+  List<OrderBookModel> _getItemsWithMissingData() {
+    final items = _getActiveOrders();
+    
+    // Filter to orders with missing or zero LTP
+    return items.where((order) {
+      // Check if LTP is missing or invalid
+      return order.token != null && 
+             order.token!.isNotEmpty && 
+             (order.ltp == null || 
+              order.ltp == "null" || 
+              order.ltp == "0" || 
+              order.ltp == "0.00");
+    }).toList();
+  }
+  
+  Future<void> _fetchCurrentLtpData(List<OrderBookModel> items) async {
+    if (items.isEmpty) return;
+    
+    try {
+      final orderProv = ref.read(orderProvider);
+      
+      // Create batch LTP arguments
+      List<Map<String, String>> ltpArgs = [];
+      for (var order in items) {
+        if (order.token == null || order.exch == null) continue;
+        ltpArgs.add({"exch": order.exch!, "token": order.token!});
+      }
+      
+      if (ltpArgs.isEmpty) return;
+      
+      // Call API to get current LTP data
+      final api = ref.read(orderProvider).api;
+      final response = await api.getLTP(ltpArgs);
+      
+      if (response.statusCode != 200) return;
+      
+      Map res = jsonDecode(response.body);
+      if (res["data"] == null) return;
+      
+      bool hasUpdates = false;
+      
+      // Update the orders with the fetched data
+      for (var order in items) {
+        if (order.token == null || !res["data"].containsKey(order.token)) continue;
+        
+        final data = res["data"][order.token];
+        
+        // Helper function to check if a string is a valid numeric price
+        bool isValidNumeric(String? value) {
+          if (value == null || value == "null" || value == "0" || value == "0.00") {
+            return false;
+          }
+          return double.tryParse(value) != null;
+        }
+        
+        // Update LTP if available
+        if (data["lp"] != null && isValidNumeric(data["lp"].toString())) {
+          order.ltp = data["lp"].toString();
+          hasUpdates = true;
+        }
+        
+        // Update close price if available
+        if (data["close"] != null && isValidNumeric(data["close"].toString())) {
+          order.close = data["close"].toString();
+          order.c = data["close"].toString();
+          hasUpdates = true;
+        }
+        
+        // Calculate or update changes
+        if (isValidNumeric(order.ltp) && isValidNumeric(order.close)) {
+          final ltp = double.tryParse(order.ltp!)!;
+          final close = double.tryParse(order.close!)!;
+          
+          // Update change
+          order.change = (ltp - close).toStringAsFixed(2);
+          
+          // Update percent change
+          if (close > 0) {
+            order.perChange = ((ltp - close) * 100 / close).toStringAsFixed(2);
+          }
+          
+          hasUpdates = true;
+        } else if (data["change"] != null && isValidNumeric(data["change"].toString())) {
+          // If direct calculation not possible but API provides change
+          order.perChange = data["change"].toString();
+          hasUpdates = true;
+        }
+      }
+      
+      if (hasUpdates && mounted) {
+        // Apply any persistent sort setting
+        if (orderProv.lastOrderSortMethod.isNotEmpty) {
+          orderProv.filterOrders(sorting: orderProv.lastOrderSortMethod);
+        }
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint("Error fetching LTP data: $e");
+    }
   }
 
   @override
