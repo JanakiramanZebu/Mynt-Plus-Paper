@@ -6,6 +6,7 @@ import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
 import '../models/marketwatch_model/get_quotes.dart';
+import '../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../provider/market_watch_provider.dart';
 import '../provider/user_profile_provider.dart';
 import '../routes/route_names.dart';
@@ -41,22 +42,22 @@ class ScripInfoBtns extends ConsumerWidget {
     final userProfile = ref.watch(userProfileProvider);
 
     return Container(
-      padding: const EdgeInsets.only(left: 14, top: 8, bottom: 8),
-      height: 50,
-      decoration: BoxDecoration(
-          border: Border(
+        padding: const EdgeInsets.only(left: 14, top: 8, bottom: 8),
+        height: 50,
+        decoration: BoxDecoration(
+            border: Border(
               bottom: BorderSide(
                   color: theme.isDarkMode
                       ? colors.darkColorDivider
                       : colors.colorDivider),
-              top: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.darkColorDivider
+                top: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
                       : colors.colorDivider))),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: marketwatch.depthBtns.length,
-        itemBuilder: (BuildContext context, int index) {
+        child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: marketwatch.depthBtns.length,
+            itemBuilder: (BuildContext context, int index) {
           final bool isActive = 
               marketwatch.actDeptBtn == marketwatch.depthBtns[index]['btnName'];
           
@@ -93,7 +94,7 @@ class ScripInfoBtns extends ConsumerWidget {
                   "${marketwatch.depthBtns[index]['imgPath']}",
                   width: 16,
                   height: 16,
-                  color: theme.isDarkMode
+                    color: theme.isDarkMode
                       ? isActive
                           ? Colors.white
                           : Colors.white
@@ -130,15 +131,28 @@ class ScripInfoBtns extends ConsumerWidget {
   Future<void> _handleButtonPress(BuildContext context, WidgetRef ref,
       MarketWatchProvider marketwatch, int index) async {
     // Set to initial loading state
-    marketwatch.singlePageloader(true);
+                        marketwatch.singlePageloader(true);
 
     try {
-      if (marketwatch.depthBtns[index]['btnName'] == "Chart") {
-        // Chart button logic
-        ref.read(userProfileProvider).setChartdialog(true);
+      final String buttonName = marketwatch.depthBtns[index]['btnName'];
+      
+      if (buttonName == "Chart") {
+        // For Chart button, we need to:
+        // 1. Setup the chart data
+        // 2. Close the current bottom sheet
+        // 3. Show the chart using the overlay mechanism
+        
+        // First prepare the chart data
         marketwatch.setChartScript(exch, token, tsym);
-      } else if (marketwatch.depthBtns[index]['btnName'] == "Option") {
-        // Option button logic - direct navigation
+        
+        // Close the bottom sheet first
+        Navigator.pop(context);
+        
+        // Then activate the chart overlay
+        ref.read(userProfileProvider).setChartdialog(true);
+        
+      } else if (buttonName == "Option") {
+        // Option chain logic
         if (exch == "NFO" || (exch == "MCX" && insName == "OPTFUT")) {
           await marketwatch.fetchStikePrc(
               "${marketwatch.getQuotes!.undTk}",
@@ -146,7 +160,7 @@ class ScripInfoBtns extends ConsumerWidget {
               context);
         }
         
-        // First set up the option script data
+        // Set up the option script data
         marketwatch.setOptionScript(
             context,
             exch,
@@ -166,40 +180,47 @@ class ScripInfoBtns extends ConsumerWidget {
             expDate: marketwatch.getQuotes!.expDate ?? '',
             option: marketwatch.getQuotes!.option ?? '');
         
-        // Navigate directly to option chain screen
+        // Navigate to option chain screen
         Navigator.pop(context);
         Navigator.pushNamed(
             context,
             Routes.optionChain,
             arguments: depthArgs);
       } else {
-        // For other buttons, show the depth info in a bottom sheet
-        DepthInputArgs depthArgs = DepthInputArgs(
-            exch: exch,
-            token: token,
-            tsym: '${marketwatch.getQuotes!.tsym}',
-            instname: marketwatch.getQuotes!.instname ?? "",
-            symbol: '${marketwatch.getQuotes!.symbol}',
-            expDate: '${marketwatch.getQuotes!.expDate}',
-            option: '${marketwatch.getQuotes!.option}');
-        Navigator.pop(context);
+        // For other buttons (Overview, Fundamental, Set Alert, etc.)
+        // Create depth args for the bottom sheet
+                          DepthInputArgs depthArgs = DepthInputArgs(
+                              exch: exch,
+                              token: token,
+            tsym: marketwatch.getQuotes!.tsym ?? '',
+                              instname: marketwatch.getQuotes!.instname ?? "",
+            symbol: marketwatch.getQuotes!.symbol ?? '',
+            expDate: marketwatch.getQuotes!.expDate ?? '',
+            option: marketwatch.getQuotes!.option ?? '');
+        
+        // Update the active depth button before showing the bottom sheet
+        await marketwatch.chngDephBtn(buttonName);
+        
+        // Close current context and show the depth info in a bottom sheet
+                          Navigator.pop(context);
 
-        showModalBottomSheet(
-            barrierColor: Colors.transparent,
-            isScrollControlled: true,
-            useSafeArea: true,
-            isDismissible: true,
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(16))),
-            backgroundColor: const Color(0xffffffff),
-            context: context,
-            builder: (context) => ScripDepthInfo(
-                wlValue: depthArgs, isBasket: ''));
-      }
+        // Show the bottom sheet with the specific button active
+                          showModalBottomSheet(
+                              barrierColor: Colors.transparent,
+                              isScrollControlled: true,
+                              useSafeArea: true,
+                              isDismissible: true,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(16))),
+                              backgroundColor: const Color(0xffffffff),
+                              context: context,
+                              builder: (context) => ScripDepthInfo(
+                                  wlValue: depthArgs, isBasket: ''));
+                        }
     } finally {
       // Ensure we turn off loading regardless of success/failure
-      marketwatch.singlePageloader(false);
-    }
+                        marketwatch.singlePageloader(false);
+                      }
   }
 }

@@ -18,7 +18,8 @@ import '../../../sharedWidget/list_divider.dart';
 class IndexBottomSheet extends ConsumerWidget {
   final dynamic defaultIndex;
   final bool src;
-  const IndexBottomSheet({super.key, required this.defaultIndex, required this.src});
+  final int indexPosition;
+  const IndexBottomSheet({super.key, required this.defaultIndex, required this.src, required this.indexPosition});
 
   // int tabIndex = 0;
   @override
@@ -196,14 +197,51 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
   String _ch = '0.00';
   String _chp = '0.00';
   bool _isInitialized = false;
+  Timer? _refreshTimer;
   
   // Track last update time to optimize rebuilds
   DateTime _lastUpdateTime = DateTime.now();
   
+  // Track when this widget was created
+  final DateTime _creationTime = DateTime.now();
+  
   @override
   void initState() {
     super.initState();
-    // Will initialize in didChangeDependencies
+    // Initialize with values from widget data if available
+    _initializeFromItemData();
+    
+    // Set up periodic refresh timer to ensure UI stays updated
+    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted && _isVisibleInViewport()) {
+        setState(() {});
+      }
+    });
+  }
+  
+  // Initialize values from widget item data if available
+  void _initializeFromItemData() {
+    // Try to use values from the item data first
+    if (widget.itemData.ltp != null && 
+        widget.itemData.ltp != "null" && 
+        widget.itemData.ltp != "0.00" && 
+        widget.itemData.ltp != "0") {
+      _ltp = widget.itemData.ltp!;
+    }
+    
+    if (widget.itemData.change != null && 
+        widget.itemData.change != "null" && 
+        widget.itemData.change != "0.00" && 
+        widget.itemData.change != "0") {
+      _ch = widget.itemData.change!;
+    }
+    
+    if (widget.itemData.perChange != null && 
+        widget.itemData.perChange != "null" && 
+        widget.itemData.perChange != "0.00" && 
+        widget.itemData.perChange != "0") {
+      _chp = widget.itemData.perChange!;
+    }
   }
   
   @override
@@ -219,7 +257,14 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
   @override
   void dispose() {
     _subscription?.cancel();
+    _refreshTimer?.cancel();
     super.dispose();
+  }
+  
+  // Helper to check if this item is likely visible in the viewport
+  bool _isVisibleInViewport() {
+    // This is a simple heuristic - items created recently are likely visible
+    return DateTime.now().difference(_creationTime).inMilliseconds < 500;
   }
   
   // Set up a focused socket listener that only updates this item
@@ -229,10 +274,12 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
     
     final websocket = ProviderScope.containerOf(context).read(websocketProvider);
     
-    // Pre-load with socket data if available
+    // Pre-load with socket data if available - FORCE update immediately
     final socketData = websocket.socketDatas[token];
     if (socketData != null) {
       _updateFromSocketData(socketData);
+      // Force immediate UI update without throttling for initial data
+      if (mounted) setState(() {});
     }
     
     // Set up subscription that only listens for this token
@@ -240,12 +287,21 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
       if (data.containsKey(token)) {
         final socketData = data[token];
         if (socketData != null) {
-          // Only rebuild if data changed AND enough time has passed (throttling)
-          if (_updateFromSocketData(socketData)) {
-            final now = DateTime.now();
-            if (now.difference(_lastUpdateTime).inMilliseconds > 300) { // Throttle updates
-              _lastUpdateTime = now;
-              if (mounted) setState(() {});
+          // Check if data actually changed
+          final hasChanged = _updateFromSocketData(socketData);
+          
+          // Always update visible items immediately for better UX
+          if (hasChanged && mounted) {
+            // Skip throttling for important updates (like price changes)
+            if (_isVisibleInViewport()) {
+              setState(() {});
+            } else {
+              // Only throttle updates for off-screen items
+              final now = DateTime.now();
+              if (now.difference(_lastUpdateTime).inMilliseconds > 300) {
+                _lastUpdateTime = now;
+                setState(() {});
+              }
             }
           }
         }
@@ -257,27 +313,68 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
   bool _updateFromSocketData(dynamic socketData) {
     bool hasUpdates = false;
     
-    if (socketData['lp'] != null && socketData['lp'].toString() != "null") {
+    // Handle lp (last price)
+    if (socketData.containsKey('lp') && socketData['lp'] != null) {
       final newLtp = socketData['lp'].toString();
-      if (newLtp != _ltp) {
+      if (newLtp != "null" && newLtp != _ltp) {
         _ltp = newLtp;
         hasUpdates = true;
       }
     }
     
-    if (socketData['chng'] != null && socketData['chng'].toString() != "null") {
+    // Handle chng (change)
+    if (socketData.containsKey('chng') && socketData['chng'] != null) {
       final newCh = socketData['chng'].toString();
-      if (newCh != _ch) {
+      if (newCh != "null" && newCh != _ch) {
         _ch = newCh;
         hasUpdates = true;
       }
     }
     
-    if (socketData['pc'] != null && socketData['pc'].toString() != "null") {
+    // Handle pc (percent change)
+    if (socketData.containsKey('pc') && socketData['pc'] != null) {
       final newChp = socketData['pc'].toString();
-      if (newChp != _chp) {
+      if (newChp != "null" && newChp != _chp) {
         _chp = newChp;
         hasUpdates = true;
+      }
+    }
+    
+    // Calculate change and perChange if missing but we have ltp and close price
+    if (socketData.containsKey('c') && 
+        socketData['c'] != null && 
+        socketData.containsKey('lp') && 
+        socketData['lp'] != null) {
+      
+      try {
+        final close = double.parse(socketData['c'].toString());
+        final ltp = double.parse(socketData['lp'].toString());
+        
+        if (close > 0 && ltp > 0) {
+          // Calculate change if it's missing or invalid
+          if (!socketData.containsKey('chng') || 
+              socketData['chng'] == null || 
+              socketData['chng'] == "null") {
+            final change = (ltp - close).toStringAsFixed(2);
+            if (change != _ch) {
+              _ch = change;
+              hasUpdates = true;
+            }
+          }
+          
+          // Calculate percent change if it's missing or invalid
+          if (!socketData.containsKey('pc') || 
+              socketData['pc'] == null || 
+              socketData['pc'] == "null") {
+            final perChange = ((ltp - close) * 100 / close).toStringAsFixed(2);
+            if (perChange != _chp) {
+              _chp = perChange;
+              hasUpdates = true;
+            }
+          }
+        }
+      } catch (e) {
+        // Ignore parsing errors
       }
     }
     
@@ -509,10 +606,11 @@ class _ActionButton extends StatelessWidget {
               msg: "Scrip Already Exist!!",
               backgroundColor: Colors.amber);
         } else {
+          // Get the first available position in the index list (0 by default)
           await indexProvider.changeIndex(
               itemData,
               context,
-              indexProvider.defaultIndexList!.indValues![0]);
+              0); // Pass position index as integer
 
           Navigator.of(context).pop();
         }

@@ -24,6 +24,7 @@ import '../../provider/order_provider.dart';
 import '../../provider/shocase_provider.dart';
 import '../../provider/sip_order_provider.dart';
 import '../../provider/thems.dart';
+import '../../provider/transcation_provider.dart';
 import '../../provider/user_profile_provider.dart';
 import '../../provider/websocket_provider.dart';
 import '../../routes/route_names.dart';
@@ -391,6 +392,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
           final orderInput = ref.watch(ordInputProvider);
           final internet = ref.watch(networkStateProvider);
           final theme = ref.read(themeProvider);
+          final trancation = ref.watch(transcationProvider);
 
           final sip = ref.watch(siprovider);
 
@@ -1657,9 +1659,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               },
                                                               hintText:
                                                                   "${widget.orderArg.ltp}",
-                                                              hintStyle: textStyle(
-                                                                  const Color(
-                                                                      0xff666666),
+                                                                  hintStyle: textStyle(
+                                                                      const Color(
+                                                                          0xff666666),
                                                                   15,
                                                                   FontWeight
                                                                       .w400),
@@ -3357,6 +3359,63 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                 ])),
                                                         const SizedBox(
                                                             width: 20),
+                                                            orderProvide.orderMarginModel != null ? orderProvide.orderMarginModel!.remarks == "Insufficient Balance" ? InkWell(
+                                                              onTap: () {
+                                                                ref
+                                            .read(transcationProvider)
+                                            .fetchValidateToken(context);
+                                        Future.delayed(
+                                            const Duration(milliseconds: 100),
+                                            () async {
+                                          await trancation.ip();
+                                          await trancation.fetchupiIdView(
+                                              trancation.bankdetails!
+                                                  .dATA![trancation.indexss][1],
+                                              trancation.bankdetails!
+                                                      .dATA![trancation.indexss]
+                                                  [2]);
+                                          await trancation
+                                              .fetchcwithdraw(context);
+                                        });
+
+                                        trancation.changebool(true);
+                                        Navigator.pushNamed(
+                                            context, Routes.fundscreen,
+                                            arguments: trancation);
+                                                              },
+                                                              child: Row(
+                                                                    children: [
+                                                                      // Red circular icon with white exclamation mark
+                                                                      Container(
+                                                                        width: 20,
+                                                                        height: 20,
+                                                                        decoration: const BoxDecoration(
+                                                                          color: Colors.white,
+                                                                          shape: BoxShape.circle,
+                                                                        ),
+                                                                        child: const Center(
+                                                                          child: Icon(
+                                                                            Icons.error, // Exclamation icon
+                                                                            color: Colors.red,
+                                                                            size: 20,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(width: 4),
+                                                                      // "+ Add fund" text in blue
+                                                                      Text(
+                                                                        '+ Add fund',
+                                                                        style: textStyle(
+                                                                          !theme.isDarkMode
+                                                                              ? colors.colorBlue
+                                                                              : colors.colorLightBlue,
+                                                                          12,
+                                                                          FontWeight.w600),
+                                                                      ),
+                                                                      SizedBox(width: 20),
+                                                                    ],
+                                                                  ),
+                                                            ) : SizedBox() : SizedBox(),
                                                         CustomWidgetButton(
                                                             onPress: internet
                                                                         .connectionStatus ==
@@ -4682,6 +4741,18 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     data = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
 
     List scripList = data[bsktName] ?? [];
+    
+    // Check if basket already has 20 items
+    if (scripList.length >= 20) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Basket limit reached. Please create a new basket as you are exceeding the 20 item limit."),
+          backgroundColor: colors.darkred,
+          duration: Duration(seconds: 3),
+        )
+      );
+      return; // Exit the function without adding the script
+    }
 
     scripList.add({
       "dname": "${widget.scripInfo.dname}",

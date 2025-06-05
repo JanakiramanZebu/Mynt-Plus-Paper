@@ -103,6 +103,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
   void _processUpdates(Map socketDatas) {
     bool hasUpdates = false;
     final items = _getActiveOrders();
+    final orderProv = ref.read(orderProvider);
 
     // Helper function to check if a string is a valid numeric price
     bool isValidNumeric(String? value) {
@@ -149,6 +150,10 @@ class _OrderBookState extends ConsumerState<OrderBook> {
 
     // Only trigger rebuild if actual data changed
     if (hasUpdates && mounted) {
+      // Reapply the last sorting if there's a persistent sort setting
+      if (orderProv.lastOrderSortMethod.isNotEmpty) {
+        orderProv.filterOrders(sorting: orderProv.lastOrderSortMethod);
+      }
       setState(() {});
     }
   }
@@ -315,7 +320,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
   Widget _buildOrderList(List<OrderBookModel> items, OrderProvider order,
       ThemesProvider theme) {
                             return ListView.builder(
-                              physics: const BouncingScrollPhysics(),
+                              physics: const AlwaysScrollableScrollPhysics(),
                               shrinkWrap: false,
                               itemBuilder: (context, index) {
                                 final itemIndex = index ~/ 2;

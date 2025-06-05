@@ -419,40 +419,127 @@ class IndexListProvider extends DefaultChangeNotifier {
 // Modify Default Index list and store in local
 
   changeIndex(IndexValue addNewIndex, BuildContext context, int index) async {
-    final localstorage = await SharedPreferences.getInstance();
+    try {
+      final localstorage = await SharedPreferences.getInstance();
 
-    if (index == 0) {
-      _defaultIndexList!.indValues!.removeAt(0);
-      _defaultIndexList!.indValues!.insert(0, addNewIndex);
-    } else if (index == 1) {
-      _defaultIndexList!.indValues!.removeAt(1);
-      _defaultIndexList!.indValues!.insert(1, addNewIndex);
-    } else if (index == 2) {
-      _defaultIndexList!.indValues!.removeAt(2);
-      _defaultIndexList!.indValues!.insert(2, addNewIndex);
-    } else {
-      _defaultIndexList!.indValues!.removeAt(3);
-      _defaultIndexList!.indValues!.insert(3, addNewIndex);
-    }
+      // First, update the index at the specified position
+      if (index >= 0 && index < _defaultIndexList!.indValues!.length) {
+        // Store the old token/exchange for unsubscribing later
+        final oldExch = _defaultIndexList!.indValues![index].exch;
+        final oldToken = _defaultIndexList!.indValues![index].token;
+        final oldIndexItem = "$oldExch|$oldToken";
+        
+        // Update the index item
+        _defaultIndexList!.indValues!.removeAt(index);
+        _defaultIndexList!.indValues!.insert(index, addNewIndex);
+        
+        // Create the new token for subscription
+        final newExch = addNewIndex.exch;
+        final newToken = addNewIndex.token;
+        final newIndexItem = "$newExch|$newToken";
+        
+        // If the token changed, update the subscriptions
+        if (oldIndexItem != newIndexItem) {
+          // First unsubscribe the old token
+          ref.read(websocketProvider).establishConnection(
+              channelInput: "$oldIndexItem",
+              task: 'u',
+              context: context);
+              
+          // Then subscribe to the new token
+          ref.read(websocketProvider).establishConnection(
+              channelInput: "$newIndexItem", 
+              task: 't',
+              context: context);
+        }
+      } else {
+        // Default to first position if index is out of bounds
+        _defaultIndexList!.indValues!.removeAt(0);
+        _defaultIndexList!.indValues!.insert(0, addNewIndex);
+      }
 
-    localstorage.setStringList(
-        "marketIndex",
-        _defaultIndexList!.indValues!
-            .map((e) => IndexListOrder(
+      // Save the updated list to localStorage
+      localstorage.setStringList(
+          "marketIndex",
+          _defaultIndexList!.indValues!
+              .map((e) => IndexListOrder(
                     index: _defaultIndexList!.indValues!.indexOf(e),
                     idxname: e.idxname!,
                     token: e.token!,
                     exch: e.exch!)
-                .toString())
-            .toList());
-    notifyListeners();
+                  .toString())
+              .toList());
+      
+      // Force a refresh of the UI immediately
+      notifyListeners();
 
-    await getIndeexListFromLocal(context);
-
-    ref.read(marketWatchProvider)
-        .requestMWScrip(isSubscribe: true, context: context);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(successMessage(context, "Index scrip modified"));
+      // Update the index list from local storage
+      await getIndeexListFromLocal(context);
+      
+      // Also fetch live data for the new index immediately 
+      List ltpArgs = [];
+      ltpArgs.add({"exch": addNewIndex.exch, "token": addNewIndex.token});
+      
+      try {
+        // Get LTP data directly
+        final response = await api.getLTP(ltpArgs);
+        Map res = jsonDecode(response.body);
+        
+        // Update the index item with live data
+        if (res["data"] != null && res["data"][addNewIndex.token] != null) {
+          final data = res["data"][addNewIndex.token];
+          
+          // Find the index we just updated
+          for (var element in _defaultIndexList!.indValues!) {
+            if (element.token == addNewIndex.token && element.exch == addNewIndex.exch) {
+              // Update with live data
+              element.ltp = "${data["lp"]}";
+              element.close = "${data["close"]}";
+              element.perChange = "${data["change"]}";
+              
+              if (element.ltp != null && element.close != null) {
+                element.change = (double.parse("${element.ltp}") - double.parse("${element.close}"))
+                    .toStringAsFixed(2);
+              }
+              
+              break;
+            }
+          }
+          
+          // Notify again after updating the data
+          notifyListeners();
+        }
+      } catch (e) {
+        print("Error fetching LTP for new index: $e");
+      }
+      
+      // Force WebSocket resubscription for all indices
+      String newSubscription = "";
+      for (var element in _defaultIndexList!.indValues!) {
+        newSubscription += "${element.exch}|${element.token}#";
+      }
+      
+      // Update the index token and refresh subscriptions
+      _indexToken = newSubscription;
+      if (_indexToken.isNotEmpty) {
+        ref.read(websocketProvider).establishConnection(
+            channelInput: _indexToken, task: 't', context: context);
+      }
+      
+      // Refresh market watch with new subscription
+      ref.read(marketWatchProvider)
+          .requestMWScrip(isSubscribe: true, context: context);
+      
+      // Show success message
+      ScaffoldMessenger.of(context)
+          .showSnackBar(successMessage(context, "Index scrip modified"));
+          
+    } catch (e) {
+      print("Error changing index: $e");
+      Fluttertoast.showToast(
+          msg: "Error updating index",
+          backgroundColor: Colors.red);
+    }
   }
 
 // Retrieve from locally stored index data

@@ -22,13 +22,35 @@ class _EdisWebviewState extends ConsumerState<EdisWebview> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
+    final portfolioProviderRef = ref.read(portfolioProvider);
+    
     return PopScope(
-      canPop: true, // Allows back navigation
+      canPop: false, // Prevent default back navigation so we can handle it ourselves
       onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return; // If system handled back, do nothing
-
-        await ref.read(portfolioProvider).fetchHoldings(context, "Refresh");
-        Navigator.of(context).pop(); // Proceed with back navigation
+        // If didPop is true, the system already handled the pop - shouldn't happen with canPop: false
+        if (didPop) return;
+        
+        // Use a local flag to track navigation state
+        bool isNavigating = false;
+        
+        try {
+          if (isNavigating) return; // Prevent multiple navigation attempts
+          isNavigating = true;
+          
+          // First refresh the holdings data
+          await portfolioProviderRef.fetchHoldings(context, "Refresh");
+          
+          // Then navigate back if the context is still valid
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+        } catch (e) {
+          // If any error occurs, ensure we still navigate back
+          print("Error during EDIS navigation: $e");
+          if (context.mounted && !isNavigating) {
+            Navigator.of(context).pop();
+          }
+        }
       },
       child: Scaffold(
           appBar: AppBar(
@@ -44,9 +66,22 @@ class _EdisWebviewState extends ConsumerState<EdisWebview> {
               ),
               leading: InkWell(
                   onTap: () async {
-                    await ref.read(portfolioProvider)
-                        .fetchHoldings(context, "Refresh");
-                    Navigator.pop(context);
+                    // Use a safer approach for AppBar back button too
+                    try {
+                      // First refresh the holdings data
+                      await portfolioProviderRef.fetchHoldings(context, "Refresh");
+                      
+                      // Then navigate back if the context is still mounted
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    } catch (e) {
+                      // If any error occurs, ensure we still navigate back
+                      print("Error during EDIS AppBar navigation: $e");
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    }
                   },
                   child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 9),

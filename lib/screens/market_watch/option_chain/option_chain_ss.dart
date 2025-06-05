@@ -221,8 +221,8 @@ class _OptionTopBar extends ConsumerWidget {
                     
                     // Set the script with a catch for error handling
                     try {
-                      tvChart.setOptionScript(context, tab.exch.toString(),
-                          tab.token.toString(), tab.tsym.toString());
+                    tvChart.setOptionScript(context, tab.exch.toString(),
+                        tab.token.toString(), tab.tsym.toString());
 
                       // Force reload if data doesn't appear within 1 second
                       Future.delayed(const Duration(milliseconds: 1000), () {
@@ -247,9 +247,9 @@ class _OptionTopBar extends ConsumerWidget {
                     }
 
                     // Scroll to the current strike price after a delay
-                    Future.delayed(const Duration(milliseconds: 500), () {
-                      scrollToStrikePrice();
-                    });
+                         Future.delayed(const Duration(milliseconds: 500), () {
+                        scrollToStrikePrice();
+                                                                          });
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Chip(
@@ -741,10 +741,10 @@ class _OptionChainContent extends ConsumerWidget {
           }
           
           // Show loading indicator while waiting
-          return const Expanded(
-            child: Center(
-              child: CircularProgressIndicator(color: Color(0xff0037B7))
-            )
+      return const Expanded(
+        child: Center(
+          child: CircularProgressIndicator(color: Color(0xff0037B7))
+        )
           );
         }
       );

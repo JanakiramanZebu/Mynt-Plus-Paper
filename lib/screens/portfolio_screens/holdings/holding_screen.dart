@@ -1100,7 +1100,7 @@ class _HoldingItemWrapperState extends ConsumerState<_HoldingItemWrapper> {
             },
             onLongPress: () {
               // Use the newer context from Builder to avoid deactivated widget issues
-              Navigator.pushNamed(newContext, Routes.holdingExit);
+              // Navigator.pushNamed(newContext, Routes.holdingExit);
             },
             child: HoldingsList(
               holdingData: widget.holding,

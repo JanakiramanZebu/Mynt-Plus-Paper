@@ -34,22 +34,35 @@ class OrderScreenHeader extends ConsumerWidget {
           }
         }
         
+        // Ensure LTP has a default value
+        final ltp = headerData.ltp ?? "0.00";
+        // Ensure perChange has a default value and isn't null
+        final perChange = headerData.perChange ?? "0.00";
+        
+        // Determine color for percentage change
+        Color percentageColor = colors.colorGrey;
+        if (perChange.isNotEmpty) {
+          if (perChange.startsWith("-")) {
+            percentageColor = colors.darkred;
+          } else if (perChange != "0.00") {
+            percentageColor = colors.ltpgreen;
+          }
+        }
+        
         return Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              "₹${headerData.ltp} ",
+              "₹${ltp} ",
                style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                                           16, FontWeight.w600)
             ),
             Text(
-              " (${headerData.perChange ?? 0.00}%)",
+              " (${perChange}%)",
               style: textStyle(
-                  headerData.perChange!.startsWith("-")
-                      ? colors.darkred
-                      : colors.ltpgreen,
-                  13,
-                  FontWeight.w600),
+                percentageColor,
+                13,
+                FontWeight.w600),
             ),
           ],
         );

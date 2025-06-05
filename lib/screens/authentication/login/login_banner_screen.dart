@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -79,27 +80,28 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
         final shouldPop = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Exit Screen'),
-            content: Text('Do you really want to go back?'),
+            title: const Text('Exit App'),
+            content: const Text('Do you really want to exit?'),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(false); // Stay on the page
                 },
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(true); // Go back
                 },
-                child: Text('Yes'),
+                child: const Text('Yes'),
               ),
             ],
           ),
         );
 
         if (shouldPop == true) {
-          Navigator.of(context).pop(); // Go back if user confirms
+          // Exit the app completely
+          SystemNavigator.pop();
         }
       },
       child: Consumer(

@@ -352,7 +352,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> with 
             return AlertDialogue(
               scripName: "${_exchTsym.tsym}",
               exch: "${_exchTsym.exch}",
-              content: 'You are unable to exit because there are no sealable quantity.',
+              content: 'You are unable to exit because there are no sellable quantity.',
             );
           }
         ).then((_) {

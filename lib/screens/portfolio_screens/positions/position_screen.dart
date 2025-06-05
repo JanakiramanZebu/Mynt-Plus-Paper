@@ -216,27 +216,27 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
               ],
             )
           ] else if (positionBook.posSelection != "All position") ...[
-                        CustomTextBtn(
-                            label: 'Create Group',
-                            onPress: () {
-                              // Prevent multiple dialog opens
-                              if (positionBook.isFilterNavigating) return;
+                        // CustomTextBtn(
+                        //     label: 'Create Group',
+                        //     onPress: () {
+                        //       // Prevent multiple dialog opens
+                        //       if (positionBook.isFilterNavigating) return;
                               
-                              try {
-                                positionBook.setFilterNavigating(true);
+                        //       try {
+                        //         positionBook.setFilterNavigating(true);
                                 
-                              showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) => const CreateGroupPos(),
-                                ).then((_) {
-                                  // Reset navigation lock after dialog is closed
-                                  positionBook.setFilterNavigating(false);
-                                });
-                              } catch (e) {
-                                positionBook.setFilterNavigating(false);
-                              }
-                            },
-                            icon: assets.addCircleIcon)
+                        //       showDialog(
+                        //           context: context,
+                        //           builder: (BuildContext context) => const CreateGroupPos(),
+                        //         ).then((_) {
+                        //           // Reset navigation lock after dialog is closed
+                        //           positionBook.setFilterNavigating(false);
+                        //         });
+                        //       } catch (e) {
+                        //         positionBook.setFilterNavigating(false);
+                        //       }
+                        //     },
+                        //     icon: assets.addCircleIcon)
                       ]
                     ],
                   ),
@@ -338,7 +338,18 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
   }
   
   Widget _buildPositionList(BuildContext context, ThemesProvider theme, PortfolioProvider positionBook) {
-    final itemsToDisplay = positionBook.positionSearchItem.isEmpty 
+    // Check if search is active but the text field is empty
+    final isSearchActive = positionBook.showSearchPosition;
+    final searchText = positionBook.positionSearchCtrl.text;
+    
+    // If search is active and search field is empty, show no data found
+    if (isSearchActive && searchText.isEmpty) {
+      return const Center(
+        child: SizedBox(height: 500, child: NoDataFound()),
+      );
+    }
+    
+    final itemsToDisplay = positionBook.positionSearchItem.isEmpty && !isSearchActive
       ? widget.listofPosition 
       : positionBook.positionSearchItem;
     
@@ -619,7 +630,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
   
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+                                return InkWell(
       onLongPress: widget.showLongPressOption 
         ? () {
             Navigator.pushNamed(
@@ -628,7 +639,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
             );
           }
         : null,
-      onTap: () async {
+                                  onTap: () async {
         // Prevent multiple navigation events on rapid taps
         if (_isNavigating) return;
         
@@ -839,7 +850,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
       ],
     );
   }
-
+  
   Future<void> _handlePositionTap(BuildContext context) async {
     final marketWatch = ref.read(marketWatchProvider);
     

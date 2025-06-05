@@ -80,7 +80,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     WidgetsBinding.instance.removeObserver(this);
     // Cancel the timer before disposing
     if (ConstantName.timer != null) {
-      ConstantName.timer!.cancel();
+    ConstantName.timer!.cancel();
       ConstantName.timer = null;
     }
     // Close socket but don't attempt to reconnect since we're disposing
@@ -254,7 +254,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       builder: (context, ref, _) {
         final internet = ref.watch(networkStateProvider);
         final websocket = ref.watch(websocketProvider);
-        
+    
         // Show no internet screen if needed - only when there's truly no connection or 
         // maximum reconnection attempts reached without successful reconnection
         if ((internet.connectionStatus == ConnectivityResult.none || 
@@ -265,16 +265,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           // Pass the context to the network provider to enable reconnection attempts
           ref.read(networkStateProvider).getContext(context);
           
-          return Scaffold(
-            appBar: AppBar(
-              elevation: 0,
+      return Scaffold(
+                          appBar: AppBar(
+                            elevation: 0,
               backgroundColor: Colors.white,
-            ),
+                          ),
             body: const NoInternetScreen(),
-          );
-        }
-        
-        // Otherwise show the main app content
+      );
+    }
+    
+    // Otherwise show the main app content
         // Use select to listen only to the selected bottom index
         final selectedBtmIndx = ref.watch(indexListProvider.select((indexProvide) => indexProvide.selectedBtmIndx));
         final theme = ref.watch(themeProvider); // Theme is used throughout, so watching the whole provider is acceptable here
@@ -804,75 +804,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           false;
     }
   }
-
-  // Show exit all positions dialog
-  void _showExitAllDialog(BuildContext context, dynamic portfolio, WidgetRef ref) {
-    final theme = ref.read(themeProvider);
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: theme.isDarkMode ? const Color.fromARGB(255, 18, 18, 18) : colors.colorWhite,
-          titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
-          ),
-          contentTextStyle: textStyles.menuTxt.copyWith(
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
-          ),
-          titlePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(14))
-          ),
-          scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: const Text("Exit Position"),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Are you sure you want to exit all positions?")
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                "No",
-                style: textStyles.textBtn.copyWith(
-                  color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue
-                )
-              )
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await portfolio.exitPosition(context, true);
-                Navigator.of(context).pop(true);
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: theme.isDarkMode ? colors.colorbluegrey : colors.colorBlack,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50),
-                )
-              ),
-              child: Text(
-                "Yes",
-                style: textStyle(
-                  !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w500
-                )
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
 
 // Watchlist actions component
@@ -983,41 +914,41 @@ class _PositionGroupActions extends ConsumerWidget { // Make this a ConsumerWidg
       padding: const EdgeInsets.only(right: 15.0),
       child: Row(
         children: [
-                                                            Container(
-                                                              height: 27,
-            padding: const EdgeInsets.only(right: 10),
-            child: OutlinedButton(
-              onPressed: () {
-                                                                        showModalBottomSheet(
-                  useSafeArea: true,
-                  isScrollControlled: true,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16))
-                  ),
-                                                                            context: context,
-                                                                            builder: (context) {
-                                                                              return const PositionGroupBottomSheet();
-                  }
-                );
-                                                                      },
-                                                                      style: OutlinedButton.styleFrom(
-                                                                          side: BorderSide(
-                  color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
-                ),
-                                                                          shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(32))
-                )
-              ),
-                                                                      child: Text(
-                                                                          "Group by",
-                                                                          style: textStyle(
-                                                                              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                                              12,
-                  FontWeight.w600
-                )
-              )
-            ),
-          ),
+          //                                                   Container(
+          //                                                     height: 27,
+          //   padding: const EdgeInsets.only(right: 10),
+          //   child: OutlinedButton(
+          //     onPressed: () {
+          //                                                               showModalBottomSheet(
+          //         useSafeArea: true,
+          //         isScrollControlled: true,
+          //         shape: const RoundedRectangleBorder(
+          //           borderRadius: BorderRadius.vertical(top: Radius.circular(16))
+          //         ),
+          //                                                                   context: context,
+          //                                                                   builder: (context) {
+          //                                                                     return const PositionGroupBottomSheet();
+          //         }
+          //       );
+          //                                                             },
+          //                                                             style: OutlinedButton.styleFrom(
+          //                                                                 side: BorderSide(
+          //         color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
+          //       ),
+          //                                                                 shape: const RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.all(Radius.circular(32))
+          //       )
+          //     ),
+          //                                                             child: Text(
+          //                                                                 "Group by",
+          //                                                                 style: textStyle(
+          //                                                                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          //                                                                     12,
+          //         FontWeight.w600
+          //       )
+          //     )
+          //   ),
+          // ),
           if (exitAll && 
               posSelection == "All position" && 
               openPositionLength > 1)
@@ -1025,7 +956,9 @@ class _PositionGroupActions extends ConsumerWidget { // Make this a ConsumerWidg
                                                                 height: 27,
               child: OutlinedButton(
                 // Pass ref to _showExitAllDialog
-                onPressed: () => _showExitAllDialog(context, portfolio, ref), // Pass context, portfolio, and ref
+                onPressed: ref.watch(portfolioProvider).isExitingAll 
+                  ? null  // Disable button while exiting
+                  : () => _showExitAllDialog(context, portfolio, ref),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
                     color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack
@@ -1034,7 +967,16 @@ class _PositionGroupActions extends ConsumerWidget { // Make this a ConsumerWidg
                     borderRadius: BorderRadius.all(Radius.circular(32))
                   )
                 ),
-                child: Text(
+                child: ref.watch(portfolioProvider).isExitingAll
+                  ? SizedBox(
+                      width: 16, 
+                      height: 16, 
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      )
+                    )
+                  : Text(
                   "Exit All",
                   style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -1056,6 +998,12 @@ class _PositionGroupActions extends ConsumerWidget { // Make this a ConsumerWidg
                                                                           showDialog(
       context: context,
       builder: (BuildContext context) {
+        // Use a StatefulBuilder to manage local dialog state
+        return StatefulBuilder(
+          builder: (context, setState) {
+            // Track local loading state
+            bool isExiting = false;
+            
                                                                               return AlertDialog(
                                                                                 backgroundColor: theme.isDarkMode ? const Color.fromARGB(255, 18, 18, 18) : colors.colorWhite,
           titleTextStyle: textStyles.appBarTitleTxt.copyWith(
@@ -1083,7 +1031,7 @@ class _PositionGroupActions extends ConsumerWidget { // Make this a ConsumerWidg
                                                                                 ),
                                                                                 actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+                  onPressed: isExiting ? null : () => Navigator.of(context).pop(),
               child: Text(
                 "No",
                 style: textStyles.textBtn.copyWith(
@@ -1091,10 +1039,24 @@ class _PositionGroupActions extends ConsumerWidget { // Make this a ConsumerWidg
                 )
               )
             ),
-                                                                                  ElevatedButton(
-                                                                                    onPressed: () async {
+                Consumer(
+                  builder: (context, ref, _) {
+                    final isExitingAll = ref.watch(portfolioProvider).isExitingAll;
+                    
+                    return ElevatedButton(
+                      onPressed: isExitingAll 
+                        ? null 
+                        : () async {
+                          // Use setState to update local loading state
+                          setState(() => isExiting = true);
+                          
+                          // Execute the exit position
                                                                                       await portfolio.exitPosition(context, true);
+                          
+                          // Close the dialog
+                          if (context.mounted) {
                                                                                       Navigator.of(context).pop(true);
+                          }
                                                                                     },
                                                                                     style: ElevatedButton.styleFrom(
                                                                                         elevation: 0,
@@ -1103,7 +1065,16 @@ class _PositionGroupActions extends ConsumerWidget { // Make this a ConsumerWidg
                                                                                           borderRadius: BorderRadius.circular(50),
                 )
               ),
-              child: Text(
+                      child: isExitingAll
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                            ),
+                          )
+                        : Text(
                 "Yes",
                 style: textStyle(
                   !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -1111,8 +1082,12 @@ class _PositionGroupActions extends ConsumerWidget { // Make this a ConsumerWidg
                   FontWeight.w500
                 )
               ),
+                    );
+                  }
                                                                                   ),
                                                                                 ],
+            );
+          }
                                                                               );
                                                                             },
                                                                           );

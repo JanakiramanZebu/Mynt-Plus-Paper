@@ -152,6 +152,13 @@ class OrderProvider extends DefaultChangeNotifier {
   bool _isExitAllOrder = false;
   bool get isExitAllOrder => _isExitAllOrder;
 
+  // Track currently subscribed symbols to avoid duplicate subscriptions
+  Set<String> _subscribedSymbols = {};
+
+  // Add this property to track the last sort method used
+  String _lastOrderSortMethod = "TIMEDSC"; // Default sorting
+  String get lastOrderSortMethod => _lastOrderSortMethod;
+
   clearAllorders() {
     _torderBookModel = [];
     _tgttOrderBookModel = [];
@@ -172,7 +179,15 @@ class OrderProvider extends DefaultChangeNotifier {
     _allOrder = [];
     _orderBookModel = [];
     _selectedTab = 0;
+    // Clear subscription tracking
+    clearSubscriptions();
     notifyListeners();
+  }
+
+  // Clear subscription tracking
+  void clearSubscriptions() {
+    _subscribedSymbols.clear();
+    print("Cleared all WebSocket subscriptions tracking");
   }
 
   setOrderIp() async {
@@ -344,6 +359,7 @@ class OrderProvider extends DefaultChangeNotifier {
     _bsktScripList = _bsktScrips[val] ?? [];
 
     if (_bsktScripList.isNotEmpty) {
+      // Clean up expired scripts
       String input = "";
       final now = DateTime.now();
       _bsktScripList.asMap().entries.toList().reversed.forEach((entry) {
@@ -363,11 +379,21 @@ class OrderProvider extends DefaultChangeNotifier {
         }
       });
 
-      input = _bsktScripList
-          .map((e) => "${e['exch']}|${e['token']}")
-          .toSet()
-          .join("#");
-      if (input.isNotEmpty) {
+      // Create input string for WebSocket subscription - only for symbols not already subscribed
+      Set<String> symbolsToSubscribe = {};
+      
+      for (var script in _bsktScripList) {
+        final symbolKey = "${script['exch']}|${script['token']}";
+        if (!_subscribedSymbols.contains(symbolKey)) {
+          symbolsToSubscribe.add(symbolKey);
+          _subscribedSymbols.add(symbolKey);
+        }
+      }
+          
+      // Only establish new connections if needed
+      if (symbolsToSubscribe.isNotEmpty) {
+        input = symbolsToSubscribe.join("#");
+        print("Subscribing to new basket scripts: $input");
         ref.read(websocketProvider).establishConnection(
             channelInput: input, task: "t", context: context);
       }
@@ -700,6 +726,11 @@ class OrderProvider extends DefaultChangeNotifier {
               }
               _allOrder!.add(element);
             }
+          }
+
+          // Reapply the last sort method if one was used
+          if (_lastOrderSortMethod.isNotEmpty) {
+            filterOrders(sorting: _lastOrderSortMethod);
           }
 
           notifyListeners();
@@ -1147,6 +1178,9 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   filterOrders({required String sorting}) async {
+    // Store the current sort method for future use
+    _lastOrderSortMethod = sorting;
+    
     if (_selectedTab == 0) {
       if (sorting == "ASC") {
         _allOrder!.sort((a, b) => a.tsym!.compareTo(b.tsym!));
@@ -1154,13 +1188,17 @@ class OrderProvider extends DefaultChangeNotifier {
         _allOrder!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
       } else if (sorting == "LTPDSC") {
         _allOrder!.sort((a, b) {
-          return double.parse(b.ltp ?? "0.00")
-              .compareTo(double.parse(a.ltp ?? "0.00"));
+          // Use the best available price field
+          double priceA = _getBestPrice(a);
+          double priceB = _getBestPrice(b);
+          return priceB.compareTo(priceA);
         });
       } else if (sorting == "LTPASC") {
         _allOrder!.sort((a, b) {
-          return double.parse(a.ltp ?? "0.00")
-              .compareTo(double.parse(b.ltp ?? "0.00"));
+          // Use the best available price field
+          double priceA = _getBestPrice(a);
+          double priceB = _getBestPrice(b);
+          return priceA.compareTo(priceB);
         });
       } else if (sorting == "QTYDSC") {
         _allOrder!.sort((a, b) {
@@ -1186,13 +1224,17 @@ class OrderProvider extends DefaultChangeNotifier {
         _openOrder!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
       } else if (sorting == "LTPDSC") {
         _openOrder!.sort((a, b) {
-          return double.parse(b.ltp ?? "0.00")
-              .compareTo(double.parse(a.ltp ?? "0.00"));
+          // Use the best available price field
+          double priceA = _getBestPrice(a);
+          double priceB = _getBestPrice(b);
+          return priceB.compareTo(priceA);
         });
       } else if (sorting == "LTPASC") {
         _openOrder!.sort((a, b) {
-          return double.parse(a.ltp ?? "0.00")
-              .compareTo(double.parse(b.ltp ?? "0.00"));
+          // Use the best available price field
+          double priceA = _getBestPrice(a);
+          double priceB = _getBestPrice(b);
+          return priceA.compareTo(priceB);
         });
       } else if (sorting == "QTYDSC") {
         _openOrder!.sort((a, b) {
@@ -1218,13 +1260,17 @@ class OrderProvider extends DefaultChangeNotifier {
         _executedOrder!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
       } else if (sorting == "LTPDSC") {
         _executedOrder!.sort((a, b) {
-          return double.parse(b.ltp ?? "0.00")
-              .compareTo(double.parse(a.ltp ?? "0.00"));
+          // Use the best available price field
+          double priceA = _getBestPrice(a);
+          double priceB = _getBestPrice(b);
+          return priceB.compareTo(priceA);
         });
       } else if (sorting == "LTPASC") {
         _executedOrder!.sort((a, b) {
-          return double.parse(a.ltp ?? "0.00")
-              .compareTo(double.parse(b.ltp ?? "0.00"));
+          // Use the best available price field
+          double priceA = _getBestPrice(a);
+          double priceB = _getBestPrice(b);
+          return priceA.compareTo(priceB);
         });
       } else if (sorting == "QTYDSC") {
         _executedOrder!.sort((a, b) {
@@ -1247,6 +1293,20 @@ class OrderProvider extends DefaultChangeNotifier {
     {}
 
     notifyListeners();
+  }
+  
+  // Helper method to get the best available price
+  double _getBestPrice(OrderBookModel order) {
+    // Try ltp first, then avgprc, then prc, then default to 0.0
+    if (order.ltp != null && order.ltp != "null" && order.ltp != "0" && order.ltp != "0.00") {
+      return double.tryParse(order.ltp!) ?? 0.0;
+    } else if (order.avgprc != null && order.avgprc != "null" && order.avgprc != "0" && order.avgprc != "0.00") {
+      return double.tryParse(order.avgprc!) ?? 0.0;
+    } else if (order.prc != null && order.prc != "null" && order.prc != "0" && order.prc != "0.00") {
+      return double.tryParse(order.prc!) ?? 0.0;
+    } else {
+      return 0.0;
+    }
   }
 
   fetchGttPlaceOrder(PlaceGTTOrderInput input, BuildContext context) async {
@@ -1638,7 +1698,8 @@ class OrderProvider extends DefaultChangeNotifier {
                 _siporderBookModel!.sipDetails![main].scrips![i].close =
                     "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["close"]}";
 
-                _siporderBookModel!.sipDetails![main].scrips![i].perChange =
+                _siporderBookModel!
+                    .sipDetails![main].scrips![i].perChange =
                     "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["change"]}";
                 _siporderBookModel!
                     .sipDetails![main].scrips![i].change = (double.parse(
@@ -1740,6 +1801,20 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Place Slice  Order", "Error": "$e"});
       notifyListeners();
+    }
+  }
+
+  // Update basket UI with WebSocket data
+  void notifyBasketUpdates() {
+    try {
+      // Safely notify listeners to refresh the UI with updated LTP values
+      notifyListeners();
+    } catch (e) {
+      print("Error in notifyBasketUpdates: $e");
+      // Use Future.microtask to schedule notification for the next event loop
+      Future.microtask(() {
+        notifyListeners();
+      });
     }
   }
 }

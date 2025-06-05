@@ -271,7 +271,117 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   final ScrollController _scrollController = ScrollController();
   ScrollController get scrollController => _scrollController;
 
-  MarketWatchProvider(this.ref);
+  MarketWatchProvider(this.ref) {
+    // Load sort preference asynchronously - don't block the constructor
+    _loadSortPreference();
+  }
+
+  // Method to load sort preference from SharedPreferences
+  Future<void> _loadSortPreference() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      _sortByWL = prefs.getString("sortByWL") ?? "";
+      notifyListeners();
+    } catch (e) {
+      print("Error loading sort preference: $e");
+    }
+  }
+
+  // CRITICAL NEW METHOD: Sync current socket values to the watchlist model before sorting
+  void syncSocketDataToModel() {
+    if (_scrips.isEmpty) return;
+    
+    try {
+      final socketDatas = ref.read(websocketProvider).socketDatas;
+      
+      // Update each scrip with current socket data if available
+      for (int i = 0; i < _scrips.length; i++) {
+        final token = _scrips[i]['token']?.toString();
+        if (token != null && socketDatas.containsKey(token)) {
+          final socketData = socketDatas[token];
+          
+          // Update ltp from socket 'lp' field
+          if (socketData['lp'] != null && socketData['lp'].toString() != "null") {
+            _scrips[i]['ltp'] = socketData['lp'].toString();
+          }
+          
+          // Update change from socket 'chng' field 
+          if (socketData['chng'] != null && socketData['chng'].toString() != "null") {
+            _scrips[i]['change'] = socketData['chng'].toString();
+          }
+          
+          // Update percentage change from socket 'pc' field
+          if (socketData['pc'] != null && socketData['pc'].toString() != "null") {
+            _scrips[i]['perChange'] = socketData['pc'].toString();
+          }
+        }
+      }
+      
+      print("Socket data synced to model for ${_scrips.length} scrips");
+    } catch (e) {
+      print("Error syncing socket data: $e");
+    }
+  }
+
+  // Method to apply saved sorting without server calls
+  void _applySavedSorting() {
+    if (_sortByWL.isEmpty || _scrips.isEmpty) return;
+    
+    try {
+      // Print sample data for debugging
+      if (_scrips.isNotEmpty) {
+        print("DEBUG: Sample scrip data for sorting: ${_scrips[0]}");
+      }
+      
+      switch (_sortByWL) {
+        case "Scrip - Z to A":
+          _scrips.sort((a, b) => b['tsym'].toString().compareTo(a['tsym'].toString()));
+          break;
+          
+        case "Scrip - A to Z":
+          _scrips.sort((a, b) => a['tsym'].toString().compareTo(b['tsym'].toString()));
+          break;
+          
+        case "Price - Low to High":
+          _scrips.sort((a, b) {
+            // LTP is stored as 'ltp' directly in the scrips array
+            double aPrice = double.tryParse(a['ltp']?.toString() ?? '0.00') ?? 0.0;
+            double bPrice = double.tryParse(b['ltp']?.toString() ?? '0.00') ?? 0.0;
+            return aPrice.compareTo(bPrice);
+          });
+          break;
+          
+        case "Price - High to Low":
+          _scrips.sort((a, b) {
+            // LTP is stored as 'ltp' directly in the scrips array
+            double aPrice = double.tryParse(a['ltp']?.toString() ?? '0.00') ?? 0.0;
+            double bPrice = double.tryParse(b['ltp']?.toString() ?? '0.00') ?? 0.0;
+            return bPrice.compareTo(aPrice);
+          });
+          break;
+          
+        case "Per.Chng - High to Low":
+          _scrips.sort((a, b) {
+            // Percentage change is stored as 'perChange' in the scrips array
+            double aChange = double.tryParse(a['perChange']?.toString() ?? '0.00') ?? 0.0;
+            double bChange = double.tryParse(b['perChange']?.toString() ?? '0.00') ?? 0.0;
+            return bChange.compareTo(aChange);
+          });
+          break;
+          
+        case "Per.Chng - Low to High":
+          _scrips.sort((a, b) {
+            // Percentage change is stored as 'perChange' in the scrips array
+            double aChange = double.tryParse(a['perChange']?.toString() ?? '0.00') ?? 0.0;
+            double bChange = double.tryParse(b['perChange']?.toString() ?? '0.00') ?? 0.0;
+            return aChange.compareTo(bChange);
+          });
+          break;
+      }
+    } catch (e) {
+      print("Error applying sorting: $e");
+    }
+  }
 
   String _wlName = "";
 
@@ -281,7 +391,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   String get isPreDefWLs => _isPreDefWLs;
 
   String _tradeSym = "";
-  String get tradeSym => _tradeSym;
+  get tradeSym => _tradeSym;
   String _exch = "";
   String get exchange => _exch;
   String _duration = "5m";
@@ -2126,6 +2236,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       // Log the number of symbols for debugging
       print("Watchlist change: $wName with ${_scrips.length} symbols");
       
+      // Apply sorting if there's a saved sort preference and if there are scrips to sort
+      if (_scrips.isNotEmpty && _sortByWL.isNotEmpty) {
+        _applySavedSorting();
+      }
+      
       // Handle portfolio holdings data if "My Stocks" watchlist
       if (wName == "My Stocks") {
         // Portfolio holdings need different subscription handling
@@ -2182,6 +2297,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   addDelMarketScrip(String wlName, String scripTok, BuildContext context,
       bool isAdd, bool isEdit, bool isReOrder, bool isOptionStike) async {
+    try {
     _addDeleteScripModel = await api.getAddDeleteSciptoMW(
         isAdd: isAdd, scripToken: scripTok, wlname: wlName);
 
@@ -2189,14 +2305,16 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       ConstantName.sessCheck = true;
       if (!isReOrder) {
         await fetchMWScrip(wlName, context);
-
         await changeWLScrip(wlName, context);
       } else {
+          // Only show snackbar if context is still mounted
+          if (context.mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, "Scrip order was changed"));
       }
-      if (!isEdit) {
+        }
+        if (!isEdit && context.mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(successMessage(
             context,
@@ -2214,7 +2332,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       }
     } else if (_addDeleteScripModel!.emsg ==
         "Session Expired :  Invalid Session Key") {
+        if (context.mounted) {
       ref.read(authProvider).ifSessionExpired(context);
+        }
+      }
+    } catch (e) {
+      print("Error in addDelMarketScrip: $e");
     }
   }
 
@@ -2242,7 +2365,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       // Only attempt subscription if we have valid tokens
       if (input.isNotEmpty) {
-        print("WebSocket: Subscribing to ${input.split('#').length} symbols");
+        print("WebSocket: ${isSubscribe ? "Subscribing to" : "Unsubscribing from"} ${input.split('#').length} symbols");
         await ref.read(websocketProvider).establishConnection(
             channelInput: input,
             task: isSubscribe ? "t" : "u",
@@ -2257,13 +2380,19 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
-  getSortByWL(String val) {
+  // Sort preference management
+  getSortByWL(String val) async {
     _sortByWL = val;
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString("sortByWL", val);
+    } catch (e) {
+      print("Error saving sort preference: $e");
+    }
     notifyListeners();
   }
 
-// Sorting market watch scrip by trade symbol(LTP,symbol,)
-
+  // Sorting alert list
   filterPendingAlert(String sorting) {
     if (sorting == "ASC") {
       _alertPendingModel!.sort((a, b) => a.tsym!.compareTo(b.tsym!));
@@ -2293,129 +2422,65 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-// Sorting market watch scrip by trade symbol(LTP,symbol,)
+  // Sorting market watch scrip by trade symbol
   filterMWScrip(
       {required String sorting,
       required String wlName,
       required BuildContext context}) async {
-    final localstorage = await SharedPreferences.getInstance();
-
-    String addInput = "";
-    String delInput = "";
-    List<String> filterData = [];
-    if (sorting == "Scrip - Z to A") {
-      _scrips.sort((a, b) {
-        filterData.add("${b['exch']}|${b['token']}#");
-        return b['tsym'].toString().compareTo(a['tsym'].toString());
-      });
-
-      filterData = filterData.toSet().toList();
-
-      for (var element in filterData) {
-        delInput += element;
-      }
-      for (var element in _scrips) {
-        addInput += "${element['exch']}|${element['token']}#";
-      }
-      await addDelMarketScrip(
-          wlName, delInput, context, false, true, false, false);
-      await addDelMarketScrip(
-          wlName, addInput, context, true, true, false, false);
-    } else if (sorting == "Scrip - A to Z") {
-      _scrips.sort((a, b) {
-        filterData.add("${b['exch']}|${b['token']}#");
-        return a['tsym'].toString().compareTo(b['tsym'].toString());
-      });
-
-      filterData = filterData.toSet().toList();
-      for (var element in filterData) {
-        delInput += element;
-      }
-      for (var element in _scrips) {
-        addInput += "${element['exch']}|${element['token']}#";
-      }
-
-      await addDelMarketScrip(
-          wlName, delInput, context, false, true, false, false);
-      await addDelMarketScrip(
-          wlName, addInput, context, true, true, false, false);
-    } else if (sorting == "Price - Low to High") {
-      _scrips.sort((a, b) {
-        filterData.add("${b['exch']}|${b['token']}#");
-
-        return double.parse(a['ltp']).compareTo(double.parse(b['ltp']));
-      });
-
-      filterData = filterData.toSet().toList();
-      for (var element in filterData) {
-        delInput += element;
-      }
-      for (var element in _scrips) {
-        addInput += "${element['exch']}|${element['token']}#";
-      }
-      await addDelMarketScrip(
-          wlName, delInput, context, false, true, false, false);
-      await addDelMarketScrip(
-          wlName, addInput, context, true, true, false, false);
-    } else if (sorting == "Price - High to Low") {
-      _scrips.sort((a, b) {
-        filterData.add("${b['exch']}|${b['token']}#");
-
-        return double.parse(b['ltp']).compareTo(double.parse(a['ltp']));
-      });
-
-      filterData = filterData.toSet().toList();
-      for (var element in filterData) {
-        delInput += element;
-      }
-      for (var element in _scrips) {
-        addInput += "${element['exch']}|${element['token']}#";
-      }
-      await addDelMarketScrip(
-          wlName, delInput, context, false, true, false, false);
-      await addDelMarketScrip(
-          wlName, addInput, context, true, true, false, false);
-    } else if (sorting == "Per.Chng - High to Low") {
-      _scrips.sort((a, b) {
-        filterData.add("${b['exch']}|${b['token']}#");
-        return double.parse("${b['perChange']}")
-            .compareTo(double.parse("${a['perChange']}"));
-      });
-
-      filterData = filterData.toSet().toList();
-      for (var element in filterData) {
-        delInput += element;
-      }
-      for (var element in _scrips) {
-        addInput += "${element['exch']}|${element['token']}#";
-      }
-      await addDelMarketScrip(
-          wlName, delInput, context, false, true, false, false);
-      await addDelMarketScrip(
-          wlName, addInput, context, true, true, false, false);
-    } else if (sorting == "Per.Chng - Low to High") {
-      _scrips.sort((a, b) {
-        filterData.add("${b['exch']}|${b['token']}#");
-        return double.parse("${a['perChange']}")
-            .compareTo(double.parse("${b['perChange']}"));
-      });
-
-      filterData = filterData.toSet().toList();
-      for (var element in filterData) {
-        delInput += element;
-      }
-      for (var element in _scrips) {
-        addInput += "${element['exch']}|${element['token']}#";
-      }
-      await addDelMarketScrip(
-          wlName, delInput, context, false, true, false, false);
-      await addDelMarketScrip(
-          wlName, addInput, context, true, true, false, false);
-    }
-
-    _sortByWL = sorting;
-    localstorage.setString("sortByWL", _sortByWL);
+      
+    // Log the current sort request
+    print("Applying sort: $sorting on $wlName");
+    
+    // CRITICAL FIX: Sync socket data to model BEFORE sorting
+    syncSocketDataToModel();
+    
+    // First update the sort preference
+    await getSortByWL(sorting);
+    
+    // Apply sorting locally immediately for UI responsiveness
+    _applySavedSorting();
     notifyListeners();
+
+    // Also update the saved model in marketWatchScripData to preserve sorting
+    if (_scrips.isNotEmpty) {
+      _marketWatchScripData[wlName] = jsonEncode(_scrips);
+    }
+    
+    // Prevent server operations if context is not valid
+    if (!context.mounted) return;
+    
+    // Now handle server-side sorting for persistence
+    try {
+      String addInput = "";
+      String delInput = "";
+      List<String> filterData = [];
+      
+      // Build delete input for current order
+      for (var element in _scrips) {
+        filterData.add("${element['exch']}|${element['token']}#");
+      }
+      filterData = filterData.toSet().toList();
+      for (var element in filterData) {
+        delInput += element;
+      }
+      
+      // Build add input for new order
+      for (var element in _scrips) {
+        addInput += "${element['exch']}|${element['token']}#";
+      }
+      
+      // Only proceed with server updates if context is still mounted
+      if (context.mounted) {
+        // Send the updates to the server
+        await addDelMarketScrip(wlName, delInput, context, false, true, true, false);
+        
+        if (context.mounted) {
+          await addDelMarketScrip(wlName, addInput, context, true, true, true, false);
+    }
+      }
+    } catch (e) {
+      print("Error updating server with sorted list: $e");
+    }
   }
 
 // Assing Del Qty =0
