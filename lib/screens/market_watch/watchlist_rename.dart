@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
@@ -16,6 +16,22 @@ class WatchListRename extends ConsumerStatefulWidget {
 }
 
 class _WatchListRenameState extends ConsumerState<WatchListRename> {
+  bool _isProcessing = false;
+  _handlebutton() async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    try {
+      errorText = "";
+      await ref
+          .read(marketWatchProvider)
+          .fetchWatchListRename(widget.wlname, textCtrl.text, context);
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
   TextEditingController textCtrl = TextEditingController();
   String? errorText;
   String wlName = "";
@@ -53,6 +69,7 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
               onPressed: () {
                 Navigator.pop(context);
               },
+              splashRadius: 16,
               icon: const Icon(Icons.close_rounded),
               color:
                   theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey)
@@ -65,7 +82,7 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
               TextFormField(
                   controller: textCtrl,
                   inputFormatters: [
-                    FilteringTextInputFormatter.deny(RegExp("[π£•₹€℅™∆√¶÷℅/]"))
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
                   ],
                   style: textStyles.textFieldLabelStyle.copyWith(
                       color: theme.isDarkMode
@@ -108,12 +125,17 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
           SizedBox(
               width: MediaQuery.of(context).size.width,
               child: ElevatedButton(
-                  onPressed: () async {
-                    await ref
-                        .read(marketWatchProvider)
-                        .fetchWatchListRename(
-                            widget.wlname, textCtrl.text, context);
-                  },
+                  onPressed: _isProcessing
+                      ? null
+                      : () async {
+                          if (textCtrl.text.trim().isEmpty) {
+                            setState(() {
+                              errorText = "Please enter watchlist name";
+                            });
+                          } else {
+                            await _handlebutton();
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: theme.isDarkMode
@@ -121,13 +143,21 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                           : colors.colorBlack,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50))),
-                  child: Text("Update",
-                      style: textStyle(
-                          !theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w500))))
+                  child:
+                      (_isProcessing || ref.read(marketWatchProvider).loading)
+                          ? const SizedBox(
+                              width: 18,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Color(0xff666666)),
+                            )
+                          : Text("Update",
+                              style: textStyle(
+                                  !theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  14,
+                                  FontWeight.w500))))
         ]);
   }
 }

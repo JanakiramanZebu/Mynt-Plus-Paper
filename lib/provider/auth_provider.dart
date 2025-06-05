@@ -75,8 +75,14 @@ class AuthProvider extends DefaultChangeNotifier {
   Map _ordgrefis = {};
   Map get ordgrefis => _ordgrefis;
 
-  setChangetotp(bool value) {
+  setChangetotp(bool value) async {
+    if (_totp == value) return; // Prevent unnecessary updates
+
     _totp = value;
+
+    // Clear any existing OTP errors
+    optError = null;
+    notifyListeners();
   }
 
   removeUsers(user, i, context) {
@@ -327,6 +333,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
     _isDisableBtn = true;
     clearError();
+    loginMethCtrl.clear();
     clearTextField();
     notifyListeners();
   }
@@ -337,6 +344,10 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
 // If login validation is successful, activate the login button.
+  set isDisableBtn(bool value) {
+    _isDisableBtn = value;
+    notifyListeners(); // remove this if you don't use Provider
+  }
 
   activeBtnLogin() {
     if (validateLogin()) {
@@ -378,7 +389,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
   clearTextField() {
     otpCtrl.clear();
-    loginMethCtrl.clear();
+    // loginMethCtrl.clear();
     passCtrl.clear();
     notifyListeners();
   }
@@ -390,21 +401,16 @@ class AuthProvider extends DefaultChangeNotifier {
 
     try {
       if (TargetPlatform.android == defaultTargetPlatform) {
-         deviceData =
-          _readAndroidDeviceInfo(await deviceInfoPlugin.androidInfo);
-      }else if( TargetPlatform.iOS == defaultTargetPlatform){
-          deviceData = _readIosDeviceInfo(await deviceInfoPlugin.iosInfo);
-          }
-          else{
-              deviceData = <String, dynamic>{
-              'Error:': 'Unsupported platform'
-            };
-          }
-        // TargetPlatform.fuchsia => null,
-        // TargetPlatform.linux => null,
-        // TargetPlatform.macOS => null,
-        // TargetPlatform.windows => null
-     
+        deviceData = _readAndroidDeviceInfo(await deviceInfoPlugin.androidInfo);
+      } else if (TargetPlatform.iOS == defaultTargetPlatform) {
+        deviceData = _readIosDeviceInfo(await deviceInfoPlugin.iosInfo);
+      } else {
+        deviceData = <String, dynamic>{'Error:': 'Unsupported platform'};
+      }
+      // TargetPlatform.fuchsia => null,
+      // TargetPlatform.linux => null,
+      // TargetPlatform.macOS => null,
+      // TargetPlatform.windows => null
     } on PlatformException {
       deviceData = <String, dynamic>{
         'Error:': 'Failed to get platform version.'
@@ -500,8 +506,13 @@ class AuthProvider extends DefaultChangeNotifier {
       pref.setImei(imei);
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
+
+      // Clear any existing OTP state
+      _mobileLogin = null;
+      notifyListeners();
+
       _mobileLogin = await api.getMobileLogin(
-          uniqueId: "${pref.deviceName!} ${pref.imei}", //
+          uniqueId: "${pref.deviceName!} ${pref.imei}",
           mobileRclient: mobileRclint,
           password: password,
           context: context,
@@ -510,7 +521,9 @@ class AuthProvider extends DefaultChangeNotifier {
       // final localstorage = await SharedPreferences.getInstance();
 
       if ((_mobileLogin!.stat == "Ok" && s.isNotEmpty) || s == "pop") {
-        Navigator.pop(context);
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
         validateOtp("");
       }
 
@@ -522,29 +535,56 @@ class AuthProvider extends DefaultChangeNotifier {
         otpCtrl.clear();
         mobile_client = mobileRclint;
         if (!totp) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, 'The OTP is sent via email and SMS'));
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                successMessage(context, 'The OTP is sent via email and SMS'));
+          }
         }
         _isDisableBtn = true;
         pref.setRiskDiscloser(false);
-        showModalBottomSheet(
-          context: context,
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-          backgroundColor: const Color(0xffffffff),
-          isDismissible: false,
-          enableDrag: false,
-          showDragHandle: false,
-          useSafeArea: false,
-          isScrollControlled: true,
-          builder: (context) => PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
-              child: BottomSheetContent()),
-        );
-        // Navigator.pushNamed(context, Routes.loginOtpVerify);
+
+        // Navigate to OTP screen
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PopScope(
+                canPop: true,
+                onPopInvoked: (didPop) {
+                  if (didPop) {
+                    isDisableBtn = false;
+                    notifyListeners();
+                  }
+                },
+                child: const BottomSheetContent(),
+              ),
+            ),
+          );
+          //    },
+          //           child: const BottomSheetContent())),
+          // );
+
+          // // showModalBottomSheet(
+          // //   context: context,
+          // //   shape: const RoundedRectangleBorder(
+          // //       borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          // //   backgroundColor: const Color(0xffffffff),
+          // //   isDismissible: false,
+          // //   enableDrag: false,
+          // //   showDragHandle: false,
+          // //   useSafeArea: false,
+          // //   isScrollControlled: true,
+          // //   builder: (context) => PopScope(
+          // //     canPop: true,
+          // //     onPopInvoked: (didPop) {
+          // //       _isDisableBtn = false;
+          // //       notifyListeners();
+          // //     },
+          // //     child: const BottomSheetContent(),
+          // //   ),
+          // // );
+          // // }
+        }
       } else if (_mobileLogin!.emsg ==
           "Invalid Input : User Blocked due to multiple wrong attempts") {
         ref.read(changePasswordProvider).userIdController.text =
@@ -559,7 +599,8 @@ class AuthProvider extends DefaultChangeNotifier {
         ref.read(changePasswordProvider).userIdController.text =
             "${_mobileLogin!.clientid}";
         if (_mobileLogin!.emsg == "Invalid Input : Password Expired") {
-          ref.read(changePasswordProvider).oldPassword.text = password.toString();
+          ref.read(changePasswordProvider).oldPassword.text =
+              password.toString();
         }
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
@@ -860,136 +901,226 @@ class AuthProvider extends DefaultChangeNotifier {
 
   Future<void> deviceAuth(BuildContext context, String s) async {
     final localAuth = LocalAuthentication();
+    final parentContext = context; // Capture stable context
 
     try {
       bool authenticated = await localAuth.authenticate(
-          localizedReason: 'Authenticate to access the app',
-          options: const AuthenticationOptions(
-              useErrorDialogs: false, stickyAuth: true, biometricOnly: false));
+        localizedReason: 'Authenticate to access the app',
+        options: const AuthenticationOptions(
+          useErrorDialogs: false,
+          stickyAuth: true,
+          biometricOnly: false,
+        ),
+      );
+
+      if (!parentContext.mounted) return; // Ensure context is still valid
 
       if (authenticated) {
-        // print('bioAuth - User authenticated successfully');
-        ref.read(themeProvider).navigateToNewPage(context);
-        initialLoadMethods(context, s);
+        ref.read(themeProvider).navigateToNewPage(parentContext);
+        initialLoadMethods(parentContext, s);
       } else {
-        showDialog(
-          barrierDismissible: false,
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              titleTextStyle: textStyles.appBarTitleTxt,
-              contentTextStyle: textStyles.menuTxt,
-              titlePadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(14))),
-              scrollable: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-              ),
-              insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-              title: const Text("Confirmation"),
-              content: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Authentication is reqired to proceed further!")
-                  ],
-                ),
-              ),
-              actions: [
-                ElevatedButton(
-                    onPressed: () => deviceAuth(context, s),
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: ref.read(themeProvider).isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
-                        padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        )),
-                    child: Text("Proceed", style: textStyles.btnText)),
-              ],
-            );
-          },
-        );
-        // Navigator.pushNamedAndRemoveUntil(
-        //     context, Routes.loginScreen, arguments: "login", (route) => false);
+        showAuthDialog(parentContext, s);
         print('bioAuth - Authentication failed');
       }
-      // } else {
-      //   print('bioAuth Biometrics not available on this device');
-      // }
-    }
-    // catch (e) {
+    } on PlatformException catch (e) {
+      if (!parentContext.mounted) return;
 
-    //   print('Error: $e');
-    // }
-
-    on PlatformException catch (e) {
-      if (e.code == auth_error.notAvailable) {
-        // Add handling of no hardware here.
-        if (defaultTargetPlatform == TargetPlatform.iOS) {
-          showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                titleTextStyle: textStyles.appBarTitleTxt,
-                contentTextStyle: textStyles.menuTxt,
-                titlePadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(14))),
-                scrollable: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                ),
-                insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-                title: const Text("Confirmation"),
-                content: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Authentication is reqired to proceed further!")
-                    ],
-                  ),
-                ),
-                actions: [
-                  ElevatedButton(
-                      onPressed: () => deviceAuth(context, s),
-                      style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: ref.read(themeProvider).isDarkMode
-                              ? colors.colorbluegrey
-                              : colors.colorBlack,
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          )),
-                      child: Text("Proceed", style: textStyles.btnText)),
-                ],
-              );
-            },
-          );
-        } else {
-          initialLoadMethods(context, s);
-        }
-      } else if (e.code == auth_error.notEnrolled) {
-        // print("bioAuth - - ${e.code}");
-        // ...
+      if (e.code == auth_error.notAvailable &&
+          defaultTargetPlatform == TargetPlatform.iOS) {
+        showAuthDialog(parentContext, s);
       } else {
-        // ...
-        // print("bioAuth - --  -${e.code}");
+        initialLoadMethods(parentContext, s);
       }
-
-      // print("bioAuth - ${e.code}");
     }
     notifyListeners();
   }
+
+  void showAuthDialog(BuildContext context, String s) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          titleTextStyle: textStyles.appBarTitleTxt,
+          contentTextStyle: textStyles.menuTxt,
+          titlePadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(14)),
+          ),
+          scrollable: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+          title: const Text("Confirmation"),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Authentication is required to proceed further!"),
+              SizedBox(height: 10),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext, rootNavigator: true).pop();
+                deviceAuth(context, s); // re-call using parent context
+              },
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: ref.read(themeProvider).isDarkMode
+                    ? colors.colorbluegrey
+                    : colors.colorBlack,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: Text("Proceed", style: textStyles.btnText),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Future<void> deviceAuth(BuildContext context, String s) async {
+  //   final localAuth = LocalAuthentication();
+
+  //   try {
+  //     bool authenticated = await localAuth.authenticate(
+  //         localizedReason: 'Authenticate to access the app',
+  //         options: const AuthenticationOptions(
+  //             useErrorDialogs: false, stickyAuth: true, biometricOnly: false));
+
+  //     if (authenticated) {
+  //       // print('bioAuth - User authenticated successfully');
+  //       ref.read(themeProvider).navigateToNewPage(context);
+  //       initialLoadMethods(context, s);
+  //     } else {
+  //       showDialog(
+  //         barrierDismissible: false,
+  //         context: context,
+  //         builder: (BuildContext context) {
+  //           return AlertDialog(
+  //             titleTextStyle: textStyles.appBarTitleTxt,
+  //             contentTextStyle: textStyles.menuTxt,
+  //             titlePadding:
+  //                 const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+  //             shape: const RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.all(Radius.circular(14))),
+  //             scrollable: true,
+  //             contentPadding: const EdgeInsets.symmetric(
+  //               horizontal: 14,
+  //             ),
+  //             insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+  //             title: const Text("Confirmation"),
+  //             content: SizedBox(
+  //               width: MediaQuery.of(context).size.width,
+  //               child: const Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text("Authentication is required to proceed further!"),
+  //                   SizedBox(
+  //                     height: 10,
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //             actions: [
+  //               ElevatedButton(
+  //                   onPressed: () => deviceAuth(context, s),
+  //                   style: ElevatedButton.styleFrom(
+  //                       elevation: 0,
+  //                       backgroundColor: ref.read(themeProvider).isDarkMode
+  //                           ? colors.colorbluegrey
+  //                           : colors.colorBlack,
+  //                       padding: const EdgeInsets.symmetric(
+  //                           vertical: 10, horizontal: 16),
+  //                       shape: RoundedRectangleBorder(
+  //                         borderRadius: BorderRadius.circular(30),
+  //                       )),
+  //                   child: Text("Proceed", style: textStyles.btnText)),
+  //             ],
+  //           );
+  //         },
+  //       );
+  //       // Navigator.pushNamedAndRemoveUntil(
+  //       //     context, Routes.loginScreen, arguments: "login", (route) => false);
+  //       print('bioAuth - Authentication failed');
+  //     }
+  //     // } else {
+  //     //   print('bioAuth Biometrics not available on this device');
+  //     // }
+  //   }
+  //   // catch (e) {
+
+  //   //   print('Error: $e');
+  //   // }
+
+  //   on PlatformException catch (e) {
+  //     if (e.code == auth_error.notAvailable) {
+  //       // Add handling of no hardware here.
+  //       if (defaultTargetPlatform == TargetPlatform.iOS) {
+  //         showDialog(
+  //           barrierDismissible: false,
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             return AlertDialog(
+  //               titleTextStyle: textStyles.appBarTitleTxt,
+  //               contentTextStyle: textStyles.menuTxt,
+  //               titlePadding:
+  //                   const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+  //               shape: const RoundedRectangleBorder(
+  //                   borderRadius: BorderRadius.all(Radius.circular(14))),
+  //               scrollable: true,
+  //               contentPadding: const EdgeInsets.symmetric(
+  //                 horizontal: 14,
+  //               ),
+  //               insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+  //               title: const Text("Confirmation"),
+  //               content: SizedBox(
+  //                 width: MediaQuery.of(context).size.width,
+  //                 child: const Column(
+  //                   crossAxisAlignment: CrossAxisAlignment.start,
+  //                   children: [
+  //                     Text("Authentication is reqired to proceed further!")
+  //                   ],
+  //                 ),
+  //               ),
+  //               actions: [
+  //                 ElevatedButton(
+  //                     onPressed: () => deviceAuth(context, s),
+  //                     style: ElevatedButton.styleFrom(
+  //                         elevation: 0,
+  //                         backgroundColor: ref.read(themeProvider).isDarkMode
+  //                             ? colors.colorbluegrey
+  //                             : colors.colorBlack,
+  //                         padding: const EdgeInsets.symmetric(vertical: 13),
+  //                         shape: RoundedRectangleBorder(
+  //                           borderRadius: BorderRadius.circular(30),
+  //                         )),
+  //                     child: Text("Proceed", style: textStyles.btnText)),
+  //               ],
+  //             );
+  //           },
+  //         );
+  //       } else {
+  //         initialLoadMethods(context, s);
+  //       }
+  //     } else if (e.code == auth_error.notEnrolled) {
+  //       // print("bioAuth - - ${e.code}");
+  //       // ...
+  //     } else {
+  //       // ...
+  //       // print("bioAuth - --  -${e.code}");
+  //     }
+
+  //     // print("bioAuth - ${e.code}");
+  //   }
+  //   notifyListeners();
+  // }
 
   AuthProvider(this.ref);
 
@@ -1173,7 +1304,7 @@ class AuthProvider extends DefaultChangeNotifier {
     // to prevent multiple calls to this method
     if (ConstantName.isSessionExpiring) return;
     ConstantName.isSessionExpiring = true;
-    
+
     // Prepare session cleanup operations asynchronously
     Future.microtask(() {
       // Clear all session data first
@@ -1181,33 +1312,33 @@ class AuthProvider extends DefaultChangeNotifier {
       pref.setLogout(true);
       pref.setHideLoginOptBtn(false);
       pref.setMobileLogin(false);
-      
+
       // Prefill the login field for convenience
       loginMethCtrl.text = pref.clientId ?? "";
-      
+
       // Close WebSocket early to stop needless data flow
       ref.read(websocketProvider).closeSocket(true);
       ref.read(websocketProvider).websockConn(false);
-      
+
       if (ConstantName.timer != null) {
         ConstantName.timer!.cancel();
       }
-      
+
       ConstantName.sessCheck = false;
-      
+
       // Navigate to login screen immediately without waiting for other operations
       if (currentRouteName != Routes.loginScreen) {
         // A short delay ensures that any pending UI operations are completed
         Future.delayed(Duration.zero, () {
           if (context.mounted) {
             Navigator.pushNamedAndRemoveUntil(
-              context, Routes.loginScreen, (route) => false);
-            
+                context, Routes.loginScreen, (route) => false);
+
             // Show the message only after navigation for better UX
-            ScaffoldMessenger.of(context).showSnackBar(
-              warningMessage(context, "Session Expired, Please log in again"));
+            ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                context, "Session Expired, Please log in again"));
           }
-          
+
           // Reset the flag after navigation is complete
           ConstantName.isSessionExpiring = false;
         });

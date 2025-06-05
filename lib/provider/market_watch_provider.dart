@@ -290,33 +290,36 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   // CRITICAL NEW METHOD: Sync current socket values to the watchlist model before sorting
   void syncSocketDataToModel() {
     if (_scrips.isEmpty) return;
-    
+
     try {
       final socketDatas = ref.read(websocketProvider).socketDatas;
-      
+
       // Update each scrip with current socket data if available
       for (int i = 0; i < _scrips.length; i++) {
         final token = _scrips[i]['token']?.toString();
         if (token != null && socketDatas.containsKey(token)) {
           final socketData = socketDatas[token];
-          
+
           // Update ltp from socket 'lp' field
-          if (socketData['lp'] != null && socketData['lp'].toString() != "null") {
+          if (socketData['lp'] != null &&
+              socketData['lp'].toString() != "null") {
             _scrips[i]['ltp'] = socketData['lp'].toString();
           }
-          
-          // Update change from socket 'chng' field 
-          if (socketData['chng'] != null && socketData['chng'].toString() != "null") {
+
+          // Update change from socket 'chng' field
+          if (socketData['chng'] != null &&
+              socketData['chng'].toString() != "null") {
             _scrips[i]['change'] = socketData['chng'].toString();
           }
-          
+
           // Update percentage change from socket 'pc' field
-          if (socketData['pc'] != null && socketData['pc'].toString() != "null") {
+          if (socketData['pc'] != null &&
+              socketData['pc'].toString() != "null") {
             _scrips[i]['perChange'] = socketData['pc'].toString();
           }
         }
       }
-      
+
       print("Socket data synced to model for ${_scrips.length} scrips");
     } catch (e) {
       print("Error syncing socket data: $e");
@@ -326,54 +329,64 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   // Method to apply saved sorting without server calls
   void _applySavedSorting() {
     if (_sortByWL.isEmpty || _scrips.isEmpty) return;
-    
+
     try {
       // Print sample data for debugging
       if (_scrips.isNotEmpty) {
         print("DEBUG: Sample scrip data for sorting: ${_scrips[0]}");
       }
-      
+
       switch (_sortByWL) {
         case "Scrip - Z to A":
-          _scrips.sort((a, b) => b['tsym'].toString().compareTo(a['tsym'].toString()));
+          _scrips.sort(
+              (a, b) => b['tsym'].toString().compareTo(a['tsym'].toString()));
           break;
-          
+
         case "Scrip - A to Z":
-          _scrips.sort((a, b) => a['tsym'].toString().compareTo(b['tsym'].toString()));
+          _scrips.sort(
+              (a, b) => a['tsym'].toString().compareTo(b['tsym'].toString()));
           break;
-          
+
         case "Price - Low to High":
           _scrips.sort((a, b) {
             // LTP is stored as 'ltp' directly in the scrips array
-            double aPrice = double.tryParse(a['ltp']?.toString() ?? '0.00') ?? 0.0;
-            double bPrice = double.tryParse(b['ltp']?.toString() ?? '0.00') ?? 0.0;
+            double aPrice =
+                double.tryParse(a['ltp']?.toString() ?? '0.00') ?? 0.0;
+            double bPrice =
+                double.tryParse(b['ltp']?.toString() ?? '0.00') ?? 0.0;
             return aPrice.compareTo(bPrice);
           });
           break;
-          
+
         case "Price - High to Low":
           _scrips.sort((a, b) {
             // LTP is stored as 'ltp' directly in the scrips array
-            double aPrice = double.tryParse(a['ltp']?.toString() ?? '0.00') ?? 0.0;
-            double bPrice = double.tryParse(b['ltp']?.toString() ?? '0.00') ?? 0.0;
+            double aPrice =
+                double.tryParse(a['ltp']?.toString() ?? '0.00') ?? 0.0;
+            double bPrice =
+                double.tryParse(b['ltp']?.toString() ?? '0.00') ?? 0.0;
             return bPrice.compareTo(aPrice);
           });
           break;
-          
+
         case "Per.Chng - High to Low":
           _scrips.sort((a, b) {
             // Percentage change is stored as 'perChange' in the scrips array
-            double aChange = double.tryParse(a['perChange']?.toString() ?? '0.00') ?? 0.0;
-            double bChange = double.tryParse(b['perChange']?.toString() ?? '0.00') ?? 0.0;
+            double aChange =
+                double.tryParse(a['perChange']?.toString() ?? '0.00') ?? 0.0;
+            double bChange =
+                double.tryParse(b['perChange']?.toString() ?? '0.00') ?? 0.0;
             return bChange.compareTo(aChange);
           });
           break;
-          
+
         case "Per.Chng - Low to High":
           _scrips.sort((a, b) {
             // Percentage change is stored as 'perChange' in the scrips array
-            double aChange = double.tryParse(a['perChange']?.toString() ?? '0.00') ?? 0.0;
-            double bChange = double.tryParse(b['perChange']?.toString() ?? '0.00') ?? 0.0;
+            double aChange =
+                double.tryParse(a['perChange']?.toString() ?? '0.00') ?? 0.0;
+            double bChange =
+                double.tryParse(b['perChange']?.toString() ?? '0.00') ?? 0.0;
             return aChange.compareTo(bChange);
           });
           break;
@@ -1024,7 +1037,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _marketWatchlist!.values!.addAll(_preDefWL);
         fetchPreDefMWScrip(context);
         if (swit == false) {
-        await changeWLScrip(_wlName, context);
+          await changeWLScrip(_wlName, context);
         }
       } else {
         if (_marketWatchlist!.emsg ==
@@ -1037,7 +1050,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       return _marketWatchlist;
     } catch (e) {
       print("Failed $e");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Market WL", "Error": "$e"});
       notifyListeners();
@@ -1110,7 +1124,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       return _marketWatchScrip;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Market Watch Scrip", "Error": "$e"});
       notifyListeners();
@@ -1154,7 +1169,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 element.option = "${spilitSymbol["option"]}";
               }
               if (ref.read(portfolioProvider).holdingsModel!.isNotEmpty) {
-                for (var holding in ref.read(portfolioProvider).holdingsModel!) {
+                for (var holding
+                    in ref.read(portfolioProvider).holdingsModel!) {
                   if (holding.exchTsym![0].exch == "NSE" ||
                       holding.exchTsym![0].exch == "BSE") {
                     if (element.token == holding.exchTsym![0].token) {
@@ -1188,7 +1204,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 element.option = "${spilitSymbol["option"]}";
               }
               if (ref.read(portfolioProvider).holdingsModel!.isNotEmpty) {
-                for (var holding in ref.read(portfolioProvider).holdingsModel!) {
+                for (var holding
+                    in ref.read(portfolioProvider).holdingsModel!) {
                   if (holding.exchTsym![0].exch == "NSE" ||
                       holding.exchTsym![0].exch == "BSE") {
                     if (element.token == holding.exchTsym![0].token) {
@@ -1221,7 +1238,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 element.option = "${spilitSymbol["option"]}";
               }
               if (ref.read(portfolioProvider).holdingsModel!.isNotEmpty) {
-                for (var holding in ref.read(portfolioProvider).holdingsModel!) {
+                for (var holding
+                    in ref.read(portfolioProvider).holdingsModel!) {
                   if (holding.exchTsym![0].exch == "NSE" ||
                       holding.exchTsym![0].exch == "BSE") {
                     if (element.token == holding.exchTsym![0].token) {
@@ -1252,7 +1270,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
       }
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Market Watch Scrip", "Error": "$e"});
       notifyListeners();
@@ -1309,7 +1328,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       return _scripInfoModel;
     } catch (e) {
       print(e);
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Scrip Info", "Error": "$e"});
       notifyListeners();
@@ -1361,7 +1381,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _getQuotes;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Scrip Quote", "Error": "$e"});
       notifyListeners();
@@ -1452,7 +1473,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _getQuotes;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Scrip Quote", "Error": "$e"});
       notifyListeners();
@@ -1484,7 +1506,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Scrip Quote", "Error": "$e"});
       notifyListeners();
@@ -1645,7 +1668,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _searchScripModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Search", "Error": "$e"});
       notifyListeners();
@@ -1790,7 +1814,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _linkedScrips;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Linked Scrip", "Error": "$e"});
       notifyListeners();
@@ -1834,7 +1859,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Option Chain", "Error": "$e"});
       notifyListeners();
@@ -1875,7 +1901,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Tech Data", "Error": "$e"});
       notifyListeners();
@@ -2017,7 +2044,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Fundamental ", "Error": "$e"});
       notifyListeners();
@@ -2105,7 +2133,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _optChainPutDown = [];
     _optChainPutUp = [];
 // Seperating Trade symbol(symbol,exp date, Option)
- final List<OptionValues>? opt = _optionChainModel!.optValue;
+    final List<OptionValues>? opt = _optionChainModel!.optValue;
     for (var el in List<OptionValues>.from(opt!)) {
       String complementType = el.optt == 'PE' ? 'CE' : 'PE';
 
@@ -2225,31 +2253,32 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       // Check if we have cached data for this watchlist
       bool wlis = _marketWatchScripData.containsKey(wName);
-      
+
       // Handle special cases or use cached data
       _scrips = wName == "My Stocks"
           ? [] // My Stocks is handled specially through portfolio
           : wlis
               ? await jsonDecode(_marketWatchScripData[wName]) ?? []
               : [];
-              
+
       // Log the number of symbols for debugging
       print("Watchlist change: $wName with ${_scrips.length} symbols");
-      
+
       // Apply sorting if there's a saved sort preference and if there are scrips to sort
       if (_scrips.isNotEmpty && _sortByWL.isNotEmpty) {
         _applySavedSorting();
       }
-      
+
       // Handle portfolio holdings data if "My Stocks" watchlist
       if (wName == "My Stocks") {
         // Portfolio holdings need different subscription handling
-        await ref.read(portfolioProvider)
+        await ref
+            .read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: true);
       } else {
         // Standard watchlist - subscribe to the scrips
         if (_scrips.isNotEmpty) {
-        await requestMWScrip(context: context, isSubscribe: true);
+          await requestMWScrip(context: context, isSubscribe: true);
         } else {
           // If no symbols in watchlist, still ensure we're unsubscribed from previous
           await requestMWScrip(context: context, isSubscribe: false);
@@ -2264,21 +2293,25 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
 // Delete market scrips by watchlist name
-  deleteWatchList(String walName, BuildContext context) async {
+  Future<void> deleteWatchList(String walName, BuildContext context) async {
     String input = "";
 
     for (var element in _scrips) {
       input += "${element['exch']}|${element['token']}#";
     }
+    try {
+      toggleLoadingOn(true);
+      _addDeleteScripModel = await api.getAddDeleteSciptoMW(
+          isAdd: false, scripToken: input, wlname: walName);
 
-    _addDeleteScripModel = await api.getAddDeleteSciptoMW(
-        isAdd: false, scripToken: input, wlname: walName);
-
-    if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
-      if (walName == _wlName) {
-      await changeWlName("", "No");
+      if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+        if (walName == _wlName) {
+          await changeWlName("", "No");
+        }
+        await fetchMWList(context, false, walName == _wlName);
       }
-      await fetchMWList(context, false, walName == _wlName);
+    } finally {
+      toggleLoadingOn(false);
     }
   }
 
@@ -2288,8 +2321,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         isAdd: true, scripToken: "", wlname: wlName);
 
     if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+      toggleLoadingOn(true);
       await changeWlName(wlName, "No");
       await fetchMWList(context, false);
+      toggleLoadingOn(false);
     } else {
       ref.read(authProvider).ifSessionExpired(context);
     }
@@ -2297,7 +2332,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   addDelMarketScrip(String wlName, String scripTok, BuildContext context,
       bool isAdd, bool isEdit, bool isReOrder, bool isOptionStike) async {
-    try {
     _addDeleteScripModel = await api.getAddDeleteSciptoMW(
         isAdd: isAdd, scripToken: scripTok, wlname: wlName);
 
@@ -2305,16 +2339,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       ConstantName.sessCheck = true;
       if (!isReOrder) {
         await fetchMWScrip(wlName, context);
+
         await changeWLScrip(wlName, context);
       } else {
-          // Only show snackbar if context is still mounted
-          if (context.mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, "Scrip order was changed"));
       }
-        }
-        if (!isEdit && context.mounted) {
+      if (!isEdit) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(successMessage(
             context,
@@ -2332,12 +2364,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       }
     } else if (_addDeleteScripModel!.emsg ==
         "Session Expired :  Invalid Session Key") {
-        if (context.mounted) {
       ref.read(authProvider).ifSessionExpired(context);
-        }
-      }
-    } catch (e) {
-      print("Error in addDelMarketScrip: $e");
     }
   }
 
@@ -2348,7 +2375,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       String input = "";
       _delScripQty = 0;
-      
+
       // Get index tokens first for market indices
       await ref.read(indexListProvider).requestdefaultIndex();
       if (ref.read(indexListProvider).indexToken.isNotEmpty) {
@@ -2365,7 +2392,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       // Only attempt subscription if we have valid tokens
       if (input.isNotEmpty) {
-        print("WebSocket: ${isSubscribe ? "Subscribing to" : "Unsubscribing from"} ${input.split('#').length} symbols");
+        print(
+            "WebSocket: ${isSubscribe ? "Subscribing to" : "Unsubscribing from"} ${input.split('#').length} symbols");
         await ref.read(websocketProvider).establishConnection(
             channelInput: input,
             task: isSubscribe ? "t" : "u",
@@ -2427,59 +2455,180 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       {required String sorting,
       required String wlName,
       required BuildContext context}) async {
-      
-    // Log the current sort request
-    print("Applying sort: $sorting on $wlName");
-    
-    // CRITICAL FIX: Sync socket data to model BEFORE sorting
-    syncSocketDataToModel();
-    
-    // First update the sort preference
-    await getSortByWL(sorting);
-    
-    // Apply sorting locally immediately for UI responsiveness
-    _applySavedSorting();
-    notifyListeners();
+    final localstorage = await SharedPreferences.getInstance();
 
-    // Also update the saved model in marketWatchScripData to preserve sorting
-    if (_scrips.isNotEmpty) {
-      _marketWatchScripData[wlName] = jsonEncode(_scrips);
+    String addInput = "";
+    String delInput = "";
+
+    // First collect all existing scrips for deletion
+    for (var scrip in _scrips) {
+      delInput += "${scrip['exch']}|${scrip['token']}#";
     }
-    
-    // Prevent server operations if context is not valid
-    if (!context.mounted) return;
-    
-    // Now handle server-side sorting for persistence
+
+    _sortScrips(sorting);
+
+    // Add all scrips back in the new order
+    for (var scrip in _scrips) {
+      addInput += "${scrip['exch']}|${scrip['token']}#";
+    }
+
+    // First remove all scrips, then add them back in sorted order
+    await addDelMarketScrip(
+        wlName, delInput, context, false, true, false, false);
+    await addDelMarketScrip(
+        wlName, addInput, context, true, true, false, false);
+
+    _sortByWL = sorting;
+    localstorage.setString("sortByWL", _sortByWL);
+    notifyListeners();
+  }
+
+  // Separate sorting logic for reuse
+  void _sortScrips(String sorting) {
+    if (sorting == "Scrip - Z to A") {
+      _scrips.sort((a, b) {
+        String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+        String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+        return bSymbol.compareTo(aSymbol);
+      });
+    } else if (sorting == "Scrip - A to Z") {
+      _scrips.sort((a, b) {
+        String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+        String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+        return aSymbol.compareTo(bSymbol);
+      });
+    } else if (sorting == "Price - Low to High") {
+      _scrips.sort((a, b) {
+        // Handle special cases first (null, invalid, etc)
+        double aLtp = _parseTradingDouble(a['ltp']);
+        double bLtp = _parseTradingDouble(b['ltp']);
+
+        // Handle invalid values
+        if (aLtp == 0 && bLtp == 0) return 0;
+        if (aLtp == 0) return 1;
+        if (bLtp == 0) return -1;
+
+        int result = aLtp.compareTo(bLtp);
+        // If LTPs are equal, use percentage change as secondary sort
+        if (result == 0) {
+          double aChange = _parseTradingDouble(a['perChange']);
+          double bChange = _parseTradingDouble(b['perChange']);
+          return aChange.compareTo(bChange);
+        }
+        return result;
+      });
+    } else if (sorting == "Price - High to Low") {
+      _scrips.sort((a, b) {
+        double aLtp = _parseTradingDouble(a['ltp']);
+        double bLtp = _parseTradingDouble(b['ltp']);
+
+        // Handle invalid values
+        if (aLtp == 0 && bLtp == 0) return 0;
+        if (aLtp == 0) return 1;
+        if (bLtp == 0) return -1;
+
+        int result = bLtp.compareTo(aLtp);
+        // If LTPs are equal, use percentage change as secondary sort
+        if (result == 0) {
+          double aChange = _parseTradingDouble(a['perChange']);
+          double bChange = _parseTradingDouble(b['perChange']);
+          return bChange.compareTo(aChange);
+        }
+        return result;
+      });
+    } else if (sorting == "Per.Chng - High to Low") {
+      _scrips.sort((a, b) {
+        double aChange = _parseTradingDouble(a['perChange']);
+        double bChange = _parseTradingDouble(b['perChange']);
+
+        // Handle invalid values
+        if (aChange == 0 && bChange == 0) return 0;
+        if (aChange == 0) return 1;
+        if (bChange == 0) return -1;
+
+        int result = bChange.compareTo(aChange);
+        // If percentage changes are equal, use LTP as secondary sort
+        if (result == 0) {
+          double aLtp = _parseTradingDouble(a['ltp']);
+          double bLtp = _parseTradingDouble(b['ltp']);
+          return bLtp.compareTo(aLtp);
+        }
+        return result;
+      });
+    } else if (sorting == "Per.Chng - Low to High") {
+      _scrips.sort((a, b) {
+        double aChange = _parseTradingDouble(a['perChange']);
+        double bChange = _parseTradingDouble(b['perChange']);
+
+        // Handle invalid values
+        if (aChange == 0 && bChange == 0) return 0;
+        if (aChange == 0) return 1;
+        if (bChange == 0) return -1;
+
+        int result = aChange.compareTo(bChange);
+        // If percentage changes are equal, use LTP as secondary sort
+        if (result == 0) {
+          double aLtp = _parseTradingDouble(a['ltp']);
+          double bLtp = _parseTradingDouble(b['ltp']);
+          return aLtp.compareTo(bLtp);
+        }
+        return result;
+      });
+    }
+  }
+
+  // Socket data update method to maintain sorting
+  void updateSocketData(Map<String, dynamic> data) {
+    // Update the socket data
+    if (data != null) {
+      for (var scrip in _scrips) {
+        String token = scrip['token']?.toString() ?? "";
+        if (data.containsKey(token)) {
+          scrip.addAll(data[token]);
+        }
+      }
+    }
+
+    // If sorting is active, maintain the sort order
+    if (_sortByWL != null && _sortByWL.isNotEmpty) {
+      _sortScrips(_sortByWL);
+      notifyListeners();
+    }
+  }
+
+  // Add scrip method with sort maintenance
+  Future<void> addScrip(
+      Map<String, dynamic> scrip, String wlName, BuildContext context) async {
+    // Add the scrip to the list
+    if (scrip != null) {
+      _scrips.add(scrip);
+    }
+
+    // If sorting is active, maintain the sort order
+    if (_sortByWL != null && _sortByWL.isNotEmpty) {
+      await filterMWScrip(sorting: _sortByWL, wlName: wlName, context: context);
+    }
+  }
+
+  // Helper method to parse trading-specific doubles
+  double _parseTradingDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+
+    // Remove any currency symbols or commas
+    String cleanValue = value.toString().replaceAll(RegExp(r'[₹,]'), '').trim();
+
+    // Handle percentage signs
+    if (cleanValue.endsWith('%')) {
+      cleanValue = cleanValue.substring(0, cleanValue.length - 1);
+    }
+
     try {
-      String addInput = "";
-      String delInput = "";
-      List<String> filterData = [];
-      
-      // Build delete input for current order
-      for (var element in _scrips) {
-        filterData.add("${element['exch']}|${element['token']}#");
-      }
-      filterData = filterData.toSet().toList();
-      for (var element in filterData) {
-        delInput += element;
-      }
-      
-      // Build add input for new order
-      for (var element in _scrips) {
-        addInput += "${element['exch']}|${element['token']}#";
-      }
-      
-      // Only proceed with server updates if context is still mounted
-      if (context.mounted) {
-        // Send the updates to the server
-        await addDelMarketScrip(wlName, delInput, context, false, true, true, false);
-        
-        if (context.mounted) {
-          await addDelMarketScrip(wlName, addInput, context, true, true, true, false);
-    }
-      }
+      // Parse the cleaned value
+      return double.parse(cleanValue);
     } catch (e) {
-      print("Error updating server with sorted list: $e");
+      // For invalid values in trading context, return 0
+      return 0.0;
     }
   }
 
@@ -2636,8 +2785,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       if (_cancelalert?.stat == "OI deleted") {
         fetchPendingAlert(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "${_cancelalert?.stat}"));
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "Alert deleted successfully"));
         _alertPendingModel!.length;
       }
       _cancelalert = await api.getCancelAlert(alid);
@@ -2658,7 +2807,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _modifyalertmodel =
           await api.getmodifyalert(exch, tysm, value, alertTypeVal, alid);
 
-      if (_modifyalertmodel!.stat! == "OI replaced") {
+      if (_modifyalertmodel!.stat! == "Alert modified successfully") {
         ConstantName.sessCheck = true;
         fetchPendingAlert(context);
         ScaffoldMessenger.of(context).showSnackBar(

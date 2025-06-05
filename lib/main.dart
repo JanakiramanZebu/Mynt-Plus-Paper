@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 // import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -28,16 +29,16 @@ final firebaseInitializedProvider = StateProvider<bool>((ref) => false);
 class FirebaseHelper {
   // Static variable to track initialization status
   static bool _isInitialized = false;
-  
+
   // Check if Firebase is initialized
   static bool isInitialized() {
     return _isInitialized;
   }
-  
+
   // Mark Firebase as initialized
   static void setInitialized(bool value) {
     _isInitialized = value;
-    
+
     // Also update the provider if possible
     try {
       final container = ProviderContainer();
@@ -86,7 +87,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> initializeFirebaseAsync() async {
   final firebaseStartTime = DateTime.now();
   print("Firebase initialization started at: $firebaseStartTime");
-  
+
   try {
     // Initialize Firebase with appropriate platform options
     if (TargetPlatform.android == defaultTargetPlatform) {
@@ -102,7 +103,7 @@ Future<void> initializeFirebaseAsync() async {
     print("Firebase core initialized in: ${coreInitDuration.inMilliseconds}ms");
 
     final Preferences pref = locator<Preferences>();
-    
+
     // Configure messaging
     final messaging = FirebaseMessaging.instance;
     await messaging.requestPermission(
@@ -121,7 +122,7 @@ Future<void> initializeFirebaseAsync() async {
 
     // Configure background messaging handler
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    
+
     // Handle notification click when app was terminated
     FirebaseMessaging.instance.getInitialMessage().then((message) async {
       if (message != null) {
@@ -133,7 +134,7 @@ Future<void> initializeFirebaseAsync() async {
         }
       }
     });
-    
+
     // Handle notification click when app was in background
     FirebaseMessaging.onMessageOpenedApp.listen((message) async {
       if (message.data["url"] != null) {
@@ -143,7 +144,7 @@ Future<void> initializeFirebaseAsync() async {
         }
       }
     });
-    
+
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (kDebugMode) {
@@ -154,18 +155,18 @@ Future<void> initializeFirebaseAsync() async {
         print('Message notification: ${message.notification?.body}');
         print('Message notification: ${message.data["imageUrl"]}');
       }
-      
+
       handleNotificationMessage(message);
       _messageStreamController.sink.add(message);
     });
 
     // Update initialization state after successful Firebase initialization
     FirebaseHelper.setInitialized(true);
-    
+
     final firebaseEndTime = DateTime.now();
     final totalFirebaseDuration = firebaseEndTime.difference(firebaseStartTime);
-    print("Firebase fully initialized in: ${totalFirebaseDuration.inMilliseconds}ms");
-    
+    print(
+        "Firebase fully initialized in: ${totalFirebaseDuration.inMilliseconds}ms");
   } catch (e) {
     print("Firebase initialization error: $e");
     // Don't update the provider state if initialization fails
@@ -177,25 +178,30 @@ void main() async {
   // Track startup time
   final startTime = DateTime.now();
   print("App startup began at: $startTime");
-  
+
   WidgetsFlutterBinding.ensureInitialized();
   if (TargetPlatform.android == defaultTargetPlatform) {
-  await FlutterDisplayMode.setHighRefreshRate();
+    await FlutterDisplayMode.setHighRefreshRate();
   }
   HttpOverrides.global = MyHttpOverrides();
   setupLocator();
   await NotificationService.initializeNotification();
-  
+
   final Preferences pref = locator<Preferences>();
   await pref.init();
-  
+
   // Run the app first without waiting for Firebase
   final beforeFirebase = DateTime.now();
   final startupDuration = beforeFirebase.difference(startTime);
   print("App ready to launch in: ${startupDuration.inMilliseconds}ms");
-  
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   runApp(const ProviderScope(child: MyApp()));
-  
+
   // Initialize Firebase after the app has started (non-blocking)
   initializeFirebaseAsync();
 }

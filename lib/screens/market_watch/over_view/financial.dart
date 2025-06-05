@@ -283,7 +283,7 @@ class BalanceSheetData extends StatelessWidget {
                   Divider(color: colors.colorDivider),
                   StockRowTable(
                       title: "Non Current Asstes",
-                      value: "${balanceSheet[index].nonCurrentAssets}",
+                      value: "${balanceSheet[index].totalNonCurrentAssets}",
                       showIcon: true),
                   Divider(color: colors.colorDivider),
                   StockRowTable(
@@ -361,7 +361,7 @@ class IncomeSheetData extends StatelessWidget {
                           : colors.colorDivider),
                   StockRowTable(
                       title: "Profit After Tax",
-                      value: "${incomSheet[index].profitBeforeTax}",
+                      value: "${incomSheet[index].profitAfterTax}",
                       showIcon: true),
                 ],
               )
@@ -391,7 +391,7 @@ class CashFlowSheetData extends StatelessWidget {
                   StockRowTable(
                       title: "Cash Flow From Investing Activities",
                       value:
-                          "${cashFlowSheet[index].cashFromFinancingActivities}",
+                          "${cashFlowSheet[index].cashFlowFromInvestingActivities}",
                       showIcon: true),
                   Divider(color: colors.colorDivider),
                   StockRowTable(

@@ -17,6 +17,21 @@ class CreatewatchList extends ConsumerStatefulWidget {
 }
 
 class _CreatewatchListState extends ConsumerState<CreatewatchList> {
+  bool _isProcessing = false;
+  _handlebutton() async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    try {
+      errorText = "";
+      await ref.read(marketWatchProvider).addWatchList(textCtrl.text, context);
+      if (mounted) Navigator.pop(context);
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
   TextEditingController textCtrl = TextEditingController();
   String? errorText;
   String wlName = "";
@@ -46,6 +61,7 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
             onPressed: () {
               Navigator.pop(context);
             },
+            splashRadius: 16,
             icon: const Icon(Icons.close_rounded),
             color:
                 theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
@@ -59,12 +75,12 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
               TextFormField(
                   controller: textCtrl,
                   inputFormatters: [
-                    FilteringTextInputFormatter.deny(RegExp("[π£•₹€℅™∆√¶÷℅/]"))
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
                   ],
                   style: textStyles.textFieldLabelStyle.copyWith(
                       color: theme.isDarkMode
                           ? colors.colorWhite
-                          : colors.colorBlue),
+                          : colors.colorBlack),
                   decoration: InputDecoration(
                       fillColor: theme.isDarkMode
                           ? colors.darkGrey
@@ -102,33 +118,36 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
           SizedBox(
               width: MediaQuery.of(context).size.width,
               child: ElevatedButton(
-                  onPressed: () async {
-                    // setState(() {
-                    if (textCtrl.text.trim().isEmpty) {
-                      setState(() {
-                        errorText = "Please enter watchlist name";
-                      });
-                    } else {
-                      List<String> watchList = [];
-                      for (var element in widget.wList) {
-                        watchList.add(element.toUpperCase());
-                      }
-                      if (watchList.isNotEmpty) {
-                        if (watchList.contains(textCtrl.text.toUpperCase())) {
-                          setState(() {
-                            errorText = "This watchlist name already exist";
-                          });
-                        } else {
-                          await ref
-                              .read(marketWatchProvider)
-                              .addWatchList(textCtrl.text, context);
-
-                          Navigator.pop(context);
-                        }
-                      }
-                    }
-                    // });
-                  },
+                  onPressed: _isProcessing
+                      ? null
+                      : () async {
+                          // setState(() {
+                          if (textCtrl.text.trim().isEmpty) {
+                            setState(() {
+                              errorText = "Please enter watchlist name";
+                            });
+                          } else {
+                            List<String> watchList = [];
+                            for (var element in widget.wList) {
+                              watchList.add(element.toUpperCase());
+                            }
+                            if (watchList.isNotEmpty) {
+                              if (watchList
+                                  .contains(textCtrl.text.toUpperCase())) {
+                                setState(() {
+                                  errorText =
+                                      "This watchlist name already exist";
+                                });
+                              } else {
+                                await _handlebutton();
+                                // await ref
+                                //     .read(marketWatchProvider)
+                                //     .addWatchList(textCtrl.text, context);
+                              }
+                            }
+                          }
+                          // });
+                        },
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
                     backgroundColor: theme.isDarkMode
@@ -138,14 +157,22 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                       borderRadius: BorderRadius.circular(50),
                     ),
                   ),
-                  child: Text("Create",
-                      style: GoogleFonts.inter(
-                          textStyle: textStyle(
-                              !theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500)))))
+                  child:
+                      (_isProcessing || ref.read(marketWatchProvider).loading)
+                          ? const SizedBox(
+                              width: 18,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Color(0xff666666)),
+                            )
+                          : Text("Create",
+                              style: GoogleFonts.inter(
+                                  textStyle: textStyle(
+                                      !theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      14,
+                                      FontWeight.w500)))))
         ]);
   }
 }

@@ -19,7 +19,6 @@ class ChangePass extends ConsumerWidget {
     // final loginAuth = ref.watch(authProvider);
     final theme = ref.watch(themeProvider);
     return Scaffold(
-     
       appBar: AppBar(
           elevation: .2,
           centerTitle: false,
@@ -114,6 +113,7 @@ class ChangePass extends ConsumerWidget {
                             14,
                             FontWeight.w600)),
                     TextFormField(
+                      readOnly: changepassword.loading ? true : false,
                       style: textStyles.textFieldLabelStyle.copyWith(
                           color: theme.isDarkMode
                               ? colors.colorWhite
@@ -184,6 +184,7 @@ class ChangePass extends ConsumerWidget {
                           color: theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack),
+                      readOnly: changepassword.loading ? true : false,
                       obscureText: changepassword.hidenewpassword,
                       controller: changepassword.newPassword,
                       decoration: InputDecoration(
@@ -257,8 +258,9 @@ class ChangePass extends ConsumerWidget {
                             onPressed: changepassword
                                         .userIdController.text.isEmpty ||
                                     changepassword.oldPassword.text.isEmpty ||
-                                    changepassword.newPassword.text.isEmpty
-                                ? () {}
+                                    changepassword.newPassword.text.isEmpty ||
+                                    changepassword.loading
+                                ? null
                                 : () {
                                     changepassword.submitChangePass(context);
                                   },

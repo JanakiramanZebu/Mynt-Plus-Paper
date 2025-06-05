@@ -22,11 +22,12 @@ class ForgotPassUnblockUser extends StatefulWidget {
 class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
   bool _isProcessing = false;
 
-  Future<void> _handleContinue(ChangePasswordProvider authForgetpassword) async {
+  Future<void> _handleContinue(
+      ChangePasswordProvider authForgetpassword) async {
     if (_isProcessing) return;
-    
+
     setState(() => _isProcessing = true);
-    
+
     try {
       await authForgetpassword.submitForgetPassword(context);
     } finally {
@@ -35,7 +36,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
       }
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Consumer(
@@ -133,15 +134,17 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                                 : colors.colorBlack),
                                     controller:
                                         authForgetpassword.forGetloginMethCtrl,
+                                    readOnly: (_isProcessing ||
+                                            authForgetpassword.loading)
+                                        ? true
+                                        : false,
+                                    maxLength: 10,
                                     textCapitalization:
                                         TextCapitalization.characters,
                                     inputFormatters: [
                                       UpperCaseTextFormatter(),
-                                      NoEmojiInputFormatter(),
-                                      FilteringTextInputFormatter.deny(
-                                          RegExp('[π£•₹€℅™∆√¶/]')),
-                                      FilteringTextInputFormatter.deny(
-                                          RegExp(r'\s')),
+                                      FilteringTextInputFormatter.allow(
+                                          RegExp(r'[a-zA-Z0-9]')),
                                     ],
                                     decoration: InputDecoration(
                                       contentPadding:
@@ -212,8 +215,8 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                     .forGetloginMethCtrl.text.isEmpty
                                 ? null
                                 : (_isProcessing || authForgetpassword.loading)
-                                  ? null
-                                  : () => _handleContinue(authForgetpassword),
+                                    ? null
+                                    : () => _handleContinue(authForgetpassword),
                             child: (_isProcessing || authForgetpassword.loading)
                                 ? const SizedBox(
                                     width: 18,
