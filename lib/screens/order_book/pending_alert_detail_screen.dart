@@ -11,14 +11,16 @@ import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
-import '../../sharedWidget/functions.dart'; 
+import '../../sharedWidget/functions.dart';
+import '../../sharedWidget/snack_bar.dart';
 
 class PendingAlertDetails extends ConsumerStatefulWidget {
   final AlertPendingModel alert;
   const PendingAlertDetails({super.key, required this.alert});
 
   @override
-  ConsumerState<PendingAlertDetails> createState() => _PendingAlertDetailsState();
+  ConsumerState<PendingAlertDetails> createState() =>
+      _PendingAlertDetailsState();
 }
 
 class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
@@ -43,13 +45,11 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         child: Row(
           children: [
-              Expanded(
+            Expanded(
                 child: ElevatedButton(
                     onPressed: () async {
                       Navigator.pop(context);
-                      ref
-                          .read(marketWatchProvider)
-                          .fetchPendingAlert(context);
+                      ref.read(marketWatchProvider).fetchPendingAlert(context);
                       ref.read(marketWatchProvider).fetchmodifyalert(
                           "${widget.alert.exch}",
                           "${widget.alert.tsym}",
@@ -72,17 +72,20 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                 : colors.colorBlack,
                             14,
                             FontWeight.w500)))),
-           const SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
                 child: ElevatedButton(
                     onPressed: () async {
+                      // Store the alert ID before popping
+                      final String alertId = "${widget.alert.alId}";
+
+                      // Pop the current screen first
                       Navigator.pop(context);
-                      ref
+
+                      // Then cancel the alert without trying to show a SnackBar afterward
+                      await ref
                           .read(marketWatchProvider)
-                          .fetchCancelAlert("${widget.alert.alId}", context);
-                      ref
-                          .read(marketWatchProvider)
-                          .fetchPendingAlert(context);
+                          .fetchCancelAlert(alertId, context);
                     },
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
@@ -92,8 +95,6 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                     child: Text("Cancel Alert",
                         style: textStyle(
                             const Color(0xffFFFFFF), 14, FontWeight.w500)))),
-           
-          
           ],
         ),
       ),
@@ -101,9 +102,13 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration:   BoxDecoration(
+            decoration: BoxDecoration(
                 border: Border(
-                    bottom: BorderSide(color:theme.isDarkMode?colors.darkGrey: const Color(0xffF1F3F8), width: 4))),
+                    bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? colors.darkGrey
+                            : const Color(0xffF1F3F8),
+                        width: 4))),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -231,7 +236,10 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
               const SizedBox(
                 height: 8,
               ),
-              Divider(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider)
+              Divider(
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider)
             ]),
           ),
           alertData("Date&Time",
@@ -264,10 +272,11 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                           FontWeight.w600),
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                          fillColor: theme.isDarkMode?colors.darkGrey: const Color(0xffF1F3F8),
+                          fillColor: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
                           filled: true,
                           hintText: "0",
-                         
                           hintStyle: textStyle(
                               const Color(0xff999999), 14, FontWeight.w600),
                           contentPadding: const EdgeInsets.symmetric(
@@ -307,7 +316,10 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Divider(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider),
+                      Divider(
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider),
                       const SizedBox(
                         height: 8,
                       ),
@@ -328,8 +340,6 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                   : colors.colorBlack,
                               14,
                               FontWeight.w500)),
-                       
-                   
                     ],
                   ),
                 ),

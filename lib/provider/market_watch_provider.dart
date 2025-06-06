@@ -40,6 +40,7 @@ import 'index_list_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
 import 'websocket_provider.dart';
+import 'dart:async';
 
 final marketWatchProvider =
     ChangeNotifierProvider((ref) => MarketWatchProvider(ref));
@@ -271,9 +272,97 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   final ScrollController _scrollController = ScrollController();
   ScrollController get scrollController => _scrollController;
 
+  // Track current watchlist page index
+  int _currentWatchlistPageIndex = 0;
+  int get currentWatchlistPageIndex => _currentWatchlistPageIndex;
+
+  // Method to update current watchlist page index
+  void setCurrentWatchlistPageIndex(int index) {
+    _currentWatchlistPageIndex = index;
+    // Store in SharedPreferences for persistence
+    _saveCurrentPageIndex();
+  }
+
+  // Save current page index to SharedPreferences
+  Future<void> _saveCurrentPageIndex() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(
+          "currentWatchlistPageIndex", _currentWatchlistPageIndex);
+    } catch (e) {
+      print("Error saving watchlist page index: $e");
+    }
+  }
+
+  // Add StreamSubscription for WebSocket data
+  StreamSubscription? _socketDataSubscription;
+
   MarketWatchProvider(this.ref) {
     // Load sort preference asynchronously - don't block the constructor
     _loadSortPreference();
+    // Load saved page index
+    _loadCurrentPageIndex();
+
+    // Listen to WebSocket data updates using a proper subscription
+    _setupWebSocketListener();
+  }
+
+  // Setup WebSocket listener with proper error handling
+  void _setupWebSocketListener() {
+    try {
+      // Cancel any existing subscription first
+      _socketDataSubscription?.cancel();
+
+      // Create a new subscription with proper error handling
+      _socketDataSubscription =
+          ref.read(websocketProvider).socketDataStream.listen(
+        (data) {
+          if (data.isNotEmpty) {
+            try {
+              // Convert to Map<String, dynamic> to match the expected type
+              final Map<String, dynamic> typedData =
+                  Map<String, dynamic>.from(data);
+              updateSocketData(typedData);
+            } catch (e) {
+              print("Error processing socket data update: $e");
+            }
+          }
+        },
+        onError: (error) {
+          print("Error in socket data stream: $error");
+        },
+      );
+    } catch (e) {
+      print("Error setting up WebSocket listener: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    // Cancel the socket data subscription to avoid memory leaks
+    if (_socketDataSubscription != null) {
+      try {
+        _socketDataSubscription?.cancel();
+        _socketDataSubscription = null;
+      } catch (e) {
+        print("Error canceling socket subscription: $e");
+      }
+    }
+
+    // Call the parent dispose method
+    super.dispose();
+  }
+
+  // Method to load current page index from SharedPreferences
+  Future<void> _loadCurrentPageIndex() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      _currentWatchlistPageIndex =
+          prefs.getInt("currentWatchlistPageIndex") ?? 0;
+      notifyListeners();
+    } catch (e) {
+      print("Error loading watchlist page index: $e");
+    }
   }
 
   // Method to load sort preference from SharedPreferences
@@ -293,34 +382,63 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     try {
       final socketDatas = ref.read(websocketProvider).socketDatas;
+      bool dataUpdated = false;
 
       // Update each scrip with current socket data if available
       for (int i = 0; i < _scrips.length; i++) {
         final token = _scrips[i]['token']?.toString();
-        if (token != null && socketDatas.containsKey(token)) {
+        if (token != null &&
+            token.isNotEmpty &&
+            socketDatas.containsKey(token)) {
           final socketData = socketDatas[token];
 
           // Update ltp from socket 'lp' field
           if (socketData['lp'] != null &&
-              socketData['lp'].toString() != "null") {
+              socketData['lp'].toString() != "null" &&
+              socketData['lp'].toString() != "0.00") {
             _scrips[i]['ltp'] = socketData['lp'].toString();
+            dataUpdated = true;
           }
 
           // Update change from socket 'chng' field
           if (socketData['chng'] != null &&
               socketData['chng'].toString() != "null") {
             _scrips[i]['change'] = socketData['chng'].toString();
+            dataUpdated = true;
           }
 
           // Update percentage change from socket 'pc' field
           if (socketData['pc'] != null &&
               socketData['pc'].toString() != "null") {
             _scrips[i]['perChange'] = socketData['pc'].toString();
+            dataUpdated = true;
+          }
+
+          // Update other important fields
+          final relevantFields = [
+            'h',
+            'l',
+            'o',
+            'c',
+            'v',
+            'ap',
+            'bp1',
+            'sp1',
+            'tbq',
+            'tsq'
+          ];
+          for (var field in relevantFields) {
+            if (socketData[field] != null &&
+                socketData[field].toString() != "null") {
+              _scrips[i][field] = socketData[field].toString();
+            }
           }
         }
       }
 
-      print("Socket data synced to model for ${_scrips.length} scrips");
+      if (dataUpdated) {
+        print("Socket data synced to model for ${_scrips.length} scrips");
+      }
     } catch (e) {
       print("Error syncing socket data: $e");
     }
@@ -331,25 +449,26 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     if (_sortByWL.isEmpty || _scrips.isEmpty) return;
 
     try {
-      // Print sample data for debugging
-      if (_scrips.isNotEmpty) {
-        print("DEBUG: Sample scrip data for sorting: ${_scrips[0]}");
-      }
+      // Make sure we have fresh data before sorting
+      syncSocketDataToModel();
 
+      // Create a copy of the list to preserve object references
+      final List<dynamic> tempScrips = List<dynamic>.from(_scrips);
+
+      // Apply the current sort
       switch (_sortByWL) {
         case "Scrip - Z to A":
-          _scrips.sort(
+          tempScrips.sort(
               (a, b) => b['tsym'].toString().compareTo(a['tsym'].toString()));
           break;
 
         case "Scrip - A to Z":
-          _scrips.sort(
+          tempScrips.sort(
               (a, b) => a['tsym'].toString().compareTo(b['tsym'].toString()));
           break;
 
         case "Price - Low to High":
-          _scrips.sort((a, b) {
-            // LTP is stored as 'ltp' directly in the scrips array
+          tempScrips.sort((a, b) {
             double aPrice =
                 double.tryParse(a['ltp']?.toString() ?? '0.00') ?? 0.0;
             double bPrice =
@@ -359,8 +478,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           break;
 
         case "Price - High to Low":
-          _scrips.sort((a, b) {
-            // LTP is stored as 'ltp' directly in the scrips array
+          tempScrips.sort((a, b) {
             double aPrice =
                 double.tryParse(a['ltp']?.toString() ?? '0.00') ?? 0.0;
             double bPrice =
@@ -370,8 +488,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           break;
 
         case "Per.Chng - High to Low":
-          _scrips.sort((a, b) {
-            // Percentage change is stored as 'perChange' in the scrips array
+          tempScrips.sort((a, b) {
             double aChange =
                 double.tryParse(a['perChange']?.toString() ?? '0.00') ?? 0.0;
             double bChange =
@@ -381,8 +498,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           break;
 
         case "Per.Chng - Low to High":
-          _scrips.sort((a, b) {
-            // Percentage change is stored as 'perChange' in the scrips array
+          tempScrips.sort((a, b) {
             double aChange =
                 double.tryParse(a['perChange']?.toString() ?? '0.00') ?? 0.0;
             double bChange =
@@ -391,6 +507,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           });
           break;
       }
+
+      // Update the list with the sorted data
+      _scrips = tempScrips;
+
+      print("Applied sorting: $_sortByWL");
     } catch (e) {
       print("Error applying sorting: $e");
     }
@@ -2296,19 +2417,48 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   Future<void> deleteWatchList(String walName, BuildContext context) async {
     String input = "";
 
-    for (var element in _scrips) {
+    // Get the scrips for this watchlist, even if it's not the active one
+    List scripList = [];
+    if (_marketWatchScripData.containsKey(walName)) {
+      scripList = jsonDecode(_marketWatchScripData[walName]) ?? [];
+    }
+
+    // Build the input string for deletion
+    for (var element in scripList) {
       input += "${element['exch']}|${element['token']}#";
     }
+
     try {
       toggleLoadingOn(true);
       _addDeleteScripModel = await api.getAddDeleteSciptoMW(
           isAdd: false, scripToken: input, wlname: walName);
 
       if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+        // If the deleted watchlist is the active one, change to a different watchlist
         if (walName == _wlName) {
-          await changeWlName("", "No");
+          // Find the first available watchlist that's not the one being deleted
+          String newWlName = "";
+          if (_marketWatchlist != null &&
+              _marketWatchlist!.values!.isNotEmpty) {
+            for (String wl in _marketWatchlist!.values!) {
+              if (wl != walName) {
+                newWlName = wl;
+                break;
+              }
+            }
+          }
+
+          // If we found an alternative, switch to it
+          if (newWlName.isNotEmpty) {
+            await changeWlName(newWlName, "No");
+          } else {
+            // If no alternative found, reset to empty
+            await changeWlName("", "No");
+          }
         }
-        await fetchMWList(context, false, walName == _wlName);
+
+        // Refresh the watchlist data
+        await fetchMWList(context, false, true);
       }
     } finally {
       toggleLoadingOn(false);
@@ -2330,41 +2480,81 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
-  addDelMarketScrip(String wlName, String scripTok, BuildContext context,
-      bool isAdd, bool isEdit, bool isReOrder, bool isOptionStike) async {
-    _addDeleteScripModel = await api.getAddDeleteSciptoMW(
-        isAdd: isAdd, scripToken: scripTok, wlname: wlName);
+  Future<bool> addDelMarketScrip(
+      String wlName,
+      String scripTok,
+      BuildContext context,
+      bool isAdd,
+      bool isEdit,
+      bool isReOrder,
+      bool isOptionStike) async {
+    try {
+      _addDeleteScripModel = await api.getAddDeleteSciptoMW(
+          isAdd: isAdd, scripToken: scripTok, wlname: wlName);
 
-    if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
-      ConstantName.sessCheck = true;
-      if (!isReOrder) {
-        await fetchMWScrip(wlName, context);
-
-        await changeWLScrip(wlName, context);
-      } else {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "Scrip order was changed"));
+      if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+        ConstantName.sessCheck = true;
+        if (!isReOrder) {
+          await fetchMWScrip(wlName, context);
+          await changeWLScrip(wlName, context);
+        } else {
+          // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
+          try {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+                successMessage(context, "Scrip order was changed"));
+          } catch (e) {
+            if (e.toString().contains("widget was disposed") ||
+                e.toString().contains("after the widget was disposed")) {
+              print("Widget was disposed when showing SnackBar: $e");
+            } else {
+              print("Error showing SnackBar: $e");
+            }
+          }
+        }
+        if (!isEdit) {
+          // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
+          try {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                context,
+                isAdd
+                    ? "Scrip was added to watchlist $wlName"
+                    : "Scrip was removed from watchlist $wlName"));
+          } catch (e) {
+            if (e.toString().contains("widget was disposed") ||
+                e.toString().contains("after the widget was disposed")) {
+              print("Widget was disposed when showing SnackBar: $e");
+            } else {
+              print("Error showing SnackBar: $e");
+            }
+          }
+        }
+        if (isEdit && isOptionStike) {
+          try {
+            Fluttertoast.showToast(
+                msg: "Scrip was added to watchlist $wlName",
+                timeInSecForIosWeb: 2,
+                backgroundColor: colors.colorBlack,
+                textColor: colors.colorWhite,
+                fontSize: 14.0);
+          } catch (e) {
+            print("Error showing toast: $e");
+          }
+        }
+        return true;
+      } else if (_addDeleteScripModel!.emsg ==
+          "Session Expired :  Invalid Session Key") {
+        try {
+          ref.read(authProvider).ifSessionExpired(context);
+        } catch (e) {
+          print("Error handling session expiration: $e");
+        }
       }
-      if (!isEdit) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(successMessage(
-            context,
-            isAdd
-                ? "Scrip was added to watchlist $wlName"
-                : "Scrip was removed from watchlist $wlName"));
-      }
-      if (isEdit && isOptionStike) {
-        Fluttertoast.showToast(
-            msg: "Scrip was added to watchlist $wlName",
-            timeInSecForIosWeb: 2,
-            backgroundColor: colors.colorBlack,
-            textColor: colors.colorWhite,
-            fontSize: 14.0);
-      }
-    } else if (_addDeleteScripModel!.emsg ==
-        "Session Expired :  Invalid Session Key") {
-      ref.read(authProvider).ifSessionExpired(context);
+      return false;
+    } catch (e) {
+      print("Error in addDelMarketScrip: $e");
+      return false;
     }
   }
 
@@ -2454,37 +2644,214 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   filterMWScrip(
       {required String sorting,
       required String wlName,
-      required BuildContext context}) async {
-    final localstorage = await SharedPreferences.getInstance();
+      required BuildContext context}) {
+    print("Starting filterMWScrip with sorting: $sorting");
 
-    String addInput = "";
-    String delInput = "";
-
-    // First collect all existing scrips for deletion
-    for (var scrip in _scrips) {
-      delInput += "${scrip['exch']}|${scrip['token']}#";
+    // If no scrips to sort, exit early
+    if (_scrips.isEmpty) {
+      print("No scrips to sort in watchlist $wlName");
+      return;
     }
 
-    _sortScrips(sorting);
-
-    // Add all scrips back in the new order
-    for (var scrip in _scrips) {
-      addInput += "${scrip['exch']}|${scrip['token']}#";
-    }
-
-    // First remove all scrips, then add them back in sorted order
-    await addDelMarketScrip(
-        wlName, delInput, context, false, true, false, false);
-    await addDelMarketScrip(
-        wlName, addInput, context, true, true, false, false);
-
+    // Store the current sort option immediately in the provider state
     _sortByWL = sorting;
-    localstorage.setString("sortByWL", _sortByWL);
+
+    // Save to persistent storage in the background
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString("sortByWL", sorting);
+    }).catchError((e) {
+      print("Error saving sort preference: $e");
+    });
+
+    // Log sample data before sorting
+    if (_scrips.isNotEmpty) {
+      print(
+          "Before sorting - Sample scrip: ${_scrips[0]['tsym']} LTP: ${_scrips[0]['ltp']} PerChange: ${_scrips[0]['perChange']}");
+    }
+
+    // Make sure we have fresh data before sorting
+    syncSocketDataToModel();
+
+    // Create a copy to preserve original objects
+    final List<dynamic> tempScrips = List<dynamic>.from(_scrips);
+
+    // Apply sorting based on requested type
+    switch (sorting) {
+      case "Scrip - Z to A":
+        tempScrips.sort((a, b) {
+          String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+          String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+          return bSymbol.compareTo(aSymbol);
+        });
+        break;
+
+      case "Scrip - A to Z":
+        tempScrips.sort((a, b) {
+          String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+          String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+          return aSymbol.compareTo(bSymbol);
+        });
+        break;
+
+      case "Price - Low to High":
+        tempScrips.sort((a, b) {
+          // Use the helper method for numeric values
+          double aPrice = _parseNumericValue(a['ltp']);
+          double bPrice = _parseNumericValue(b['ltp']);
+
+          // If values are equal, use symbol as secondary sort
+          if (aPrice == bPrice) {
+            String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+            String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+            return aSymbol.compareTo(bSymbol);
+          }
+
+          return aPrice.compareTo(bPrice);
+        });
+        break;
+
+      case "Price - High to Low":
+        tempScrips.sort((a, b) {
+          // Use the helper method for numeric values
+          double aPrice = _parseNumericValue(a['ltp']);
+          double bPrice = _parseNumericValue(b['ltp']);
+
+          // If values are equal, use symbol as secondary sort
+          if (aPrice == bPrice) {
+            String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+            String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+            return aSymbol.compareTo(bSymbol);
+          }
+
+          return bPrice.compareTo(aPrice);
+        });
+        break;
+
+      case "Per.Chng - High to Low":
+        tempScrips.sort((a, b) {
+          // Use the helper method for numeric values
+          double aChange = _parseNumericValue(a['perChange']);
+          double bChange = _parseNumericValue(b['perChange']);
+
+          // If values are equal, use symbol as secondary sort
+          if (aChange == bChange) {
+            String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+            String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+            return aSymbol.compareTo(bSymbol);
+          }
+
+          return bChange.compareTo(aChange);
+        });
+        break;
+
+      case "Per.Chng - Low to High":
+        tempScrips.sort((a, b) {
+          // Use the helper method for numeric values
+          double aChange = _parseNumericValue(a['perChange']);
+          double bChange = _parseNumericValue(b['perChange']);
+
+          // If values are equal, use symbol as secondary sort
+          if (aChange == bChange) {
+            String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+            String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+            return aSymbol.compareTo(bSymbol);
+          }
+
+          return aChange.compareTo(bChange);
+        });
+        break;
+    }
+
+    // Log sample data after sorting
+    if (tempScrips.isNotEmpty) {
+      print(
+          "After sorting - Sample scrip: ${tempScrips[0]['tsym']} LTP: ${tempScrips[0]['ltp']} PerChange: ${tempScrips[0]['perChange']}");
+    }
+
+    // Update the list with the sorted data
+    _scrips = tempScrips;
+
+    // Force UI update
     notifyListeners();
+
+    // Update the backend in the background
+    _updateBackendSortOrderNonBlocking(wlName, context);
   }
 
-  // Separate sorting logic for reuse
+  // Non-blocking backend update to avoid UI stutters
+  void _updateBackendSortOrderNonBlocking(String wlName, BuildContext context) {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _updateBackendSortOrder(wlName, context);
+    });
+  }
+
+  // Helper method to safely parse numeric values from various formats
+  double _parseNumericValue(dynamic value) {
+    if (value == null) return 0.0;
+
+    // If value is already a number, return it directly
+    if (value is num) return value.toDouble();
+
+    // Convert to string for safe parsing
+    String strValue = value.toString().trim();
+
+    // Handle empty strings
+    if (strValue.isEmpty) return 0.0;
+
+    // Remove any currency symbols, commas, or other non-numeric characters
+    strValue = strValue.replaceAll(RegExp(r'[₹,%]'), '').trim();
+
+    try {
+      return double.parse(strValue);
+    } catch (e) {
+      print("Error parsing numeric value '$value': $e");
+      return 0.0;
+    }
+  }
+
+  // Helper method to update the backend without blocking UI
+  void _updateBackendSortOrder(String wlName, BuildContext context) {
+    // Use a longer delay to ensure UI has fully updated before backend operations
+    Future.delayed(const Duration(milliseconds: 300), () async {
+      try {
+        // Build a single string with all tokens in the current sort order
+        final String scripTokens = _scrips
+            .map((scrip) => "${scrip['exch']}|${scrip['token']}")
+            .join("#");
+
+        if (scripTokens.isEmpty) {
+          return;
+        }
+
+        // First step: Delete all scrips (but only from backend, not UI)
+        final deleteResult = await addDelMarketScrip(
+            wlName, "$scripTokens#", context, false, true, true, false);
+
+        // Second step: Add all scrips back in the new order (only to backend)
+        if (deleteResult) {
+          await addDelMarketScrip(
+              wlName, "$scripTokens#", context, true, true, true, false);
+
+          print("Backend watchlist order updated successfully");
+        }
+      } catch (e) {
+        // Silently handle errors in the background operation
+        print("Error updating backend sort order: $e");
+      }
+    });
+  }
+
+  // Improved sorting logic with reset to ensure clean sort operations
   void _sortScrips(String sorting) {
+    // Ensure we have fresh data before sorting
+    syncSocketDataToModel();
+
+    // Reset any previous sort flags in data
+    for (var scrip in _scrips) {
+      scrip.remove('_sortRank');
+    }
+
+    // Apply the requested sort
     if (sorting == "Scrip - Z to A") {
       _scrips.sort((a, b) {
         String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
@@ -2498,100 +2865,292 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         return aSymbol.compareTo(bSymbol);
       });
     } else if (sorting == "Price - Low to High") {
+      // First, normalize the LTP values and add a sort rank
+      for (int i = 0; i < _scrips.length; i++) {
+        double ltp = _parseTradingDouble(_scrips[i]['ltp']);
+        _scrips[i]['_sortRank'] = ltp;
+      }
+
       _scrips.sort((a, b) {
-        // Handle special cases first (null, invalid, etc)
-        double aLtp = _parseTradingDouble(a['ltp']);
-        double bLtp = _parseTradingDouble(b['ltp']);
+        double aLtp = a['_sortRank'] as double;
+        double bLtp = b['_sortRank'] as double;
 
-        // Handle invalid values
-        if (aLtp == 0 && bLtp == 0) return 0;
-        if (aLtp == 0) return 1;
-        if (bLtp == 0) return -1;
+        // Special handling for zero and negative values
+        // Order: negative values, then zeros, then positive values
+        if (aLtp < 0 && bLtp >= 0) return -1;
+        if (aLtp >= 0 && bLtp < 0) return 1;
+        if (aLtp == 0 && bLtp > 0) return -1;
+        if (aLtp > 0 && bLtp == 0) return 1;
 
+        // Normal comparison for values in the same category
         int result = aLtp.compareTo(bLtp);
-        // If LTPs are equal, use percentage change as secondary sort
+
+        // If LTPs are equal, use symbol as tiebreaker
         if (result == 0) {
-          double aChange = _parseTradingDouble(a['perChange']);
-          double bChange = _parseTradingDouble(b['perChange']);
-          return aChange.compareTo(bChange);
+          String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+          String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+          return aSymbol.compareTo(bSymbol);
         }
         return result;
       });
     } else if (sorting == "Price - High to Low") {
+      // First, normalize the LTP values and add a sort rank
+      for (int i = 0; i < _scrips.length; i++) {
+        double ltp = _parseTradingDouble(_scrips[i]['ltp']);
+        _scrips[i]['_sortRank'] = ltp;
+      }
+
       _scrips.sort((a, b) {
-        double aLtp = _parseTradingDouble(a['ltp']);
-        double bLtp = _parseTradingDouble(b['ltp']);
+        double aLtp = a['_sortRank'] as double;
+        double bLtp = b['_sortRank'] as double;
 
-        // Handle invalid values
-        if (aLtp == 0 && bLtp == 0) return 0;
-        if (aLtp == 0) return 1;
-        if (bLtp == 0) return -1;
+        // Special handling for zero and negative values
+        // Order: positive values, then zeros, then negative values
+        if (aLtp > 0 && bLtp <= 0) return -1;
+        if (aLtp <= 0 && bLtp > 0) return 1;
+        if (aLtp == 0 && bLtp < 0) return -1;
+        if (aLtp < 0 && bLtp == 0) return 1;
 
+        // Normal comparison for values in the same category
         int result = bLtp.compareTo(aLtp);
-        // If LTPs are equal, use percentage change as secondary sort
+
+        // If LTPs are equal, use symbol as tiebreaker
         if (result == 0) {
-          double aChange = _parseTradingDouble(a['perChange']);
-          double bChange = _parseTradingDouble(b['perChange']);
-          return bChange.compareTo(aChange);
+          String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+          String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+          return aSymbol.compareTo(bSymbol);
         }
         return result;
       });
     } else if (sorting == "Per.Chng - High to Low") {
+      // First, normalize the percentage change values and add a sort rank
+      for (int i = 0; i < _scrips.length; i++) {
+        double perChange = _parseTradingDouble(_scrips[i]['perChange']);
+        _scrips[i]['_sortRank'] = perChange;
+      }
+
       _scrips.sort((a, b) {
-        double aChange = _parseTradingDouble(a['perChange']);
-        double bChange = _parseTradingDouble(b['perChange']);
+        double aChange = a['_sortRank'] as double;
+        double bChange = b['_sortRank'] as double;
 
-        // Handle invalid values
-        if (aChange == 0 && bChange == 0) return 0;
-        if (aChange == 0) return 1;
-        if (bChange == 0) return -1;
+        // Special handling for zero values
+        if (aChange > 0 && bChange <= 0) return -1;
+        if (aChange <= 0 && bChange > 0) return 1;
+        if (aChange == 0 && bChange < 0) return -1;
+        if (aChange < 0 && bChange == 0) return 1;
 
+        // Normal comparison for values in the same category
         int result = bChange.compareTo(aChange);
-        // If percentage changes are equal, use LTP as secondary sort
+
+        // If percentage changes are equal, use symbol as tiebreaker
         if (result == 0) {
-          double aLtp = _parseTradingDouble(a['ltp']);
-          double bLtp = _parseTradingDouble(b['ltp']);
-          return bLtp.compareTo(aLtp);
+          String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+          String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+          return aSymbol.compareTo(bSymbol);
         }
         return result;
       });
     } else if (sorting == "Per.Chng - Low to High") {
+      // First, normalize the percentage change values and add a sort rank
+      for (int i = 0; i < _scrips.length; i++) {
+        double perChange = _parseTradingDouble(_scrips[i]['perChange']);
+        _scrips[i]['_sortRank'] = perChange;
+      }
+
       _scrips.sort((a, b) {
-        double aChange = _parseTradingDouble(a['perChange']);
-        double bChange = _parseTradingDouble(b['perChange']);
+        double aChange = a['_sortRank'] as double;
+        double bChange = b['_sortRank'] as double;
 
-        // Handle invalid values
-        if (aChange == 0 && bChange == 0) return 0;
-        if (aChange == 0) return 1;
-        if (bChange == 0) return -1;
+        // Special handling for zero values
+        if (aChange < 0 && bChange >= 0) return -1;
+        if (aChange >= 0 && bChange < 0) return 1;
+        if (aChange == 0 && bChange > 0) return -1;
+        if (aChange > 0 && bChange == 0) return 1;
 
+        // Normal comparison for values in the same category
         int result = aChange.compareTo(bChange);
-        // If percentage changes are equal, use LTP as secondary sort
+
+        // If percentage changes are equal, use symbol as tiebreaker
         if (result == 0) {
-          double aLtp = _parseTradingDouble(a['ltp']);
-          double bLtp = _parseTradingDouble(b['ltp']);
-          return aLtp.compareTo(bLtp);
+          String aSymbol = (a['tsym'] ?? "").toString().toUpperCase();
+          String bSymbol = (b['tsym'] ?? "").toString().toUpperCase();
+          return aSymbol.compareTo(bSymbol);
         }
         return result;
       });
     }
+
+    // Clean up temp sorting data
+    for (var scrip in _scrips) {
+      scrip.remove('_sortRank');
+    }
+  }
+
+  // Helper method to parse trading-specific doubles
+  double _parseTradingDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+
+    // Handle empty strings
+    if (value.toString().trim().isEmpty) return 0.0;
+
+    // Remove any currency symbols or commas
+    String cleanValue = value.toString().replaceAll(RegExp(r'[₹,]'), '').trim();
+
+    // Handle percentage signs
+    if (cleanValue.endsWith('%')) {
+      cleanValue = cleanValue.substring(0, cleanValue.length - 1);
+    }
+
+    try {
+      // Parse the cleaned value
+      return double.parse(cleanValue);
+    } catch (e) {
+      // For invalid values in trading context, return 0
+      print("Error parsing value '$value': $e");
+      return 0.0;
+    }
   }
 
   // Socket data update method to maintain sorting
-  void updateSocketData(Map<String, dynamic> data) {
-    // Update the socket data
-    if (data != null) {
-      for (var scrip in _scrips) {
-        String token = scrip['token']?.toString() ?? "";
-        if (data.containsKey(token)) {
-          scrip.addAll(data[token]);
+  void updateSocketData(Map<String, dynamic> socketDatas) {
+    if (socketDatas == null || _scrips.isEmpty) return;
+
+    bool dataUpdated = false;
+
+    // First pass: Update the data in the scrips list
+    for (var scrip in _scrips) {
+      String token = scrip['token']?.toString() ?? "";
+      if (token.isNotEmpty && socketDatas.containsKey(token)) {
+        final socketData = socketDatas[token];
+
+        // Update LTP
+        if (socketData['lp'] != null && socketData['lp'].toString() != "null") {
+          String newValue = socketData['lp'].toString();
+          if (scrip['ltp'] != newValue) {
+            scrip['ltp'] = newValue;
+            dataUpdated = true;
+          }
+        }
+
+        // Update change
+        if (socketData['chng'] != null &&
+            socketData['chng'].toString() != "null") {
+          String newValue = socketData['chng'].toString();
+          if (scrip['change'] != newValue) {
+            scrip['change'] = newValue;
+            dataUpdated = true;
+          }
+        }
+
+        // Update percentage change
+        if (socketData['pc'] != null && socketData['pc'].toString() != "null") {
+          String newValue = socketData['pc'].toString();
+          if (scrip['perChange'] != newValue) {
+            scrip['perChange'] = newValue;
+            dataUpdated = true;
+          }
+        }
+
+        // Update other relevant fields
+        final relevantFields = [
+          'h',
+          'l',
+          'o',
+          'c',
+          'v',
+          'ap',
+          'bp1',
+          'sp1',
+          'tbq',
+          'tsq'
+        ];
+
+        for (var field in relevantFields) {
+          if (socketData[field] != null &&
+              socketData[field].toString() != "null") {
+            String newValue = socketData[field].toString();
+            if (scrip[field] != newValue) {
+              scrip[field] = newValue;
+              dataUpdated = true;
+            }
+          }
         }
       }
     }
 
-    // If sorting is active, maintain the sort order
-    if (_sortByWL != null && _sortByWL.isNotEmpty) {
-      _sortScrips(_sortByWL);
+    // If we have updates and a sort preference, re-apply the sort
+    if (dataUpdated && _sortByWL.isNotEmpty) {
+      try {
+        // Log pre-sort data for debugging
+        if (_scrips.isNotEmpty) {
+          print(
+              "Socket update - Pre-sort: ${_scrips[0]['tsym']} LTP: ${_scrips[0]['ltp']} PerChange: ${_scrips[0]['perChange']}");
+        }
+
+        // Create a copy of the list to preserve object references
+        final List<dynamic> tempScrips = List<dynamic>.from(_scrips);
+
+        // Apply the sort without having to check the type again
+        switch (_sortByWL) {
+          case "Scrip - Z to A":
+            tempScrips.sort(
+                (a, b) => b['tsym'].toString().compareTo(a['tsym'].toString()));
+            break;
+
+          case "Scrip - A to Z":
+            tempScrips.sort(
+                (a, b) => a['tsym'].toString().compareTo(b['tsym'].toString()));
+            break;
+
+          case "Price - Low to High":
+            tempScrips.sort((a, b) {
+              double aPrice = _parseNumericValue(a['ltp']);
+              double bPrice = _parseNumericValue(b['ltp']);
+              return aPrice.compareTo(bPrice);
+            });
+            break;
+
+          case "Price - High to Low":
+            tempScrips.sort((a, b) {
+              double aPrice = _parseNumericValue(a['ltp']);
+              double bPrice = _parseNumericValue(b['ltp']);
+              return bPrice.compareTo(aPrice);
+            });
+            break;
+
+          case "Per.Chng - High to Low":
+            tempScrips.sort((a, b) {
+              double aChange = _parseNumericValue(a['perChange']);
+              double bChange = _parseNumericValue(b['perChange']);
+              return bChange.compareTo(aChange);
+            });
+            break;
+
+          case "Per.Chng - Low to High":
+            tempScrips.sort((a, b) {
+              double aChange = _parseNumericValue(a['perChange']);
+              double bChange = _parseNumericValue(b['perChange']);
+              return aChange.compareTo(bChange);
+            });
+            break;
+        }
+
+        // Log post-sort data for debugging
+        if (tempScrips.isNotEmpty) {
+          print(
+              "Socket update - Post-sort: ${tempScrips[0]['tsym']} LTP: ${tempScrips[0]['ltp']} PerChange: ${tempScrips[0]['perChange']}");
+        }
+
+        // Update the list with the sorted data
+        _scrips = tempScrips;
+      } catch (e) {
+        print("Error applying sort during socket update: $e");
+      }
+    }
+
+    // Notify listeners to update the UI - only if data actually changed
+    if (dataUpdated) {
       notifyListeners();
     }
   }
@@ -2607,28 +3166,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     // If sorting is active, maintain the sort order
     if (_sortByWL != null && _sortByWL.isNotEmpty) {
       await filterMWScrip(sorting: _sortByWL, wlName: wlName, context: context);
-    }
-  }
-
-  // Helper method to parse trading-specific doubles
-  double _parseTradingDouble(dynamic value) {
-    if (value == null) return 0.0;
-    if (value is num) return value.toDouble();
-
-    // Remove any currency symbols or commas
-    String cleanValue = value.toString().replaceAll(RegExp(r'[₹,]'), '').trim();
-
-    // Handle percentage signs
-    if (cleanValue.endsWith('%')) {
-      cleanValue = cleanValue.substring(0, cleanValue.length - 1);
-    }
-
-    try {
-      // Parse the cleaned value
-      return double.parse(cleanValue);
-    } catch (e) {
-      // For invalid values in trading context, return 0
-      return 0.0;
     }
   }
 
@@ -2722,11 +3259,22 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       ref.read(orderProvider).changeTabIndex(6, context);
 
       if (_setAlertModel!.stat! == "OI created") {
-        fetchPendingAlert(context);
+        // Fetch updated alert list
+        await fetchPendingAlert(context);
+
+        // Update the tab count immediately
+        ref.read(orderProvider).tabSize();
+
+        // Display success message
         ScaffoldMessenger.of(context)
             .showSnackBar(successMessage(context, "${_setAlertModel?.stat}"));
+
+        // Close the alert creation screens
         Navigator.pop(context);
         Navigator.pop(context);
+
+        // Navigate to the Alert tab after closing the alert creation screens
+        ref.read(orderProvider).changeTabIndex(6, context);
       } else if (_setAlertModel!.stat! == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
       }
@@ -2781,23 +3329,42 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future fetchCancelAlert(String alid, BuildContext context) async {
+  Future<bool> fetchCancelAlert(String alid, BuildContext context) async {
     try {
-      if (_cancelalert?.stat == "OI deleted") {
-        fetchPendingAlert(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "Alert deleted successfully"));
-        _alertPendingModel!.length;
-      }
+      // First make the API call to cancel the alert
       _cancelalert = await api.getCancelAlert(alid);
       ConstantName.sessCheck = true;
-      if (_cancelalert!.stat == "Not_Ok") {
+
+      if (_cancelalert!.stat == "OI deleted") {
+        // Fetch updated alert list
+        await fetchPendingAlert(context);
+
+        // Update the tab count immediately
+        ref.read(orderProvider).tabSize();
+
+        // Show success message using a safe approach
+        // This should be safe since we're using the context from the caller
+        // which should be the order book screen that remains active
+        try {
+          ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, "Alert deleted successfully"));
+        } catch (e) {
+          print("Could not show SnackBar: $e");
+        }
+
+        // Return success status
+        notifyListeners();
+        return true;
+      } else if (_cancelalert!.stat == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
+        return false;
       }
+
       notifyListeners();
-      return _cancelalert;
+      return false;
     } catch (e) {
-      rethrow;
+      print("Error canceling alert: $e");
+      return false;
     }
   }
 
@@ -2809,7 +3376,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_modifyalertmodel!.stat! == "Alert modified successfully") {
         ConstantName.sessCheck = true;
-        fetchPendingAlert(context);
+
+        // Fetch updated alert list
+        await fetchPendingAlert(context);
+
+        // Update the tab count immediately
+        ref.read(orderProvider).tabSize();
+
         ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, "${_modifyalertmodel?.stat}"));
       } else if (_modifyalertmodel!.stat == "Not_Ok") {
