@@ -304,9 +304,9 @@ mixin OrderAPI on ApiCore {
 
 // get Cancel GTT order response from kambala
 
-  Future<PlaceGttOrderModel> getCancelGTTorder(String cancelId) async {
+  Future<PlaceGttOrderModel> cancelGTTOrderAPI(String cancelId) async {
     try {
-      final uri = Uri.parse(apiLinks.cancelGTTOrder);
+      final uri = Uri.parse(apiLinks.cancelGTTOrderURL);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
@@ -460,11 +460,10 @@ mixin OrderAPI on ApiCore {
     }
   }
 
-// get Place GTT order response from kambala
-
-  Future<PlaceGttOrderModel> getPlaceGTTOrder(PlaceGTTOrderInput input) async {
+// Place GTT order to kambala
+  Future<PlaceGttOrderModel> placeGTTOrderAPI(PlaceGTTOrderInput input) async {
     try {
-      final uri = Uri.parse(apiLinks.placeGTTOrder);
+      final uri = Uri.parse(apiLinks.placeGTTOrderURL);
       Map payload = {
         "uid": prefs.clientId,
         "tsym": input.tsym,
@@ -487,11 +486,12 @@ mixin OrderAPI on ApiCore {
       if (input.remarks.isNotEmpty) {
         payload.addAll({"remarks": input.remarks});
       }
+      log("Place GTT Order payload => ${inspect(payload)}");
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
-      // log("Place GTT Order => ${res.body}");
+      log("Place GTT Order response => ${res.body}");
       final json = jsonDecode(res.body);
 
       return PlaceGttOrderModel.fromJson(json as Map<String, dynamic>);
@@ -500,11 +500,10 @@ mixin OrderAPI on ApiCore {
     }
   }
 
-// get Modify GTT order response from kambala
-
-  Future<PlaceGttOrderModel> getModifyGTTOrder(PlaceGTTOrderInput input) async {
+// Modify GTT order to kambala
+  Future<PlaceGttOrderModel> modifyGTTOrderAPI(PlaceGTTOrderInput input) async {
     try {
-      final uri = Uri.parse(apiLinks.modifyGTTOrder);
+      final uri = Uri.parse(apiLinks.modifyGTTOrderURL);
       Map payload = {
         "uid": prefs.clientId,
         "tsym": input.tsym,
@@ -537,15 +536,15 @@ mixin OrderAPI on ApiCore {
 
       return PlaceGttOrderModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
+      log("Place GTT Order Error => $e");
       rethrow;
     }
   }
 
-  // get One cancels the others order response from kambala
-
-  Future<PlaceGttOrderModel> getPlaceOcoOrder(PlaceOcoOrderInput input) async {
+  //  Place OCO order to kambala
+  Future<PlaceGttOrderModel> placeOCOOrderAPI(PlaceOcoOrderInput input) async {
     try {
-      final uri = Uri.parse(apiLinks.placeOCOOrder);
+      final uri = Uri.parse(apiLinks.placeOCOOrderURL);
       Map payload = {
         "uid": prefs.clientId,
         "ai_t": "LMT_BOS_O",
@@ -589,24 +588,24 @@ mixin OrderAPI on ApiCore {
       if (input.remarks.isNotEmpty) {
         payload.addAll({"remarks": input.remarks});
       }
-
+      log("Place GTT OCO Order payload => ${inspect(payload)}");
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: '''jData=${jsonEncode(payload)}&jKey=${prefs.clientSession}''');
-      // log("Place OCO Order => ${res.body}");
+      log("Place GTT OCO Order Response => ${res.body}");
       final json = jsonDecode(res.body);
 
       return PlaceGttOrderModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
+      log("Place GTT OCO Order Error => $e");
       rethrow;
     }
   }
 
-  // get modify once cancels the others order response from kambala
-
-  Future<PlaceGttOrderModel> getModifyOcoOrder(PlaceOcoOrderInput input) async {
+  // modify OCO order to kambala
+  Future<PlaceGttOrderModel> modifyOCOOrderAPI(PlaceOcoOrderInput input) async {
     try {
-      final uri = Uri.parse(apiLinks.modifyOCOOrder);
+      final uri = Uri.parse(apiLinks.modifyOCOOrderURL);
       Map payload = {
         "uid": prefs.clientId,
         "ai_t": "LMT_BOS_O",
@@ -682,8 +681,10 @@ mixin OrderAPI on ApiCore {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         try {
-          if (json is Map<String, dynamic>) {
+          if (json.isEmpty && json.length <1) {
             stat = 'no data';
+
+            
           } else if (json.isNotEmpty && json.length > 0) {
             stat = 'success';
             for (final item in json) {

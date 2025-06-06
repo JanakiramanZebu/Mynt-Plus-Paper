@@ -617,7 +617,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                       itemCount: orderTypes.length))
                             ]
                           ]))),
-                  body: Stack(children: [
+                  body: Stack(
+                    children: [
                     SingleChildScrollView(
                         padding: EdgeInsets.only(
                             bottom: ((priceType == "Market" ||
@@ -631,10 +632,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                             children: [
                               const SizedBox(height: 16),
                               if (orderType == "SIP") ...[
-                                Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
+                                          Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
                                       Padding(
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 16, vertical: 4),
@@ -981,859 +982,936 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                       ]))
                                     ])
                               ],
+                              
                               if (orderType == "GTT") ...[
-                                GttCondition(
-                                    isOco: false,
-                                    isGtt: isGtt,
-                                    isModify: widget.orderArg.isModify),
-                                const SizedBox(height: 8),
-                                InvesTypeWidget(
-                                    scripInfo: widget.scripInfo,
-                                    ordType: "GTT"),
-                                const SizedBox(height: 8),
-                                Padding(
-                                    padding: const EdgeInsets.only(left: 16),
-                                    child:
-                                        headerTitleText("Price type", theme)),
-                                const SizedBox(height: 10),
-                                PriceTypeBtn(
-                                    isOco: false,
-                                    isGtt: isGtt,
-                                    ltp: "${widget.orderArg.ltp}"),
-                                const SizedBox(height: 3),
-                                Divider(
-                                    color: theme.isDarkMode
-                                        ? colors.darkColorDivider
-                                        : colors.colorDivider),
-                                Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Expanded(
-                                              child: Column(
+                                          GttCondition(
+                                              isOco: false,
+                                              isGtt: isGtt,
+                                              isModify: widget.orderArg.isModify),
+                                          const SizedBox(height: 8),
+                                          InvesTypeWidget(
+                                              scripInfo: widget.scripInfo,
+                                              ordType: "GTT"),
+                                          const SizedBox(height: 8),
+                                          Padding(
+                                              padding: const EdgeInsets.only(left: 16),
+                                              child:
+                                                  headerTitleText("Price type", theme)),
+                                          const SizedBox(height: 10),
+                                          PriceTypeBtn(
+                                              isOco: false,
+                                              isGtt: isGtt,
+                                              ltp: "${widget.orderArg.ltp}"),
+                                          const SizedBox(height: 3),
+                                          Divider(
+                                              color: theme.isDarkMode
+                                                  ? colors.darkColorDivider
+                                                  : colors.colorDivider),
+                                          Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 16),
+                                              child: Row(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
-                                                headerTitleText(
-                                                    "Quantity", theme),
-                                                const SizedBox(height: 8),
-                                                SizedBox(
-                                                    height: 44,
-                                                    child: CustomTextFormField(
-                                                        fillColor: theme
-                                                                .isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
-                                                        hintText:
-                                                            orderInput
-                                                                .qtyCtrl.text,
-                                                        hintStyle: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            15,
-                                                            FontWeight.w400),
-                                                        inputFormate: [
-                                                          FilteringTextInputFormatter
-                                                              .digitsOnly
-                                                        ],
-                                                        keyboardType:
-                                                            TextInputType
-                                                                .number,
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            16,
-                                                            FontWeight.w600),
-                                                        prefixIcon: InkWell(
-                                                          onTap: () {
-                                                            setState(() {
-                                                              if (orderInput
-                                                                  .qtyCtrl
-                                                                  .text
-                                                                  .isNotEmpty) {
-                                                                if (int.parse(orderInput
-                                                                        .qtyCtrl
-                                                                        .text) >
-                                                                    multiplayer) {
-                                                                  orderInput
-                                                                      .qtyCtrl
-                                                                      .text = (int.parse(orderInput
-                                                                              .qtyCtrl
-                                                                              .text) -
-                                                                          multiplayer)
-                                                                      .toString();
-                                                                }
-                                                              } else {
-                                                                orderInput
-                                                                        .qtyCtrl
-                                                                        .text =
-                                                                    "$multiplayer";
-                                                              }
-                                                            });
-                                                          },
-                                                          child: SvgPicture.asset(
-                                                              theme.isDarkMode
-                                                                  ? assets
-                                                                      .darkCMinus
-                                                                  : assets
-                                                                      .minusIcon,
-                                                              fit: BoxFit
-                                                                  .scaleDown),
-                                                        ),
-                                                        suffixIcon: InkWell(
-                                                          onTap: () {
-                                                            setState(() {
-                                                              if (orderInput
-                                                                  .qtyCtrl
-                                                                  .text
-                                                                  .isNotEmpty) {
-                                                                if (int.parse(
+                                                    Expanded(
+                                                        child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment.start,
+                                                            children: [
+                                                          headerTitleText(
+                                                              "Quantity", theme),
+                                                          const SizedBox(height: 8),
+                                                          SizedBox(
+                                                              height: 44,
+                                                              child: CustomTextFormField(
+                                                                  fillColor: theme
+                                                                          .isDarkMode
+                                                                      ? colors.darkGrey
+                                                                      : const Color(
+                                                                          0xffF1F3F8),
+                                                                  hintText:
                                                                       orderInput
-                                                                          .qtyCtrl
-                                                                          .text) <
-                                                                    ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
-                                                                  orderInput
-                                                                      .qtyCtrl
-                                                                      .text = (int.parse(orderInput
-                                                                              .qtyCtrl
-                                                                              .text) +
-                                                                          multiplayer)
-                                                                      .toString();
-                                                                }
-                                                              } else {
-                                                                orderInput
-                                                                        .qtyCtrl
-                                                                        .text =
-                                                                    "$multiplayer";
-                                                              }
-                                                            });
-                                                          },
-                                                          child: SvgPicture.asset(
-                                                              theme.isDarkMode
-                                                                  ? assets
-                                                                      .darkAdd
-                                                                  : assets
-                                                                      .addIcon,
-                                                              fit: BoxFit
-                                                                  .scaleDown),
-                                                        ),
-                                                        textCtrl:
-                                                            orderInput.qtyCtrl,
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                        onChanged: (value) {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .hideCurrentSnackBar();
-                                                          if (value.isEmpty) {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                                    warningMessage(
-                                                                        context,
-                                                                        "Quantity can not be empty"));
-                                                          } else {
-                                                            String newValue =
-                                                                value.replaceAll(
-                                                                    RegExp(
-                                                                        r'[^0-9]'),
-                                                                    '');
-                                                            if (newValue !=
-                                                                value) {
-                                                              orderInput.qtyCtrl
-                                                                      .text =
-                                                                  newValue;
-                                                              orderInput.qtyCtrl
-                                                                      .selection =
-                                                                  TextSelection
-                                                                      .fromPosition(
-                                                                TextPosition(
-                                                                    offset: newValue
-                                                                        .length),
-                                                              );
-                                                            }
-                                                          }
-                                                        }))
-                                              ])),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      headerTitleText(
-                                                          "Price", theme)
-                                                    ]),
-                                                const SizedBox(height: 8),
-                                                SizedBox(
-                                                    height: 44,
-                                                    child: CustomTextFormField(
-                                                        fillColor: theme.isDarkMode
-                                                            ? colors.darkGrey
-                                                            : const Color(
-                                                                0xffF1F3F8),
-                                                        onChanged: (value) {
-                                                          if (value
-                                                                  .isNotEmpty &&
-                                                              double.parse(
-                                                                      value) >
-                                                                  0) {
-                                                            final regex = RegExp(
-                                                                r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                            if (!regex.hasMatch(
-                                                                value)) {
-                                                              orderInput
-                                                                      .priceCtrl
-                                                                      .text =
-                                                                  value.substring(
-                                                                      0,
-                                                                      value.length -
-                                                                          1); // Revert to previous valid input
-                                                              orderInput
-                                                                      .priceCtrl
-                                                                      .selection =
-                                                                  TextSelection.collapsed(
-                                                                      offset: orderInput
-                                                                          .priceCtrl
-                                                                          .text
-                                                                          .length); // Keep cursor at the end
-                                                            }
-                                                          }
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .hideCurrentSnackBar();
-                                                          if (value.isEmpty) {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                                    warningMessage(
-                                                                        context,
-                                                                        "Price can not be empty"));
-                                                          } else {
-                                                            setState(() {
-                                                              ordPrice = value;
-                                                            });
-                                                          }
-                                                        },
-                                                        hintText:
-                                                            "${widget.orderArg.ltp}",
-                                                        hintStyle: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            15,
-                                                            FontWeight.w400),
-                                                        keyboardType:
-                                                            const TextInputType.numberWithOptions(
-                                                                decimal: true),
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            16,
-                                                            FontWeight.w600),
-                                                        isReadable: orderInput.actPrcType ==
-                                                                    "Limit" ||
-                                                                orderInput.actPrcType ==
-                                                                    "SL Limit"
-                                                            ? false
-                                                            : true,
-                                                        prefixIcon: Container(
-                                                            margin: const EdgeInsets.all(
-                                                                12),
-                                                            decoration: BoxDecoration(
-                                                                borderRadius:
-                                                                    BorderRadius.circular(20),
-                                                                color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                                                            child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                        textCtrl: orderInput.priceCtrl,
-                                                        textAlign: TextAlign.start)),
-                                              ]))
-                                        ])),
-                                const SizedBox(height: 3),
-                                Divider(
-                                    color: theme.isDarkMode
-                                        ? colors.darkColorDivider
-                                        : colors.colorDivider),
-                                if (orderInput.actPrcType == "SL Limit" ||
-                                    orderInput.actPrcType == "SL MKT") ...[
-                                  triggerOption(
-                                      theme, context, widget.scripInfo),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider)
-                                ],
-                                Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                headerTitleText(
-                                                    "Validity", theme),
-                                                const SizedBox(height: 7),
-                                                SizedBox(
-                                                    height: 38,
-                                                    child: ListView.separated(
-                                                        scrollDirection:
-                                                            Axis.horizontal,
-                                                        itemBuilder:
-                                                            (context, index) {
-                                                          return ElevatedButton(
-                                                              onPressed: () {
-                                                                setState(() {
-                                                                  validityTypeGTT =
-                                                                      validityTypesGTT[
-                                                                          index];
-                                                                });
-                                                              },
-                                                              style: ElevatedButton
-                                                                  .styleFrom(
-                                                                      elevation:
-                                                                          0,
-                                                                      padding: const EdgeInsets
-                                                                          .symmetric(
-                                                                          horizontal:
-                                                                              12,
-                                                                          vertical:
-                                                                              0),
-                                                                      backgroundColor: !theme
-                                                                              .isDarkMode
-                                                                          ? validityTypeGTT != validityTypesGTT[index]
-                                                                              ? const Color(0xffF1F3F8)
-                                                                              : colors.colorBlack
-                                                                          : validityTypeGTT != validityTypesGTT[index]
-                                                                              ? colors.darkGrey
-                                                                              : colors.colorbluegrey,
-                                                                      shape: const StadiumBorder()),
-                                                              child: Text(validityTypesGTT[index],
-                                                                  style: textStyle(
-                                                                      !theme.isDarkMode
-                                                                          ? validityTypeGTT != validityTypesGTT[index]
-                                                                              ? const Color(0xff666666)
-                                                                              : colors.colorWhite
-                                                                          : validityTypeGTT != validityTypesGTT[index]
-                                                                              ? const Color(0xff666666)
-                                                                              : colors.colorBlack,
-                                                                      14,
-                                                                      validityTypeGTT == validityTypesGTT[index] ? FontWeight.w600 : FontWeight.w500)));
-                                                        },
-                                                        separatorBuilder:
-                                                            (context, index) {
-                                                          return const SizedBox(
-                                                              width: 8);
-                                                        },
-                                                        itemCount:
-                                                            validityTypesGTT
-                                                                .length))
-                                              ])),
-                                          const SizedBox(width: 16),
-                                          Row(children: [
-                                            Text("OCO",
-                                                style: textStyle(
-                                                    const Color(0xff666666),
-                                                    14,
-                                                    FontWeight.w500)),
-                                            IconButton(
-                                                onPressed: () {
-                                                  setState(() {
-                                                    isOco = !isOco;
-
-                                                    if (isOco) {
-                                                      orderInput
-                                                          .chngAlert("LTP");
-                                                      orderInput
-                                                          .chngCond("Less");
-                                                      orderInput
-                                                          .chngOCOPriceType(
-                                                              "Limit");
-                                                      orderInput
-                                                          .disableCondGTT(true);
-                                                    } else {
-                                                      orderInput.disableCondGTT(
-                                                          false);
-                                                    }
-                                                  });
-
-                                                  ref
-                                                      .read(ordInputProvider)
-                                                      .chngInvesType(
-                                                          widget.scripInfo
-                                                                      .seg ==
-                                                                  "EQT"
-                                                              ? InvestType
-                                                                  .delivery
-                                                              : InvestType
-                                                                  .carryForward,
-                                                          "OCO");
-                                                  ref
-                                                      .read(ordInputProvider)
-                                                      .updateOcoPrcQtyCtrl(
-                                                          "${widget.orderArg.ltp}",
-                                                          widget
-                                                              .orderArg.lotSize!
-                                                              .replaceAll(
-                                                                  "-", ""));
-                                                },
-                                                icon: SvgPicture.asset(theme
-                                                        .isDarkMode
-                                                    ? isOco
-                                                        ? assets
-                                                            .darkCheckedboxIcon
-                                                        : assets
-                                                            .darkCheckboxIcon
-                                                    : isOco
-                                                        ? assets.checkedbox
-                                                        : assets.checkbox))
-                                          ])
-                                        ])),
-                                if (isOco) ...[
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider,
-                                      thickness: .4),
-                                  const SizedBox(height: 10),
-                                  GttCondition(
-                                      isOco: isOco,
-                                      isGtt: isGtt,
-                                      isModify: widget.orderArg.isModify),
-                                  const SizedBox(height: 8),
-                                  InvesTypeWidget(
-                                      scripInfo: widget.scripInfo,
-                                      ordType: "OCO"),
-                                  const SizedBox(height: 8),
-                                  Padding(
-                                      padding: const EdgeInsets.only(left: 16),
-                                      child:
-                                          headerTitleText("Price type", theme)),
-                                  const SizedBox(height: 10),
-                                  PriceTypeBtn(
-                                      isOco: isOco,
-                                      isGtt: isGtt,
-                                      ltp: "${widget.orderArg.ltp}"),
-                                  const SizedBox(height: 3),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                  Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Expanded(
-                                                child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                  headerTitleText(
-                                                      "Quantity", theme),
-                                                  const SizedBox(height: 8),
-                                                  SizedBox(
-                                                      height: 44,
-                                                      child:
-                                                          CustomTextFormField(
-                                                              fillColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .darkGrey
-                                                                  : const Color(
-                                                                      0xffF1F3F8),
-                                                              hintText: orderInput
-                                                                  .ocoQtyCtrl
-                                                                  .text,
-                                                              hintStyle: textStyle(
-                                                                  const Color(
-                                                                      0xff666666),
-                                                                  15,
-                                                                  FontWeight
-                                                                      .w400),
-                                                              inputFormate: [
-                                                                FilteringTextInputFormatter
-                                                                    .digitsOnly
-                                                              ],
-                                                              keyboardType:
-                                                                  TextInputType
-                                                                      .number,
-                                                              style: textStyle(
-                                                                  theme.isDarkMode
-                                                                      ? colors
-                                                                          .colorWhite
-                                                                      : colors
-                                                                          .colorBlack,
-                                                                  16,
-                                                                  FontWeight
-                                                                      .w600),
-                                                              prefixIcon:
-                                                                  InkWell(
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    if (orderInput
-                                                                        .ocoQtyCtrl
-                                                                        .text
-                                                                        .isNotEmpty) {
-                                                                      if (int.parse(orderInput.ocoQtyCtrl.text) >
-                                                                          multiplayer) {
-                                                                        orderInput
-                                                                            .ocoQtyCtrl
-                                                                            .text = (int.parse(orderInput.ocoQtyCtrl.text) -
-                                                                                multiplayer)
-                                                                            .toString();
-                                                                      }
-                                                                    } else {
-                                                                      orderInput
-                                                                          .ocoQtyCtrl
-                                                                          .text = "$multiplayer";
-                                                                    }
-                                                                  });
-                                                                },
-                                                                child: SvgPicture.asset(
-                                                                    theme.isDarkMode
-                                                                        ? assets
-                                                                            .darkCMinus
-                                                                        : assets
-                                                                            .minusIcon,
-                                                                    fit: BoxFit
-                                                                        .scaleDown),
-                                                              ),
-                                                              suffixIcon:
-                                                                  InkWell(
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    if (orderInput
-                                                                        .ocoQtyCtrl
-                                                                        .text
-                                                                        .isNotEmpty) {
-                                                                      if ( int.parse(orderInput
-                                                                            .ocoQtyCtrl
-                                                                            .text) <
-                                                                          ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
-                                                                        orderInput
-                                                                            .ocoQtyCtrl
-                                                                            .text = (int.parse(orderInput.ocoQtyCtrl.text) +
-                                                                                multiplayer)
-                                                                            .toString();
-                                                                      }
-                                                                    } else {
-                                                                      orderInput
-                                                                          .ocoQtyCtrl
-                                                                          .text = "$multiplayer";
-                                                                    }
-                                                                  });
-                                                                },
-                                                                child: SvgPicture.asset(
-                                                                    theme.isDarkMode
-                                                                        ? assets
-                                                                            .darkAdd
-                                                                        : assets
-                                                                            .addIcon,
-                                                                    fit: BoxFit
-                                                                        .scaleDown),
-                                                              ),
-                                                              textCtrl: orderInput
-                                                                  .ocoQtyCtrl,
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              onChanged:
-                                                                  (value) {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .hideCurrentSnackBar();
-                                                                if (value
-                                                                    .isEmpty) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Quantity can not be empty"));
-                                                                } else {
-                                                                  String
-                                                                      newValue =
-                                                                      value.replaceAll(
-                                                                          RegExp(
-                                                                              r'[^0-9]'),
-                                                                          '');
-                                                                  if (newValue !=
-                                                                      value) {
-                                                                    orderInput
-                                                                            .ocoQtyCtrl
-                                                                            .text =
-                                                                        newValue;
-                                                                    orderInput
-                                                                            .ocoQtyCtrl
-                                                                            .selection =
-                                                                        TextSelection
-                                                                            .fromPosition(
-                                                                TextPosition(
-                                                                    offset: newValue
-                                                                        .length),
-                                                              );
-                                                                  }
-                                                                }
-                                                              }))
-                                                ])),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                                child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                  Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        headerTitleText(
-                                                            "Price", theme)
-                                                      ]),
-                                                  const SizedBox(height: 8),
-                                                  SizedBox(
-                                                      height: 44,
-                                                      child:
-                                                          CustomTextFormField(
-                                                              fillColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .darkGrey
-                                                                  : const Color(
-                                                                      0xffF1F3F8),
-                                                              onChanged:
-                                                                  (value) {
-                                                                if (value
-                                                                        .isNotEmpty &&
-                                                                    double.parse(
-                                                                            value) >
-                                                                        0) {
-                                                                  final regex =
-                                                                      RegExp(
-                                                                          r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                                  if (!regex
-                                                                      .hasMatch(
-                                                                          value)) {
-                                                                    orderInput
-                                                                            .ocoPriceCtrl
-                                                                            .text =
-                                                                        value.substring(
-                                                                            0,
-                                                                            value.length -
-                                                                                1); // Revert to previous valid input
-                                                                    orderInput.ocoPriceCtrl.selection = TextSelection.collapsed(
-                                                                        offset: orderInput
-                                                                            .ocoPriceCtrl
-                                                                            .text
-                                                                            .length); // Keep cursor at the end
-                                                                  }
-                                                                }
-                                                              },
-                                                              hintText:
-                                                                  "${widget.orderArg.ltp}",
+                                                                          .qtyCtrl.text,
                                                                   hintStyle: textStyle(
                                                                       const Color(
                                                                           0xff666666),
-                                                                  15,
-                                                                  FontWeight
-                                                                      .w400),
-                                                              keyboardType:
-                                                                  const TextInputType.numberWithOptions(
-                                                                      decimal:
-                                                                          true),
-                                                              style: textStyle(
-                                                                  theme.isDarkMode
-                                                                      ? colors
-                                                                          .colorWhite
-                                                                      : colors
-                                                                          .colorBlack,
-                                                                  16,
-                                                                  FontWeight
-                                                                      .w600),
-                                                              isReadable: orderInput.actOcoPrcType == "Limit" ||
-                                                                      orderInput.actOcoPrcType ==
-                                                                          "SL Limit"
-                                                                  ? false
-                                                                  : true,
-                                                              prefixIcon: Container(
-                                                                  margin:
-                                                                      const EdgeInsets.all(
+                                                                      15,
+                                                                      FontWeight.w400),
+                                                                  inputFormate: [
+                                                                    FilteringTextInputFormatter
+                                                                        .digitsOnly
+                                                                  ],
+                                                                  keyboardType:
+                                                                      TextInputType
+                                                                          .number,
+                                                                  style: textStyle(
+                                                                      theme.isDarkMode
+                                                                          ? colors
+                                                                              .colorWhite
+                                                                          : colors
+                                                                              .colorBlack,
+                                                                      16,
+                                                                      FontWeight.w600),
+                                                                  prefixIcon: InkWell(
+                                                                    onTap: () {
+                                                                      setState(() {
+                                                                        String input =
+                                                                            orderInput.qtyCtrl.text;
+
+                                                                      int currentQty =
+                                                                            int.tryParse(
+                                                                                    input) ?? 0;
+
+                                                                      int adjustedQty =
+                                                                            ((currentQty / multiplayer).floor()) * multiplayer;
+                                                                            
+                                                                      if (currentQty !=
+                                                                            adjustedQty) {
+                                                                          qtyCtrl.text =
+                                                                              adjustedQty
+                                                                                  .toString();
+                                                                        } 
+                                                                      else if (input
+                                                                            .isNotEmpty && currentQty >
+                                                                                multiplayer) {
+                                                                    
+                                                                            orderInput
+                                                                                .qtyCtrl
+                                                                                .text = (int.parse(orderInput
+                                                                                        .qtyCtrl
+                                                                                        .text) -
+                                                                                    multiplayer)
+                                                                                .toString();
+                                                                        
+                                                                        } else {
+                                                                          orderInput
+                                                                                  .qtyCtrl
+                                                                                  .text =
+                                                                              "$multiplayer";
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                    child: SvgPicture.asset(
+                                                                        theme.isDarkMode
+                                                                            ? assets
+                                                                                .darkCMinus
+                                                                            : assets
+                                                                                .minusIcon,
+                                                                        fit: BoxFit
+                                                                            .scaleDown),
+                                                                  ),
+                                                                  suffixIcon: InkWell(
+                                                                    onTap: () {
+                                                                      setState(() {
+                                                                      String input =
+                                                                            orderInput.qtyCtrl.text;
+
+                                                                      int currentQty =
+                                                                            int.tryParse(
+                                                                                    input) ?? 0;
+
+                                                                      int adjustedQty =
+                                                                            ((currentQty / multiplayer).round()) * multiplayer;
+                                                                            
+                                                                      if (currentQty !=
+                                                                            adjustedQty) {
+                                                                          qtyCtrl.text =
+                                                                              adjustedQty
+                                                                                  .toString();
+                                                                        } 
+
+                                                                        else if (input
+                                                                            .isNotEmpty && currentQty <
+                                                                              ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                 
+                                                                            orderInput.qtyCtrl
+                                                                                .text = 
+                                                                                (currentQty +
+                                                                                      multiplayer)
+                                                                                  .toString();
+                                                                          
+                                                                        } else {
+                                                                          orderInput.
+                                                                                  qtyCtrl
+                                                                                  .text =
+                                                                               multiplayer
+                                                                                .toString();
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                    child: SvgPicture.asset(
+                                                                        theme.isDarkMode
+                                                                            ? assets
+                                                                                .darkAdd
+                                                                            : assets
+                                                                                .addIcon,
+                                                                        fit: BoxFit
+                                                                            .scaleDown),
+                                                                  ),
+                                                                  textCtrl:
+                                                                      orderInput.qtyCtrl,
+                                                                  textAlign:
+                                                                      TextAlign.center,
+                                                                  onChanged: (value) {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .hideCurrentSnackBar();
+                                                                    if (value.isEmpty || value == "0") {
+                                                                      ScaffoldMessenger
+                                                                              .of(context)
+                                                                          .showSnackBar(
+                                                                              warningMessage(
+                                                                                  context,
+                                                                                  "Quantity can not be ${value == "0"?'zero':'empty'}"));
+                                                                    } else {
+                                                                      String newValue =
+                                                                          value.replaceAll(
+                                                                              RegExp(r'[^0-9]'),'');
+
+                                                                        int number =int.tryParse(newValue) ??0;
+                                                                        if (number > ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                            orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
+                                                                              ScaffoldMessenger.of(context)
+                                                                            .showSnackBar(warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
+                                                                        }
+
+                                                                      if (newValue !=
+                                                                          value) {
+                                                                        orderInput.qtyCtrl
+                                                                                .text =
+                                                                            newValue;
+
+                                                                        orderInput.qtyCtrl
+                                                                                .selection =
+                                                                            TextSelection
+                                                                                .fromPosition(
+                                                                          TextPosition(
+                                                                              offset: newValue
+                                                                                  .length),
+                                                                        );
+                                                                      }
+                                                                    }
+                                                                  }))
+                                                        ])),
+                                                    const SizedBox(width: 16),
+                                                    Expanded(
+                                                        child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment.start,
+                                                            children: [
+                                                          Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                headerTitleText(
+                                                                    "Price", theme)
+                                                              ]),
+                                                          const SizedBox(height: 8),
+                                                          SizedBox(
+                                                              height: 44,
+                                                              child: CustomTextFormField(
+                                                                  fillColor: theme.isDarkMode
+                                                                      ? colors.darkGrey
+                                                                      : const Color(
+                                                                          0xffF1F3F8),
+                                                                  onChanged: (value) {
+                                                                    if (value
+                                                                            .isNotEmpty &&
+                                                                        double.parse(
+                                                                                value) >
+                                                                            0) {
+                                                                      final regex = RegExp(
+                                                                          r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                                      if (!regex.hasMatch(
+                                                                          value)) {
+                                                                        orderInput
+                                                                                .priceCtrl
+                                                                                .text =
+                                                                            value.substring(
+                                                                                0,
+                                                                                value.length -
+                                                                                    1); // Revert to previous valid input
+                                                                        orderInput
+                                                                                .priceCtrl
+                                                                                .selection =
+                                                                            TextSelection.collapsed(
+                                                                                offset: orderInput
+                                                                                    .priceCtrl
+                                                                                    .text
+                                                                                    .length); // Keep cursor at the end
+                                                                      }
+                                                                    }
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .hideCurrentSnackBar();
+                                                                    if (value.isEmpty || value == "0" || value == "0.00") {
+                                                                      ScaffoldMessenger
+                                                                              .of(context)
+                                                                          .showSnackBar(
+                                                                              warningMessage(
+                                                                                  context,
+                                                                                  "Price can not be ${value == "0" || value == "0.00" ?'zero':'empty'}"));
+                                                                    } else {
+                                                                      setState(() {
+                                                                        ordPrice = value;
+                                                                      });
+                                                                    }
+                                                                  },
+                                                                  hintText:
+                                                                      "${widget.orderArg.ltp}",
+                                                                  hintStyle: textStyle(
+                                                                      const Color(
+                                                                          0xff666666),
+                                                                      15,
+                                                                      FontWeight.w400),
+                                                                  keyboardType:
+                                                                      const TextInputType.numberWithOptions(
+                                                                          decimal: true),
+                                                                  style: textStyle(
+                                                                      theme.isDarkMode
+                                                                          ? colors
+                                                                              .colorWhite
+                                                                          : colors
+                                                                              .colorBlack,
+                                                                      16,
+                                                                      FontWeight.w600),
+                                                                  isReadable: orderInput.actPrcType ==
+                                                                              "Limit" ||
+                                                                          orderInput.actPrcType ==
+                                                                              "SL Limit"
+                                                                      ? false
+                                                                      : true,
+                                                                  prefixIcon: Container(
+                                                                      margin: const EdgeInsets.all(
                                                                           12),
-                                                                  decoration: BoxDecoration(
-                                                                      borderRadius: BorderRadius.circular(20),
-                                                                      color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                                                                  child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                              textCtrl: orderInput.ocoPriceCtrl,
-                                                              textAlign: TextAlign.start))
-                                                ]))
-                                          ])),
-                                  const SizedBox(height: 3),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                  if (orderInput.actOcoPrcType == "SL Limit" ||
-                                      orderInput.actOcoPrcType == "SL MKT") ...[
-                                    Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16),
-                                        child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const SizedBox(height: 2),
-                                              headerTitleText("Trigger", theme),
-                                              const SizedBox(height: 7),
-                                              SizedBox(
-                                                  height: 44,
-                                                  child: CustomTextFormField(
-                                                      fillColor: theme.isDarkMode
-                                                          ? colors.darkGrey
-                                                          : const Color(
-                                                              0xffF1F3F8),
-                                                      hintText: "0.00",
-                                                      hintStyle: textStyle(
-                                                          const Color(
-                                                              0xff666666),
-                                                          15,
-                                                          FontWeight.w400),
-                                                      onChanged: (value) {
-                                                        if (value.isNotEmpty &&
-                                                            double.parse(
-                                                                    value) >
-                                                                0) {
-                                                          final regex = RegExp(
-                                                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                          if (!regex.hasMatch(
-                                                              value)) {
-                                                            orderInput
-                                                                    .ocoTrgPrcCtrl
-                                                                    .text =
-                                                                value.substring(
-                                                                    0,
-                                                                    value.length -
-                                                                        1); // Revert to previous valid input
-                                                            orderInput
-                                                                    .ocoTrgPrcCtrl
-                                                                    .selection =
-                                                                TextSelection.collapsed(
-                                                                    offset: orderInput
-                                                                        .ocoTrgPrcCtrl
-                                                                        .text
-                                                                        .length); // Keep cursor at the end
-                                                          }
-                                                        }
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .hideCurrentSnackBar();
-                                                        if (value.isNotEmpty) {
-                                                        } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                                  warningMessage(
-                                                                      context,
-                                                                      "Trigger can not be empty"));
-                                                        }
-                                                      },
-                                                      keyboardType: const TextInputType.numberWithOptions(
-                                                          decimal: true),
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          16,
-                                                          FontWeight.w600),
-                                                      prefixIcon: Container(
-                                                          margin: const EdgeInsets.all(
-                                                              12),
-                                                          decoration: BoxDecoration(
-                                                              borderRadius: BorderRadius.circular(
-                                                                  20),
-                                                              color: theme.isDarkMode
-                                                                  ? const Color(
-                                                                      0xff555555)
-                                                                  : colors
-                                                                      .colorWhite),
-                                                          child: SvgPicture.asset(
-                                                              color: theme.isDarkMode
-                                                                  ? colors.colorWhite
-                                                                  : colors.colorGrey,
-                                                              assets.ruppeIcon,
-                                                              fit: BoxFit.scaleDown)),
-                                                      textCtrl: orderInput.ocoTrgPrcCtrl,
-                                                      textAlign: TextAlign.start)),
-                                            ])),
-                                    Divider(
-                                        color: theme.isDarkMode
-                                            ? colors.darkColorDivider
-                                            : colors.colorDivider)
-                                  ]
-                                ],
-                                if (!isOco) ...[
-                                  const SizedBox(height: 3),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider,
-                                      thickness: .4)
-                                ],
-                                Padding(
-                                    padding: const EdgeInsets.only(
-                                        bottom: 8, left: 16),
-                                    child: headerTitleText("Remarks", theme)),
-                                Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    height: 40,
-                                    child: CustomTextFormField(
-                                        keyboardType: TextInputType.text,
-                                        fillColor: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : const Color(0xffF1F3F8),
-                                        hintStyle: textStyle(
-                                            const Color(0xff666666),
-                                            15,
-                                            FontWeight.w400),
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            16,
-                                            FontWeight.w600),
-                                        textAlign: TextAlign.start,
-                                        onChanged: (value) {},
-                                        textCtrl: orderInput.reMarksCtrl)),
-                                const SizedBox(height: 100)
-                              ] else ...[
+                                                                      decoration: BoxDecoration(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(20),
+                                                                          color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                                                                      child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
+                                                                  textCtrl: orderInput.priceCtrl,
+                                                                  textAlign: TextAlign.start)),
+                                                        ]))
+                                                  ])),
+                                          const SizedBox(height: 3),
+                                          Divider(
+                                              color: theme.isDarkMode
+                                                  ? colors.darkColorDivider
+                                                  : colors.colorDivider),
+                                          if (orderInput.actPrcType == "SL Limit" ||  orderInput.actPrcType == "SL MKT") ...[
+                                                triggerOption(
+                                                    theme, context, widget.scripInfo),
+                                                Divider(
+                                                    color: theme.isDarkMode
+                                                        ? colors.darkColorDivider
+                                                        : colors.colorDivider)
+                                          ],
+                                                    Padding(
+                                                        padding: const EdgeInsets.symmetric(
+                                                            horizontal: 16),
+                                                        child: Row(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment.center,
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment.end,
+                                                            children: [
+                                                            //   Expanded(
+                                                            //       child: Column(
+                                                            //           crossAxisAlignment:
+                                                            //               CrossAxisAlignment.start,
+                                                            //           children: [
+                                                            //         headerTitleText(
+                                                            //             "Validity", theme),
+                                                            //         const SizedBox(height: 7),
+                                                            //         SizedBox(
+                                                            //             height: 38,
+                                                            //             child: ListView.separated(
+                                                            //                 scrollDirection:
+                                                            //                     Axis.horizontal,
+                                                            //                 itemBuilder:
+                                                            //                     (context, index) {
+                                                            //                   return ElevatedButton(
+                                                            //                       onPressed: () {
+                                                            //                         setState(() {
+                                                            //                           validityTypeGTT =
+                                                            //                               validityTypesGTT[
+                                                            //                                   index];
+                                                            //                         });
+                                                            //                       },
+                                                            //                       style: ElevatedButton
+                                                            //                           .styleFrom(
+                                                            //                               elevation:
+                                                            //                                   0,
+                                                            //                               padding: const EdgeInsets
+                                                            //                                   .symmetric(
+                                                            //                                   horizontal:
+                                                            //                                       12,
+                                                            //                                   vertical:
+                                                            //                                       0),
+                                                            //                               backgroundColor: !theme
+                                                            //                                       .isDarkMode
+                                                            //                                   ? validityTypeGTT != validityTypesGTT[index]
+                                                            //                                       ? const Color(0xffF1F3F8)
+                                                            //                                       : colors.colorBlack
+                                                            //                                   : validityTypeGTT != validityTypesGTT[index]
+                                                            //                                       ? colors.darkGrey
+                                                            //                                       : colors.colorbluegrey,
+                                                            //                               shape: const StadiumBorder()),
+                                                            //                       child: Text(validityTypesGTT[index],
+                                                            //                           style: textStyle(
+                                                            //                               !theme.isDarkMode
+                                                            //                                   ? validityTypeGTT != validityTypesGTT[index]
+                                                            //                                       ? const Color(0xff666666)
+                                                            //                                       : colors.colorWhite
+                                                            //                                   : validityTypeGTT != validityTypesGTT[index]
+                                                            //                                       ? const Color(0xff666666)
+                                                            //                                       : colors.colorBlack,
+                                                            //                               14,
+                                                            //                               validityTypeGTT == validityTypesGTT[index] ? FontWeight.w600 : FontWeight.w500)));
+                                                            //                 },
+                                                            //                 separatorBuilder:
+                                                            //                     (context, index) {
+                                                            //                   return const SizedBox(
+                                                            //                       width: 8);
+                                                            //                 },
+                                                            //                 itemCount:
+                                                            //                     validityTypesGTT
+                                                            //                         .length))
+                                                            //       ],
+                                                            //       ),
+                                                            //       ),
+                                                            //   const SizedBox(width: 16),
+                                                              Row(children: [
+                                                                Text("OCO",
+                                                                    style: textStyle(
+                                                                        const Color(0xff666666),
+                                                                        14,
+                                                                        FontWeight.w500)),
+                                                                IconButton(
+                                                                    onPressed: () {
+                                                                      setState(() {
+                                                                        isOco = !isOco;
+
+                                                                        if (isOco) {
+                                                                          orderInput
+                                                                              .chngAlert("LTP");
+                                                                          orderInput
+                                                                              .chngCond("Greater than"); // "Less than"
+                                                                          orderInput
+                                                                              .chngOCOPriceType(
+                                                                                  "Limit");
+                                                                          orderInput
+                                                                              .disableCondGTT(true);
+                                                                        } else {
+                                                                          orderInput.disableCondGTT(
+                                                                              false);
+                                                                        }
+                                                                      });
+
+                                                                      ref
+                                                                          .read(ordInputProvider)
+                                                                          .chngInvesType(
+                                                                              widget.scripInfo
+                                                                                          .seg ==
+                                                                                      "EQT"
+                                                                                  ? InvestType
+                                                                                      .delivery
+                                                                                  : InvestType
+                                                                                      .carryForward,
+                                                                              "OCO");
+                                                                      ref
+                                                                          .read(ordInputProvider)
+                                                                          .updateOcoPrcQtyCtrl(
+                                                                              "${widget.orderArg.ltp}",
+                                                                              widget
+                                                                                  .orderArg.lotSize!
+                                                                                  .replaceAll(
+                                                                                      "-", ""));
+                                                                    },
+                                                                    icon: SvgPicture.asset(theme
+                                                                            .isDarkMode
+                                                                        ? isOco
+                                                                            ? assets
+                                                                                .darkCheckedboxIcon
+                                                                            : assets
+                                                                                .darkCheckboxIcon
+                                                                        : isOco
+                                                                            ? assets.checkedbox
+                                                                            : assets.checkbox))
+                                                              ],
+                                                              ),
+                                                            ],
+                                                            ),
+                                                            ),
+                                          if (isOco) ...[
+                                            Divider(
+                                                color: theme.isDarkMode
+                                                    ? colors.darkColorDivider
+                                                    : colors.colorDivider,
+                                                thickness: .4),
+                                            const SizedBox(height: 10),
+                                            GttCondition(
+                                                isOco: isOco,
+                                                isGtt: isGtt,
+                                                isModify: widget.orderArg.isModify),
+                                            const SizedBox(height: 8),
+                                            InvesTypeWidget(
+                                                scripInfo: widget.scripInfo,
+                                                ordType: "OCO"),
+                                            const SizedBox(height: 8),
+                                            Padding(
+                                                padding: const EdgeInsets.only(left: 16),
+                                                child:
+                                                    headerTitleText("Price type", theme)),
+                                            const SizedBox(height: 10),
+                                            PriceTypeBtn(
+                                                isOco: isOco,
+                                                isGtt: isGtt,
+                                                ltp: "${widget.orderArg.ltp}"),
+                                            const SizedBox(height: 3),
+                                            Divider(
+                                                color: theme.isDarkMode
+                                                    ? colors.darkColorDivider
+                                                    : colors.colorDivider),
+                                            Padding(
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 16),
+                                                child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.start,
+                                                    children: [
+                                                      Expanded(
+                                                          child: Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                            headerTitleText(
+                                                                "Quantity", theme),
+                                                            const SizedBox(height: 8),
+                                                            SizedBox(
+                                                                height: 44,
+                                                                child:
+                                                                    CustomTextFormField(
+                                                                        fillColor: theme
+                                                                                .isDarkMode
+                                                                            ? colors
+                                                                                .darkGrey
+                                                                            : const Color(
+                                                                                0xffF1F3F8),
+                                                                        hintText: orderInput
+                                                                            .ocoQtyCtrl
+                                                                            .text,
+                                                                        hintStyle: textStyle(
+                                                                            const Color(
+                                                                                0xff666666),
+                                                                            15,
+                                                                            FontWeight
+                                                                                .w400),
+                                                                        inputFormate: [
+                                                                          FilteringTextInputFormatter
+                                                                              .digitsOnly
+                                                                        ],
+                                                                        keyboardType:
+                                                                            TextInputType
+                                                                                .number,
+                                                                        style: textStyle(
+                                                                            theme.isDarkMode
+                                                                                ? colors
+                                                                                    .colorWhite
+                                                                                : colors
+                                                                                    .colorBlack,
+                                                                            16,
+                                                                            FontWeight
+                                                                                .w600),
+                                                                        prefixIcon:
+                                                                            InkWell(
+                                                                          onTap: () {
+                                                                            setState(() {
+                                                                        String input =
+                                                                            orderInput
+                                                                            .ocoQtyCtrl
+                                                                            .text;
+                                                                    int currentQty =
+                                                                        int.tryParse(input) ??
+                                                                            0;
+                                                                    int adjustedQty =
+                                                                        ((currentQty / multiplayer).floor()) *
+                                                                            multiplayer;
+
+                                                                               if (currentQty != adjustedQty) {
+                                                                                    orderInput
+                                                                                        .ocoQtyCtrl
+                                                                                        .text =
+                                                                                    adjustedQty
+                                                                                        .toString();
+                                                                              }else if (input
+                                                                                  .isNotEmpty && currentQty >
+                                                                                    multiplayer) {
+                                                                             
+                                                                                  orderInput
+                                                                                      .ocoQtyCtrl
+                                                                                      .text = (currentQty -
+                                                                                          multiplayer)
+                                                                                      .toString();
+                                                                                
+                                                                              } else {
+                                                                                orderInput
+                                                                                    .ocoQtyCtrl
+                                                                                    .text =multiplayer
+                                                                                    .toString();
+                                                                              }
+                                                                            });
+                                                                          },
+                                                                          child: SvgPicture.asset(
+                                                                              theme.isDarkMode
+                                                                                  ? assets
+                                                                                      .darkCMinus
+                                                                                  : assets
+                                                                                      .minusIcon,
+                                                                              fit: BoxFit
+                                                                                  .scaleDown),
+                                                                        ),
+                                                                        suffixIcon:
+                                                                            InkWell(
+                                                                          onTap: () {
+                                                                            setState(() {
+                                                                        String input =
+                                                                            orderInput
+                                                                            .ocoQtyCtrl
+                                                                            .text;
+                                                                    int currentQty =
+                                                                        int.tryParse(input) ??
+                                                                            0;
+                                                                    int adjustedQty =
+                                                                        ((currentQty / multiplayer).round()) *
+                                                                            multiplayer;
+
+                                                                    if (currentQty !=
+                                                                        adjustedQty) {
+                                                                      orderInput
+                                                                              .ocoQtyCtrl
+                                                                              .text =
+                                                                          adjustedQty
+                                                                              .toString();
+                                                                    }else if (input
+                                                                                  .isNotEmpty && currentQty <
+                                                                                    ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                              
+                                                                                  orderInput
+                                                                                      .ocoQtyCtrl
+                                                                                      .text = (int.parse(orderInput.ocoQtyCtrl.text) +
+                                                                                          multiplayer)
+                                                                                      .toString();
+                                                                                
+                                                                              } else {
+                                                                                orderInput
+                                                                                    .ocoQtyCtrl
+                                                                                    .text = "$multiplayer";
+                                                                              }
+                                                                            });
+                                                                          },
+                                                                          child: SvgPicture.asset(
+                                                                              theme.isDarkMode
+                                                                                  ? assets
+                                                                                      .darkAdd
+                                                                                  : assets
+                                                                                      .addIcon,
+                                                                              fit: BoxFit
+                                                                                  .scaleDown),
+                                                                        ),
+                                                                        textCtrl: orderInput
+                                                                            .ocoQtyCtrl,
+                                                                        textAlign:
+                                                                            TextAlign
+                                                                                .center,
+                                                                        onChanged:
+                                                                            (value) {
+                                                                          ScaffoldMessenger.of(
+                                                                                  context)
+                                                                              .hideCurrentSnackBar();
+                                                                          if (value
+                                                                              .isEmpty || value == "0") {
+                                                                            ScaffoldMessenger.of(
+                                                                                    context)
+                                                                                .showSnackBar(warningMessage(
+                                                                                    context,
+                                                                                    "Quantity can not be ${value == "0"?'zero':'empty'}"));
+                                                                          } else {
+                                                                            String
+                                                                                newValue =
+                                                                                value.replaceAll(
+                                                                                    RegExp(
+                                                                                        r'[^0-9]'),
+                                                                                    '');
+
+                                                                        int number =int.tryParse(newValue) ??0;
+                                                                        if (number > ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                            orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
+                                                                              ScaffoldMessenger.of(context)
+                                                                            .showSnackBar(warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
+                                                                        }
+
+
+                                                                            if (newValue !=
+                                                                                value) {
+                                                                              orderInput
+                                                                                      .ocoQtyCtrl
+                                                                                      .text =
+                                                                                  newValue;
+                                                                              orderInput
+                                                                                      .ocoQtyCtrl
+                                                                                      .selection =
+                                                                                  TextSelection
+                                                                                      .fromPosition(
+                                                                          TextPosition(
+                                                                              offset: newValue
+                                                                                  .length),
+                                                                        );
+                                                                            }
+                                                                          }
+                                                                        }))
+                                                          ])),
+                                                      const SizedBox(width: 16),
+                                                      Expanded(
+                                                          child: Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                            Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceBetween,
+                                                                children: [
+                                                                  headerTitleText(
+                                                                      "Price", theme)
+                                                                ]),
+                                                            const SizedBox(height: 8),
+                                                            SizedBox(
+                                                                height: 44,
+                                                                child:
+                                                                    CustomTextFormField(
+                                                                        fillColor: theme
+                                                                                .isDarkMode
+                                                                            ? colors
+                                                                                .darkGrey
+                                                                            : const Color(
+                                                                                0xffF1F3F8),
+                                                                        onChanged:
+                                                                            (value) {
+                                                                          if (value
+                                                                                  .isNotEmpty &&
+                                                                              double.parse(
+                                                                                      value) >
+                                                                                  0) {
+                                                                            final regex =
+                                                                                RegExp(
+                                                                                    r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                                            if (!regex
+                                                                                .hasMatch(
+                                                                                    value)) {
+                                                                              orderInput
+                                                                                      .ocoPriceCtrl
+                                                                                      .text =
+                                                                                  value.substring(
+                                                                                      0,
+                                                                                      value.length -
+                                                                                          1); // Revert to previous valid input
+                                                                              orderInput.ocoPriceCtrl.selection = TextSelection.collapsed(
+                                                                                  offset: orderInput
+                                                                                      .ocoPriceCtrl
+                                                                                      .text
+                                                                                      .length); // Keep cursor at the end
+                                                                            }
+                                                                          }
+                                                                        },
+                                                                        hintText:
+                                                                            "${widget.orderArg.ltp}",
+                                                                        hintStyle: textStyle(
+                                                                            const Color(
+                                                                                0xff666666),
+                                                                            15,
+                                                                            FontWeight
+                                                                                .w400),
+                                                                        keyboardType:
+                                                                            const TextInputType.numberWithOptions(
+                                                                                decimal:
+                                                                                    true),
+                                                                        style: textStyle(
+                                                                            theme.isDarkMode
+                                                                                ? colors
+                                                                                    .colorWhite
+                                                                                : colors
+                                                                                    .colorBlack,
+                                                                            16,
+                                                                            FontWeight
+                                                                                .w600),
+                                                                        isReadable: orderInput.actOcoPrcType == "Limit" ||
+                                                                                orderInput.actOcoPrcType ==
+                                                                                    "SL Limit"
+                                                                            ? false
+                                                                            : true,
+                                                                        prefixIcon: Container(
+                                                                            margin:
+                                                                                const EdgeInsets.all(
+                                                                                    12),
+                                                                            decoration: BoxDecoration(
+                                                                                borderRadius: BorderRadius.circular(20),
+                                                                                color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                                                                            child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
+                                                                        textCtrl: orderInput.ocoPriceCtrl,
+                                                                        textAlign: TextAlign.start))
+                                                          ]))
+                                                    ])),
+                                            const SizedBox(height: 3),
+                                            Divider(
+                                                color: theme.isDarkMode
+                                                    ? colors.darkColorDivider
+                                                    : colors.colorDivider),
+                                            if (orderInput.actOcoPrcType == "SL Limit" || orderInput.actOcoPrcType == "SL MKT") ...[
+                                              Padding(
+                                                  padding: const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                                  child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment.start,
+                                                      children: [
+                                                        const SizedBox(height: 2),
+                                                        headerTitleText("Trigger", theme),
+                                                        const SizedBox(height: 7),
+                                                        SizedBox(
+                                                            height: 44,
+                                                            child: CustomTextFormField(
+                                                                fillColor: theme.isDarkMode
+                                                                    ? colors.darkGrey
+                                                                    : const Color(
+                                                                        0xffF1F3F8),
+                                                                hintText: "0.00",
+                                                                hintStyle: textStyle(
+                                                                    const Color(
+                                                                        0xff666666),
+                                                                    15,
+                                                                    FontWeight.w400),
+                                                                onChanged: (value) {
+                                                                  if (value.isNotEmpty &&
+                                                                      double.parse(
+                                                                              value) >
+                                                                          0) {
+                                                                    final regex = RegExp(
+                                                                        r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                                    if (!regex.hasMatch(
+                                                                        value)) {
+                                                                      orderInput
+                                                                              .ocoTrgPrcCtrl
+                                                                              .text =
+                                                                          value.substring(
+                                                                              0,
+                                                                              value.length -
+                                                                                  1); // Revert to previous valid input
+                                                                      orderInput
+                                                                              .ocoTrgPrcCtrl
+                                                                              .selection =
+                                                                          TextSelection.collapsed(
+                                                                              offset: orderInput
+                                                                                  .ocoTrgPrcCtrl
+                                                                                  .text
+                                                                                  .length); // Keep cursor at the end
+                                                                    }
+                                                                  }
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .hideCurrentSnackBar();
+                                                                  if (value.isNotEmpty) {
+                                                                  } else {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                            warningMessage(
+                                                                                context,
+                                                                                "Trigger can not be empty"));
+                                                                  }
+                                                                },
+                                                                keyboardType: const TextInputType.numberWithOptions(
+                                                                    decimal: true),
+                                                                style: textStyle(
+                                                                    theme.isDarkMode
+                                                                        ? colors
+                                                                            .colorWhite
+                                                                        : colors
+                                                                            .colorBlack,
+                                                                    16,
+                                                                    FontWeight.w600),
+                                                                prefixIcon: Container(
+                                                                    margin: const EdgeInsets.all(
+                                                                        12),
+                                                                    decoration: BoxDecoration(
+                                                                        borderRadius: BorderRadius.circular(
+                                                                            20),
+                                                                        color: theme.isDarkMode
+                                                                            ? const Color(
+                                                                                0xff555555)
+                                                                            : colors
+                                                                                .colorWhite),
+                                                                    child: SvgPicture.asset(
+                                                                        color: theme.isDarkMode
+                                                                            ? colors.colorWhite
+                                                                            : colors.colorGrey,
+                                                                        assets.ruppeIcon,
+                                                                        fit: BoxFit.scaleDown)),
+                                                                textCtrl: orderInput.ocoTrgPrcCtrl,
+                                                                textAlign: TextAlign.start)),
+                                                      ])),
+                                              Divider(
+                                                  color: theme.isDarkMode
+                                                      ? colors.darkColorDivider
+                                                      : colors.colorDivider)
+                                            ]
+                                          ],
+                                          if (!isOco) ...[
+                                            const SizedBox(height: 3),
+                                            Divider(
+                                                color: theme.isDarkMode
+                                                    ? colors.darkColorDivider
+                                                    : colors.colorDivider,
+                                                thickness: .4)
+                                          ],
+                                          Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 8, left: 16),
+                                              child: headerTitleText("Remarks", theme),
+                                              ),
+                                          Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 16),
+                                                height: 40,
+                                                child: CustomTextFormField(
+                                                    keyboardType: TextInputType.text,
+                                                    fillColor: theme.isDarkMode
+                                                        ? colors.darkGrey
+                                                        : const Color(0xffF1F3F8),
+                                                    hintStyle: textStyle(
+                                                        const Color(0xff666666),
+                                                        15,
+                                                        FontWeight.w400),
+                                                    style: textStyle(
+                                                        theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                                        16,
+                                                        FontWeight.w600),
+                                                    textAlign: TextAlign.start,
+                                                    onChanged: (value) {},
+                                                    textCtrl: orderInput.reMarksCtrl),
+                                                  ),
+                                          const SizedBox(height: 100)
+                              ] 
+                              else ...[
+                                // If Order Tab is Regular then show investment type and investment type radio button
                                 if (orderType == "Regular") ...[
                                   Column(
                                       crossAxisAlignment:
@@ -1997,749 +2075,773 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                       ]),
                                   const SizedBox(height: 8)
                                 ],
-                                if (orderType == "Regular" ||
-                                    orderType == "Cover" ||
-                                    orderType == "Bracket" ||
-                                    orderType == "GTT") ...[
-                                  Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text("Price type",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500)),
-                                          if (orderType != "Regular") ...[
-                                            InkWell(
-                                              onTap: () {
-                                                setState(() {
-                                                  Navigator.pop(context);
-                                                  Navigator.pushNamed(context,
-                                                      Routes.orderPrefer,
-                                                      arguments: {
-                                                        "orderArg":
-                                                            widget.orderArg,
-                                                        "scripInfo":
-                                                            widget.scripInfo,
-                                                        "isRollback": 'yes'
-                                                      });
-                                                });
-                                              },
-                                              child: SvgPicture.asset(
-                                                  'assets/profile/privacy_settings.svg'),
-                                            )
-                                          ]
-                                        ],
-                                      )),
-                                  const SizedBox(height: 10),
-                                  Padding(
-                                      padding: const EdgeInsets.only(left: 16),
-                                      child: SizedBox(
-                                          height: 38,
-                                          child: ListView.separated(
-                                              scrollDirection: Axis.horizontal,
-                                              itemBuilder: (context, index) {
-                                                return ElevatedButton(
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        priceType =
-                                                            priceTypes[index]
-                                                                ['type'];
-                                                        if (priceType ==
-                                                                "Market" ||
-                                                            priceType ==
-                                                                "SL MKT") {
-                                                          priceCtrl.text =
-                                                              "Market";
-
-                                                          double ltp = (double
-                                                                      .parse(
-                                                                          "${widget.orderArg.ltp}") *
-                                                                  double.parse(mktProtCtrl
-                                                                          .text
-                                                                          .isEmpty
-                                                                      ? "0"
-                                                                      : mktProtCtrl
-                                                                          .text)) /
-                                                              100;
-
-                                                          if (isBuy!) {
-                                                            ordPrice = (double
-                                                                        .parse(
-                                                                            "${widget.orderArg.ltp ?? 0.00}") +
-                                                                    ltp)
-                                                                .toStringAsFixed(
-                                                                    2);
-                                                          } else {
-                                                            ordPrice = (double
-                                                                        .parse(
-                                                                            "${widget.orderArg.ltp ?? 0.00}") -
-                                                                    ltp)
-                                                                .toStringAsFixed(
-                                                                    2);
-                                                          }
-                                                          double result = double
-                                                                  .parse(
-                                                                      ordPrice) +
-                                                              (double.parse(
-                                                                      "${widget.scripInfo.ti}") /
-                                                                  2);
-                                                          result -= result %
-                                                              double.parse(
-                                                                  "${widget.scripInfo.ti}");
-
-                                                          if (result >=
-                                                              double.parse(
-                                                                  "${widget.scripInfo.uc ?? 0.00}")) {
-                                                            ordPrice =
-                                                                "${widget.scripInfo.uc ?? 0.00}";
-                                                          } else if (result <=
-                                                              double.parse(
-                                                                  "${widget.scripInfo.lc ?? 0.00}")) {
-                                                            ordPrice =
-                                                                "${widget.scripInfo.lc ?? 0.00}";
-                                                          } else {
-                                                            ordPrice = result
-                                                                .toStringAsFixed(
-                                                                    2);
-                                                          }
-                                                        } else {
-                                                          priceCtrl.text =
-                                                              "${widget.orderArg.ltp}";
-                                                          ordPrice =
-                                                              priceCtrl.text;
-                                                        }
-                                                        orderInput
-                                                            .chngPriceType(
-                                                                priceTypes[
-                                                                        index]
-                                                                    ['type'],
-                                                                widget.orderArg
-                                                                    .exchange);
-                                                      });
-                                                      marginUpdate();
-                                                      FocusScope.of(context)
-                                                          .unfocus();
-                                                    },
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                            elevation: 0,
-                                                            padding: const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 12,
-                                                                vertical: 0),
-                                                            backgroundColor: !theme
-                                                                    .isDarkMode
-                                                                ? priceType !=
-                                                                        priceTypes[index]
-                                                                            [
-                                                                            'type']
-                                                                    ? const Color(
-                                                                        0xffF1F3F8)
-                                                                    : colors
-                                                                        .colorBlack
-                                                                : priceType !=
-                                                                        priceTypes[index]
-                                                                            [
-                                                                            'type']
-                                                                    ? colors
-                                                                        .darkGrey
-                                                                    : colors
-                                                                        .colorbluegrey,
-                                                            shape:
-                                                                const StadiumBorder()),
-                                                    child: Text(
-                                                        priceTypes[index]
-                                                            ['type'],
-                                                        style: textStyle(
-                                                            !theme.isDarkMode
-                                                                ? priceType !=
-                                                                        priceTypes[index]
-                                                                            [
-                                                                            'type']
-                                                                    ? const Color(
-                                                                        0xff666666)
-                                                                    : colors
-                                                                        .colorWhite
-                                                                : priceType !=
-                                                                        priceTypes[index]
-                                                                            ['type']
-                                                                    ? const Color(0xff666666)
-                                                                    : colors.colorBlack,
-                                                            14,
-                                                            priceType == priceTypes[index]['type'] ? FontWeight.w600 : FontWeight.w500)));
-                                              },
-                                              separatorBuilder:
-                                                  (context, index) {
-                                                return const SizedBox(width: 8);
-                                              },
-                                              itemCount: orderType == "Cover" ||
-                                                      orderType == "Bracket"
-                                                  ? 3
-                                                  : priceTypes.length))),
-                                  const SizedBox(height: 3),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                  Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Expanded(
-                                                child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                  Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .end,
-                                                      children: [
-                                                        headerTitleText(
-                                                            "Quantity", theme),
-                                                        Text(
-                                                          "Lot: ${widget.scripInfo.ls} ${widget.scripInfo.prcunt ?? ''}  ",
-                                                          style: textStyle(
-                                                              const Color(
-                                                                  0xff777777),
-                                                              11,
-                                                              FontWeight.w600),
-                                                        )
-                                                      ]),
-                                                  const SizedBox(height: 8),
-                                                  SizedBox(
-                                                      height: 44,
-                                                      child:
-                                                          CustomTextFormField(
-                                                              fillColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .darkGrey
-                                                                  : const Color(
-                                                                      0xffF1F3F8),
-                                                              hintText:
-                                                                  qtyCtrl.text,
-                                                              hintStyle: textStyle(
-                                                                  const Color(
-                                                                      0xff666666),
-                                                                  15,
-                                                                  FontWeight
-                                                                      .w400),
-                                                              inputFormate: [
-                                                                FilteringTextInputFormatter
-                                                                    .digitsOnly
-                                                              ],
-                                                              keyboardType:
-                                                                  TextInputType
-                                                                      .number,
-                                                              style: textStyle(
-                                                                  theme.isDarkMode
-                                                                      ? colors
-                                                                          .colorWhite
-                                                                      : colors
-                                                                          .colorBlack,
-                                                                  16,
-                                                                  FontWeight
-                                                                      .w600),
-                                                              prefixIcon:
+                                // If Order Tab is Regular, Cover, Bracket, or GTT then show Price type Section , Quantity and Price fields
+                                if (orderType == "Regular" || orderType == "Cover" || orderType == "Bracket" || orderType == "GTT") ...[
+                                                    Padding(
+                                                        padding: const EdgeInsets.symmetric(
+                                                          horizontal: 16),
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment.spaceBetween,
+                                                            children: [
+                                                              Text("Price type",
+                                                                  style: textStyle(
+                                                                      theme.isDarkMode
+                                                                          ? colors.colorWhite
+                                                                          : colors.colorBlack,
+                                                                      14,
+                                                                      FontWeight.w500)),
+                                                              if (orderType != "Regular") ...[
                                                                   InkWell(
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    if (qtyCtrl
-                                                                        .text
-                                                                        .isNotEmpty) {
-                                                                      if (int.parse(
-                                                                              qtyCtrl.text) >
-                                                                          multiplayer) {
-                                                                        qtyCtrl
-                                                                            .text = (int.parse(qtyCtrl.text) -
-                                                                                multiplayer)
-                                                                            .toString();
-                                                                      }
-                                                                    } else {
-                                                                      qtyCtrl.text =
-                                                                          "$multiplayer";
-                                                                    }
-                                                                    marginUpdate();
-                                                                  });
-                                                                },
-                                                                child:
-                                                                    SvgPicture
-                                                                        .asset(
-                                                                  theme.isDarkMode
-                                                                      ? assets
-                                                                          .darkCMinus
-                                                                      : assets
-                                                                          .minusIcon,
-                                                                  fit: BoxFit
-                                                                      .scaleDown,
-                                                                ),
-                                                              ),
-                                                              suffixIcon:
-                                                                  InkWell(
-                                                                onTap: () {
-                                                                  setState(() {
-                                                                    if (qtyCtrl
-                                                                        .text
-                                                                        .isNotEmpty) {
-                                                                      if (int.parse(
-                                                                            qtyCtrl.text) <
-                                                                          ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
-                                                                        qtyCtrl
-                                                                            .text = (int.parse(qtyCtrl.text) +
-                                                                                multiplayer)
-                                                                            .toString();
-                                                                      }
-                                                                    } else {
-                                                                      qtyCtrl.text =
-                                                                          "$multiplayer";
-                                                                    }
-                                                                    marginUpdate();
-                                                                  });
-                                                                },
-                                                                child: SvgPicture.asset(
-                                                                    theme.isDarkMode
-                                                                        ? assets
-                                                                            .darkAdd
-                                                                        : assets
-                                                                            .addIcon,
-                                                                    fit: BoxFit
-                                                                        .scaleDown),
-                                                              ),
-                                                              textCtrl: qtyCtrl,
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              onChanged:
-                                                                  (value) {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .hideCurrentSnackBar();
-                                                                if (value
-                                                                    .isEmpty) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Quantity can not be empty"));
-                                                                } else {
-                                                                  int number =
-                                                                      int.tryParse(
-                                                                              qtyCtrl.text) ??
-                                                                          0;
+                                                                    onTap: () {
+                                                                        setState(() {
+                                                                          Navigator.pop(context);
+                                                                          Navigator.pushNamed(context,
+                                                                              Routes.orderPrefer,
+                                                                              arguments: {
+                                                                                "orderArg":
+                                                                                    widget.orderArg,
+                                                                                "scripInfo":
+                                                                                    widget.scripInfo,
+                                                                                "isRollback": 'yes'
+                                                                              });
+                                                                        },
+                                                                      );
+                                                                    },
+                                                                    child: SvgPicture.asset(
+                                                                        'assets/profile/privacy_settings.svg'),
+                                                                  )
+                                                              ]
+                                                            ],
+                                                          ),
+                                                      ),
+                                                        const SizedBox(height: 10),
 
-                                                                  if (number >
-                                                                      ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
-                                                                    qtyCtrl.text = qtyCtrl
-                                                                        .text;
+                                                    // Price Type section, List of buttons such as Market, Limit, SL, SL Mkt
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(left: 16),
+                                                      child: SizedBox(
+                                                          height: 38,
+                                                          child: ListView.separated(
+                                                              scrollDirection: Axis.horizontal,
+                                                              itemBuilder: (context, index) {
+                                                                    return ElevatedButton(
+                                                                        onPressed: () {
+                                                                        setState(() {
+                                                                            priceType =
+                                                                                priceTypes[index]
+                                                                                    ['type'];
+                                                                            if (priceType ==
+                                                                                    "Market" ||
+                                                                                priceType ==
+                                                                                    "SL MKT") {
+                                                                            priceCtrl.text =
+                                                                                "Market";
 
-                                                                        // .substring(
-                                                                        //     0,
-                                                                        //     10); // Restrict max value
+                                                                            double ltp = (double
+                                                                                        .parse(
+                                                                                            "${widget.orderArg.ltp}") *
+                                                                                    double.parse(mktProtCtrl
+                                                                                            .text
+                                                                                            .isEmpty
+                                                                                        ? "0"
+                                                                                        : mktProtCtrl
+                                                                                            .text)) /
+                                                                                100;
 
-                                                                        ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
-                                                                  }
+                                                                            if (isBuy!) {
+                                                                                ordPrice = (double.parse("${widget.orderArg.ltp ?? 0.00}") + ltp).toStringAsFixed(2);
+                                                                            } else {
+                                                                                ordPrice = (double.parse("${widget.orderArg.ltp ?? 0.00}") - ltp).toStringAsFixed(2);
+                                                                            }
+                                                                            double result = double.parse(ordPrice) + (double.parse( "${widget.scripInfo.ti}") / 2);
+                                                                            result -= result %
+                                                                                double.parse(
+                                                                                    "${widget.scripInfo.ti}");
 
-                                                                  String
-                                                                      newValue =
-                                                                      value.replaceAll(
-                                                                          RegExp(
-                                                                              r'[^0-9]'),
-                                                                          '');
-                                                                  if (newValue !=
-                                                                      value) {
-                                                                    qtyCtrl.text =
-                                                                        newValue;
-                                                                    qtyCtrl.selection =
-                                                                        TextSelection
-                                                                            .fromPosition(
-                                                                      TextPosition(
-                                                                          offset:
-                                                                              newValue.length),
-                                                                    );
-                                                                  }
-                                                                  marginUpdate();
-                                                                }
-                                                              })),
-                                                  if (widget.scripInfo.frzqty !=
-                                                      null) ...[
-                                                    const SizedBox(height: 8),
-                                                    Text("Frz Qty : $frezQty",
-                                                        style: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            12,
-                                                            FontWeight.w500))
-                                                  ]
-                                                ])),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                                child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                  Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .end,
-                                                      children: [
-                                                        headerTitleText(
-                                                            "Price", theme),
-                                                        Text(
-                                                            "Tick: ${widget.scripInfo.ti} ",
-                                                            style: textStyle(
-                                                                const Color(
-                                                                    0xff777777),
-                                                                11,
-                                                                FontWeight
-                                                                    .w600))
-                                                      ]),
-                                                  const SizedBox(height: 8),
-                                                  SizedBox(
-                                                      height: 44,
-                                                      child:
-                                                          CustomTextFormField(
-                                                              fillColor: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .darkGrey
-                                                                  : const Color(
-                                                                      0xffF1F3F8),
-                                                              onChanged:
-                                                                  (value) {
-                                                                if (value
-                                                                        .isNotEmpty &&
-                                                                    double.parse(
-                                                                            value) >
-                                                                        0) {
-                                                                  final regex =
-                                                                      RegExp(
-                                                                          r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                                  if (!regex
-                                                                      .hasMatch(
-                                                                          value)) {
-                                                                    priceCtrl
-                                                                            .text =
-                                                                        value.substring(
-                                                                            0,
-                                                                            value.length -
-                                                                                1); // Revert to previous valid input
-                                                                    priceCtrl.selection = TextSelection.collapsed(
-                                                                        offset: priceCtrl
-                                                                            .text
-                                                                            .length); // Keep cursor at the end
-                                                                  }
-                                                                }
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .removeCurrentSnackBar();
-                                                                if (value
-                                                                    .isEmpty) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Price can not be empty"));
-                                                                } else {
-                                                                  setState(() {
-                                                                    ordPrice =
-                                                                        value;
-                                                                    marginUpdate();
-                                                                  });
-                                                                }
+                                                                            if (result >=
+                                                                                double.parse(
+                                                                                    "${widget.scripInfo.uc ?? 0.00}")) {
+                                                                                ordPrice =
+                                                                                    "${widget.scripInfo.uc ?? 0.00}";
+                                                                            } else if (result <=
+                                                                                double.parse(
+                                                                                    "${widget.scripInfo.lc ?? 0.00}")) {
+                                                                                ordPrice =
+                                                                                    "${widget.scripInfo.lc ?? 0.00}";
+                                                                            } else {
+                                                                                ordPrice = result
+                                                                                    .toStringAsFixed(
+                                                                                        2);
+                                                                            }
+                                                                            } else {
+                                                                                priceCtrl.text =
+                                                                                    "${widget.orderArg.ltp}";
+                                                                                ordPrice =
+                                                                                    priceCtrl.text;
+                                                                            }
+                                                                            orderInput
+                                                                                .chngPriceType(
+                                                                                    priceTypes[
+                                                                                            index]
+                                                                                        ['type'],
+                                                                                    widget.orderArg
+                                                                                        .exchange);
+                                                                        });
+                                                                        marginUpdate();
+                                                                        FocusScope.of(context)
+                                                                            .unfocus();
+                                                                        },
+                                                                        style: ElevatedButton
+                                                                            .styleFrom(
+                                                                                elevation: 0,
+                                                                                padding: const EdgeInsets
+                                                                                    .symmetric(
+                                                                                    horizontal: 12,
+                                                                                    vertical: 0),
+                                                                                backgroundColor: !theme
+                                                                                        .isDarkMode
+                                                                                    ? priceType !=
+                                                                                            priceTypes[index]
+                                                                                                [
+                                                                                                'type']
+                                                                                        ? const Color(
+                                                                                            0xffF1F3F8)
+                                                                                        : colors
+                                                                                            .colorBlack
+                                                                                    : priceType !=
+                                                                                            priceTypes[index]
+                                                                                                [
+                                                                                                'type']
+                                                                                        ? colors
+                                                                                            .darkGrey
+                                                                                        : colors
+                                                                                            .colorbluegrey,
+                                                                                shape:
+                                                                                    const StadiumBorder()),
+                                                                        child: Text(
+                                                                            priceTypes[index]
+                                                                                ['type'],
+                                                                            style: textStyle(
+                                                                                !theme.isDarkMode
+                                                                                    ? priceType !=
+                                                                                            priceTypes[index]
+                                                                                                [
+                                                                                                'type']
+                                                                                        ? const Color(
+                                                                                            0xff666666)
+                                                                                        : colors
+                                                                                            .colorWhite
+                                                                                    : priceType !=
+                                                                                            priceTypes[index]
+                                                                                                ['type']
+                                                                                        ? const Color(0xff666666)
+                                                                                        : colors.colorBlack,
+                                                                                14,
+                                                                                priceType == priceTypes[index]['type'] ? FontWeight.w600 : FontWeight.w500),
+                                                                            ),
+                                                                        );
                                                               },
-                                                              hintText:
-                                                                  "${widget.orderArg.ltp}",
-                                                              hintStyle: textStyle(
-                                                                  const Color(
-                                                                      0xff666666),
-                                                                  15,
-                                                                  FontWeight
-                                                                      .w400),
-                                                              keyboardType:
-                                                                  const TextInputType.numberWithOptions(
-                                                                      decimal:
-                                                                          true),
-                                                              style: textStyle(
-                                                                  theme.isDarkMode
-                                                                      ? colors
-                                                                          .colorWhite
-                                                                      : colors
-                                                                          .colorBlack,
-                                                                  16,
-                                                                  FontWeight
-                                                                      .w600),
-                                                              isReadable: priceType == "Limit" ||
-                                                                      priceType ==
-                                                                          "SL Limit"
-                                                                  ? false
-                                                                  : true,
-                                                              prefixIcon: Container(
-                                                                  margin:
-                                                                      const EdgeInsets.all(
-                                                                          12),
-                                                                  decoration: BoxDecoration(
-                                                                      borderRadius: BorderRadius.circular(20),
-                                                                      color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                                                                  child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                              textCtrl: priceCtrl,
-                                                              textAlign: TextAlign.start)),
-                                                  const SizedBox(height: 8),
-                                                  Text(
-                                                      "Cir Lv : ${widget.scripInfo.lc ?? 0.00} - ${widget.scripInfo.uc ?? 0.00}",
-                                                      style: textStyle(
-                                                          const Color(
-                                                              0xff666666),
-                                                          12,
-                                                          FontWeight.w500))
-                                                ]))
-                                          ])),
-                                  const SizedBox(height: 3),
-                                  if (priceType == "Market" ||
-                                      priceType == "SL MKT") ...[
-                                    const SizedBox(height: 8),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: Text(
-                                          "A market order carries the risk of execution at a less advantageous price",
-                                          style: textStyle(
-                                              const Color(0xff666666),
-                                              12,
-                                              FontWeight.w500)),
-                                    ),
-                                  ],
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider)
+                                                              separatorBuilder:
+                                                                  (context, index) {
+                                                                return const SizedBox(width: 8);
+                                                              },
+                                                              itemCount: orderType == "Cover" || orderType == "Bracket" ? 3 : priceTypes.length
+                                                            ),
+                                                          ),
+                                                      ),
+                                                    const SizedBox(height: 3),
+                                                  Divider(
+                                                      color: theme.isDarkMode
+                                                          ? colors.darkColorDivider
+                                                          : colors.colorDivider),
+
+                                                // Quantity and Price fields
+                                                  Padding(
+                                                      padding: const EdgeInsets.symmetric(
+                                                          horizontal: 16),
+                                                      child: Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment.start,
+                                                          children: [
+                                                            Expanded(
+                                                                child: Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                            Row(
+                                                                                    mainAxisAlignment:
+                                                                                        MainAxisAlignment
+                                                                                            .spaceBetween,
+                                                                                    crossAxisAlignment:
+                                                                                        CrossAxisAlignment
+                                                                                            .end,
+                                                                                    children: [
+                                                                                        headerTitleText(
+                                                                                            "Quantity", theme),
+                                                                                        Text(
+                                                                                        "Lot: ${widget.scripInfo.ls} ${widget.scripInfo.prcunt ?? ''}  ",
+                                                                                        style: textStyle(
+                                                                                            const Color(
+                                                                                                0xff777777),
+                                                                                            11,
+                                                                                            FontWeight.w600),
+                                                                                        )
+                                                                                    ]),
+                                                                                const SizedBox(height: 8),
+                                                                                SizedBox(
+                                                                                    height: 44,
+                                                                                    child:
+                                                                                        CustomTextFormField(
+                                                                                            fillColor: theme
+                                                                                                    .isDarkMode
+                                                                                                ? colors
+                                                                                                    .darkGrey
+                                                                                                : const Color(
+                                                                                                    0xffF1F3F8),
+                                                                                            hintText:
+                                                                                                qtyCtrl.text,
+                                                                                            hintStyle: textStyle(
+                                                                                                const Color(
+                                                                                                    0xff666666),
+                                                                                                15,
+                                                                                                FontWeight
+                                                                                                    .w400),
+                                                                                            inputFormate: [
+                                                                                                FilteringTextInputFormatter
+                                                                                                    .digitsOnly
+                                                                                            ],
+                                                                                            keyboardType:
+                                                                                                TextInputType
+                                                                                                    .number,
+                                                                                            style: textStyle(
+                                                                                                theme.isDarkMode
+                                                                                                    ? colors
+                                                                                                        .colorWhite
+                                                                                                    : colors
+                                                                                                        .colorBlack,
+                                                                                                16,
+                                                                                                FontWeight
+                                                                                                    .w600),
+                                                                                            prefixIcon:
+                                                                                                InkWell(
+                                                                                                onTap: () {
+                                                                                                setState(() {
+
+                                                                                              String input =
+                                                                                                      qtyCtrl
+                                                                                                          .text;
+                                                                                                  int currentQty =
+                                                                                                      int.tryParse(input) ??
+                                                                                                          0;
+                                                                                                  int adjustedQty =
+                                                                                                      ((currentQty / multiplayer).floor()) *
+                                                                                                          multiplayer;
+                                                                                                  if (currentQty !=
+                                                                                                      adjustedQty) {
+                                                                                                    qtyCtrl.text =
+                                                                                                        adjustedQty
+                                                                                                            .toString();
+                                                                                                  } else if (input
+                                                                                                        .isNotEmpty && currentQty >
+                                                                                                        multiplayer) {
+                                                                                                    
+                                                                                                        qtyCtrl
+                                                                                                            .text = (currentQty -
+                                                                                                                multiplayer)
+                                                                                                            .toString();
+                                                                                                    } else {
+                                                                                                    qtyCtrl.text =
+                                                                                                        "$multiplayer";
+                                                                                                    }
+                                                                                                    marginUpdate();
+                                                                                                });
+                                                                                                },
+                                                                                                child:
+                                                                                                    SvgPicture
+                                                                                                        .asset(
+                                                                                                theme.isDarkMode
+                                                                                                    ? assets
+                                                                                                        .darkCMinus
+                                                                                                    : assets
+                                                                                                        .minusIcon,
+                                                                                                fit: BoxFit
+                                                                                                    .scaleDown,
+                                                                                                ),
+                                                                                            ),
+                                                                                            suffixIcon:
+                                                                                                InkWell(
+                                                                                                onTap: () {
+                                                                                                setState(() {
+                                                                                                      String input =
+                                                                                                          qtyCtrl
+                                                                                                          .text;
+                                                                                                  int currentQty =
+                                                                                                      int.tryParse(input) ??
+                                                                                                          0;
+                                                                                                  int adjustedQty =
+                                                                                                      ((currentQty / multiplayer).round()) *
+                                                                                                          multiplayer;
+
+                                                                                                  if (currentQty !=
+                                                                                                      adjustedQty) {
+                                                                                                    qtyCtrl.text =
+                                                                                                        adjustedQty
+                                                                                                            .toString();
+                                                                                                  } 
+
+                                                                                                    else if (input
+                                                                                                        .isNotEmpty && currentQty <
+                                                                                                        ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                                                        qtyCtrl
+                                                                                                            .text = (currentQty +
+                                                                                                                multiplayer)
+                                                                                                            .toString();
+                                                                                                  
+                                                                                                    } else {
+                                                                                                    qtyCtrl.text =
+                                                                                                        "$multiplayer";
+                                                                                                    }
+                                                                                                    marginUpdate();
+                                                                                                });
+                                                                                                },
+                                                                                                child: SvgPicture.asset(
+                                                                                                    theme.isDarkMode
+                                                                                                        ? assets
+                                                                                                            .darkAdd
+                                                                                                        : assets
+                                                                                                            .addIcon,
+                                                                                                    fit: BoxFit
+                                                                                                        .scaleDown),
+                                                                                            ),
+                                                                                            textCtrl: qtyCtrl,
+                                                                                            textAlign:
+                                                                                                TextAlign
+                                                                                                    .center,
+                                                                                            onChanged:
+                                                                                                (value) {
+                                                                                                ScaffoldMessenger.of(
+                                                                                                        context)
+                                                                                                    .hideCurrentSnackBar();
+                                                                                                if (value
+                                                                                                    .isEmpty || value == "0") {
+                                                                                                ScaffoldMessenger.of(
+                                                                                                        context)
+                                                                                                    .showSnackBar(warningMessage(
+                                                                                                        context,
+                                                                                                        "Quantity can not be ${value == "0"?'zero':'empty'}"));
+                                                                                                } else {
+                                                                                                
+
+                                                                                                String
+                                                                                                    newValue =
+                                                                                                    value.replaceAll(
+                                                                                                        RegExp(
+                                                                                                            r'[^0-9]'),
+                                                                                                        '');
+
+
+
+                                                                                                        int number =
+                                                                                                    int.tryParse(
+                                                                                                            newValue) ??
+                                                                                                        0;
+
+                                                                                                if (number >
+                                                                                                    ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                                                    qtyCtrl.text = qtyCtrl
+                                                                                                        .text;
+
+                                                                                                        // .substring(
+                                                                                                        //     0,
+                                                                                                        //     10); // Restrict max value
+
+                                                                                                        ScaffoldMessenger.of(
+                                                                                                        context)
+                                                                                                    .showSnackBar(warningMessage(
+                                                                                                        context,
+                                                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
+                                                                                                }
+
+                                                                                                if (newValue !=
+                                                                                                    value) {
+                                                                                                    qtyCtrl.text =
+                                                                                                        newValue;
+                                                                                                    qtyCtrl.selection =
+                                                                                                        TextSelection
+                                                                                                            .fromPosition(
+                                                                                                    TextPosition(
+                                                                                                        offset:
+                                                                                                            newValue.length),
+                                                                                                    );
+                                                                                                }
+                                                                                                marginUpdate();
+                                                                                                }
+                                                                                            },
+                                                                                            ),
+                                                                                            ),
+                                                                                if (widget.scripInfo.frzqty != null) ...[
+                                                                                        const SizedBox(height: 8),
+                                                                                        Text("Frz Qty : $frezQty",
+                                                                                            style: textStyle(
+                                                                                                const Color(
+                                                                                                    0xff666666),
+                                                                                                12,
+                                                                                                FontWeight.w500))
+                                                                                ]
+                                                                        ],
+                                                                ),
+                                                                ),
+                                                            const SizedBox(width: 16),
+                                                            Expanded(
+                                                                child: Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                  Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .spaceBetween,
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .end,
+                                                                      children: [
+                                                                        headerTitleText(
+                                                                            "Price", theme),
+                                                                        Text(
+                                                                            "Tick: ${widget.scripInfo.ti} ",
+                                                                            style: textStyle(
+                                                                                const Color(
+                                                                                    0xff777777),
+                                                                                11,
+                                                                                FontWeight
+                                                                                    .w600))
+                                                                      ]),
+                                                                  const SizedBox(height: 8),
+                                                                  SizedBox(
+                                                                      height: 44,
+                                                                      child:
+                                                                          CustomTextFormField(
+                                                                              fillColor: theme
+                                                                                      .isDarkMode
+                                                                                  ? colors
+                                                                                      .darkGrey
+                                                                                  : const Color(
+                                                                                      0xffF1F3F8),
+                                                                              onChanged:
+                                                                                  (value) {
+                                                                                if (value
+                                                                                        .isNotEmpty &&
+                                                                                    double.parse(
+                                                                                            value) >
+                                                                                        0) {
+                                                                                  final regex =
+                                                                                      RegExp(
+                                                                                          r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                                                  if (!regex
+                                                                                      .hasMatch(
+                                                                                          value)) {
+                                                                                    priceCtrl
+                                                                                            .text =
+                                                                                        value.substring(
+                                                                                            0,
+                                                                                            value.length -
+                                                                                                1); // Revert to previous valid input
+                                                                                    priceCtrl.selection = TextSelection.collapsed(
+                                                                                        offset: priceCtrl
+                                                                                            .text
+                                                                                            .length); // Keep cursor at the end
+                                                                                  }
+                                                                                }
+                                                                                ScaffoldMessenger.of(
+                                                                                        context)
+                                                                                    .removeCurrentSnackBar();
+                                                                                if (value
+                                                                                    .isEmpty) {
+                                                                                  ScaffoldMessenger.of(
+                                                                                          context)
+                                                                                      .showSnackBar(warningMessage(
+                                                                                          context,
+                                                                                          "Price can not be empty"));
+                                                                                } else {
+                                                                                  setState(() {
+                                                                                    ordPrice =
+                                                                                        value;
+                                                                                    marginUpdate();
+                                                                                  });
+                                                                                }
+                                                                              },
+                                                                              hintText:
+                                                                                  "${widget.orderArg.ltp}",
+                                                                              hintStyle: textStyle(
+                                                                                  const Color(
+                                                                                      0xff666666),
+                                                                                  15,
+                                                                                  FontWeight
+                                                                                      .w400),
+                                                                              keyboardType:
+                                                                                  const TextInputType.numberWithOptions(
+                                                                                      decimal:
+                                                                                          true),
+                                                                              style: textStyle(
+                                                                                  theme.isDarkMode
+                                                                                      ? colors
+                                                                                          .colorWhite
+                                                                                      : colors
+                                                                                          .colorBlack,
+                                                                                  16,
+                                                                                  FontWeight
+                                                                                      .w600),
+                                                                              isReadable: priceType == "Limit" ||
+                                                                                      priceType ==
+                                                                                          "SL Limit"
+                                                                                  ? false
+                                                                                  : true,
+                                                                              prefixIcon: Container(
+                                                                                  margin:
+                                                                                      const EdgeInsets.all(
+                                                                                          12),
+                                                                                  decoration: BoxDecoration(
+                                                                                      borderRadius: BorderRadius.circular(20),
+                                                                                      color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                                                                                  child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
+                                                                              textCtrl: priceCtrl,
+                                                                              textAlign: TextAlign.start)),
+                                                                  const SizedBox(height: 8),
+                                                                  Text(
+                                                                      "Cir Lv : ${widget.scripInfo.lc ?? 0.00} - ${widget.scripInfo.uc ?? 0.00}",
+                                                                      style: textStyle(
+                                                                          const Color(
+                                                                              0xff666666),
+                                                                          12,
+                                                                          FontWeight.w500))
+                                                                ]))
+                                                          ])),
+                                                  const SizedBox(height: 3),
+                                                  
+                                                  if (priceType == "Market" || priceType == "SL MKT") ...[
+                                                    const SizedBox(height: 8),
+                                                    Padding(
+                                                      padding: const EdgeInsets.symmetric(
+                                                          horizontal: 16),
+                                                      child: Text(
+                                                          "A market order carries the risk of execution at a less advantageous price",
+                                                          style: textStyle(
+                                                              const Color(0xff666666),
+                                                              12,
+                                                              FontWeight.w500)),
+                                                    ),
+                                                  ],
+                                                  Divider(
+                                                      color: theme.isDarkMode
+                                                          ? colors.darkColorDivider
+                                                          : colors.colorDivider)
                                 ],
-                                if (priceType == "SL Limit" ||
-                                    priceType == "SL MKT") ...[
-                                  triggerOption(
-                                      theme, context, widget.scripInfo),
-                                  Divider(
-                                    color: theme.isDarkMode
-                                        ? colors.darkColorDivider
-                                        : colors.colorDivider,
-                                  ),
+
+                                if (priceType == "SL Limit" || priceType == "SL MKT") ...[
+                                            triggerOption(
+                                                theme, context, widget.scripInfo),
+                                            Divider(
+                                              color: theme.isDarkMode
+                                                  ? colors.darkColorDivider
+                                                  : colors.colorDivider,
+                                            ),
                                 ],
                                 if (addStoploss) ...[
-                                  Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            if (orderType == "Bracket") ...[
-                                              priceType == "SL Limit"
-                                                  ? const SizedBox(height: 10)
-                                                  : Container(),
-                                              headerTitleText("Target", theme),
-                                              const SizedBox(height: 7),
-                                              SizedBox(
-                                                  height: 44,
-                                                  child: CustomTextFormField(
-                                                      fillColor:
-                                                          theme.isDarkMode
+                                        Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16),
+                                            child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  if (orderType == "Bracket") ...[
+                                                    priceType == "SL Limit"
+                                                        ? const SizedBox(height: 10)
+                                                        : Container(),
+                                                    headerTitleText("Target", theme),
+                                                    const SizedBox(height: 7),
+                                                    SizedBox(
+                                                        height: 44,
+                                                        child: CustomTextFormField(
+                                                            fillColor:
+                                                                theme.isDarkMode
+                                                                    ? colors.darkGrey
+                                                                    : const Color(
+                                                                        0xffF1F3F8),
+                                                            hintText: "0.00",
+                                                            onChanged: (value) {
+                                                              if (value.isNotEmpty &&
+                                                                  double.parse(
+                                                                          value) >
+                                                                      0) {
+                                                                final regex = RegExp(
+                                                                    r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                                if (!regex.hasMatch(
+                                                                    value)) {
+                                                                  targetCtrl.text =
+                                                                      value.substring(
+                                                                          0,
+                                                                          value.length -
+                                                                              1); // Revert to previous valid input
+                                                                  targetCtrl
+                                                                          .selection =
+                                                                      TextSelection.collapsed(
+                                                                          offset: targetCtrl
+                                                                              .text
+                                                                              .length); // Keep cursor at the end
+                                                                }
+                                                              }
+
+                                                              ScaffoldMessenger.of(
+                                                                      context)
+                                                                  .hideCurrentSnackBar();
+                                                              if (value.isEmpty) {
+                                                                ScaffoldMessenger.of(
+                                                                        context)
+                                                                    .showSnackBar(
+                                                                        warningMessage(
+                                                                            context,
+                                                                            "Target can not be empty"));
+                                                              }
+                                                            },
+                                                            hintStyle: textStyle(
+                                                                const Color(
+                                                                    0xff666666),
+                                                                15,
+                                                                FontWeight.w400),
+                                                            keyboardType:
+                                                                const TextInputType
+                                                                    .numberWithOptions(
+                                                                    decimal: true),
+                                                            style: textStyle(
+                                                                theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack,
+                                                                16,
+                                                                FontWeight.w600),
+                                                            prefixIcon: Container(
+                                                              margin: const EdgeInsets
+                                                                  .all(12),
+                                                              decoration: BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              20),
+                                                                  color: theme
+                                                                          .isDarkMode
+                                                                      ? const Color(
+                                                                          0xff555555)
+                                                                      : colors
+                                                                          .colorWhite),
+                                                              child: SvgPicture.asset(
+                                                                  color: theme.isDarkMode
+                                                                      ? colors
+                                                                          .colorWhite
+                                                                      : colors
+                                                                          .colorGrey,
+                                                                  assets.ruppeIcon,
+                                                                  fit: BoxFit
+                                                                      .scaleDown),
+                                                            ),
+                                                            textCtrl: targetCtrl,
+                                                            textAlign:
+                                                                TextAlign.start)),
+                                                    const SizedBox(height: 10)
+                                                  ],
+                                                  headerTitleText("Stoploss", theme),
+                                                  const SizedBox(height: 7),
+                                                  SizedBox(
+                                                      height: 44,
+                                                      child: CustomTextFormField(
+                                                          fillColor: theme.isDarkMode
                                                               ? colors.darkGrey
                                                               : const Color(
                                                                   0xffF1F3F8),
-                                                      hintText: "0.00",
-                                                      onChanged: (value) {
-                                                        if (value.isNotEmpty &&
-                                                            double.parse(
-                                                                    value) >
-                                                                0) {
-                                                          final regex = RegExp(
-                                                              r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                          if (!regex.hasMatch(
-                                                              value)) {
-                                                            targetCtrl.text =
-                                                                value.substring(
-                                                                    0,
-                                                                    value.length -
-                                                                        1); // Revert to previous valid input
-                                                            targetCtrl
-                                                                    .selection =
-                                                                TextSelection.collapsed(
-                                                                    offset: targetCtrl
-                                                                        .text
-                                                                        .length); // Keep cursor at the end
-                                                          }
-                                                        }
-
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .hideCurrentSnackBar();
-                                                        if (value.isEmpty) {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                                  warningMessage(
-                                                                      context,
-                                                                      "Target can not be empty"));
-                                                        }
-                                                      },
-                                                      hintStyle: textStyle(
-                                                          const Color(
-                                                              0xff666666),
-                                                          15,
-                                                          FontWeight.w400),
-                                                      keyboardType:
-                                                          const TextInputType
-                                                              .numberWithOptions(
-                                                              decimal: true),
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          16,
-                                                          FontWeight.w600),
-                                                      prefixIcon: Container(
-                                                        margin: const EdgeInsets
-                                                            .all(12),
-                                                        decoration: BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        20),
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? const Color(
-                                                                    0xff555555)
-                                                                : colors
-                                                                    .colorWhite),
-                                                        child: SvgPicture.asset(
-                                                            color: theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorGrey,
-                                                            assets.ruppeIcon,
-                                                            fit: BoxFit
-                                                                .scaleDown),
-                                                      ),
-                                                      textCtrl: targetCtrl,
-                                                      textAlign:
-                                                          TextAlign.start)),
-                                              const SizedBox(height: 10)
-                                            ],
-                                            headerTitleText("Stoploss", theme),
-                                            const SizedBox(height: 7),
-                                            SizedBox(
-                                                height: 44,
-                                                child: CustomTextFormField(
-                                                    fillColor: theme.isDarkMode
-                                                        ? colors.darkGrey
-                                                        : const Color(
-                                                            0xffF1F3F8),
-                                                    onChanged: (value) {
-                                                      if (value.isNotEmpty &&
-                                                          double.parse(value) >
-                                                              0) {
-                                                        final regex = RegExp(
-                                                            r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                        if (!regex
-                                                            .hasMatch(value)) {
-                                                          stopLossCtrl.text =
-                                                              value.substring(
-                                                                  0,
-                                                                  value.length -
-                                                                      1); // Revert to previous valid input
-                                                          stopLossCtrl
-                                                                  .selection =
-                                                              TextSelection.collapsed(
-                                                                  offset: stopLossCtrl
-                                                                      .text
-                                                                      .length); // Keep cursor at the end
-                                                        }
-                                                      }
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .hideCurrentSnackBar();
-                                                      if (value.isEmpty) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Stoploss can not be empty"));
-                                                      }
-                                                    },
-                                                    hintText: "0.00",
-                                                    hintStyle: textStyle(
-                                                        const Color(0xff666666),
-                                                        15,
-                                                        FontWeight.w400),
-                                                    keyboardType:
-                                                        const TextInputType
-                                                            .numberWithOptions(
-                                                            decimal: true),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        16,
-                                                        FontWeight.w600),
-                                                    prefixIcon: Container(
-                                                      margin:
-                                                          const EdgeInsets.all(
-                                                              12),
-                                                      decoration: BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(20),
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? const Color(
-                                                                  0xff555555)
-                                                              : colors
-                                                                  .colorWhite),
-                                                      child: SvgPicture.asset(
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorGrey,
-                                                          assets.ruppeIcon,
-                                                          fit:
-                                                              BoxFit.scaleDown),
-                                                    ),
-                                                    textCtrl: stopLossCtrl,
-                                                    textAlign: TextAlign.start))
-                                          ]))
+                                                          onChanged: (value) {
+                                                            if (value.isNotEmpty &&
+                                                                double.parse(value) >
+                                                                    0) {
+                                                              final regex = RegExp(
+                                                                  r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
+                                                              if (!regex
+                                                                  .hasMatch(value)) {
+                                                                stopLossCtrl.text =
+                                                                    value.substring(
+                                                                        0,
+                                                                        value.length -
+                                                                            1); // Revert to previous valid input
+                                                                stopLossCtrl
+                                                                        .selection =
+                                                                    TextSelection.collapsed(
+                                                                        offset: stopLossCtrl
+                                                                            .text
+                                                                            .length); // Keep cursor at the end
+                                                              }
+                                                            }
+                                                            ScaffoldMessenger.of(
+                                                                    context)
+                                                                .hideCurrentSnackBar();
+                                                            if (value.isEmpty) {
+                                                              ScaffoldMessenger.of(
+                                                                      context)
+                                                                  .showSnackBar(
+                                                                      warningMessage(
+                                                                          context,
+                                                                          "Stoploss can not be empty"));
+                                                            }
+                                                          },
+                                                          hintText: "0.00",
+                                                          hintStyle: textStyle(
+                                                              const Color(0xff666666),
+                                                              15,
+                                                              FontWeight.w400),
+                                                          keyboardType:
+                                                              const TextInputType
+                                                                  .numberWithOptions(
+                                                                  decimal: true),
+                                                          style: textStyle(
+                                                              theme.isDarkMode
+                                                                  ? colors.colorWhite
+                                                                  : colors.colorBlack,
+                                                              16,
+                                                              FontWeight.w600),
+                                                          prefixIcon: Container(
+                                                            margin:
+                                                                const EdgeInsets.all(
+                                                                    12),
+                                                            decoration: BoxDecoration(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(20),
+                                                                color: theme
+                                                                        .isDarkMode
+                                                                    ? const Color(
+                                                                        0xff555555)
+                                                                    : colors
+                                                                        .colorWhite),
+                                                            child: SvgPicture.asset(
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorGrey,
+                                                                assets.ruppeIcon,
+                                                                fit:
+                                                                    BoxFit.scaleDown),
+                                                          ),
+                                                          textCtrl: stopLossCtrl,
+                                                          textAlign: TextAlign.start))
+                                                ],
+                                                ),
+                                                )
                                 ],
-                                if (orderType == "Regular" ||
-                                    orderType == "Cover" ||
-                                    orderType == "Bracket") ...[
-                                  if (orderType != "Regular" &&
-                                      orderType != "MTF") ...[
+                                if (orderType == "Regular" || orderType == "Cover" || orderType == "Bracket") ...[
+                                  if (orderType != "Regular" && orderType != "MTF") ...[
                                     const SizedBox(height: 12),
                                     const ListDivider()
                                   ],
@@ -2771,195 +2873,197 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                     : addValidity
                                                         ? assets.checkedbox
                                                         : assets.checkbox))
-                                          ])),
+                                          ],
+                                          ),
+                                          ),
                                   if (addValidity) ...[
-                                    Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16),
-                                        child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Expanded(
-                                                  child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                    headerTitleText(
-                                                        "Validity", theme),
-                                                    const SizedBox(height: 7),
-                                                    SizedBox(
-                                                        height: 38,
-                                                        child:
-                                                            ListView.separated(
-                                                                scrollDirection:
-                                                                    Axis
-                                                                        .horizontal,
-                                                                itemBuilder:
-                                                                    (context,
-                                                                        index) {
-                                                                  return ElevatedButton(
-                                                                      onPressed:
-                                                                          () {
-                                                                        setState(
-                                                                            () {
-                                                                          validityType =
-                                                                              validityTypes[index];
-                                                                        });
-                                                                      },
-                                                                      style: ElevatedButton.styleFrom(
-                                                                          elevation: 0,
-                                                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                                                                          backgroundColor: !theme.isDarkMode
-                                                                              ? validityType != validityTypes[index]
-                                                                                  ? const Color(0xffF1F3F8)
-                                                                                  : colors.colorBlack
-                                                                              : validityType != validityTypes[index]
-                                                                                  ? colors.darkGrey
-                                                                                  : colors.colorbluegrey,
-                                                                          shape: const StadiumBorder()),
-                                                                      child: Text(
-                                                                        validityTypes[
-                                                                            index],
-                                                                        style: textStyle(
-                                                                            !theme.isDarkMode
-                                                                                ? validityType != validityTypes[index]
-                                                                                    ? const Color(0xff666666)
-                                                                                    : colors.colorWhite
-                                                                                : validityType != validityTypes[index]
-                                                                                    ? const Color(0xff666666)
-                                                                                    : colors.colorBlack,
-                                                                            14,
-                                                                            validityType == validityTypes[index] ? FontWeight.w600 : FontWeight.w500),
-                                                                      ));
-                                                                },
-                                                                separatorBuilder:
-                                                                    (context,
-                                                                        index) {
-                                                                  return const SizedBox(
-                                                                      width: 8);
-                                                                },
-                                                                itemCount: widget.orderArg.exchange ==
-                                                                            "BSE" ||
-                                                                        widget.orderArg.exchange ==
-                                                                            "BFO"
-                                                                    ? validityType
-                                                                        .length
-                                                                    : 2))
-                                                  ])),
-                                              const SizedBox(width: 16),
-                                              Expanded(
-                                                  child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                    headerTitleText(
-                                                        "Disclosed Qty", theme),
-                                                    const SizedBox(height: 7),
-                                                    SizedBox(
-                                                        height: 44,
-                                                        child:
-                                                            CustomTextFormField(
-                                                                fillColor: theme
-                                                                        .isDarkMode
-                                                                    ? colors
-                                                                        .darkGrey
-                                                                    : const Color(
-                                                                        0xffF1F3F8),
-                                                                hintText: "0",
-                                                                hintStyle: textStyle(
-                                                                    const Color(
-                                                                        0xff666666),
-                                                                    15,
-                                                                    FontWeight
-                                                                        .w400),
-                                                                inputFormate: [
-                                                                  FilteringTextInputFormatter
-                                                                      .digitsOnly
-                                                                ],
-                                                                keyboardType:
-                                                                    TextInputType
-                                                                        .number,
-                                                                style: textStyle(
-                                                                    theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                    16,
-                                                                    FontWeight
-                                                                        .w600),
-                                                                prefixIcon:
-                                                                    InkWell(
-                                                                  onTap: () {
-                                                                    setState(
-                                                                        () {
-                                                                      if (discQtyCtrl
-                                                                          .text
-                                                                          .isNotEmpty) {
-                                                                        if (int.parse(discQtyCtrl.text) >
-                                                                            0) {
-                                                                          discQtyCtrl.text =
-                                                                              (int.parse(discQtyCtrl.text) - 1).toString();
-                                                                        } else {
-                                                                          discQtyCtrl.text =
-                                                                              "0";
-                                                                        }
-                                                                      } else {
-                                                                        discQtyCtrl.text =
-                                                                            "0";
-                                                                      }
-                                                                    });
-                                                                  },
-                                                                  child: SvgPicture.asset(
-                                                                      theme.isDarkMode
-                                                                          ? assets
-                                                                              .darkCMinus
-                                                                          : assets
-                                                                              .minusIcon,
-                                                                      fit: BoxFit
-                                                                          .scaleDown),
-                                                                ),
-                                                                suffixIcon:
-                                                                    InkWell(
-                                                                  onTap: () {
-                                                                    setState(
-                                                                        () {
-                                                                      int number =
-                                                                          int.parse(discQtyCtrl.text);
-                                                                      if (discQtyCtrl
-                                                                          .text
-                                                                          .isNotEmpty) {
-                                                                        if (number <
-                                                                            9999999999) {
-                                                                          discQtyCtrl.text =
-                                                                              (int.parse(discQtyCtrl.text) + 1).toString();
-                                                                        }
-                                                                      } else {
-                                                                        discQtyCtrl.text =
-                                                                            "0";
-                                                                      }
-                                                                    });
-                                                                  },
-                                                                  child: SvgPicture.asset(
-                                                                      theme.isDarkMode
-                                                                          ? assets
-                                                                              .darkAdd
-                                                                          : assets
-                                                                              .addIcon,
-                                                                      fit: BoxFit
-                                                                          .scaleDown),
-                                                                ),
-                                                                textCtrl:
-                                                                    discQtyCtrl,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center))
-                                                  ]))
-                                            ])),
-                                    const SizedBox(height: 10)
+                                                    Padding(
+                                                        padding: const EdgeInsets.symmetric(
+                                                            horizontal: 16),
+                                                        child: Row(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment.start,
+                                                            children: [
+                                                              Expanded(
+                                                                  child: Column(
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .start,
+                                                                      children: [
+                                                                    headerTitleText(
+                                                                        "Validity", theme),
+                                                                    const SizedBox(height: 7),
+                                                                    SizedBox(
+                                                                        height: 38,
+                                                                        child:
+                                                                            ListView.separated(
+                                                                                scrollDirection:
+                                                                                    Axis
+                                                                                        .horizontal,
+                                                                                itemBuilder:
+                                                                                    (context,
+                                                                                        index) {
+                                                                                  return ElevatedButton(
+                                                                                      onPressed:
+                                                                                          () {
+                                                                                        setState(
+                                                                                            () {
+                                                                                          validityType =
+                                                                                              validityTypes[index];
+                                                                                        });
+                                                                                      },
+                                                                                      style: ElevatedButton.styleFrom(
+                                                                                          elevation: 0,
+                                                                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                                                                          backgroundColor: !theme.isDarkMode
+                                                                                              ? validityType != validityTypes[index]
+                                                                                                  ? const Color(0xffF1F3F8)
+                                                                                                  : colors.colorBlack
+                                                                                              : validityType != validityTypes[index]
+                                                                                                  ? colors.darkGrey
+                                                                                                  : colors.colorbluegrey,
+                                                                                          shape: const StadiumBorder()),
+                                                                                      child: Text(
+                                                                                        validityTypes[
+                                                                                            index],
+                                                                                        style: textStyle(
+                                                                                            !theme.isDarkMode
+                                                                                                ? validityType != validityTypes[index]
+                                                                                                    ? const Color(0xff666666)
+                                                                                                    : colors.colorWhite
+                                                                                                : validityType != validityTypes[index]
+                                                                                                    ? const Color(0xff666666)
+                                                                                                    : colors.colorBlack,
+                                                                                            14,
+                                                                                            validityType == validityTypes[index] ? FontWeight.w600 : FontWeight.w500),
+                                                                                      ));
+                                                                                },
+                                                                                separatorBuilder:
+                                                                                    (context,
+                                                                                        index) {
+                                                                                  return const SizedBox(
+                                                                                      width: 8);
+                                                                                },
+                                                                                itemCount: widget.orderArg.exchange ==
+                                                                                            "BSE" ||
+                                                                                        widget.orderArg.exchange ==
+                                                                                            "BFO"
+                                                                                    ? validityType
+                                                                                        .length
+                                                                                    : 2))
+                                                                  ])),
+                                                              const SizedBox(width: 16),
+                                                              Expanded(
+                                                                  child: Column(
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .start,
+                                                                      children: [
+                                                                    headerTitleText(
+                                                                        "Disclosed Qty", theme),
+                                                                    const SizedBox(height: 7),
+                                                                    SizedBox(
+                                                                        height: 44,
+                                                                        child:
+                                                                            CustomTextFormField(
+                                                                                fillColor: theme
+                                                                                        .isDarkMode
+                                                                                    ? colors
+                                                                                        .darkGrey
+                                                                                    : const Color(
+                                                                                        0xffF1F3F8),
+                                                                                hintText: "0",
+                                                                                hintStyle: textStyle(
+                                                                                    const Color(
+                                                                                        0xff666666),
+                                                                                    15,
+                                                                                    FontWeight
+                                                                                        .w400),
+                                                                                inputFormate: [
+                                                                                  FilteringTextInputFormatter
+                                                                                      .digitsOnly
+                                                                                ],
+                                                                                keyboardType:
+                                                                                    TextInputType
+                                                                                        .number,
+                                                                                style: textStyle(
+                                                                                    theme.isDarkMode
+                                                                                        ? colors
+                                                                                            .colorWhite
+                                                                                        : colors
+                                                                                            .colorBlack,
+                                                                                    16,
+                                                                                    FontWeight
+                                                                                        .w600),
+                                                                                prefixIcon:
+                                                                                    InkWell(
+                                                                                  onTap: () {
+                                                                                    setState(
+                                                                                        () {
+                                                                                      if (discQtyCtrl
+                                                                                          .text
+                                                                                          .isNotEmpty) {
+                                                                                        if (int.parse(discQtyCtrl.text) >
+                                                                                            0) {
+                                                                                          discQtyCtrl.text =
+                                                                                              (int.parse(discQtyCtrl.text) - 1).toString();
+                                                                                        } else {
+                                                                                          discQtyCtrl.text =
+                                                                                              "0";
+                                                                                        }
+                                                                                      } else {
+                                                                                        discQtyCtrl.text =
+                                                                                            "0";
+                                                                                      }
+                                                                                    });
+                                                                                  },
+                                                                                  child: SvgPicture.asset(
+                                                                                      theme.isDarkMode
+                                                                                          ? assets
+                                                                                              .darkCMinus
+                                                                                          : assets
+                                                                                              .minusIcon,
+                                                                                      fit: BoxFit
+                                                                                          .scaleDown),
+                                                                                ),
+                                                                                suffixIcon:
+                                                                                    InkWell(
+                                                                                  onTap: () {
+                                                                                    setState(
+                                                                                        () {
+                                                                                      int number =
+                                                                                          int.parse(discQtyCtrl.text);
+                                                                                      if (discQtyCtrl
+                                                                                          .text
+                                                                                          .isNotEmpty) {
+                                                                                        if (number <
+                                                                                            9999999999) {
+                                                                                          discQtyCtrl.text =
+                                                                                              (int.parse(discQtyCtrl.text) + 1).toString();
+                                                                                        }
+                                                                                      } else {
+                                                                                        discQtyCtrl.text =
+                                                                                            "0";
+                                                                                      }
+                                                                                    });
+                                                                                  },
+                                                                                  child: SvgPicture.asset(
+                                                                                      theme.isDarkMode
+                                                                                          ? assets
+                                                                                              .darkAdd
+                                                                                          : assets
+                                                                                              .addIcon,
+                                                                                      fit: BoxFit
+                                                                                          .scaleDown),
+                                                                                ),
+                                                                                textCtrl:
+                                                                                    discQtyCtrl,
+                                                                                textAlign:
+                                                                                    TextAlign
+                                                                                        .center))
+                                                                  ]))
+                                                            ])),
+                                                    const SizedBox(height: 10)
                                   ],
                                   const ListDivider(),
                                   Padding(
@@ -2990,122 +3094,124 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                     : isAmo
                                                         ? assets.checkedbox
                                                         : assets.checkbox))
-                                          ])),
-                                  if (priceType == "Market" ||
-                                      priceType == "SL MKT") ...[
-                                    Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Divider(
-                                                color: theme.isDarkMode
-                                                    ? colors.darkColorDivider
-                                                    : colors.colorDivider),
-                                            headerTitleText(
-                                                "Market Protection", theme),
-                                            const SizedBox(height: 7),
-                                            SizedBox(
-                                              height: 44,
-                                              child: CustomTextFormField(
-                                                  fillColor: theme.isDarkMode
-                                                      ? colors.darkGrey
-                                                      : const Color(0xffF1F3F8),
-                                                  inputFormate: [
-                                                    FilteringTextInputFormatter
-                                                        .digitsOnly
-                                                  ],
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .hideCurrentSnackBar();
-                                                      if (value.isNotEmpty) {
-                                                        String newValue =
-                                                            value.replaceAll(
-                                                                RegExp(
-                                                                    r'[^0-9]'),
-                                                                '');
-                                                        if (newValue != value) {
-                                                          mktProtCtrl.text =
-                                                              newValue;
-                                                          mktProtCtrl
-                                                                  .selection =
-                                                              TextSelection
-                                                                  .fromPosition(
-                                                            TextPosition(
-                                                                offset: newValue
-                                                                    .length),
-                                                          );
-                                                        }
-                                                        if (int.parse(value) >
-                                                            20) {
-                                                          mktProtCtrl.text =
-                                                              "20";
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                                  warningMessage(
-                                                                      context,
-                                                                      "can't enter greater than 20% of Market Protection"));
-                                                        } else if (int.parse(
-                                                                value) <
-                                                            1) {
-                                                          mktProtCtrl.text =
-                                                              "1";
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                                  warningMessage(
-                                                                      context,
-                                                                      "can't enter less than 1% of Market Protection"));
-                                                        }
-                                                      }
-                                                    });
-                                                  },
-                                                  keyboardType:
-                                                      TextInputType.number,
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      14,
-                                                      FontWeight.w600),
-                                                  textCtrl: mktProtCtrl,
-                                                  prefixIcon: Container(
-                                                    margin:
-                                                        const EdgeInsets.all(
-                                                            12),
-                                                    decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(20),
-                                                        color: theme.isDarkMode
-                                                            ? const Color(
-                                                                0xff555555)
-                                                            : colors
-                                                                .colorWhite),
-                                                    child: SvgPicture.asset(
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorGrey,
-                                                        assets.precentIcon,
-                                                        fit: BoxFit.scaleDown),
-                                                  ),
-                                                  textAlign: TextAlign.start),
-                                            )
                                           ],
-                                        )),
+                                          ),
+                                          ),
+                                  if (priceType == "Market" || priceType == "SL MKT") ...[
+                                                  Padding(
+                                                      padding: const EdgeInsets.symmetric(
+                                                          horizontal: 16),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment.start,
+                                                        children: [
+                                                          Divider(
+                                                              color: theme.isDarkMode
+                                                                  ? colors.darkColorDivider
+                                                                  : colors.colorDivider),
+                                                          headerTitleText(
+                                                              "Market Protection", theme),
+                                                          const SizedBox(height: 7),
+                                                          SizedBox(
+                                                            height: 44,
+                                                            child: CustomTextFormField(
+                                                                fillColor: theme.isDarkMode
+                                                                    ? colors.darkGrey
+                                                                    : const Color(0xffF1F3F8),
+                                                                inputFormate: [
+                                                                  FilteringTextInputFormatter
+                                                                      .digitsOnly
+                                                                ],
+                                                                onChanged: (value) {
+                                                                  setState(() {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .hideCurrentSnackBar();
+                                                                    if (value.isNotEmpty) {
+                                                                      String newValue =
+                                                                          value.replaceAll(
+                                                                              RegExp(
+                                                                                  r'[^0-9]'),
+                                                                              '');
+                                                                      if (newValue != value) {
+                                                                        mktProtCtrl.text =
+                                                                            newValue;
+                                                                        mktProtCtrl
+                                                                                .selection =
+                                                                            TextSelection
+                                                                                .fromPosition(
+                                                                          TextPosition(
+                                                                              offset: newValue
+                                                                                  .length),
+                                                                        );
+                                                                      }
+                                                                      if (int.parse(value) >
+                                                                          20) {
+                                                                        mktProtCtrl.text =
+                                                                            "20";
+                                                                        ScaffoldMessenger.of(
+                                                                                context)
+                                                                            .showSnackBar(
+                                                                                warningMessage(
+                                                                                    context,
+                                                                                    "can't enter greater than 20% of Market Protection"));
+                                                                      } else if (int.parse(
+                                                                              value) <
+                                                                          1) {
+                                                                        mktProtCtrl.text =
+                                                                            "1";
+                                                                        ScaffoldMessenger.of(
+                                                                                context)
+                                                                            .showSnackBar(
+                                                                                warningMessage(
+                                                                                    context,
+                                                                                    "can't enter less than 1% of Market Protection"));
+                                                                      }
+                                                                    }
+                                                                  });
+                                                                },
+                                                                keyboardType:
+                                                                    TextInputType.number,
+                                                                style: textStyle(
+                                                                    theme.isDarkMode
+                                                                        ? colors.colorWhite
+                                                                        : colors.colorBlack,
+                                                                    14,
+                                                                    FontWeight.w600),
+                                                                textCtrl: mktProtCtrl,
+                                                                prefixIcon: Container(
+                                                                  margin:
+                                                                      const EdgeInsets.all(
+                                                                          12),
+                                                                  decoration: BoxDecoration(
+                                                                      borderRadius:
+                                                                          BorderRadius
+                                                                              .circular(20),
+                                                                      color: theme.isDarkMode
+                                                                          ? const Color(
+                                                                              0xff555555)
+                                                                          : colors
+                                                                              .colorWhite),
+                                                                  child: SvgPicture.asset(
+                                                                      color: theme.isDarkMode
+                                                                          ? colors.colorWhite
+                                                                          : colors.colorGrey,
+                                                                      assets.precentIcon,
+                                                                      fit: BoxFit.scaleDown),
+                                                                ),
+                                                                textAlign: TextAlign.start),
+                                                          )
+                                                        ],
+                                                      ),),
                                   ],
                                   SizedBox(
                                       height: priceType == "Market" ? 180 : 100)
                                 ]
                               ]
-                            ])),
-                    if (internet.connectionStatus ==
-                        ConnectivityResult.none) ...[const NoInternetWidget()]
+                            ],
+                            ),
+                            ),
+                    if (internet.connectionStatus == ConnectivityResult.none) ...[const NoInternetWidget()]
                   ]),
                   bottomSheet:
                       internet.connectionStatus == ConnectivityResult.none
@@ -3598,11 +3704,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                             context,
                                                                             "Trigger can not be empty"));
                                                                   } else {
-                                                                    placeOCOOrder(
+                                                                    prepareToPlaceOCOOrder(
                                                                         orderInput);
                                                                   }
                                                                 } else {
-                                                                  placeOCOOrder(
+                                                                  prepareToPlaceOCOOrder(
                                                                       orderInput);
                                                                 }
                                                               } else {
@@ -3641,11 +3747,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                             context,
                                                                             "Trigger can not be empty"));
                                                                   } else {
-                                                                    placeGttOrder(
+                                                                    prepareToPlaceGttOrder(
                                                                         orderInput);
                                                                   }
                                                                 } else {
-                                                                  placeGttOrder(
+                                                                  prepareToPlaceGttOrder(
                                                                       orderInput);
                                                                 }
                                                               } else {
@@ -4415,12 +4521,17 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                             : const Color(
                                                                 0xffffffff),
                                                         14,
-                                                        FontWeight.w600)))),
+                                                        FontWeight.w600),
+                                                        ),
+                                                    ),
+                                        ),
                                     if (defaultTargetPlatform ==
                                         TargetPlatform.iOS)
                                       const SizedBox(height: 18)
                                   ]))));
-        }));
+        },
+        ),
+        );
   }
 
   Padding triggerOption(
@@ -4684,7 +4795,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     ref.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
   }
 
-  placeGttOrder(OrderInputProvider orderInput) async {
+  prepareToPlaceGttOrder(OrderInputProvider orderInput) async {
     PlaceGTTOrderInput input = PlaceGTTOrderInput(
         exch: '${widget.scripInfo.exch}',
         qty: orderInput.qtyCtrl.text,
@@ -4703,10 +4814,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
             ? orderInput.trgPrcCtrl.text
             : "",
         alid: '');
-    await ref.read(orderProvider).fetchGttPlaceOrder(input, context);
+    await ref.read(orderProvider).placeGTTOrder(input, context);
   }
 
-  placeOCOOrder(OrderInputProvider orderInput) async {
+  prepareToPlaceOCOOrder(OrderInputProvider orderInput) async {
     PlaceOcoOrderInput input = PlaceOcoOrderInput(
         exch: '${widget.scripInfo.exch}',
         tsym: '${widget.scripInfo.tsym}',
@@ -4733,7 +4844,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
             ? orderInput.ocoTrgPrcCtrl.text
             : "",
         alid: '');
-    await ref.read(orderProvider).fetchOCOPlaceOrder(input, context);
+    await ref.read(orderProvider).placeOCOOrder(input, context);
   }
 
   addBasketScrip(

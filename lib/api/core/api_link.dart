@@ -87,7 +87,7 @@ class ApiLinks {
   String get tradeBook => '$goMyntURL/TradeBook';
   String get cancleSiporder => '$goMyntURL/CancelSipOrder';
   String get pendingGttorder => '$goMyntURL/GetPendingGTTOrder';
-  String get cancelGTTOrder => '$goMyntURL/CancelGTTOrder';
+  String get cancelGTTOrderURL => '$goMyntURL/CancelGTTOrder';
   String get basketMargin => '$goMyntURL/GetBasketMargin';
 
 // Order
@@ -98,10 +98,10 @@ class ApiLinks {
   String get getBrokerage => '$goMyntURL/GetBrokerage';
   String get placeOrder => '$goMyntURL/PlaceOrder';
   String get cancelOrder => '$goMyntURL/CancelOrder';
-  String get placeGTTOrder => '$goMyntURL/PlaceGTTOrder';
-  String get placeOCOOrder => '$goMyntURL/PlaceOCOOrder';
-  String get modifyGTTOrder => '$goMyntURL/ModifyGTTOrder';
-  String get modifyOCOOrder => '$goMyntURL/ModifyOCOOrder';
+  String get placeGTTOrderURL => '$goMyntURL/PlaceGTTOrder';
+  String get placeOCOOrderURL => '$goMyntURL/PlaceOCOOrder';
+  String get modifyGTTOrderURL => '$goMyntURL/ModifyGTTOrder';
+  String get modifyOCOOrderURL => '$goMyntURL/ModifyOCOOrder';
   String get mdifyOrder => '$goMyntURL/ModifyOrder';
 // Fund
 

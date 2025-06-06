@@ -67,7 +67,7 @@ class OrderProvider extends DefaultChangeNotifier {
   List<OrderBookModel>? _torderBookModel = [];
   List<GttOrderBookModel>? _gttOrderBookModel = [];
   List<GttOrderBookModel>? get gttOrderBookModel => _gttOrderBookModel;
-  List<GttOrderBookModel>? _tgttOrderBookModel = [];
+  // List<GttOrderBookModel>? _tgttOrderBookModel = [];
   List<GttOrderBookModel>? _gttOrderBookSearch = [];
   List<GttOrderBookModel>? get gttOrderBookSearch => _gttOrderBookSearch;
   final Preferences pref = locator<Preferences>();
@@ -164,7 +164,6 @@ class OrderProvider extends DefaultChangeNotifier {
 
   clearAllorders() {
     _torderBookModel = [];
-    _tgttOrderBookModel = [];
     _ttradeBook = [];
     _orderBookModel = [];
     _gttOrderBookModel = [];
@@ -273,12 +272,12 @@ class OrderProvider extends DefaultChangeNotifier {
     } else if (mode == 'gtt') {
       result = await api.getGTTOrderBook();
       if (result['stat'] == 'success') {
-        _tgttOrderBookModel = result['data'];
+        _gttOrderBookModel = result['data'];
       } else {
         if (result['stat'] == 'no data') {
           _gttOrderBookModel = [];
         }
-        _tgttOrderBookModel = [];
+        // _tgttOrderBookModel = [];
       }
     }
     print("qwqwqw prov alert btm $mode");
@@ -823,13 +822,13 @@ class OrderProvider extends DefaultChangeNotifier {
   Future fetchGTTOrderBook(context, String initLoad) async {
     try {
       await setPortfolioupdate('gtt');
-      if (_gttOrderBookModel!.isNotEmpty) {
-        if (_tgttOrderBookModel!.isNotEmpty) {
-          _gttOrderBookModel = _tgttOrderBookModel;
-        }
-      } else {
-        _gttOrderBookModel = _tgttOrderBookModel;
-      }
+      // if (_gttOrderBookModel!.isNotEmpty) {
+      //   if (_tgttOrderBookModel!.isNotEmpty) {
+      //     _gttOrderBookModel = _tgttOrderBookModel;
+      //   }
+      // } else {
+      //   _gttOrderBookModel = _tgttOrderBookModel;
+      // }
       if (_gttOrderBookModel!.isNotEmpty) {
         if (_gttOrderBookModel![0].stat == "Ok") {
           ConstantName.sessCheck = true;
@@ -860,7 +859,6 @@ class OrderProvider extends DefaultChangeNotifier {
         }
       }
       tabSize();
-      notifyListeners();
 
       return _gttOrderBookModel;
     } catch (e) {
@@ -868,8 +866,10 @@ class OrderProvider extends DefaultChangeNotifier {
       ref.read(indexListProvider)
           .logError
           .add({"type": "API GTT Order Book", "Error": "$e"});
-      notifyListeners();
-    } finally {}
+    } finally {
+            notifyListeners();
+
+    }
   }
 
   Future fetchOrderHistory(String orderNum, BuildContext context) async {
@@ -1312,9 +1312,9 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
-  fetchGttPlaceOrder(PlaceGTTOrderInput input, BuildContext context) async {
+  placeGTTOrder(PlaceGTTOrderInput input, BuildContext context) async {
     try {
-      _placeGttOrderModel = await api.getPlaceGTTOrder(input);
+      _placeGttOrderModel = await api.placeGTTOrderAPI(input);
 
       if (_placeGttOrderModel!.stat == "OI created") {
         ConstantName.sessCheck = true;
@@ -1341,9 +1341,9 @@ class OrderProvider extends DefaultChangeNotifier {
     } finally {}
   }
 
-  fetchModifyGTTOrder(PlaceGTTOrderInput input, BuildContext context) async {
+  modifyGTTOrder(PlaceGTTOrderInput input, BuildContext context) async {
     try {
-      _modifyGttOrderModel = await api.getModifyGTTOrder(input);
+      _modifyGttOrderModel = await api.modifyGTTOrderAPI(input);
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
         ConstantName.sessCheck = true;
@@ -1372,15 +1372,18 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
-  fetchGttCancelOrder(String canId, BuildContext context) async {
+  cancelGttOrder(String canId, BuildContext context) async {
+    toggleLoadingOn(true);
     try {
-      _placeGttOrderModel = await api.getCancelGTTorder(canId);
+      _placeGttOrderModel = await api.cancelGTTOrderAPI(canId);
 
       if (_placeGttOrderModel!.stat == "OI deleted") {
-        await fetchGTTOrderBook(context, "");
+      
         ConstantName.sessCheck = true;
 
-        Navigator.pop(context);
+        // Navigator.pop(context);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(successMessage(context, "GTT Order Cancelled Successfully"));
         Navigator.pop(context);
       } else {
         if (_placeGttOrderModel!.emsg ==
@@ -1389,18 +1392,28 @@ class OrderProvider extends DefaultChangeNotifier {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
-      notifyListeners();
+      //  Navigator.pop(context);
+       if(_placeGttOrderModel!.stat=="Invalid Oi"){
+      await fetchGTTOrderBook(context, "");
+       ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, "Provided GTT Order is not found"));
+       Navigator.pop(context);
+            }
     } catch (e) {
       ref.read(indexListProvider)
           .logError
           .add({"type": "API GTT Order  CANCEL", "Error": "$e"});
-      notifyListeners();
-    } finally {}
+    } finally {
+            await fetchGTTOrderBook(context, "");
+            toggleLoadingOn(false);
+            notifyListeners();
+
+    }
   }
 
-  fetchOCOPlaceOrder(PlaceOcoOrderInput input, BuildContext context) async {
+  placeOCOOrder(PlaceOcoOrderInput input, BuildContext context) async {
     try {
-      _placeGttOrderModel = await api.getPlaceOcoOrder(input);
+      _placeGttOrderModel = await api.placeOCOOrderAPI(input);
 
       if (_placeGttOrderModel!.stat == "OI created") {
         ConstantName.sessCheck = true;
@@ -1418,18 +1431,19 @@ class OrderProvider extends DefaultChangeNotifier {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
-      notifyListeners();
+      
     } catch (e) {
       ref.read(indexListProvider)
           .logError
           .add({"type": "API OCO Order ", "Error": "$e"});
+    } finally {
       notifyListeners();
-    } finally {}
+    }
   }
 
-  fetchOCOModifyOrder(PlaceOcoOrderInput input, BuildContext context) async {
+  modifyOCOOrder(PlaceOcoOrderInput input, BuildContext context) async {
     try {
-      _modifyGttOrderModel = await api.getModifyOcoOrder(input);
+      _modifyGttOrderModel = await api.modifyOCOOrderAPI(input);
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
         ConstantName.sessCheck = true;

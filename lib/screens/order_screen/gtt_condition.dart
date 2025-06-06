@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../provider/order_input_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart'; 
@@ -21,103 +22,163 @@ class GttCondition extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final orderInput = ref.watch(ordInputProvider);
     final theme = ref.read(themeProvider);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Alert",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : const Color(0xff666666),
-                        14,
-                        FontWeight.w500)),
-                const SizedBox(height: 3),
-                conditionBtn("Alert", isOco ? "LTP" : orderInput.actAlert,
-                    context, orderInput, isModify, theme)
-              ],
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Condition",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : const Color(0xff666666),
-                        14,
-                        FontWeight.w500)),
-                const SizedBox(height: 3),
-                conditionBtn("Condition", isOco ? "Grater" : orderInput.actCond,
-                    context, orderInput, isModify, theme)
-              ],
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Value *",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : const Color(0xff666666),
-                        14,
-                        FontWeight.w500)),
-                const SizedBox(height: 6),
-                if (isGtt && !isOco)
-                  SizedBox(
-                      height: 40,
-                      child: CustomTextFormField(
-                        fillColor: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                        hintText: "0",
-                        hintStyle: textStyle(
-                            const Color(0xff666666), 15, FontWeight.w400),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Alert",
                         style: textStyle(
                             theme.isDarkMode
                                 ? colors.colorWhite
-                                : colors.colorBlack,
-                            16,
-                            FontWeight.w600),
-                        textAlign: TextAlign.start,
-                        onChanged: (value) {},
-                        textCtrl: orderInput.val1Ctrl,
-                      )),
-                if (isOco)
-                  SizedBox(
-                      height: 40,
-                      child: CustomTextFormField(
-                        fillColor: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                        hintText: "0",
-                        hintStyle: textStyle(
-                            const Color(0xff666666), 15, FontWeight.w400),
+                                : const Color(0xff666666),
+                            14,
+                            FontWeight.w500)),
+                    const SizedBox(height: 3),
+                    conditionBtn("Alert", isOco ? "LTP" : orderInput.actAlert,
+                        context, orderInput, isModify, theme),
+                        
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Condition",
                         style: textStyle(
                             theme.isDarkMode
                                 ? colors.colorWhite
-                                : colors.colorBlack,
-                            16,
-                            FontWeight.w600),
-                        textAlign: TextAlign.start,
-                        onChanged: (value) {},
-                        textCtrl: orderInput.val2Ctrl,
-                      ))
-              ],
+                                : const Color(0xff666666),
+                            14,
+                            FontWeight.w500)),
+                    const SizedBox(height: 3),
+                    conditionBtn("Condition", isOco ? "Less than" : orderInput.actCond,
+                        context, orderInput, isModify, theme)
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Value *",
+                        style: textStyle(
+                            theme.isDarkMode
+                                ? colors.colorWhite
+                                : const Color(0xff666666),
+                            14,
+                            FontWeight.w500)),
+                    const SizedBox(height: 6),
+                    if (isGtt && !isOco)
+                      SizedBox(
+                          height: 40,
+                          child: CustomTextFormField(
+                            fillColor: theme.isDarkMode
+                                ? colors.darkGrey
+                                : const Color(0xffF1F3F8),
+                            hintText: "0",
+                            hintStyle: textStyle(
+                                const Color(0xff666666), 15, FontWeight.w400),
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                16,
+                                FontWeight.w600),
+                            textAlign: TextAlign.start,
+                            onChanged: (value) {
+                              if (value.isEmpty || value == "0") {
+                                 ScaffoldMessenger.of(
+                                            context)
+                                        .removeCurrentSnackBar();
+                    
+                                      ScaffoldMessenger.of(
+                                              context)
+                                          .showSnackBar(warningMessage(
+                                              context,
+                                              "value can not be ${value == "0"?'zero':'empty'}")); 
+                              } else {
+                                // Validate if it's a valid number
+                                final numericRegex = RegExp(r'^\d+\.?\d{0,2}$');
+                                if (!numericRegex.hasMatch(value)) {
+                                  orderInput.val1Ctrl.text = value.substring(0, value.length - 1);
+                                  orderInput.val1Ctrl.selection = TextSelection.collapsed(
+                                      offset: orderInput.val1Ctrl.text.length);
+                                }
+                              }
+                            },
+                            textCtrl: orderInput.val1Ctrl,
+                          )),
+                    if (isOco)
+                      SizedBox(
+                          height: 40,
+                          child: CustomTextFormField(
+                            fillColor: theme.isDarkMode
+                                ? colors.darkGrey
+                                : const Color(0xffF1F3F8),
+                            hintText: "0",
+                            hintStyle: textStyle(
+                                const Color(0xff666666), 15, FontWeight.w400),
+                            style: textStyle(
+                                theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                16,
+                                FontWeight.w600),
+                            textAlign: TextAlign.start,
+                            onChanged: (value) {
+                              if (value.isEmpty|| value == "0") {
+                                 ScaffoldMessenger.of(
+                                          context)
+                                      .removeCurrentSnackBar();
+                      
+                                    ScaffoldMessenger.of(
+                                            context)
+                                        .showSnackBar(warningMessage(
+                                            context,
+                                            "Value can not be ${value == "0"?'zero':'empty'}"));
+                              } else {
+                                // Validate if it's a valid number
+                                final numericRegex = RegExp(r'^\d+\.?\d{0,2}$');
+                                if (!numericRegex.hasMatch(value)) {
+                                  orderInput.val2Ctrl.text = value.substring(0, value.length - 1);
+                                  orderInput.val2Ctrl.selection = TextSelection.collapsed(
+                                      offset: orderInput.val2Ctrl.text.length);
+                                }
+                              }
+                            },
+                            textCtrl: orderInput.val2Ctrl,
+                          ))
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Helper text for GTT and OCO
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            isOco 
+              ? "OCO: One-Cancels-the-Other order. When one condition is met, the other order is automatically canceled." 
+              : "GTT: Good-Till-Triggered order. Will execute when the condition is met.",
+            style: textStyle(
+              theme.isDarkMode ? Colors.grey[400]! : Colors.grey[600]!, 
+              12, 
+              FontWeight.w400
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -288,7 +349,7 @@ class PriceTypeBtn extends ConsumerWidget {
             separatorBuilder: (context, index) {
               return const SizedBox(width: 8);
             },
-            itemCount: orderInput.prcTypes.length));
+            itemCount: 2));
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {

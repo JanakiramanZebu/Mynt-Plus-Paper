@@ -109,8 +109,10 @@ class GttBottomSheet extends ConsumerWidget {
               separatorBuilder: (BuildContext context, int index) {
                 return const ListDivider();
               },
-            )
+            ),
+             const SizedBox(height: 18),
           ],
-        ));
+        ),
+        );
   }
 }

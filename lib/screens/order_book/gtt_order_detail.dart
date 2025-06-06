@@ -77,7 +77,7 @@ class GttOrderDetail extends ConsumerWidget {
                                           : colors.colorBlack)),
                             ],
                           ),
-                          Text("₹${displayData.ltp}",
+                          Text("₹${displayData.ltp??'0.00'}",
                               style: textStyle(
                                   theme.isDarkMode
                                       ? colors.colorWhite
@@ -130,7 +130,8 @@ class GttOrderDetail extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Order details",
+                      if(displayData.placeOrderParams != null)
+                      Text("${ displayData.placeOrderParams?.trantype == 'B' ? 'Buy' : 'Sell'} Trigger @ ${displayData.oivariable?.first.d}",
                           style: textStyle(
                               theme.isDarkMode
                                   ? colors.colorWhite
@@ -139,19 +140,65 @@ class GttOrderDetail extends ConsumerWidget {
                               FontWeight.w600)),
                       const SizedBox(height: 16),
                       rowOfInfoData(
-                          "Transaction Type",
-                          displayData.trantype == "B" ? "Buy" : "Sell",
-                          "Price Type",
-                          "${displayData.prctyp}",
+                          "Product",
+                          displayData.placeOrderParams?.prd == "C" ? "CNC" : "MIS",
+                          "Order Type",
+                          "${displayData.placeOrderParams?.prctyp}",
                           theme),
                       const SizedBox(height: 4),
-                      rowOfInfoData("Price", "${displayData.prc}", "Qty",
-                          "${displayData.qty}", theme),
+                      rowOfInfoData( "Qty", "${displayData.placeOrderParams?.qty}",
+                        "Price", "${displayData.placeOrderParams?.prctyp=="MKT"? "MKT":displayData.placeOrderParams?.prc}", theme),
                       const SizedBox(height: 4),
                     ],
                   ),
                 ),
-              ],
+                
+                if(displayData.placeOrderParamsLeg2 != null) 
+                 Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("${ displayData.placeOrderParamsLeg2?.trantype == 'B' ? 'Buy' : 'Sell'} Trigger @ ${displayData.oivariable?.last.d}",
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              16,
+                              FontWeight.w600)),
+                      const SizedBox(height: 16),
+                      rowOfInfoData(
+                         "Product",
+                          displayData.placeOrderParamsLeg2?.prd == "C" ? "CNC" : "MIS",
+                          "Order Type",
+                          "${displayData.placeOrderParamsLeg2?.prctyp}",
+                          theme), 
+                      const SizedBox(height: 4),
+                      rowOfInfoData("Qty", "${displayData.placeOrderParamsLeg2?.qty}",
+                       "Price", "${displayData.placeOrderParamsLeg2?.prctyp=="MKT"? "MKT":displayData.placeOrderParamsLeg2?.prc}", theme),
+                    ],
+                  ),
+                ),
+                if(displayData.remarks != null && displayData.remarks != "")
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Remarks",
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              16,
+                              FontWeight.w600)),
+                      const SizedBox(height: 16),
+                    Text("${displayData.remarks}", style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 14, FontWeight.w500)),
+                    
+                    ],
+                  ),
+                ),
+               ],
             ),
             bottomNavigationBar: BottomAppBar(
                 shape: const CircularNotchedRectangle(),
@@ -201,9 +248,10 @@ class GttOrderDetail extends ConsumerWidget {
                       Expanded(
                         child: InkWell(
                           onTap: () async {
+                            ref.read(orderProvider).loading?null:
                             showDialog(
                               context: context,
-                              builder: (BuildContext context) {
+                              builder: (BuildContext dialogContext) {
                                 return AlertDialog(
                                   backgroundColor: theme.isDarkMode
                                       ? const Color.fromARGB(255, 18, 18, 18)
@@ -237,7 +285,7 @@ class GttOrderDetail extends ConsumerWidget {
                                     ],
                                   ),
                                   content: SizedBox(
-                                    width: MediaQuery.of(context).size.width,
+                                    width: MediaQuery.of(dialogContext).size.width,
                                     child: const Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -250,7 +298,7 @@ class GttOrderDetail extends ConsumerWidget {
                                   actions: [
                                     TextButton(
                                         onPressed: () {
-                                          Navigator.pop(context);
+                                          Navigator.pop(dialogContext);
                                         },
                                         child: Text(
                                           "No",
@@ -272,18 +320,19 @@ class GttOrderDetail extends ConsumerWidget {
                                                   BorderRadius.circular(50),
                                             )),
                                         onPressed: () async {
+                                          Navigator.pop(dialogContext);
                                           await ref
                                               .read(orderProvider)
-                                              .fetchGttCancelOrder(
+                                              .cancelGttOrder(
                                                   "${displayData.alId}",
                                                   context);
                                         },
                                         child: Text(
                                           "Yes",
                                           style: textStyle(
-                                              !theme.isDarkMode
+                                              theme.isDarkMode
                                                   ? colors.colorBlack
-                                                  : colors.colorBlack,
+                                                  : colors.colorWhite,
                                               14,
                                               FontWeight.w500),
                                         )),
@@ -298,7 +347,18 @@ class GttOrderDetail extends ConsumerWidget {
                                 color: colors.darkred,
                                 borderRadius: BorderRadius.circular(108)),
                             child: Center(
-                              child: Text("Cancel Order",
+                              child: ref.read(orderProvider).loading? 
+                                const SizedBox(
+                                      width: 18,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Color(0xff666666)),
+                                    )
+                                  : 
+                              
+                              
+                              Text("Cancel Order",
                                   style: textStyle(
                                       theme.isDarkMode
                                           ? colors.colorWhite
