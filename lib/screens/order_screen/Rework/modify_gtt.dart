@@ -498,94 +498,96 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                         CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      Expanded(
-                                          child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                            headerTitleText("Validity", theme),
-                                            const SizedBox(height: 7),
-                                            SizedBox(
-                                              height: 38,
-                                              child: ListView.separated(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  itemBuilder:
-                                                      (context, index) {
-                                                    return ElevatedButton(
-                                                      onPressed: () {
-                                                        setState(() {
-                                                          validityType =
-                                                              validityTypes[
-                                                                  index];
-                                                        });
-                                                      },
-                                                      style: ElevatedButton
-                                                          .styleFrom(
-                                                              elevation: 0,
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          0),
-                                                              backgroundColor: !theme
-                                                                      .isDarkMode
-                                                                  ? validityType !=
-                                                                          validityTypes[
-                                                                              index]
-                                                                      ? const Color(
-                                                                          0xffF1F3F8)
-                                                                      : colors
-                                                                          .colorBlack
-                                                                  : validityType !=
-                                                                          validityTypes[
-                                                                              index]
-                                                                      ? colors
-                                                                          .darkGrey
-                                                                      : colors
-                                                                          .colorWhite,
-                                                              shape:
-                                                                  const StadiumBorder()),
-                                                      child: Text(
-                                                        validityTypes[index],
-                                                        style: textStyle(
-                                                            !theme.isDarkMode
-                                                                ? validityType !=
-                                                                        validityTypes[
-                                                                            index]
-                                                                    ? const Color(
-                                                                        0xff666666)
-                                                                    : colors
-                                                                        .colorWhite
-                                                                : validityType !=
-                                                                        validityTypes[
-                                                                            index]
-                                                                    ? const Color(
-                                                                        0xff666666)
-                                                                    : colors
-                                                                        .colorBlack,
-                                                            14,
-                                                            validityType ==
-                                                                    validityTypes[
-                                                                        index]
-                                                                ? FontWeight
-                                                                    .w600
-                                                                : FontWeight
-                                                                    .w500),
-                                                      ),
-                                                    );
-                                                  },
-                                                  separatorBuilder:
-                                                      (context, index) {
-                                                    return const SizedBox(
-                                                        width: 8);
-                                                  },
-                                                  itemCount:
-                                                      validityTypes.length),
-                                            )
-                                          ])),
+                                      // Expanded(
+                                      //     child: Column(
+                                      //         crossAxisAlignment:
+                                      //             CrossAxisAlignment.start,
+                                      //         children: [
+                                      //       headerTitleText("Validity", theme),
+                                      //       const SizedBox(height: 7),
+                                      //       SizedBox(
+                                      //         height: 38,
+                                      //         child: ListView.separated(
+                                      //             scrollDirection:
+                                      //                 Axis.horizontal,
+                                      //             itemBuilder:
+                                      //                 (context, index) {
+                                      //               return ElevatedButton(
+                                      //                 onPressed: () {
+                                      //                   setState(() {
+                                      //                     validityType =
+                                      //                         validityTypes[
+                                      //                             index];
+                                      //                   });
+                                      //                 },
+                                      //                 style: ElevatedButton
+                                      //                     .styleFrom(
+                                      //                         elevation: 0,
+                                      //                         padding:
+                                      //                             const EdgeInsets
+                                      //                                 .symmetric(
+                                      //                                 horizontal:
+                                      //                                     12,
+                                      //                                 vertical:
+                                      //                                     0),
+                                      //                         backgroundColor: !theme
+                                      //                                 .isDarkMode
+                                      //                             ? validityType !=
+                                      //                                     validityTypes[
+                                      //                                         index]
+                                      //                                 ? const Color(
+                                      //                                     0xffF1F3F8)
+                                      //                                 : colors
+                                      //                                     .colorBlack
+                                      //                             : validityType !=
+                                      //                                     validityTypes[
+                                      //                                         index]
+                                      //                                 ? colors
+                                      //                                     .darkGrey
+                                      //                                 : colors
+                                      //                                     .colorWhite,
+                                      //                         shape:
+                                      //                             const StadiumBorder()),
+                                      //                 child: Text(
+                                      //                   validityTypes[index],
+                                      //                   style: textStyle(
+                                      //                       !theme.isDarkMode
+                                      //                           ? validityType !=
+                                      //                                   validityTypes[
+                                      //                                       index]
+                                      //                               ? const Color(
+                                      //                                   0xff666666)
+                                      //                               : colors
+                                      //                                   .colorWhite
+                                      //                           : validityType !=
+                                      //                                   validityTypes[
+                                      //                                       index]
+                                      //                               ? const Color(
+                                      //                                   0xff666666)
+                                      //                               : colors
+                                      //                                   .colorBlack,
+                                      //                       14,
+                                      //                       validityType ==
+                                      //                               validityTypes[
+                                      //                                   index]
+                                      //                           ? FontWeight
+                                      //                               .w600
+                                      //                           : FontWeight
+                                      //                               .w500),
+                                      //                 ),
+                                      //               );
+                                      //             },
+                                      //             separatorBuilder:
+                                      //                 (context, index) {
+                                      //               return const SizedBox(
+                                      //                   width: 8);
+                                      //             },
+                                      //             itemCount:
+                                      //                 validityTypes.length),
+                                      //       )
+                                      //     ],
+                                      //     ),
+                                      //     ),
                                       if (isOco) ...[
                                         const SizedBox(width: 16),
                                         Row(children: [
@@ -1006,7 +1008,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                   width: MediaQuery.of(context).size.width,
                                   child: ElevatedButton(
                                       onPressed: internet.connectionStatus ==
-                                              ConnectivityResult.none
+                                              ConnectivityResult.none || ref.read(orderProvider).loading
                                           ? null
                                           : () async {
                                               if (orderInput.disableGTTCond) {
@@ -1037,11 +1039,11 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                                   context,
                                                                   "Trigger can not be empty"));
                                                     } else {
-                                                      modifyOCOOrder(
+                                                      prepareToModifyOCOOrder(
                                                           orderInput);
                                                     }
                                                   } else {
-                                                    modifyOCOOrder(orderInput);
+                                                    prepareToModifyOCOOrder(orderInput);
                                                   }
                                                 } else {
                                                   ScaffoldMessenger.of(context)
@@ -1069,11 +1071,11 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                                   context,
                                                                   "Trigger can not be empty"));
                                                     } else {
-                                                      modifyGttOrder(
+                                                      prepareToModifyGttOrder(
                                                           orderInput);
                                                     }
                                                   } else {
-                                                    modifyGttOrder(orderInput);
+                                                    prepareToModifyGttOrder(orderInput);
                                                   }
                                                 } else {
                                                   ScaffoldMessenger.of(context)
@@ -1090,7 +1092,17 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                               ? colors.ltpgreen
                                               : colors.darkred,
                                           shape: const StadiumBorder()),
-                                      child: Text("Modify",
+                                      child: ref.read(orderProvider).loading? 
+                                        const SizedBox(
+                                            width: 18,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Color(0xff666666)),
+                                          )
+                                        : 
+                                      
+                                      Text("Modify",
                                           style: textStyle(
                                               const Color(0xffffffff),
                                               14,
@@ -1116,7 +1128,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
             TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 
-  modifyGttOrder(OrderInputProvider orderInput) async {
+  prepareToModifyGttOrder(OrderInputProvider orderInput) async {
     PlaceGTTOrderInput input = PlaceGTTOrderInput(
         exch: '${widget.gttOrderBook.exch}',
         qty: orderInput.qtyCtrl.text,
@@ -1135,10 +1147,10 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
             ? orderInput.trgPrcCtrl.text
             : "",
         alid: '${widget.gttOrderBook.alId}');
-    await ref.read(orderProvider).fetchModifyGTTOrder(input, context);
+    await ref.read(orderProvider).modifyGTTOrder(input, context);
   }
 
-  modifyOCOOrder(OrderInputProvider orderInput) async {
+  prepareToModifyOCOOrder(OrderInputProvider orderInput) async {
     PlaceOcoOrderInput input = PlaceOcoOrderInput(
         exch: '${widget.gttOrderBook.exch}',
         tsym: '${widget.gttOrderBook.tsym}',
@@ -1165,6 +1177,6 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
             ? orderInput.ocoTrgPrcCtrl.text
             : "",
         alid: '${widget.gttOrderBook.alId}');
-    await ref.read(orderProvider).fetchOCOModifyOrder(input, context);
+    await ref.read(orderProvider).modifyOCOOrder(input, context);
   }
 }

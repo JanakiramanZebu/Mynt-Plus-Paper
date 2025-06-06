@@ -264,18 +264,18 @@ class OrderInputProvider extends DefaultChangeNotifier {
   final List<String> _alertTypes = [
     "LTP",
     "Perc. Change",
-    "ATP",
-    "OI",
-    "TOI",
-    "Volume"
+    // "ATP",
+    // "OI",
+    // "TOI",
+    // "Volume"
   ];
   List<String> get alertTypes => _alertTypes;
   String _actAlert = "LTP";
   String get actAlert => _actAlert;
 
-  final List<String> _condTypes = ["Less", "Greater"];
+  final List<String> _condTypes = ["Less than", "Greater than"];
   List<String> get condTypes => _condTypes;
-  String _actCond = "Less";
+  String _actCond = "Less than";
   String get actCond => _actCond;
 
   updatePrcCtrl(String prc, qty) {
@@ -293,40 +293,40 @@ class OrderInputProvider extends DefaultChangeNotifier {
 
   chngAlert(String val) {
     _actAlert = val;
-    if (_actAlert == "LTP" && _actCond == "Less") {
+    if (_actAlert == "LTP" && _actCond == "Less than") {
       _ait = "LTP_B_O";
     }
-    if (_actAlert == "LTP" && _actCond == "Greater") {
+    if (_actAlert == "LTP" && _actCond == "Greater than") {
       _ait = "LTP_A_O";
     }
-    if (_actAlert == "Perc. Change" && _actCond == "Less") {
+    if (_actAlert == "Perc. Change" && _actCond == "Less than") {
       _ait = "CH_PER_B_O";
     }
-    if (_actAlert == "Perc. Change" && _actCond == "Greater") {
+    if (_actAlert == "Perc. Change" && _actCond == "Greater than") {
       _ait = "CH_PER_A_O";
     }
-    if (_actAlert == "ATP" && _actCond == "Less") {
+    if (_actAlert == "ATP" && _actCond == "Less than") {
       _ait = "ATP_B_O";
     }
-    if (_actAlert == "ATP" && _actCond == "Greater") {
+    if (_actAlert == "ATP" && _actCond == "Greater than") {
       _ait = "ATP_A_O";
     }
-    if (_actAlert == "OI" && _actCond == "Less") {
+    if (_actAlert == "OI" && _actCond == "Less than") {
       _ait = "OI_B_O";
     }
-    if (_actAlert == "OI" && _actCond == "Greater") {
+    if (_actAlert == "OI" && _actCond == "Greater than") {
       _ait = "OI_A_O";
     }
-    if (_actAlert == "TOI" && _actCond == "Less") {
+    if (_actAlert == "TOI" && _actCond == "Less than") {
       _ait = "TOI_B_O";
     }
-    if (_actAlert == "TOI" && _actCond == "Greater") {
+    if (_actAlert == "TOI" && _actCond == "Greater than") {
       _ait = "TOI_A_O";
     }
-    if (_actAlert == "Volume" && _actCond == "Less") {
+    if (_actAlert == "Volume" && _actCond == "Less than") {
       _ait = "VOLUME_B_O";
     }
-    if (_actAlert == "Volume" && _actCond == "Greater") {
+    if (_actAlert == "Volume" && _actCond == "Greater than") {
       _ait = "VOLUME_A_O";
     }
 
@@ -386,6 +386,74 @@ class OrderInputProvider extends DefaultChangeNotifier {
     _disableGTTCond = val;
     notifyListeners();
   }
+  
+  // Validate GTT order before submission
+  Map<String, dynamic> validateGttOrder(bool isOco) {
+    bool isValid = true;
+    String errorMessage = "";
+    
+    // Check if value is provided for the condition
+    if (val1Ctrl.text.isEmpty) {
+      isValid = false;
+      errorMessage = "Please enter a value for the condition";
+      return {"isValid": isValid, "message": errorMessage};
+    }
+    
+    // Check if quantity is provided
+    if (qtyCtrl.text.isEmpty) {
+      isValid = false;
+      errorMessage = "Please enter quantity";
+      return {"isValid": isValid, "message": errorMessage};
+    }
+    
+    // Check if price is provided for Limit orders
+    if ((actPrcType == "Limit" || actPrcType == "SL Limit") && 
+        (priceCtrl.text.isEmpty || priceCtrl.text == "0" || priceCtrl.text == "0.0")) {
+      isValid = false;
+      errorMessage = "Please enter a valid price";
+      return {"isValid": isValid, "message": errorMessage};
+    }
+    
+    // Check trigger price for SL orders
+    if ((actPrcType == "SL Limit" || actPrcType == "SL MKT") && 
+        (trgPrcCtrl.text.isEmpty || trgPrcCtrl.text == "0" || trgPrcCtrl.text == "0.0")) {
+      isValid = false;
+      errorMessage = "Please enter a valid trigger price";
+      return {"isValid": isValid, "message": errorMessage};
+    }
+    
+    // Additional validations for OCO orders
+    if (isOco) {
+      if (val2Ctrl.text.isEmpty) {
+        isValid = false;
+        errorMessage = "Please enter a value for the OCO condition";
+        return {"isValid": isValid, "message": errorMessage};
+      }
+      
+      if (ocoQtyCtrl.text.isEmpty) {
+        isValid = false;
+        errorMessage = "Please enter OCO quantity";
+        return {"isValid": isValid, "message": errorMessage};
+      }
+      
+      if ((actOcoPrcType == "Limit" || actOcoPrcType == "SL Limit") && 
+          (ocoPriceCtrl.text.isEmpty || ocoPriceCtrl.text == "0" || ocoPriceCtrl.text == "0.0")) {
+        isValid = false;
+        errorMessage = "Please enter a valid OCO price";
+        return {"isValid": isValid, "message": errorMessage};
+      }
+      
+      if ((actOcoPrcType == "SL Limit" || actOcoPrcType == "SL MKT") && 
+          (ocoTrgPrcCtrl.text.isEmpty || ocoTrgPrcCtrl.text == "0" || ocoTrgPrcCtrl.text == "0.0")) {
+        isValid = false;
+        errorMessage = "Please enter a valid OCO trigger price";
+        return {"isValid": isValid, "message": errorMessage};
+      }
+    }
+    
+    return {"isValid": isValid, "message": errorMessage};
+  }
+
 // This method for retrieving information from the GTT order book to Modify the order
 
   getModifyData(GttOrderBookModel gttOrderBook) {
@@ -454,51 +522,51 @@ class OrderInputProvider extends DefaultChangeNotifier {
     _ait = gttOrderBook.aiT!;
     if (_ait == "LTP_B_O") {
       _actAlert == "LTP";
-      _actCond == "Less";
+      _actCond == "Less than";
     }
     if (_ait == "LTP_A_O") {
       _actAlert == "LTP";
-      _actCond == "Greater";
+      _actCond == "Greater than";
     }
     if (_ait == "CH_PER_B_O") {
       _actAlert == "Perc. Change";
-      _actCond == "Less";
+      _actCond == "Less than";
     }
     if (_ait == "CH_PER_A_O") {
       _actAlert == "Perc. Change";
-      _actCond == "Greater";
+      _actCond == "Greater than";
     }
     if (_ait == "ATP_B_O") {
       _actAlert == "ATP";
-      _actCond == "Less";
+      _actCond == "Less than";
     }
     if (_ait == "ATP_A_O") {
       _actAlert == "ATP";
-      _actCond == "Greater";
+      _actCond == "Greater than";
     }
     if (_ait == "OI_B_O") {
       _actAlert == "OI";
-      _actCond == "Less";
+      _actCond == "Less than";
     }
     if (_ait == "OI_A_O") {
       _actAlert == "OI";
-      _actCond == "Greater";
+      _actCond == "Greater than";
     }
     if (_ait == "TOI_B_O") {
       _actAlert == "TOI";
-      _actCond == "Less";
+      _actCond == "Less than";
     }
     if (_ait == "TOI_A_O") {
       _actAlert == "TOI";
-      _actCond == "Greater";
+      _actCond == "Greater than";
     }
     if (_ait == "VOLUME_B_O") {
       _actAlert == "Volume";
-      _actCond == "Less";
+      _actCond == "Less than";
     }
     if (_ait == "VOLUME_A_O") {
       _actAlert == "Volume";
-      _actCond == "Greater";
+      _actCond == "Greater than";
     }
     notifyListeners();
   }

@@ -349,28 +349,50 @@ class GttOrderBook extends ConsumerWidget {
                                                                   : colors.ltpgreen,
                                                               12,
                                                               FontWeight.w600))),
-                                                  Container(
-                                                      margin: const EdgeInsets.only(
-                                                          left: 7),
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                              horizontal: 7,
-                                                              vertical: 2),
-                                                      decoration: BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  4),
-                                                          color: theme.isDarkMode
-                                                              ? const Color(0xff666666)
-                                                                  .withOpacity(.2)
-                                                              : const Color(0xff999999)
-                                                                  .withOpacity(.2)),
-                                                      child: Text(
-                                                          "${gttOrderBook[index].placeOrderParams!.sPrdtAli}",
-                                                          style: textStyle(
-                                                              const Color(0xff666666),
-                                                              11,
-                                                              FontWeight.w600)))
+                                                            Container(
+                                                                margin: const EdgeInsets.only(
+                                                                    left: 7),
+                                                                padding:
+                                                                    const EdgeInsets.symmetric(
+                                                                        horizontal: 7,
+                                                                        vertical: 2),
+                                                                decoration: BoxDecoration(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            4),
+                                                                    color: theme.isDarkMode
+                                                                        ? const Color(0xff666666)
+                                                                            .withOpacity(.2)
+                                                                        : const Color(0xff999999)
+                                                                            .withOpacity(.2)),
+                                                                child: Text(
+                                                                    "${gttOrderBook[index].placeOrderParams!.sPrdtAli}",
+                                                                    style: textStyle(
+                                                                        const Color(0xff666666),
+                                                                        11,
+                                                                        FontWeight.w600))),
+                                                              Container(
+                                                                    margin: const EdgeInsets.only(
+                                                                        left: 7),
+                                                                    padding:
+                                                                        const EdgeInsets.symmetric(
+                                                                            horizontal: 7,
+                                                                            vertical: 2),
+                                                                    decoration: BoxDecoration(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(
+                                                                                4),
+                                                                        color: theme.isDarkMode
+                                                                            ? const Color(0xff666666)
+                                                                                .withOpacity(.2)
+                                                                            : const Color(0xff999999)
+                                                                                .withOpacity(.2)),
+                                                                    child: Text(
+                                                                        gttOrderBook[index].gttOrderCurrentStatus??'',
+                                                                        style: textStyle(
+                                                                            const Color(0xff666666),
+                                                                            11,
+                                                                            FontWeight.w600)))
                                                 ]),
                                                 Row(children: [
                                                   Text("Qty: ",
@@ -379,7 +401,7 @@ class GttOrderBook extends ConsumerWidget {
                                                           14,
                                                           FontWeight.w500)),
                                                   Text(
-                                                      "${gttOrderBook[index].qty ?? 0}",
+                                                      "${gttOrderBook[index].placeOrderParams?.qty ?? ''} ${gttOrderBook[index].placeOrderParamsLeg2?.qty != null ? ' / ${gttOrderBook[index].placeOrderParamsLeg2?.qty}' : ''}",
                                                       style: textStyle(
                                                           theme.isDarkMode
                                                               ? colors.colorWhite
@@ -395,14 +417,14 @@ class GttOrderBook extends ConsumerWidget {
                                               children: [
                                                 Row(
                                                   children: [
-                                                    Text(
-                                                        "${gttOrderBook[index].aiT!.replaceAll("_B_O", "").replaceAll("_A_O", "").replaceAll("_", " ")} ",
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors.colorWhite
-                                                                : colors.colorBlack,
-                                                            14,
-                                                            FontWeight.w500)),
+                                                    // Text(
+                                                    //     "${gttOrderBook[index].aiT!.replaceAll("_B_O", "").replaceAll("_A_O", "").replaceAll("_", " ")} ",
+                                                    //     style: textStyle(
+                                                    //         theme.isDarkMode
+                                                    //             ? colors.colorWhite
+                                                    //             : colors.colorBlack,
+                                                    //         14,
+                                                    //         FontWeight.w500)),
                                                     Text(
                                                         formatDateTime(
                                                             value:
@@ -421,7 +443,8 @@ class GttOrderBook extends ConsumerWidget {
                                                           14,
                                                           FontWeight.w500)),
                                                   Text(
-                                                      "${gttOrderBook[index].prc ?? 0.00}",
+                                                    "${gttOrderBook[index].placeOrderParams?.prctyp=="MKT" ? "MKT" : gttOrderBook[index].placeOrderParams?.prc ?? ''} ${gttOrderBook[index].placeOrderParamsLeg2?.prc != null ? ' / ${ gttOrderBook[index].placeOrderParamsLeg2?.prctyp=="MKT" ? "MKT" : gttOrderBook[index].placeOrderParamsLeg2?.prc}' : ''}",
+                                                    //  gttOrderBook[index].prctyp=="MKT"? "MKT": "${gttOrderBook[index].placeOrderParams?.prc ?? ''} ${gttOrderBook[index].placeOrderParamsLeg2?.prc != null ? ' / ${gttOrderBook[index].placeOrderParamsLeg2?.prc}' : ''}",
                                                       style: textStyle(
                                                           theme.isDarkMode
                                                               ? colors.colorWhite
@@ -631,7 +654,8 @@ class GttOrderBook extends ConsumerWidget {
                                                     14,
                                                     FontWeight.w500)),
                                             Text(
-                                                "${order.gttOrderBookSearch![index].qty ?? 0}",
+                                                // "${order.gttOrderBookSearch![index].qty ?? 0}",
+                                                "${order.gttOrderBookSearch![index].placeOrderParams?.qty ?? ''} ${order.gttOrderBookSearch![index].placeOrderParamsLeg2?.qty != null ? ' / ${order.gttOrderBookSearch![index].placeOrderParamsLeg2?.qty}' : ''}",
                                                 style: textStyle(
                                                     theme.isDarkMode
                                                         ? colors.colorWhite
@@ -647,14 +671,14 @@ class GttOrderBook extends ConsumerWidget {
                                         children: [
                                           Row(
                                             children: [
-                                              Text(
-                                                  "${order.gttOrderBookSearch![index].aiT!.replaceAll("_B_O", "").replaceAll("_A_O", "").replaceAll("_", " ")} ",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      14,
-                                                      FontWeight.w500)),
+                                            //   Text(
+                                            //       "${order.gttOrderBookSearch![index].aiT!.replaceAll("_B_O", "").replaceAll("_A_O", "").replaceAll("_", " ")} ",
+                                            //       style: textStyle(
+                                            //           theme.isDarkMode
+                                            //               ? colors.colorWhite
+                                            //               : colors.colorBlack,
+                                            //           14,
+                                            //           FontWeight.w500)),
                                               Text(
                                                   formatDateTime(
                                                       value: gttOrderBook[index]
@@ -672,7 +696,8 @@ class GttOrderBook extends ConsumerWidget {
                                                     14,
                                                     FontWeight.w500)),
                                             Text(
-                                                "${order.gttOrderBookSearch![index].prc ?? 0.00}",
+                                                // "${order.gttOrderBookSearch![index].prc ?? 0.00}",
+                                                "${order.gttOrderBookSearch![index].placeOrderParams?.prctyp=="MKT" ? "MKT" : order.gttOrderBookSearch![index].placeOrderParams?.prc ?? ''} ${order.gttOrderBookSearch![index].placeOrderParamsLeg2?.prc != null ? ' / ${ order.gttOrderBookSearch![index].placeOrderParamsLeg2?.prctyp=="MKT" ? "MKT" : order.gttOrderBookSearch![index].placeOrderParamsLeg2?.prc}' : ''}",
                                                 style: textStyle(
                                                     theme.isDarkMode
                                                         ? colors.colorWhite

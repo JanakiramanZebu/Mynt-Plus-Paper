@@ -36,6 +36,7 @@ class GttOrderBookModel {
   String? low;
   String? perChange;
   String? change;
+  String? gttOrderCurrentStatus;
 
   GttOrderBookModel(
       {this.stat,
@@ -77,6 +78,8 @@ class GttOrderBookModel {
       this.ordDate});
 
   GttOrderBookModel.fromJson(Map<String, dynamic> json) {
+    gttOrderCurrentStatus = "Pending";
+
     stat = json['stat'];
     emsg = json['emsg'];
     aiT = json['ai_t'];
