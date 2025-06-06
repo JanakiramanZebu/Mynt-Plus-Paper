@@ -5,14 +5,18 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:mynt_plus/provider/network_state_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
+import 'package:mynt_plus/provider/auth_provider.dart';
 import 'functions.dart';
 import 'dart:async';
 
 //  If there is no internet, it will show on the screen.
 
 class NoInternetScreen extends ConsumerStatefulWidget {
+  final VoidCallback? onReconnectionSuccess;
+  
   const NoInternetScreen({
     super.key,
+    this.onReconnectionSuccess,
   });
 
   @override
@@ -24,6 +28,7 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
   bool _isCheckingConnection = false;
   Timer? _connectionCheckTimer;
   bool _disposed = false;
+  String _errorMessage = "";
   
   @override
   void initState() {
@@ -78,10 +83,24 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
     if (mounted) {
       setState(() {
         _isReconnecting = true;
+        _errorMessage = "";
       });
     }
     
     try {
+      // Check current connection state first
+      final connectivityResult = await Connectivity().checkConnectivity();
+      
+      if (connectivityResult == ConnectivityResult.none) {
+        if (mounted) {
+          setState(() {
+            _errorMessage = "No internet connection available. Please check your network settings.";
+            _isReconnecting = false;
+          });
+        }
+        return;
+      }
+      
       final webSocket = ref.read(websocketProvider);
       
       // Reset connection count if it's at max attempts
@@ -92,16 +111,44 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
       // Start reconnection process
       webSocket.closeSocket(true);
       webSocket.changeretryscreen(true);
-      webSocket.reconnect(context);
       
-      // Wait for reconnection to complete or timeout
-      await Future.delayed(const Duration(seconds: 5));
-    } finally {
-      if (!_disposed && mounted) {
+      // Call initialLoadMethods to reload all necessary data
+      try {
+        await ref.read(authProvider).initialLoadMethods(context, "");
+        
+        // Once initialLoadMethods completes successfully, try reconnecting websocket
+        webSocket.reconnect(context);
+        
+        // Wait for reconnection to complete
+        await Future.delayed(const Duration(seconds: 2));
+        
+        // Call the onReconnectionSuccess callback if provided
+        if (widget.onReconnectionSuccess != null && mounted) {
+          widget.onReconnectionSuccess!();
+        }
+        
+        if (mounted) {
+          setState(() {
+            _isReconnecting = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _errorMessage = "Failed to reload data. Please try again.";
+            _isReconnecting = false;
+          });
+        }
+        print("Error during reconnection: $e");
+      }
+    } catch (e) {
+      if (mounted) {
         setState(() {
+          _errorMessage = "Connection failed. Please try again.";
           _isReconnecting = false;
         });
       }
+      print("Error during reconnection: $e");
     }
   }
 
@@ -129,9 +176,11 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
       }
       
       final isNetworkAvailable = networkState.connectionStatus != ConnectivityResult.none;
-      final statusMessage = isNetworkAvailable 
-          ? "Connection issues detected. Please try reconnecting."
-          : "It seems like you are offline. Please check your network connection.";
+      final statusMessage = _errorMessage.isNotEmpty 
+          ? _errorMessage
+          : isNetworkAvailable 
+              ? "Connection issues detected. Please try reconnecting."
+              : "It seems like you are offline. Please check your network connection.";
       
       return Scaffold(
         body: SafeArea(
@@ -176,10 +225,10 @@ class _NoInternetScreenState extends ConsumerState<NoInternetScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       )),
-                  onPressed: (_isReconnecting || webSocket.retryscreen) 
+                  onPressed: (_isReconnecting) 
                       ? null 
                       : _attemptReconnection,
-                  child: (_isReconnecting || webSocket.retryscreen) 
+                  child: (_isReconnecting) 
                       ? const SizedBox(
                           width: 20,
                           height: 20,

@@ -112,6 +112,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
               ];
               
               await Future.wait(futures);
+              
+              // Make sure to re-enable all navigation functionality
+              if (mounted) {
+                setState(() {
+                  // Trigger rebuild to ensure navigation is responsive
+                });
+              }
             }
             
             // Handle WebSocket connections after session validation
@@ -162,45 +169,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     if (!mounted) return;
     
     final websocket = ref.read(websocketProvider);
+    final indexProvide = ref.read(indexListProvider);
     
-    if (websocket.wsConnected == false || websocket.wsConnected == true) {
-          if (ConstantName.lastSubscribe.isNotEmpty) {
+    // Reset connection count if needed
+    if (websocket.connectioncount >= 5) {
+      websocket.changeconnectioncount();
+    }
+    
+    // Handle connection states
+    if (!websocket.wsConnected) {
+      // If not connected, try to re-establish connection
+      if (ConstantName.lastSubscribe.isNotEmpty) {
         websocket.establishConnection(
-                channelInput: ConstantName.lastSubscribe,
-                task: "t",
-                context: context);
-          }
+          channelInput: ConstantName.lastSubscribe,
+          task: "t",
+          context: context
+        );
+      }
       
-          if (ConstantName.lastSubscribeDepth.isNotEmpty) {
+      if (ConstantName.lastSubscribeDepth.isNotEmpty) {
         websocket.establishConnection(
-                channelInput: ConstantName.lastSubscribeDepth,
-                task: "d",
-                context: context);
-          }
-      
-      if (ref.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
-        websocket.changeconnectioncount();
-        
-        final indexProvide = ref.read(indexListProvider);
-        if (indexProvide.selectedBtmIndx == 1) {
-          ref.read(marketWatchProvider)
-                  .requestMWScrip(context: context, isSubscribe: true);
-            }
-        
-        if (indexProvide.selectedBtmIndx == 2) {
-          ref.read(portfolioProvider)
-                  .requestWSHoldings(context: context, isSubscribe: true);
+          channelInput: ConstantName.lastSubscribeDepth,
+          task: "d",
+          context: context
+        );
+      }
+    }
+    
+    // Ensure current tab data is properly loaded
+    if (ref.read(networkStateProvider).connectionStatus != ConnectivityResult.none) {
+      // Request data based on currently selected tab
+      switch (indexProvide.selectedBtmIndx) {
+        case 1:
+          ref.read(marketWatchProvider).requestMWScrip(context: context, isSubscribe: true);
+          break;
+        case 2:
+          ref.read(portfolioProvider).requestWSHoldings(context: context, isSubscribe: true);
           ref.read(portfolioProvider).timerfunc();
-          ref.read(portfolioProvider)
-                  .requestWSPosition(context: context, isSubscribe: true);
-            }
-        
-        if (indexProvide.selectedBtmIndx == 3) {
-          ref.read(orderProvider)
-                  .requestWSOrderBook(context: context, isSubscribe: true);
-            }
-          }
-        }
+          ref.read(portfolioProvider).requestWSPosition(context: context, isSubscribe: true);
+          break;
+        case 3:
+          ref.read(orderProvider).requestWSOrderBook(context: context, isSubscribe: true);
+          break;
+        case 4:
+          // Profile tab has no websocket dependency
+          break;
+      }
+    }
   }
   
   // Extract chart data handling to separate method
@@ -265,16 +280,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           // Pass the context to the network provider to enable reconnection attempts
           ref.read(networkStateProvider).getContext(context);
           
-      return Scaffold(
-                          appBar: AppBar(
-                            elevation: 0,
+          return Scaffold(
+            appBar: AppBar(
+              elevation: 0,
               backgroundColor: Colors.white,
-                          ),
-            body: const NoInternetScreen(),
-      );
-    }
+            ),
+            body: NoInternetScreen(
+              onReconnectionSuccess: _handleReconnectionSuccess,
+            ),
+          );
+        }
     
-    // Otherwise show the main app content
+        // When internet has been restored, ensure websocket connection is properly re-established
+        if (internet.connectionStatus != ConnectivityResult.none && 
+            !websocket.wsConnected && websocket.retryscreen) {
+          // This ensures we properly reconnect websocket when returning from no internet state
+          Future.microtask(() {
+            if (mounted) {
+              _handleWebSocketConnections();
+              // Reset the retryscreen flag to prevent duplicate reconnection attempts
+              websocket.changeretryscreen(false);
+              // Force UI refresh to ensure navigation works
+              _handleReconnectionSuccess();
+            }
+          });
+        }
+    
+        // Otherwise show the main app content
         // Use select to listen only to the selected bottom index
         final selectedBtmIndx = ref.watch(indexListProvider.select((indexProvide) => indexProvide.selectedBtmIndx));
         final theme = ref.watch(themeProvider); // Theme is used throughout, so watching the whole provider is acceptable here
@@ -288,6 +320,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
         );
       },
     );
+  }
+  
+  // Handle successful reconnection after internet issues
+  void _handleReconnectionSuccess() {
+    if (!mounted) return;
+    
+    // Ensure all navigation is working by forcing a rebuild
+    setState(() {
+      // This rebuild ensures navigation handlers are properly attached
+    });
+    
+    // Make sure data for current tab is loaded
+    final selectedTab = ref.read(indexListProvider).selectedBtmIndx;
+    
+    // Reload essential data based on selected tab
+    switch (selectedTab) {
+      case 1: // Watchlist
+        ref.read(marketWatchProvider).fetchMWList(context, false);
+        break;
+      case 2: // Portfolio
+        ref.read(portfolioProvider).fetchHoldings(context, "");
+        ref.read(portfolioProvider).fetchPositionBook(context, false);
+        break;
+      case 3: // Orders
+        ref.read(orderProvider).fetchOrderBook(context, false);
+        break;
+      case 4: // Profile
+        ref.read(userProfileProvider).fetchUserDetail(context);
+        break;
+    }
   }
   
   // Chart overlay component
@@ -554,15 +616,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
   Widget _buildBottomNavItem(int index, String iconAsset, String label, int selectedIndex, 
     ThemesProvider theme, {bool useHeight = false, double height = 24}) {
     final isSelected = selectedIndex == index;
-    // Use select to listen only to the connectionStatus
+    // We'll still check internet status but avoid using it to disable navigation
     final internetStatus = ref.watch(networkStateProvider.select((internet) => internet.connectionStatus));
-    final isInternetAvailable = internetStatus != ConnectivityResult.none;
     
     return Expanded(
       child: RepaintBoundary(
                                                 child: InkWell(
-          onTap: isInternetAvailable ? () {
-            // Bottom navigation tap handling
+          onTap: () {
+            // Always allow navigation taps regardless of internet status
+            // This ensures UI stays interactive even during reconnection
             switch (index) {
               case 1:
                 _handleWatchlistTap();
@@ -577,7 +639,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                 _handleProfileTap();
                 break;
             }
-          } : null,
+          },
                                                     child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 7),
                                                         decoration: BoxDecoration(

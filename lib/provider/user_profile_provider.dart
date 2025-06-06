@@ -132,6 +132,17 @@ class UserProfileProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  // Method to clear all user data when switching accounts
+  void clearUserData() {
+    _userDetailModel = null;
+    _clientDetailModel = null;
+    _showchartof = false;
+    _onloadshowchartof = false;
+    _userloader = false;
+    _webViewKey = UniqueKey();
+    notifyListeners();
+  }
+
   profilePageloader(bool value) {
     _userloader = value;
     notifyListeners();

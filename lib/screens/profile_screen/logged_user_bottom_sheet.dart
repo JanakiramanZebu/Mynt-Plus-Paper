@@ -85,9 +85,20 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                         pref.clientId) {
                                           
                                       userProfile.profilePageloader(true);
+                                      
+                                      // Clear data from previous account
+                                      portfolio.clearAllportfolio();
+                                      orders.clearAllorders();
+                                      ledgerprovider.setterfornullallSwitch = null;
+                                      userProfile.clearUserData();
+                                      
+                                      // Close WebSocket before changing account
+                                      final websocket = ref.read(websocketProvider);
+                                      websocket.closeSocket(true);
+                                      
+                                      // Set new account information
                                       pref.setClientId(loggedUser
                                           .loggedMobile[index].clientId); 
-                                          ledgerprovider.setterfornullallSwitch = null;
                                       pref.setClientMob(loggedUser
                                           .loggedMobile[index].mobile);
                                       pref.setClientSession(loggedUser
@@ -97,7 +108,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                       pref.setImei(
                                           loggedUser.loggedMobile[index].imei);
                                       pref.setMobileLogin(true);
-
+                                      
                                       await ref
                                           .read(authProvider)
                                           .fetchMobileLogin(
@@ -108,9 +119,11 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                               "switchAc",
                                               loggedUser
                                                   .loggedMobile[index].imei, true);
-                                      portfolio.clearAllportfolio();
-                                      orders.clearAllorders();
+                                              
                                       userProfile.profilePageloader(false);
+                                      
+                                      // Reset WebSocket connection count and reconnect
+                                      websocket.changeconnectioncount();
                                     }
                                   },
                                   dense: true,
@@ -157,6 +170,14 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                             horizontal: 16, vertical: 5),
                         child: OutlinedButton(
                             onPressed: () {
+                              // Clear all data from previous account before adding a new one
+                              ref.read(portfolioProvider).clearAllportfolio();
+                              ref.read(orderProvider).clearAllorders();
+                              ref.read(ledgerProvider).setterfornullallSwitch = null;
+                              
+                              // Clear any cached user profile data
+                              ref.read(userProfileProvider).clearUserData();
+                              
                               pref.setMobileLogin(true);
                               pref.setLogout(false);
                               pref.setHideLoginOptBtn(true);
