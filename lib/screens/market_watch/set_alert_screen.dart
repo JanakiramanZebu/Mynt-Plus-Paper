@@ -20,6 +20,7 @@ class SetAlert extends StatefulWidget {
 }
 
 class _SetAlertState extends State<SetAlert> {
+  bool _handlesetalert = false;
   TextEditingController valueCtrl = TextEditingController();
   TextEditingController remark = TextEditingController();
   final List<String> alterItems = ['Above', 'Below'];
@@ -33,6 +34,31 @@ class _SetAlertState extends State<SetAlert> {
     alertValue = alterItems[0];
     alertTypeVal = alertType[0];
     super.initState();
+  }
+
+validatesetalret(value){
+   try {
+                      if (alertTypeVal == "LTP" && value.isNotEmpty) {
+                        double enteredValue = double.parse(value);
+                        double currentLtp = double.parse(widget.depthdata.lp ?? "0.0");
+                        
+                        // Format numbers to always show 2 decimal places
+                        String formattedLtp = currentLtp.toStringAsFixed(2);
+                        String formattedEnteredValue = enteredValue.toStringAsFixed(2);
+                        
+                        if (alertValue == "Above" && enteredValue <= currentLtp) {
+                          errorText = "The Current LTP (₹$formattedLtp) is already above ₹$formattedEnteredValue";
+                        } else if (alertValue == "Below" && enteredValue >= currentLtp) {
+                          errorText = "The Current LTP (₹$formattedLtp) is already below ₹$formattedEnteredValue";
+                        } else {
+                          errorText = "";
+                        }
+                      } else {
+                        errorText = "";
+                      }
+                    } catch (e) {
+                      errorText = "Please enter a valid number";
+                    }
   }
 
   @override
@@ -111,6 +137,7 @@ class _SetAlertState extends State<SetAlert> {
                       alertTypeVal = value!;
                       valueCtrl.clear();
                     });
+                    validatesetalret(value);
                   },
                   // buttonDecoration: const BoxDecoration(
                   //     color: Color(0xffF1F3F8),
@@ -182,6 +209,7 @@ class _SetAlertState extends State<SetAlert> {
                     setState(() {
                       alertValue = value!;
                     });
+                    validatesetalret(value);
                   },
                   // buttonDecoration: const BoxDecoration(
                   //     color: Color(0xffF1F3F8),
@@ -243,7 +271,16 @@ class _SetAlertState extends State<SetAlert> {
                         borderSide: BorderSide.none,
                         borderRadius: BorderRadius.circular(30))),
                 onChanged: (value) {
-                  setState(() {});
+                  setState(() {
+                    if (value.isEmpty) {
+                      errorText = "* Value is required";
+                      return;
+                    }
+                    
+                    // Try to parse the entered value
+                    validatesetalret(value);
+                   
+                  });
                 },
               ),
             ),
@@ -308,24 +345,30 @@ class _SetAlertState extends State<SetAlert> {
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
                     // ignore: deprecated_member_use
-                    backgroundColor: theme.isDarkMode
+                    backgroundColor: errorText.isNotEmpty || valueCtrl.text.isEmpty
+                        ? Colors.grey // Disabled color
+                        : (theme.isDarkMode
                         ? colors.colorWhite
-                        : colors.colorBlack,
+                            : colors.colorBlack),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30)),
                   ),
-                  onPressed: () {
+                  onPressed: (errorText.isNotEmpty || valueCtrl.text.isEmpty)
+                      ? null // Disable the button when there's an error or empty value
+                      : () {
                     setState(() {
-                      if (valueCtrl.text.isEmpty || valueCtrl.text == "0") {
-                        errorText = valueCtrl.text.isEmpty
-                            ? "* Value is required"
-                            : "Value cannot be 0";
+                            if (valueCtrl.text == "0") {
+                              errorText = "Value cannot be 0";
                       } else {
                         errorText = "";
                         showDialog(
                           barrierDismissible: false,
                           context: context,
                           builder: (BuildContext context) {
+                                  return StatefulBuilder(builder: (BuildContext
+                                                            context,
+                                                        StateSetter
+                                                            setDialogState) {
                             return AlertDialog(
                               backgroundColor: theme.isDarkMode
                                   ? const Color.fromARGB(255, 18, 18, 18)
@@ -382,7 +425,12 @@ class _SetAlertState extends State<SetAlert> {
                                           borderRadius:
                                               BorderRadius.circular(50),
                                         )),
-                                    onPressed: () async {
+                                            onPressed: _handlesetalert ? null : () async {
+                                              setDialogState(
+                                                                          () {
+                                                                        _handlesetalert =
+                                                                            true;
+                                                                      });
                                       await ref
                                           .read(marketWatchProvider)
                                           .fetchSetAlert(
@@ -405,7 +453,13 @@ class _SetAlertState extends State<SetAlert> {
                                                   .alertPendingModel!.length,
                                               "${widget.depthdata.lp}",
                                               remark.text);
-
+                                    if (mounted) {
+                                                                        setDialogState(
+                                                                            () {
+                                                                          _handlesetalert =
+                                                                              false;
+                                                                        });
+                                                                      }
                                     
                                     },
                                     child: Text("Ok",
@@ -415,6 +469,8 @@ class _SetAlertState extends State<SetAlert> {
                                                 : colors.colorBlack)))
                               ],
                             );
+                                                            }
+                                  );
                           },
                         );
                       }

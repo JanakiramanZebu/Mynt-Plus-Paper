@@ -24,11 +24,32 @@ class PendingAlertDetails extends ConsumerStatefulWidget {
 }
 
 class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
+  bool isModifying = false;
+  bool isCancelling = false;
+  late TextEditingController valueCtrl;
+  String modifiedValue = "";
+  
+  @override
+  void initState() {
+    super.initState();
+    valueCtrl = TextEditingController(text: widget.alert.d);
+    modifiedValue = widget.alert.d ?? "";
+    
+    // Listen for changes to preserve the value
+    valueCtrl.addListener(() {
+      modifiedValue = valueCtrl.text;
+    });
+  }
+  
+  @override
+  void dispose() {
+    valueCtrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
-    TextEditingController valueCtrl =
-        TextEditingController(text: widget.alert.d);
     return Scaffold(
       appBar: AppBar(
         leadingWidth: 41,
@@ -47,25 +68,63 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
           children: [
             Expanded(
                 child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      ref.read(marketWatchProvider).fetchPendingAlert(context);
-                      ref.read(marketWatchProvider).fetchmodifyalert(
+                    onPressed: isModifying || isCancelling 
+                      ? null 
+                      : () async {
+                        setState(() {
+                          isModifying = true;
+                        });
+                        
+                        try {
+                          // Use the preserved value for the API call
+                          await ref.read(marketWatchProvider).fetchmodifyalert(
                           "${widget.alert.exch}",
                           "${widget.alert.tsym}",
-                          valueCtrl.text,
+                              modifiedValue,
                           "${widget.alert.aiT}",
                           "${widget.alert.alId}",
                           context);
+                              
+                          // Then fetch updated pending alerts
+                          await ref.read(marketWatchProvider).fetchPendingAlert(context);
+                          
+                          // Finally navigate back
+                          if (mounted) {
+                            Navigator.pop(context);
+                          }
+                        } catch (e) {
+                          // Show error if modification fails
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Failed to modify alert: ${e.toString()}")),
+                            );
+                          }
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              isModifying = false;
+                            });
+                          }
+                        }
                     },
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: theme.isDarkMode
+                        backgroundColor: isModifying 
+                            ? Colors.grey
+                            : theme.isDarkMode
                             ? colors.colorbluegrey
                             : colors.colorBlack,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50))),
-                    child: Text("Modify Alert",
+                    child: isModifying
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                            ))
+                        : Text("Modify Alert",
                         style: textStyle(
                             !theme.isDarkMode
                                 ? colors.colorWhite
@@ -75,24 +134,58 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
             const SizedBox(width: 16),
             Expanded(
                 child: ElevatedButton(
-                    onPressed: () async {
-                      // Store the alert ID before popping
+                    onPressed: isModifying || isCancelling
+                      ? null
+                      : () async {
+                        setState(() {
+                          isCancelling = true;
+                        });
+                        
+                        try {
+                          // Store the alert ID
                       final String alertId = "${widget.alert.alId}";
 
-                      // Pop the current screen first
-                      Navigator.pop(context);
+                          // First cancel the alert
+                          await ref.read(marketWatchProvider).fetchCancelAlert(alertId, context);
 
-                      // Then cancel the alert without trying to show a SnackBar afterward
-                      await ref
-                          .read(marketWatchProvider)
-                          .fetchCancelAlert(alertId, context);
+                          // Then fetch updated pending alerts
+                          await ref.read(marketWatchProvider).fetchPendingAlert(context);
+                          
+                          // Finally navigate back
+                          if (mounted) {
+                            Navigator.pop(context);
+                          }
+                        } catch (e) {
+                          // Show error if cancellation fails
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Failed to cancel alert: ${e.toString()}")),
+                            );
+                          }
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              isCancelling = false;
+                            });
+                          }
+                        }
                     },
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: colors.darkred,
+                        backgroundColor: isCancelling 
+                            ? Colors.grey 
+                            : colors.darkred,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50))),
-                    child: Text("Cancel Alert",
+                    child: isCancelling
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: colors.colorWhite,
+                            ))
+                        : Text("Cancel Alert",
                         style: textStyle(
                             const Color(0xffFFFFFF), 14, FontWeight.w500)))),
           ],
@@ -146,7 +239,9 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                         CustomExchBadge(exch: "${widget.alert.exch}"),
                         Text(" (${widget.alert.perChange ?? 0.00}%)",
                             style: textStyle(
-                                widget.alert.perChange!.startsWith("-")
+                                widget.alert.perChange == null
+                                    ? colors.ltpgrey
+                                    : widget.alert.perChange!.startsWith("-")
                                     ? colors.darkred
                                     : widget.alert.perChange == "0.00"
                                         ? colors.ltpgrey

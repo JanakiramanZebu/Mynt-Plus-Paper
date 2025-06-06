@@ -1049,7 +1049,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _alertPendingSearch = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _alertPendingSearch = _alertPendingModel!
-          .where((element) => element.tsym!.toLowerCase().contains(value))
+          .where((element) => element.tsym!.toLowerCase().contains(value.toLowerCase()))
           .toList();
       if (_alertPendingSearch!.isEmpty) {
         ScaffoldMessenger.of(context)
@@ -3267,7 +3267,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         // Display success message
         ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "${_setAlertModel?.stat}"));
+            .showSnackBar(successMessage(context, "Alert created successfully"));
 
         // Close the alert creation screens
         Navigator.pop(context);
