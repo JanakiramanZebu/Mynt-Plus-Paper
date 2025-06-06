@@ -778,6 +778,31 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen> with 
                       ],
                     ),
                   ],
+                  if (_holdingData.rpnl != null && _holdingData.rpnl != "0") ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("Realised P&L",
+                                  style: textStyle(const Color(0xff666666),
+                                      12, FontWeight.w500)),
+                              const SizedBox(height: 2),
+                              Text(
+                                "${_holdingData.rpnl ?? 0}",
+                                style: textStyle(const Color(0xff000000), 14,
+                                    FontWeight.w500),
+                              ),
+                              const SizedBox(height: 2),
+                              Divider(color: colors.colorDivider),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ])),
       ]),
       bottomNavigationBar: BottomAppBar(

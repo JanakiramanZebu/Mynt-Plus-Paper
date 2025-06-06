@@ -444,7 +444,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
       var exchTsym = holding.exchTsym![0];
       
       // Accumulate summary values
-      newTotalPnl += double.parse("${exchTsym.profitNloss ?? 0.0}");
+      newTotalPnl += double.parse("${exchTsym.profitNloss ?? 0.0}") + double.parse("${holding.rpnl ?? 0.0}");
       newOneDayChng += double.parse("${exchTsym.oneDayChg ?? 0.0}");
       newInvest += double.parse("${holding.invested ?? 0.0}");
       newTotalCurrentVal += double.parse("${holding.currentValue ?? 0.0}");

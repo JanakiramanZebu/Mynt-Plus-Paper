@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io'; // Import for SocketException and HttpException
 import 'package:device_info_plus/device_info_plus.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
@@ -669,7 +670,10 @@ class AuthProvider extends DefaultChangeNotifier {
               arguments: "login",
               (route) => false);
         }
-      } else {
+      } else if (_mobileLogin == null) {
+        _handleNetworkFailure(context, "Network error. Please check your connection.");
+      }
+      else {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, _mobileLogin!.emsg!));
         if (currentRouteName != Routes.loginScreen) {
@@ -688,6 +692,7 @@ class AuthProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       print(e);
+      _handleNetworkFailure(context, "Network error. Please check your connection.");
     } finally {
       toggleLoadingOn(false);
     }
@@ -1138,97 +1143,151 @@ class AuthProvider extends DefaultChangeNotifier {
         ref.read(websocketProvider).closeSocket(true);
       }
 
-      await ref.read(indexListProvider).checkSession(context);
-      ref.read(marketWatchProvider).changeWlName("", "No");
-      _logoutMsg = "";
+      try {
+        await ref.read(indexListProvider).checkSession(context);
+        ref.read(marketWatchProvider).changeWlName("", "No");
+        _logoutMsg = "";
 
-      if (ref.read(indexListProvider).checkSess!.stat == "Ok") {
-        ref.read(indexListProvider).fetchNotifyMsg();
-        ref.read(portfolioProvider).changeTabIndex(0);
-        await ref.read(themeProvider).navigateToNewPage(context);
-        await ref.read(portfolioProvider).fetchHoldings(context, "");
+        if (ref.read(indexListProvider).checkSess!.stat == "Ok") {
+          ref.read(indexListProvider).fetchNotifyMsg();
+          ref.read(portfolioProvider).changeTabIndex(0);
+          await ref.read(themeProvider).navigateToNewPage(context);
+          await ref.read(portfolioProvider).fetchHoldings(context, "");
 
-        await ref.read(indexListProvider).getDeafultIndexList(context);
-        await ref.read(marketWatchProvider).fetchMWList(context, true);
-        // initLaod(false);
-        ref.read(orderProvider).fetchOrderBook(context, false);
-        ref.read(portfolioProvider).fetchPositionBook(context, false);
-        ref.read(orderProvider).fetchTradeBook(context);
-        ref.read(orderProvider).fetchGTTOrderBook(context, "initLoad");
-        ref.read(transcationProvider).fetchcwithdraw(context);
-        ref.read(transcationProvider).fetchfundbank(context);
-        ref.read(portfolioProvider).fetchOplist(context);
-        ref.read(userProfileProvider).fetchUserDetail(context);
-        ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
-        ref.read(transcationProvider).fetchc(context);
+          await ref.read(indexListProvider).getDeafultIndexList(context);
+          await ref.read(marketWatchProvider).fetchMWList(context, true);
+          // initLaod(false);
+          ref.read(orderProvider).fetchOrderBook(context, false);
+          ref.read(portfolioProvider).fetchPositionBook(context, false);
+          ref.read(orderProvider).fetchTradeBook(context);
+          ref.read(orderProvider).fetchGTTOrderBook(context, "initLoad");
+          ref.read(transcationProvider).fetchcwithdraw(context);
+          ref.read(transcationProvider).fetchfundbank(context);
+          ref.read(portfolioProvider).fetchOplist(context);
+          ref.read(userProfileProvider).fetchUserDetail(context);
+          ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
+          ref.read(transcationProvider).fetchc(context);
 
-        // FirebaseAnalytics.instance.setUserId(id: pref.clientId);
-        // IPOs
-        // setIposAPicalls();
-        // mf
-        // setmfapicalls(context);
-        // Explore
-        // await ref.read(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
-        // await ref.read(indexListProvider).fetchStockTopIndex();
+          // FirebaseAnalytics.instance.setUserId(id: pref.clientId);
+          // IPOs
+          // setIposAPicalls();
+          // mf
+          // setmfapicalls(context);
+          // Explore
+          // await ref.read(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
+          // await ref.read(indexListProvider).fetchStockTopIndex();
 
-        // await ref.read(stocksProvide).fetchCorporateAction();
-        // await ref.read(stocksProvide).fetchCAevents();
-        // await ref.read(stocksProvide).defaultSectorThemematicData();
-        // await ref.read(stocksProvide).getNews();
-        // await ref.read(stocksProvide).chngTradeAct("Equity");
+          // await ref.read(stocksProvide).fetchCorporateAction();
+          // await ref.read(stocksProvide).fetchCAevents();
+          // await ref.read(stocksProvide).defaultSectorThemematicData();
+          // await ref.read(stocksProvide).getNews();
+          // await ref.read(stocksProvide).chngTradeAct("Equity");
 
-        // ref.read(mfProvider).fetchcommonsearchWadd(null, "", context, false);
-        // ref.read(mfProvider).fetchmfCommonsearch("Z", context);
-        // ref.read(mfProvider).fetchMFWatchlist(null, "", context, false,"");
-        // ref.read(mfProvider).fetchBestMF();
+          // ref.read(mfProvider).fetchcommonsearchWadd(null, "", context, false);
+          // ref.read(mfProvider).fetchmfCommonsearch("Z", context);
+          // ref.read(mfProvider).fetchMFWatchlist(null, "", context, false,"");
+          // ref.read(mfProvider).fetchBestMF();
 
-        // ref.read(mfProvider).fetchMfOrderbook(context);
-        setProfileAPicalls();
-        setPrefOrderPrefer(context);
-        ref.read(orderProvider).setOrderIp();
-        // End Explore
-        if (s.isEmpty) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, Routes.homeScreen, (route) => false);
-          // if (pref.islogIn!) {
-          if (pref.showRiskDis != 'true') {
-            showModalBottomSheet(
-                shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16))),
-                backgroundColor: const Color(0xffffffff),
-                isDismissible: false,
-                enableDrag: false,
-                showDragHandle: false,
-                useSafeArea: false,
-                isScrollControlled: true,
-                context: context,
-                builder: (BuildContext context) {
-                  return PopScope(
-                      canPop: false,
-                      onPopInvokedWithResult: (didPop, result) async {
-                        if (didPop) return;
-                      },
-                      child: const RiskDisclousreBottomSheet());
-                });
+          // ref.read(mfProvider).fetchMfOrderbook(context);
+          setProfileAPicalls();
+          setPrefOrderPrefer(context);
+          ref.read(orderProvider).setOrderIp();
+          // End Explore
+          if (s.isEmpty) {
+            Navigator.pushNamedAndRemoveUntil(
+                context, Routes.homeScreen, (route) => false);
+            // if (pref.islogIn!) {
+            if (pref.showRiskDis != 'true') {
+              showModalBottomSheet(
+                  shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(16))),
+                  backgroundColor: const Color(0xffffffff),
+                  isDismissible: false,
+                  enableDrag: false,
+                  showDragHandle: false,
+                  useSafeArea: false,
+                  isScrollControlled: true,
+                  context: context,
+                  builder: (BuildContext context) {
+                    return PopScope(
+                        canPop: false,
+                        onPopInvokedWithResult: (didPop, result) async {
+                          if (didPop) return;
+                        },
+                        child: const RiskDisclousreBottomSheet());
+                  });
+            }
           }
+          // {
+          await ref.read(fundProvider).fetchFunds(context);
+          Map data = {
+            "uid": "${pref.clientId}_${pref.imei}",
+            "log": {
+              "version": _version,
+              "os": defaultTargetPlatform.toString(),
+              "devices": pref.deviceName!.toString(),
+              "date": DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())
+            }
+          };
+          api.setAppversion(data, context);
+          // }
+        } else {
+          // Handle invalid session by redirecting to login
+          _handleNetworkFailure(context, "Session invalid");
         }
-        // {
-        await ref.read(fundProvider).fetchFunds(context);
-        Map data = {
-          "uid": "${pref.clientId}_${pref.imei}",
-          "log": {
-            "version": _version,
-            "os": defaultTargetPlatform.toString(),
-            "devices": pref.deviceName!.toString(),
-            "date": DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())
-          }
-        };
-        api.setAppversion(data, context);
-        // }
+      } catch (e) {
+        _handleNetworkFailure(context, e.toString());
       }
+    } on SocketException catch (e) {
+      _handleNetworkFailure(context, "Network connection issue: ${e.message}");
+    } on HttpException catch (e) {
+      _handleNetworkFailure(context, "Server communication error: ${e.message}");
+    } on TimeoutException catch (e) {
+      _handleNetworkFailure(context, "Connection timed out");
+    } catch (e) {
+      _handleNetworkFailure(context, "Error connecting to server");
     } finally {
       initLaod(false);
+    }
+  }
+
+  // Helper method to handle network failures and redirect to login
+  void _handleNetworkFailure(BuildContext context, String errorMessage) {
+    print("Network failure: $errorMessage");
+    
+    // Clear user session
+    pref.clearClientSession();
+    pref.setLogout(true);
+    pref.setHideLoginOptBtn(false);
+    pref.setMobileLogin(false);
+    
+    // Update UI state
+    ref.read(indexListProvider).bottomMenu(1, context);
+    
+    // If we have client ID, prefill the login field
+    if (pref.clientId != null && pref.clientId!.isNotEmpty) {
+      loginMethCtrl.text = pref.clientId!;
+    }
+    
+    // Close WebSocket connection
+    ref.read(websocketProvider).closeSocket(true);
+    ref.read(websocketProvider).websockConn(false);
+    
+    // Cancel any active timers
+    if (ConstantName.timer != null) {
+      ConstantName.timer!.cancel();
+    }
+    
+    // Navigate to login screen if not already there
+    if (context.mounted && currentRouteName != Routes.loginScreen) {
+      Navigator.pushNamedAndRemoveUntil(
+          context, Routes.loginScreen, (route) => false);
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, "Connection issue. Please check your internet and try again.")
+      );
     }
   }
 

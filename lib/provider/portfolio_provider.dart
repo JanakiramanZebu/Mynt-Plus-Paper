@@ -215,6 +215,21 @@ class PortfolioProvider extends DefaultChangeNotifier {
     _tpostionBookModel = [];
     _allholds = {};
     _mfHoldingsModel = [];
+    _allPostionList = [];
+    _openPosition = [];
+    _closedPosion = [];
+    _holdingSearchItem = [];
+    _positionSearchItem = [];
+    _subscr = "";
+    _mfTotInveest = 0.00;
+    _mfTotCurrentVal = 0.00;
+    _mfTotalPnl = 0.00;
+    _mfTotalPnlPerchng = 0.00;
+    _getPositionGroupSymbol = [];
+    
+    // Reset any timer or ongoing operations
+    cancelTimer();
+    
     notifyListeners();
   }
 
@@ -579,6 +594,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     int.parse("${element.dpQty ?? 0}") +
                     int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.usedqty ?? 0}");
+            if (element.sellAmt != null && element.sellAmt != "0.000000") {
+            element.rpnl = (double.parse("${element.sellAmt ?? 0.00}") - double.parse("${element.invested ?? 0.00}")).toString();
+            }
 
             if (element.saleableQty != 0) {
               _sealableHoldings.add(element);
@@ -1384,7 +1402,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
               if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
                 break;
               }
-              if (element.isExitSelection!) {
+            }
+              if (!element.isExitSelection!) {
             } else {
                 PlaceOrderInput placeOrderInput = PlaceOrderInput(
                     amo: "",
@@ -1413,7 +1432,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
               }
             }
           }
-        }
+        
       }
     } finally {
       // Reset loading state when done (whether successful or not)

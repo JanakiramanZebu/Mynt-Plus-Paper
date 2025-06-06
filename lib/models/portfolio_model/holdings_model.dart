@@ -21,6 +21,7 @@ class HoldingsModel {
   int? saleableQty;
   String? dpQty;
   bool? isExitHoldings;
+  String? rpnl;
 
   String? avgPrc;
 
@@ -47,7 +48,8 @@ class HoldingsModel {
       this.totalPnL,
       this.saleableQty,
       this.isExitHoldings,
-      this.avgPrc});
+      this.avgPrc,
+      this.rpnl});
 
   HoldingsModel.fromJson(Map<String, dynamic> json) {
     stat = json['stat'];
