@@ -95,6 +95,10 @@ class GttCondition extends ConsumerWidget {
                                 16,
                                 FontWeight.w600),
                             textAlign: TextAlign.start,
+                             keyboardType:
+                                const TextInputType.numberWithOptions(
+                                    decimal:
+                                        true),
                             onChanged: (value) {
                               if (value.isEmpty || value == "0") {
                                  ScaffoldMessenger.of(
@@ -135,6 +139,10 @@ class GttCondition extends ConsumerWidget {
                                 16,
                                 FontWeight.w600),
                             textAlign: TextAlign.start,
+                             keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal:
+                                          true),
                             onChanged: (value) {
                               if (value.isEmpty|| value == "0") {
                                  ScaffoldMessenger.of(
