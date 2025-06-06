@@ -118,7 +118,10 @@ class WebSocketProvider extends ChangeNotifier {
     _reconnectBackoff?.cancel();
     
     if (mounted) {
+      // CRITICAL FIX: Schedule notification for the next microtask to avoid conflict with widget lifecycle
+      Future.microtask(() {
       notifyListeners();
+      });
     }
   }
 
@@ -309,11 +312,11 @@ class WebSocketProvider extends ChangeNotifier {
         _handleConnectionSuccess();
       } else if (res['t']?.toString().toLowerCase() == "tf" || 
                 res['t']?.toString().toLowerCase() == "df") {
-        log("Socket Data: ${res.toString()}");
+        // log("Socket Data: ${res.toString()}");
         _handleMarketData(res);
       } else if (res['t']?.toString().toLowerCase() == "tk" || 
                 res['t']?.toString().toLowerCase() == "dk") {
-        log("Socket Data: ${res.toString()}");
+        // log("Socket Data: ${res.toString()}");
         _handleTokenData(res);
       } else if (res['t']?.toString().toLowerCase() == "om" && _context != null) {
         _handleOrderMessage(res);
@@ -627,14 +630,14 @@ class WebSocketProvider extends ChangeNotifier {
       final connectionStatus = ref.read(networkStateProvider).connectionStatus;
       
       if (connectionStatus != ConnectivityResult.none) {
-        _reconnectBackoff = Timer(backoffDelay, () {
+      _reconnectBackoff = Timer(backoffDelay, () {
           _attemptReconnection(context);
         });
-      } else {
+        } else {
         // Reset reconnecting flag if no network is available
         _reconnecting = false;
         notifyListeners();
-      }
+        }
     }
   }
 
@@ -662,21 +665,21 @@ class WebSocketProvider extends ChangeNotifier {
       Future.delayed(const Duration(milliseconds: 500), () {
         // Verify we're still in reconnection process before continuing
         if (_reconnecting && !_wsConnected) {
-          if (ConstantName.lastSubscribe.isNotEmpty) {
+      if (ConstantName.lastSubscribe.isNotEmpty) {
             connectTouchLine(
               input: ConstantName.lastSubscribe,
-              task: "t",
-              context: context,
-            );
-          }
-          
-          if (ConstantName.lastSubscribeDepth.isNotEmpty) {
+          task: "t",
+          context: context,
+        );
+      }
+      
+      if (ConstantName.lastSubscribeDepth.isNotEmpty) {
             connectTouchLine(
               input: ConstantName.lastSubscribeDepth,
-              task: "d",
-              context: context,
-            );
-          }
+          task: "d",
+          context: context,
+        );
+      }
         }
         
         // Reset reconnecting flag after attempt, regardless of success

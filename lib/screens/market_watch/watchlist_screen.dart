@@ -165,7 +165,7 @@ class _WatchListScreen extends State<WatchListScreen> with AutomaticKeepAliveCli
     return ListView.separated(
       key: ValueKey(scrips.length), // Use key based on list length for more precise rebuilds
       shrinkWrap: false,
-      physics: const BouncingScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       itemCount: scrips.length,
       separatorBuilder: (context, index) => const ListDivider(),
       itemBuilder: (BuildContext context, int idx) {

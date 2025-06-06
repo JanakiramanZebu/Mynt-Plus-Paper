@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
@@ -19,6 +20,8 @@ class WatchlistsBottomSheet extends StatefulWidget {
 }
 
 class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
+  bool _isDeleting = false;
+
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
@@ -55,10 +58,13 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                       : colors.colorBlack)),
                           if (watchlist.length - 4 < 10)
                             InkWell(
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  showDialog(
+                                onTap: () async {
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                  await showDialog(
                                       context: context,
+                                      barrierDismissible: false,
                                       builder: (BuildContext context) {
                                         // int selectedValue = 1;
                                         return CreatewatchList(
@@ -102,16 +108,15 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                   // await context
                                   //     .read(portfolioProvider)
                                   //     .fetchHoldings(context,"");
-                                  ref
-                                      .read(portfolioProvider)
-                                      .requestWSHoldings(
-                                          context: context, isSubscribe: true);
+                                  ref.read(portfolioProvider).requestWSHoldings(
+                                      context: context, isSubscribe: true);
                                 } else {
                                   await marketWatch.changeWLScrip(
                                       preDefWl[index], context);
                                 }
-
-                                Navigator.pop(context);
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                   elevation: 0,
@@ -197,6 +202,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                       onTap: () async {
                                         showDialog(
                                             context: context,
+                                            barrierDismissible: false,
                                             builder: (BuildContext context) {
                                               return WatchListRename(
                                                   wlname: watchlist[index]);
@@ -217,10 +223,96 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                           ),
                                           onTap: () async {
                                             // Click to Delete watchlist name
-                                            await marketWatch.deleteWatchList(
-                                                watchlist[index], context);
+                                            await showDialog(
+                                                context: context,
+                                                builder: (
+                                                  BuildContext context,
+                                                ) {
+                                                  return StatefulBuilder(
+                                                    builder: (BuildContext
+                                                            context,
+                                                        StateSetter
+                                                            setDialogState) {
+                                                      return AlertDialog(
+                                                        shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        16)),
+                                                        title: TextWidget.titleText(
+                                                            text:
+                                                                "Delete Watchlist",
+                                                            theme: theme
+                                                                .isDarkMode,
+                                                            fw: 1),
+                                                        //  const Divider(thickness: 0.6,color: Colors.grey,),
 
-                                            Navigator.pop(context);
+                                                        content: TextWidget.subText(
+                                                            text:
+                                                                'Do you really want to Delete?',
+                                                            theme: theme
+                                                                .isDarkMode,
+                                                            fw: 0),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                            },
+                                                            child: TextWidget
+                                                                .subText(
+                                                                    text:
+                                                                        'Cancel',
+                                                                    theme: theme
+                                                                        .isDarkMode,
+                                                                    fw: 1),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed: (_isDeleting ||
+                                                                    marketWatch
+                                                                        .loading)
+                                                                ? null
+                                                                : () async {
+                                                                    setDialogState(
+                                                                        () {
+                                                                      _isDeleting =
+                                                                          true;
+                                                                    });
+                                                                    await marketWatch.deleteWatchList(
+                                                                        watchlist[
+                                                                            index],
+                                                                        context);
+                                                                    if (context
+                                                                        .mounted) {
+                                                                      await Future.delayed(const Duration(
+                                                                          milliseconds:
+                                                                              50));
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                    } // Go back
+                                                                    if (mounted) {
+                                                                      setDialogState(
+                                                                          () {
+                                                                        _isDeleting =
+                                                                            false;
+                                                                      });
+                                                                    }
+                                                                  },
+                                                            child: TextWidget
+                                                                .subText(
+                                                                    text: 'Yes',
+                                                                    theme: theme
+                                                                        .isDarkMode,
+                                                                    fw: 1),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                });
                                           }))
                                 ])
                               : Container(width: .2));

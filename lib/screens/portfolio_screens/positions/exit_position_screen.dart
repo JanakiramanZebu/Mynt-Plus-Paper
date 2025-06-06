@@ -20,8 +20,19 @@ class ExitPositionScreen extends ConsumerWidget {
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return; // If system handled back, do nothing
 
-        positions.selectExitAllPosition(false);
-        Navigator.of(context).pop(); // Proceed with back navigation
+        try {
+          // Reset selection state first
+          positions.selectExitAllPosition(false);
+          
+          // Only attempt navigation if the context is still valid
+          if (context.mounted) {
+            // Use maybePop which safely checks if navigation is possible
+            Navigator.of(context).maybePop();
+          }
+        } catch (e) {
+          // If we have any errors during navigation, log them
+          debugPrint("Navigation error: $e");
+        }
       },
       child: Scaffold(
         appBar: AppBar(
@@ -31,8 +42,15 @@ class ExitPositionScreen extends ConsumerWidget {
           titleSpacing: 6,
           leading: InkWell(
               onTap: () {
-                positions.selectExitAllPosition(false);
-                Navigator.pop(context);
+                try {
+                  positions.selectExitAllPosition(false);
+                  
+                  if (context.mounted) {
+                    Navigator.of(context).maybePop();
+                  }
+                } catch (e) {
+                  debugPrint("Navigation error: $e");
+                }
               },
               child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 9),
@@ -160,253 +178,253 @@ class ExitPositionScreen extends ConsumerWidget {
                 final originalIndex = positions.openPosition!.indexOf(position);
                 
                 return InkWell(
-                  onTap: () {
+                        onTap: () {
                     positions.selectExitPosition(originalIndex);
-                  },
-                  child: Container(
-                    color: theme.isDarkMode
-                        ? position.isExitSelection!
-                            ? colors.darkGrey
-                            : colors.colorBlack
-                        : position.isExitSelection!
-                            ? const Color(0xffF1F3F8)
-                            : colors.colorWhite,
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text("${position.symbol} ",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textStyles.scripNameTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
-                                Text("${position.option} ",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textStyles.scripNameTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text(" LTP: ",
-                                    style: textStyle(
-                                        const Color(0xff5E6B7D),
-                                        13,
-                                        FontWeight.w600)),
-                                Text("₹${position.lp}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500)),
-                              ],
-                            )
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 3),
-                                  decoration: BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.circular(2),
-                                      color: theme.isDarkMode
-                                          ? position.qty ==
-                                                  "0"
-                                              ? colors.colorBlack
-                                              : colors.darkGrey
-                                          : position.qty ==
-                                                  "0"
-                                              ? colors.colorWhite
-                                              : const Color(0xffECEDEE)),
-                                  child: Text(
-                                      "${position.exch}",
-                                      overflow: TextOverflow.ellipsis,
-                                      style: textStyle(
-                                          const Color(0xff666666),
-                                          10,
-                                          FontWeight.w500)),
-                                ),
-                                Text(
-                                    "  ${position.expDate} ",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textStyles.scripExchTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
-                              ],
-                            ),
-                            Text(
-                                " (${position.perChange ?? 0.00}%)",
-                                style: textStyle(
-                                    position.perChange ==
-                                                "0.00" || position.perChange ==
-                                                null
-                                            ? colors.ltpgrey : position.perChange!
-                                            .startsWith("-")
-                                        ? colors.darkred
-                                        :  colors.ltpgreen,
-                                    12,
-                                    FontWeight.w500)),
-                          ],
-                        ),
-                        Divider(
+                        },
+                        child: Container(
                             color: theme.isDarkMode
-                                ? colors.darkGrey
-                                : Color(
-                                    position.netqty == "0"
-                                        ? 0xffffffff
-                                        : 0xffECEDEE),
-                            thickness: 1.2),
-                        const SizedBox(height: 2),
-                        Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                    "${position.sPrdtAli}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        13,
-                                        FontWeight.w600)),
-                              ],
-                            ),
-                            positions.isNetPnl
-                                ? Row(
+                        ? position.isExitSelection!
+                                    ? colors.darkGrey
+                                    : colors.colorBlack
+                        : position.isExitSelection!
+                                    ? const Color(0xffF1F3F8)
+                                    : colors.colorWhite,
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text("P&L: ",
-                                          style: textStyle(
-                                              const Color(0xff5E6B7D),
-                                              13,
-                                              FontWeight.w500)),
-                                      Text(
-                                          "₹${position.profitNloss ?? position.rpnl}",
-                                          style: textStyle(
-                                              position.profitNloss !=
-                                                      null
-                                                  ? position.profitNloss!
-                                                          .startsWith("-")
-                                                      ? colors.darkred
-                                                      : position.profitNloss ==
-                                                              "0.00"
-                                                          ? colors.ltpgrey
-                                                          : colors
-                                                              .ltpgreen
-                                                  : position.rpnl!
-                                                          .startsWith("-")
-                                                      ? colors.darkred
-                                                      : position.rpnl ==
-                                                              "0.00"
-                                                          ? colors.ltpgrey
-                                                          : colors
-                                                              .ltpgreen,
-                                              15,
-                                              FontWeight.w600)),
-                                    ],
-                                  )
-                                : Row(
-                                    children: [
-                                      Text("MTM: ",
-                                          style: textStyle(
-                                              const Color(0xff5E6B7D),
-                                              13,
-                                              FontWeight.w500)),
-                                      Text(
-                                          "₹${position.mTm}",
-                                          style: textStyle(
-                                              position.mTm!
-                                                      .startsWith("-")
-                                                  ? colors.darkred
-                                                  : position.mTm ==
-                                                          "0.00"
-                                                      ? colors.ltpgrey
-                                                      : colors.ltpgreen,
-                                              15,
-                                              FontWeight.w600)),
+                                      Row(
+                                        children: [
+                                Text("${position.symbol} ",
+                                              overflow: TextOverflow.ellipsis,
+                                              style: textStyles.scripNameTxtStyle
+                                                  .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack)),
+                                Text("${position.option} ",
+                                              overflow: TextOverflow.ellipsis,
+                                              style: textStyles.scripNameTxtStyle
+                                                  .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack)),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(" LTP: ",
+                                              style: textStyle(
+                                                  const Color(0xff5E6B7D),
+                                                  13,
+                                                  FontWeight.w600)),
+                                Text("₹${position.lp}",
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  14,
+                                                  FontWeight.w500)),
+                                        ],
+                                      )
                                     ],
                                   ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text("Qty: ",
-                                    style: textStyle(
-                                        const Color(0xff5E6B7D),
-                                        14,
-                                        FontWeight.w500)),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 3),
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(2),
+                                                color: theme.isDarkMode
+                                          ? position.qty ==
+                                                            "0"
+                                                        ? colors.colorBlack
+                                                        : colors.darkGrey
+                                          : position.qty ==
+                                                            "0"
+                                                        ? colors.colorWhite
+                                                        : const Color(0xffECEDEE)),
+                                            child: Text(
+                                      "${position.exch}",
+                                                overflow: TextOverflow.ellipsis,
+                                                style: textStyle(
+                                                    const Color(0xff666666),
+                                                    10,
+                                                    FontWeight.w500)),
+                                          ),
+                                          Text(
+                                    "  ${position.expDate} ",
+                                              overflow: TextOverflow.ellipsis,
+                                              style: textStyles.scripExchTxtStyle
+                                                  .copyWith(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack)),
+                                        ],
+                                      ),
+                                      Text(
+                                " (${position.perChange ?? 0.00}%)",
+                                          style: textStyle(
+                                    position.perChange ==
+                                                "0.00" || position.perChange ==
+                                                          null
+                                            ? colors.ltpgrey : position.perChange!
+                                                      .startsWith("-")
+                                                  ? colors.darkred
+                                                  :  colors.ltpgreen,
+                                              12,
+                                              FontWeight.w500)),
+                                    ],
+                                  ),
+                                  Divider(
+                                      color: theme.isDarkMode
+                                          ? colors.darkGrey
+                                          : Color(
+                                    position.netqty == "0"
+                                                  ? 0xffffffff
+                                                  : 0xffECEDEE),
+                                      thickness: 1.2),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                    "${position.sPrdtAli}",
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  13,
+                                                  FontWeight.w600)),
+                                        ],
+                                      ),
+                                      positions.isNetPnl
+                                          ? Row(
+                                              children: [
+                                                Text("P&L: ",
+                                                    style: textStyle(
+                                                        const Color(0xff5E6B7D),
+                                                        13,
+                                                        FontWeight.w500)),
+                                                Text(
+                                          "₹${position.profitNloss ?? position.rpnl}",
+                                                    style: textStyle(
+                                              position.profitNloss !=
+                                                                null
+                                                  ? position.profitNloss!
+                                                                    .startsWith("-")
+                                                                ? colors.darkred
+                                                      : position.profitNloss ==
+                                                                        "0.00"
+                                                                    ? colors.ltpgrey
+                                                                    : colors
+                                                                        .ltpgreen
+                                                  : position.rpnl!
+                                                                    .startsWith("-")
+                                                                ? colors.darkred
+                                                      : position.rpnl ==
+                                                                        "0.00"
+                                                                    ? colors.ltpgrey
+                                                                    : colors
+                                                                        .ltpgreen,
+                                                        15,
+                                                        FontWeight.w600)),
+                                              ],
+                                            )
+                                          : Row(
+                                              children: [
+                                                Text("MTM: ",
+                                                    style: textStyle(
+                                                        const Color(0xff5E6B7D),
+                                                        13,
+                                                        FontWeight.w500)),
+                                                Text(
+                                          "₹${position.mTm}",
+                                                    style: textStyle(
+                                              position.mTm!
+                                                                .startsWith("-")
+                                                            ? colors.darkred
+                                                  : position.mTm ==
+                                                                    "0.00"
+                                                                ? colors.ltpgrey
+                                                                : colors.ltpgreen,
+                                                        15,
+                                                        FontWeight.w600)),
+                                              ],
+                                            ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text("Qty: ",
+                                              style: textStyle(
+                                                  const Color(0xff5E6B7D),
+                                                  14,
+                                                  FontWeight.w500)),
                                 Text("${position.qty}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500)),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text("Avg: ",
-                                    style: textStyle(
-                                        const Color(0xff5E6B7D),
-                                        14,
-                                        FontWeight.w500)),
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  14,
+                                                  FontWeight.w500)),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text("Avg: ",
+                                              style: textStyle(
+                                                  const Color(0xff5E6B7D),
+                                                  14,
+                                                  FontWeight.w500)),
                                 Text("${position.avgPrc}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500)),
-                              ],
-                            ),
-                          ],
-                        ),
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  14,
+                                                  FontWeight.w500)),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                       ]
                     ),
                   ),
-                );
+                      );
               },
               separatorBuilder: (BuildContext context, int index) {
                 final position = exitablePositions[index];
                 
                 return Container(
-                  color: theme.isDarkMode
+                        color: theme.isDarkMode
                       ? !position.isExitSelection!
-                          ? colors.darkGrey
-                          : colors.colorBlack
+                                ? colors.darkGrey
+                                : colors.colorBlack
                       : !position.isExitSelection!
-                          ? const Color(0xffF1F3F8)
-                          : colors.colorWhite,
-                  height: 6);
+                                ? const Color(0xffF1F3F8)
+                                : colors.colorWhite,
+                        height: 6);
               },
             );
           }
@@ -429,7 +447,21 @@ class ExitPositionScreen extends ConsumerWidget {
                   onTap: positions.exitPositionQty == 0
                       ? () {}
                       : () async {
-                          await positions.exitPosition(context, false);
+                          try {
+                            // Execute the exit position logic
+                            await positions.exitPosition(context, false);
+                            
+                            // Check if context is still valid and mounted before navigating
+                            if (context.mounted) {
+                              // Use Navigator.of(context).maybePop() which safely checks if navigation is possible
+                              Navigator.of(context).maybePop();
+                            }
+                          } catch (e) {
+                            // Handle any errors during the exit process
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: ${e.toString()}')),
+                            );
+                          }
                         },
                   child: Center(
                       child: Text(

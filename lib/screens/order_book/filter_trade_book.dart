@@ -19,7 +19,6 @@ class _OrderbookTradeBookFilterBottomSheetState
     extends ConsumerState<OrderbookTradeBookFilterBottomSheet> {
   Preferences pref = Preferences();
   late bool scripisAscending;
-  late bool pricepisAscending;
   late bool buyOrsellisAscending;
   late bool timeisAscending;
 
@@ -27,7 +26,6 @@ class _OrderbookTradeBookFilterBottomSheetState
   void initState() {
     setState(() {
       scripisAscending = pref.isTBScripname ?? true;
-      pricepisAscending = pref.isTBPrice ?? true;
       buyOrsellisAscending = pref.isTBBuyorSell ?? true;
       timeisAscending = pref.isTBTime ?? true;
     });
@@ -103,48 +101,6 @@ class _OrderbookTradeBookFilterBottomSheetState
                       ),
                       Text(
                         "Scrip Name",
-                        style: textStyles.prdText,
-                      ),
-                    ],
-                  ),
-                ),
-                const ListDivider(),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              setState(() {
-                if (pricepisAscending == true) {
-                  ref.read(orderProvider).filterTradeBook("LTPDSC");
-                } else if (pricepisAscending == false) {
-                  ref.read(orderProvider).filterTradeBook("LTPASC");
-                }
-
-                pricepisAscending = !pricepisAscending;
-                pref.setTbPrice(pricepisAscending);
-                Navigator.pop(context);
-              });
-            },
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                  child: Row(
-                    children: [
-                      Icon(
-                        pref.isTBPrice == true
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 20,
-                        color: colors.colorGrey,
-                      ),
-                      const SizedBox(
-                        width: 15,
-                      ),
-                      Text(
-                        "LTP",
                         style: textStyles.prdText,
                       ),
                     ],

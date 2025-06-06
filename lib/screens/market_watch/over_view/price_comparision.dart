@@ -1,7 +1,7 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';  
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -58,7 +58,8 @@ class PriceComparision extends ConsumerWidget {
                           ? const Color(0xffB5C0CF).withOpacity(.15)
                           : const Color(0xffF1F3F8),
                       // border: Border.all(color: Colors.grey),
-                      borderRadius: const BorderRadius.all(Radius.circular(32)))),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(32)))),
               // buttonDecoration: const BoxDecoration(
               //     color: Color(0xffF1F3F8),
               //     // border: Border.all(color: Colors.grey),
@@ -89,45 +90,48 @@ class PriceComparision extends ConsumerWidget {
         ),
       ),
       const SizedBox(height: 12),
-      peersdata(peersData.fundamentalData!.peersComparison!.stock!, peersData, theme),
-      Divider(color: 
-      theme.isDarkMode
-                  ?colors.darkColorDivider
-                  :colors.colorDivider),
-      peersdata(peersData.fundamentalData!.peersComparison!.peers!, peersData,theme),
+      peersdata(
+          peersData.fundamentalData!.peersComparison!.stock!, peersData, theme),
+      Divider(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
+      peersdata(
+          peersData.fundamentalData!.peersComparison!.peers!, peersData, theme),
       const SizedBox(height: 12),
-      Divider(color: theme.isDarkMode
-                  ?colors.darkColorDivider
-                  :colors.colorDivider),
+      Divider(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
       const SizedBox(height: 8),
-      Text("Price Comparison",
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              20,
-              FontWeight.w600)),
-      const SizedBox(height: 5),
-      Text(
-          "Compare ${peersData.getQuotes!.tsym!.replaceAll("-EQ", "")} with other stocks",
-          style: textStyle(const Color(0xff000000), 12, FontWeight.w500)),
-      const SizedBox(height: 14),
-      const PriceComChart(),
-      const SizedBox(height: 4),
-      Divider(color: theme.isDarkMode
-                  ?colors.darkColorDivider
-                  :colors.colorDivider),
-      const SizedBox(height: 4),
+      // Text("Price Comparison",
+      //     style: textStyle(
+      //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+      //         20,
+      //         FontWeight.w600)),
+      // const SizedBox(height: 5),
+      // Text(
+      //     "Compare ${peersData.getQuotes!.tsym!.replaceAll("-EQ", "")} with other stocks",
+      //     style: textStyle(const Color(0xff000000), 12, FontWeight.w500)),
+      // const SizedBox(height: 14),
+      // const PriceComChart(),
+      // const SizedBox(height: 4),
+      // Divider(color: theme.isDarkMode
+      //             ?colors.darkColorDivider
+      //             :colors.colorDivider),
+      // const SizedBox(height: 4),
     ]);
   }
 
-  ListView peersdata(List<Stock> list, MarketWatchProvider peersData ,  ThemesProvider themes) {
+  ListView peersdata(
+      List<Stock> list, MarketWatchProvider peersData, ThemesProvider themes) {
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemCount: list.length,
       separatorBuilder: (BuildContext context, int index) {
-        return Divider(color: themes.isDarkMode
-                  ?colors.darkColorDivider
-                  :colors.colorDivider);
+        return Divider(
+            color: themes.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider);
       },
       itemBuilder: (BuildContext context, int index) {
         return StockRowTable(

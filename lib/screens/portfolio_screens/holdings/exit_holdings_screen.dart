@@ -498,7 +498,7 @@ class ExitHoldingsScreen extends ConsumerWidget {
                                                                         index]
                                                                     .brkcolqty ==
                                                                 "0"
-                                                        ? "You are unable to exit because there are no sealable quantity. Kindly do E-DIS."
+                                                        ? "You are unable to exit because there are no sellable quantity. Kindly do E-DIS."
                                                         : "You are unable to exit because the stock is pledged. Kindly unpledge and do E-DIS.",
                                                     style: textStyle(
                                                         theme.isDarkMode

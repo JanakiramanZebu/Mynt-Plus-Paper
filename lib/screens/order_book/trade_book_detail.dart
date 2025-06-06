@@ -165,7 +165,9 @@ class TradeBookDetail extends ConsumerWidget {
                                 : displayData.prc != null && displayData.prc != "null"
                                     ? displayData.prc!
                                     : "0.00", 
-                            "", "", theme),
+                            "Trade Value",
+                            "${displayData.flqty != null && displayData.flprc != null ? (double.parse(displayData.flqty!) * double.parse(displayData.flprc!)) : 0.00}",theme
+                            ),
                         const SizedBox(height: 4),
                         rowOfInfoData("Filled Qty", "${displayData.flqty ?? ''}", "Fill Id",
                             displayData.flid ?? "-", theme),
@@ -173,7 +175,6 @@ class TradeBookDetail extends ConsumerWidget {
                         rowOfInfoData("Validity", "${displayData.ret ?? ''}", "Product",
                             "${displayData.sPrdtAli ?? ''}", theme),
                         const SizedBox(height: 4),
-
                         rowOfInfoData(
                             "Order Id",
                             "${displayData.norenordno ?? ''}",
@@ -182,6 +183,9 @@ class TradeBookDetail extends ConsumerWidget {
                                 ? formatDateTime(value: displayData.norentm!)
                                 : "-",
                             theme),
+                            rowOfInfoData(
+                            "Exch Order ID", displayData.exchordid ?? "-", "","",theme
+                            ),
                         //
                       ])),
             ],

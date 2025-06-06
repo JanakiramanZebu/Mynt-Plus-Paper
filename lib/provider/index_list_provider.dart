@@ -418,7 +418,8 @@ class IndexListProvider extends DefaultChangeNotifier {
 
 // Modify Default Index list and store in local
 
-  changeIndex(IndexValue addNewIndex, BuildContext context, int index) async {
+  changeIndex(
+      IndexValue addNewIndex, BuildContext context, dynamic index) async {
     final localstorage = await SharedPreferences.getInstance();
 
     if (index == 0) {
@@ -449,7 +450,8 @@ class IndexListProvider extends DefaultChangeNotifier {
 
     await getIndeexListFromLocal(context);
 
-    ref.read(marketWatchProvider)
+    ref
+        .read(marketWatchProvider)
         .requestMWScrip(isSubscribe: true, context: context);
     ScaffoldMessenger.of(context)
         .showSnackBar(successMessage(context, "Index scrip modified"));
@@ -502,26 +504,25 @@ class IndexListProvider extends DefaultChangeNotifier {
       if (wasLoadingOn) {
         toggleLoadingOn(false);
       }
-      
+
       _checkSess = await api.getAddDeleteSciptoMW(
           isAdd: false, scripToken: "", wlname: "");
-      
-      if (_checkSess?.stat == null || 
-          (_checkSess!.emsg == "Session Expired :  Invalid Session Key" && 
-           _checkSess!.stat == "Not_Ok")) {
+
+      if (_checkSess?.stat == null ||
+          (_checkSess!.emsg == "Session Expired :  Invalid Session Key" &&
+              _checkSess!.stat == "Not_Ok")) {
         // Directly call ifSessionExpired without waiting, as it handles cleanup
         ref.read(authProvider).ifSessionExpired(context);
         return;
-      }
-      else {
+      } else {
         _checkSess!.stat = "Ok";
       }
-      
+
       // Only restore loading state if it was on before
       if (wasLoadingOn) {
         toggleLoadingOn(true);
       }
-      
+
       notifyListeners();
     } catch (e) {
       // In case of any error, assume session is invalid

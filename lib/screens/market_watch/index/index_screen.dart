@@ -38,7 +38,8 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList> with Automa
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     
-    final indexProvider = ref.read(indexListProvider);
+    // Watch the indexListProvider to rebuild when the default index list changes
+    final indexProvider = ref.watch(indexListProvider);
     
     final indexValues = indexProvider.defaultIndexList?.indValues;
     if (indexValues == null || indexValues.isEmpty) {
@@ -47,8 +48,12 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList> with Automa
     
     // Width calculation moved here to avoid context in initState
     final itemWidth = MediaQuery.of(context).size.width * 0.47;
+    
+    // Create a unique key based on the indices to force rebuild when they change
+    final indexKey = ValueKey(indexValues.map((i) => "${i.exch}|${i.token}").join("-"));
         
         return Container(
+          key: indexKey, // Add key here to force rebuild when indices change
           margin: const EdgeInsets.symmetric(vertical: 6),
       padding: EdgeInsets.only(left: widget.src ? 0 : 12),
       height: widget.src ? 54 : 50,
@@ -63,7 +68,7 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList> with Automa
             final indexItem = indexValues[index];
             
             // Create a key for efficient widget reuse
-            final key = ValueKey('index-${indexItem.token}');
+            final key = ValueKey('index-${indexItem.token}-${indexItem.exch}');
             
             // Use const for spacing
             return Padding(
@@ -104,7 +109,11 @@ class OptimizedIndexItem extends ConsumerWidget {
     final token = indexItem.token?.toString();
     final exch = indexItem.exch?.toString();
     
+    // Add a ValueKey that includes all important properties to ensure proper updates
+    final itemKey = ValueKey('${exch}_${token}_${indexItem.idxname}');
+    
     return RepaintBoundary(
+      key: itemKey,
       child: InkWell(
         onTap: () => _handleTap(context, marketWatch, token, exch),
         onLongPress: () => _handleLongPress(context, indexProvider, marketWatch),
@@ -144,6 +153,7 @@ class OptimizedIndexItem extends ConsumerWidget {
               
               // Dynamic part that updates with WebSocket data
               _LivePriceWidget(
+                key: ValueKey('price_$token'),
                 token: token ?? "",
                 initialLtp: indexItem.ltp == null || indexItem.ltp == "null" ? "0.00" : indexItem.ltp,
                 initialChange: indexItem.change == null || indexItem.change == "null" ? "0.00" : indexItem.change, 
@@ -196,27 +206,36 @@ class OptimizedIndexItem extends ConsumerWidget {
   // Handle long press on index item
   Future<void> _handleLongPress(BuildContext context, dynamic indexProvider, dynamic marketWatch) async {
     try {
-      await indexProvider.fetchIndexList("NSE", context);
-      
-      // Pass the indexItem directly - no conversion needed
-      await showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          isDismissible: true,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-            ),
-          ),
-          builder: (_) => IndexBottomSheet(
-            defaultIndex: indexItem, 
-            src: src
-          )
+      // Get the index position in the list (0-3 typically)
+      final int indexPosition = indexProvider.defaultIndexList!.indValues!.indexWhere(
+        (item) => item.token == indexItem.token && item.exch == indexItem.exch
       );
       
-      await indexProvider.fetchIndexList("exit", context);
-      await marketWatch.requestMWScrip(context: context, isSubscribe: true);
+      // Only proceed if we found a valid index position
+      if (indexPosition >= 0) {
+        await indexProvider.fetchIndexList("NSE", context);
+        
+        // Pass the indexPosition directly - no conversion needed
+        await showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            isDismissible: true,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+              ),
+            ),
+            builder: (_) => IndexBottomSheet(
+              defaultIndex: indexItem, 
+              src: src,
+              indexPosition: indexPosition, // Pass the index position
+            )
+        );
+        
+        await indexProvider.fetchIndexList("exit", context);
+        await marketWatch.requestMWScrip(context: context, isSubscribe: true);
+      }
     } catch (e) {
       // Log or handle the error
       debugPrint("Error in index onLongPress: $e");
@@ -273,6 +292,28 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
     if (!_isInitialized) {
       _setupSocketListener();
       _isInitialized = true;
+    }
+  }
+  
+  @override
+  void didUpdateWidget(_LivePriceWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // If token changed, update socket listener
+    if (oldWidget.token != widget.token) {
+      // Reset values
+      _ltp = widget.initialLtp == "null" ? "0.00" : widget.initialLtp;
+      _change = widget.initialChange == "null" ? "0.00" : widget.initialChange;
+      _perChange = widget.initialPerChange == "null" ? "0.00" : widget.initialPerChange;
+      
+      // Reset socket subscription
+      _subscription?.cancel();
+      _isInitialized = false;
+      _setupSocketListener();
+      _isInitialized = true;
+      
+      // Force UI update
+      if (mounted) setState(() {});
     }
   }
   

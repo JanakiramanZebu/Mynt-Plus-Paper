@@ -25,7 +25,8 @@ class SearchScreen extends ConsumerStatefulWidget {
   ConsumerState<SearchScreen> createState() => _AddScripState();
 }
 
-class _AddScripState extends ConsumerState<SearchScreen> with TickerProviderStateMixin {
+class _AddScripState extends ConsumerState<SearchScreen>
+    with TickerProviderStateMixin {
   late TabController tabCtrl;
   String _searchvalue = "";
   int tabcount = 5;
@@ -97,6 +98,7 @@ class _AddScripState extends ConsumerState<SearchScreen> with TickerProviderStat
                           height: 40,
                           padding: const EdgeInsets.only(right: 14.0),
                           child: TextFormField(
+                              autofocus: true,
                               controller: textCtrl,
                               style: textStyle(
                                   theme.isDarkMode
@@ -163,8 +165,8 @@ class _AddScripState extends ConsumerState<SearchScreen> with TickerProviderStat
                                 }
                                 if (internet.connectionStatus !=
                                     ConnectivityResult.none) {
-                                  searchScrip.scripSearch(
-                                      value, context, tabCtrl.index, widget.isBasket);
+                                  searchScrip.scripSearch(value, context,
+                                      tabCtrl.index, widget.isBasket);
                                 }
                               }))),
                   body: Stack(children: [

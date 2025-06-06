@@ -24,6 +24,7 @@ import '../../provider/order_provider.dart';
 import '../../provider/shocase_provider.dart';
 import '../../provider/sip_order_provider.dart';
 import '../../provider/thems.dart';
+import '../../provider/transcation_provider.dart';
 import '../../provider/user_profile_provider.dart';
 import '../../provider/websocket_provider.dart';
 import '../../routes/route_names.dart';
@@ -391,6 +392,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
           final orderInput = ref.watch(ordInputProvider);
           final internet = ref.watch(networkStateProvider);
           final theme = ref.read(themeProvider);
+          final trancation = ref.watch(transcationProvider);
 
           final sip = ref.watch(siprovider);
           int frezQtyOrderSliceMaxLimit=ref.read(orderProvider).frezQtyOrderSliceMaxLimit;
@@ -3222,335 +3224,392 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (orderType != "GTT" && orderType != "SIP") ...[
-                                                    Container(
-                                                        width:
-                                                            MediaQuery.of(context).size.width,
-                                                        decoration: BoxDecoration(
-                                                            color: theme.isDarkMode
-                                                                ? colors.darkGrey
-                                                                : const Color(0xfffafbff),
-                                                            border: Border(
-                                                                top: BorderSide(
-                                                                    color: theme.isDarkMode
+                                    if (orderType != "GTT" &&
+                                        orderType != "SIP") ...[
+                                      Container(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          decoration: BoxDecoration(
+                                              color: theme.isDarkMode
+                                                  ? colors.darkGrey
+                                                  : const Color(0xfffafbff),
+                                              border: Border(
+                                                  top: BorderSide(
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .darkColorDivider
+                                                          : colors
+                                                              .colorDivider),
+                                                  bottom: BorderSide(
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .darkColorDivider
+                                                          : colors
+                                                              .colorDivider))),
+                                          padding: const EdgeInsets.only(
+                                              left: 16.0, right: 3, top: 0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              if (isAvbSecu) ...[
+                                                AnimatedBuilder(
+                                                  animation: anibuildctrl,
+                                                  builder: (context, child) {
+                                                    return Transform.translate(
+                                                      offset: Offset(
+                                                          _shakeAnimation
+                                                                  .value *
+                                                              sin(DateTime.now()
+                                                                      .millisecondsSinceEpoch *
+                                                                  0.01),
+                                                          0),
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          final dynamic
+                                                              tooltip =
+                                                              tooltipKey
+                                                                  .currentState;
+                                                          tooltip
+                                                              ?.ensureTooltipVisible(); // Manually show tooltip on tap
+                                                        },
+                                                        child:
+                                                            AnimatedContainer(
+                                                                duration:
+                                                                    const Duration(
+                                                                        milliseconds:
+                                                                            300),
+                                                                curve: Curves
+                                                                    .easeInCubic,
+                                                                margin:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                        right:
+                                                                            16,
+                                                                        top: 16,
+                                                                        bottom:
+                                                                            0),
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(0),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: const Color(
+                                                                      0xffFFF6E6),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              6),
+                                                                  border: Border
+                                                                      .all(
+                                                                    color: anibuildctrl.isAnimating
                                                                         ? colors
-                                                                            .darkColorDivider
-                                                                        : colors
-                                                                            .colorDivider),
-                                                                bottom: BorderSide(
-                                                                    color: theme.isDarkMode
-                                                                        ? colors
-                                                                            .darkColorDivider
-                                                                        : colors
-                                                                            .colorDivider))),
-                                                        padding: const EdgeInsets.only(
-                                                            left: 16.0, right: 3, top: 0),
-                                                        child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment.start,
-                                                            children: [
-                                                            if (isAvbSecu) ...[
-                                                                AnimatedBuilder(
-                                                                animation: anibuildctrl,
-                                                                builder: (context, child) {
-                                                                    return Transform.translate(
-                                                                    offset: Offset(
-                                                                        _shakeAnimation
-                                                                                .value *
-                                                                            sin(DateTime.now()
-                                                                                    .millisecondsSinceEpoch *
-                                                                                0.01),
-                                                                        0),
-                                                                    child: GestureDetector(
-                                                                        onTap: () {
-                                                                        final dynamic
-                                                                            tooltip =
-                                                                            tooltipKey
-                                                                                .currentState;
-                                                                        tooltip
-                                                                            ?.ensureTooltipVisible(); // Manually show tooltip on tap
-                                                                        },
-                                                                        child:
-                                                                            AnimatedContainer(
-                                                                                duration:
-                                                                                    const Duration(
-                                                                                        milliseconds:
-                                                                                            300),
-                                                                                curve: Curves
-                                                                                    .easeInCubic,
-                                                                                margin:
-                                                                                    const EdgeInsets
-                                                                                        .only(
-                                                                                        right:
-                                                                                            16,
-                                                                                        top: 16,
-                                                                                        bottom:
-                                                                                            0),
-                                                                                padding:
-                                                                                    const EdgeInsets
-                                                                                        .all(0),
-                                                                                decoration:
-                                                                                    BoxDecoration(
-                                                                                color: const Color(
-                                                                                    0xffFFF6E6),
-                                                                                borderRadius:
-                                                                                    BorderRadius
-                                                                                        .circular(
-                                                                                            6),
-                                                                                border: Border
-                                                                                    .all(
-                                                                                    color: anibuildctrl.isAnimating
-                                                                                        ? colors
-                                                                                            .darkred
-                                                                                        : const Color(
-                                                                                            0xffFFF6E6), // Border color
-                                                                                    width: anibuildctrl
-                                                                                            .isAnimating
-                                                                                        ? 1.0
-                                                                                        : 0.0, // Border width (1px)
-                                                                                ),
-                                                                                boxShadow:
-                                                                                    anibuildctrl
-                                                                                            .isAnimating
-                                                                                        ? [
-                                                                                            BoxShadow(
-                                                                                                color: colors.darkred.withOpacity(0.6),
-                                                                                                blurRadius: 10,
-                                                                                                spreadRadius: 3,
-                                                                                                offset: const Offset(0, 0),
-                                                                                            ),
-                                                                                            ]
-                                                                                        : [],
-                                                                                ),
-                                                                                child: Row(
-                                                                                mainAxisAlignment:
-                                                                                    MainAxisAlignment
-                                                                                        .start,
-                                                                                children: [
-                                                                                    IconButton(
-                                                                                        onPressed:
-                                                                                            () {
-                                                                                        setState(
-                                                                                            () {
-                                                                                            isSecu =
-                                                                                                !isSecu;
-                                                                                        });
-                                                                                        },
-                                                                                        icon: SvgPicture.asset(isSecu
-                                                                                            ? assets.checkedbox
-                                                                                            : assets.checkbox)),
-                                                                                    Expanded(
-                                                                                        // Ensures text takes available space and wraps
-                                                                                        child:
-                                                                                            Column(
-                                                                                    crossAxisAlignment:
-                                                                                        CrossAxisAlignment
-                                                                                            .start,
-                                                                                    children: [
-                                                                                        RichText(
-                                                                                        text:
-                                                                                            TextSpan(
-                                                                                            style:
-                                                                                                textStyle(
-                                                                                            const Color(0xffB37702),
-                                                                                            13,
-                                                                                            FontWeight.w500,
-                                                                                            ),
-                                                                                            children: [
-                                                                                            const WidgetSpan(
-                                                                                                child: Icon(Icons.warning_outlined, color: Color.fromARGB(255, 255, 170, 0), size: 16),
-                                                                                            ),
-                                                                                            const TextSpan(text: " Exchange surveillance measures are active; tick the box to produce the order."),
-                                                                                            WidgetSpan(
-                                                                                                child: Tooltip(
-                                                                                                key: tooltipKey,
-                                                                                                // enableTapToDismiss: false,
-                                                                                                preferBelow: false,
-                                                                                                message: quotemsg,
-                                                                                                textStyle: const TextStyle(
-                                                                                                    color: Colors.white,
-                                                                                                    fontSize: 13,
-                                                                                                ),
-                                                                                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                                                                                                margin: const EdgeInsets.symmetric(horizontal: 16),
-                                                                                                decoration: BoxDecoration(
-                                                                                                    color: Colors.black,
-                                                                                                    borderRadius: BorderRadius.circular(8),
-                                                                                                ),
-                                                                                                child: Text(
-                                                                                                    " Know more",
-                                                                                                    style: textStyle(
-                                                                                                    !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
-                                                                                                    13,
-                                                                                                    FontWeight.w500,
-                                                                                                    ),
-                                                                                                ),
-                                                                                                ),
-                                                                                            ),
-                                                                                            ],
-                                                                                        ),
-                                                                                        softWrap:
-                                                                                            true,
-                                                                                        ),
-                                                                                    ],
-                                                                                    ))
-                                                                                ],
-                                                                                )),
-                                                                    ),
-                                                                    );
-                                                                },
+                                                                            .darkred
+                                                                        : const Color(
+                                                                            0xffFFF6E6), // Border color
+                                                                    width: anibuildctrl
+                                                                            .isAnimating
+                                                                        ? 1.0
+                                                                        : 0.0, // Border width (1px)
+                                                                  ),
+                                                                  boxShadow:
+                                                                      anibuildctrl
+                                                                              .isAnimating
+                                                                          ? [
+                                                                              BoxShadow(
+                                                                                color: colors.darkred.withOpacity(0.6),
+                                                                                blurRadius: 10,
+                                                                                spreadRadius: 3,
+                                                                                offset: const Offset(0, 0),
+                                                                              ),
+                                                                            ]
+                                                                          : [],
                                                                 ),
-                                                            ],
-                                                            SingleChildScrollView(
-                                                                scrollDirection:
-                                                                    Axis.horizontal,
                                                                 child: Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .spaceBetween,
-                                                                    children: [
-                                                                    Row(children: [
-                                                                        CustomWidgetButton(
-                                                                            onPress: internet
-                                                                                        .connectionStatus ==
-                                                                                    ConnectivityResult
-                                                                                        .none
-                                                                                ? () {}
-                                                                                : () {
-                                                                                    marginUpdate();
-                                                                                    showModalBottomSheet(
-                                                                                        useSafeArea:
-                                                                                            true,
-                                                                                        isScrollControlled:
-                                                                                            true,
-                                                                                        shape: const RoundedRectangleBorder(
-                                                                                            borderRadius: BorderRadius.vertical(
-                                                                                                top: Radius.circular(
-                                                                                                    16))),
-                                                                                        context:
-                                                                                            context,
-                                                                                        builder:
-                                                                                            (context) {
-                                                                                        return const MarginDetailsBottomsheet();
-                                                                                        });
-                                                                                },
-                                                                            widget: Row(
-                                                                                children: [
-                                                                                Text(
-                                                                                    "Margin: ",
-                                                                                    style: textStyle(
-                                                                                        const Color(
-                                                                                            0xff666666),
-                                                                                        12,
-                                                                                        FontWeight
-                                                                                            .w500)),
-                                                                                Text(
-                                                                                    "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
-                                                                                    style: textStyle(
-                                                                                        !theme.isDarkMode
-                                                                                            ? colors.colorBlue
-                                                                                            : colors.colorLightBlue,
-                                                                                        12,
-                                                                                        FontWeight.w600)),
-                                                                                Icon(
-                                                                                    Icons
-                                                                                        .arrow_drop_down,
-                                                                                    color: !theme.isDarkMode
-                                                                                        ? colors
-                                                                                            .colorBlue
-                                                                                        : colors
-                                                                                            .colorLightBlue)
-                                                                                ])),
-                                                                        const SizedBox(
-                                                                            width: 20),
-                                                                        CustomWidgetButton(
-                                                                            onPress: internet
-                                                                                        .connectionStatus ==
-                                                                                    ConnectivityResult
-                                                                                        .none
-                                                                                ? () {}
-                                                                                : () {
-                                                                                    BrokerageInput brokerageInput = BrokerageInput(
-                                                                                        exch:
-                                                                                            "${widget.scripInfo.exch}",
-                                                                                        prc: priceCtrl
-                                                                                            .text,
-                                                                                        prd: orderInput
-                                                                                            .orderType,
-                                                                                        qty:
-                                                                                            "${widget.scripInfo.ls}",
-                                                                                        trantype: isBuy!
-                                                                                            ? "B"
-                                                                                            : "S",
-                                                                                        tsym:
-                                                                                            "${widget.scripInfo.tsym}");
-                                                                                    ref
-                                                                                        .read(
-                                                                                            orderProvider)
-                                                                                        .fetchGetBrokerage(
-                                                                                            brokerageInput,
-                                                                                            context);
-                                                                                    showModalBottomSheet(
-                                                                                        useSafeArea:
-                                                                                            true,
-                                                                                        isScrollControlled:
-                                                                                            true,
-                                                                                        shape: const RoundedRectangleBorder(
-                                                                                            borderRadius: BorderRadius.vertical(
-                                                                                                top: Radius.circular(
-                                                                                                    16))),
-                                                                                        context:
-                                                                                            context,
-                                                                                        builder:
-                                                                                            (context) {
-                                                                                        return const ChargesDetailsBottomsheet();
-                                                                                        });
-                                                                                },
-                                                                            widget: Row(
-                                                                                children: [
-                                                                                Text(
-                                                                                    "Charges: ",
-                                                                                    style: textStyle(
-                                                                                        const Color(
-                                                                                            0xff666666),
-                                                                                        12,
-                                                                                        FontWeight
-                                                                                            .w500)),
-                                                                                Text(
-                                                                                    "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                                                    style: textStyle(
-                                                                                        !theme.isDarkMode
-                                                                                            ? colors.colorBlue
-                                                                                            : colors.colorLightBlue,
-                                                                                        12,
-                                                                                        FontWeight.w600)),
-                                                                                Icon(
-                                                                                    Icons
-                                                                                        .arrow_drop_down,
-                                                                                    color: !theme.isDarkMode
-                                                                                        ? colors
-                                                                                            .colorBlue
-                                                                                        : colors
-                                                                                            .colorLightBlue)
-                                                                                ]))
-                                                                    ]),
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .start,
+                                                                  children: [
                                                                     IconButton(
-                                                                        onPressed: internet
-                                                                                    .connectionStatus ==
-                                                                                ConnectivityResult
-                                                                                    .none
-                                                                            ? null
-                                                                            : () {
-                                                                                marginUpdate();
-                                                                                },
-                                                                        icon: SvgPicture
-                                                                            .asset(assets
-                                                                                .reloadIcon))
-                                                                    ]),
-                                                            ),
-                                                            ],
-                                                        ),
-                                                        ),
+                                                                        onPressed:
+                                                                            () {
+                                                                          setState(
+                                                                              () {
+                                                                            isSecu =
+                                                                                !isSecu;
+                                                                          });
+                                                                        },
+                                                                        icon: SvgPicture.asset(isSecu
+                                                                            ? assets.checkedbox
+                                                                            : assets.checkbox)),
+                                                                    Expanded(
+                                                                        // Ensures text takes available space and wraps
+                                                                        child:
+                                                                            Column(
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .start,
+                                                                      children: [
+                                                                        RichText(
+                                                                          text:
+                                                                              TextSpan(
+                                                                            style:
+                                                                                textStyle(
+                                                                              const Color(0xffB37702),
+                                                                              13,
+                                                                              FontWeight.w500,
+                                                                            ),
+                                                                            children: [
+                                                                              const WidgetSpan(
+                                                                                child: Icon(Icons.warning_outlined, color: Color.fromARGB(255, 255, 170, 0), size: 16),
+                                                                              ),
+                                                                              const TextSpan(text: " Exchange surveillance measures are active; tick the box to produce the order."),
+                                                                              WidgetSpan(
+                                                                                child: Tooltip(
+                                                                                  key: tooltipKey,
+                                                                                  // enableTapToDismiss: false,
+                                                                                  preferBelow: false,
+                                                                                  message: quotemsg,
+                                                                                  textStyle: const TextStyle(
+                                                                                    color: Colors.white,
+                                                                                    fontSize: 13,
+                                                                                  ),
+                                                                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                                                                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                                                                                  decoration: BoxDecoration(
+                                                                                    color: Colors.black,
+                                                                                    borderRadius: BorderRadius.circular(8),
+                                                                                  ),
+                                                                                  child: Text(
+                                                                                    " Know more",
+                                                                                    style: textStyle(
+                                                                                      !theme.isDarkMode ? colors.colorBlue : colors.colorLightBlue,
+                                                                                      13,
+                                                                                      FontWeight.w500,
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                          softWrap:
+                                                                              true,
+                                                                        ),
+                                                                      ],
+                                                                    ))
+                                                                  ],
+                                                                )),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ],
+                                              SingleChildScrollView(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Row(children: [
+                                                        CustomWidgetButton(
+                                                            onPress: internet
+                                                                        .connectionStatus ==
+                                                                    ConnectivityResult
+                                                                        .none
+                                                                ? () {}
+                                                                : () {
+                                                                    marginUpdate();
+                                                                    showModalBottomSheet(
+                                                                        useSafeArea:
+                                                                            true,
+                                                                        isScrollControlled:
+                                                                            true,
+                                                                        shape: const RoundedRectangleBorder(
+                                                                            borderRadius: BorderRadius.vertical(
+                                                                                top: Radius.circular(
+                                                                                    16))),
+                                                                        context:
+                                                                            context,
+                                                                        builder:
+                                                                            (context) {
+                                                                          return const MarginDetailsBottomsheet();
+                                                                        });
+                                                                  },
+                                                            widget: Row(
+                                                                children: [
+                                                                  Text(
+                                                                      "Margin: ",
+                                                                      style: textStyle(
+                                                                          const Color(
+                                                                              0xff666666),
+                                                                          12,
+                                                                          FontWeight
+                                                                              .w500)),
+                                                                  Text(
+                                                                      "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
+                                                                      style: textStyle(
+                                                                          !theme.isDarkMode
+                                                                              ? colors.colorBlue
+                                                                              : colors.colorLightBlue,
+                                                                          12,
+                                                                          FontWeight.w600)),
+                                                                  Icon(
+                                                                      Icons
+                                                                          .arrow_drop_down,
+                                                                      color: !theme.isDarkMode
+                                                                          ? colors
+                                                                              .colorBlue
+                                                                          : colors
+                                                                              .colorLightBlue)
+                                                                ])),
+                                                        const SizedBox(
+                                                            width: 20),
+                                                            orderProvide.orderMarginModel != null ? orderProvide.orderMarginModel!.remarks == "Insufficient Balance" ? InkWell(
+                                                              onTap: () {
+                                                                ref
+                                            .read(transcationProvider)
+                                            .fetchValidateToken(context);
+                                        Future.delayed(
+                                            const Duration(milliseconds: 100),
+                                            () async {
+                                          await trancation.ip();
+                                          await trancation.fetchupiIdView(
+                                              trancation.bankdetails!
+                                                  .dATA![trancation.indexss][1],
+                                              trancation.bankdetails!
+                                                      .dATA![trancation.indexss]
+                                                  [2]);
+                                          await trancation
+                                              .fetchcwithdraw(context);
+                                        });
+
+                                        trancation.changebool(true);
+                                        Navigator.pushNamed(
+                                            context, Routes.fundscreen,
+                                            arguments: trancation);
+                                                              },
+                                                              child: Row(
+                                                                    children: [
+                                                                      // Red circular icon with white exclamation mark
+                                                                      Container(
+                                                                        width: 20,
+                                                                        height: 20,
+                                                                        decoration: const BoxDecoration(
+                                                                          color: Colors.white,
+                                                                          shape: BoxShape.circle,
+                                                                        ),
+                                                                        child: const Center(
+                                                                          child: Icon(
+                                                                            Icons.error, // Exclamation icon
+                                                                            color: Colors.red,
+                                                                            size: 20,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(width: 4),
+                                                                      // "+ Add fund" text in blue
+                                                                      Text(
+                                                                        '+ Add fund',
+                                                                        style: textStyle(
+                                                                          !theme.isDarkMode
+                                                                              ? colors.colorBlue
+                                                                              : colors.colorLightBlue,
+                                                                          12,
+                                                                          FontWeight.w600),
+                                                                      ),
+                                                                      SizedBox(width: 20),
+                                                                    ],
+                                                                  ),
+                                                            ) : SizedBox() : SizedBox(),
+                                                        CustomWidgetButton(
+                                                            onPress: internet
+                                                                        .connectionStatus ==
+                                                                    ConnectivityResult
+                                                                        .none
+                                                                ? () {}
+                                                                : () {
+                                                                    BrokerageInput brokerageInput = BrokerageInput(
+                                                                        exch:
+                                                                            "${widget.scripInfo.exch}",
+                                                                        prc: priceCtrl
+                                                                            .text,
+                                                                        prd: orderInput
+                                                                            .orderType,
+                                                                        qty:
+                                                                            "${widget.scripInfo.ls}",
+                                                                        trantype: isBuy!
+                                                                            ? "B"
+                                                                            : "S",
+                                                                        tsym:
+                                                                            "${widget.scripInfo.tsym}");
+                                                                    ref
+                                                                        .read(
+                                                                            orderProvider)
+                                                                        .fetchGetBrokerage(
+                                                                            brokerageInput,
+                                                                            context);
+                                                                    showModalBottomSheet(
+                                                                        useSafeArea:
+                                                                            true,
+                                                                        isScrollControlled:
+                                                                            true,
+                                                                        shape: const RoundedRectangleBorder(
+                                                                            borderRadius: BorderRadius.vertical(
+                                                                                top: Radius.circular(
+                                                                                    16))),
+                                                                        context:
+                                                                            context,
+                                                                        builder:
+                                                                            (context) {
+                                                                          return const ChargesDetailsBottomsheet();
+                                                                        });
+                                                                  },
+                                                            widget: Row(
+                                                                children: [
+                                                                  Text(
+                                                                      "Charges: ",
+                                                                      style: textStyle(
+                                                                          const Color(
+                                                                              0xff666666),
+                                                                          12,
+                                                                          FontWeight
+                                                                              .w500)),
+                                                                  Text(
+                                                                      "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                      style: textStyle(
+                                                                          !theme.isDarkMode
+                                                                              ? colors.colorBlue
+                                                                              : colors.colorLightBlue,
+                                                                          12,
+                                                                          FontWeight.w600)),
+                                                                  Icon(
+                                                                      Icons
+                                                                          .arrow_drop_down,
+                                                                      color: !theme.isDarkMode
+                                                                          ? colors
+                                                                              .colorBlue
+                                                                          : colors
+                                                                              .colorLightBlue)
+                                                                ]))
+                                                      ]),
+                                                      IconButton(
+                                                          onPressed: internet
+                                                                      .connectionStatus ==
+                                                                  ConnectivityResult
+                                                                      .none
+                                                              ? null
+                                                              : () {
+                                                                  marginUpdate();
+                                                                },
+                                                          icon: SvgPicture
+                                                              .asset(assets
+                                                                  .reloadIcon))
+                                                    ]),
+                                              ),
+                                            ],
+                                          ))
                                     ],
                                     Container(
                                         padding: const EdgeInsets.symmetric(
@@ -4795,6 +4854,18 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     data = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
 
     List scripList = data[bsktName] ?? [];
+    
+    // Check if basket already has 20 items
+    if (scripList.length >= 20) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Basket limit reached. Please create a new basket as you are exceeding the 20 item limit."),
+          backgroundColor: colors.darkred,
+          duration: Duration(seconds: 3),
+        )
+      );
+      return; // Exit the function without adding the script
+    }
 
     scripList.add({
       "dname": "${widget.scripInfo.dname}",

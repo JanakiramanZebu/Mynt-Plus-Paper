@@ -8,6 +8,7 @@ import '../../../provider/version_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
+import 'package:flutter/services.dart';
 
 class LoginBannerScreen extends StatefulWidget {
   const LoginBannerScreen({super.key});
@@ -17,13 +18,35 @@ class LoginBannerScreen extends StatefulWidget {
 }
 
 class _LoginBannerScreenState extends State<LoginBannerScreen> {
-  bool _isProcessing = false;
-  bool _isLoginProcessing = false;
+  bool _isAnyProcessing = false;
+  String? _activeButton;
+  bool _conflictTap = false;
 
   Future<void> _handleLogin() async {
-    if (_isProcessing) return;
+    if (_isAnyProcessing) return;
 
-    setState(() => _isProcessing = true);
+    if (_activeButton != null && _activeButton != 'openAccount') {
+      // Conflict: other button also tapped
+      setState(() {
+        _conflictTap = true;
+      });
+      return;
+    }
+
+    setState(() {
+      _isAnyProcessing = true;
+      _activeButton = 'openAccount';
+    });
+    await Future.delayed(Duration(milliseconds: 10));
+    if (_conflictTap) {
+      // Reset everything
+      setState(() {
+        _isAnyProcessing = false;
+        _activeButton = null;
+        _conflictTap = false;
+      });
+      return;
+    }
 
     try {
       // Perform login logic
@@ -38,23 +61,44 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
       );
     } finally {
       if (mounted) {
-        setState(() => _isProcessing = false);
+        setState(() {
+          _isAnyProcessing = false;
+          _activeButton = null;
+          _conflictTap = false;
+        });
       }
     }
   }
 
   Future<void> _handleLoginToMynt(WidgetRef ref) async {
-    if (_isLoginProcessing) return;
-    
-    setState(() => _isLoginProcessing = true);
-    
+    if (_isAnyProcessing) return;
+    if (_activeButton != null && _activeButton != 'loginMynt') {
+      setState(() {
+        _conflictTap = true;
+      });
+      return;
+    }
+    setState(() {
+      _isAnyProcessing = true;
+      _activeButton = 'loginMynt';
+    });
+    await Future.delayed(Duration(milliseconds: 10));
+    if (_conflictTap) {
+      // Reset everything
+      setState(() {
+        _isAnyProcessing = false;
+        _activeButton = null;
+        _conflictTap = false;
+      });
+      return;
+    }
     try {
       final theme = ref.read(themeProvider);
       final auth = ref.read(authProvider);
-      
+
       theme.navigateToNewPage(context);
       auth.clearError();
-      
+
       await Future.delayed(const Duration(milliseconds: 200));
       Navigator.pushNamed(context, Routes.loginScreen);
     } catch (e) {
@@ -64,7 +108,11 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
       );
     } finally {
       if (mounted) {
-        setState(() => _isLoginProcessing = false);
+        setState(() {
+          _isAnyProcessing = false;
+          _activeButton = null;
+          _conflictTap = false;
+        });
       }
     }
   }
@@ -99,7 +147,7 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
         );
 
         if (shouldPop == true) {
-          Navigator.of(context).pop(); // Go back if user confirms
+          SystemNavigator.pop(); // Go back if user confirms
         }
       },
       child: Consumer(
@@ -183,24 +231,20 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Column(
                               children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 0),
-                                  child: SizedBox(
-                                    width: MediaQuery.of(context).size.width,
+                                GestureDetector(
+                                  onTap: _isAnyProcessing
+                                      ? null
+                                      : () => _handleLoginToMynt(ref),
+                                  child: Container(
+                                    width: double.infinity,
                                     height: 46,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          backgroundColor: colors.colorBlack,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                          )),
-                                      onPressed: _isLoginProcessing 
-                                        ? null 
-                                        : () => _handleLoginToMynt(ref),
-                                      child: _isLoginProcessing
+                                    decoration: BoxDecoration(
+                                      color: colors.colorBlack,
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: _isAnyProcessing &&
+                                            _activeButton == 'loginMynt'
                                         ? const SizedBox(
                                             width: 16,
                                             height: 16,
@@ -209,48 +253,45 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                                               color: Colors.white,
                                             ),
                                           )
-                                        : Text("Login to MYNT",
-                                          style: textStylebanner(
-                                              colors.colorWhite,
-                                              17,
-                                              FontWeight.w500)),
-                                    ),
+                                        : Text(
+                                            "Login to MYNT",
+                                            style: textStylebanner(
+                                                colors.colorWhite,
+                                                17,
+                                                FontWeight.w500),
+                                          ),
                                   ),
                                 ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 0),
-                                  child: SizedBox(
-                                    width: MediaQuery.of(context).size.width,
+                                const SizedBox(height: 10),
+
+                                // Open a free account Button
+                                GestureDetector(
+                                  onTap: _isAnyProcessing ? null : _handleLogin,
+                                  child: Container(
+                                    width: double.infinity,
                                     height: 46,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          backgroundColor: colors.colorBlack,
-                                          // padding:
-                                          //     const EdgeInsets.symmetric(vertical: 13),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                          )),
-                                      onPressed:
-                                          _isProcessing ? null : _handleLogin,
-                                      child: _isProcessing
-                                          ? const SizedBox(
-                                              width: 16,
-                                              height: 16,
-                                              child: CircularProgressIndicator(
-                                                  strokeWidth: 2),
-                                            )
-                                          : Text("Open a free account",
-                                              style: textStylebanner(
-                                                  colors.colorWhite,
-                                                  17,
-                                                  FontWeight.w500)),
+                                    decoration: BoxDecoration(
+                                      color: colors.colorBlack,
+                                      borderRadius: BorderRadius.circular(30),
                                     ),
+                                    alignment: Alignment.center,
+                                    child: _isAnyProcessing &&
+                                            _activeButton == 'openAccount'
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : Text(
+                                            "Open a free account",
+                                            style: textStylebanner(
+                                                colors.colorWhite,
+                                                17,
+                                                FontWeight.w500),
+                                          ),
                                   ),
                                 ),
                                 const SizedBox(height: 40),

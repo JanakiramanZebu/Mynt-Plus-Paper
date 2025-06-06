@@ -73,7 +73,9 @@ class BasketList extends ConsumerWidget {
                                             style: ElevatedButton.styleFrom(
                                                 elevation: 0,
                                                 backgroundColor:
-                                                    const Color(0xffF1F3F8),
+                                                    theme.isDarkMode
+                                                          ? colors.colorbluegrey
+                                                          : colors.colorBlack,
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(50),
@@ -83,7 +85,9 @@ class BasketList extends ConsumerWidget {
                                             },
                                             child: Text("No",
                                                 style: textStyle(
-                                                    colors.colorGrey,
+                                                  theme.isDarkMode
+                                                          ? colors.colorBlack
+                                                          : colors.colorWhite,
                                                     12,
                                                     FontWeight.w600))),
                                       ),
@@ -93,9 +97,7 @@ class BasketList extends ConsumerWidget {
                                               style: ElevatedButton.styleFrom(
                                                   elevation: 0,
                                                   backgroundColor:
-                                                      theme.isDarkMode
-                                                          ? colors.colorbluegrey
-                                                          : colors.colorBlack,
+                                                          const Color(0xffF1F3F8),
                                                   shape: RoundedRectangleBorder(
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -108,16 +110,16 @@ class BasketList extends ConsumerWidget {
                                               },
                                               child: Text("Yes",
                                                   style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorBlack
-                                                          : colors.colorWhite,
+                                                      colors.colorGrey,
                                                       12,
                                                       FontWeight.w600))))
                                     ])
                               ]);
                         });
                   },
-                  onTap: () {
+                  onTap: () async {
+                    await basket
+                                                                .fetchBasketMargin();
                     basket.chngBsktName(
                         basket.bsktList[index]['bsketName'], context);
                   },
@@ -151,6 +153,22 @@ class BasketList extends ConsumerWidget {
 class BasketScripList extends ConsumerWidget {
   final String bsktName;
   const BasketScripList({super.key, required this.bsktName});
+  
+  /// Checks if the basket contains scripts from multiple exchanges
+  bool _hasMultipleExchanges(List scriptList) {
+    if (scriptList.isEmpty) return false;
+    
+    // Extract all exchanges from the basket scripts
+    Set<String> exchanges = {};
+    for (var script in scriptList) {
+      if (script['exch'] != null) {
+        exchanges.add(script['exch'].toString());
+      }
+    }
+    
+    // If there's more than one unique exchange, return true
+    return exchanges.length > 1;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -165,12 +183,12 @@ class BasketScripList extends ConsumerWidget {
             titleSpacing: 6,
             leading: const CustomBackBtn(),
             shadowColor: const Color(0xffECEFF3),
-            title: Text(bsktName,
+            title: Text("${bsktName}   (${basket.bsktScripList.length} / ${20})",
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                     14,
                     FontWeight.w600)),
-            actions: basket.bsktScripList.length <= 20
+            actions: basket.bsktScripList.length < 20
                 ? [
                     Row(
                       children: [
@@ -179,6 +197,18 @@ class BasketScripList extends ConsumerWidget {
                             height: 30,
                             child: OutlinedButton(
                                 onPressed: () async {
+                                  // Check if basket already has 20 items
+                                  if (basket.bsktScripList.length >= 20) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text("Basket limit reached. Please create a new basket as you are exceeding the 20 item limit."),
+                                        backgroundColor: colors.darkred,
+                                        duration: Duration(seconds: 3),
+                                      )
+                                    );
+                                    return;
+                                  }
+                                  
                                   await ref.watch(marketWatchProvider)
                                       .searchClear();
                                   Navigator.pushNamed(
@@ -256,8 +286,29 @@ class BasketScripList extends ConsumerWidget {
                                         16,
                                         FontWeight.w500)),
                               ])
-                        ])
+                        ]),
+                    
                   ])),
+                  if (basket.bsktScripList.isNotEmpty && _hasMultipleExchanges(basket.bsktScripList))
+                      Container(
+                        margin: const EdgeInsets.only(top: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffe3f2fd),
+                          borderRadius: BorderRadius.circular(6)
+                        ),
+                        child: Row(
+                           mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, color: colors.darkred, size: 16),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Basket should contain orders of only 1 exchange",
+                              style: textStyle(colors.darkred, 13, FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                      ),
           Container(
               padding: const EdgeInsets.symmetric(vertical: 3),
               decoration: BoxDecoration(
@@ -277,22 +328,42 @@ class BasketScripList extends ConsumerWidget {
                       builder: (context, snapshot) {
                         final socketDatas = snapshot.data ?? {};
                         
-                        // Update basket script list with real-time values
-                        if (snapshot.hasData) {
+                        // Check if we have socket data and need to update
+                        if (snapshot.hasData && socketDatas.isNotEmpty) {
+                          bool updated = false;
+                          
+                          // Update basket script list with real-time values
                           for (var script in basket.bsktScripList) {
-                            final token = script['token'];
-                            if (socketDatas.containsKey(token)) {
+                            final token = script['token']?.toString();
+                            if (token != null && socketDatas.containsKey(token)) {
                               final lp = socketDatas[token]['lp']?.toString();
                               final pc = socketDatas[token]['pc']?.toString();
                               
                               if (lp != null && lp != "null") {
-                                script['lp'] = lp;
+                                if (script['lp']?.toString() != lp) {
+                                  script['lp'] = lp;
+                                  updated = true;
+                                }
                               }
                               
                               if (pc != null && pc != "null") {
-                                script['pc'] = pc;
+                                if (script['pc']?.toString() != pc) {
+                                  script['pc'] = pc;
+                                  updated = true;
+                                }
                               }
                             }
+                          }
+                          
+                          // Force a refresh if we have updates
+                          if (updated) {
+                            // Update in the next frame to avoid rebuild conflicts
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (context.mounted) {
+                                // This will trigger a rebuild with the new values
+                                basket.notifyBasketUpdates();
+                              }
+                            });
                           }
                         }
                         
@@ -417,6 +488,8 @@ class BasketScripList extends ConsumerWidget {
                                                                 .removeBsktScrip(
                                                                     index,
                                                                     bsktName);
+                                                                   await basket
+                                                                .fetchBasketMargin();
                                                             Navigator.pop(context);
                                                           },
                                                           child: Text("Yes",
@@ -443,6 +516,11 @@ class BasketScripList extends ConsumerWidget {
                                 basket.bsktScripList[index]['index'] = index;
                                 basket.bsktScripList[index]['prctyp'] =
                                     basket.bsktScripList[index]['prctype'];
+                                
+                                // Ensure lp and pc values are not null for OrderScreenArgs
+                                final ltp = basket.bsktScripList[index]['lp']?.toString() ?? "0.00";
+                                final perChange = basket.bsktScripList[index]['pc']?.toString() ?? "0.00";
+                                
                                 OrderScreenArgs orderArgs = OrderScreenArgs(
                                     exchange:
                                         '${basket.bsktScripList[index]['exch']}',
@@ -460,8 +538,8 @@ class BasketScripList extends ConsumerWidget {
                                         .scripInfoModel
                                         ?.ls
                                         .toString(),
-                                    ltp: basket.bsktScripList[index]['lp'],
-                                    perChange: basket.bsktScripList[index]['pc'],
+                                    ltp: ltp,
+                                    perChange: perChange,
                                     orderTpye: '',
                                     holdQty: '',
                                     isModify: true,
@@ -516,7 +594,7 @@ class BasketScripList extends ConsumerWidget {
                                                           13,
                                                           FontWeight.w600)),
                                                   Text(
-                                                      "₹${basket.bsktScripList[index]['lp'] ?? 0.00}",
+                                                      "₹${basket.bsktScripList[index]['lp']?.toString() ?? "0.00"}",
                                                       style: textStyle(
                                                           theme.isDarkMode
                                                               ? colors.colorWhite
@@ -554,22 +632,23 @@ class BasketScripList extends ConsumerWidget {
                                                 ],
                                               ),
                                               Text(
-                                                  " (${basket.bsktScripList[index]['pc'] ?? 0.00}%)",
+                                                  " (${basket.bsktScripList[index]['pc']?.toString() ?? "0.00"}%)",
                                                   style: textStyle(
                                                       basket.bsktScripList[index]
                                                                   ['pc']
-                                                              .toString()
-                                                              .startsWith("-")
+                                                              ?.toString()
+                                                              .startsWith("-") ??
+                                                          false
                                                           ? colors.darkred
                                                           : basket.bsktScripList[
                                                                           index]
                                                                           ['pc']
-                                                                      .toString() ==
+                                                                      ?.toString() ==
                                                                   "0.00"
-                                                                  ? colors.ltpgrey
-                                                                  : colors.ltpgreen,
-                                                  12,
-                                                  FontWeight.w500)),
+                                                              ? colors.ltpgrey
+                                                              : colors.ltpgreen,
+                                                      12,
+                                                      FontWeight.w500)),
                                             ]),
                                         const SizedBox(height: 4),
                                         Divider(
@@ -686,6 +765,7 @@ class BasketScripList extends ConsumerWidget {
                                                         FontWeight.w500))
                                               ]),
                                               Row(children: [
+                                                if(basket.bsktScripList[index]["prctype"] != "MKT")...[
                                                 Text("Price: ",
                                                     style: textStyle(
                                                         const Color(0xff5E6B7D),
@@ -699,6 +779,7 @@ class BasketScripList extends ConsumerWidget {
                                                             : colors.colorBlack,
                                                         14,
                                                         FontWeight.w500))
+                                                ]
                                               ])
                                             ])
                                       ])),
@@ -726,20 +807,34 @@ class BasketScripList extends ConsumerWidget {
                     height: 40,
                     decoration: BoxDecoration(
                         border: Border.all(
-                            color: theme.isDarkMode
+                            color: _hasMultipleExchanges(basket.bsktScripList) 
+                              ? Colors.grey 
+                              : (theme.isDarkMode
                                 ? colors.colorWhite
-                                : colors.colorBlack),
+                                : colors.colorBlack)),
                         borderRadius: BorderRadius.circular(108)),
                     child: InkWell(
-                        onTap: () async {
-                          basket.placeBasketOrder(context);
-                        },
+                        onTap: _hasMultipleExchanges(basket.bsktScripList)
+                          ? () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Cannot place order: Basket should contain orders from only 1 exchange"),
+                                  backgroundColor: colors.darkred,
+                                  duration: Duration(seconds: 3),
+                                )
+                              );
+                            }
+                          : () async {
+                              basket.placeBasketOrder(context);
+                            },
                         child: Center(
                             child: Text("Place Order",
                                 style: textStyle(
-                                    theme.isDarkMode
+                                    _hasMultipleExchanges(basket.bsktScripList)
+                                      ? Colors.grey
+                                      : (theme.isDarkMode
                                         ? colors.colorWhite
-                                        : colors.colorBlack,
+                                        : colors.colorBlack),
                                     14,
                                     FontWeight.w600)))))));
   }

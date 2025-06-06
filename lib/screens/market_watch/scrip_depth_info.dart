@@ -543,12 +543,12 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo> {
                                                           
                                                           // Then navigate to the option chain screen
                                                           if (mounted) {
-                                                            Navigator.pop(context);
-                                                            Navigator.pushNamed(
-                                                                context,
-                                                                Routes.optionChain,
-                                                                arguments:
-                                                                    widget.wlValue);
+                                                          Navigator.pop(context);
+                                                          Navigator.pushNamed(
+                                                              context,
+                                                              Routes.optionChain,
+                                                              arguments:
+                                                                  widget.wlValue);
                                                           }
                                                         } else if (scripInfo
                                                                     .depthBtns[

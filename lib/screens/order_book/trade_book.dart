@@ -147,7 +147,7 @@ class TradeBook extends ConsumerWidget {
         child: order.tradeBooksearch!.isEmpty
             ? tradeBook.isNotEmpty
                 ? ListView.builder(
-                    physics: const BouncingScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {
                       final itemIndex = index ~/ 2;
@@ -362,13 +362,13 @@ class TradeBook extends ConsumerWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(children: [
-                                          Text("Fill Id: ",
+                                          Text("Order No: ",
                                               style: textStyle(
                                                   const Color(0xff5E6B7D),
                                                   14,
                                                   FontWeight.w500)),
                                           Text(
-                                              "${tradeBook[itemIndex].flid ?? 0}",
+                                              "${tradeBook[itemIndex].norenordno ?? 0}",
                                               style: textStyle(
                                                   theme.isDarkMode
                                                       ? colors.colorWhite
@@ -390,10 +390,12 @@ class TradeBook extends ConsumerWidget {
                     },
                     itemCount: tradeBook.length * 2 - 1,
                   )
-                : const SizedBox(height: 500, child: NoDataFound())
+                : SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: SizedBox(height: MediaQuery.of(context).size.height * 0.7, child: const NoDataFound()))
             : order.tradeBooksearch!.isNotEmpty
                 ? ListView.builder(
-                    physics: const BouncingScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     shrinkWrap: false,
                     itemBuilder: (context, index) {
                       final itemIndex = index ~/ 2;
@@ -642,7 +644,10 @@ class TradeBook extends ConsumerWidget {
                     },
                     itemCount: order.tradeBooksearch!.length * 2 - 1,
                   )
-                : Container(),
+                : SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: SizedBox(height: MediaQuery.of(context).size.height * 0.7)
+                  ),
       ))
     ]);
   }
