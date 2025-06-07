@@ -2066,6 +2066,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 element, "${date[0].substring(0, 3)} ${date[2].substring(2)}");
           }
         }
+        if(fundamentalData != null && fundamentalData!.shareholdings != null){
+        sortAndFormatDates(
+          _fundamentalData!.shareholdings!,
+          (element) => element.date!,
+          (element, value) => element.convDate = value,
+        );
+        }
 
         // Shareholding dates
         sortAndFormatDates(
@@ -2082,6 +2089,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           (element) => element.yearEndDate!,
           (element, value) => element.convDate = value,
         );
+
         sortAndFormatDates(
           consolidated.incomeSheet!,
           (element) => element.yearEndDate!,

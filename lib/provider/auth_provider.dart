@@ -1237,7 +1237,7 @@ class AuthProvider extends DefaultChangeNotifier {
           _handleNetworkFailure(context, "Session invalid");
         }
       } catch (e) {
-        _handleNetworkFailure(context, e.toString());
+        // _handleNetworkFailure(context, e.toString());
       }
     } on SocketException catch (e) {
       _handleNetworkFailure(context, "Network connection issue: ${e.message}");
