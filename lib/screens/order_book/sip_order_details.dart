@@ -66,7 +66,7 @@ class _SipOrderDetailsState extends ConsumerState<SipOrderDetails> {
                   FontWeight.w600)),
         ),
         bottomNavigationBar: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(children: [
             Expanded(
               child: ElevatedButton(

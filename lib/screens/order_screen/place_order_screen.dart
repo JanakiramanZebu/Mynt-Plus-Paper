@@ -708,37 +708,42 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               prefixIcon: Theme(
                                                                   data: ThemeData(splashColor: Colors.transparent, splashFactory: NoSplash.splashFactory),
                                                                   child: InkWell(
-                                                                      onLongPress: () {
-                                                                        setState(
-                                                                            () {
-                                                                          if (sipqtyctrl
-                                                                              .text
-                                                                              .isNotEmpty) {
-                                                                            if (int.parse(sipqtyctrl.text) >
-                                                                                multiplayer) {
-                                                                              sipqtyctrl.text = (int.parse(sipqtyctrl.text) - multiplayer).toString();
-                                                                              double inputValue = double.tryParse(sipqtyctrl.text) ?? 0.00;
-                                                                              double ltpsip = double.parse("${widget.orderArg.ltp}");
-                                                                              resultsip = inputValue * ltpsip;
-                                                                            }
-                                                                          } else {
-                                                                            sipqtyctrl.text =
-                                                                                "$multiplayer";
-                                                                          }
-                                                                        });
-                                                                      },
+                                                                      // onLongPress: () {
+                                                                      //   setState(
+                                                                      //       () {
+                                                                      //     if (sipqtyctrl
+                                                                      //         .text
+                                                                      //         .isNotEmpty) {
+                                                                      //       if (int.parse(sipqtyctrl.text) >
+                                                                      //           multiplayer) {
+                                                                      //         sipqtyctrl.text = (int.parse(sipqtyctrl.text) - multiplayer).toString();
+                                                                      //         double inputValue = double.tryParse(sipqtyctrl.text) ?? 0.00;
+                                                                      //         double ltpsip = double.parse("${widget.orderArg.ltp}");
+                                                                      //         resultsip = inputValue * ltpsip;
+                                                                      //       }
+                                                                      //     } else {
+                                                                      //       sipqtyctrl.text =
+                                                                      //           "$multiplayer";
+                                                                      //     }
+                                                                      //   });
+                                                                      // },
                                                                       onTap: () {
                                                                         setState(
                                                                             () {
                                                                           if (sipqtyctrl
                                                                               .text
                                                                               .isNotEmpty) {
-                                                                            if (int.parse(sipqtyctrl.text) >
+                                                                                int sipQty=int.tryParse(sipqtyctrl.text)??multiplayer;
+                                                                               if (sipQty ==
                                                                                 multiplayer) {
-                                                                              sipqtyctrl.text = (int.parse(sipqtyctrl.text) - multiplayer).toString();
-                                                                              double inputValue = double.tryParse(sipqtyctrl.text) ?? 0.00;
+                                                                              sipqtyctrl.text = (sipQty).toString();
+
+                                                                                }
+                                                                            if (sipQty >
+                                                                                multiplayer) {
+                                                                              sipqtyctrl.text = (sipQty - multiplayer).toString();
                                                                               double ltpsip = double.parse("${widget.orderArg.ltp}");
-                                                                              resultsip = inputValue * ltpsip;
+                                                                              resultsip = sipQty * ltpsip;
                                                                             }
                                                                           } else {
                                                                             sipqtyctrl.text =
@@ -750,44 +755,47 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               suffixIcon: Theme(
                                                                   data: ThemeData(splashColor: Colors.transparent, splashFactory: NoSplash.splashFactory),
                                                                   child: InkWell(
-                                                                      onLongPress: () {
-                                                                        setState(
-                                                                            () {
-                                                                          if (sipqtyctrl
-                                                                              .text
-                                                                              .isNotEmpty) {
-                                                                            sipqtyctrl.text =
-                                                                                (int.parse(sipqtyctrl.text) + multiplayer).toString();
-                                                                            double
-                                                                                inputValue =
-                                                                                double.tryParse(sipqtyctrl.text) ?? 0.00;
-                                                                            double
-                                                                                ltpsip =
-                                                                                double.parse("${widget.orderArg.ltp}");
-                                                                            resultsip =
-                                                                                inputValue * ltpsip;
-                                                                          } else {
-                                                                            sipqtyctrl.text =
-                                                                                "$multiplayer";
-                                                                          }
-                                                                        });
-                                                                      },
+                                                                      // onLongPress: () {
+                                                                      //   setState(
+                                                                      //       () {
+                                                                      //     if (sipqtyctrl
+                                                                      //         .text
+                                                                      //         .isNotEmpty) {
+                                                                      //       sipqtyctrl.text =
+                                                                      //           (int.parse(sipqtyctrl.text) + multiplayer).toString();
+                                                                      //       double
+                                                                      //           inputValue =
+                                                                      //           double.tryParse(sipqtyctrl.text) ?? 0.00;
+                                                                      //       double
+                                                                      //           ltpsip =
+                                                                      //           double.parse("${widget.orderArg.ltp}");
+                                                                      //       resultsip =
+                                                                      //           inputValue * ltpsip;
+                                                                      //     } else {
+                                                                      //       sipqtyctrl.text =
+                                                                      //           "$multiplayer";
+                                                                      //     }
+                                                                      //   });
+                                                                      // },
                                                                       onTap: () {
                                                                         setState(
                                                                             () {
                                                                           if (sipqtyctrl
                                                                               .text
                                                                               .isNotEmpty) {
-                                                                            sipqtyctrl.text =
-                                                                                (int.parse(sipqtyctrl.text) + multiplayer).toString();
-                                                                            double
-                                                                                inputValue =
-                                                                                double.tryParse(sipqtyctrl.text) ?? 0.00;
+                                                                              int sipQty=int.tryParse(sipqtyctrl.text)??multiplayer;
+                                                                    
+                                                                                  sipqtyctrl.text =
+                                                                                      (sipQty + multiplayer).toString();
+                                                                            
+                                                                            // double
+                                                                            //     inputValue =
+                                                                            //     double.tryParse(sipqtyctrl.text) ?? 0.00;
                                                                             double
                                                                                 ltpsip =
                                                                                 double.parse("${widget.orderArg.ltp}");
                                                                             resultsip =
-                                                                                inputValue * ltpsip;
+                                                                                sipQty * ltpsip;
                                                                           } else {
                                                                             sipqtyctrl.text =
                                                                                 "$multiplayer";
@@ -952,6 +960,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                     .of(context)
                                                                 .hideCurrentSnackBar();
                                                             if (value.isEmpty) {
+                                                              ScaffoldMessenger
+                                                                      .of(
+                                                                          context)
+                                                                  .showSnackBar(
+                                                                      warningMessage(
+                                                                          context,
+                                                                          "The minimum number of this SIP is one."));
+                                                            }
+                                                             if (value.isEmpty) {
                                                               ScaffoldMessenger
                                                                       .of(
                                                                           context)
@@ -3659,7 +3676,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                           ? "Number of SIP can not be empty"
                                                                           : "Number of SIP can not be 0"));
                                                             } else {
+                                                              bool sipQty=int.tryParse(sipqtyctrl.text)!=null?true:false;
+                                                              bool numberOfSips=int.tryParse(sip.numberofSips.text)!=null?true:false;
+
+                                                              if (!sipQty || !numberOfSips){
+                                                                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+                                                                     "Provide a valid value for SIP"));
+                                                              }else{
                                                               sipOrder(ref);
+                                                              }
                                                             }
                                                           } else if (orderType ==
                                                               "GTT") {
