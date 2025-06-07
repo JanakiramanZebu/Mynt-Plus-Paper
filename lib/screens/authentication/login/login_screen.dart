@@ -87,7 +87,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: CircularLoaderImage()))
             : PopScope(
                 canPop: false,
-                onPopInvoked: (didPop) {
+                onPopInvokedWithResult: (didPop, result) {
                   theme.removeUsermatrial(context);
                   Navigator.pushNamedAndRemoveUntil(
                       context, Routes.loginScreenBanner, (route) => false);

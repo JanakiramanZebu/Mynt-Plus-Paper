@@ -75,7 +75,7 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
               TextFormField(
                   controller: textCtrl,
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9 ]')),
                   ],
                   style: textStyles.textFieldLabelStyle.copyWith(
                       color: theme.isDarkMode

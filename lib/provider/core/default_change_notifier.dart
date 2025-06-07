@@ -4,6 +4,10 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
   bool loading = false;
   bool isLoad = true;
   bool fundisLoad = false;
+  bool _disposed = false;
+
+  /// Flag indicating if this notifier has been disposed
+  bool get disposed => _disposed;
 
   String? errorMessage;
   bool initLoad = false;
@@ -37,5 +41,11 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
   void initLaod(bool on) {
     initLoad = on;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

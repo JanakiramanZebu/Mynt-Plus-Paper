@@ -11,22 +11,45 @@ import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
-import '../../sharedWidget/functions.dart'; 
+import '../../sharedWidget/functions.dart';
+import '../../sharedWidget/snack_bar.dart';
 
 class PendingAlertDetails extends ConsumerStatefulWidget {
   final AlertPendingModel alert;
   const PendingAlertDetails({super.key, required this.alert});
 
   @override
-  ConsumerState<PendingAlertDetails> createState() => _PendingAlertDetailsState();
+  ConsumerState<PendingAlertDetails> createState() =>
+      _PendingAlertDetailsState();
 }
 
 class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
+  bool isModifying = false;
+  bool isCancelling = false;
+  late TextEditingController valueCtrl;
+  String modifiedValue = "";
+  
+  @override
+  void initState() {
+    super.initState();
+    valueCtrl = TextEditingController(text: widget.alert.d);
+    modifiedValue = widget.alert.d ?? "";
+    
+    // Listen for changes to preserve the value
+    valueCtrl.addListener(() {
+      modifiedValue = valueCtrl.text;
+    });
+  }
+  
+  @override
+  void dispose() {
+    valueCtrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
-    TextEditingController valueCtrl =
-        TextEditingController(text: widget.alert.d);
     return Scaffold(
       appBar: AppBar(
         leadingWidth: 41,
@@ -43,57 +66,128 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         child: Row(
           children: [
-              Expanded(
+            Expanded(
                 child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      ref
-                          .read(marketWatchProvider)
-                          .fetchPendingAlert(context);
-                      ref.read(marketWatchProvider).fetchmodifyalert(
+                    onPressed: isModifying || isCancelling 
+                      ? null 
+                      : () async {
+                        setState(() {
+                          isModifying = true;
+                        });
+                        
+                        try {
+                          // Use the preserved value for the API call
+                          await ref.read(marketWatchProvider).fetchmodifyalert(
                           "${widget.alert.exch}",
                           "${widget.alert.tsym}",
-                          valueCtrl.text,
+                              modifiedValue,
                           "${widget.alert.aiT}",
                           "${widget.alert.alId}",
                           context);
+                              
+                          // Then fetch updated pending alerts
+                          await ref.read(marketWatchProvider).fetchPendingAlert(context);
+                          
+                          // Finally navigate back
+                          if (mounted) {
+                            Navigator.pop(context);
+                          }
+                        } catch (e) {
+                          // Show error if modification fails
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Failed to modify alert: ${e.toString()}")),
+                            );
+                          }
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              isModifying = false;
+                            });
+                          }
+                        }
                     },
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: theme.isDarkMode
+                        backgroundColor: isModifying 
+                            ? Colors.grey
+                            : theme.isDarkMode
                             ? colors.colorbluegrey
                             : colors.colorBlack,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50))),
-                    child: Text("Modify Alert",
+                    child: isModifying
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                            ))
+                        : Text("Modify Alert",
                         style: textStyle(
                             !theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
                             14,
                             FontWeight.w500)))),
-           const SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
                 child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      ref
-                          .read(marketWatchProvider)
-                          .fetchCancelAlert("${widget.alert.alId}", context);
-                      ref
-                          .read(marketWatchProvider)
-                          .fetchPendingAlert(context);
+                    onPressed: isModifying || isCancelling
+                      ? null
+                      : () async {
+                        setState(() {
+                          isCancelling = true;
+                        });
+                        
+                        try {
+                          // Store the alert ID
+                      final String alertId = "${widget.alert.alId}";
+
+                          // First cancel the alert
+                          await ref.read(marketWatchProvider).fetchCancelAlert(alertId, context);
+
+                          // Then fetch updated pending alerts
+                          await ref.read(marketWatchProvider).fetchPendingAlert(context);
+                          
+                          // Finally navigate back
+                          if (mounted) {
+                            Navigator.pop(context);
+                          }
+                        } catch (e) {
+                          // Show error if cancellation fails
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Failed to cancel alert: ${e.toString()}")),
+                            );
+                          }
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              isCancelling = false;
+                            });
+                          }
+                        }
                     },
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: colors.darkred,
+                        backgroundColor: isCancelling 
+                            ? Colors.grey 
+                            : colors.darkred,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50))),
-                    child: Text("Cancel Alert",
+                    child: isCancelling
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: colors.colorWhite,
+                            ))
+                        : Text("Cancel Alert",
                         style: textStyle(
                             const Color(0xffFFFFFF), 14, FontWeight.w500)))),
-           
-          
           ],
         ),
       ),
@@ -101,9 +195,13 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration:   BoxDecoration(
+            decoration: BoxDecoration(
                 border: Border(
-                    bottom: BorderSide(color:theme.isDarkMode?colors.darkGrey: const Color(0xffF1F3F8), width: 4))),
+                    bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? colors.darkGrey
+                            : const Color(0xffF1F3F8),
+                        width: 4))),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -141,7 +239,9 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                         CustomExchBadge(exch: "${widget.alert.exch}"),
                         Text(" (${widget.alert.perChange ?? 0.00}%)",
                             style: textStyle(
-                                widget.alert.perChange!.startsWith("-")
+                                widget.alert.perChange == null
+                                    ? colors.ltpgrey
+                                    : widget.alert.perChange!.startsWith("-")
                                     ? colors.darkred
                                     : widget.alert.perChange == "0.00"
                                         ? colors.ltpgrey
@@ -231,7 +331,10 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
               const SizedBox(
                 height: 8,
               ),
-              Divider(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider)
+              Divider(
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider)
             ]),
           ),
           alertData("Date&Time",
@@ -264,10 +367,11 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                           FontWeight.w600),
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                          fillColor: theme.isDarkMode?colors.darkGrey: const Color(0xffF1F3F8),
+                          fillColor: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
                           filled: true,
                           hintText: "0",
-                         
                           hintStyle: textStyle(
                               const Color(0xff999999), 14, FontWeight.w600),
                           contentPadding: const EdgeInsets.symmetric(
@@ -307,7 +411,10 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Divider(color: theme.isDarkMode?colors.darkColorDivider: colors.colorDivider),
+                      Divider(
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider),
                       const SizedBox(
                         height: 8,
                       ),
@@ -328,8 +435,6 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                   : colors.colorBlack,
                               14,
                               FontWeight.w500)),
-                       
-                   
                     ],
                   ),
                 ),

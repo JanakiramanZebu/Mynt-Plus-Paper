@@ -154,6 +154,10 @@ class _searchScripList extends State<SearchScripList> {
                   : IconButton(
                       splashRadius: 20,
                       onPressed: () async {
+                        // Store the current page index before any operations
+                        final currentIndex =
+                            searchScrip.currentWatchlistPageIndex;
+
                         if (searchScrip.isAdded![index]) {
                           await searchScrip.isActiveAddBtn(false, index);
                           await searchScrip.addDelMarketScrip(
@@ -177,58 +181,40 @@ class _searchScripList extends State<SearchScripList> {
                             false,
                           );
 
-                          // Apply sorting when scrip is added
+                          // Apply only the current sort preference instead of all three
+                          try {
+                            // Get the current sort preference
+                            final currentSort =
+                                ref.read(marketWatchProvider).sortByWL;
 
-                          // Scrip sorting
-                          if (scripisAscending == true) {
-                            ref.read(marketWatchProvider).filterMWScrip(
-                                  sorting: "Scrip - A to Z",
-                                  wlName: widget.wlName,
-                                  context: context,
-                                );
-                          } else if (scripisAscending == false) {
-                            ref.read(marketWatchProvider).filterMWScrip(
-                                  sorting: "Scrip - Z to A",
-                                  wlName: widget.wlName,
-                                  context: context,
-                                );
-                          }
-                          scripisAscending = !scripisAscending;
-                          pref.setMWScrip(scripisAscending);
+                            // Only apply sorting if there's an active preference
+                            if (currentSort.isNotEmpty) {
+                              await ref.read(marketWatchProvider).filterMWScrip(
+                                    sorting: currentSort,
+                                    wlName: widget.wlName,
+                                    context: context,
+                                  );
+                            }
 
-                          // Price sorting
-                          if (pricepisAscending == true) {
-                            ref.read(marketWatchProvider).filterMWScrip(
-                                  sorting: "Price - High to Low",
-                                  wlName: widget.wlName,
-                                  context: context,
-                                );
-                          } else if (pricepisAscending == false) {
-                            ref.read(marketWatchProvider).filterMWScrip(
-                                  sorting: "Price - Low to High",
-                                  wlName: widget.wlName,
-                                  context: context,
-                                );
-                          }
-                          pricepisAscending = !pricepisAscending;
-                          pref.setMWPrice(pricepisAscending);
+                            // Update the preference flags but don't trigger additional sorts
+                            scripisAscending = !scripisAscending;
+                            pref.setMWScrip(scripisAscending);
 
-                          // Percentage change sorting
-                          if (perchangisAscending == true) {
-                            ref.read(marketWatchProvider).filterMWScrip(
-                                  sorting: "Per.Chng - High to Low",
-                                  wlName: widget.wlName,
-                                  context: context,
-                                );
-                          } else if (perchangisAscending == false) {
-                            ref.read(marketWatchProvider).filterMWScrip(
-                                  sorting: "Per.Chng - Low to High",
-                                  wlName: widget.wlName,
-                                  context: context,
-                                );
+                            pricepisAscending = !pricepisAscending;
+                            pref.setMWPrice(pricepisAscending);
+
+                            perchangisAscending = !perchangisAscending;
+                            pref.setMWPerchnage(perchangisAscending);
+                          } catch (e) {
+                            print("Error applying sort: $e");
                           }
-                          perchangisAscending = !perchangisAscending;
-                          pref.setMWPerchnage(perchangisAscending);
+                        }
+
+                        // Restore the page index to maintain the user's position
+                        // This ensures the watchlist stays on the same page after adding/removing a scrip
+                        if (currentIndex >= 0) {
+                          searchScrip
+                              .setCurrentWatchlistPageIndex(currentIndex);
                         }
                       },
                       icon: SvgPicture.asset(

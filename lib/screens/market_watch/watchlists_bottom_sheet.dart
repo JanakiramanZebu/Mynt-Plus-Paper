@@ -10,6 +10,7 @@ import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 import 'create_watchlist.dart';
 import 'watchlist_rename.dart';
+import 'dart:math' as math;
 
 class WatchlistsBottomSheet extends StatefulWidget {
   final String currentWLName;
@@ -158,8 +159,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                 ListView.separated(
                     shrinkWrap: true,
                     padding: EdgeInsets.zero,
-                    itemCount:
-                        watchlist.length - 4 >= 10 ? 10 : watchlist.length - 4,
+                    itemCount: watchlist.length - 4 >= 10
+                        ? 10
+                        : math.max(0, watchlist.length - 4),
                     itemBuilder: (BuildContext context, int index) {
                       return ListTile(
                           onTap: () async {

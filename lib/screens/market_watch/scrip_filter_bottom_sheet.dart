@@ -7,218 +7,248 @@ import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 
-class ScripFilterBottomSheet extends StatefulWidget {
+class ScripFilterBottomSheet extends ConsumerStatefulWidget {
   const ScripFilterBottomSheet({
     super.key,
   });
 
   @override
-  State<ScripFilterBottomSheet> createState() => _WatchlistsBottomSheetState();
+  ConsumerState<ScripFilterBottomSheet> createState() =>
+      _WatchlistsBottomSheetState();
 }
 
-class _WatchlistsBottomSheetState extends State<ScripFilterBottomSheet> {
+class _WatchlistsBottomSheetState
+    extends ConsumerState<ScripFilterBottomSheet> {
   Preferences pref = Preferences();
-  late bool scripisAscending;
-  late bool pricepisAscending;
-  late bool perchangisAscending;
+  bool scripisAscending = true;
+  bool pricepisAscending = true;
+  bool perchangisAscending = true;
+  String currentSortType = ""; // Track current sort type
 
   @override
   void initState() {
+    super.initState();
+    _initCurrentSort();
+  }
+
+  void _initCurrentSort() {
+    // Get the current sort from provider
+    final sortByWL = ref.read(marketWatchProvider).sortByWL;
+
+    if (sortByWL.isEmpty) return;
+
+    // Determine current sort type and direction
+    if (sortByWL.startsWith("Scrip")) {
+      currentSortType = "scrip";
+      scripisAscending = sortByWL.contains("A to Z");
+    } else if (sortByWL.startsWith("Price")) {
+      currentSortType = "price";
+      pricepisAscending = sortByWL.contains("Low to High");
+    } else if (sortByWL.startsWith("Per.Chng")) {
+      currentSortType = "perchng";
+      perchangisAscending = sortByWL.contains("Low to High");
+    }
+  }
+
+  // Apply sort directly and force UI update
+  void _applySortForType(String type) {
+    final watchlist = ref.read(marketWatchProvider);
+    String sortingValue = "";
+
+    // Debug current values
+    print("Before sort - Current type: $currentSortType");
+    print(
+        "Before sort - Sort state: Scrip: $scripisAscending, Price: $pricepisAscending, PerChng: $perchangisAscending");
+
+    // Update current sort type
     setState(() {
-      scripisAscending = pref.isMWScripname ?? true;
-      pricepisAscending = pref.isMWPrice ?? true;
-      perchangisAscending = pref.isMWPerchang ?? true;
+      // If already using this type, toggle direction
+      if (currentSortType == type) {
+        if (type == "scrip") {
+          scripisAscending = !scripisAscending;
+        } else if (type == "price") {
+          pricepisAscending = !pricepisAscending;
+        } else if (type == "perchng") {
+          perchangisAscending = !perchangisAscending;
+        }
+      } else {
+        // Set new sort type
+        currentSortType = type;
+      }
+
+      // Determine the sort string to apply
+      if (type == "scrip") {
+        sortingValue = scripisAscending ? "Scrip - A to Z" : "Scrip - Z to A";
+      } else if (type == "price") {
+        sortingValue =
+            pricepisAscending ? "Price - Low to High" : "Price - High to Low";
+      } else if (type == "perchng") {
+        sortingValue = perchangisAscending
+            ? "Per.Chng - Low to High"
+            : "Per.Chng - High to Low";
+      }
     });
 
-    super.initState();
+    // Debug the resulting sort value
+    print("Applying sort value: $sortingValue");
+
+    // Apply the sort directly with force flag
+    ref.read(marketWatchProvider).getSortByWL(sortingValue);
+
+    // Force UI update by using the provider method
+    ref.read(marketWatchProvider).filterMWScrip(
+        sorting: sortingValue, wlName: watchlist.wlName, context: context);
+
+    // Close the sheet
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, WidgetRef ref, _) {
-      final watchlist = ref.watch(marketWatchProvider);
-      final theme = ref.watch(themeProvider);
-      return Container(
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: theme.isDarkMode ? Colors.black : Colors.white,
-            boxShadow: const [
-              BoxShadow(
-                  color: Color(0xff999999),
-                  blurRadius: 4.0,
-                  offset: Offset(2.0, 0.0))
-            ]),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CustomDragHandler(),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Sort by",
-                    style: textStyles.appBarTitleTxt.copyWith(
-                        color: theme.isDarkMode ? Colors.white : Colors.black),
-                  ),
-                ],
-              ),
+    final theme = ref.watch(themeProvider);
+    return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: theme.isDarkMode ? Colors.black : Colors.white,
+          boxShadow: const [
+            BoxShadow(
+                color: Color(0xff999999),
+                blurRadius: 4.0,
+                offset: Offset(2.0, 0.0))
+          ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const CustomDragHandler(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Sort by",
+                  style: textStyles.appBarTitleTxt.copyWith(
+                      color: theme.isDarkMode ? Colors.white : Colors.black),
+                ),
+              ],
             ),
-            Divider(
-                color: theme.isDarkMode
-                    ? colors.darkColorDivider
-                    : colors.colorDivider),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  if (scripisAscending == true) {
-                    ref.read(marketWatchProvider).filterMWScrip(
-                        sorting: "Scrip - A to Z",
-                        wlName: watchlist.wlName,
-                        context: context);
-                  } else if (scripisAscending == false) {
-                    ref.read(marketWatchProvider).filterMWScrip(
-                        sorting: "Scrip - Z to A",
-                        wlName: watchlist.wlName,
-                        context: context);
-                  }
-
-                  scripisAscending = !scripisAscending;
-                  pref.setMWScrip(scripisAscending);
-                  Navigator.pop(context);
-                });
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 13),
-                    child: Row(
-                      children: [
-                        Icon(
-                          pref.isMWScripname == true
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 20,
+          ),
+          Divider(
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider),
+          // Scrip name sorting option with indicator
+          InkWell(
+            onTap: () => _applySortForType("scrip"),
+            child: Column(
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                  child: Row(
+                    children: [
+                      Icon(
+                        scripisAscending
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward,
+                        size: 20,
+                        color: colors.colorGrey,
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Scrip Name",
+                        style: textStyles.prdText.copyWith(
                           color: colors.colorGrey,
+                          fontWeight: currentSortType == "scrip"
+                              ? FontWeight.w600
+                              : null,
                         ),
-                        const SizedBox(
-                          width: 15,
-                        ),
-                        Text(
-                          "Scrip Name",
-                          style: textStyles.prdText,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const ListDivider(),
-                ],
-              ),
+                ),
+                const ListDivider(),
+              ],
             ),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  if (pricepisAscending == true) {
-                    ref.read(marketWatchProvider).filterMWScrip(
-                        sorting: "Price - High to Low",
-                        wlName: watchlist.wlName,
-                        context: context);
-                  } else if (pricepisAscending == false) {
-                    ref.read(marketWatchProvider).filterMWScrip(
-                        sorting: "Price - Low to High",
-                        wlName: watchlist.wlName,
-                        context: context);
-                  }
-
-                  pricepisAscending = !pricepisAscending;
-                  pref.setMWPrice(pricepisAscending);
-                  Navigator.pop(context);
-                });
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 13),
-                    child: Row(
-                      children: [
-                        Icon(
-                          pref.isMWPrice == true
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 20,
+          ),
+          // LTP sorting option with indicator
+          InkWell(
+            onTap: () => _applySortForType("price"),
+            child: Column(
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                  child: Row(
+                    children: [
+                      Icon(
+                        pricepisAscending
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward,
+                        size: 20,
+                        color: colors.colorGrey,
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "LTP",
+                        style: textStyles.prdText.copyWith(
                           color: colors.colorGrey,
+                          fontWeight: currentSortType == "price"
+                              ? FontWeight.w600
+                              : null,
                         ),
-                        const SizedBox(
-                          width: 15,
-                        ),
-                        Text(
-                          "LTP",
-                          style: textStyles.prdText,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const ListDivider(),
-                ],
-              ),
+                ),
+                const ListDivider(),
+              ],
             ),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  if (perchangisAscending == true) {
-                    ref.read(marketWatchProvider).filterMWScrip(
-                        sorting: "Per.Chng - High to Low",
-                        wlName: watchlist.wlName,
-                        context: context);
-                  } else if (perchangisAscending == false) {
-                    ref.read(marketWatchProvider).filterMWScrip(
-                        sorting: "Per.Chng - Low to High",
-                        wlName: watchlist.wlName,
-                        context: context);
-                  }
-
-                  perchangisAscending = !perchangisAscending;
-                  pref.setMWPerchnage(perchangisAscending);
-                  Navigator.pop(context);
-                });
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 13),
-                    child: Row(
-                      children: [
-                        Icon(
-                          pref.isMWPerchang == true
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 20,
+          ),
+          // Percentage change sorting option with indicator
+          InkWell(
+            onTap: () => _applySortForType("perchng"),
+            child: Column(
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                  child: Row(
+                    children: [
+                      Icon(
+                        perchangisAscending
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward,
+                        size: 20,
+                        color: colors.colorGrey,
+                      ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      Text(
+                        "Perc.Change",
+                        style: textStyles.prdText.copyWith(
                           color: colors.colorGrey,
+                          fontWeight: currentSortType == "perchng"
+                              ? FontWeight.w600
+                              : null,
                         ),
-                        const SizedBox(
-                          width: 15,
-                        ),
-                        Text(
-                          "Perc.Change",
-                          style: textStyles.prdText,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const ListDivider(),
-                ],
-              ),
+                ),
+                const ListDivider(),
+              ],
             ),
-          ],
-        ),
-      );
-    });
+          ),
+        ],
+      ),
+    );
   }
 }
