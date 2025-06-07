@@ -542,6 +542,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                     "PlcOrder");
                                               }
                                               if (orderType != "GTT") {
+                                                isOco=false;
                                                 marginUpdate();
                                               } else {
                                                 ref
