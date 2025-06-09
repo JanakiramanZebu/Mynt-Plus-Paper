@@ -24,7 +24,8 @@ class _SetAlertState extends State<SetAlert> {
   TextEditingController valueCtrl = TextEditingController();
   TextEditingController remark = TextEditingController();
   final List<String> alterItems = ['Above', 'Below'];
-  final List<String> alertType = ["LTP", "Perc.Change"];
+  // final List<String> alertType = ["LTP", "Perc.Change"];
+  final List<String> alertType = ["LTP"];
   String alertValue = "";
   String alertTypeVal = "";
   String validityTypeVal = "";
@@ -36,29 +37,40 @@ class _SetAlertState extends State<SetAlert> {
     super.initState();
   }
 
-validatesetalret(value){
-   try {
-                      if (alertTypeVal == "LTP" && value.isNotEmpty) {
-                        double enteredValue = double.parse(value);
-                        double currentLtp = double.parse(widget.depthdata.lp ?? "0.0");
-                        
-                        // Format numbers to always show 2 decimal places
-                        String formattedLtp = currentLtp.toStringAsFixed(2);
-                        String formattedEnteredValue = enteredValue.toStringAsFixed(2);
-                        
-                        if (alertValue == "Above" && enteredValue <= currentLtp) {
-                          errorText = "The Current LTP (₹$formattedLtp) is already above ₹$formattedEnteredValue";
-                        } else if (alertValue == "Below" && enteredValue >= currentLtp) {
-                          errorText = "The Current LTP (₹$formattedLtp) is already below ₹$formattedEnteredValue";
-                        } else {
-                          errorText = "";
-                        }
-                      } else {
-                        errorText = "";
-                      }
-                    } catch (e) {
-                      errorText = "Please enter a valid number";
-                    }
+  validatesetalret(value) {
+    try {
+      if (value == null || value.isEmpty) {
+        errorText = "* Value is required";
+        return;
+      }
+
+      if (alertTypeVal == "LTP" && value.isNotEmpty) {
+        double enteredValue = double.parse(value);
+        double currentLtp = double.parse(widget.depthdata.lp ?? "0.0");
+
+        // Format numbers to always show 2 decimal places
+        String formattedLtp = currentLtp.toStringAsFixed(2);
+        String formattedEnteredValue = enteredValue.toStringAsFixed(2);
+
+        if (alertValue == "Above" && enteredValue <= currentLtp) {
+          errorText =
+              "The Current LTP (₹$formattedLtp) is already above ₹$formattedEnteredValue";
+        } else if (alertValue == "Below" && enteredValue >= currentLtp) {
+          errorText =
+              "The Current LTP (₹$formattedLtp) is already below ₹$formattedEnteredValue";
+        } else {
+          errorText = "";
+        }
+      }
+      //  else if (alertTypeVal == "Perc.Change") {
+      //   errorText = "";
+      // }
+       else {
+        errorText = "";
+      }
+    } catch (e) {
+      errorText = "Please enter a valid number";
+    }
   }
 
   @override
@@ -253,12 +265,12 @@ validatesetalret(value){
                         const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     labelStyle: textStyles.textFieldLabelStyle,
                     prefixIconColor: const Color(0xff586279),
-                    prefixIcon: alertTypeVal == "Perc.Change"
+                    prefixIcon: /*alertTypeVal == "Perc.Change"
                         ? const Icon(
                             Icons.percent_outlined,
                             size: 16,
                           )
-                        : SvgPicture.asset(assets.ruppeIcon,
+                        : */SvgPicture.asset(assets.ruppeIcon,
                             fit: BoxFit.scaleDown),
                     enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide.none,
@@ -271,15 +283,14 @@ validatesetalret(value){
                         borderSide: BorderSide.none,
                         borderRadius: BorderRadius.circular(30))),
                 onChanged: (value) {
-                  setState(() {
-                    if (value.isEmpty) {
-                      errorText = "* Value is required";
-                      return;
+                  // Don't block the input operation, apply validation after the text change
+                  Future.microtask(() {
+                    if (mounted) {
+                      setState(() {
+                        // Handle validation
+                        validatesetalret(value);
+                      });
                     }
-                    
-                    // Try to parse the entered value
-                    validatesetalret(value);
-                   
                   });
                 },
               ),
@@ -345,137 +356,158 @@ validatesetalret(value){
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
                     // ignore: deprecated_member_use
-                    backgroundColor: errorText.isNotEmpty || valueCtrl.text.isEmpty
-                        ? Colors.grey // Disabled color
-                        : (theme.isDarkMode
-                        ? colors.colorWhite
-                            : colors.colorBlack),
+                    backgroundColor:
+                        errorText.isNotEmpty || valueCtrl.text.isEmpty
+                            ? Colors.grey // Disabled color
+                            : (theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30)),
                   ),
                   onPressed: (errorText.isNotEmpty || valueCtrl.text.isEmpty)
                       ? null // Disable the button when there's an error or empty value
                       : () {
-                    setState(() {
+                          setState(() {
                             if (valueCtrl.text == "0") {
                               errorText = "Value cannot be 0";
-                      } else {
-                        errorText = "";
-                        showDialog(
-                          barrierDismissible: false,
-                          context: context,
-                          builder: (BuildContext context) {
-                                  return StatefulBuilder(builder: (BuildContext
-                                                            context,
-                                                        StateSetter
-                                                            setDialogState) {
-                            return AlertDialog(
-                              backgroundColor: theme.isDarkMode
-                                  ? const Color.fromARGB(255, 18, 18, 18)
-                                  : colors.colorWhite,
-                              titleTextStyle: textStyles.appBarTitleTxt
-                                  .copyWith(
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack),
-                              contentTextStyle: textStyles.menuTxt.copyWith(
-                                  color: theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack),
-                              titlePadding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 12),
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(14))),
-                              scrollable: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                              ),
-                              insetPadding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              // ignore: prefer_const_constructors
-                              title: Text(
-                                "Confirmation Alert",
-                              ),
-                              content: SizedBox(
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                        "Alert me when $alertTypeVal of ${widget.wlvalue.tsym} is $alertValue ${valueCtrl.text}")
-                                  ],
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: Text("Cancel",
-                                        style: textStyles.textBtn.copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorLightBlue
-                                                : colors.colorBlue))),
-                                ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        backgroundColor: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(50),
-                                        )),
-                                            onPressed: _handlesetalert ? null : () async {
-                                              setDialogState(
-                                                                          () {
-                                                                        _handlesetalert =
-                                                                            true;
-                                                                      });
-                                      await ref
-                                          .read(marketWatchProvider)
-                                          .fetchSetAlert(
-                                              widget.wlvalue.exch,
-                                              widget.wlvalue.tsym,
-                                              valueCtrl.text,
-                                              alertValue == "Above" &&
-                                                      alertTypeVal == "LTP"
-                                                  ? "LTP_A"
-                                                  : alertValue == "Below" &&
-                                                          alertTypeVal == "LTP"
-                                                      ? "LTP_B"
-                                                      : alertValue == "Above" &&
-                                                              alertTypeVal ==
-                                                                  "Perc.Change"
-                                                          ? "CH_PER_A"
-                                                          : "CH_PER_B",
-                                              context,
-                                              scripInfo
-                                                  .alertPendingModel!.length,
-                                              "${widget.depthdata.lp}",
-                                              remark.text);
-                                    if (mounted) {
-                                                                        setDialogState(
-                                                                            () {
-                                                                          _handlesetalert =
-                                                                              false;
-                                                                        });
-                                                                      }
-                                    
-                                    },
-                                    child: Text("Ok",
-                                        style: textStyles.btnText.copyWith(
-                                            color: !theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)))
-                              ],
-                            );
-                                                            }
-                                  );
-                          },
-                        );
-                      }
-                    });
-                  },
+                            } else {
+                              errorText = "";
+                              showDialog(
+                                barrierDismissible: false,
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return StatefulBuilder(builder:
+                                      (BuildContext context,
+                                          StateSetter setDialogState) {
+                                    return AlertDialog(
+                                      backgroundColor: theme.isDarkMode
+                                          ? const Color.fromARGB(
+                                              255, 18, 18, 18)
+                                          : colors.colorWhite,
+                                      titleTextStyle: textStyles.appBarTitleTxt
+                                          .copyWith(
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack),
+                                      contentTextStyle: textStyles.menuTxt
+                                          .copyWith(
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack),
+                                      titlePadding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 12),
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(14))),
+                                      scrollable: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                      ),
+                                      insetPadding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
+                                      // ignore: prefer_const_constructors
+                                      title: Text(
+                                        "Confirmation Alert",
+                                      ),
+                                      content: SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                "Alert me when $alertTypeVal of ${widget.wlvalue.tsym} is $alertValue ${valueCtrl.text}")
+                                          ],
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: Text("Cancel",
+                                                style: textStyles.textBtn
+                                                    .copyWith(
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .colorLightBlue
+                                                            : colors
+                                                                .colorBlue))),
+                                        ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                                elevation: 0,
+                                                backgroundColor:
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(50),
+                                                )),
+                                            onPressed: _handlesetalert
+                                                ? null
+                                                : () async {
+                                                    setDialogState(() {
+                                                      _handlesetalert = true;
+                                                    });
+                                                    try {
+                                                      await ref
+                                                          .read(
+                                                              marketWatchProvider)
+                                                          .fetchSetAlert(
+                                                              widget
+                                                                  .wlvalue.exch,
+                                                              widget
+                                                                  .wlvalue.tsym,
+                                                              valueCtrl.text,
+                                                              alertValue ==
+                                                                          "Above" &&
+                                                                      alertTypeVal ==
+                                                                          "LTP"
+                                                                  ? "LTP_A"
+                                                                  : alertValue ==
+                                                                              "Below" &&
+                                                                          alertTypeVal ==
+                                                                              "LTP"
+                                                                      ? "LTP_B"
+                                                                      /*: alertValue == "Above" &&
+                                                                              alertTypeVal ==
+                                                                                  "Perc.Change"
+                                                                          ? "CH_PER_A"
+                                                                          : "CH_PER_B"*/
+                                                                      : "LTP_B",
+                                                              context,
+                                                              scripInfo
+                                                                  .alertPendingModel!
+                                                                  .length,
+                                                              "${widget.depthdata.lp}",
+                                                              remark.text);
+                                                    } finally {
+                                                      if (mounted) {
+                                                        setDialogState(() {
+                                                          _handlesetalert =
+                                                              false;
+                                                        });
+                                                      }
+                                                    }
+                                                  },
+                                            child: Text("Ok",
+                                                style: textStyles.btnText
+                                                    .copyWith(
+                                                        color: !theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors
+                                                                .colorBlack)))
+                                      ],
+                                    );
+                                  });
+                                },
+                              );
+                            }
+                          });
+                        },
                   child: Text(
                     'Set my alert',
                     style: GoogleFonts.inter(
@@ -492,6 +524,4 @@ validatesetalret(value){
       );
     });
   }
-
-  
 }
