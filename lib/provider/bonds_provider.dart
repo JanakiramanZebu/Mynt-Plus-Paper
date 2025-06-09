@@ -97,7 +97,9 @@ class BondsProvider extends DefaultChangeNotifier {
   final List _bondsCommonSearchList = [];
   List get bondsCommonSearchList => _bondsCommonSearchList;
 
-  clearCommonBondsSearch() {}
+  clearCommonBondsSearch() {
+    _bondscommonsearchcontroller.text = "";
+  }
 
   searchCommonBonds(String SearchBond, BuildContext context) {
     print("searchCommomBonds ::  $SearchBond");
@@ -209,7 +211,8 @@ class BondsProvider extends DefaultChangeNotifier {
       togglefundLoadingOn(true);
 
       for (var element in _bondsOrderBook ?? []) {
-        if ((element.reponseStatus == 'success'  && element.orderStatus != "CS" ) ||
+        if ((element.reponseStatus == 'success' &&
+                element.orderStatus != "CS") ||
             element.reponseStatus == 'pending') {
           _openOrderBook!.add(element);
           // _openorder!.sort((a, b) => a.companyName!.compareTo(b.companyName!));
@@ -230,16 +233,15 @@ class BondsProvider extends DefaultChangeNotifier {
         DateTime dateB = DateTime.parse(b.responseDatetime.toString());
         return dateA.compareTo(dateB);
       });
- print("ordersplit :: Open Orders (${_openOrderBook?.length}):");
-    for (var order in _openOrderBook ?? []) {
-      print(order.toJson());
-    }
+      print("ordersplit :: Open Orders (${_openOrderBook?.length}):");
+      for (var order in _openOrderBook ?? []) {
+        print(order.toJson());
+      }
 
-    print("ordersplit :: Close Orders (${_closeOrderBook?.length}):");
-    for (var order in _closeOrderBook ?? []) {
-      print(order.toJson());
-    }
-      
+      print("ordersplit :: Close Orders (${_closeOrderBook?.length}):");
+      for (var order in _closeOrderBook ?? []) {
+        print(order.toJson());
+      }
     } catch (e) {
       print("ordersplit :: ${e}");
     } finally {
@@ -288,7 +290,7 @@ class BondsProvider extends DefaultChangeNotifier {
 
   Future fetchGovtBonds() async {
     try {
-      _govtBonds = await api.getGovtBondApi();     
+      _govtBonds = await api.getGovtBondApi();
       notifyListeners();
     } catch (e) {
       debugPrint("Error fetching bonds: $e");
@@ -297,28 +299,28 @@ class BondsProvider extends DefaultChangeNotifier {
 
   Future fetchTreassuryBonds() async {
     try {
-      _treasuryBonds = await api.getTreasuryBondApi();      
+      _treasuryBonds = await api.getTreasuryBondApi();
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");     
+      debugPrint("$e");
     }
   }
 
   Future fetchStateBonds() async {
     try {
-      _stateBonds = await api.getStateBondApi();   
-      notifyListeners();  
+      _stateBonds = await api.getStateBondApi();
+      notifyListeners();
     } catch (e) {
-      debugPrint("$e");     
+      debugPrint("$e");
     }
   }
 
   Future fetchGoldBonds() async {
     try {
-      _sovereignGoldBonds = await api.getGoldBondApi();     
+      _sovereignGoldBonds = await api.getGoldBondApi();
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");     
+      debugPrint("$e");
     }
   }
 
@@ -327,7 +329,6 @@ class BondsProvider extends DefaultChangeNotifier {
       _ledgerBalModel = await api.getLedgerBalApi();
 
       notifyListeners();
-      
     } catch (e) {
       debugPrint("$e");
     }
@@ -339,7 +340,8 @@ class BondsProvider extends DefaultChangeNotifier {
       _bondsOrderBook = await api.getBondsOrderBookApi();
       // _bondsOrderBook.bondsOrderBook.forEach()
       // print("fetchBondsOrderBook called :: $_bondsOrderBook. ");
-       print("fetchBondsOrderBook called :: ${_bondsOrderBook?.length} orders fetched.");    
+      print(
+          "fetchBondsOrderBook called :: ${_bondsOrderBook?.length} orders fetched.");
       ordersplit();
       notifyListeners();
     } catch (e) {
@@ -419,18 +421,16 @@ class BondsProvider extends DefaultChangeNotifier {
       String clientApplicationNumber = bondOrderData["clientApplicationNumber"];
       String orderNumber = bondOrderData["orderNumber"];
 
-        print('Cancel API call initiated with bondOrderData: $bondOrderData');
+      print('Cancel API call initiated with bondOrderData: $bondOrderData');
       _bondOrderResponcesModel = await api.cancelBondOrderApi(
           symbol, investmentValue, price, clientApplicationNumber, orderNumber);
-           print('Cancel API response: ${_bondOrderResponcesModel?.toJson()}');
-           await fetchBondsOrderBook();
-            print('Updated bonds order book fetched successfully.');
-           notifyListeners();
+      print('Cancel API response: ${_bondOrderResponcesModel?.toJson()}');
+      await fetchBondsOrderBook();
+      print('Updated bonds order book fetched successfully.');
+      notifyListeners();
 
-            ScaffoldMessenger.of(context).showSnackBar(successMessage(
+      ScaffoldMessenger.of(context).showSnackBar(successMessage(
           context, _bondOrderResponcesModel!.orderStatusResponse ?? ""));
-    
-    
 
       // Navigator.pop(context);
       // Navigator.pushNamed(context, Routes.bondsorderbook);
