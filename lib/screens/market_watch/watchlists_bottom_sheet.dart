@@ -102,6 +102,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                         itemBuilder: (BuildContext context, int index) {
                           return ElevatedButton(
                               onPressed: () async {
+                                ref.read(marketWatchProvider).setCurrentWatchlistPageIndex(index + watchlist.length - 4);
                                 ref
                                     .read(marketWatchProvider)
                                     .changeWlName(preDefWl[index], "Yes");
@@ -166,6 +167,10 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                       return ListTile(
                           onTap: () async {
                             // click to switch watch list
+                            ref
+                                .read(marketWatchProvider)
+                                .setCurrentWatchlistPageIndex(index);
+
                             ref
                                 .read(marketWatchProvider)
                                 .changeWlName(watchlist[index], "No");

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,6 +29,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
   bool isCancelling = false;
   late TextEditingController valueCtrl;
   String modifiedValue = "";
+  String errorText = "";
   
   @override
   void initState() {
@@ -39,6 +41,42 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
     valueCtrl.addListener(() {
       modifiedValue = valueCtrl.text;
     });
+  }
+  
+  // Add validation logic similar to set_alert_screen.dart
+  validateAlertValue(String value) {
+    try {
+      if (value.isEmpty) {
+        errorText = "* Value is required";
+        return;
+      }
+      
+      // Get current LTP
+      double currentLtp = double.tryParse(widget.alert.ltp ?? widget.alert.close ?? "0.0") ?? 0.0;
+      
+      // Check alert type
+      if ((widget.alert.aiT == "LTP_A" || widget.alert.aiT == "LTP_B") && value.isNotEmpty) {
+        double enteredValue = double.parse(value);
+        
+        // Format numbers to show 2 decimal places
+        String formattedLtp = currentLtp.toStringAsFixed(2);
+        String formattedEnteredValue = enteredValue.toStringAsFixed(2);
+        
+        // Validation based on condition
+        if (widget.alert.aiT == "LTP_A" && enteredValue <= currentLtp) {
+          errorText = "The Current LTP (₹$formattedLtp) is already above ₹$formattedEnteredValue";
+        } else if (widget.alert.aiT == "LTP_B" && enteredValue >= currentLtp) {
+          errorText = "The Current LTP (₹$formattedLtp) is already below ₹$formattedEnteredValue";
+        } else {
+          errorText = "";
+        }
+      } else {
+        // For percentage change, no validation needed
+        errorText = "";
+      }
+    } catch (e) {
+      errorText = "Please enter a valid number";
+    }
   }
   
   @override
@@ -62,135 +100,142 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                 14,
                 FontWeight.w600)),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-        child: Row(
-          children: [
-            Expanded(
-                child: ElevatedButton(
-                    onPressed: isModifying || isCancelling 
-                      ? null 
-                      : () async {
-                        setState(() {
-                          isModifying = true;
-                        });
-                        
-                        try {
-                          // Use the preserved value for the API call
-                          await ref.read(marketWatchProvider).fetchmodifyalert(
-                          "${widget.alert.exch}",
-                          "${widget.alert.tsym}",
-                              modifiedValue,
-                          "${widget.alert.aiT}",
-                          "${widget.alert.alId}",
-                          context);
+      resizeToAvoidBottomInset: true,
+      bottomNavigationBar:
+       SafeArea(
+         child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+           child: Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Row(
+              children: [
+                Expanded(
+                    child: ElevatedButton(
+                        onPressed: isModifying || isCancelling || errorText.isNotEmpty || valueCtrl.text.isEmpty
+                          ? null 
+                          : () async {
+                            setState(() {
+                              isModifying = true;
+                            });
+                            
+                            try {
+                              // Use the preserved value for the API call
+                              await ref.read(marketWatchProvider).fetchmodifyalert(
+                              "${widget.alert.exch}",
+                              "${widget.alert.tsym}",
+                                  modifiedValue,
+                              "${widget.alert.aiT}",
+                              "${widget.alert.alId}",
+                              context);
+                                  
+                              // Then fetch updated pending alerts
+                              await ref.read(marketWatchProvider).fetchPendingAlert(context);
                               
-                          // Then fetch updated pending alerts
-                          await ref.read(marketWatchProvider).fetchPendingAlert(context);
-                          
-                          // Finally navigate back
-                          if (mounted) {
-                            Navigator.pop(context);
-                          }
-                        } catch (e) {
-                          // Show error if modification fails
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Failed to modify alert: ${e.toString()}")),
-                            );
-                          }
-                        } finally {
-                          if (mounted) {
-                            setState(() {
-                              isModifying = false;
-                            });
-                          }
-                        }
-                    },
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: isModifying 
-                            ? Colors.grey
-                            : theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50))),
-                    child: isModifying
-                        ? SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                            ))
-                        : Text("Modify Alert",
-                        style: textStyle(
-                            !theme.isDarkMode
-                                ? colors.colorWhite
+                              // Finally navigate back
+                              if (mounted) {
+                                Navigator.pop(context);
+                              }
+                            } catch (e) {
+                              // Show error if modification fails
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Failed to modify alert: ${e.toString()}")),
+                                );
+                              }
+                            } finally {
+                              if (mounted) {
+                                setState(() {
+                                  isModifying = false;
+                                });
+                              }
+                            }
+                        },
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: (isModifying || errorText.isNotEmpty || valueCtrl.text.isEmpty)
+                                ? Colors.grey
+                                : theme.isDarkMode
+                                ? colors.colorbluegrey
                                 : colors.colorBlack,
-                            14,
-                            FontWeight.w500)))),
-            const SizedBox(width: 16),
-            Expanded(
-                child: ElevatedButton(
-                    onPressed: isModifying || isCancelling
-                      ? null
-                      : () async {
-                        setState(() {
-                          isCancelling = true;
-                        });
-                        
-                        try {
-                          // Store the alert ID
-                      final String alertId = "${widget.alert.alId}";
-
-                          // First cancel the alert
-                          await ref.read(marketWatchProvider).fetchCancelAlert(alertId, context);
-
-                          // Then fetch updated pending alerts
-                          await ref.read(marketWatchProvider).fetchPendingAlert(context);
-                          
-                          // Finally navigate back
-                          if (mounted) {
-                            Navigator.pop(context);
-                          }
-                        } catch (e) {
-                          // Show error if cancellation fails
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Failed to cancel alert: ${e.toString()}")),
-                            );
-                          }
-                        } finally {
-                          if (mounted) {
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50))),
+                        child: isModifying
+                            ? SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                                ))
+                            : Text("Modify Alert",
+                            style: textStyle(
+                                !theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                14,
+                                FontWeight.w500)))),
+                const SizedBox(width: 16),
+                Expanded(
+                    child: ElevatedButton(
+                        onPressed: isModifying || isCancelling
+                          ? null
+                          : () async {
                             setState(() {
-                              isCancelling = false;
+                              isCancelling = true;
                             });
-                          }
-                        }
-                    },
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: isCancelling 
-                            ? Colors.grey 
-                            : colors.darkred,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50))),
-                    child: isCancelling
-                        ? SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: colors.colorWhite,
-                            ))
-                        : Text("Cancel Alert",
-                        style: textStyle(
-                            const Color(0xffFFFFFF), 14, FontWeight.w500)))),
-          ],
-        ),
-      ),
+                            
+                            try {
+                              // Store the alert ID
+                          final String alertId = "${widget.alert.alId}";
+           
+                              // First cancel the alert
+                              await ref.read(marketWatchProvider).fetchCancelAlert(alertId, context);
+           
+                              // Then fetch updated pending alerts
+                              await ref.read(marketWatchProvider).fetchPendingAlert(context);
+                              
+                              // Finally navigate back
+                              if (mounted) {
+                                Navigator.pop(context);
+                              }
+                            } catch (e) {
+                              // Show error if cancellation fails
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Failed to cancel alert: ${e.toString()}")),
+                                );
+                              }
+                            } finally {
+                              if (mounted) {
+                                setState(() {
+                                  isCancelling = false;
+                                });
+                              }
+                            }
+                        },
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: isCancelling 
+                                ? Colors.grey 
+                                : colors.darkred,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50))),
+                        child: isCancelling
+                            ? SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colors.colorWhite,
+                                ))
+                            : Text("Cancel Alert",
+                            style: textStyle(
+                                const Color(0xffFFFFFF), 14, FontWeight.w500)))),
+              ],
+            ),
+                 ),
+         ),
+       ),
       body: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Container(
@@ -359,6 +404,9 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                     child: TextFormField(
                       //textAlign: TextAlign.right,
                       controller: valueCtrl,
+                      inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  ],
                       style: textStyle(
                           theme.isDarkMode
                               ? colors.colorWhite
@@ -395,12 +443,30 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                           border: OutlineInputBorder(
                               borderSide: BorderSide.none,
                               borderRadius: BorderRadius.circular(30))),
+                      onChanged: (value) {
+                        // Don't block the input operation, apply validation after the text change
+                        Future.microtask(() {
+                          if (mounted) {
+                            setState(() {
+                              // Handle validation
+                              validateAlertValue(value);
+                            });
+                          }
+                        });
+                      },
                     ),
                   ),
                 ),
               ],
             ),
           ),
+          if (errorText.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 4),
+              child: Text(errorText,
+                  style: textStyle(colors.darkred, 10, FontWeight.w500)),
+            ),
+          ],
           const SizedBox(
             height: 8,
           ),
