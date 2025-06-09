@@ -168,6 +168,10 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                             // click to switch watch list
                             ref
                                 .read(marketWatchProvider)
+                                .setCurrentWatchlistPageIndex(index);
+
+                            ref
+                                .read(marketWatchProvider)
                                 .changeWlName(watchlist[index], "No");
 
                             await marketWatch.changeWLScrip(
