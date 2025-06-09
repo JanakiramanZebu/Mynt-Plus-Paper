@@ -1170,9 +1170,9 @@ class AuthProvider extends DefaultChangeNotifier {
 
           // FirebaseAnalytics.instance.setUserId(id: pref.clientId);
           // IPOs
-          // setIposAPicalls();
+          setIposAPicalls();
           // mf
-          // setmfapicalls(context);
+          setmfapicalls(context);
           // Explore
           // await ref.read(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
           // await ref.read(indexListProvider).fetchStockTopIndex();

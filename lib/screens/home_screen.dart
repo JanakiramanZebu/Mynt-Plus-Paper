@@ -130,6 +130,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
         
         // Handle chart data in a separate task
         _handleChartData();
+        
+        // Add this after connections are reestablished
+        // Force UI refresh with latest data
+        if (mounted) {
+          // Give a slight delay for data to arrive
+          Future.delayed(Duration(milliseconds: 300), () {
+            if (mounted) {
+              setState(() {
+                // This will force the current tab to rebuild with fresh data
+              });
+            }
+          });
+        }
         break;
         
       case AppLifecycleState.inactive:

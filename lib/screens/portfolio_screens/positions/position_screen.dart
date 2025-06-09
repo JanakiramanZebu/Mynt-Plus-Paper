@@ -58,26 +58,28 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         bool needsUpdate = false;
         
         for (var position in widget.listofPosition) {
-                          if (socketDatas.containsKey(position.token)) {
-                            final socketData = socketDatas[position.token];
-                            
-                            // Only update with non-zero values, otherwise keep existing values
-                            final lp = socketData['lp']?.toString();
-                            if (lp != null && lp != "null" && lp != "0" && lp != "0.0" && lp != "0.00") {
-                              position.lp = lp;
+          if (socketDatas.containsKey(position.token)) {
+            final socketData = socketDatas[position.token];
+            
+            // FIX: Accept all valid values for LTP updates to ensure real-time prices
+            final lp = socketData['lp']?.toString();
+            if (lp != null && lp != "null" && lp != position.lp) {
+              position.lp = lp;
               needsUpdate = true;
-                            }
-                            
-                            final pc = socketData['pc']?.toString();
-                            if (pc != null && pc != "null" && pc != "0" && pc != "0.0" && pc != "0.00") {
-                              position.perChange = pc;
+            }
+            
+            // Update percent change if available
+            final pc = socketData['pc']?.toString();
+            if (pc != null && pc != "null" && pc != position.perChange) {
+              position.perChange = pc;
               needsUpdate = true;
-                            }
-                          }
-                        }
-                        
+            }
+          }
+        }
+        
+        // FIX: Always update UI immediately when price data changes
         if (needsUpdate) {
-                        positionBook.positionCal(positionBook.isDay);
+          positionBook.positionCal(positionBook.isDay);
           if (mounted) setState(() {});
         }
       });

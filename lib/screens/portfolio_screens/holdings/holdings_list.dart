@@ -272,6 +272,8 @@ class _DynamicLtpInfo extends StatefulWidget {
 
 class _DynamicLtpInfoState extends State<_DynamicLtpInfo> {
   late String _ltp;
+  // FIX: Add StreamSubscription for direct socket updates
+  StreamSubscription? _subscription;
   
   // Cached text styles
   static final Map<String, TextStyle> _styles = {};
@@ -280,6 +282,39 @@ class _DynamicLtpInfoState extends State<_DynamicLtpInfo> {
   void initState() {
     super.initState();
     _ltp = widget.ltp;
+    // FIX: Setup direct socket listener for this token
+    _setupSocketListener();
+  }
+  
+  // FIX: Add method to listen directly to socket updates
+  void _setupSocketListener() {
+    // Get token from parent chain (if available)
+    final String? token = widget.key?.toString().split(':').firstOrNull;
+    if (token == null || token.isEmpty) return;
+    
+    // Get socket provider using ProviderScope to avoid build context
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final websocket = container.read(websocketProvider);
+      
+      _subscription = websocket.socketDataStream.listen((data) {
+        if (data.containsKey(token)) {
+          final socketData = data[token];
+          if (socketData != null) {
+            final lp = socketData['lp']?.toString();
+            if (lp != null && lp != "null" && lp != _ltp) {
+              if (mounted) {
+                setState(() {
+                  _ltp = lp;
+                });
+              }
+            }
+          }
+        }
+      });
+    } catch (e) {
+      print("Error setting up holdings LTP socket listener: $e");
+    }
   }
   
   @override
@@ -292,6 +327,8 @@ class _DynamicLtpInfoState extends State<_DynamicLtpInfo> {
   
   @override
   void dispose() {
+    // FIX: Clean up subscription
+    _subscription?.cancel();
     // Avoid accessing anything from context in dispose
     super.dispose();
   }

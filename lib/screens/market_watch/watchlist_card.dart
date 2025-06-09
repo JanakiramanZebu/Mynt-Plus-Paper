@@ -204,16 +204,12 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
       }
       
       // Only rebuild if values actually changed and not already rebuilding
-      if (valueChanged && !_shouldUpdate) {
-        _shouldUpdate = true;
-        
-        // Debounce updates to avoid rapid UI rebuilds
-        Future.delayed(const Duration(milliseconds: 250), () {
-          if (mounted) {
-            setState(() {});
-          }
-          _shouldUpdate = false;
-        });
+      if (valueChanged) {
+        // FIX: Remove debounce delay to ensure immediate LTP updates
+        // Immediately update UI for price changes
+        if (mounted) {
+          setState(() {});
+        }
       }
     });
   }

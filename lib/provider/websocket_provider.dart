@@ -748,36 +748,30 @@ class WebSocketProvider extends ChangeNotifier {
   // Method to notify the market watch provider of data updates
   void _notifyMarketWatchProvider() {
     try {
-      // Use debounce to avoid too many updates
-      if (_debounceTimer?.isActive ?? false) {
-        _debounceTimer?.cancel();
-      }
-
       // If we don't have any data, don't bother updating
       if (_socketDatas.isEmpty) return;
 
-      // Use a short debounce time to ensure UI responsiveness
-      _debounceTimer = Timer(const Duration(milliseconds: 100), () {
-        try {
-          // Safely check if the market watch provider is still available
-          final marketWatchProv = ref.read(marketWatchProvider);
+      // FIX: Remove debounce for critical LTP updates to ensure real-time prices
+      // Directly send the updates to market watch provider
+      try {
+        // Safely check if the market watch provider is still available
+        final marketWatchProv = ref.read(marketWatchProvider);
 
-          // Check if the provider is already disposed
-          if (marketWatchProv.disposed) {
-            print("Market watch provider is disposed, skipping update");
-            return;
-          }
-
-          // Send a copy of the data to prevent modification issues
-          final dataCopy = Map<String, dynamic>.from(_socketDatas);
-          marketWatchProv.updateSocketData(dataCopy);
-        } catch (e) {
-          // Silent catch - this can happen during app shutdown or page transitions
-          // We don't want to crash the app if the provider is being disposed
-          print(
-              "Market watch provider access error (likely during transition): $e");
+        // Check if the provider is already disposed
+        if (marketWatchProv.disposed) {
+          print("Market watch provider is disposed, skipping update");
+          return;
         }
-      });
+
+        // Send a copy of the data to prevent modification issues
+        final dataCopy = Map<String, dynamic>.from(_socketDatas);
+        marketWatchProv.updateSocketData(dataCopy);
+      } catch (e) {
+        // Silent catch - this can happen during app shutdown or page transitions
+        // We don't want to crash the app if the provider is being disposed
+        print(
+            "Market watch provider access error (likely during transition): $e");
+      }
     } catch (e) {
       print("Error setting up notification to market watch provider: $e");
     }
