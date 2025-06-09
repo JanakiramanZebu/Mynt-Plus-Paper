@@ -4,10 +4,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:mynt_plus/models/ipo_model/ipo_mainstream_model.dart';
 import 'package:mynt_plus/screens/ipo/preclose_ipo/preclose_ipo_screen.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/iop_provider.dart';
@@ -51,7 +49,7 @@ class MainSmeListCard extends StatelessWidget {
 }
 
       return ((openIpos.isEmpty) &&
-              (ipos.ipoPreClose!.msg.isEmpty) &&
+              (ipos.ipoPreClose?.msg.isEmpty ?? true) &&
               (preOpenIpos.isEmpty))
           ? Padding(
               padding: const EdgeInsets.only(top: 225),
