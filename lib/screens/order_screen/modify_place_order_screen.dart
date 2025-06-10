@@ -166,6 +166,8 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
         final orderProvide = ref.watch(orderProvider);
         final internet = ref.watch(networkStateProvider);
         final theme = ref.read(themeProvider);
+        int frezQtyOrderSliceMaxLimit=ref.read(orderProvider).frezQtyOrderSliceMaxLimit;
+
         return GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: Scaffold(
@@ -290,7 +292,7 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                                       priceCtrl.text = "Market";
                                                     } else {
                                                       priceCtrl.text =
-                                                          "${widget.orderArg.ltp}";
+                                                          "${widget.modifyOrderArgs.prc}";
                                                     }
                                                     prcType = isActivePrice[0]
                                                         ? 'LMT'
@@ -413,25 +415,47 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                                     prefixIcon: InkWell(
                                                       onTap: () {
                                                         setState(() {
-                                                          if (qtyCtrl.text
-                                                              .isNotEmpty) {
-                                                            if (int.parse(
+
+                                                           String input =
                                                                     qtyCtrl
-                                                                        .text) >
-                                                                multiplayer) {
-                                                              qtyCtrl
-                                                                  .text = (int.parse(
-                                                                          qtyCtrl
-                                                                              .text) -
-                                                                      multiplayer)
-                                                                  .toString();
-                                                            }
-                                                          } else {
-                                                            qtyCtrl.text =
-                                                                "$multiplayer";
-                                                          }
-                                                          marginUpdate();
-                                                        });
+                                                                        .text;
+                                                                int currentQty =
+                                                                    int.tryParse(input) ??
+                                                                        0;
+                                                                int adjustedQty =
+                                                                    ((currentQty / multiplayer).floor()) *
+                                                                        multiplayer;
+                                                                if (currentQty !=
+                                                                    adjustedQty) {
+                                                                  qtyCtrl.text =
+                                                                      adjustedQty
+                                                                          .toString();
+                                                                } else if (input
+                                                                      .isNotEmpty && currentQty >
+                                                                      multiplayer) {
+                                                                  
+                                                                      qtyCtrl
+                                                                          .text = (currentQty -
+                                                                              multiplayer)
+                                                                          .toString();
+                                                                  } else {
+                                                                  qtyCtrl.text =
+                                                                      "$multiplayer";
+                                                                  }
+                                                                  marginUpdate();
+                                                              },
+                                                              );
+
+                                                          // String input = qtyCtrl.text;
+                                                          // int quantityValue = int.tryParse(input) ?? 0;
+
+                                                          // if (input.isNotEmpty && quantityValue > multiplayer) {
+                                                          //     qtyCtrl.text = (quantityValue - multiplayer).toString();
+                                                          // } else {
+                                                          //   qtyCtrl.text = "$multiplayer";
+                                                          // }
+                                                          // marginUpdate();
+                                                        // });
                                                       },
                                                       child: SvgPicture.asset(
                                                           theme.isDarkMode
@@ -448,24 +472,56 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                                     suffixIcon: InkWell(
                                                       onTap: () {
                                                         setState(() {
-                                                          int number =
-                                                              int.parse(
-                                                                  qtyCtrl.text);
-                                                          if (qtyCtrl.text
-                                                              .isNotEmpty) {
-                                                            if (number <
-                                                                999999) {
-                                                              qtyCtrl
-                                                                  .text = (int.parse(discQtyCtrl.text) +
-                                                                              1)
-                                                                          .toString();
-                                                            }
-                                                          } else {
-                                                            qtyCtrl.text =
-                                                                "$multiplayer";
-                                                          }
-                                                          marginUpdate();
-                                                        });
+                                                                String input =
+                                                                    qtyCtrl
+                                                                    .text;
+                                                            int currentQty =
+                                                                int.tryParse(input) ??
+                                                                    0;
+                                                            int adjustedQty =
+                                                                ((currentQty / multiplayer).round()) *
+                                                                    multiplayer;
+
+                                                            if (currentQty !=
+                                                                adjustedQty) {
+                                                              qtyCtrl.text =
+                                                                  adjustedQty
+                                                                      .toString();
+                                                            } 
+
+                                                              else if (input
+                                                                  .isNotEmpty && currentQty <
+                                                                  ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                  qtyCtrl.text = (currentQty + multiplayer).toString();
+                                                              } else {
+                                                                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                                ScaffoldMessenger.of(context)
+                                                                    .showSnackBar(warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
+                                                              // qtyCtrl.text =
+                                                              //     "$multiplayer";
+                                                              }
+                                                              marginUpdate();
+                                                          });
+
+
+
+                                                        //   String input = qtyCtrl.text;
+                                                        //   int quantityValue =int.parse(input);
+
+                                                        //   if (input.isNotEmpty quantityValue) {
+                                                        //     if (number <
+                                                        //         999999) {
+                                                        //       qtyCtrl
+                                                        //           .text = (int.parse(discQtyCtrl.text) +
+                                                        //                       1)
+                                                        //                   .toString();
+                                                        //     }
+                                                        //   } else {
+                                                        //     qtyCtrl.text =
+                                                        //         "$multiplayer";
+                                                        //   }
+                                                        //   marginUpdate();
+                                                        // });
                                                       },
                                                       child: SvgPicture.asset(
                                                           theme.isDarkMode
@@ -477,37 +533,75 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                                     textCtrl: qtyCtrl,
                                                     textAlign: TextAlign.center,
                                                     onChanged: (value) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .hideCurrentSnackBar();
-                                                      if (value.isEmpty) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    "Quantity can not be empty"));
-                                                      } else {
-                                                        String newValue =
-                                                            value.replaceAll(
-                                                                RegExp(
-                                                                    r'[^0-9]'),
-                                                                '');
-                                                        if (newValue != value) {
-                                                          qtyCtrl.text =
-                                                              newValue;
-                                                          qtyCtrl.selection =
-                                                              TextSelection
-                                                                  .fromPosition(
-                                                            TextPosition(
-                                                                offset: newValue
-                                                                    .length),
-                                                          );
-                                                        }
-                                                        marginUpdate();
-                                                      }
-                                                    },
-                                                  ))
+
+                                                              ScaffoldMessenger.of(
+                                                                      context)
+                                                                  .hideCurrentSnackBar();
+                                                              if (value
+                                                                  .isEmpty || value == "0") {
+                                                              ScaffoldMessenger.of(
+                                                                      context)
+                                                                  .showSnackBar(warningMessage(
+                                                                      context,
+                                                                      "Quantity can not be ${value == "0"?'zero':'empty'}"));
+                                                              } else {
+                                                              String
+                                                                  newValue = value.replaceAll(RegExp(r'[^0-9]'),'');
+                                                                  int number = int.tryParse(newValue) ?? 0;
+                                                              if (number >
+                                                                  ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                  qtyCtrl.text = qtyCtrl.text;
+                                                                      // .substring(
+                                                                      //     0,
+                                                                      //     10); // Restrict max value
+                                                                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                                      ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+                                                                      "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
+                                                              }
+                                                              if (newValue != value) {
+                                                                  qtyCtrl.text = newValue;
+                                                                  qtyCtrl.selection =TextSelection.fromPosition(
+                                                                  TextPosition(offset:newValue.length),
+                                                                  );
+                                                              }
+                                                              marginUpdate();
+                                                              }
+                                                          },
+                                                          ),
+
+
+                                                      // ScaffoldMessenger.of(
+                                                      //         context)
+                                                      //     .hideCurrentSnackBar();
+                                                      // if (value.isEmpty) {
+                                                      //   ScaffoldMessenger.of(
+                                                      //           context)
+                                                      //       .showSnackBar(
+                                                      //           warningMessage(
+                                                      //               context,
+                                                      //               "Quantity can not be empty"));
+                                                      // } else {
+                                                      //   String newValue =
+                                                      //       value.replaceAll(
+                                                      //           RegExp(
+                                                      //               r'[^0-9]'),
+                                                      //           '');
+                                                      //   if (newValue != value) {
+                                                      //     qtyCtrl.text =
+                                                      //         newValue;
+                                                      //     qtyCtrl.selection =
+                                                      //         TextSelection
+                                                      //             .fromPosition(
+                                                      //       TextPosition(
+                                                      //           offset: newValue
+                                                      //               .length),
+                                                      //     );
+                                                      //   }
+                                                      //   marginUpdate();
+                                                      // }
+                                                      //   },
+                                                      // )
+                                                  )
                                             ])),
                                         const SizedBox(width: 16),
                                         Expanded(
@@ -1138,8 +1232,7 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                                                           .toString();
                                                                 }
                                                               } else {
-                                                                discQtyCtrl
-                                                                    .text = "0";
+                                                                discQtyCtrl.text = "0";
                                                               }
                                                             });
                                                           },

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/stocks_provider.dart';
+import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -103,12 +104,46 @@ class IndexListProvider extends DefaultChangeNotifier {
 // Change bottom tab menu
 
   bottomMenu(int value, BuildContext context) {
+    // Store previous index to handle transitions correctly
+    final int previousIndex = _selectedBtmIndx;
     _selectedBtmIndx = value;
-    ref.read(stocksProvide).requestWSTradeaction(
-        isSubscribe: value == 0 ? true : false, context: context);
-    ref.read(marketWatchProvider).requestMWScrip(
-        context: context, isSubscribe: value == 1 ? true : false);
-    // ref.read(indexListProvider).checkSession(context);
+
+    // Handle WebSocket subscriptions based on tab changes
+    if (value == 0) {
+      // Dashboard tab
+      ref
+          .read(stocksProvide)
+          .requestWSTradeaction(isSubscribe: true, context: context);
+      if (previousIndex == 1) {
+        ref
+            .read(marketWatchProvider)
+            .requestMWScrip(context: context, isSubscribe: false);
+      }
+    } else if (value == 1) {
+      // Watchlist tab
+      ref
+          .read(stocksProvide)
+          .requestWSTradeaction(isSubscribe: false, context: context);
+      ref
+          .read(marketWatchProvider)
+          .requestMWScrip(context: context, isSubscribe: true);
+    } else {
+      // For other tabs, unsubscribe from market watch
+      ref
+          .read(stocksProvide)
+          .requestWSTradeaction(isSubscribe: false, context: context);
+      if (previousIndex == 1) {
+        ref
+            .read(marketWatchProvider)
+            .requestMWScrip(context: context, isSubscribe: false);
+      }
+    }
+
+    // Ensure data is properly refreshed when switching to profile tab
+    if (value == 4 && previousIndex != 4) {
+      ref.read(userProfileProvider).fetchprofilemenu();
+    }
+
     notifyListeners();
   }
 

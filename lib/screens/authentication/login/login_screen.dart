@@ -7,9 +7,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/change_password_provider.dart';
+import '../../../provider/index_list_provider.dart';
 import '../../../provider/ledger_provider.dart';
+import '../../../provider/order_provider.dart';
+import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/user_profile_provider.dart';
 import '../../../provider/version_provider.dart';
+import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
@@ -65,6 +70,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final forpass = ref.watch(changePasswordProvider);
       final theme = ref.watch(themeProvider);
       final ledgerprovider = ref.read(ledgerProvider);
+      final portfolio = ref.watch(portfolioProvider);
+      final orders = ref.watch(orderProvider);
+      final userProfile = ref.watch(userProfileProvider);
 
       return GestureDetector(
         onTap: () {
@@ -86,11 +94,75 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     child: CircularLoaderImage()))
             : PopScope(
-                canPop: false,
-                onPopInvokedWithResult: (didPop, result) {
-                  theme.removeUsermatrial(context);
-                  Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.loginScreenBanner, (route) => false);
+                canPop: (pref.islogOut! &&
+                        (pref.clientId!.isNotEmpty ||
+                            pref.clientMob!.isNotEmpty))
+                    ? false
+                    : true,
+                onPopInvokedWithResult: (didPop, result) async {
+                  if (didPop) return;
+
+                  if (result == true) {
+                    theme.removeUsermatrial(context);
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, Routes.loginScreenBanner, (route) => false);
+                  } else {
+                    // This is executed when pressing the back button
+
+                    // Check if we need to switch accounts or restore data
+                    int activeIndex = auth.loggedMobile.indexWhere(
+                        (element) => element.clientId == pref.clientId);
+                    if (activeIndex == -1) return;
+
+                    // Show loading indicator
+                    userProfile.profilePageloader(true);
+
+                    try {
+                      // pref.setMobileLogin(false);
+
+                      // Set client information
+                      await pref
+                          .setClientId(auth.loggedMobile[activeIndex].clientId);
+                      await pref
+                          .setClientMob(auth.loggedMobile[activeIndex].mobile);
+                      await pref.setClientSession(
+                          auth.loggedMobile[activeIndex].sesstion);
+                      await pref.setClientName(
+                          auth.loggedMobile[activeIndex].userName);
+                      await pref.setImei(auth.loggedMobile[activeIndex].imei);
+                      await pref.setMobileLogin(true);
+
+                      // Fetch account data
+                      await ref.read(authProvider).fetchMobileLogin(
+                          context,
+                          "",
+                          auth.loggedMobile[activeIndex].clientId,
+                          "switchAc",
+                          auth.loggedMobile[activeIndex].imei,
+                          true);
+
+                      // Reset and restart websocket connection
+                      ref.read(websocketProvider).closeSocket(true);
+                      ref.read(websocketProvider).changeconnectioncount();
+
+                      // Navigate to profile tab
+                      ref.read(indexListProvider).bottomMenu(4, context);
+
+                      // Wait for a short time to ensure data is loaded
+                      await Future.delayed(const Duration(milliseconds: 200));
+
+                      // Remove loading indicator after everything is done
+                      if (context.mounted) {
+                        userProfile.profilePageloader(false);
+                      }
+                    } catch (e) {
+                      // Handle any errors during the process
+                      print("Error restoring user data: $e");
+                      if (context.mounted) {
+                        userProfile.profilePageloader(false);
+                      }
+                    }
+                  }
                 },
                 child: Scaffold(
                   appBar: AppBar(
