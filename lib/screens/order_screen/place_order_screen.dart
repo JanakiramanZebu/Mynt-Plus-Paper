@@ -271,6 +271,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
               : "DAY";
       lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
       frezQty = ((sfq / lotSize).floor() * lotSize);
+      // 999999 1353220
       isBuy = widget.orderArg.transType;
       sipqtyctrl = TextEditingController(text: "1");
 
@@ -728,28 +729,26 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                       //   });
                                                                       // },
                                                                       onTap: () {
-                                                                        setState(
-                                                                            () {
-                                                                          if (sipqtyctrl
-                                                                              .text
-                                                                              .isNotEmpty) {
+                                                                        setState(() {
+                                                                          // if () {
                                                                                 int sipQty=int.tryParse(sipqtyctrl.text)??multiplayer;
-                                                                               if (sipQty ==
-                                                                                multiplayer) {
-                                                                              sipqtyctrl.text = (sipQty).toString();
-
-                                                                                }
-                                                                            if (sipQty >
+                                                                              //  if (sipQty ==
+                                                                              //   multiplayer) {
+                                                                              // sipqtyctrl.text = (sipQty).toString();
+                                                                              //   }
+                                                                            if (sipqtyctrl.text.isNotEmpty && sipQty >
                                                                                 multiplayer) {
                                                                               sipqtyctrl.text = (sipQty - multiplayer).toString();
                                                                               double ltpsip = double.parse("${widget.orderArg.ltp}");
-                                                                              resultsip = sipQty * ltpsip;
-                                                                            }
+                                                                              int inputValue = int.tryParse(sipqtyctrl.text) ?? 0;
+                                                                              resultsip = inputValue * ltpsip;
+                                                                            // }
                                                                           } else {
                                                                             sipqtyctrl.text =
                                                                                 "$multiplayer";
                                                                           }
-                                                                        });
+                                                                        }
+                                                                        );
                                                                       },
                                                                       child: SvgPicture.asset(theme.isDarkMode ? assets.darkCMinus : assets.minusIcon, fit: BoxFit.scaleDown))),
                                                               suffixIcon: Theme(
@@ -778,27 +777,21 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                       //   });
                                                                       // },
                                                                       onTap: () {
-                                                                        setState(
-                                                                            () {
-                                                                          if (sipqtyctrl
-                                                                              .text
-                                                                              .isNotEmpty) {
+                                                                        setState(() {
                                                                               int sipQty=int.tryParse(sipqtyctrl.text)??multiplayer;
-                                                                    
-                                                                                  sipqtyctrl.text =
-                                                                                      (sipQty + multiplayer).toString();
-                                                                            
-                                                                            // double
-                                                                            //     inputValue =
-                                                                            //     double.tryParse(sipqtyctrl.text) ?? 0.00;
-                                                                            double
-                                                                                ltpsip =
-                                                                                double.parse("${widget.orderArg.ltp}");
-                                                                            resultsip =
-                                                                                sipQty * ltpsip;
+                                                                          if (sipqtyctrl.text.isNotEmpty && sipQty
+                                                                          < ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)
+                                                                          ) {
+                                                                              sipqtyctrl.text = (sipQty + multiplayer).toString();
+                                                                              double ltpsip = double.parse("${widget.orderArg.ltp}");
+                                                                              int inputValue = int.tryParse(sipqtyctrl.text) ?? 0;
+                                                                              resultsip = inputValue * ltpsip;
                                                                           } else {
-                                                                            sipqtyctrl.text =
-                                                                                "$multiplayer";
+                                                                            ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                                            ScaffoldMessenger.of(context)
+                                                                            .showSnackBar(warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
+                                                                            // sipqtyctrl.text =
+                                                                            //     "$multiplayer";
                                                                           }
                                                                         });
                                                                       },
@@ -812,37 +805,25 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30))),
                                                           onTap: () {},
                                                           onChanged: (value) {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .hideCurrentSnackBar();
-                                                            if (value.isEmpty) {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      warningMessage(
-                                                                          context,
-                                                                          "The minimum quantity of this stock is one."));
-                                                            }
+                                                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                                            if (value.isEmpty  || value == "0") {
+                                                              ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,"The minimum quantity of this stock is one."));
+                                                            }else{
                                                             setState(() {
-                                                              double
-                                                                  inputValue =
-                                                                  double.tryParse(
-                                                                          value) ??
-                                                                      0.00;
+                                                              int inputValue =int.tryParse(value) ?? 0;
 
                                                               double ltpsip =
-                                                                  double.parse(
-                                                                      "${widget.orderArg.ltp}");
+                                                                  double.parse("${widget.orderArg.ltp}");
                                                               resultsip =
                                                                   inputValue *
                                                                       ltpsip;
                                                               sipLtpctrl.text =
-                                                                  resultsip
-                                                                      .toStringAsFixed(
-                                                                          2);
+                                                                  resultsip.toStringAsFixed(2);
                                                             });
-                                                          }))
+                                                          }
+                                                          },
+                                                          ),
+                                                          ),
                                                 ]))
                                           ])),
                                       const SizedBox(height: 10),
@@ -956,10 +937,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                                                               border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(30))),
                                                           onChanged: (value) {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .hideCurrentSnackBar();
-                                                            if (value.isEmpty) {
+                                                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                                            int inputValue = int.tryParse(value) ?? 0;
+                                                            if (value.isEmpty || inputValue < 1) {
                                                               ScaffoldMessenger
                                                                       .of(
                                                                           context)
@@ -968,15 +948,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                           context,
                                                                           "The minimum number of this SIP is one."));
                                                             }
-                                                             if (value.isEmpty) {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      warningMessage(
-                                                                          context,
-                                                                          "The minimum number of this SIP is one."));
-                                                            }
+                                                            //  if (value.isEmpty) {
+                                                            //   ScaffoldMessenger
+                                                            //           .of(
+                                                            //               context)
+                                                            //       .showSnackBar(
+                                                            //           warningMessage(
+                                                            //               context,
+                                                            //               "The minimum number of this SIP is one."));
+                                                            // }
                                                           }))
                                                 ]))
                                           ])),
@@ -1086,7 +1066,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                             
                                                                       if (currentQty !=
                                                                             adjustedQty) {
-                                                                          qtyCtrl.text =
+                                                                          orderInput.qtyCtrl.text =
                                                                               adjustedQty
                                                                                   .toString();
                                                                         } 
@@ -1134,14 +1114,14 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                             
                                                                       if (currentQty !=
                                                                             adjustedQty) {
-                                                                          qtyCtrl.text =
+                                                                          orderInput.qtyCtrl.text =
                                                                               adjustedQty
                                                                                   .toString();
                                                                         } 
 
                                                                         else if (input
                                                                             .isNotEmpty && currentQty <
-                                                                              ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                              ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
                                                                  
                                                                             orderInput.qtyCtrl
                                                                                 .text = 
@@ -1149,12 +1129,16 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                                       multiplayer)
                                                                                   .toString();
                                                                           
-                                                                        } else {
-                                                                          orderInput.
-                                                                                  qtyCtrl
-                                                                                  .text =
-                                                                               multiplayer
-                                                                                .toString();
+                                                                        } 
+                                                                        else {
+                                                                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                                           ScaffoldMessenger.of(context)
+                                                                            .showSnackBar(warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
+                                                                          // orderInput.
+                                                                          //         qtyCtrl
+                                                                          //         .text =
+                                                                          //      multiplayer
+                                                                          //       .toString();
                                                                         }
                                                                       });
                                                                     },
@@ -1174,7 +1158,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   onChanged: (value) {
                                                                     ScaffoldMessenger.of(
                                                                             context)
-                                                                        .hideCurrentSnackBar();
+                                                                        .removeCurrentSnackBar();
                                                                     if (value.isEmpty || value == "0") {
                                                                       ScaffoldMessenger
                                                                               .of(context)
@@ -1188,8 +1172,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                               RegExp(r'[^0-9]'),'');
 
                                                                         int number =int.tryParse(newValue) ??0;
-                                                                        if (number > ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                        if (number > ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
                                                                             orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
+                                                                            ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                                                               ScaffoldMessenger.of(context)
                                                                             .showSnackBar(warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
                                                                         }
@@ -1263,7 +1248,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                     }
                                                                     ScaffoldMessenger.of(
                                                                             context)
-                                                                        .hideCurrentSnackBar();
+                                                                        .removeCurrentSnackBar();
                                                                     if (value.isEmpty || value == "0" || value == "0.00") {
                                                                       ScaffoldMessenger
                                                                               .of(context)
@@ -1616,7 +1601,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                               .toString();
                                                                     }else if (input
                                                                                   .isNotEmpty && currentQty <
-                                                                                    ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                                    ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
                                                                               
                                                                                   orderInput
                                                                                       .ocoQtyCtrl
@@ -1625,9 +1610,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                                       .toString();
                                                                                 
                                                                               } else {
-                                                                                orderInput
-                                                                                    .ocoQtyCtrl
-                                                                                    .text = "$multiplayer";
+                                                                                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                                                ScaffoldMessenger.of(context)
+                                                                                     .showSnackBar(warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
+                                                                                // orderInput
+                                                                                //     .ocoQtyCtrl
+                                                                                //     .text = "$multiplayer";
                                                                               }
                                                                             });
                                                                           },
@@ -1649,7 +1637,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                             (value) {
                                                                           ScaffoldMessenger.of(
                                                                                   context)
-                                                                              .hideCurrentSnackBar();
+                                                                              .removeCurrentSnackBar();
                                                                           if (value
                                                                               .isEmpty || value == "0") {
                                                                             ScaffoldMessenger.of(
@@ -1666,8 +1654,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                                     '');
 
                                                                         int number =int.tryParse(newValue) ??0;
-                                                                        if (number > ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                        if (number > ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
                                                                             orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
+                                                                            ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                                                               ScaffoldMessenger.of(context)
                                                                             .showSnackBar(warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
                                                                         }
@@ -2411,15 +2400,14 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
 
                                                                                                     else if (input
                                                                                                         .isNotEmpty && currentQty <
-                                                                                                        ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
-                                                                                                        qtyCtrl
-                                                                                                            .text = (currentQty +
-                                                                                                                multiplayer)
-                                                                                                            .toString();
-                                                                                                  
+                                                                                                        ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                                                        qtyCtrl.text = (currentQty + multiplayer).toString();
                                                                                                     } else {
-                                                                                                    qtyCtrl.text =
-                                                                                                        "$multiplayer";
+                                                                                                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                                                                      ScaffoldMessenger.of(context)
+                                                                                                          .showSnackBar(warningMessage(context,"Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
+                                                                                                    // qtyCtrl.text =
+                                                                                                    //     "$multiplayer";
                                                                                                     }
                                                                                                     marginUpdate();
                                                                                                 });
@@ -2458,27 +2446,21 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                                                         RegExp(
                                                                                                             r'[^0-9]'),
                                                                                                         '');
-
-
-
                                                                                                         int number =
-                                                                                                    int.tryParse(
-                                                                                                            newValue) ??
-                                                                                                        0;
+                                                                                                        int.tryParse(newValue) ?? 0;
 
                                                                                                 if (number >
-                                                                                                    ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
+                                                                                                    ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)) {
                                                                                                     qtyCtrl.text = qtyCtrl
                                                                                                         .text;
 
                                                                                                         // .substring(
                                                                                                         //     0,
                                                                                                         //     10); // Restrict max value
-
+                                                                                                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                                                                                         ScaffoldMessenger.of(
                                                                                                         context)
-                                                                                                    .showSnackBar(warningMessage(
-                                                                                                        context,
+                                                                                                    .showSnackBar(warningMessage(context,
                                                                                                         "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit*frezQty}"));
                                                                                                 }
 
@@ -2575,7 +2557,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                                 }
                                                                                 ScaffoldMessenger.of(
                                                                                         context)
-                                                                                    .removeCurrentSnackBar();
+                                                                                    .hideCurrentSnackBar();
                                                                                 if (value
                                                                                     .isEmpty) {
                                                                                   ScaffoldMessenger.of(
@@ -2658,7 +2640,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           : colors.colorDivider)
                                 ],
 
-                                if (priceType == "SL Limit" || priceType == "SL MKT") ...[
+                                if ((orderType == "Regular" || orderType == "Cover" || orderType == "Bracket") && (priceType == "SL Limit" || priceType == "SL MKT")) ...[
                                             triggerOption(
                                                 theme, context, widget.scripInfo),
                                             Divider(
@@ -3642,8 +3624,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                     : () async {
                                                         if (!orderProvide
                                                             .orderloader) {
-                                                          if (orderType ==
-                                                              "SIP") {
+                                                          if (orderType =="SIP") {
                                                             if (sipqtyctrl.text
                                                                     .isEmpty ||
                                                                 sipqtyctrl
@@ -3686,8 +3667,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                               sipOrder(ref);
                                                               }
                                                             }
-                                                          } else if (orderType ==
-                                                              "GTT") {
+                                                          } else if (orderType =="GTT") {
                                                             if (orderInput
                                                                 .disableGTTCond) {
                                                               if ((orderInput
@@ -3851,7 +3831,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                           : "Price can not be 0"));
 
                                                             }else if(int.parse(qtyCtrl.text.trim()) >
-                                                                      ((frezQtyOrderSliceMaxLimit*frezQty)==0?999999:frezQtyOrderSliceMaxLimit*frezQty)){
+                                                                      ((frezQtyOrderSliceMaxLimit*frezQty)==frezQtyOrderSliceMaxLimit?999999:frezQtyOrderSliceMaxLimit*frezQty)){
                                                                            ScaffoldMessenger.of(
                                                                           context)
                                                                       .showSnackBar(warningMessage(
@@ -4630,7 +4610,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                       textAlign: TextAlign.start)),
               const SizedBox(height: 8),
               Text(
-                  "Your order wil executed after a stock crosses this trigger price set for you",
+                  "Your order will be executed after a stock crosses this trigger price set for you",
                   style:
                       textStyle(const Color(0xff666666), 12, FontWeight.w500))
             ]));
