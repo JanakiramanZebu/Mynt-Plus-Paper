@@ -381,6 +381,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   chngPositionPnl(bool value) {
     _isNetPnl = value;
+    // Recalculate values after changing the PnL/MTM display mode
+    positionCal(_isDay);
     notifyListeners();
   }
 
@@ -917,99 +919,112 @@ class PortfolioProvider extends DefaultChangeNotifier {
     final lp = double.tryParse(position.lp ?? "0.00") ?? 0.0;
     final prcFtr = double.tryParse(position.prcftr ?? "1.0") ?? 1.0;
     final mult = double.tryParse(position.mult ?? "1.0") ?? 1.0;
+    final lotSize = double.tryParse(position.ls ?? "1.0") ?? 1.0;
     final netQty = int.tryParse(position.netqty ?? "0") ?? 0;
-    final netQtyWeighted = netQty * prcFtr;
 
     final dayBuyQty = int.tryParse(position.daybuyqty ?? "0") ?? 0;
     final daySellQty = int.tryParse(position.daysellqty ?? "0") ?? 0;
     final cfBuyQty = int.tryParse(position.cfbuyqty ?? "0") ?? 0;
     final cfSellQty = int.tryParse(position.cfsellqty ?? "0") ?? 0;
 
+    final dayBuyAmt = double.tryParse(position.daybuyamt ?? "0.00") ?? 0.0;
+    final daySellAmt = double.tryParse(position.daysellamt ?? "0.00") ?? 0.0;
+    final upldPrc = double.tryParse(position.upldprc ?? "0.00") ?? 0.0;
+    final netAvgPrc = double.tryParse(position.netavgprc ?? "0.00") ?? 0.0;
+    final netUpldPrc = double.tryParse(position.netupldprc ?? "0.00") ?? 0.0;
+    final rpnl = double.tryParse(position.rpnl ?? "0.00") ?? 0.0;
+
+    // Net Buy/Sell Qty
     final netBuyQty = dayBuyQty + cfBuyQty;
     final netSellQty = daySellQty + cfSellQty;
 
-    final netAvgPrc = double.tryParse(position.netavgprc ?? "0.00") ?? 0.0;
-    final upldPrc = double.tryParse(position.upldprc ?? "0.00") ?? 0.0;
-    final netUpldPrc = double.tryParse(position.netupldprc ?? "0.00") ?? 0.0;
-    final dayBuyAmt = double.tryParse(position.daybuyamt ?? "0.00") ?? 0.0;
-    final daySellAmt = double.tryParse(position.daysellamt ?? "0.00") ?? 0.0;
-    final rpnl = double.tryParse(position.rpnl ?? "0.00") ?? 0.0;
+    // --- Assign qty and avgPrc as per isDay ---
+    int qty = 0;
+    double avgPrc = 0.0;
 
     if (isDay) {
-      position.avgPrc = netQty == 0 ? "0.00" : position.dayavgprc;
-
-      int qty = position.exch == "MCX"
-          ? ((dayBuyQty - daySellQty) / (double.tryParse(position.ls ?? "1") ?? 1.0)).toInt()
-          : dayBuyQty - daySellQty;
-      position.qty = "$qty";
-
-      if (qty != 0) {
-        final dayAvgPrc = double.tryParse(position.dayavgprc ?? "0.00") ?? 0.0;
-        final unrealizedMtm = netQtyWeighted * mult * (lp - dayAvgPrc);
-        position.profitNloss = unrealizedMtm.toStringAsFixed(2);
-        unRealMtm += unrealizedMtm;
-
-        if (netBuyQty > 0 && netSellQty > 0) {
-          final actualSellAvg = daySellAmt / (mult * netSellQty * prcFtr);
-          final actualBuyAvg = dayBuyAmt / (mult * netBuyQty * prcFtr);
-          final booked = (qty > 0)
-              ? (actualSellAvg - actualBuyAvg) * netSellQty * mult * prcFtr
-              : (actualSellAvg - actualBuyAvg) * netBuyQty * mult * prcFtr;
-          bookPnl += booked;
-        }
+      // qty logic for day
+      if (position.exch == "MCX") {
+        qty = ((dayBuyQty - daySellQty) / lotSize).toInt();
       } else {
-        position.profitNloss = position.rpnl ?? "0.00";
-        bookPnl += rpnl;
+        qty = dayBuyQty - daySellQty;
       }
+      position.qty = qty.toString();
+
+      // avgPrc logic for day
+      position.avgPrc = (netQty == 0 ? "0.00" : position.dayavgprc ?? "0.00");
+      avgPrc = double.tryParse(position.avgPrc ?? "0.00") ?? 0.0;
     } else {
-      position.qty = position.netqty ?? "0";
-      final mtmAvgPrc = netAvgPrc;
-      final pnlAvgPrc = netUpldPrc == 0.0 ? netAvgPrc : netUpldPrc;
+      // qty logic for net
+      qty = netQty;
+      position.qty = qty.toString();
 
-      if (netQty == 0) {
+      // avgPrc logic for net
+      if (qty == 0) {
         position.avgPrc = "0.00";
-        position.mTm = position.rpnl ?? "0.00";
-        position.profitNloss = position.rpnl ?? "0.00";
-        totalMtm += rpnl;
-        totalPnl += rpnl;
       } else {
-        position.avgPrc = (_isNetPnl && position.upldprc == "0.00")
-            ? position.netavgprc
-            : (_isNetPnl ? position.upldprc : position.netavgprc);
-
-        final unrealizedMtmForMtm = netQtyWeighted * mult * (lp - mtmAvgPrc);
-        position.mTm = (rpnl + unrealizedMtmForMtm).toStringAsFixed(2);
-        totalMtm += rpnl + unrealizedMtmForMtm;
-
-        final unrealizedMtmForPnl = netQtyWeighted * mult * (lp - pnlAvgPrc);
-
-        double actualSellAvg = netSellQty != 0
-            ? ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) / netSellQty
-            : 0.0;
-        double actualBuyAvg = netBuyQty != 0
-            ? ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) / netBuyQty
-            : 0.0;
-
-        double booked = (netQty > 0)
-            ? (actualSellAvg - actualBuyAvg) * netSellQty * mult
-            : (actualSellAvg - actualBuyAvg) * netBuyQty * mult;
-
-        final pnl = booked + unrealizedMtmForPnl;
-        position.profitNloss = pnl.toStringAsFixed(2);
-        totalPnl += pnl;
+        // If netupldprc != 0, use that, else netavgprc
+        position.avgPrc = (netUpldPrc != 0.0)
+            ? netUpldPrc.toStringAsFixed(2)
+            : netAvgPrc.toStringAsFixed(2);
       }
+      avgPrc = double.tryParse(position.avgPrc ?? "0.00") ?? 0.0;
     }
+
+    // ActualBuyAvgPrice (for BookedPNL calculation)
+    double actualBuyAvgPrice = 0.0;
+    if (netBuyQty != 0) {
+      actualBuyAvgPrice = ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) / netBuyQty;
+    }
+
+    // ActualSellAvgPrice (for BookedPNL calculation)
+    double actualSellAvgPrice = 0.0;
+    if (netSellQty != 0) {
+      actualSellAvgPrice = ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) / netSellQty;
+    }
+
+    // ActualBookedPNL
+    double actualBookedPnl = 0.0;
+    if (netQty > 0) {
+      actualBookedPnl = (actualSellAvgPrice - actualBuyAvgPrice) * netSellQty * mult;
+    } else {
+      actualBookedPnl = (actualSellAvgPrice - actualBuyAvgPrice) * netBuyQty * mult;
+    }
+
+    // For MTM, avgprc = netavgprc
+    double actualUnrealizedMtm = netQty * prcFtr * mult * (lp - netAvgPrc);
+
+    // For PnL, avgprc = netupldprc if not 0 else netavgprc
+    double avgPrcForUnrealized = netUpldPrc != 0.0 ? netUpldPrc : netAvgPrc;
+    double actualUnrealizedPnl = netQty * prcFtr * mult * (lp - avgPrcForUnrealized);
+
+    // MTM = rpnl + ActualUnrealizedMtoM
+    double mtm = rpnl + actualUnrealizedMtm;
+
+    // PnL = ActualBookedPNL + ActualUnrealizedMtoM
+    double pnl = actualBookedPnl + actualUnrealizedPnl;
+
+    // Assign back to position
+    position.mTm = mtm.toStringAsFixed(2);
+    position.profitNloss = pnl.toStringAsFixed(2);
+
+    // Totals
+    totalMtm += mtm;
+    totalPnl += pnl;
+    unRealMtm += actualUnrealizedPnl;
+    bookPnl += actualBookedPnl;
   }
 
   _totMtm = totalMtm.toStringAsFixed(2);
   _totPnL = totalPnl.toStringAsFixed(2);
   _totUnRealMtm = unRealMtm.toStringAsFixed(2);
   _totBookedPnL = bookPnl.toStringAsFixed(2);
-
   notifyListeners();
 }
 
-// websocket Connection Request for Position scrip
+
+
+  // websocket Connection Request for Position scrip
   requestWSPosition(
       {required bool isSubscribe, required BuildContext context}) {
     try {
