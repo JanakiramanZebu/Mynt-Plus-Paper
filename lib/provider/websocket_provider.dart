@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -9,6 +10,7 @@ import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/network_state_provider.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../api/core/api_link.dart';
@@ -17,6 +19,7 @@ import '../locator/locator.dart';
 import '../locator/preference.dart';
 import 'auth_provider.dart';
 import 'market_watch_provider.dart';
+import 'notification_provider.dart';
 
 final websocketProvider =
     ChangeNotifierProvider((ref) => WebSocketProvider(ref));
@@ -331,7 +334,11 @@ class WebSocketProvider extends ChangeNotifier {
       } else if (res['t']?.toString().toLowerCase() == "om" &&
           _context != null) {
         _handleOrderMessage(res);
-      } else if (res['t']?.toString().toLowerCase() == "h") {
+      }else if (res['t']?.toString().toLowerCase() == "am" &&
+          _context != null) {
+        _handleAlertMessage(res);
+      }
+       else if (res['t']?.toString().toLowerCase() == "h") {
         // Handle heartbeat/ping response
         _failedPingCount = 0;
       }
@@ -362,6 +369,29 @@ class WebSocketProvider extends ChangeNotifier {
 
     if (!_connectionCompleter!.isCompleted) {
       _connectionCompleter?.complete();
+    }
+  }
+
+  void _handleAlertMessage(Map<String, dynamic> res) {   
+    // Show alert message in a SnackBar
+    if (res['dmsg'] != null && _context != null) {
+      // Display the alert message to the user
+      ScaffoldMessenger.of(_context!).showSnackBar(
+        successMessage(_context!, res['dmsg'].toString())
+      );
+      
+      // Navigate to the alerts tab (tab index 6) when alert is triggered
+      // This will take the user to the alerts tab even if they're on another screen
+      ref.read(orderProvider).changeTabIndex(6, _context!);
+    }
+    
+    // Update both pending alerts and triggered alerts
+    if (_context != null) {
+      // Fetch broker messages for triggered alerts
+      ref.read(notificationprovider).fetchbrokermsg(_context!);
+      
+      // Fetch pending alerts to refresh the list
+      ref.read(marketWatchProvider).fetchPendingAlert(_context!);
     }
   }
 
@@ -748,36 +778,30 @@ class WebSocketProvider extends ChangeNotifier {
   // Method to notify the market watch provider of data updates
   void _notifyMarketWatchProvider() {
     try {
-      // Use debounce to avoid too many updates
-      if (_debounceTimer?.isActive ?? false) {
-        _debounceTimer?.cancel();
-      }
-
       // If we don't have any data, don't bother updating
       if (_socketDatas.isEmpty) return;
 
-      // Use a short debounce time to ensure UI responsiveness
-      _debounceTimer = Timer(const Duration(milliseconds: 100), () {
-        try {
-          // Safely check if the market watch provider is still available
-          final marketWatchProv = ref.read(marketWatchProvider);
+      // FIX: Remove debounce for critical LTP updates to ensure real-time prices
+      // Directly send the updates to market watch provider
+      try {
+        // Safely check if the market watch provider is still available
+        final marketWatchProv = ref.read(marketWatchProvider);
 
-          // Check if the provider is already disposed
-          if (marketWatchProv.disposed) {
-            print("Market watch provider is disposed, skipping update");
-            return;
-          }
-
-          // Send a copy of the data to prevent modification issues
-          final dataCopy = Map<String, dynamic>.from(_socketDatas);
-          marketWatchProv.updateSocketData(dataCopy);
-        } catch (e) {
-          // Silent catch - this can happen during app shutdown or page transitions
-          // We don't want to crash the app if the provider is being disposed
-          print(
-              "Market watch provider access error (likely during transition): $e");
+        // Check if the provider is already disposed
+        if (marketWatchProv.disposed) {
+          print("Market watch provider is disposed, skipping update");
+          return;
         }
-      });
+
+        // Send a copy of the data to prevent modification issues
+        final dataCopy = Map<String, dynamic>.from(_socketDatas);
+        marketWatchProv.updateSocketData(dataCopy);
+      } catch (e) {
+        // Silent catch - this can happen during app shutdown or page transitions
+        // We don't want to crash the app if the provider is being disposed
+        print(
+            "Market watch provider access error (likely during transition): $e");
+      }
     } catch (e) {
       print("Error setting up notification to market watch provider: $e");
     }

@@ -3262,6 +3262,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       String lp,
       String remark) async {
     try {
+      toggleLoadingOn(true);
       _setAlertModel =
           await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
       ref.read(orderProvider).changeTabIndex(6, context);
@@ -3291,6 +3292,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       return _setAlertModel;
     } catch (e) {
       debugPrint(e.toString());
+    }
+    finally {
+      toggleLoadingOn(false);
     }
   }
 
@@ -3382,7 +3386,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _modifyalertmodel =
           await api.getmodifyalert(exch, tysm, value, alertTypeVal, alid);
 
-      if (_modifyalertmodel!.stat! == "Alert modified successfully") {
+      if (_modifyalertmodel!.stat! == "OI replaced") {
         ConstantName.sessCheck = true;
 
         // Fetch updated alert list
@@ -3392,7 +3396,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         ref.read(orderProvider).tabSize();
 
         ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_modifyalertmodel?.stat}"));
+            successMessage(context, "Alert modified successfully"));
       } else if (_modifyalertmodel!.stat == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
       }

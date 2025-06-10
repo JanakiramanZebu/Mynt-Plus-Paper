@@ -32,7 +32,8 @@ class _OrderBookState extends ConsumerState<OrderBook> {
 
   // Throttling properties
   DateTime _lastSocketUpdateTime = DateTime.now();
-  static const Duration _minUpdateInterval = Duration(milliseconds: 200);
+  // FIX: Reduce throttling interval for faster LTP updates
+  static const Duration _minUpdateInterval = Duration(milliseconds: 50);
 
   // Cache of items needing updates
   final Map<String, Map<String, dynamic>> _pendingUpdates = {};
@@ -118,9 +119,10 @@ class _OrderBookState extends ConsumerState<OrderBook> {
 
     // Helper function to check if a string is a valid numeric price
     bool isValidNumeric(String? value) {
-      if (value == null || value == "null" || value == "0" || value == "0.00") {
+      if (value == null || value == "null") {
         return false;
       }
+      // FIX: Allow zero values when necessary (e.g., for newly listed stocks)
       return double.tryParse(value) != null;
     }
 
@@ -137,11 +139,14 @@ class _OrderBookState extends ConsumerState<OrderBook> {
       final currentLtp = order.ltp;
       final currentPerChange = order.perChange;
 
-      // Only update LTP if it has a valid value and has changed
+      // FIX: Prioritize LTP updates - check if it has a valid value
       final lp = socketData['lp']?.toString();
-      if (isValidNumeric(lp) && lp != currentLtp) {
-        order.ltp = lp;
-        hasUpdates = true;
+      if (isValidNumeric(lp)) {
+        // Always update if different to ensure real-time display
+        if (lp != currentLtp) {
+          order.ltp = lp;
+          hasUpdates = true;
+        }
       }
 
       // Only update percent change if it has a valid value and has changed
@@ -159,7 +164,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
       }
     }
 
-    // Only trigger rebuild if actual data changed
+    // FIX: Immediately update UI when price data changes
     if (hasUpdates && mounted) {
       // Reapply the last sorting if there's a persistent sort setting
       if (orderProv.lastOrderSortMethod.isNotEmpty) {

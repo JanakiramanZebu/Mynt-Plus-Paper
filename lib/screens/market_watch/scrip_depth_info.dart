@@ -1093,6 +1093,9 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo> {
                                           "Fundamental") ...[
                                         if (ref
                                                 .read(marketWatchProvider)
+                                                .fundamentalData != null &&
+                                            ref
+                                                .read(marketWatchProvider)
                                                 .fundamentalData!
                                                 .msg
                                                 .toString() !=
