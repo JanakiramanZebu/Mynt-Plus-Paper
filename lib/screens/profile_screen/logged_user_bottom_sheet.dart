@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
+import '../../provider/index_list_provider.dart';
 import '../../provider/ledger_provider.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/portfolio_provider.dart';
@@ -12,6 +13,7 @@ import '../../provider/user_profile_provider.dart';
 import '../../provider/websocket_provider.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
+import '../../screens/authentication/login/login_screen.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
@@ -83,22 +85,23 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                     if (loggedUser
                                             .loggedMobile[index].clientId !=
                                         pref.clientId) {
-                                          
                                       userProfile.profilePageloader(true);
-                                      
+
                                       // Clear data from previous account
                                       portfolio.clearAllportfolio();
                                       orders.clearAllorders();
-                                      ledgerprovider.setterfornullallSwitch = null;
+                                      ledgerprovider.setterfornullallSwitch =
+                                          null;
                                       userProfile.clearUserData();
-                                      
+
                                       // Close WebSocket before changing account
-                                      final websocket = ref.read(websocketProvider);
+                                      final websocket =
+                                          ref.read(websocketProvider);
                                       websocket.closeSocket(true);
-                                      
+
                                       // Set new account information
                                       pref.setClientId(loggedUser
-                                          .loggedMobile[index].clientId); 
+                                          .loggedMobile[index].clientId);
                                       pref.setClientMob(loggedUser
                                           .loggedMobile[index].mobile);
                                       pref.setClientSession(loggedUser
@@ -108,7 +111,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                       pref.setImei(
                                           loggedUser.loggedMobile[index].imei);
                                       pref.setMobileLogin(true);
-                                      
+
                                       await ref
                                           .read(authProvider)
                                           .fetchMobileLogin(
@@ -118,10 +121,11 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                                   .loggedMobile[index].clientId,
                                               "switchAc",
                                               loggedUser
-                                                  .loggedMobile[index].imei, true);
-                                              
+                                                  .loggedMobile[index].imei,
+                                              true);
+
                                       userProfile.profilePageloader(false);
-                                      
+
                                       // Reset WebSocket connection count and reconnect
                                       websocket.changeconnectioncount();
                                     }
@@ -153,8 +157,10 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                               FontWeight.w600))
                                       : InkWell(
                                           onTap: () {
-                                            loggedUser.removeUsers(loggedUser
-                                              .loggedMobile[index], index, context);
+                                            loggedUser.removeUsers(
+                                                loggedUser.loggedMobile[index],
+                                                index,
+                                                context);
                                           },
                                           child: Text("Remove",
                                               style: textStyle(
@@ -171,24 +177,52 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                         child: OutlinedButton(
                             onPressed: () {
                               // Clear all data from previous account before adding a new one
-                              ref.read(portfolioProvider).clearAllportfolio();
+                              //   ref.read(portfolioProvider).clearAllportfolio();
                               ref.read(orderProvider).clearAllorders();
-                              ref.read(ledgerProvider).setterfornullallSwitch = null;
-                              
+                              ref.read(ledgerProvider).setterfornullallSwitch =
+                                  null;
+
                               // Clear any cached user profile data
-                              ref.read(userProfileProvider).clearUserData();
-                              
-                              pref.setMobileLogin(true);
-                              pref.setLogout(false);
-                              pref.setHideLoginOptBtn(true);
+                              //   ref.read(userProfileProvider).clearUserData();
+
+                              //   pref.setMobileLogin(true);
+                              //   pref.setLogout(false);
+                              //   pref.setHideLoginOptBtn(true);
                               ref.watch(websocketProvider).closeSocket(true);
+
                               loggedUser.addClient(true);
                               loggedUser.clearError();
-                              loggedUser.clearTextField();
+                              //   loggedUser.clearTextField();
+                              loggedUser.loginMethCtrl.clear();
+
+                              // Close bottom sheet
                               Navigator.pop(context);
-                              // Navigator.pushNamed(
-                              //     context, Routes.loginScreenBanner);
-                              Navigator.pushNamed(context, Routes.loginScreen);
+
+                              // Navigate to login screen using a different approach
+                              // that won't clear user data when returning via back button
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => PopScope(
+                                    canPop: true,
+                                    onPopInvokedWithResult:
+                                        (didPop, result) async {
+                                      if (didPop) {
+                                        // Ensure we're still in the profile screen
+                                        // when returning from login
+                                        ref
+                                            .read(websocketProvider)
+                                            .changeconnectioncount();
+                                        if (context.mounted) {
+                                          ref
+                                              .read(indexListProvider)
+                                              .bottomMenu(4, context);
+                                        }
+                                      }
+                                    },
+                                    child: const LoginScreen(),
+                                  ),
+                                ),
+                              );
                             },
                             style: OutlinedButton.styleFrom(
                                 side: BorderSide(
