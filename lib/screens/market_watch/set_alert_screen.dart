@@ -493,13 +493,21 @@ class _SetAlertState extends State<SetAlert> {
                                                       }
                                                     }
                                                   },
-                                            child: Text("Ok",
+                                            child: _handlesetalert || scripInfo.loading ? const SizedBox(
+                              width: 18,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Color(0xff666666)),
+                            ) :  Text("Ok",
                                                 style: textStyles.btnText
                                                     .copyWith(
                                                         color: !theme.isDarkMode
                                                             ? colors.colorWhite
                                                             : colors
-                                                                .colorBlack)))
+                                                                .colorBlack))
+                                                                
+                                                                
+                                                                )
                                       ],
                                     );
                                   });

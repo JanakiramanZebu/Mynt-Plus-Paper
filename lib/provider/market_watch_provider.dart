@@ -3262,6 +3262,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       String lp,
       String remark) async {
     try {
+      toggleLoadingOn(true);
       _setAlertModel =
           await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
       ref.read(orderProvider).changeTabIndex(6, context);
@@ -3291,6 +3292,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       return _setAlertModel;
     } catch (e) {
       debugPrint(e.toString());
+    }
+    finally {
+      toggleLoadingOn(false);
     }
   }
 

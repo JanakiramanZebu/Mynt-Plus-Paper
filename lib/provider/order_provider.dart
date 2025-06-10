@@ -432,12 +432,14 @@ class OrderProvider extends DefaultChangeNotifier {
             ? "Trade Book (${_tradeBook!.length})"
             : "Trade Book",
       ),
-      Tab(
-        text: (ref.read(marketWatchProvider).alertPendingModel != null &&
-                ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty)
-            ? "Alert (${ref.read(marketWatchProvider).alertPendingModel!.length})"
-            : "Alert",
+      const Tab(
+        text: ("Alert"),
+      // ref.read(marketWatchProvider).alertPendingModel != null &&
+      //           ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty)
+      //       ? "Alert (${ref.read(marketWatchProvider).alertPendingModel!.length})"
+      //       :
       ),
+
       Tab(
         text: (_siporderBookModel?.sipDetails?.isNotEmpty ?? false)
             ? "SIP Order (${_siporderBookModel!.sipDetails!.length})"
