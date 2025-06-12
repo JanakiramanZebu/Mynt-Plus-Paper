@@ -185,12 +185,12 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                               // Clear any cached user profile data
                               //   ref.read(userProfileProvider).clearUserData();
 
-                              //   pref.setMobileLogin(true);
-                              //   pref.setLogout(false);
+                              pref.setMobileLogin(true);
+                              pref.setLogout(false);
                               //   pref.setHideLoginOptBtn(true);
                               ref.watch(websocketProvider).closeSocket(true);
 
-                              loggedUser.addClient(true);
+                              loggedUser.addClient(false);
                               loggedUser.clearError();
                               //   loggedUser.clearTextField();
                               loggedUser.loginMethCtrl.clear();

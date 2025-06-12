@@ -300,6 +300,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   MarketWatchProvider(this.ref) {
     // Load sort preference asynchronously - don't block the constructor
     _loadSortPreference();
+    _setupWebSocketListener();
     // Load saved page index
     _loadCurrentPageIndex();
 
@@ -1152,11 +1153,25 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           }
         }
 
+        // Set default watchlist name only if not already set
         if (_wlName.isEmpty) {
+          // Try to use saved page index to determine watchlist
+          if (_currentWatchlistPageIndex >= 0 && 
+              _currentWatchlistPageIndex < _marketWatchlist!.values!.length) {
+            _wlName = _marketWatchlist!.values![_currentWatchlistPageIndex];
+          } else {
+            // Fallback to first watchlist
           _wlName = _marketWatchlist!.values!.first;
         }
+        }
+        
+        // Add predefined watchlists
         _marketWatchlist!.values!.addAll(_preDefWL);
-        fetchPreDefMWScrip(context);
+        
+        // Fetch predefined watchlists data
+        await fetchPreDefMWScrip(context);
+        
+        // If not during a switch operation, change to the selected watchlist
         if (swit == false) {
           await changeWLScrip(_wlName, context);
         }
@@ -1170,7 +1185,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _marketWatchlist;
     } catch (e) {
-      print("Failed $e");
+      print("Failed to fetch market watchlist: $e");
       ref
           .read(indexListProvider)
           .logError
@@ -2380,18 +2395,43 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   changeWLScrip(String wName, BuildContext context) async {
     try {
+      // Handle empty watchlist name gracefully
+      if (wName.isEmpty) {
+        print("Warning: Empty watchlist name provided to changeWLScrip");
+        _scrips = [];
+        notifyListeners();
+        return;
+      }
+      
+      print("Changing to watchlist: $wName");
+      
       // Check if we have cached data for this watchlist
       bool wlis = _marketWatchScripData.containsKey(wName);
+      
+      // If data isn't cached and this isn't a special case, try to fetch it
+      if (!wlis && !["My Stocks", "Nifty50", "Niftybank", "Sensex"].contains(wName)) {
+        print("No cached data for watchlist: $wName, fetching...");
+        await fetchMWScrip(wName, context);
+        wlis = _marketWatchScripData.containsKey(wName);
+      }
 
       // Handle special cases or use cached data
-      _scrips = wName == "My Stocks"
-          ? [] // My Stocks is handled specially through portfolio
-          : wlis
-              ? await jsonDecode(_marketWatchScripData[wName]) ?? []
-              : [];
-
-      // Log the number of symbols for debugging
-      print("Watchlist change: $wName with ${_scrips.length} symbols");
+      if (wName == "My Stocks") {
+        _scrips = [];
+        print("Switching to My Stocks watchlist");
+      } else if (wlis) {
+        try {
+          var decodedData = jsonDecode(_marketWatchScripData[wName]);
+          _scrips = decodedData is List ? decodedData : [];
+          print("Loaded ${_scrips.length} symbols for watchlist: $wName");
+        } catch (e) {
+          print("Error decoding watchlist data: $e");
+          _scrips = [];
+        }
+      } else {
+        print("No data available for watchlist: $wName");
+        _scrips = [];
+      }
 
       // Apply sorting if there's a saved sort preference and if there are scrips to sort
       if (_scrips.isNotEmpty && _sortByWL.isNotEmpty) {
@@ -2411,14 +2451,16 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         } else {
           // If no symbols in watchlist, still ensure we're unsubscribed from previous
           await requestMWScrip(context: context, isSubscribe: false);
-          print("No symbols in watchlist: $wName");
         }
-      }
-    } catch (e) {
-      print("Watchlist change error: $e");
     }
 
+      // Update UI
+      notifyListeners();
+    } catch (e) {
+      print("Error in changeWLScrip: $e");
+      _scrips = [];
     notifyListeners();
+    }
   }
 
 // Delete market scrips by watchlist name
@@ -2598,6 +2640,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             context: context);
       } else {
         print("WebSocket: No symbols to subscribe");
+      }
+      
+      // Re-apply sorting after subscription if needed
+      if (isSubscribe && _sortByWL.isNotEmpty && _scrips.isNotEmpty) {
+        _applySavedSorting();
       }
     } catch (e) {
       print("WebSocket subscription error: $e");
