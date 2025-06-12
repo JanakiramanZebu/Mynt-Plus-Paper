@@ -111,12 +111,21 @@ class WebSocketProvider extends ChangeNotifier {
     wsmount = mounted;
     _wsConnected = false;
     _connecting = false;
+    _reconnecting =
+        false; // Reset reconnection flag to ensure we can reconnect properly
 
     // Stop ping timer
     _stopPingTimer();
 
+    // Cancel any outstanding connection completion
+    if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
+      _connectionCompleter!
+          .completeError("WebSocket connection closed intentionally");
+    }
+
     // Properly close channel
     _channel?.sink.close();
+    _channel = null; // Set to null to ensure we create a new one on reconnect
 
     // Cancel all timers to prevent further reconnection attempts
     for (var timer in _subscriptionTimers.values) {
@@ -126,6 +135,7 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Cancel backoff timer if it exists
     _reconnectBackoff?.cancel();
+    _reconnectBackoff = null;
 
     if (mounted) {
       // CRITICAL FIX: Schedule notification for the next microtask to avoid conflict with widget lifecycle
@@ -334,11 +344,10 @@ class WebSocketProvider extends ChangeNotifier {
       } else if (res['t']?.toString().toLowerCase() == "om" &&
           _context != null) {
         _handleOrderMessage(res);
-      }else if (res['t']?.toString().toLowerCase() == "am" &&
+      } else if (res['t']?.toString().toLowerCase() == "am" &&
           _context != null) {
         _handleAlertMessage(res);
-      }
-       else if (res['t']?.toString().toLowerCase() == "h") {
+      } else if (res['t']?.toString().toLowerCase() == "h") {
         // Handle heartbeat/ping response
         _failedPingCount = 0;
       }
@@ -372,24 +381,23 @@ class WebSocketProvider extends ChangeNotifier {
     }
   }
 
-  void _handleAlertMessage(Map<String, dynamic> res) {   
+  void _handleAlertMessage(Map<String, dynamic> res) {
     // Show alert message in a SnackBar
     if (res['dmsg'] != null && _context != null) {
       // Display the alert message to the user
-      ScaffoldMessenger.of(_context!).showSnackBar(
-        successMessage(_context!, res['dmsg'].toString())
-      );
-      
+      ScaffoldMessenger.of(_context!)
+          .showSnackBar(successMessage(_context!, res['dmsg'].toString()));
+
       // Navigate to the alerts tab (tab index 6) when alert is triggered
       // This will take the user to the alerts tab even if they're on another screen
       ref.read(orderProvider).changeTabIndex(6, _context!);
     }
-    
+
     // Update both pending alerts and triggered alerts
     if (_context != null) {
       // Fetch broker messages for triggered alerts
       ref.read(notificationprovider).fetchbrokermsg(_context!);
-      
+
       // Fetch pending alerts to refresh the list
       ref.read(marketWatchProvider).fetchPendingAlert(_context!);
     }

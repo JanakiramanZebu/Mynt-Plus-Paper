@@ -381,7 +381,7 @@ class ExitPositionScreen extends ConsumerWidget {
                                                   const Color(0xff5E6B7D),
                                                   14,
                                                   FontWeight.w500)),
-                                Text("${position.qty}",
+                                Text("${position.netqty }",
                                               style: textStyle(
                                                   theme.isDarkMode
                                                       ? colors.colorWhite
