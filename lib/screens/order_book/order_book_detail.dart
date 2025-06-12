@@ -633,7 +633,7 @@ class _BottomActionBar extends ConsumerWidget {
               ),
               child: Text("Yes",
                 style: textStyle(
-                  !theme.isDarkMode
+                  theme.isDarkMode
                     ? colors.colorBlack
                     : colors.colorWhite,
                   14,

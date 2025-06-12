@@ -145,10 +145,10 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
         priceCtrl.text = "${widget.modifyOrderArgs.prc}";
       }
 
-      addStoploss = widget.modifyOrderArgs.sPrdtAli == "BO" ||
-              widget.modifyOrderArgs.sPrdtAli == "CO"
-          ? true
-          : false;
+      // addStoploss = widget.modifyOrderArgs.sPrdtAli == "BO" ||
+      //         widget.modifyOrderArgs.sPrdtAli == "CO"
+      //     ? true
+      //     : false;
       marginUpdate();
     });
     super.initState();
@@ -1008,250 +1008,250 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                 const Divider(
                                     color: Color(0xffDDDDDD), height: 0)
                               ],
-                              Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 16, right: 4),
-                                  child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text("Add Validity & Disclosed Qty",
-                                            style: textStyle(
-                                                const Color(0xff666666),
-                                                14,
-                                                FontWeight.w500)),
-                                        IconButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                addValidity = !addValidity;
-                                              });
-                                            },
-                                            icon: SvgPicture.asset(theme
-                                                    .isDarkMode
-                                                ? addValidity
-                                                    ? assets.darkCheckedboxIcon
-                                                    : assets.darkCheckboxIcon
-                                                : addValidity
-                                                    ? assets.checkedbox
-                                                    : assets.checkbox))
-                                      ])),
-                              if (addValidity) ...[
-                                Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                headerTitleText(
-                                                    "Validity", theme),
-                                                const SizedBox(height: 7),
-                                                SizedBox(
-                                                  height: 43,
-                                                  child: ListView.separated(
-                                                      scrollDirection:
-                                                          Axis.horizontal,
-                                                      itemBuilder:
-                                                          (context, index) {
-                                                        return ElevatedButton(
-                                                          onPressed: () {
-                                                            setState(() {
-                                                              for (var i = 0;
-                                                                  i <
-                                                                      validityType
-                                                                          .length;
-                                                                  i++) {
-                                                                isActiveValidity[
-                                                                    i] = false;
-                                                              }
-                                                              isActiveValidity[
-                                                                  index] = true;
+                              // Padding(
+                              //     padding:
+                              //         const EdgeInsets.only(left: 16, right: 4),
+                              //     child: Row(
+                              //         mainAxisAlignment:
+                              //             MainAxisAlignment.spaceBetween,
+                              //         children: [
+                              //           Text("Add Validity & Disclosed Qty",
+                              //               style: textStyle(
+                              //                   const Color(0xff666666),
+                              //                   14,
+                              //                   FontWeight.w500)),
+                              //           IconButton(
+                              //               onPressed: () {
+                              //                 setState(() {
+                              //                   addValidity = !addValidity;
+                              //                 });
+                              //               },
+                              //               icon: SvgPicture.asset(theme
+                              //                       .isDarkMode
+                              //                   ? addValidity
+                              //                       ? assets.darkCheckedboxIcon
+                              //                       : assets.darkCheckboxIcon
+                              //                   : addValidity
+                              //                       ? assets.checkedbox
+                              //                       : assets.checkbox))
+                              //         ])),
+                              // if (addValidity) ...[
+                              //   Padding(
+                              //       padding: const EdgeInsets.symmetric(
+                              //           horizontal: 16),
+                              //       child: Row(
+                              //           crossAxisAlignment:
+                              //               CrossAxisAlignment.start,
+                              //           children: [
+                              //             Expanded(
+                              //                 child: Column(
+                              //                     crossAxisAlignment:
+                              //                         CrossAxisAlignment.start,
+                              //                     children: [
+                              //                   headerTitleText(
+                              //                       "Validity", theme),
+                              //                   const SizedBox(height: 7),
+                              //                   SizedBox(
+                              //                     height: 43,
+                              //                     child: ListView.separated(
+                              //                         scrollDirection:
+                              //                             Axis.horizontal,
+                              //                         itemBuilder:
+                              //                             (context, index) {
+                              //                           return ElevatedButton(
+                              //                             onPressed: () {
+                              //                               setState(() {
+                              //                                 for (var i = 0;
+                              //                                     i <
+                              //                                         validityType
+                              //                                             .length;
+                              //                                     i++) {
+                              //                                   isActiveValidity[
+                              //                                       i] = false;
+                              //                                 }
+                              //                                 isActiveValidity[
+                              //                                     index] = true;
 
-                                                              validity =
-                                                                  validityType[
-                                                                      index];
-                                                            });
-                                                          },
-                                                          style: ElevatedButton
-                                                              .styleFrom(
-                                                                  elevation: 0,
-                                                                  padding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          12,
-                                                                      vertical:
-                                                                          0),
-                                                                  backgroundColor: !theme
-                                                                          .isDarkMode
-                                                                      ? !isActiveValidity[
-                                                                              index]
-                                                                          ? const Color(
-                                                                              0xffF1F3F8)
-                                                                          : colors
-                                                                              .colorBlack
-                                                                      : !isActiveValidity[
-                                                                              index]
-                                                                          ? colors
-                                                                              .darkGrey
-                                                                          : colors
-                                                                              .colorWhite,
-                                                                  shape:
-                                                                      const StadiumBorder()),
-                                                          child: Text(
-                                                            validityType[index],
-                                                            style: textStyle(
-                                                                !theme
-                                                                        .isDarkMode
-                                                                    ? !isActiveValidity[
-                                                                            index]
-                                                                        ? const Color(
-                                                                            0xff666666)
-                                                                        : colors
-                                                                            .colorWhite
-                                                                    : !isActiveValidity[
-                                                                            index]
-                                                                        ? const Color(
-                                                                            0xff666666)
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                14,
-                                                                isActiveValidity[
-                                                                        index]
-                                                                    ? FontWeight
-                                                                        .w600
-                                                                    : FontWeight
-                                                                        .w500),
-                                                          ),
-                                                        );
-                                                      },
-                                                      separatorBuilder:
-                                                          (context, index) {
-                                                        return const SizedBox(
-                                                            width: 8);
-                                                      },
-                                                      itemCount:
-                                                          validityType.length),
-                                                )
-                                              ])),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                headerTitleText(
-                                                    "Disclosed Qty", theme),
-                                                const SizedBox(height: 7),
-                                                SizedBox(
-                                                    height: 44,
-                                                    child: CustomTextFormField(
-                                                        fillColor:
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .darkGrey
-                                                                : const Color(
-                                                                    0xffF1F3F8),
-                                                        // type:"int",
-                                                        hintText: "0",
-                                                        hintStyle: textStyle(
-                                                            const Color(
-                                                                0xff666666),
-                                                            15,
-                                                            FontWeight.w400),
-                                                        inputFormate: [
-                                                          FilteringTextInputFormatter
-                                                              .digitsOnly
-                                                        ],
-                                                        keyboardType:
-                                                            TextInputType
-                                                                .number,
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            16,
-                                                            FontWeight.w600),
-                                                        prefixIcon: InkWell(
-                                                          onTap: () {
-                                                            setState(() {
-                                                              if (discQtyCtrl
-                                                                  .text
-                                                                  .isNotEmpty) {
-                                                                if (int.parse(
-                                                                        discQtyCtrl
-                                                                            .text) >
-                                                                    0) {
-                                                                  discQtyCtrl
-                                                                          .text =
-                                                                      (int.parse(discQtyCtrl.text) -
-                                                                              1)
-                                                                          .toString();
-                                                                } else {
-                                                                  discQtyCtrl
-                                                                          .text =
-                                                                      "0";
-                                                                }
-                                                              } else {
-                                                                discQtyCtrl
-                                                                    .text = "0";
-                                                              }
-                                                            });
-                                                          },
-                                                          child: SvgPicture.asset(
-                                                              theme.isDarkMode
-                                                                  ? assets
-                                                                      .darkCMinus
-                                                                  : assets
-                                                                      .minusIcon,
-                                                              fit: BoxFit
-                                                                  .scaleDown),
-                                                        ),
-                                                        suffixIcon: InkWell(
-                                                          onTap: () {
-                                                            setState(() {
-                                                              int number =
-                                                                  int.parse(
-                                                                      discQtyCtrl
-                                                                          .text);
-                                                              if (discQtyCtrl
-                                                                  .text
-                                                                  .isNotEmpty) {
-                                                                if (number <
-                                                                    999999) {
-                                                                  discQtyCtrl
-                                                                          .text =
-                                                                      (int.parse(discQtyCtrl.text) +
-                                                                              1)
-                                                                          .toString();
-                                                                }
-                                                              } else {
-                                                                discQtyCtrl.text = "0";
-                                                              }
-                                                            });
-                                                          },
-                                                          child: SvgPicture.asset(
-                                                              theme.isDarkMode
-                                                                  ? assets
-                                                                      .darkAdd
-                                                                  : assets
-                                                                      .addIcon,
-                                                              fit: BoxFit
-                                                                  .scaleDown),
-                                                        ),
-                                                        textCtrl: discQtyCtrl,
-                                                        textAlign:
-                                                            TextAlign.center))
-                                              ]))
-                                        ])),
-                                const SizedBox(height: 10)
-                              ],
+                              //                                 validity =
+                              //                                     validityType[
+                              //                                         index];
+                              //                               });
+                              //                             },
+                              //                             style: ElevatedButton
+                              //                                 .styleFrom(
+                              //                                     elevation: 0,
+                              //                                     padding: const EdgeInsets
+                              //                                         .symmetric(
+                              //                                         horizontal:
+                              //                                             12,
+                              //                                         vertical:
+                              //                                             0),
+                              //                                     backgroundColor: !theme
+                              //                                             .isDarkMode
+                              //                                         ? !isActiveValidity[
+                              //                                                 index]
+                              //                                             ? const Color(
+                              //                                                 0xffF1F3F8)
+                              //                                             : colors
+                              //                                                 .colorBlack
+                              //                                         : !isActiveValidity[
+                              //                                                 index]
+                              //                                             ? colors
+                              //                                                 .darkGrey
+                              //                                             : colors
+                              //                                                 .colorWhite,
+                              //                                     shape:
+                              //                                         const StadiumBorder()),
+                              //                             child: Text(
+                              //                               validityType[index],
+                              //                               style: textStyle(
+                              //                                   !theme
+                              //                                           .isDarkMode
+                              //                                       ? !isActiveValidity[
+                              //                                               index]
+                              //                                           ? const Color(
+                              //                                               0xff666666)
+                              //                                           : colors
+                              //                                               .colorWhite
+                              //                                       : !isActiveValidity[
+                              //                                               index]
+                              //                                           ? const Color(
+                              //                                               0xff666666)
+                              //                                           : colors
+                              //                                               .colorBlack,
+                              //                                   14,
+                              //                                   isActiveValidity[
+                              //                                           index]
+                              //                                       ? FontWeight
+                              //                                           .w600
+                              //                                       : FontWeight
+                              //                                           .w500),
+                              //                             ),
+                              //                           );
+                              //                         },
+                              //                         separatorBuilder:
+                              //                             (context, index) {
+                              //                           return const SizedBox(
+                              //                               width: 8);
+                              //                         },
+                              //                         itemCount:
+                              //                             validityType.length),
+                              //                   )
+                              //                 ])),
+                              //             const SizedBox(width: 16),
+                              //             Expanded(
+                              //                 child: Column(
+                              //                     crossAxisAlignment:
+                              //                         CrossAxisAlignment.start,
+                              //                     children: [
+                              //                   headerTitleText(
+                              //                       "Disclosed Qty", theme),
+                              //                   const SizedBox(height: 7),
+                              //                   SizedBox(
+                              //                       height: 44,
+                              //                       child: CustomTextFormField(
+                              //                           fillColor:
+                              //                               theme.isDarkMode
+                              //                                   ? colors
+                              //                                       .darkGrey
+                              //                                   : const Color(
+                              //                                       0xffF1F3F8),
+                              //                           // type:"int",
+                              //                           hintText: "0",
+                              //                           hintStyle: textStyle(
+                              //                               const Color(
+                              //                                   0xff666666),
+                              //                               15,
+                              //                               FontWeight.w400),
+                              //                           inputFormate: [
+                              //                             FilteringTextInputFormatter
+                              //                                 .digitsOnly
+                              //                           ],
+                              //                           keyboardType:
+                              //                               TextInputType
+                              //                                   .number,
+                              //                           style: textStyle(
+                              //                               theme.isDarkMode
+                              //                                   ? colors
+                              //                                       .colorWhite
+                              //                                   : colors
+                              //                                       .colorBlack,
+                              //                               16,
+                              //                               FontWeight.w600),
+                              //                           prefixIcon: InkWell(
+                              //                             onTap: () {
+                              //                               setState(() {
+                              //                                 if (discQtyCtrl
+                              //                                     .text
+                              //                                     .isNotEmpty) {
+                              //                                   if (int.parse(
+                              //                                           discQtyCtrl
+                              //                                               .text) >
+                              //                                       0) {
+                              //                                     discQtyCtrl
+                              //                                             .text =
+                              //                                         (int.parse(discQtyCtrl.text) -
+                              //                                                 1)
+                              //                                             .toString();
+                              //                                   } else {
+                              //                                     discQtyCtrl
+                              //                                             .text =
+                              //                                         "0";
+                              //                                   }
+                              //                                 } else {
+                              //                                   discQtyCtrl
+                              //                                       .text = "0";
+                              //                                 }
+                              //                               });
+                              //                             },
+                              //                             child: SvgPicture.asset(
+                              //                                 theme.isDarkMode
+                              //                                     ? assets
+                              //                                         .darkCMinus
+                              //                                     : assets
+                              //                                         .minusIcon,
+                              //                                 fit: BoxFit
+                              //                                     .scaleDown),
+                              //                           ),
+                              //                           suffixIcon: InkWell(
+                              //                             onTap: () {
+                              //                               setState(() {
+                              //                                 int number =
+                              //                                     int.parse(
+                              //                                         discQtyCtrl
+                              //                                             .text);
+                              //                                 if (discQtyCtrl
+                              //                                     .text
+                              //                                     .isNotEmpty) {
+                              //                                   if (number <
+                              //                                       999999) {
+                              //                                     discQtyCtrl
+                              //                                             .text =
+                              //                                         (int.parse(discQtyCtrl.text) +
+                              //                                                 1)
+                              //                                             .toString();
+                              //                                   }
+                              //                                 } else {
+                              //                                   discQtyCtrl.text = "0";
+                              //                                 }
+                              //                               });
+                              //                             },
+                              //                             child: SvgPicture.asset(
+                              //                                 theme.isDarkMode
+                              //                                     ? assets
+                              //                                         .darkAdd
+                              //                                     : assets
+                              //                                         .addIcon,
+                              //                                 fit: BoxFit
+                              //                                     .scaleDown),
+                              //                           ),
+                              //                           textCtrl: discQtyCtrl,
+                              //                           textAlign:
+                              //                               TextAlign.center))
+                              //                 ]))
+                              //           ])),
+                              //   const SizedBox(height: 10)
+                              // ],
                               const Divider(
                                   color: Color(0xffDDDDDD), height: 0),
                               // Padding(

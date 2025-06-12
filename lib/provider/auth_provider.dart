@@ -656,8 +656,14 @@ class AuthProvider extends DefaultChangeNotifier {
         await setLocalData(_loggedMobile, currentUser);
 
         _loggedMobile = await getLocalData();
+bool isAccountSwitch = s == "switchAc";
 
+if(!isAccountSwitch){
         await deviceAuth(context, s);
+}else{
+  ref.read(themeProvider).navigateToNewPage(context);
+          initialLoadMethods(context, s);
+}
       } else if (password.isEmpty &&
           _mobileLogin!.emsg == "Invalid Input : Wrong Password") {
         _isDisableBtn = true;
@@ -845,24 +851,41 @@ class AuthProvider extends DefaultChangeNotifier {
     try {
       _logoutModel = await api.getLogout();
       if (_logoutModel!.stat == "Ok") {
+        // Cancel any active timers
+        if (ConstantName.timer != null) {
         ConstantName.timer!.cancel();
+        }
 
-        // _logoutMsg = "Logout";
-        // _isMobileLogin = true;
-        // localstorage.setString("logout", _logoutMsg);
+        // Close WebSocket connections and unsubscribe from market data
+        ref.read(websocketProvider).closeSocket(true);
+        ref.read(websocketProvider).websockConn(false);
+        
+        // Save the current page index before cleanup (for restoration after login)
+        // We don't reset currentWatchlistPageIndex to preserve the user's last position
+        
+        // Clear user session data
         pref.clearClientSession();
         pref.setLogout(true);
         pref.setHideLoginOptBtn(false);
         pref.setMobileLogin(false);
+        
+        // Update UI state
         ref.read(indexListProvider).bottomMenu(1, context);
+        
+        // Pre-fill login field with last client ID for convenience
+        if (pref.clientId != null && pref.clientId!.isNotEmpty) {
         loginMethCtrl.text = pref.clientId!;
+        }
+        
         notifyListeners();
-        // ScaffoldMessenger.of(context)
-        //     .showSnackBar(warningMessage(context, 'Logged out'));
 
+        // Navigation handling
+        try {
         Navigator.pop(context);
-        // ref.read(websocketProvider).closeSocket();
-        // ref.read(websocketProvider).websockConn(false);
+        } catch (e) {
+          print("Error during navigation pop: $e");
+        }
+        
         if (currentRouteName != Routes.loginScreen) {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.loginScreen, (route) => false);
@@ -904,91 +927,91 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // When device authentication is enabled, a dialogue box appears to provide access to our app.
 
-  Future<void> deviceAuth(BuildContext context, String s) async {
-    final localAuth = LocalAuthentication();
-    final parentContext = context; // Capture stable context
+  // Future<void> deviceAuth(BuildContext context, String s) async {
+  //   final localAuth = LocalAuthentication();
+  //   final parentContext = context; // Capture stable context
 
-    try {
-      bool authenticated = await localAuth.authenticate(
-        localizedReason: 'Authenticate to access the app',
-        options: const AuthenticationOptions(
-          useErrorDialogs: false,
-          stickyAuth: true,
-          biometricOnly: false,
-        ),
-      );
+  //   try {
+  //     bool authenticated = await localAuth.authenticate(
+  //       localizedReason: 'Authenticate to access the app',
+  //       options: const AuthenticationOptions(
+  //         useErrorDialogs: false,
+  //         stickyAuth: true,
+  //         biometricOnly: false,
+  //       ),
+  //     );
 
-      if (!parentContext.mounted) return; // Ensure context is still valid
+  //     if (!parentContext.mounted) return; // Ensure context is still valid
 
-      if (authenticated) {
-        ref.read(themeProvider).navigateToNewPage(parentContext);
-        initialLoadMethods(parentContext, s);
-      } else {
-        showAuthDialog(parentContext, s);
-        print('bioAuth - Authentication failed');
-      }
-    } on PlatformException catch (e) {
-      if (!parentContext.mounted) return;
+  //     if (authenticated) {
+  //       ref.read(themeProvider).navigateToNewPage(parentContext);
+  //       initialLoadMethods(parentContext, s);
+  //     } else {
+  //       showAuthDialog(parentContext, s);
+  //       print('bioAuth - Authentication failed');
+  //     }
+  //   } on PlatformException catch (e) {
+  //     if (!parentContext.mounted) return;
 
-      if (e.code == auth_error.notAvailable &&
-          defaultTargetPlatform == TargetPlatform.iOS) {
-        showAuthDialog(parentContext, s);
-      } else {
-        initialLoadMethods(parentContext, s);
-      }
-    }
-    notifyListeners();
-  }
+  //     if (e.code == auth_error.notAvailable &&
+  //         defaultTargetPlatform == TargetPlatform.iOS) {
+  //       showAuthDialog(parentContext, s);
+  //     } else {
+  //       initialLoadMethods(parentContext, s);
+  //     }
+  //   }
+  //   notifyListeners();
+  // }
 
-  void showAuthDialog(BuildContext context, String s) {
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          titleTextStyle: textStyles.appBarTitleTxt,
-          contentTextStyle: textStyles.menuTxt,
-          titlePadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(14)),
-          ),
-          scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: const Text("Confirmation"),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Authentication is required to proceed further!"),
-              SizedBox(height: 10),
-            ],
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext, rootNavigator: true).pop();
-                deviceAuth(context, s); // re-call using parent context
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: ref.read(themeProvider).isDarkMode
-                    ? colors.colorbluegrey
-                    : colors.colorBlack,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              child: Text("Proceed", style: textStyles.btnText),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // void showAuthDialog(BuildContext context, String s) {
+  //   showDialog(
+  //     barrierDismissible: false,
+  //     context: context,
+  //     builder: (BuildContext dialogContext) {
+  //       return AlertDialog(
+  //         titleTextStyle: textStyles.appBarTitleTxt,
+  //         contentTextStyle: textStyles.menuTxt,
+  //         titlePadding:
+  //             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+  //         shape: const RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.all(Radius.circular(14)),
+  //         ),
+  //         scrollable: true,
+  //         contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+  //         insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+  //         title: const Text("Confirmation"),
+  //         content: const Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Text("Authentication is required to proceed further!"),
+  //             SizedBox(height: 10),
+  //           ],
+  //         ),
+  //         actions: [
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               Navigator.of(dialogContext, rootNavigator: true).pop();
+  //               deviceAuth(context, s); // re-call using parent context
+  //             },
+  //             style: ElevatedButton.styleFrom(
+  //               elevation: 0,
+  //               backgroundColor: ref.read(themeProvider).isDarkMode
+  //                   ? colors.colorbluegrey
+  //                   : colors.colorBlack,
+  //               padding:
+  //                   const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+  //               shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(30),
+  //               ),
+  //             ),
+  //             child: Text("Proceed", style: textStyles.btnText),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   // Future<void> deviceAuth(BuildContext context, String s) async {
   //   final localAuth = LocalAuthentication();
@@ -1035,7 +1058,9 @@ class AuthProvider extends DefaultChangeNotifier {
   //             ),
   //             actions: [
   //               ElevatedButton(
-  //                   onPressed: () => deviceAuth(context, s),
+  //                   onPressed: () {
+  //                     Navigator.of(context, rootNavigator: true).pop();
+  //                      deviceAuth(context, s);},
   //                   style: ElevatedButton.styleFrom(
   //                       elevation: 0,
   //                       backgroundColor: ref.read(themeProvider).isDarkMode
@@ -1096,7 +1121,9 @@ class AuthProvider extends DefaultChangeNotifier {
   //               ),
   //               actions: [
   //                 ElevatedButton(
-  //                     onPressed: () => deviceAuth(context, s),
+  //                     onPressed: () {
+  //                     Navigator.of(context, rootNavigator: true).pop();
+  //                      deviceAuth(context, s);},
   //                     style: ElevatedButton.styleFrom(
   //                         elevation: 0,
   //                         backgroundColor: ref.read(themeProvider).isDarkMode
@@ -1127,6 +1154,276 @@ class AuthProvider extends DefaultChangeNotifier {
   //   notifyListeners();
   // }
 
+  Future<void> deviceAuth(BuildContext context, String s) async {
+    final localAuth = LocalAuthentication();
+bool isAccountSwitch = s == "switchAc";
+    try {
+      bool authenticated = await localAuth.authenticate(
+          localizedReason: 'Authenticate to access the app',
+          options: const AuthenticationOptions(
+              useErrorDialogs: false, stickyAuth: true, biometricOnly: false));
+
+      if (authenticated) {
+          ref.read(themeProvider).navigateToNewPage(context);
+          initialLoadMethods(context, s);
+      }
+      else {
+        _showAuthenticationFailedDialog(context, s);
+      }
+    } on PlatformException catch (e) {
+      print("cvbghnjmk ${e}");
+      if (e.code == auth_error.notAvailable) {
+        if (defaultTargetPlatform == TargetPlatform.iOS) {
+          _showAuthenticationRequiredDialog(context, s);
+        } else {
+          initialLoadMethods(context, s);
+        }
+      } else if (e.code == auth_error.notEnrolled) {
+        // Handle not enrolled case
+        _showBiometricNotSetupDialog(context, s);
+      } else {
+        // Handle other platform exceptions
+        _showAuthenticationErrorDialog(context, s, e.message ?? 'Unknown error');
+      }
+    } catch (e) {
+      // Handle other exceptions
+      _showAuthenticationErrorDialog(context, s, e.toString());
+    }
+    
+    notifyListeners();
+}
+
+void _showAccountSwitchConfirmationDialog(BuildContext context, String s) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext dialogContext) {
+      return WillPopScope(
+        onWillPop: () async => false, // Prevent back button
+        child: AlertDialog(
+          titleTextStyle: textStyles.appBarTitleTxt,
+          contentTextStyle: textStyles.menuTxt,
+          titlePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(14))),
+          scrollable: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+          title: const Text("Account Switch Confirmed"),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Authentication successful! Ready to switch account."),
+                SizedBox(height: 10),
+              ],
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                ref.read(themeProvider).navigateToNewPage(context);
+                initialLoadMethods(context, s);
+              },
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: ref.read(themeProvider).isDarkMode
+                    ? colors.colorbluegrey
+                    : colors.colorBlack,
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: Text("Proceed", style: textStyles.btnText),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+void _showAuthenticationFailedDialog(BuildContext context, String s) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        titleTextStyle: textStyles.appBarTitleTxt,
+        contentTextStyle: textStyles.menuTxt,
+        titlePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(14))),
+        scrollable: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        title: const Text("Authentication Failed"),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Authentication is required to proceed further!"),
+              SizedBox(height: 10),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              // Go back to login or previous screen instead of recursive call
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel", style: textStyles.btnText),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              // Use a slight delay to ensure dialog is closed before retry
+              Future.delayed(const Duration(milliseconds: 100), () {
+                deviceAuth(context, s);
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: ref.read(themeProvider).isDarkMode
+                  ? colors.colorbluegrey
+                  : colors.colorBlack,
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: Text("Try Again", style: textStyles.btnText),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void _showAuthenticationRequiredDialog(BuildContext context, String s) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        titleTextStyle: textStyles.appBarTitleTxt,
+        contentTextStyle: textStyles.menuTxt,
+        titlePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(14))),
+        scrollable: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        title: const Text("Authentication Required"),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Authentication is required to proceed further!")
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel", style: textStyles.btnText),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              Future.delayed(const Duration(milliseconds: 100), () {
+                deviceAuth(context, s);
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: ref.read(themeProvider).isDarkMode
+                  ? colors.colorbluegrey
+                  : colors.colorBlack,
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: Text("Proceed", style: textStyles.btnText),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void _showBiometricNotSetupDialog(BuildContext context, String s) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        title: const Text("Biometric Not Setup"),
+        content: const Text("Please setup biometric authentication in your device settings."),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              Navigator.of(context).pop();
+            },
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              // Proceed without biometric or redirect to settings
+              initialLoadMethods(context, s);
+            },
+            child: const Text("Continue"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void _showAuthenticationErrorDialog(BuildContext context, String s, String error) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        title: const Text("Authentication Error"),
+        content: Text("An error occurred: $error"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              Navigator.of(context).pop();
+            },
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              Future.delayed(const Duration(milliseconds: 100), () {
+                deviceAuth(context, s);
+              });
+            },
+            child: const Text("Retry"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
   AuthProvider(this.ref);
 
   // Following a successful login and device authentication, these methods are called first.
@@ -1145,7 +1442,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
       try {
         await ref.read(indexListProvider).checkSession(context);
-        ref.read(marketWatchProvider).changeWlName("", "No");
+        // Don't reset watchlist name here as it will be properly set after fetching watchlist data
         _logoutMsg = "";
 
         if (ref.read(indexListProvider).checkSess!.stat == "Ok") {
@@ -1155,7 +1452,23 @@ class AuthProvider extends DefaultChangeNotifier {
           await ref.read(portfolioProvider).fetchHoldings(context, "");
 
           await ref.read(indexListProvider).getDeafultIndexList(context);
-          await ref.read(marketWatchProvider).fetchMWList(context, true);
+          
+          // Fetch watchlist data with proper initialization
+          await ref.read(marketWatchProvider).fetchMWList(context, false);
+          
+          // Load the watchlist using the saved page index
+          int savedIndex = ref.read(marketWatchProvider).currentWatchlistPageIndex;
+          if (savedIndex >= 0 && 
+              ref.read(marketWatchProvider).marketWatchlist != null && 
+              savedIndex < ref.read(marketWatchProvider).marketWatchlist!.values!.length) {
+            String watchlistName = ref.read(marketWatchProvider).marketWatchlist!.values![savedIndex];
+            // Set the watchlist name
+            ref.read(marketWatchProvider).changeWlName(watchlistName, 
+              ["My Stocks", "Nifty50", "Niftybank", "Sensex"].contains(watchlistName) ? "Yes" : "No");
+            // Load the scrips for this watchlist
+            await ref.read(marketWatchProvider).changeWLScrip(watchlistName, context);
+          }
+          
           // initLaod(false);
           ref.read(orderProvider).fetchOrderBook(context, false);
           ref.read(portfolioProvider).fetchPositionBook(context, false);

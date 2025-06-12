@@ -60,6 +60,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _handleBackNavigation(BuildContext context, Preferences pref, AuthProvider auth, 
+      UserProfileProvider userProfile, WidgetRef ref) async {
+    final theme = ref.watch(themeProvider);
+    if (pref.islogOut! &&
+        (pref.clientId!.isNotEmpty || pref.clientMob!.isNotEmpty)) {
+      // This path is for logged out users with saved credentials
+      theme.removeUsermatrial(context);
+      Navigator.pushNamedAndRemoveUntil(
+          context, Routes.loginScreenBanner, (route) => false);
+    } else {
+      // This path is for when we need to switch between accounts
+      // Note: Previous issue was caused by inconsistent navigation stack between app bar back button
+      // and system back button in the OTP screen
+      int activeIndex = auth.loggedMobile.indexWhere(
+          (element) => element.clientId == pref.clientId);
+      if (activeIndex == -1) return;
+
+      // Show loading indicator
+      userProfile.profilePageloader(true);
+
+      try {
+        // Set client information
+        await pref.setClientId(auth.loggedMobile[activeIndex].clientId);
+        await pref.setClientMob(auth.loggedMobile[activeIndex].mobile);
+        await pref.setClientSession(auth.loggedMobile[activeIndex].sesstion);
+        await pref.setClientName(auth.loggedMobile[activeIndex].userName);
+        await pref.setImei(auth.loggedMobile[activeIndex].imei);
+        await pref.setMobileLogin(true);
+
+        // Fetch account data
+        await ref.read(authProvider).fetchMobileLogin(
+            context,
+            "",
+            auth.loggedMobile[activeIndex].clientId,
+            "switchAc",
+            auth.loggedMobile[activeIndex].imei,
+            true);
+
+        // Reset and restart websocket connection
+        ref.read(websocketProvider).closeSocket(true);
+        ref.read(websocketProvider).changeconnectioncount();
+
+        // Navigate to profile tab
+        ref.read(indexListProvider).bottomMenu(4, context);
+
+        // Wait for a short time to ensure data is loaded
+        await Future.delayed(const Duration(milliseconds: 200));
+
+        // Remove loading indicator after everything is done
+        if (context.mounted) {
+          userProfile.profilePageloader(false);
+        }
+      } catch (e) {
+        // Handle any errors during the process
+        print("Error restoring user data: $e");
+        if (context.mounted) {
+          userProfile.profilePageloader(false);
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -94,75 +156,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     child: CircularLoaderImage()))
             : PopScope(
-                canPop: (pref.islogOut! &&
-                        (pref.clientId!.isNotEmpty ||
-                            pref.clientMob!.isNotEmpty))
-                    ? false
-                    : true,
+                canPop:pref.islogOut! &&
+                              (pref.clientId!.isNotEmpty ||
+                                  pref.clientMob!.isNotEmpty) ? false : true,
                 onPopInvokedWithResult: (didPop, result) async {
                   if (didPop) return;
-
-                  if (result == true) {
-                    theme.removeUsermatrial(context);
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, Routes.loginScreenBanner, (route) => false);
-                  } else {
-                    // This is executed when pressing the back button
-
-                    // Check if we need to switch accounts or restore data
-                    int activeIndex = auth.loggedMobile.indexWhere(
-                        (element) => element.clientId == pref.clientId);
-                    if (activeIndex == -1) return;
-
-                    // Show loading indicator
-                    userProfile.profilePageloader(true);
-
-                    try {
-                      // pref.setMobileLogin(false);
-
-                      // Set client information
-                      await pref
-                          .setClientId(auth.loggedMobile[activeIndex].clientId);
-                      await pref
-                          .setClientMob(auth.loggedMobile[activeIndex].mobile);
-                      await pref.setClientSession(
-                          auth.loggedMobile[activeIndex].sesstion);
-                      await pref.setClientName(
-                          auth.loggedMobile[activeIndex].userName);
-                      await pref.setImei(auth.loggedMobile[activeIndex].imei);
-                      await pref.setMobileLogin(true);
-
-                      // Fetch account data
-                      await ref.read(authProvider).fetchMobileLogin(
-                          context,
-                          "",
-                          auth.loggedMobile[activeIndex].clientId,
-                          "switchAc",
-                          auth.loggedMobile[activeIndex].imei,
-                          true);
-
-                      // Reset and restart websocket connection
-                      ref.read(websocketProvider).closeSocket(true);
-                      ref.read(websocketProvider).changeconnectioncount();
-
-                      // Navigate to profile tab
-                      ref.read(indexListProvider).bottomMenu(4, context);
-
-                      // Wait for a short time to ensure data is loaded
-                      await Future.delayed(const Duration(milliseconds: 200));
-
-                      // Remove loading indicator after everything is done
-                      if (context.mounted) {
-                        userProfile.profilePageloader(false);
-                      }
-                    } catch (e) {
-                      // Handle any errors during the process
-                      print("Error restoring user data: $e");
-                      if (context.mounted) {
-                        userProfile.profilePageloader(false);
-                      }
-                    }
-                  }
+                  await _handleBackNavigation(context, pref, auth, userProfile, ref);
                 },
                 child: Scaffold(
                   appBar: AppBar(
@@ -175,10 +174,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     leadingWidth: 41,
                     titleSpacing: 6,
                     leading: InkWell(
-                        onTap: () {
-                          theme.removeUsermatrial(context);
-                          Navigator.pushNamedAndRemoveUntil(context,
-                              Routes.loginScreenBanner, (route) => false);
+                        onTap: () async {
+                          await _handleBackNavigation(context, pref, auth, userProfile, ref);
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 9),
