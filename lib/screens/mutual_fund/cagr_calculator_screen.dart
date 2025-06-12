@@ -17,66 +17,77 @@ class MFCAGRCAL extends StatefulWidget {
 }
 
 class _MFCAGRCALState extends State<MFCAGRCAL> {
-  final TextEditingController _principalCtrl =
-      TextEditingController(text: '5000');
-  final TextEditingController _finalAmountCtrl =
-      TextEditingController(text: '25000');
+  final TextEditingController _principalCtrl = TextEditingController(text: '5000');
+  final TextEditingController _finalAmountCtrl = TextEditingController(text: '25000');
   double _tenureYears = 5.0;
-  String _cagrResult = '';
-
-  double _principalSliderValue = 10000;
-  double _finalAmountSliderValue = 20000;
-  int _toteinv = 0;
-  int _finalret = 0;
+  String _cagrResult = '38.01'; // Default result based on initial values
+  double _principalSliderValue = 5000; // Match initial value
+  double _finalAmountSliderValue = 25000; // Match initial value
 
   @override
   void initState() {
     super.initState();
+    
+    // Calculate initial CAGR
     calculateCAGR();
-      double initialValue = double.tryParse(_principalCtrl.text) ?? 0.0;
-        double finalval = double.tryParse(_principalCtrl.text) ?? 0.0;
-    if(initialValue > 0){
-    _principalCtrl.addListener(() {
-      double value = double.tryParse(_principalCtrl.text) ?? 0.0;
+    
+    // Add listeners to text controllers
+    _principalCtrl.addListener(_onPrincipalChanged);
+    _finalAmountCtrl.addListener(_onFinalAmountChanged);
+  }
+
+  void _onPrincipalChanged() {
+    final value = double.tryParse(_principalCtrl.text) ?? 0.0;
+    if (value > 0) {
       setState(() {
         _principalSliderValue = value.clamp(1, 10000000);
       });
       calculateCAGR();
-    });
     }
-if(finalval > 0){
-  _finalAmountCtrl.addListener(() {
-      double value = double.tryParse(_finalAmountCtrl.text) ?? 0.0;
+  }
+
+  void _onFinalAmountChanged() {
+    final value = double.tryParse(_finalAmountCtrl.text) ?? 0.0;
+    if (value > 0) {
       setState(() {
         _finalAmountSliderValue = value.clamp(1, 10000000);
       });
       calculateCAGR();
-    });
-}
-  
+    }
   }
 
   void calculateCAGR() {
-    double principal = double.tryParse(_principalCtrl.text) ?? 0.0;
-    double finalAmount = double.tryParse(_finalAmountCtrl.text) ?? 0.0;
-    double tenure = _tenureYears;
-
-    if (principal > 0 && finalAmount > 0 && tenure > 0) {
-      double first = finalAmount / principal;
-      double second = pow(first, 1 / tenure) - 1;
-      double cagr = second * 100;
-      setState(() {
-        _cagrResult = cagr.toStringAsFixed(2);
-      });
+    final principal = double.tryParse(_principalCtrl.text) ?? 0.0;
+    final finalAmount = double.tryParse(_finalAmountCtrl.text) ?? 0.0;
+    
+    if (principal > 0 && finalAmount > 0 && _tenureYears > 0) {
+      try {
+        final first = finalAmount / principal;
+        final second = pow(first, 1 / _tenureYears) - 1;
+        final cagr = second * 100;
+        
+        setState(() {
+          _cagrResult = cagr.toStringAsFixed(2);
+        });
+      } catch (e) {
+        setState(() {
+          _cagrResult = '0.00';
+        });
+      }
     } else {
       setState(() {
-        _cagrResult = '';
+        _cagrResult = '0.00';
       });
     }
   }
 
   @override
   void dispose() {
+    // Remove listeners to prevent memory leaks
+    _principalCtrl.removeListener(_onPrincipalChanged);
+    _finalAmountCtrl.removeListener(_onFinalAmountChanged);
+    
+    // Dispose controllers
     _principalCtrl.dispose();
     _finalAmountCtrl.dispose();
     super.dispose();
@@ -86,13 +97,15 @@ if(finalval > 0){
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
       final theme = ref.watch(themeProvider);
+      final isDarkMode = theme.isDarkMode;
+      
+      // Safely parse values for chart
+      final double principal = double.tryParse(_principalCtrl.text) ?? 0.0;
+      final double finalAmount = double.tryParse(_finalAmountCtrl.text) ?? 0.0;
+      
       final List<ChartData> donutChart = [
-        ChartData('Initial Investment Value',
-            double.tryParse(_principalCtrl.text) ?? 0.0, colors.colorBlack),
-        ChartData(
-            'Final Investment',
-            double.tryParse(_finalAmountCtrl.text) ?? 0.0,
-            const Color(0xff015FEC)),
+        ChartData('Initial Investment Value', principal, colors.colorBlack),
+        ChartData('Final Investment', finalAmount, const Color(0xff015FEC)),
       ];
 
       return Scaffold(
@@ -107,9 +120,7 @@ if(finalval > 0){
               padding: const EdgeInsets.only(left: 8.0),
               child: IconButton(
                 icon: Icon(Icons.arrow_back_ios,
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack),
+                    color: isDarkMode ? colors.colorWhite : colors.colorBlack),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
@@ -118,7 +129,7 @@ if(finalval > 0){
               style: textStyles.appBarTitleTxt.copyWith(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                color: isDarkMode ? colors.colorWhite : colors.colorBlack,
               ),
             ),
           ),
@@ -129,95 +140,91 @@ if(finalval > 0){
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-     Container(
-  padding: EdgeInsets.zero,
-  margin: EdgeInsets.zero,
-  height: 230,
-  child: SfCircularChart(
-    margin: EdgeInsets.zero,
-    annotations: <CircularChartAnnotation>[
-      CircularChartAnnotation(
-     widget: Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Text(
-        'CAGR',
-        textAlign: TextAlign.center,
-        style: textStyle(
-          Colors.grey, // Label in grey
-          12,
-          FontWeight.w500,
-        ),
-      ),
-      const SizedBox(height: 4),
-      Text(
-       "${_cagrResult} %", // The value
-        textAlign: TextAlign.center,
-        style: textStyle(
-          colors.colorBlack, // Value in black
-          16,
-          FontWeight.bold,
-        ),
-      ),
-    ],
-  ),
-      ),
-    ],
-    series: <DoughnutSeries<ChartData, String>>[
-      DoughnutSeries<ChartData, String>(
-        animationDuration: 0,
-        radius: '96',
-        innerRadius: '70%',
-        dataSource: donutChart,
-        pointColorMapper: (ChartData data, _) => data.color,
-        dataLabelMapper: (ChartData data, _) => '${data.y}%',
-        xValueMapper: (ChartData data, _) => data.x,
-        yValueMapper: (ChartData data, _) => data.y,
-        dataLabelSettings: DataLabelSettings(
-          isVisible: true,
-          textStyle: textStyle(
-            !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            0,
-            FontWeight.w600,
-          ),
-        ),
-      ),
-    ],
-  ),
-),
-
-
-
+                // CAGR Donut Chart
+                Container(
+                  padding: EdgeInsets.zero,
+                  margin: EdgeInsets.zero,
+                  height: 230,
+                  child: SfCircularChart(
+                    margin: EdgeInsets.zero,
+                    annotations: <CircularChartAnnotation>[
+                      CircularChartAnnotation(
+                        widget: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'CAGR',
+                              textAlign: TextAlign.center,
+                              style: textStyle(
+                                Colors.grey,
+                                12,
+                                FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "$_cagrResult %",
+                              textAlign: TextAlign.center,
+                              style: textStyle(
+                                colors.colorBlack,
+                                16,
+                                FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    series: <DoughnutSeries<ChartData, String>>[
+                      DoughnutSeries<ChartData, String>(
+                        animationDuration: 0,
+                        radius: '96',
+                        innerRadius: '70%',
+                        dataSource: donutChart,
+                        pointColorMapper: (ChartData data, _) => data.color,
+                        dataLabelMapper: (ChartData data, _) => '${data.y}%',
+                        xValueMapper: (ChartData data, _) => data.x,
+                        yValueMapper: (ChartData data, _) => data.y,
+                        dataLabelSettings: DataLabelSettings(
+                          isVisible: true,
+                          textStyle: textStyle(
+                            !isDarkMode ? colors.colorWhite : colors.colorBlack,
+                            0,
+                            FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
                 const SizedBox(height: 16),
 
+                // Initial Investment
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       "Initial Investment",
                       style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
+                        isDarkMode ? colors.colorWhite : colors.colorBlack,
                         16,
                         FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: 6),
-                    // Expanded(
                     Container(
-                      width: 150, // Adjust the width as per your requirement
+                      width: 150,
                       height: 40,
                       child: CustomTextFormField(
                         textAlign: TextAlign.start,
-                        fillColor: theme.isDarkMode
+                        fillColor: isDarkMode
                             ? colors.darkGrey
                             : const Color(0xffF1F3F8),
                         hintText: '10000',
                         textCtrl: _principalCtrl,
                         style: textStyle(
-                          theme.isDarkMode
+                          isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack,
                           14,
@@ -227,12 +234,12 @@ if(finalval > 0){
                           margin: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            color: theme.isDarkMode
+                            color: isDarkMode
                                 ? const Color(0xff555555)
                                 : colors.colorWhite,
                           ),
                           child: SvgPicture.asset(
-                            color: theme.isDarkMode
+                            color: isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorGrey,
                             assets.ruppeIcon,
@@ -241,38 +248,19 @@ if(finalval > 0){
                         ),
                       ),
                     )
-                    // ),
                   ],
                 ),
 
                 const SizedBox(height: 6),
 
-                // Text("Initial Investment",
-                //     style: textStyle(
-                //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                //         16,
-                //         FontWeight.w600)),
-                // const SizedBox(height: 6),
-                // CustomTextFormField(
-                //   textAlign: TextAlign.start,
-                //   fillColor: theme.isDarkMode
-                //       ? colors.darkGrey
-                //       : const Color(0xffF1F3F8),
-                //   hintText: '10000',
-                //   textCtrl: _principalCtrl,
-                //   style: textStyle(
-                //       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                //       14,
-                //       FontWeight.w600),
-                // ),
-
+                // Initial Investment Slider
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 4.0,
-                    activeTrackColor: Color(0xFFA3C8FF),
-                    inactiveTrackColor: Color(0xFFEEEEEE),
+                    activeTrackColor: const Color(0xFFA3C8FF),
+                    inactiveTrackColor: const Color(0xFFEEEEEE),
                     thumbColor: Colors.blue,
-                    overlayColor: Color(0xFFCCCCCC),
+                    overlayColor: const Color(0xFFCCCCCC),
                     thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 8.0,
                     ),
@@ -300,33 +288,31 @@ if(finalval > 0){
 
                 const SizedBox(height: 16),
 
+                // Final Investment
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       "Final Investment",
                       style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
+                        isDarkMode ? colors.colorWhite : colors.colorBlack,
                         16,
                         FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: 6),
-                    // Expanded(
                     Container(
                       width: 150,
                       height: 40,
                       child: CustomTextFormField(
                         textAlign: TextAlign.start,
-                        fillColor: theme.isDarkMode
+                        fillColor: isDarkMode
                             ? colors.darkGrey
                             : const Color(0xffF1F3F8),
                         hintText: '10000',
                         textCtrl: _finalAmountCtrl,
                         style: textStyle(
-                          theme.isDarkMode
+                          isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack,
                           14,
@@ -336,12 +322,12 @@ if(finalval > 0){
                           margin: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            color: theme.isDarkMode
+                            color: isDarkMode
                                 ? const Color(0xff555555)
                                 : colors.colorWhite,
                           ),
                           child: SvgPicture.asset(
-                            color: theme.isDarkMode
+                            color: isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorGrey,
                             assets.ruppeIcon,
@@ -350,38 +336,19 @@ if(finalval > 0){
                         ),
                       ),
                     )
-                    // ),
                   ],
                 ),
 
                 const SizedBox(height: 6),
 
-                // Text("Final Investment (Maturity)",
-                //     style: textStyle(
-                //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                //         16,
-                //         FontWeight.w600)),
-                // const SizedBox(height: 6),
-                // CustomTextFormField(
-                //   textAlign: TextAlign.start,
-                //   fillColor: theme.isDarkMode
-                //       ? colors.darkGrey
-                //       : const Color(0xffF1F3F8),
-                //   hintText: '20000',
-                //   textCtrl: _finalAmountCtrl,
-                //   style: textStyle(
-                //       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                //       14,
-                //       FontWeight.w600),
-                // ),
-
+                // Final Investment Slider
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 4.0,
-                    activeTrackColor: Color(0xFFA3C8FF),
-                    inactiveTrackColor: Color(0xFFEEEEEE),
+                    activeTrackColor: const Color(0xFFA3C8FF),
+                    inactiveTrackColor: const Color(0xFFEEEEEE),
                     thumbColor: Colors.blue,
-                    overlayColor: Color(0xFFCCCCCC),
+                    overlayColor: const Color(0xFFCCCCCC),
                     thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 8.0,
                     ),
@@ -408,15 +375,15 @@ if(finalval > 0){
                 ),
 
                 const SizedBox(height: 24),
+                
+                // Duration of Investment
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       "Duration of Investment (Years)",
                       style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
+                        isDarkMode ? colors.colorWhite : colors.colorBlack,
                         16,
                         FontWeight.w600,
                       ),
@@ -424,16 +391,17 @@ if(finalval > 0){
                     Text(
                       "${_tenureYears.toStringAsFixed(0)} Yr",
                       style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
+                        isDarkMode ? colors.colorWhite : colors.colorBlack,
                         14,
                         FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
+                
                 const SizedBox(height: 16),
+                
+                // Duration Slider
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 4.0,
@@ -441,10 +409,8 @@ if(finalval > 0){
                     inactiveTrackColor: const Color(0xFFEEEEEE),
                     thumbColor: Colors.blue,
                     overlayColor: const Color(0xFFCCCCCC),
-                    thumbShape:
-                        const RoundSliderThumbShape(enabledThumbRadius: 8.0),
-                    overlayShape:
-                        const RoundSliderOverlayShape(overlayRadius: 0.0),
+                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 0.0),
                   ),
                   child: Slider(
                     value: _tenureYears.clamp(1, 50),
@@ -460,120 +426,27 @@ if(finalval > 0){
                     },
                   ),
                 ),
+                
                 const SizedBox(height: 16),
+                
+                // Estimation Section
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Estimation",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            16,
-                            FontWeight.w600)),
+                    Text(
+                      "Estimation",
+                      style: textStyle(
+                        isDarkMode ? colors.colorWhite : colors.colorBlack,
+                        16,
+                        FontWeight.w600
+                      )
+                    ),
                     const SizedBox(height: 16),
-
-                    resultRow("Initial Value", int.parse(_principalCtrl.text)),
-                    resultRow("Final Value", int.parse(_finalAmountCtrl.text)),
-// resultRow("CAGR(%)", double.parse(_cagrResult).round()),
-                              const SizedBox(height: 4),
-                  
-                    // Row(
-                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //     children: [
-                    //       Row(
-                    //         children: [
-                    //           Icon(Icons.circle,
-                    //               color: Color.fromARGB(255, 0, 0, 0), size: 0),
-                    //           const SizedBox(width: 18),
-                    //           Text(
-                    //             "CAGR(%)",
-                    //             style: textStyle(
-                    //                 Color(0xff666666), 14, FontWeight.w500),
-                    //           ),
-                    //         ],
-                    //       ),
-                    //       Text(
-                    //         "${_cagrResult} %",
-                    //         style: textStyle(
-                    //             colors.colorBlack, 14, FontWeight.w600),
-                    //       ),
-                    //     ]),
-                    // Transform(
-                    //   alignment: Alignment.center,
-                    //   transform: Matrix4.rotationY(3.14159),
-                    //   child: Container(
-                    //     height: 45,
-                    //     decoration: BoxDecoration(
-                    //       color: Colors.grey[400],
-                    //       borderRadius: BorderRadius.circular(5),
-                    //     ),
-                    //     child: LayoutBuilder(
-                    //       builder: (context, constraints) {
-                    //         double totalWidth = constraints.maxWidth;
-                    //         double cagrPercent = double.tryParse(_cagrResult) ?? 0.0;
-                    //         double barWidth = totalWidth * (cagrPercent / 100).clamp(0.0, 1.0);
-
-                    //         int segments = (barWidth / 6).floor();
-                    //         double spacing = 6.0;
-
-                    //         return Stack(
-                    //           children: [
-                    //             for (int i = 0; i < segments; i++)
-                    //               Positioned(
-                    //                 left: i * spacing,
-                    //                 top: 0,
-                    //                 bottom: 0,
-                    //                 child: Container(
-                    //                   width: 4,
-                    //                   decoration: BoxDecoration(
-                    //                     color: const Color(0xFF015FEC),
-                    //                     borderRadius: BorderRadius.circular(2),
-                    //                   ),
-                    //                 ),
-                    //               ),
-                    //           ],
-                    //         );
-                    //       },
-                    //     ),
-                    //   ),
-                    // ),
-                    const SizedBox(height: 8),
-                    //   Row(
-                    //     children: [
-                    //       Container(
-                    //         width: 5,
-                    //         height: 40,
-                    //         decoration: BoxDecoration(
-                    //           color: const Color(0xFF015FEC),
-                    //           borderRadius: BorderRadius.circular(2),
-                    //         ),
-                    //       ),
-                    //       const SizedBox(width: 10),
-                    //       Column(
-                    //         crossAxisAlignment: CrossAxisAlignment.start,
-                    //         children: [
-                    //           const Text(
-                    //             "Total CAGR is",
-                    //             style: TextStyle(
-                    //               fontSize: 16,
-                    //               color: Colors.grey,
-                    //               fontWeight: FontWeight.w500,
-                    //             ),
-                    //           ),
-                    //           const SizedBox(height: 4),
-                    //           Text(
-                    //             "$_cagrResult%",
-                    //             style: const TextStyle(
-                    //               fontSize: 20,
-                    //               fontWeight: FontWeight.bold,
-                    //               color: Colors.black,
-                    //             ),
-                    //           ),
-                    //         ],
-                    //       ),
-                    //     ],
-                    //   ),
+                    
+                    // Initial and Final Values
+                    resultRow("Initial Value", int.tryParse(_principalCtrl.text) ?? 0),
+                    resultRow("Final Value", int.tryParse(_finalAmountCtrl.text) ?? 0),
+                    const SizedBox(height: 4),
                   ],
                 ),
               ],
@@ -592,17 +465,17 @@ if(finalval > 0){
         children: [
           Row(
             children: [
-              Icon(Icons.circle,
-                  color: label == 'Initial Value'
-                      ? Color.fromARGB(255, 0, 0, 0)
-                      : label == 'Final Value'
-                          ? Color(0xff015FEC)
-                          : Color(0xff015FEC),
-                  size: 14),
+              Icon(
+                Icons.circle,
+                color: label == 'Initial Value'
+                    ? const Color.fromARGB(255, 0, 0, 0)
+                    : const Color(0xff015FEC),
+                size: 14
+              ),
               const SizedBox(width: 4),
               Text(
                 label,
-                style: textStyle(Color(0xff666666), 14, FontWeight.w500),
+                style: textStyle(const Color(0xff666666), 14, FontWeight.w500),
               ),
             ],
           ),
@@ -614,4 +487,20 @@ if(finalval > 0){
       ),
     );
   }
+  
+  TextStyle textStyle(Color color, double fontSize, FontWeight fontWeight) {
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+    );
+  }
+}
+
+class ChartData {
+  final String x;
+  final double y;
+  final Color color;
+
+  ChartData(this.x, this.y, this.color);
 }

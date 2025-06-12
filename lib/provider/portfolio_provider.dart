@@ -597,7 +597,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.usedqty ?? 0}");
             if (element.sellAmt != null && element.sellAmt != "0.000000") {
-            element.rpnl = (double.parse("${element.sellAmt ?? 0.00}") - double.parse("${element.invested ?? 0.00}")).toString();
+              element.rpnl = (double.parse("${element.sellAmt ?? 0.00}") - ((double.parse("${element.trdqty ?? 0.00}")) * (double.parse("${element.avgPrc ?? 0.00}")))).toStringAsFixed(2);
+            // element.rpnl = (double.parse("${element.invested ?? 0.00}") - double.parse("${element.sellAmt ?? 0.00}")).toString();
             }
 
             if (element.saleableQty != 0) {

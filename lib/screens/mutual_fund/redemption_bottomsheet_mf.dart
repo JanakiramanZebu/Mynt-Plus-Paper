@@ -28,10 +28,21 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
 
   @override
   void initState() {
-    setState(() {
-      ref.read(mfProvider).redemptionQty.text = ref.read(portfolioProvider).mfQuotes!.minRdQty!;
-      ref.read(mfProvider).redemptionAmount.text = (double.parse(ref.read(mfProvider).redemptionQty.text) * double.parse(widget.mfHoldingData.exchTsym![0].nav!)).toString();
-      });
+    try {
+      final portfolioRef = ref.read(portfolioProvider);
+      final mfRef = ref.read(mfProvider);
+      
+      if (portfolioRef.mfQuotes?.minRdQty != null) {
+        mfRef.redemptionQty.text = portfolioRef.mfQuotes!.minRdQty!;
+        
+        final redemptionQty = double.tryParse(mfRef.redemptionQty.text) ?? 0.0;
+        final navValue = double.tryParse(widget.mfHoldingData.exchTsym?.firstOrNull?.nav ?? "0.0") ?? 0.0;
+        
+        mfRef.redemptionAmount.text = (redemptionQty * navValue).toStringAsFixed(2);
+      }
+    } catch (e) {
+      debugPrint("Error initializing redemption values: $e");
+    }
     super.initState();
   }
 
@@ -90,7 +101,7 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(widget.mfHoldingData.exchTsym![0].cname!,
+                          Text(widget.mfHoldingData.exchTsym?.firstOrNull?.cname ?? "Unknown Scheme",
                               style: textStyle(
                                   theme.isDarkMode
                                       ? colors.colorWhite
@@ -133,7 +144,7 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
                                       14,
                                       FontWeight.w600)),
                               const SizedBox(width: 8),
-                              Text(widget.mfHoldingData.holdqty!,
+                              Text(widget.mfHoldingData.holdqty ?? "0.0",
                                   style: textStyle(
                                       theme.isDarkMode
                                           ? colors.colorWhite
@@ -147,7 +158,18 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
                       const SizedBox(height: 10),
                       TextFormField(
                         onChanged: (value){
-                          mf.checkRedemption(value,portfolio.mfQuotes!.minRdQty,widget.mfHoldingData.holdqty!,widget.mfHoldingData.exchTsym![0].nav);
+                          try {
+                            if (value.isNotEmpty) {
+                              mf.checkRedemption(value, portfolio.mfQuotes!.minRdQty, widget.mfHoldingData.holdqty!, widget.mfHoldingData.exchTsym?.firstOrNull?.nav);
+                              
+                              // Update redemption amount
+                              final qty = double.tryParse(value) ?? 0.0;
+                              final nav = double.tryParse(widget.mfHoldingData.exchTsym?.firstOrNull?.nav ?? "0.0") ?? 0.0;
+                              mf.redemptionAmount.text = (qty * nav).toStringAsFixed(2);
+                            }
+                          } catch (e) {
+                            debugPrint("Error validating redemption: $e");
+                          }
                         },
                         // initialValue:portfolio.mfQuotes!.minRdQty,
                         // readOnly: bonds.loading ? true : false,
@@ -178,7 +200,7 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
                               borderRadius: BorderRadius.circular(30)),
                         ),
                       ),
-                      if(mf.redemptionError != "" && mf.redemptionError != null)...[
+                      if(mf.redemptionError != null && mf.redemptionError!.isNotEmpty)...[
                         Text("${mf.redemptionError}",
                         textAlign: TextAlign.start,
               style: textStyle(colors.kColorRedText, 10, FontWeight.w500)),
@@ -285,12 +307,36 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
                        
                       trailing: ElevatedButton(
                         onPressed: () {
-                          if(mf.checkRedemption(mf.redemptionQty.text,portfolio.mfQuotes!.minRdQty,widget.mfHoldingData.holdqty!,widget.mfHoldingData.exchTsym![0].nav)){
-                            mf.mfRedemption(context,widget.mfHoldingData.exchTsym![0].tsym!,mf.redemptionQty.text);
-                          }
-                          else{
+                          try {
+                            final minRdQty = portfolio.mfQuotes?.minRdQty;
+                            final holdQty = widget.mfHoldingData.holdqty;
+                            final navValue = widget.mfHoldingData.exchTsym?.firstOrNull?.nav;
+                            
+                            if (minRdQty == null || holdQty == null || navValue == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                successMessage(context, "Missing fund information")
+                              );
+                              return;
+                            }
+                            
+                            if (mf.checkRedemption(mf.redemptionQty.text, minRdQty, holdQty, navValue)) {
+                              final tsym = widget.mfHoldingData.exchTsym?.firstOrNull?.tsym;
+                              if (tsym != null) {
+                                mf.mfRedemption(context, tsym, mf.redemptionQty.text);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  successMessage(context, "Missing scheme symbol")
+                                );
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                successMessage(context, "Please check the data you have provided")
+                              );
+                            }
+                          } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                successMessage(context, "Please check the data you have provided"));
+                              successMessage(context, "Error processing redemption: ${e.toString()}")
+                            );
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -304,9 +350,21 @@ class _RedemptionBottomScreenState extends ConsumerState<RedemptionBottomScreen>
                             borderRadius: BorderRadius.circular(32),
                           ),
                         ),
-                        child: Text("Redeem",
-                            style: textStyle(const Color.fromARGB(255, 255, 255, 255), 14,
-                                FontWeight.w500)),
+                        child: mf.loading == true
+                          ? const SizedBox(
+                              height: 15,
+                              width: 15,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color.fromARGB(99, 48, 48, 48)
+                                ),
+                                backgroundColor: Color.fromARGB(255, 255, 255, 255),
+                              ),
+                            )
+                          : Text("Redeem",
+                              style: textStyle(const Color.fromARGB(255, 255, 255, 255), 14,
+                                  FontWeight.w500)),
                       ),
                     ),
                   ],

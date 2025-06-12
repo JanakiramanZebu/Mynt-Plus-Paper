@@ -28,13 +28,28 @@ class mfholdsinlepage extends StatefulWidget {
 
 class _mfholdsinlepage extends State<mfholdsinlepage>
     with SingleTickerProviderStateMixin {
+  // Helper method to safely format values
+  String _formatValue(String? value) {
+    return (value == null || value.isEmpty) ? "0.00" : value;
+  }
+  
+  // Helper method to determine color based on value
+  Color _getColorBasedOnValue(String? valueStr) {
+    final value = double.tryParse(valueStr ?? "0") ?? 0;
+    return value >= 0 ? Colors.green : Colors.red;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
       final theme = ref.watch(themeProvider);
       final mfdata = ref.watch(mfProvider);
-      // print("11111111111111111${mfdata.mfsinglepageres!.invList}");
-// print("13434312${mfdata.holssinglelist![0].sCHEMECODE}");
+      
+      // Check if data is available
+      final hasData = mfdata.holssinglelist != null && 
+                      mfdata.holssinglelist!.isNotEmpty && 
+                      mfdata.holssinglelist![0] != null;
+
       return Scaffold(
           appBar: AppBar(
             elevation: 0,
@@ -66,450 +81,182 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           ),
           body: Stack(children: [
             TransparentLoaderScreen(
-              isLoading: mfdata.bestmfloader!,
-              child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const SizedBox(width: 0),
-                              Expanded(
-                                  child: Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          // const SizedBox(
-                                          //     width: 6),
-
-                                          // const SizedBox(
-                                          //     width: 16),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Container(
-                                                  width: MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      0.6,
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start, // Aligns text properly
-                                                    children: [
-                                                      // const SizedBox(height: 4), // Now it's correctly placed
-                                                      Text(
-                                                        "${mfdata.holssinglelist![0]?.sCHEMENAME}",
-                                                        maxLines: 2,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: textStyles
-                                                            .scripNameTxtStyle
-                                                            .copyWith(
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                // const SizedBox(height: 8),
-                                                // SizedBox(
-                                                //     height: 16,
-                                                //     child: ListView(
-                                                //         scrollDirection: Axis.horizontal,
-                                                //         children: [
-
-                                                //           // CustomExchBadge(exch: "${"${mfdata.mfsinglepageres?.liveCancel}"}"),
-
-                                                //           // Container(
-                                                //           //   decoration: BoxDecoration(
-                                                //           //     color: mfdata.mfsinglepageres
-                                                //           //                 ?.liveCancel ==
-                                                //           //             "LIVE"
-                                                //           //         ? const Color(0xFFE5F5EA)
-                                                //           //         : const Color(0xFFFFC7C7),
-                                                //           //     borderRadius:
-                                                //           //         BorderRadius.circular(3),
-                                                //           //   ),
-                                                //           //   padding:
-                                                //           //       const EdgeInsets.symmetric(
-                                                //           //           horizontal: 4,
-                                                //           //           vertical: 2),
-                                                //           //   child: Text(
-                                                //           //     "${mfdata.mfsinglepageres?.liveCancel}",
-                                                //           //     style: textStyle(
-                                                //           //       mfdata.mfsinglepageres
-                                                //           //                   ?.liveCancel ==
-                                                //           //               "LIVE"
-                                                //           //           ? const Color(0xFF42A833)
-                                                //           //           : const Color(0xFFF33E4B),
-                                                //           //       10,
-                                                //           //       FontWeight.w400,
-                                                //           //     ),
-                                                //           //   ),
-                                                //           // ),
-                                                //         ]))
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                    ]),
-                              )),
-                            Column(
-  crossAxisAlignment: CrossAxisAlignment.end, // Align children to the right
-  children: [
-    Text(
-      "₹ ${mfdata.holssinglelist![0]?.gainOrLoss ?? '0'} ",
-      style: textStyle(
-        (((double.tryParse(mfdata.holssinglelist![0]?.gainOrLoss ?? '0') ?? 0)) >= 0
-            ? Colors.green
-            : Colors.red),
-        14,
-        FontWeight.w500,
-      ),
-    ),
-    Text(
-      "(${(double.tryParse(mfdata.holssinglelist?[0]?.percentage ?? '0') ?? 0).toStringAsFixed(2)}%)",
-      style: textStyle(
-        (((double.tryParse(mfdata.holssinglelist![0]?.gainOrLoss ?? '0') ?? 0)) >= 0
-            ? Colors.green
-            : Colors.red),
-        14,
-        FontWeight.w500,
-      ),
-    ),
-  ],
-),
-
-                              // const SizedBox(width: 7),
-                            ]),
-                        const SizedBox(height: 2),
-                        Divider(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          thickness: 1.0,
-                        ),
-
-// const SizedBox(height: 8),
-//               Text(
-//                 "Order Details",
-//                 style: textStyle(
-//                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-//                     16,
-//                     FontWeight.w500),
-//               ),
-
-                        const SizedBox(height: 16),
-
-  rowOfInfoData(
-     "Units",
-                            "${mfdata.holssinglelist![0]?.nET}",
-                            "Avg Price",
-                            "${(mfdata.holssinglelist?[0]?.bought ?? '0')}",
-                           
-                            theme),
-                        const SizedBox(height: 16),
-
-
-  rowOfInfoData(
-                            "Pledged Units",
-                            "${mfdata.holssinglelist![0]?.pLEDGEQTY ?? '0'}",
-                            "Current NAV",
-                            "${mfdata.holssinglelist![0]?.nav}",
-                            theme),
-
-                        const SizedBox(height: 16),
-
-                        rowOfInfoData(
-                            "Invested",
-                            "₹ ${mfdata.holssinglelist![0]?.purchase ?? '0'}",
-                            "Current",
-                            "₹ ${mfdata.holssinglelist![0]?.current ?? '0'}",
-                            theme),
-                      
-                        const SizedBox(height: 16),
-                        // rowOfInfoData(
-                        //     "Price",
-                        //     "${(double.tryParse(mfdata.holssinglelist![0]?.purchase ?? '0') ?? 0).toStringAsFixed(4)}",
-                        //     "Avg Price",
-                        //     "${(double.tryParse(mfdata.holssinglelist?[0]?.bought ?? '0') ?? 0).toStringAsFixed(2)}",
-                        //     theme),
-                        //      rowOfInfoData(
-                        //        "Pledged Qty",
-                        //     "${(double.tryParse(mfdata.holssinglelist![0]?.pLEDGEQTY ?? '0') ?? 0).toStringAsFixed(2)}",
-                        //     "",
-                        //     "",
-                        //     theme),
-                        const SizedBox(height: 16),
-
-                        Spacer(),
-                        SafeArea(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 6, // Takes 6 columns
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      _showBottomSheet(
-                                        context,
-                                        RedemptionBottomScreenNew(),
-                                      );
-                                      mfdata.recdemevalu();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Colors.white, // White background
-                                      foregroundColor: const Color.fromARGB(
-                                          255, 0, 0, 0), // Text and icon color
-                                      side: const BorderSide(
-                                          color: Color.fromARGB(255, 0, 0, 0),
-                                          width: 1), // Outlined border
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            20), // Optional: rounded corners
-                                      ),
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Icon(
-                                        //   Icons.cancel,
-                                        //   color: Color.fromARGB(255, 0, 0, 0),
-                                        //   size: 18,
-                                        // ),
-                                        // SizedBox(width: 6),
-                                        Text(
-                                          "Redeem",
-                                          style: TextStyle(
-                                            color: Color.fromARGB(255, 0, 0, 0),
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              // const SizedBox(width: 10),
-                            ],
-                          ),
-                        ),
-
-//               const SizedBox(height: 16),
-//               Text(
-//                 "SIP Status",
-//                 style: textStyle(
-//                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-//                     16,
-//                     FontWeight.w500),
-//               ),
-//               const SizedBox(height: 16),
-//               ListView.builder(
-//                 itemCount: mfdata.mfsinglepageres!.invList!.length,
-//                 physics: const NeverScrollableScrollPhysics(),
-//                 shrinkWrap: true,
-//                 itemBuilder: (BuildContext context, int index) {
-//                   final isFirst = index == 0;
-//                   final isLasts =
-//                       index == mfdata.mfsinglepageres!.invList!.length;
-//                   print(
-//                       "Index: $index, Data: ${mfdata.mfsinglepageres!.invList![index]}");
-
-//                   return MFtimelineWidget(
-//                     isfFrist: isFirst,
-//                     isLast: isLasts,
-//                     orderHistoryData: mfdata.mfsinglepageres?.invList?[index],
-//                   );
-//                 },
-//               ),
-//             if(mfdata.mfsinglepageres?.nextInstallmentDate == "")...[
-//            const SizedBox(height: 16),
-//               Text(
-//                 "Rejected Reason",
-//                 style: textStyle(
-//                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-//                     16,
-//                     FontWeight.w500),
-//               ),
-//            const SizedBox(height: 8),
-
-//  Text(
-//             "${mfdata.mfsinglepageres!.invList![0]["orderremarks"]}",
-//                 style: textStyle(
-//                     theme.isDarkMode ? colors.colorWhite : const Color(0xFFF33E4B),
-//                     13,
-//                     FontWeight.w500),
-//               ),
-//             ]
-                      ])
-
-//           Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-
-//               Text(
-//                 "₹ ${mfdata.mfsinglepageres?.installmentAmount}",
-//                 style: TextStyle(
-//                   color:
-//                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-//                   fontSize: 20,
-//                   fontWeight: FontWeight.w600,
-//                 ),
-//               ),
-
-//               const SizedBox(height: 10),
-
-// if(mfdata.mfsinglepageres?.nextInstallmentDate != "")...[
-//   Text(
-//                 "Next Due Date : ${mfdata.mfsinglepageres?.nextInstallmentDate}",
-//                 style: const TextStyle(color: Color(0xFF666666), fontSize: 14,fontWeight:  FontWeight.w500),
-//               ),
-
-//               const SizedBox(height: 20),
-// ],
-
-//               const Text(
-//                 "Nippon India Retirement Fund Income Generation Scheme (G) ",
-//                   style: TextStyle(
-//                     fontSize: 19,
-//                     fontWeight: FontWeight.w600,
-//                     color: Color(0xFF181B19)),
-//               ),
-//               // const SizedBox(height: 8),
-//               // Divider(
-//               //     color: theme.isDarkMode
-//               //         ? colors.darkColorDivider
-//               //         : colors.colorDivider,thickness: 1.0,),
-//               const SizedBox(height: 17),
-
-//               // Text(
-//               //   "Upcoming",
-//               //   style: TextStyle(
-//               //     color:
-//               //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-//               //     fontSize: 18,
-//               //     fontWeight: FontWeight.w500,
-//               //   ),
-//               // ),
-
-//               // const SizedBox(height: 14),
-//               // Row(
-//               //   children: [
-//               //     Icon(
-//               //       Icons.calendar_today, // Calendar icon
-//               //       size: 15,
-//               //       color:
-//               //           theme.isDarkMode ? colors.colorWhite : colors.colorGrey,
-//               //     ),
-//               //     const SizedBox(width: 8), // Space between icon and text
-//               //     Text(
-//               //       "3rd March",
-//               //       style: TextStyle(
-//               //         color: theme.isDarkMode
-//               //             ? colors.colorWhite
-//               //             : colors.colorGrey,
-//               //         fontSize: 15,
-//               //         fontWeight: FontWeight.w500,
-//               //       ),
-//               //     ),
-//               //   ],
-//               // ),
-
-//               // const SizedBox(height: 8),
-//               // Divider(
-//               //   color: theme.isDarkMode
-//               //       ? colors.darkColorDivider
-//               //       : colors.colorDivider,
-//               //   thickness: 1.0,
-//               // ),
-//               // const SizedBox(height: 10),
-
-//                Text(
-//                 "Order Status",
-//                 style: TextStyle(
-//                   color:
-//                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-//                   fontSize: 14,
-//                   fontWeight: FontWeight.w500,
-//                 ),
-//               ),
-
-//               // SIP Amount
-//               // Text(
-//               //   "Amount: ₹5000",
-//               //   style: textStyles.smallText.copyWith(color: colors.colorGrey),
-//               // ),
-//               // const SizedBox(height: 10),
-
-//               // // SIP Status
-//               // Text(
-//               //   "Status: Active",
-//               //   style: textStyles.smallText.copyWith(color: colors.colorGreen),
-//               // ),
-//               // const SizedBox(height: 10),
-
-//               // // Next Due Date
-//               // Text(
-//               //   "Next Due Date: 15 March 2025",
-//               //   style: textStyles.smallText.copyWith(color: colors.colorBlack),
-//               // ),
-//               // const SizedBox(height: 10),
-
-//               // // Frequency
-//               // Text(
-//               //   "Frequency: Monthly",
-//               //   style: textStyles.smallText.copyWith(color: colors.colorGrey),
-//               // ),
-//               // const SizedBox(height: 20),
-
-//               // Cancel Button
-//               // SizedBox(
-//               //   width: double.infinity,
-//               //   child: ElevatedButton(
-//               //     onPressed: () {
-//               //       // Handle SIP cancellation
-//               //     },
-//               //     style: ElevatedButton.styleFrom(
-//               //       backgroundColor: colors.colorRed,
-//               //       padding: const EdgeInsets.symmetric(vertical: 12),
-//               //     ),
-//               //     child: Text(
-//               //       "Cancel SIP",
-//               //       style: textStyles.buttonText.copyWith(
-//               //         color: colors.colorWhite,
-//               //       ),
-//               //     ),
-//               //   ),
-//               // ),
-//             ],
-//           ),
-                  ),
+              isLoading: mfdata.bestmfloader ?? false,
+              child: hasData 
+                ? _buildHoldingDetails(context, theme, mfdata)
+                : const Center(child: Text("No holding data available")),
             )
           ]));
     });
+  }
+
+  // Extracted method to build holding details
+  Widget _buildHoldingDetails(BuildContext context, ThemesProvider theme, MFProvider mfdata) {
+    final data = mfdata.holssinglelist![0];
+    
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SizedBox(width: 0),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: MediaQuery.of(context).size.width * 0.6,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        data.sCHEMENAME ?? "Unknown Fund",
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: textStyles.scripNameTxtStyle.copyWith(
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                  ),
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "₹ ${_formatValue(data.gainOrLoss)} ",
+                    style: textStyle(
+                      _getColorBasedOnValue(data.gainOrLoss),
+                      14,
+                      FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    "(${(double.tryParse(data.percentage ?? '0') ?? 0).toStringAsFixed(2)}%)",
+                    style: textStyle(
+                      _getColorBasedOnValue(data.gainOrLoss),
+                      14,
+                      FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider,
+            thickness: 1.0,
+          ),
+
+          const SizedBox(height: 16),
+
+          // Units and Avg Price
+          rowOfInfoData(
+            "Units",
+            "${data.nET ?? '0'}",
+            "Avg Price",
+            "${data.bought ?? '0'}",
+            theme,
+          ),
+          const SizedBox(height: 16),
+
+          // Pledged Units and Current NAV
+          rowOfInfoData(
+            "Pledged Units",
+            "${data.pLEDGEQTY ?? '0'}",
+            "Current NAV",
+            "${data.nav ?? '0'}",
+            theme,
+          ),
+
+          const SizedBox(height: 16),
+
+          // Invested and Current Value
+          rowOfInfoData(
+            "Invested",
+            "₹ ${data.purchase ?? '0'}",
+            "Current",
+            "₹ ${data.current ?? '0'}",
+            theme,
+          ),
+      
+          const SizedBox(height: 16),
+          
+          const Spacer(),
+          
+          // Redeem button
+          SafeArea(
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 6,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _showBottomSheet(
+                          context,
+                          RedemptionBottomScreenNew(),
+                        );
+                        mfdata.recdemevalu();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                        side: const BorderSide(
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          width: 1,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text(
+                        "Redeem",
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Row rowOfInfoData(String title1, String value1, String title2, String value2,

@@ -23,7 +23,7 @@ class MfOrderBookScreen extends StatefulWidget {
 
 class _MfOrderBookScreen extends State<MfOrderBookScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController1;
+  late TabController _tabController;
   final tablistitems = [
     {"title": "Holdings", "index": 0},
     {"title": "Orders", "index": 1}
@@ -33,7 +33,13 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
   @override
   void initState() {
     super.initState();
-    _tabController1 = TabController(length: 2, vsync: this, initialIndex: 0);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -45,7 +51,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
         body: Stack(
           children: [
             TransparentLoaderScreen(
-              isLoading: mforderbook.bestmfloader!,
+              isLoading: mforderbook.bestmfloader ?? false,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -72,260 +78,21 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                       labelPadding: const EdgeInsets.only(right: 0, bottom: 0),
                       tabAlignment: TabAlignment.start,
                       indicatorColor: const Color.fromARGB(255, 0, 0, 0),
-                      controller: _tabController1,
+                      controller: _tabController,
                       isScrollable: true,
                       tabs: List.generate(
                         tablistitems.length,
-                        (tab) => tabConstruce(
-                          tablistitems[tab]['title'].toString(),
-                          theme,
-                          tab,
-                          () {},
-                        ),
+                        (tab) => _buildTab(tab, theme),
                       ),
                     ),
                   ),
                   Expanded(
                     child: TabBarView(
                       physics: const NeverScrollableScrollPhysics(),
-                      controller: _tabController1,
+                      controller: _tabController,
                       children: [
                         const MfHoldNewScreen(),
-                        TransparentLoaderScreen(
-                          isLoading: mforderbook.mforderloader,
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                mforderbook.mfOrderbookfilter == "All"
-                                    ? (mforderbook.mflumpsumorderbook == null || mforderbook.mflumpsumorderbook?.stat == "Not Ok")
-                                        ? const Padding(
-                                            padding: EdgeInsets.only(top: 280),
-                                            child: Center(child: NoDataFound()),
-                                          )
-                                        : ListView.separated(
-                                            shrinkWrap: true,
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            itemBuilder: (context, index) {
-                                              return InkWell(
-                                                onTap: () async {
-                                                  mforderbook.loaderfun();
-                                                  await mforderbook.fetchorderdetails(
-                                                    "${mforderbook.mflumpsumorderbook!.data![index].ordernumber}",
-                                                    "${mforderbook.mflumpsumorderbook!.data![index].buysell}",
-                                                    "${mforderbook.mflumpsumorderbook!.data![index].ordertype}",
-                                                    "${mforderbook.mflumpsumorderbook!.data![index].orderstatus}",
-                                                    "${mforderbook.mflumpsumorderbook!.data![index].sipregnno}",
-                                                    "${mforderbook.mflumpsumorderbook!.data![index].orderremarks}",
-                                                  );
-
-                                                  if (mforderbook.mforderdet?.stat ==
-                                                      "Ok") {
-                                                    Navigator.pushNamed(
-                                                        context,
-                                                        Routes.mforderdetscreen);
-                                                  } else {
-                                                    ScaffoldMessenger.of(context)
-                                                        .showSnackBar(successMessage(
-                                                            context,
-                                                            "${mforderbook.mforderdet?.msg}"));
-                                                  }
-                                                },
-                                                child: Container(
-                                                  padding: const EdgeInsets.all(20),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.start,
-                                                    children: [
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Expanded(
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(right: 1.0),
-                                                              child: SizedBox(
-                                                                 width: MediaQuery.of(context).size.width * 0.4,
-                                                                child: Text(
-                                                                  "${mforderbook.mflumpsumorderbook!.data![index].schemename}",
-                                                                  maxLines: 2,
-                                                                  style: textStyles
-                                                                      .scripNameTxtStyle
-                                                                      .copyWith(
-                                                                    color: theme
-                                                                            .isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Row(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .end,
-                                                            children: [
-                                                              SvgPicture.asset(
-                                                                mforderbook
-                                                                            .mflumpsumorderbook!
-                                                                            .data![
-                                                                                index]
-                                                                            .orderstatus ==
-                                                                        "VALID"
-                                                                    ? assets
-                                                                        .completedIcon
-                                                                    : mforderbook
-                                                                                .mflumpsumorderbook!
-                                                                                .data![
-                                                                                    index]
-                                                                                .orderstatus ==
-                                                                            "INVALID"
-                                                                        ? assets
-                                                                            .cancelledIcon
-                                                                        : assets
-                                                                            .warningIcon,
-                                                                width: 20,
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        left: 4.0),
-                                                                child: Text(
-                                                                  mforderbook
-                                                                              .mflumpsumorderbook!
-                                                                              .data![
-                                                                                  index]
-                                                                              .orderstatus ==
-                                                                          "VALID"
-                                                                      ? 'Success'
-                                                                      : mforderbook.mflumpsumorderbook!.data![index].orderstatus ==
-                                                                              'PENDING'
-                                                                          ? 'Pending' 
-                                                                           : mforderbook.mflumpsumorderbook!.data![index].orderstatus ==
-                                                                              'INVALID'
-                                                                          ? 'Invalid'
-                                                                          : mforderbook
-                                                                              .mflumpsumorderbook!
-                                                                              .data![index]
-                                                                              .orderstatus!,
-                                                                  style: textStyle(
-                                                                      theme.isDarkMode
-                                                                          ? colors
-                                                                              .colorWhite
-                                                                          : colors
-                                                                              .colorBlack,
-                                                                      14,
-                                                                      FontWeight
-                                                                          .w600),
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(height: 8),
-                                                      Row(
-                                                        children: [
-                                                          Container(
-                                                            decoration:
-                                                                BoxDecoration(
-                                                              color: mforderbook
-                                                                          .mflumpsumorderbook!
-                                                                          .data![
-                                                                              index]
-                                                                          .buysell ==
-                                                                      "P"
-                                                                  ? const Color(
-                                                                      0xFFE5F5EA)
-                                                                  : const Color(
-                                                                      0xFFFFC7C7),
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(3),
-                                                            ),
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        4,
-                                                                    vertical: 2),
-                                                            child: Text(
-                                                              "${mforderbook.mflumpsumorderbook!.data![index].buysell}",
-                                                              style: textStyle(
-                                                                mforderbook
-                                                                            .mflumpsumorderbook!
-                                                                            .data![
-                                                                                index]
-                                                                            .buysell ==
-                                                                        "P"
-                                                                    ? const Color(
-                                                                        0xFF42A833)
-                                                                    : const Color(
-                                                                        0xFFF33E4B),
-                                                                10,
-                                                                FontWeight.w400,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          const SizedBox(width: 8),
-                                                          CustomExchBadge(
-                                                            exch:
-                                                                "${mforderbook.mflumpsumorderbook!.data![index].ordertype == "NRM" ? "One-Time" : "SIP"}",
-                                                          ),
-                                                          const SizedBox(width: 8),
-                                                          Text(
-                                                            "${mforderbook.mflumpsumorderbook?.data?[index].dateTime}",
-                                                            style: textStyle(
-                                                                theme.isDarkMode
-                                                                    ? colors
-                                                                        .colorWhite
-                                                                    : colors
-                                                                        .colorBlack,
-                                                                10,
-                                                                FontWeight.w400),
-                                                          ),
-                                                          const Spacer(),
-                                                          Text(
-                                                            '${mforderbook.mflumpsumorderbook!.data![index].amount == "" || double.tryParse(mforderbook.mflumpsumorderbook!.data![index].amount.toString()) == null ? '0.00' : double.tryParse(mforderbook.mflumpsumorderbook!.data![index].amount.toString())!.toStringAsFixed(2)}',
-                                                            style: textStyle(
-                                                                colors.colorGrey,
-                                                                12,
-                                                                FontWeight.w600),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            separatorBuilder:
-                                                (BuildContext context, int index) {
-                                              return Container(
-                                                color: theme.isDarkMode
-                                                    ? colors.darkGrey
-                                                    : const Color(0xffF1F3F8),
-                                                height: 2,
-                                              );
-                                            },
-                                          itemCount: mforderbook.mflumpsumorderbook?.data?.length ?? 0,
-
-                                          )
-                                    : const Padding(
-                                        padding: EdgeInsets.only(top: 300),
-                                        child: Center(child: NoDataFound()),
-                                      ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        _buildOrdersTab(mforderbook, theme, context),
                       ],
                     ),
                   ),
@@ -338,14 +105,196 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
     });
   }
 
-  Widget tabConstruce(
-      String title, ThemesProvider theme, int tab, VoidCallback onPressed) {
+  Widget _buildOrdersTab(MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
+    return TransparentLoaderScreen(
+      isLoading: mforderbook.mforderloader,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            if (mforderbook.mfOrderbookfilter == "All" && mforderbook.mflumpsumorderbook != null && mforderbook.mflumpsumorderbook?.stat != "Not Ok")
+              _buildOrderList(mforderbook, theme, context)
+            else
+              const Padding(
+                padding: EdgeInsets.only(top: 300),
+                child: Center(child: NoDataFound()),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrderList(MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: mforderbook.mflumpsumorderbook?.data?.length ?? 0,
+      itemBuilder: (context, index) {
+        final orderData = mforderbook.mflumpsumorderbook?.data?[index];
+        if (orderData == null) return const SizedBox();
+        
+        return InkWell(
+          onTap: () async {
+            mforderbook.loaderfun();
+            await mforderbook.fetchorderdetails(
+              orderData.ordernumber ?? "",
+              orderData.buysell ?? "",
+              orderData.ordertype ?? "",
+              orderData.orderstatus ?? "",
+              orderData.sipregnno ?? "",
+              orderData.orderremarks ?? "",
+            );
+
+            if (mforderbook.mforderdet?.stat == "Ok") {
+              Navigator.pushNamed(context, Routes.mforderdetscreen);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                successMessage(context, "${mforderbook.mforderdet?.msg ?? 'Error loading order details'}")
+              );
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 1.0),
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          child: Text(
+                            orderData.schemename ?? "Unknown Fund",
+                            maxLines: 2,
+                            style: textStyles.scripNameTxtStyle.copyWith(
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        SvgPicture.asset(
+                          _getStatusIcon(orderData.orderstatus),
+                          width: 20,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4.0),
+                          child: Text(
+                            _getStatusText(orderData.orderstatus),
+                            style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              14,
+                              FontWeight.w600
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: orderData.buysell == "P"
+                            ? const Color(0xFFE5F5EA)
+                            : const Color(0xFFFFC7C7),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2
+                      ),
+                      child: Text(
+                        orderData.buysell ?? "-",
+                        style: textStyle(
+                          orderData.buysell == "P"
+                              ? const Color(0xFF42A833)
+                              : const Color(0xFFF33E4B),
+                          10,
+                          FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    CustomExchBadge(
+                      exch: "${orderData.ordertype == 'NRM' ? 'One-Time' : 'SIP'}",
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      orderData.dateTime ?? "-",
+                      style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        10,
+                        FontWeight.w400
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      _formatAmount(orderData.amount),
+                      style: textStyle(
+                        colors.colorGrey,
+                        12,
+                        FontWeight.w600
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      separatorBuilder: (BuildContext context, int index) {
+        return Container(
+          color: theme.isDarkMode
+              ? colors.darkGrey
+              : const Color(0xffF1F3F8),
+          height: 2,
+        );
+      },
+    );
+  }
+
+  String _getStatusIcon(String? status) {
+    if (status == "VALID") return assets.completedIcon;
+    if (status == "INVALID") return assets.cancelledIcon;
+    return assets.warningIcon;
+  }
+
+  String _getStatusText(String? status) {
+    if (status == "VALID") return 'Success';
+    if (status == 'PENDING') return 'Pending';
+    if (status == 'INVALID') return 'Invalid';
+    return status ?? 'Unknown';
+  }
+
+  String _formatAmount(String? amount) {
+    if (amount == null || amount.isEmpty) return '0.00';
+    final value = double.tryParse(amount) ?? 0.0;
+    return value.toStringAsFixed(2);
+  }
+
+  Widget _buildTab(int tab, ThemesProvider theme) {
     return ElevatedButton(
       onPressed: () {
         setState(() {
           activeTab = tab;
         });
-        _tabController1.animateTo(tab);
+        _tabController.animateTo(tab);
       },
       style: ElevatedButton.styleFrom(
         minimumSize: Size(MediaQuery.of(context).size.width * 0.5, 50),
@@ -360,22 +309,15 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                 : const Color.fromARGB(255, 255, 255, 255),
         shape: const StadiumBorder(),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: textStyle(
-              theme.isDarkMode
-                  ? Color(tab == activeTab ? 0xFFFFFFFF : 0xff5E6B7D)
-                  : Color(tab == activeTab ? 0xff000000 : 0xff000000),
-              15,
-              FontWeight.w600,
-            ),
-          ),
-        ],
+      child: Text(
+        tablistitems[tab]['title'].toString(),
+        style: textStyle(
+          theme.isDarkMode
+              ? Color(tab == activeTab ? 0xFFFFFFFF : 0xff5E6B7D)
+              : Color(tab == activeTab ? 0xff000000 : 0xff000000),
+          15,
+          FontWeight.w600,
+        ),
       ),
     );
   }

@@ -1158,7 +1158,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _marketWatchlist!.values!.addAll(_preDefWL);
         fetchPreDefMWScrip(context);
         if (swit == false) {
-          await changeWLScrip(_wlName, context);
+        await changeWLScrip(_wlName, context);
         }
       } else {
         if (_marketWatchlist!.emsg ==
@@ -2407,7 +2407,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       } else {
         // Standard watchlist - subscribe to the scrips
         if (_scrips.isNotEmpty) {
-          await requestMWScrip(context: context, isSubscribe: true);
+        await requestMWScrip(context: context, isSubscribe: true);
         } else {
           // If no symbols in watchlist, still ensure we're unsubscribed from previous
           await requestMWScrip(context: context, isSubscribe: false);
@@ -2438,10 +2438,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     try {
       toggleLoadingOn(true);
-      _addDeleteScripModel = await api.getAddDeleteSciptoMW(
+    _addDeleteScripModel = await api.getAddDeleteSciptoMW(
           isAdd: false, scripToken: input, wlname: walName);
 
-      if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+    if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
         // If the deleted watchlist is the active one, change to a different watchlist
         if (walName == _wlName) {
           // Find the first available watchlist that's not the one being deleted
@@ -2461,7 +2461,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             await changeWlName(newWlName, "No");
           } else {
             // If no alternative found, reset to empty
-            await changeWlName("", "No");
+      await changeWlName("", "No");
           }
         }
 
@@ -2497,18 +2497,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       bool isReOrder,
       bool isOptionStike) async {
     try {
-      _addDeleteScripModel = await api.getAddDeleteSciptoMW(
-          isAdd: isAdd, scripToken: scripTok, wlname: wlName);
+    _addDeleteScripModel = await api.getAddDeleteSciptoMW(
+        isAdd: isAdd, scripToken: scripTok, wlname: wlName);
 
-      if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
-        ConstantName.sessCheck = true;
-        if (!isReOrder) {
-          await fetchMWScrip(wlName, context);
-          await changeWLScrip(wlName, context);
-        } else {
+    if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+      ConstantName.sessCheck = true;
+      if (!isReOrder) {
+        await fetchMWScrip(wlName, context);
+        await changeWLScrip(wlName, context);
+      } else {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(
                 successMessage(context, "Scrip order was changed"));
           } catch (e) {
@@ -2519,16 +2519,16 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               print("Error showing SnackBar: $e");
             }
           }
-        }
-        if (!isEdit) {
+      }
+      if (!isEdit) {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                context,
-                isAdd
-                    ? "Scrip was added to watchlist $wlName"
-                    : "Scrip was removed from watchlist $wlName"));
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(
+            context,
+            isAdd
+                ? "Scrip was added to watchlist $wlName"
+                : "Scrip was removed from watchlist $wlName"));
           } catch (e) {
             if (e.toString().contains("widget was disposed") ||
                 e.toString().contains("after the widget was disposed")) {
@@ -2537,22 +2537,22 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               print("Error showing SnackBar: $e");
             }
           }
-        }
-        if (isEdit && isOptionStike) {
+      }
+      if (isEdit && isOptionStike) {
           try {
-            Fluttertoast.showToast(
-                msg: "Scrip was added to watchlist $wlName",
-                timeInSecForIosWeb: 2,
-                backgroundColor: colors.colorBlack,
-                textColor: colors.colorWhite,
-                fontSize: 14.0);
+        Fluttertoast.showToast(
+            msg: "Scrip was added to watchlist $wlName",
+            timeInSecForIosWeb: 2,
+            backgroundColor: colors.colorBlack,
+            textColor: colors.colorWhite,
+            fontSize: 14.0);
           } catch (e) {
             print("Error showing toast: $e");
-          }
+      }
         }
         return true;
-      } else if (_addDeleteScripModel!.emsg ==
-          "Session Expired :  Invalid Session Key") {
+    } else if (_addDeleteScripModel!.emsg ==
+        "Session Expired :  Invalid Session Key") {
         try {
           ref.read(authProvider).ifSessionExpired(context);
         } catch (e) {
@@ -2837,7 +2837,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         // Second step: Add all scrips back in the new order (only to backend)
         if (deleteResult) {
-          await addDelMarketScrip(
+      await addDelMarketScrip(
               wlName, "$scripTokens#", context, true, true, true, false);
 
           print("Backend watchlist order updated successfully");
@@ -3159,7 +3159,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     // Notify listeners to update the UI - only if data actually changed
     if (dataUpdated) {
-      notifyListeners();
+    notifyListeners();
     }
   }
 
@@ -3365,7 +3365,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
 
         // Return success status
-        notifyListeners();
+      notifyListeners();
         return true;
       } else if (_cancelalert!.stat == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);

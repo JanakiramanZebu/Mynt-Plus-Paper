@@ -15,17 +15,30 @@ import '../../res/res.dart';
 class MfCancelAlert extends ConsumerWidget {
   final Data mfcancel;
   final String message; 
-  const MfCancelAlert({super.key, required this.mfcancel,required this.message});
+  
+  const MfCancelAlert({
+    super.key, 
+    required this.mfcancel, 
+    required this.message
+  });
+  
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
-      final mfData = ref.watch(mfProvider);
+    final mfData = ref.watch(mfProvider);
+    final isDarkMode = theme.isDarkMode;
+    
+    // Safe access to scheme name with fallback
+    final schemeName = mfcancel.schemename ?? "this mutual fund";
+    final orderNumber = mfcancel.ordernumber;
+    
     return AlertDialog(
-      backgroundColor: theme.isDarkMode
+      backgroundColor: isDarkMode
           ? const Color.fromARGB(255, 18, 18, 18)
           : colors.colorWhite,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10))),
+        borderRadius: BorderRadius.all(Radius.circular(10))
+      ),
       scrollable: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
@@ -37,68 +50,86 @@ class MfCancelAlert extends ConsumerWidget {
       content: Column(
         children: [
           Text(
-              "Are you sure you want to cancel the ( ${mfcancel.schemename} ) order" ,
-              textAlign: TextAlign.center,
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w600))
+            "Are you sure you want to cancel the ($schemeName) order",
+            textAlign: TextAlign.center,
+            style: textStyle(
+              isDarkMode ? colors.colorWhite : colors.colorBlack,
+              16,
+              FontWeight.w600
+            )
+          )
         ],
       ),
       actions: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // No button
             Expanded(
               child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: const Color(0xffF1F3F8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      )),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text("No",
-                      style: textStyle(colors.colorGrey, 12, FontWeight.w600))),
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: const Color(0xffF1F3F8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  )
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  "No",
+                  style: textStyle(colors.colorGrey, 12, FontWeight.w600)
+                )
+              ),
             ),
             const SizedBox(width: 16),
+            
+            // Yes button
             Expanded(
               child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: theme.isDarkMode
-                          ? colors.colorbluegrey
-                          : colors.colorBlack,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      )),
-                  onPressed: () async{
-                
-                        await mfData.cancelredumorder(context, mfcancel.ordernumber);
-                        
-                     Navigator.pop(context);
-                  },
-                  child: mfData.loading == true
-                        ? const SizedBox(
-                            height: 15,
-                            width: 15,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.0,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Color.fromARGB(99, 48, 48, 48)),
-                              backgroundColor:
-                                  Color.fromARGB(255, 255, 255, 255),
-                            ),
-                          )
-                        :  Text("Yes",
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: isDarkMode
+                    ? colors.colorbluegrey
+                    : colors.colorBlack,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  )
+                ),
+                onPressed: () async {
+                  if (orderNumber != null) {
+                    try {
+                      await mfData.cancelredumorder(context, orderNumber);
+                    } catch (e) {
+                      // Handle error silently
+                    }
+                  }
+                  Navigator.pop(context);
+                },
+                child: mfData.loading == true
+                  ? const SizedBox(
+                      height: 15,
+                      width: 15,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.0,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color.fromARGB(99, 48, 48, 48)
+                        ),
+                        backgroundColor: Color.fromARGB(255, 255, 255, 255),
+                      ),
+                    )
+                  : Text(
+                      "Yes",
                       style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          12,
-                          FontWeight.w600))),
+                        isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                        12,
+                        FontWeight.w600
+                      )
+                    )
+              ),
             )
           ],
         ),
@@ -106,10 +137,14 @@ class MfCancelAlert extends ConsumerWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
+  TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
     return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+      textStyle: TextStyle(
+        fontWeight: fWeight, 
+        color: color, 
+        fontSize: fontSize
+      )
+    );
   }
 }
 

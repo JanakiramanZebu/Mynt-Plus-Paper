@@ -12,52 +12,43 @@ import '../../models/portfolio_model/mf_holdings_model.dart';
 import '../../sharedWidget/snack_bar.dart';
 
 class RedemptionBottomScreenNew extends StatefulWidget {
-  // final MFHoldingsModel mfHoldingData;
-
-// , required this.bondInfo
-  // const RedemptionBottomScreenNew({super.key, required this.mfHoldingData});
+  const RedemptionBottomScreenNew({super.key});
 
   @override
-  State<RedemptionBottomScreenNew> createState() =>
-      _RedemptionBottomScreenNewState();
+  State<RedemptionBottomScreenNew> createState() => _RedemptionBottomScreenNewState();
 }
 
 class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
-  // String upierrortext = "Please enter the UPI Id";
-  // late BondDetails bondDetails;
-
   var ischecked = false;
-
-  // @override
-  // void initState() {
-  //   setState(() {
-  //     ref.read(mfProvider).redemptionQty.text = ref.read(portfolioProvider). mfQuotes!.minRdQty!;
-  //     ref.read(mfProvider).redemptionAmount.text = (double.parse(ref.read(mfProvider).redemptionQty.text) * double.parse(widget.mfHoldingData.exchTsym![0].nav!)).toString();
-  //     });
-  //   super.initState();
-  // }
 
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
-      final portfolio = ref.watch(portfolioProvider);
       final theme = ref.watch(themeProvider);
       final mf = ref.watch(mfProvider);
+
+      // Safe access to NAV value
+      final navValue = mf.holssinglelist?.isNotEmpty == true 
+          ? (double.tryParse(mf.holssinglelist![0]?.nav ?? '0.0') ?? 0.0)
+          : 0.0;
+
+      // Calculate redemption value
+      final redemptionQtyValue = double.tryParse(mf.redemptionQty.text) ?? 0.0;
+      final redemptionValue = redemptionQtyValue * navValue;
+
       return SingleChildScrollView(
-        // initialChildSize: 0.50,
-        // maxChildSize: .99,
-        // expand: false,
-        // builder: (context, scrollController) {
         child: Container(
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              boxShadow: const [
-                BoxShadow(
-                    color: Color(0xff999999),
-                    blurRadius: 4.0,
-                    offset: Offset(0.0, 0.0))
-              ]),
+            borderRadius: BorderRadius.circular(16),
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0xff999999),
+                blurRadius: 4.0,
+                offset: Offset(0.0, 0.0)
+              )
+            ]
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -66,291 +57,184 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                   Container(
                     height: 30,
                     decoration: const BoxDecoration(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(16)),
-                      color: Color(
-                          0xFFFCEFD4), //theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                      // boxShadow: [
-                      //   // BoxShadow(
-                      //   //     color: Color(0xff999999),
-                      //   //     blurRadius: 4.0,
-                      //   //     offset: Offset(2.0, 0.0))
-                      // ]
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                      color: Color(0xFFFCEFD4),
                     ),
-                    // color: Color(0xFFFCEFD4),
-
                     child: Center(
-                      child: Text("Redemption ",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w600)),
+                      child: Text(
+                        "Redemption ",
+                        style: textStyle(
+                          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          14,
+                          FontWeight.w600
+                        )
+                      ),
                     ),
                   ),
                   Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("${mf.holssinglelist![0]?.sCHEMENAME}",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  15,
-                                  FontWeight.w600)),
-                          const SizedBox(
-                            height: 5,
-                          ),
-                        ],
-                      )),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                     child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Text("Redemption Units",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Text("Total Units: ",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
-                                  const SizedBox(width: 8),
-                                  Text("${mf.holssinglelist![0]?.nET}",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          10,
-                                          FontWeight.w600)),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            onChanged: (value) {
-                              if (value != "") {
-                                mf.checkRedemption(
-                                    value,
-                                    mf.holssinglelist![0]?.mINIMUMREDEMPTIONQTY,
-                                    mf.holssinglelist![0]?.nET,
-                                    mf.holssinglelist![0]?.nav);
-                              }
-
-                              print("valll$value");
-                            },
-                            // initialValue:portfolio.mfQuotes!.minRdQty,
-                            // readOnly: bonds.loading ? true : false,
-                            textAlign: TextAlign.start,
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          mf.holssinglelist?.isNotEmpty == true 
+                              ? (mf.holssinglelist![0]?.sCHEMENAME ?? "Unknown Scheme") 
+                              : "Unknown Scheme",
+                          style: textStyle(
+                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                            15,
+                            FontWeight.w600
+                          )
+                        ),
+                        const SizedBox(height: 5),
+                      ],
+                    )
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Redemption Units",
+                              style: textStyle(
+                                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                                 14,
-                                FontWeight.w600),
-                            keyboardType: TextInputType.number,
-                            controller: mf.redemptionQty,
-                            decoration: InputDecoration(
-                              fillColor: theme.isDarkMode
-                                  ? colors.darkGrey
-                                  : const Color(0xffF1F3F8),
-                              filled: true,
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(30)),
-                              disabledBorder: InputBorder.none,
-                              focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(30)),
-                              contentPadding: const EdgeInsets.all(13),
-                              border: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(30)),
+                                FontWeight.w600
+                              )
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Total Units: ",
+                                  style: textStyle(
+                                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                    14,
+                                    FontWeight.w600
+                                  )
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  mf.holssinglelist?.isNotEmpty == true 
+                                      ? (mf.holssinglelist![0]?.nET ?? "0.00") 
+                                      : "0.00",
+                                  style: textStyle(
+                                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                    10,
+                                    FontWeight.w600
+                                  )
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          onChanged: (value) {
+                            if (value.isNotEmpty) {
+                              try {
+                                final minRedemptionQty = mf.holssinglelist?.isNotEmpty == true 
+                                    ? mf.holssinglelist![0]?.mINIMUMREDEMPTIONQTY 
+                                    : null;
+                                    
+                                final netUnits = mf.holssinglelist?.isNotEmpty == true 
+                                    ? mf.holssinglelist![0]?.nET 
+                                    : null;
+                                    
+                                final navStr = mf.holssinglelist?.isNotEmpty == true 
+                                    ? mf.holssinglelist![0]?.nav 
+                                    : null;
+                                
+                                mf.checkRedemption(value, minRedemptionQty, netUnits, navStr);
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  successMessage(context, "Error validating redemption: ${e.toString()}")
+                                );
+                              }
+                            }
+                          },
+                          textAlign: TextAlign.start,
+                          style: textStyle(
+                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                            14,
+                            FontWeight.w600
+                          ),
+                          keyboardType: TextInputType.number,
+                          controller: mf.redemptionQty,
+                          decoration: InputDecoration(
+                            fillColor: theme.isDarkMode 
+                                ? colors.darkGrey 
+                                : const Color(0xffF1F3F8),
+                            filled: true,
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(30)
+                            ),
+                            disabledBorder: InputBorder.none,
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(30)
+                            ),
+                            contentPadding: const EdgeInsets.all(13),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(30)
                             ),
                           ),
-                          if (mf.redemptionError != "" &&
-                              mf.redemptionError != null) ...[
-                            if (mf.redemptionError!.isNotEmpty)
-                              Text(
-                                "${mf.redemptionError}",
-                                textAlign: TextAlign.start,
-                                style: textStyle(
-                                    colors.kColorRedText, 10, FontWeight.w500),
-                              ),
-                            const SizedBox(height: 6)
-                          ],
-                          Row(
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 20.0, top: 5.0),
-                                child: Text(
-                                    "Min. redemption units ${mf.holssinglelist![0]?.mINIMUMREDEMPTIONQTY}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        11,
-                                        FontWeight.w600)),
-                              ),
-                              const SizedBox(width: 8),
-                            ],
+                        ),
+                        if (mf.redemptionError != null && mf.redemptionError!.isNotEmpty) ...[
+                          Text(
+                            mf.redemptionError!,
+                            textAlign: TextAlign.start,
+                            style: textStyle(colors.kColorRedText, 10, FontWeight.w500),
                           ),
-
-                          const SizedBox(height: 15),
-                          // Row(
-                          //   children: [
-                          //     Text("Redemption amount",
-                          //         style: textStyle(
-                          //             theme.isDarkMode
-                          //                 ? colors.colorWhite
-                          //                 : colors.colorBlack,
-                          //             14,
-                          //             FontWeight.w600)),
-                          //     const SizedBox(width: 8),
-                          //   ],
-                          // ),
-                          // const SizedBox(height: 15),
-                          // TextFormField(
-                          //   readOnly: true,
-                          //   textAlign: TextAlign.start,
-                          //   style: textStyle(
-                          //       theme.isDarkMode
-                          //           ? colors.colorWhite
-                          //           : colors.colorBlack,
-                          //       14,
-                          //       FontWeight.w600),
-                          //   keyboardType: TextInputType.number,
-                          //   controller: mf.redemptionAmount,
-                          //   decoration: InputDecoration(
-                          //     prefixIcon: InkWell(
-                          //       child: SvgPicture.asset(assets.rupee,
-                          //           //             theme.isDarkMode
-                          //           //                 ? assets.darkCMinus
-                          //           //                 : assets.minusIcon,
-                          //           fit: BoxFit.scaleDown),
-                          //     ),
-                          //     fillColor: theme.isDarkMode
-                          //         ? colors.darkGrey
-                          //         : const Color(0xffF1F3F8),
-                          //     filled: true,
-                          //     enabledBorder: OutlineInputBorder(
-                          //         borderSide: BorderSide.none,
-                          //         borderRadius: BorderRadius.circular(30)),
-                          //     disabledBorder: InputBorder.none,
-                          //     focusedBorder: OutlineInputBorder(
-                          //         borderSide: BorderSide.none,
-                          //         borderRadius: BorderRadius.circular(30)),
-                          //     contentPadding: const EdgeInsets.all(13),
-                          //     border: OutlineInputBorder(
-                          //         borderSide: BorderSide.none,
-                          //         borderRadius: BorderRadius.circular(30)),
-                          //   ),
-                          // ),
-                          // Row(
-                          //   children: [
-                          //     Padding(
-                          //       padding:
-                          //           const EdgeInsets.only(left: 20.0, top: 5.0),
-                          //       child: Text(
-                          //           "Max. redemption amount ${double.parse("${mf.holssinglelist![0]?.sCRIPVALUE}")}",
-                          //           style: textStyle(
-                          //               theme.isDarkMode
-                          //                   ? colors.colorWhite
-                          //                   : colors.colorBlack,
-                          //               11,
-                          //               FontWeight.w600)),
-                          //     ),
-                          //     const SizedBox(width: 8),
-                          //   ],
-                          // ),
-                          if (mf.redemptionOrderError != "") ...[
-                            const SizedBox(height: 8),
-                            Text("${mf.redemptionOrderError}",
-                                textAlign: TextAlign.start,
+                          const SizedBox(height: 6)
+                        ],
+                        Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 20.0, top: 5.0),
+                              child: Text(
+                                "Min. redemption units ${mf.holssinglelist?.isNotEmpty == true ? (mf.holssinglelist![0]?.mINIMUMREDEMPTIONQTY ?? 'N/A') : 'N/A'}",
                                 style: textStyle(
-                                    colors.kColorRedText, 12, FontWeight.w500)),
-                            const SizedBox(height: 6)
-                          ]
-                        ]),
+                                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                  11,
+                                  FontWeight.w600
+                                )
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        if (mf.redemptionOrderError != null && mf.redemptionOrderError!.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            mf.redemptionOrderError!,
+                            textAlign: TextAlign.start,
+                            style: textStyle(colors.kColorRedText, 12, FontWeight.w500)
+                          ),
+                          const SizedBox(height: 6)
+                        ]
+                      ]
+                    ),
                   ),
                 ],
               ),
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(vertical: 16),
-              //   child: Column(
-              //     children: [
-              //       ListTile(
-              //         trailing: ElevatedButton(
-              //           onPressed: () {
-              //             //                   if(mf.checkRedemption(mf.redemptionQty.text,portfolio.mfQuotes!.minRdQty,widget.mfHoldingData.holdqty!,widget.mfHoldingData.exchTsym![0].nav)){
-              //             //                     mf.mfRedemption(context,widget.mfHoldingData.exchTsym![0].tsym!,mf.redemptionQty.text);
-              //             //                   }
-              //             //                   else{
-              //             //                     ScaffoldMessenger.of(context).showSnackBar(
-              //             // successMessage(context, "Please check the data you have provided"));
-              //             //                   }
-              //           },
-              //           style: ElevatedButton.styleFrom(
-              //             minimumSize: const Size(145, 37),
-              //             backgroundColor:
-              //                 // theme.isDarkMode
-              //                 // ?
-              //                 colors.colorBlack,
-              //             // : colors.colorbluegrey,
-              //             shape: RoundedRectangleBorder(
-              //               borderRadius: BorderRadius.circular(32),
-              //             ),
-              //           ),
-              //           child: Text("Redeem",
-              //               style: textStyle(
-              //                   const Color.fromARGB(255, 255, 255, 255),
-              //                   14,
-              //                   FontWeight.w500)),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // First Column: Label + Value
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "${(double.parse(mf.redemptionQty.text) * double.parse(mf.holssinglelist![0]?.nav ?? '0.0')).toStringAsFixed(2)}", // Replace with dynamic value if needed
+                          redemptionValue.toStringAsFixed(2),
                           style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
+                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                             16,
                             FontWeight.bold,
                           ),
@@ -359,32 +243,43 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                         Text(
                           " Redemption Value",
                           style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
+                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                             14,
                             FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
-
                     ElevatedButton(
                       onPressed: () {
-                        if (mf.checkRedemption(
-                            mf.redemptionQty.text,
-                            mf.holssinglelist![0]?.mINIMUMREDEMPTIONQTY,
-                            mf.holssinglelist![0]?.nET,
-                            mf.holssinglelist![0]?.nav)) {
-                          mf.mfRedemption(
-                              context,
-                              mf.holssinglelist![0]?.sCHEMECODE ??
-                                  'DefaultScheme',
-                              mf.redemptionQty.text);
-                        } else {
+                        try {
+                          final minRedemptionQty = mf.holssinglelist?.isNotEmpty == true 
+                              ? mf.holssinglelist![0]?.mINIMUMREDEMPTIONQTY 
+                              : null;
+                              
+                          final netUnits = mf.holssinglelist?.isNotEmpty == true 
+                              ? mf.holssinglelist![0]?.nET 
+                              : null;
+                              
+                          final navStr = mf.holssinglelist?.isNotEmpty == true 
+                              ? mf.holssinglelist![0]?.nav 
+                              : null;
+                          
+                          if (mf.checkRedemption(mf.redemptionQty.text, minRedemptionQty, netUnits, navStr)) {
+                            final schemeCode = mf.holssinglelist?.isNotEmpty == true 
+                                ? (mf.holssinglelist![0]?.sCHEMECODE ?? 'DefaultScheme')
+                                : 'DefaultScheme';
+                                
+                            mf.mfRedemption(context, schemeCode, mf.redemptionQty.text);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              successMessage(context, "Please check the data you have provided")
+                            );
+                          }
+                        } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                              successMessage(context,
-                                  "Please check the data you have provided"));
+                            successMessage(context, "Error processing redemption: ${e.toString()}")
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -395,25 +290,25 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                         ),
                       ),
                       child: mf.loading == true
-                          ? const SizedBox(
-                              height: 15,
-                              width: 15,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.0,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color.fromARGB(99, 48, 48, 48)),
-                                backgroundColor:
-                                    Color.fromARGB(255, 255, 255, 255),
+                        ? const SizedBox(
+                            height: 15,
+                            width: 15,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.0,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color.fromARGB(99, 48, 48, 48)
                               ),
-                            )
-                          : Text(
-                              "Redeem",
-                              style: textStyle(
-                                const Color.fromARGB(255, 255, 255, 255),
-                                14,
-                                FontWeight.w500,
-                              ),
+                              backgroundColor: Color.fromARGB(255, 255, 255, 255),
                             ),
+                          )
+                        : Text(
+                            "Redeem",
+                            style: textStyle(
+                              const Color.fromARGB(255, 255, 255, 255),
+                              14,
+                              FontWeight.w500,
+                            ),
+                          ),
                     ),
                   ],
                 ),
@@ -421,7 +316,6 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
             ],
           ),
         ),
-        // }
       );
     });
   }

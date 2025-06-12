@@ -21,16 +21,18 @@ class MFCategoryListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
-    final fund = ref.watch(fundProvider);
     final mfData = ref.watch(mfProvider);
 
     // Sort the list based on s3Year in descending order
-    final sortedList = mfData.catnewlist?.toList()
-      ?..sort((a, b) {
+    final sortedList = mfData.catnewlist?.toList();
+    
+    if (sortedList != null) {
+      sortedList.sort((a, b) {
         final aValue = double.tryParse(a.s3Year ?? '0.00') ?? 0.00;
         final bValue = double.tryParse(b.s3Year ?? '0.00') ?? 0.00;
         return bValue.compareTo(aValue); // Sort in descending order
       });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -58,186 +60,22 @@ class MFCategoryListScreen extends ConsumerWidget {
         ),
       ),
       body: TransparentLoaderScreen(
-        isLoading: mfData.bestmfloader!,
+        isLoading: mfData.bestmfloader ?? false,
         child: mfData.catnewlist?.isEmpty ?? true
             ? const Center(child: NoDataFound())
             : Column(
                 children: [
-                  ListView.separated(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.all(0),
-                    itemBuilder: (BuildContext context, int index) {
-                      return title ==
-                              mfData.mFCategoryTypesStatic[index]['title']
-                          ? buildCategoryCard(
-                              chips: mfData.mFCategoryTypesStatic[index]['sub'],
-                              ref: ref,
-                              themee: theme,
-                              title: title,
-                            )
-                          : const SizedBox.shrink();
-                    },
-                    separatorBuilder: (BuildContext context, int index) {
-                      return const SizedBox(height: 0);
-                    },
-                    itemCount: mfData.mFCategoryTypesStatic.length,
-                  ),
+                  _buildCategoryChips(context, ref, theme, title, mfData),
                   Expanded(
                     child: ListView.builder(
                       shrinkWrap: true,
                       padding: const EdgeInsets.all(8),
                       itemCount: sortedList?.length ?? 0,
                       itemBuilder: (BuildContext context, int index) {
-                        final item = sortedList![index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 0),
-                          child: InkWell(
-                            onLongPress: () async {
-                              await mfData.fetchMFWatchlist(
-                                item.iSIN!,
-                                item.isAdd! ? "delete" : "add",
-                                context,
-                                false,
-                                "watch",
-                              );
-                            },
-                            onTap: () async {
-                              mfData.loaderfun();
-                              await mfData.fetchFactSheet(item.iSIN!);
-                              if (mfData.factSheetDataModel?.stat != "Not Ok") {
-                                Map<String, dynamic> jsonData = item.toJson();
-                                MutualFundList bInstance =
-                                    MutualFundList.fromJson(jsonData);
-                                Navigator.pushNamed(
-                                  context,
-                                  Routes.mfStockDetail,
-                                  arguments: bInstance,
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    successMessage(
-                                        context, "No Single Page Data"));
-                                final jsondata =
-                                    MutualFundList.fromJson(item.toJson());
-
-                                Navigator.pushNamed(
-                                    context, Routes.mforderScreen,
-                                    arguments: jsondata);
-                                mfData.orderchangetitle("One-time");
-
-                                mfData.chngOrderType("One-time");
-                              }
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.symmetric(
-                                  vertical: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.darkGrey
-                                        : const Color(0xffEEF0F2),
-                                    width: 0,
-                                  ),
-                                ),
-                              ),
-                              padding: const EdgeInsets.all(8),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 16),
-                                        child: CircleAvatar(
-                                          backgroundImage: NetworkImage(
-                                            "https://v3.mynt.in/mf/static/images/mf/${item.aMCCode}.png",
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                              Row(
-  children: [
-    SizedBox(
-      width: MediaQuery.of(context).size.width * 0.6,
-      child: Text(
-        "${item.schemeGroupName}",
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: textStyles.scripNameTxtStyle.copyWith(
-          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-        ),
-      ),
-    ),
-  ],
-),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.only(top: 8),
-                                              child: SizedBox(
-                                                height: 18,
-                                                child: ListView(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              left: 5),
-                                                      child: CustomExchBadge(
-                                                          exch: "${item.type}"),
-                                                    ),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              left: 5),
-                                                      child: CustomExchBadge(
-                                                        exch: "${item.subType}",
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Text(
-                                        "${item.s3Year!.isEmpty ? "0.00" : item.s3Year!}%",
-                                        style: textStyle(
-                                          double.parse(item.s3Year!.isEmpty
-                                                      ? "0.00"
-                                                      : item.s3Year!) >=
-                                                  0
-                                              ? Colors.green
-                                              : Colors.red,
-                                          14,
-                                          FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 0),
-                                    child: Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider,
-                                      thickness: 1.0,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
+                        final item = sortedList?[index];
+                        if (item == null) return const SizedBox.shrink();
+                        
+                        return _buildListItem(context, item, theme, mfData);
                       },
                     ),
                   ),
@@ -245,6 +83,205 @@ class MFCategoryListScreen extends ConsumerWidget {
               ),
       ),
     );
+  }
+
+  Widget _buildCategoryChips(BuildContext context, WidgetRef ref, ThemesProvider theme, String title, dynamic mfData) {
+    return ListView.separated(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(0),
+      itemBuilder: (BuildContext context, int index) {
+        final categoryData = mfData.mFCategoryTypesStatic;
+        if (index >= categoryData.length) return const SizedBox.shrink();
+        
+        return title == categoryData[index]['title']
+            ? buildCategoryCard(
+                chips: categoryData[index]['sub'] ?? [],
+                ref: ref,
+                themee: theme,
+                title: title,
+              )
+            : const SizedBox.shrink();
+      },
+      separatorBuilder: (BuildContext context, int index) {
+        return const SizedBox(height: 0);
+      },
+      itemCount: mfData.mFCategoryTypesStatic.length,
+    );
+  }
+
+  Widget _buildListItem(BuildContext context, dynamic item, ThemesProvider theme, dynamic mfData) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 0),
+      child: InkWell(
+        onLongPress: () async {
+          try {
+            if (item.iSIN != null) {
+              await mfData.fetchMFWatchlist(
+                item.iSIN,
+                item.isAdd ?? false ? "delete" : "add",
+                context,
+                false,
+                "watch",
+              );
+            }
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, "Error updating watchlist: ${e.toString()}")
+            );
+          }
+        },
+        onTap: () async {
+          try {
+            mfData.loaderfun();
+            if (item.iSIN != null) {
+              await mfData.fetchFactSheet(item.iSIN);
+              
+              if (mfData.factSheetDataModel?.stat != "Not Ok") {
+                Map<String, dynamic> jsonData = item.toJson();
+                MutualFundList bInstance = MutualFundList.fromJson(jsonData);
+                Navigator.pushNamed(
+                  context,
+                  Routes.mfStockDetail,
+                  arguments: bInstance,
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  successMessage(context, "No Single Page Data")
+                );
+                final jsondata = MutualFundList.fromJson(item.toJson());
+                Navigator.pushNamed(context, Routes.mforderScreen, arguments: jsondata);
+                mfData.orderchangetitle("One-time");
+                mfData.chngOrderType("One-time");
+              }
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                successMessage(context, "Missing fund information")
+              );
+            }
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, "Error loading fund details: ${e.toString()}")
+            );
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.symmetric(
+              vertical: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.darkGrey
+                    : const Color(0xffEEF0F2),
+                width: 0,
+              ),
+            ),
+          ),
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: CircleAvatar(
+                      backgroundImage: NetworkImage(
+                        "https://v3.mynt.in/mf/static/images/mf/${item.aMCCode ?? 'default'}.png",
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.6,
+                              child: Text(
+                                item.schemeGroupName ?? "Unknown Scheme",
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: textStyles.scripNameTxtStyle.copyWith(
+                                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: SizedBox(
+                            height: 18,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 5),
+                                  child: CustomExchBadge(
+                                    exch: item.type ?? "Unknown"
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 5),
+                                  child: CustomExchBadge(
+                                    exch: item.subType ?? "Unknown",
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    _formatReturns(item.s3Year),
+                    style: textStyle(
+                      _getReturnColor(item.s3Year),
+                      14,
+                      FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 0),
+                child: Divider(
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider,
+                  thickness: 1.0,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatReturns(String? returns) {
+    if (returns == null || returns.isEmpty) {
+      return "0.00%";
+    }
+    return "$returns%";
+  }
+
+  Color _getReturnColor(String? returns) {
+    if (returns == null || returns.isEmpty) {
+      return Colors.grey;
+    }
+    
+    try {
+      final value = double.parse(returns);
+      return value >= 0 ? Colors.green : Colors.red;
+    } catch (e) {
+      // If parsing fails, return a neutral color
+      return Colors.grey;
+    }
   }
 
   Widget buildCategoryCard({
@@ -276,18 +313,20 @@ class MFCategoryListScreen extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 itemCount: chips.length,
                 itemBuilder: (context, index) {
+                  final chipText = chips[index]?.toString() ?? "";
+                  
                   return Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: GestureDetector(
                       onTap: () async {
-                        mfData.changetitle(chips[index]);
-                        mfData.fetchcatdatanew(title, chips[index]);
+                        mfData.changetitle(chipText);
+                        mfData.fetchcatdatanew(title, chipText);
                       },
                       child: Chip(
                         label: Text(
-                          chips[index],
+                          chipText,
                           style: textStyle(
-                            chips[index] == mfData.selctedchip
+                            chipText == mfData.selctedchip
                                 ? colors.colorWhite
                                 :themee.isDarkMode ? const Color.fromARGB(255, 255, 255, 255) :colors.colorBlack,
                             12,
@@ -298,13 +337,13 @@ class MFCategoryListScreen extends ConsumerWidget {
                         shape: const StadiumBorder(),
                         labelPadding: const EdgeInsets.symmetric(
                             horizontal: 4, vertical: -2),
-                        backgroundColor: chips[index] == mfData.selctedchip
+                        backgroundColor: chipText == mfData.selctedchip
                             ? (themee.isDarkMode ? const Color(0xFF2A2A2A) : colors.colorBlack)
-    : (themee.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : colors.colorWhite), 
+                            : (themee.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : colors.colorWhite), 
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12.0, vertical: 4.0),
                         side: BorderSide(
-                          color:themee.isDarkMode ? Color(0xFF2A2A2A)  : Color(0xFF666666),
+                          color:themee.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFF666666),
                           width: 1.0,
                         ),
                       ),

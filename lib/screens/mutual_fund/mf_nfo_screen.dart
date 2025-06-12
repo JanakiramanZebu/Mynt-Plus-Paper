@@ -2,14 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/loader_ui.dart';
 
 class MFNFOScreen extends ConsumerWidget {
@@ -32,7 +30,10 @@ class MFNFOScreen extends ConsumerWidget {
           leading: Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: IconButton(
-              icon: Icon(Icons.arrow_back_ios, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+              icon: Icon(
+                Icons.arrow_back_ios, 
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
+              ),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -48,128 +49,162 @@ class MFNFOScreen extends ConsumerWidget {
       ),
       body: TransparentLoaderScreen(
         isLoading: mf.investloader,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                itemCount: mf.investloader == false ? mf.mfNFOList!.nfoList!.length : 0,
-                itemBuilder: (BuildContext context, int index) {
-                  return Column(
-                    children: [
-                      InkWell(
-                        onTap: () async {
-                          mf.chngMandate("Lumpsum");
-                          await mf.fetchUpiDetail();
-                          await mf.fetchBankDetail();
-                        
-                          if (mf.mfNFOList!.nfoList![index].sIPFLAG == "Y") {
-                            await mf.fetchMFSipData(
-                              mf.mfNFOList!.nfoList![index].iSIN!,
-                              mf.mfNFOList!.nfoList![index].schemeCode!,
-                            );
-                            await mf.fetchMFMandateDetail();
-                          }
-                            mf.orderpagetite("NFO");
-                          Navigator.pushNamed(
-                            context,
-                            Routes.mforderScreen,
-                            arguments: mf.mfNFOList!.nfoList![index],
-                          );
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.symmetric(
-                              vertical: BorderSide(
-                                color: theme.isDarkMode ? colors.darkGrey : const Color(0xffEEF0F2),
-                                width: 0,
-                              ),
-                            ),
-                          ),
-                          padding: const EdgeInsets.all(8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  CircleAvatar(
-                                    backgroundImage: NetworkImage(
-                                      "https://v3.mynt.in/mf/static/images/mf/${mf.mfNFOList!.nfoList![index].aMCCode}.png",
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                             Row(
-  children: [
-    SizedBox(
-      width: MediaQuery.of(context).size.width * 0.65, // 75% of screen width
-      child: Text(
-        "${mf.mfNFOList!.nfoList![index].fSchemeName ?? ""}",
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: textStyles.scripNameTxtStyle.copyWith(
-          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-        ),
+        child: _buildContent(context, mf, theme),
       ),
-    ),
-  ],
-),
-
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              "Open ${mf.mfNFOList!.nfoList![index].startDate!.replaceAll(RegExp(r'\s+'), ' ')}",
-                                              style: textStyle(
-                                                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                12,
-                                                FontWeight.w400,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(right: 8.0),
-                                              child: Text(
-                                                "Closing ${mf.mfNFOList!.nfoList![index].endDate!}",
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w400,
-                                                  color:theme.isDarkMode ? colors.colorWhite : Colors.black,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Divider(
-                                color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-                                thickness: 1.0,
-                              ),
-                            ],
+    );
+  }
+  
+  Widget _buildContent(BuildContext context, MFProvider mf, ThemesProvider theme) {
+    final hasData = mf.investloader == false && 
+                    mf.mfNFOList != null && 
+                    mf.mfNFOList!.nfoList != null && 
+                    mf.mfNFOList!.nfoList!.isNotEmpty;
+                    
+    if (!hasData) {
+      return const Center(child: Text("No New Fund Offers available"));
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            itemCount: mf.mfNFOList!.nfoList!.length,
+            itemBuilder: (BuildContext context, int index) {
+              final nfoItem = mf.mfNFOList!.nfoList![index];
+              
+              return Column(
+                children: [
+                  InkWell(
+                    onTap: () async {
+                      try {
+                        mf.chngMandate("Lumpsum");
+                        await mf.fetchUpiDetail();
+                        await mf.fetchBankDetail();
+                      
+                        if (nfoItem.sIPFLAG == "Y") {
+                          await mf.fetchMFSipData(
+                            nfoItem.iSIN ?? "",
+                            nfoItem.schemeCode ?? "",
+                          );
+                          await mf.fetchMFMandateDetail();
+                        }
+                        mf.orderpagetite("NFO");
+                        
+                        Navigator.pushNamed(
+                          context,
+                          Routes.mforderScreen,
+                          arguments: nfoItem,
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Error: ${e.toString()}"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.symmetric(
+                          vertical: BorderSide(
+                            color: theme.isDarkMode ? colors.darkGrey : const Color(0xffEEF0F2),
+                            width: 0,
                           ),
                         ),
                       ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                  "https://v3.mynt.in/mf/static/images/mf/${nfoItem.aMCCode ?? 'default'}.png",
+                                ),
+                                onBackgroundImageError: (_, __) {},
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        SizedBox(
+                                          width: MediaQuery.of(context).size.width * 0.65,
+                                          child: Text(
+                                            nfoItem.fSchemeName ?? "Unknown Fund",
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: textStyles.scripNameTxtStyle.copyWith(
+                                              color: theme.isDarkMode 
+                                                ? colors.colorWhite 
+                                                : colors.colorBlack,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Open ${_formatDate(nfoItem.startDate)}",
+                                          style: textStyle(
+                                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                            12,
+                                            FontWeight.w400,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(right: 8.0),
+                                          child: Text(
+                                            "Closing ${_formatDate(nfoItem.endDate)}",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
+                                              color: theme.isDarkMode ? colors.colorWhite : Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Divider(
+                            color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                            thickness: 1.0,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
+  }
+  
+  // Helper method to format date strings
+  String _formatDate(String? date) {
+    if (date == null || date.isEmpty) {
+      return "N/A";
+    }
+    return date.replaceAll(RegExp(r'\s+'), ' ');
   }
 }

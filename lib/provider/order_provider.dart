@@ -399,11 +399,58 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(websocketProvider).establishConnection(
             channelInput: input, task: "t", context: context);
       }
+      
+      // Update basket with latest values from socket data
+      updateBasketFromSocketData();
     }
 
     await fetchBasketMargin();
 
     Navigator.pushNamed(context, Routes.bsktScripList, arguments: val);
+    notifyListeners();
+  }
+
+  // Method to update basket values from existing socket data
+  void updateBasketFromSocketData() {
+    try {
+      final socketDatas = ref.read(websocketProvider).socketDatas;
+      if (socketDatas.isEmpty || _bsktScripList.isEmpty) return;
+      
+      bool updated = false;
+      
+      // Update basket script list with current socket values
+      for (var script in _bsktScripList) {
+        final token = script['token']?.toString();
+        if (token != null && socketDatas.containsKey(token)) {
+          final lp = socketDatas[token]['lp']?.toString();
+          final pc = socketDatas[token]['pc']?.toString();
+          
+          if (lp != null && lp != "null") {
+            if (script['lp']?.toString() != lp) {
+              script['lp'] = lp;
+              updated = true;
+            }
+          }
+          
+          if (pc != null && pc != "null") {
+            if (script['pc']?.toString() != pc) {
+              script['pc'] = pc;
+              updated = true;
+            }
+          }
+        }
+      }
+      
+      if (updated) {
+        notifyBasketUpdates();
+      }
+    } catch (e) {
+      print("Error updating basket from socket data: $e");
+    }
+  }
+  
+  // Notify listeners about basket updates without creating a full rebuild cycle
+  void notifyBasketUpdates() {
     notifyListeners();
   }
 
@@ -1820,20 +1867,6 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Place Slice  Order", "Error": "$e"});
       notifyListeners();
-    }
-  }
-
-  // Update basket UI with WebSocket data
-  void notifyBasketUpdates() {
-    try {
-      // Safely notify listeners to refresh the UI with updated LTP values
-      notifyListeners();
-    } catch (e) {
-      print("Error in notifyBasketUpdates: $e");
-      // Use Future.microtask to schedule notification for the next event loop
-      Future.microtask(() {
-        notifyListeners();
-      });
     }
   }
 }

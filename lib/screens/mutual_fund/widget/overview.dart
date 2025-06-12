@@ -15,407 +15,247 @@ class MFOverview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    late TooltipBehavior _tooltipBehavior;
     final theme = ref.watch(themeProvider);
-    final mfData = ref.watch(mfProvider);
-    // factSheetDataModel!.data!;
-    final navGraph = ref.watch(mfProvider).navGraph;
     final mfProvide = ref.watch(mfProvider);
-    _tooltipBehavior = TooltipBehavior(
-      enable: true,
-      opacity: 0,
-      activationMode: ActivationMode.none,
-      shouldAlwaysShow: true,
-      builder: (data, point, series, pointIndex, seriesIndex) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10.0),
-          child: Container(
-            height: 30,
-            width: 70,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: Center(
-              child: Text(
-                point.x,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-    var interactiveTooltip = InteractiveTooltip(
+    final navGraph = mfProvide.navGraph;
+    final factSheetData = mfProvide.factSheetDataModel?.data;
+    
+    // Early return if essential data is missing
+    if (factSheetData == null) {
+      return const SizedBox();
+    }
+    
+    final isDarkMode = theme.isDarkMode;
+    
+    // Create tooltip behavior for chart
+    final interactiveTooltip = InteractiveTooltip(
       enable: true,
       format: 'Nav : point.y',
       borderColor: colors.colorBlue,
-      textStyle: TextStyle(color: Colors.white), 
+      textStyle: const TextStyle(color: Colors.white), 
     );
+    
+    // Safely create data source
+    final List<NavGraphData> dataSource = mfProvide.singleloader == true ? [] : (navGraph?.data?.toList() ?? []);
+    
     return Container(
-      color: theme.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : const Color.fromARGB(255, 255, 255, 255), // Background color
-      child:
-    
-     Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          // const SizedBox(height: 5),
-
-
-Container(
-  
-
-  margin: const EdgeInsets.only(top: 14, bottom: 12),
-  height: 320,
-     
-  width: MediaQuery.of(context).size.width,
-  decoration: BoxDecoration(
-    color: theme.isDarkMode ? colors.colorBlack: Colors.white, 
-    border: Border.all(
-      color: theme.isDarkMode ? colors.colorBlack: Colors.transparent, 
-    ),
-  ),
-  child: SfCartesianChart(
- 
-  margin: const EdgeInsets.symmetric(horizontal: 0),
-  backgroundColor:  theme.isDarkMode ? colors.colorBlack: const Color.fromARGB(255, 255, 255, 255), 
-  borderWidth: 0, 
-   plotAreaBorderWidth: 0,
-  primaryXAxis: CategoryAxis(
-    isVisible: false,
-    labelStyle: textStyle(
-      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-      10,
-      FontWeight.w500,
-    ),
-    majorGridLines: const MajorGridLines(width: 0),
-    axisLine: const AxisLine(width: 0), 
-  ),
-  primaryYAxis: NumericAxis(
-    isVisible: false,
-
-    majorGridLines: const MajorGridLines(width: 0),
-  ),
-  // tooltipBehavior: TooltipBehavior(
-  //   enable: true,
-  //   color: const Color.fromARGB(255, 17, 16, 16),
-  //   header: '', 
-  //   format: 'NAV: ₹point.y | point.x', 
-  // ),
-    trackballBehavior: TrackballBehavior(
-    enable: true,
-    activationMode: ActivationMode.singleTap, 
-    tooltipSettings: interactiveTooltip,
-    tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
-    // tooltipAlignment: ChartAlignment.near,
-  ),
-
-  series: <CartesianSeries<NavGraphData, String>>[
-    AreaSeries<NavGraphData, String>(
-      name: "Historical NAV",
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-        theme.isDarkMode ? colors.colorBlack:   Colors.white.withOpacity(1),
-         theme.isDarkMode ? colors.colorBlack:  Colors.white.withOpacity(1),
-         theme.isDarkMode ? colors.colorBlack:  Colors.white.withOpacity(1),
-        ],
-        stops: const [0.0, 0.5, 1.0],
-      ),
-      isVisibleInLegend: false, 
-      // isVisible: true,
-      enableTooltip: true,
-      borderColor: colors.colorBlue,
-      borderWidth: 2,
-    dataSource: mfProvide.singleloader == false ? navGraph?.data ?? [] : [],
-      xValueMapper: (NavGraphData data, _) =>
-          data.navDate!.substring(0, data.navDate!.length - 14),
-      yValueMapper: (NavGraphData data, _) => data.nav,
-    
-
-    ),
-  ],
-)
-
-),
-
-
-
-  //         Text("${mfData.name}",
-  //             style: textStyle(
-  //                 theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-  //                 17,
-  //                 FontWeight.w600)),
-  //         const SizedBox(height: 8),
-  //         ReadMoreText("${mfData.overview1}",
-  //              style: textStyle(const Color(0xff666666), 14, FontWeight.w500).copyWith(
-  //   height: 1.5, 
-  // ),
-  //             textAlign: TextAlign.start,
-  //             trimLines: 3,
-  //             moreStyle: theme.isDarkMode
-  //                 ? textStyles.darkmorestyle
-  //                 : textStyles.morestyle,
-  //             lessStyle: theme.isDarkMode
-  //                 ? textStyles.darkmorestyle
-  //                 : textStyles.morestyle,
-  //             colorClickableText: const Color(0xff0037B7),
-  //             trimMode: TrimMode.Line,
-  //             trimCollapsedText: 'Read more',
-  //             trimExpandedText: ' Read less'),
-          // const SizedBox(height: 22),
-          // Text("Volatility Measures",
-          //     style: textStyle(
-          //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          //         17,
-          //         FontWeight.w600)),
-          // const SizedBox(height: 15),
-          // rowOfInfoData("ALPHA", "${mfData.alpha}", "SHARP RATIO",
-     
-
-          //     "${mfData.sharpRatio}", "MEAN", "${mfData.mean}", theme,),
-          // const SizedBox(height: 14),
-          // rowOfInfoData("BETA", "${mfData.beta}", "STD. DEVIATION",
-          //     "${mfData.standardDev}", "YTM", "${mfData.ytm}", theme),
-          // const SizedBox(height: 14),
-          // rowOfInfoData(
-          //     "MODIFIED DURATION",
-          //     "${mfData.modifiedDuration}",
-          //     "AVG. MATURITY",
-          //     "${mfData.avgMat}",
-          //     "FACE VALUE",
-          //     "${mfStockData.faceValue}",
-          //     theme),
-          const SizedBox(height: 22),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Trailing Returns (%)",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      17,
-                      FontWeight.w600)),
-       
-
-              // Row(
-              //   children: [
-              //     Icon(
-              //       Icons.circle,
-              //       size: 16,
-              //       color: colors.ltpgreen,
-              //     ),
-              //     Text(" Benchmark",
-              //         style: textStyle(
-              //             theme.isDarkMode
-              //                 ? colors.colorWhite
-              //                 : colors.colorBlack,
-              //             13,
-              //             FontWeight.w500)),
-              //   ],
-              // ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-  children: [
-   
-    const SizedBox(width: 0),
-    Icon(
-      Icons.circle,
-      size: 16,
-      color: colors.ltpgreen,
-    ),
-    Text(
-      " Benchmark",
-      style: textStyle(
-        theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-        13,
-        FontWeight.w500,
-      ),
-    ),
-     Expanded(
-      child: Text(
-        "  (${mfData.factSheetDataModel?.data?.benchmark})",
-        style: textStyle(
-          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          13,
-          FontWeight.w500,
-        ),
-        overflow: TextOverflow.ellipsis, // Add ellipsis for long text
-        maxLines: 1, // Limit to one line
-      ),
-    ),
-  ],
-),
-
-          const SizedBox(height: 25),
-
-          // Text("${mfData.benchmark}"),
-          //  Text(" Benchmark",
-          //             style: textStyle(
-          //                 theme.isDarkMode
-          //                     ? colors.colorWhite
-          //                     : colors.colorBlack,
-          //                 13,
-          //                 FontWeight.w500)),
-          GridView.count(
-            padding: EdgeInsets.zero,
-            crossAxisCount: 3,
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 14,
-            childAspectRatio: 1.3,
-            children:
-                List.generate(mfProvide.mfReturnsGridview.length, (index) {
-              return Container(
-                decoration: BoxDecoration(
-                   color: theme.isDarkMode 
-    ? Color(0xFF2A2A2A) 
-    : Color(mfProvide.mfReturnsGridview[index]['value']
-            .toString()
-            .startsWith("-")
-        ? 0xffFFFCFB
-        : 0xffFBFFFA),
-
-                    borderRadius: BorderRadius.circular(10),
-                    border:
-                        Border.all(color: const Color(0xff999999), width: .2)),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 8),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                                "${mfProvide.mfReturnsGridview[index]['value']}%",
-                                style: textStyle(
-                                    mfProvide.mfReturnsGridview[index]['value']
-                                            .toString()
-                                            .startsWith("-")
-                                        ? colors.darkred
-                                        : colors.ltpgreen,
-                                    16,
-                                    FontWeight.w600)),
-                            const SizedBox(height: 3),
-                            Text(
-                                "${mfProvide.mfReturnsGridview[index]['durName']}",
-                                style: textStyle(theme.isDarkMode ? colors.colorWhite:const Color(0xff666666), 12,
-                                    FontWeight.w500)),
-                            const SizedBox(height: 3),
-
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      left: 0,
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: MediaQuery.of(context).size.width,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                            color: Color(mfProvide.mfReturnsGridview[index]
-                                        ['return']
-                                    .toString()
-                                    .startsWith("-")
-                                ? 0xffFF1717
-                                : 0xff43A833),
-                            borderRadius: const BorderRadius.vertical(
-                                bottom: Radius.circular(10))),
-                        child: Text(
-                            "${mfProvide.mfReturnsGridview[index]['return']}%",
-                            style: textStyle(
-                                colors.colorWhite, 14, FontWeight.w500)),
-                      ),
-                    ),
-                  ],
+      color: isDarkMode ? Colors.black : Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            // NAV Chart
+            Container(
+              margin: const EdgeInsets.only(top: 14, bottom: 12),
+              height: 320,
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                color: isDarkMode ? colors.colorBlack : Colors.white, 
+                border: Border.all(
+                  color: isDarkMode ? colors.colorBlack : Colors.transparent, 
                 ),
-              );
-            }),
-          ),
-          const SizedBox(height: 25),
-          // Text("Historical NAV",
-          //     style: textStyle(
-          //         theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          //         17,
-          //         FontWeight.w600)),
-          // const SizedBox(height: 15),
+              ),
+              child: SfCartesianChart(
+                margin: const EdgeInsets.symmetric(horizontal: 0),
+                backgroundColor: isDarkMode ? colors.colorBlack : Colors.white, 
+                borderWidth: 0, 
+                plotAreaBorderWidth: 0,
+                primaryXAxis: CategoryAxis(
+                  isVisible: false,
+                  labelStyle: textStyle(
+                    isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    10,
+                    FontWeight.w500,
+                  ),
+                  majorGridLines: const MajorGridLines(width: 0),
+                  axisLine: const AxisLine(width: 0), 
+                ),
+                primaryYAxis: NumericAxis(
+                  isVisible: false,
+                  majorGridLines: const MajorGridLines(width: 0),
+                ),
+                trackballBehavior: TrackballBehavior(
+                  enable: true,
+                  activationMode: ActivationMode.singleTap, 
+                  tooltipSettings: interactiveTooltip,
+                  tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
+                ),
+                series: <CartesianSeries<NavGraphData, String>>[
+                  AreaSeries<NavGraphData, String>(
+                    name: "Historical NAV",
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        isDarkMode ? colors.colorBlack : Colors.white.withOpacity(1),
+                        isDarkMode ? colors.colorBlack : Colors.white.withOpacity(1),
+                        isDarkMode ? colors.colorBlack : Colors.white.withOpacity(1),
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                    isVisibleInLegend: false, 
+                    enableTooltip: true,
+                    borderColor: colors.colorBlue,
+                    borderWidth: 2,
+                    dataSource: dataSource,
+                    xValueMapper: (NavGraphData data, _) {
+                      if (data.navDate == null) return "";
+                      return data.navDate!.length > 14 
+                          ? data.navDate!.substring(0, data.navDate!.length - 14)
+                          : data.navDate!;
+                    },
+                    yValueMapper: (NavGraphData data, _) => data.nav,
+                  ),
+                ],
+              ),
+            ),
 
-          // Container(
-          //     margin: const EdgeInsets.only(top: 14, bottom: 12),
-          //     height: 320,
-          //     width: MediaQuery.of(context).size.width,
-          //     child: SfCartesianChart(
-          //         margin: const EdgeInsets.symmetric(horizontal: 0),
-          //         primaryXAxis: CategoryAxis(
-          //           labelStyle: textStyle(
-          //               theme.isDarkMode
-          //                   ? colors.colorWhite
-          //                   : colors.colorBlack,
-          //               10,
-          //               FontWeight.w500),
-          //           majorGridLines: const MajorGridLines(width: 0),
-          //         ),
-          //         primaryYAxis: NumericAxis(
-          //             labelStyle: textStyle(
-          //                 theme.isDarkMode
-          //                     ? colors.colorWhite
-          //                     : colors.colorBlack,
-          //                 12,
-          //                 FontWeight.w500),
-          //             majorGridLines: const MajorGridLines(width: 0)),
-          //         tooltipBehavior:
-          //             TooltipBehavior(enable: true, color: Colors.transparent),
-          //         series: <CartesianSeries<NavGraphData, String>>[
-          //           AreaSeries(
-          //             name: "Historical NAV",
-          //             gradient: LinearGradient(
-          //                 begin: Alignment.topCenter,
-          //                 end: Alignment.bottomCenter,
-          //                 colors: [
-          //                   colors.colorBlue.withOpacity(.99),
-          //                   colors.colorBlue.withOpacity(.5),
-          //                   colors.colorBlue.withOpacity(.1)
-          //                 ],
-          //                 stops: const [
-          //                   0.1,
-          //                   0.4,
-          //                   1
-          //                 ]),
-          //             isVisibleInLegend: true,
-          //             isVisible: true,
-          //             enableTooltip: true,
-          //             borderColor: colors.colorBlue,
-          //             borderWidth: 3,
-          //             legendIconType: LegendIconType.image,
-          //             dataSource: navGraph!.data!,
-          //             xValueMapper: (NavGraphData data, _) =>
-          //                 data.navDate!.substring(0, data.navDate!.length - 14),
-          //             yValueMapper: (NavGraphData data, _) => data.nav,
-          //           ),
-          //         ])),
-       
-       
-       
-        ],
-      ),
-    )
+            const SizedBox(height: 22),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Trailing Returns (%)",
+                  style: textStyle(
+                    isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    17,
+                    FontWeight.w600
+                  )
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const SizedBox(width: 0),
+                Icon(
+                  Icons.circle,
+                  size: 16,
+                  color: colors.ltpgreen,
+                ),
+                Text(
+                  " Benchmark",
+                  style: textStyle(
+                    isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    13,
+                    FontWeight.w500,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    "  (${factSheetData.benchmark ?? ""})",
+                    style: textStyle(
+                      isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      13,
+                      FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 25),
+            
+            // Returns Grid
+            if (mfProvide.mfReturnsGridview.isNotEmpty)
+              GridView.count(
+                padding: EdgeInsets.zero,
+                crossAxisCount: 3,
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 14,
+                childAspectRatio: 1.3,
+                children: List.generate(mfProvide.mfReturnsGridview.length, (index) {
+                  final item = mfProvide.mfReturnsGridview[index];
+                  final value = item['value']?.toString() ?? "0";
+                  final isNegative = value.startsWith("-");
+                  final returnValue = item['return']?.toString() ?? "0";
+                  final isReturnNegative = returnValue.startsWith("-");
+                  
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: isDarkMode 
+                          ? const Color(0xFF2A2A2A) 
+                          : Color(isNegative ? 0xffFFFCFB : 0xffFBFFFA),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xff999999), width: .2)
+                    ),
+                    child: Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "$value%",
+                                  style: textStyle(
+                                    isNegative ? colors.darkred : colors.ltpgreen,
+                                    16,
+                                    FontWeight.w600
+                                  )
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  item['durName']?.toString() ?? "",
+                                  style: textStyle(
+                                    isDarkMode ? colors.colorWhite : const Color(0xff666666),
+                                    12,
+                                    FontWeight.w500
+                                  )
+                                ),
+                                const SizedBox(height: 3),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          left: 0,
+                          child: Container(
+                            alignment: Alignment.center,
+                            width: MediaQuery.of(context).size.width,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Color(isReturnNegative ? 0xffFF1717 : 0xff43A833),
+                              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10))
+                            ),
+                            child: Text(
+                              "$returnValue%",
+                              style: textStyle(colors.colorWhite, 14, FontWeight.w500)
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              )
+            else
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Text(
+                    "No returns data available",
+                    style: textStyle(
+                      isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      14,
+                      FontWeight.w500
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      )
     );
- 
   }
 
   Row rowOfInfoData(String title1, String value1, String title2, String value2,

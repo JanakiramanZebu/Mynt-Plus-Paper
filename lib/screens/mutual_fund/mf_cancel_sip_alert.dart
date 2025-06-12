@@ -22,7 +22,6 @@ class MfSipCancelalert extends ConsumerWidget {
   final String mffreqtype;
   final String mfnextsipdate;
 
-
   const MfSipCancelalert({
     super.key,
     required this.mfcancels,
@@ -31,15 +30,24 @@ class MfSipCancelalert extends ConsumerWidget {
     required this.message,
     required this.mffreqtype,
     required this.mfnextsipdate,
-
   });
+  
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
-
+    final isDarkMode = theme.isDarkMode;
+    
+    // Safe access with defaults
+    final schemeName = mfcancels.isNotEmpty ? mfcancels : "this mutual fund";
+    final orderNo = mforderno.isNotEmpty ? mforderno : "";
+    final referNo = mfreferno.isNotEmpty ? mfreferno : "";
+    final freqType = mffreqtype.isNotEmpty ? mffreqtype : "";
+    final nextSipDate = mfnextsipdate.isNotEmpty ? mfnextsipdate : "";
+    final isPause = message == 'pause';
+    
     return AlertDialog(
-      backgroundColor: theme.isDarkMode
+      backgroundColor: isDarkMode
           ? const Color.fromARGB(255, 18, 18, 18)
           : colors.colorWhite,
       shape: const RoundedRectangleBorder(
@@ -55,13 +63,17 @@ class MfSipCancelalert extends ConsumerWidget {
       content: Column(
         children: [
           Text(
-              "Are you sure you want to ${message == 'pause' ? "Pause" : "Cancel"}  the ( ${mfcancels})  SIP order",
-              textAlign: TextAlign.center,
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w600)),
+            "Are you sure you want to ${isPause ? "Pause" : "Cancel"} the ($schemeName) SIP order",
+            textAlign: TextAlign.center,
+            style: textStyle(
+              isDarkMode ? colors.colorWhite : colors.colorBlack,
+              16,
+              FontWeight.w600
+            )
+          ),
           const SizedBox(height: 18),
+          
+          // Conditional UI based on action type
           if (message == 'sip') ...[
             Align(
               alignment: Alignment.centerLeft,
@@ -70,7 +82,7 @@ class MfSipCancelalert extends ConsumerWidget {
                 child: Text(
                   "Select The SIP Cancel Reason *",
                   style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    isDarkMode ? colors.colorWhite : colors.colorBlack,
                     12,
                     FontWeight.w500,
                   ),
@@ -78,11 +90,11 @@ class MfSipCancelalert extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 5),
-            droupdowntest(mfData, theme),
+            _buildReasonDropdown(mfData, theme),
             const SizedBox(height: 5),
           ],
 
-          if (message == 'pause') ...[
+          if (isPause) ...[
             Align(
               alignment: Alignment.centerLeft,
               child: Padding(
@@ -90,7 +102,7 @@ class MfSipCancelalert extends ConsumerWidget {
                 child: Text(
                   "No of installments Passed *",
                   style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    isDarkMode ? colors.colorWhite : colors.colorBlack,
                     12,
                     FontWeight.w500,
                   ),
@@ -98,147 +110,134 @@ class MfSipCancelalert extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 0),
-            pausetextfield(mfData, theme),
+            _buildPauseTextField(mfData, theme),
             const SizedBox(height: 5),
           ]
-
-          // Text("${mfData.droupreason}")
         ],
       ),
       actions: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // No button
             Expanded(
               child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: const Color(0xffF1F3F8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      )),
-                  onPressed: () {
-                    mfData.cleartext();
-                    mfData.rejectsip.text = "";
-                    mfData.pausesip.text = "";
-                    Navigator.pop(context);
-                  },
-                  child: Text("No",
-                      style: textStyle(colors.colorGrey, 12, FontWeight.w600))),
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: const Color(0xffF1F3F8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  )
+                ),
+                onPressed: () {
+                  // Clear fields on cancel
+                  mfData.cleartext();
+                  mfData.rejectsip.text = "";
+                  mfData.pausesip.text = "";
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  "No",
+                  style: textStyle(colors.colorGrey, 12, FontWeight.w600)
+                )
+              ),
             ),
             const SizedBox(width: 16),
-            if (message == 'sip') ...[
+            
+            // Yes button - SIP Cancel
+            if (message == 'sip')
               Expanded(
                 child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        )),
-                    onPressed: () async {
-                      await mfData.cancelsiporder(
-                          context, mforderno, mfreferno);
-
-                      // Navigator.pop(context);
-                    },
-                    child: mfData.loading == true
-                        ? const SizedBox(
-                            height: 15,
-                            width: 15,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.0,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Color.fromARGB(99, 48, 48, 48)),
-                              backgroundColor:
-                                  Color.fromARGB(255, 255, 255, 255),
-                            ),
-                          )
-                        : Text("Yes",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite,
-                                12,
-                                FontWeight.w600))),
-              )
-            ],
-            if (message == 'pause') ...[
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: isDarkMode
+                      ? colors.colorbluegrey
+                      : colors.colorBlack,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    )
+                  ),
+                  onPressed: () async {
+                    try {
+                      await mfData.cancelsiporder(context, orderNo, referNo);
+                    } catch (e) {
+                      // Handle error silently
+                    }
+                  },
+                  child: _buildButtonContent(mfData, isDarkMode)
+                ),
+              ),
+              
+            // Yes button - SIP Pause
+            if (isPause)
               Expanded(
                 child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        )),
-                    onPressed: () async {
-                      await mfData.pausesiporder(context, mforderno,mffreqtype,mfnextsipdate);
-
-                      // Navigator.pop(context);
-                    },
-                    child: mfData.loading == true
-                        ? const SizedBox(
-                            height: 15,
-                            width: 15,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.0,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Color.fromARGB(99, 48, 48, 48)),
-                              backgroundColor:
-                                  Color.fromARGB(255, 255, 255, 255),
-                            ),
-                          )
-                        : Text("Yes",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite,
-                                12,
-                                FontWeight.w600))),
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: isDarkMode
+                      ? colors.colorbluegrey
+                      : colors.colorBlack,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    )
+                  ),
+                  onPressed: () async {
+                    try {
+                      await mfData.pausesiporder(context, orderNo, freqType, nextSipDate);
+                    } catch (e) {
+                      // Handle error silently
+                    }
+                  },
+                  child: _buildButtonContent(mfData, isDarkMode)
+                ),
               )
-            ]
           ],
         ),
       ],
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  // Button content (loading indicator or text)
+  Widget _buildButtonContent(MFProvider mfData, bool isDarkMode) {
+    return mfData.loading == true
+      ? const SizedBox(
+          height: 15,
+          width: 15,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.0,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Color.fromARGB(99, 48, 48, 48)
+            ),
+            backgroundColor: Color.fromARGB(255, 255, 255, 255),
+          ),
+        )
+      : Text(
+          "Yes",
+          style: textStyle(
+            isDarkMode ? colors.colorBlack : colors.colorWhite,
+            12,
+            FontWeight.w600
+          )
+        );
   }
 
-  Text headerTitleText(String text, ThemesProvider theme) {
-    return Text(text,
-        style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w500));
-  }
-
-// String? selectedValue;
-  Widget droupdowntest(MFProvider mfData, ThemesProvider theme) {
-    // final theme = ref.watch(themeProvider);
+  // SIP Cancel reason dropdown
+  Widget _buildReasonDropdown(MFProvider mfData, ThemesProvider theme) {
+    final isDarkMode = theme.isDarkMode;
+    final hasReasonList = mfData.mfrejectsiplist != null && mfData.mfrejectsiplist!.isNotEmpty;
+    
     return Column(
       children: [
         DropdownButtonHideUnderline(
           child: DropdownButton2<String>(
             isExpanded: true,
-            value: mfData.mfrejectsiplist
-                        ?.any((item) => item["id"] == mfData.droupreason) ==
-                    true
+            value: hasReasonList && mfData.mfrejectsiplist!.any((item) => item["id"] == mfData.droupreason)
                 ? mfData.droupreason
                 : null,
             menuItemStyleData: MenuItemStyleData(
-              customHeights: mfData.mfrejectsiplist != null
-                  ? List.filled(mfData.mfrejectsiplist!.length, 50.0)
-                  : [],
+              customHeights: hasReasonList
+                ? List.filled(mfData.mfrejectsiplist!.length, 50.0)
+                : [],
             ),
             buttonStyleData: const ButtonStyleData(
               height: 45,
@@ -260,16 +259,17 @@ class MfSipCancelalert extends ConsumerWidget {
               mfData.sipreason, // Use selected value or default hint
               style: textStyle(const Color(0XFF000000), 13, FontWeight.w500),
             ),
-            items: mfData.mfrejectsiplist?.map((item) {
-              return DropdownMenuItem<String>(
-                value: item["id"],
-                child: Text(
-                  item["reason_name"],
-                  style:
-                      textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-                ),
-              );
-            }).toList(),
+            items: hasReasonList 
+              ? mfData.mfrejectsiplist!.map((item) {
+                  return DropdownMenuItem<String>(
+                    value: item["id"] as String?,
+                    child: Text(
+                      item["reason_name"] as String? ?? "",
+                      style: textStyle(const Color(0XFF000000), 13, FontWeight.w500),
+                    ),
+                  );
+                }).toList()
+              : [],
             onChanged: (value) {
               if (value != null) {
                 mfData.orderrejectupdate(value);
@@ -280,28 +280,32 @@ class MfSipCancelalert extends ConsumerWidget {
         if (mfData.droupreason == "13") ...[
           const SizedBox(height: 10),
           Container(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              height: 44,
-              child: CustomTextFormField(
-                textAlign: TextAlign.start,
-                fillColor: theme.isDarkMode
-                    ? colors.darkGrey
-                    : const Color(0xffF1F3F8),
-                hintText: 'Specify The Reason',
-                hintStyle:
-                    textStyle(const Color(0xff666666), 14, FontWeight.w400),
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600),
-                textCtrl: mfData.rejectsip,
-              )),
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            height: 44,
+            child: CustomTextFormField(
+              textAlign: TextAlign.start,
+              fillColor: isDarkMode
+                ? colors.darkGrey
+                : const Color(0xffF1F3F8),
+              hintText: 'Specify The Reason',
+              hintStyle: textStyle(const Color(0xff666666), 14, FontWeight.w400),
+              style: textStyle(
+                isDarkMode ? colors.colorWhite : colors.colorBlack,
+                14,
+                FontWeight.w600
+              ),
+              textCtrl: mfData.rejectsip,
+            )
+          ),
         ]
       ],
     );
   }
 
-  Widget pausetextfield(MFProvider mfData, ThemesProvider theme) {
+  // Pause SIP text field
+  Widget _buildPauseTextField(MFProvider mfData, ThemesProvider theme) {
+    final isDarkMode = theme.isDarkMode;
+    
     return Column(
       children: [
         Container(
@@ -309,21 +313,29 @@ class MfSipCancelalert extends ConsumerWidget {
           height: 44,
           child: CustomTextFormField(
             textAlign: TextAlign.start,
-            fillColor:
-                theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+            fillColor: isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
             hintText: 'No of installments Passed',
             hintStyle: textStyle(const Color(0xff666666), 14, FontWeight.w400),
             style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              isDarkMode ? colors.colorWhite : colors.colorBlack,
               14,
               FontWeight.w600,
             ),
             textCtrl: mfData.pausesip,
-            // inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             keyboardType: TextInputType.number, // Show numeric keyboard
           ),
         ),
       ],
+    );
+  }
+
+  TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
+    return GoogleFonts.inter(
+      textStyle: TextStyle(
+        fontWeight: fWeight, 
+        color: color, 
+        fontSize: fontSize
+      )
     );
   }
 }

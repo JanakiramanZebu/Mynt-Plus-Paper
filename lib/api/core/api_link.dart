@@ -120,12 +120,12 @@ class ApiLinks {
 
   String get mainBaseURL => 'https://copy.mynt.in';
 
-  String get mobileLogin => '$mainBaseURL/MobileLogin';
+  String get mobileLogin => 'https://ws.mynt.in/login/MobileLogin';
 
-  String get mobileOtp => '$mainBaseURL/otp_verify';
+  String get mobileOtp => 'https://ws.mynt.in/login/otp_verify';
 
   String get loginOtp => '$mainBaseURL/otp_send_Tv';
-  String get loginOtpVerify => '$mainBaseURL/otp_verify';
+  String get loginOtpVerify => 'https://ws.mynt.in/login/otp_verify';
   String get deviceLogin => '$mainBaseURL/device_login';
   String get validateSession => '$mainBaseURL/validate_session';
 

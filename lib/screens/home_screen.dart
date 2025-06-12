@@ -294,8 +294,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           ref.read(networkStateProvider).getContext(context);
           
           return Scaffold(
-            appBar: AppBar(
-              elevation: 0,
+                          appBar: AppBar(
+                            elevation: 0,
               backgroundColor: Colors.white,
             ),
             body: NoInternetScreen(
@@ -652,7 +652,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                 _handleProfileTap();
                 break;
             }
-          },
+                                                    },
                                                     child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 7),
                                                         decoration: BoxDecoration(
@@ -690,11 +690,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                     isSelected ? FontWeight.w600 : FontWeight.w500
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
     );
   }
   
@@ -807,13 +807,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       ref.read(chartUpdateProvider).changeOrientation('portrait');
 
       final mktwth = ref.read(marketWatchProvider);
-      mktwth.chngDephBtn("Overview");
-      mktwth.singlePageloader(true);
+        mktwth.chngDephBtn("Overview");
+        mktwth.singlePageloader(true);
 
       // Ensure context is passed if needed by calldepthApis
-      mktwth.calldepthApis(context, mktwth.getQuotes, "");
+        mktwth.calldepthApis(context, mktwth.getQuotes, "");
 
-      mktwth.singlePageloader(false);
+        mktwth.singlePageloader(false);
       
       // Update state locally if needed
       if(mounted) setState(() {});

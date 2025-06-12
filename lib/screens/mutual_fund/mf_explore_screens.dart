@@ -26,28 +26,25 @@ class MFExploreScreens extends ConsumerStatefulWidget {
 class _ExploreScreensState extends ConsumerState<MFExploreScreens>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  
   final tablistitems = [
     {
-      "Aimgpath": "",
-      "imgpath": assets.exportIcon,
+      "imgpath": "assets.exportIcon",
       "title": "Explore",
       "index": 0,
     },
     {
-      "Aimgpath": "",
-      "imgpath": assets.bookmarkLineIcon,
+      "imgpath": "assets.bookmarkLineIcon",
       "title": "Watchlist",
       "index": 1,
     },
     {
-      "Aimgpath": "",
-      "imgpath": assets.bookmarkLineIcon,
+      "imgpath": "assets.bookmarkLineIcon",
       "title": "Portfolio",
       "index": 2,
     },
-     {
-      "Aimgpath": "",
-      "imgpath": assets.bookmarkLineIcon,
+    {
+      "imgpath": "assets.bookmarkLineIcon",
       "title": "SIP",
       "index": 3,
     }
@@ -83,7 +80,17 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this, initialIndex: ref.read(mfProvider).activeTab ?? 0);
+    _tabController = TabController(
+      length: 4, 
+      vsync: this, 
+      initialIndex: ref.read(mfProvider).activeTab ?? 0
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -111,7 +118,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                           )),
               // height: 60,
               child: TabBar(
-                indicator: BoxDecoration(),
+                indicator: const BoxDecoration(),
                   labelPadding: const EdgeInsets.only(right: 8, bottom: 8),
                   tabAlignment: TabAlignment.start,
                   indicatorColor: theme.isDarkMode ? colors.colorBlack :const Color.fromARGB(255, 255, 255, 255),
@@ -119,13 +126,10 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                   isScrollable: true,
                   tabs: List.generate(
                       tablistitems.length,
-                      (tab) => tabConstruce(
-                          // tablistitems[tab]['imgpath'].toString(),
+                      (tab) => _buildTab(
                           tablistitems[tab]['title'].toString(),
-                          
                           theme,
                           tab,
-                          () {},
                           mfData)))),
           Expanded(
             child: TabBarView(
@@ -148,64 +152,44 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
     );
   }
 
-  Widget tabConstruce( String title, ThemesProvider theme, int tab,
-      VoidCallback onPressed, mfData) {
+  Widget _buildTab(String title, ThemesProvider theme, int tab, mfData) {
     return ElevatedButton(
-        onPressed: () {
-          setState(() {
-            mfData.mfExTabchange(tab);
-          });
-          _tabController.animateTo(tab);
-          print("object act tab $tab");
-        },
-        
-        style: ElevatedButton.styleFrom(
-          
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            backgroundColor: theme.isDarkMode
-                ? tab == mfData.activeTab
-                    ? colors.colorbluegrey
-                    : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
-                : tab == mfData.activeTab
-                    ? const Color(0xff000000)
-                    : const Color.fromARGB(255, 255, 255, 255),
-                    
-      shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(18), 
-      side: const BorderSide( 
-        color: Colors.black, 
-        width: 1, 
+      onPressed: () {
+        setState(() {
+          mfData.mfExTabchange(tab);
+        });
+        _tabController.animateTo(tab);
+      },
+      style: ElevatedButton.styleFrom(
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        backgroundColor: theme.isDarkMode
+          ? tab == mfData.activeTab
+            ? colors.colorbluegrey
+            : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
+          : tab == mfData.activeTab
+            ? const Color(0xff000000)
+            : const Color.fromARGB(255, 255, 255, 255),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(
+            color: Colors.black,
+            width: 1,
+          ),
+        ),
+        minimumSize: const Size(0, 30),
       ),
-    ),
-            
-             minimumSize: const Size(0, 30),
-            ),
-        child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // SvgPicture.asset(
-              //   icon,
-              //   color: theme.isDarkMode
-              //       ? Color(tab == mfData.activeTab ? 0xff000000 : 0xffffffff)
-              //       : Color(tab == mfData.activeTab ? 0xffffffff : 0xff000000),
-              // ),
-              // const SizedBox(width: 8),
-              Text(title,
-                  style: textStyle(
-                      theme.isDarkMode
-                          ? Color(
-                              tab == mfData.activeTab ? 0xff000000 : 0xffffffff)
-                          : Color(tab == mfData.activeTab
-                              ? 0xffffffff
-                              : 0xff000000),
-                      13,
-                      FontWeight.w500))
-            ]));
-            
- 
+      child: Text(
+        title,
+        style: textStyle(
+          theme.isDarkMode
+            ? Color(tab == mfData.activeTab ? 0xff000000 : 0xffffffff)
+            : Color(tab == mfData.activeTab ? 0xffffffff : 0xff000000),
+          13,
+          FontWeight.w500,
+        ),
+      ),
+    );
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
