@@ -57,8 +57,26 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
       setState(() {});
     });
     super.initState();
-    Future.microtask(() {
+    Future.microtask(() async {
+      // Load default tabs first
       ref.read(marketWatchProvider).loadDefaultTabs();
+      
+      // Ensure we have data by explicitly fetching option chain data
+      // This will work even during non-market hours as a fallback
+      final marketWatch = ref.read(marketWatchProvider);
+      if (marketWatch.optChainCallUP.isEmpty || 
+          marketWatch.optChainPutUp.isEmpty ||
+          marketWatch.optChainCallDown.isEmpty || 
+          marketWatch.optChainPutDown.isEmpty) {
+        
+        await marketWatch.fetchOPtionChain(
+          context: context,
+          exchange: marketWatch.optionExch ?? widget.wlValue.exch,
+          numofStrike: marketWatch.numStrike,
+          strPrc: marketWatch.optionStrPrc,
+          tradeSym: marketWatch.selectedTradeSym ?? widget.wlValue.tsym
+        );
+      }
     });
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -224,7 +242,17 @@ class _OptionTopBar extends ConsumerWidget {
                     tvChart.setOptionScript(context, tab.exch.toString(),
                         tab.token.toString(), tab.tsym.toString());
 
-                      // Force reload if data doesn't appear within 1 second
+                      // Always fetch option chain data to ensure we have the latest data
+                      // This provides a fallback for non-market hours
+                      await tvChart.fetchOPtionChain(
+                        context: context,
+                        exchange: tvChart.optionExch ?? tab.exch.toString(),
+                        numofStrike: tvChart.numStrike,
+                        strPrc: tvChart.optionStrPrc,
+                        tradeSym: tvChart.selectedTradeSym ?? tab.tsym.toString()
+                      );
+
+                      // Force reload if data still doesn't appear
                       Future.delayed(const Duration(milliseconds: 1000), () {
                         if (tvChart.optChainCallUP.isEmpty || 
                             tvChart.optChainPutUp.isEmpty) {
@@ -687,8 +715,10 @@ class _OptionChainContent extends ConsumerWidget {
     
     // Determine if data is fully loaded
     final bool isLoading = scripInfo.isLoad || 
-                        scripInfo.scripDepthloader || 
-                        scripInfo.optChainCallUP.isEmpty || 
+                        scripInfo.scripDepthloader;
+    
+    // Check if data is completely empty (potentially during non-market hours)
+    final bool isDataEmpty = scripInfo.optChainCallUP.isEmpty || 
                         scripInfo.optChainPutUp.isEmpty ||
                         scripInfo.optChainCallDown.isEmpty || 
                         scripInfo.optChainPutDown.isEmpty;
@@ -717,11 +747,13 @@ class _OptionChainContent extends ConsumerWidget {
                         
                         // Retry fetching data
                         if (scripInfo.oactiveTab != null) {
-                          ref.read(marketWatchProvider).setOptionScript(
-                            context,
-                            scripInfo.oactiveTab!.exch.toString(),
-                            scripInfo.oactiveTab!.token.toString(),
-                            scripInfo.oactiveTab!.tsym.toString(),
+                          // Force fetch data even during non-market hours
+                          await ref.read(marketWatchProvider).fetchOPtionChain(
+                            context: context,
+                            exchange: scripInfo.optionExch ?? scripInfo.oactiveTab!.exch.toString(),
+                            numofStrike: scripInfo.numStrike,
+                            strPrc: scripInfo.optionStrPrc,
+                            tradeSym: scripInfo.selectedTradeSym ?? scripInfo.oactiveTab!.tsym.toString()
                           );
                         }
                       },
@@ -747,6 +779,52 @@ class _OptionChainContent extends ConsumerWidget {
         )
           );
         }
+      );
+    }
+    
+    // Handle empty data scenario (possibly during non-market hours)
+    if (isDataEmpty) {
+      return Expanded(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                "No option chain data available",
+                style: TextStyle(fontSize: 16, color: Color(0xff666666)),
+              ),
+              const Text(
+                "This may happen during non-market hours",
+                style: TextStyle(fontSize: 14, color: Color(0xff888888)),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () async {
+                  // Explicitly fetch option chain data
+                  ref.read(marketWatchProvider).singlePageloader(true);
+                  
+                  if (scripInfo.oactiveTab != null) {
+                    await ref.read(marketWatchProvider).fetchOPtionChain(
+                      context: context,
+                      exchange: scripInfo.optionExch ?? scripInfo.oactiveTab!.exch.toString(),
+                      numofStrike: scripInfo.numStrike,
+                      strPrc: scripInfo.optionStrPrc,
+                      tradeSym: scripInfo.selectedTradeSym ?? scripInfo.oactiveTab!.tsym.toString()
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xff0037B7),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: const Text(
+                  "Load Data",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
     
