@@ -64,7 +64,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       UserProfileProvider userProfile, WidgetRef ref) async {
     final theme = ref.watch(themeProvider);
     if (pref.islogOut! &&
-        (pref.clientId!.isNotEmpty || pref.clientMob!.isNotEmpty)) {
+        (pref.clientId!.isEmpty || pref.clientId!.isNotEmpty || pref.clientMob!.isEmpty || pref.clientMob!.isNotEmpty)) {
       // This path is for logged out users with saved credentials
       theme.removeUsermatrial(context);
       Navigator.pushNamedAndRemoveUntil(
@@ -156,9 +156,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     child: CircularLoaderImage()))
             : PopScope(
-                canPop:pref.islogOut! &&
-                              (pref.clientId!.isNotEmpty ||
-                                  pref.clientMob!.isNotEmpty) ? false : true,
+                canPop: false,
+                // pref.islogOut! &&
+                //               (pref.clientId!.isNotEmpty ||
+                //                   pref.clientMob!.isNotEmpty) ? false : true,
                 onPopInvokedWithResult: (didPop, result) async {
                   if (didPop) return;
                   await _handleBackNavigation(context, pref, auth, userProfile, ref);
@@ -175,6 +176,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     titleSpacing: 6,
                     leading: InkWell(
                         onTap: () async {
+                          print("dfghj tapped");
                           await _handleBackNavigation(context, pref, auth, userProfile, ref);
                         },
                         child: Padding(
