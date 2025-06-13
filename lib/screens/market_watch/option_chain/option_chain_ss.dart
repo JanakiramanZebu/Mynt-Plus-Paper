@@ -8,6 +8,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
+import '../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
@@ -61,22 +62,18 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
       // Load default tabs first
       ref.read(marketWatchProvider).loadDefaultTabs();
       
-      // Ensure we have data by explicitly fetching option chain data
-      // This will work even during non-market hours as a fallback
+      // Fetch option chain data immediately
       final marketWatch = ref.read(marketWatchProvider);
-      if (marketWatch.optChainCallUP.isEmpty || 
-          marketWatch.optChainPutUp.isEmpty ||
-          marketWatch.optChainCallDown.isEmpty || 
-          marketWatch.optChainPutDown.isEmpty) {
-        
-        await marketWatch.fetchOPtionChain(
-          context: context,
-          exchange: marketWatch.optionExch ?? widget.wlValue.exch,
-          numofStrike: marketWatch.numStrike,
-          strPrc: marketWatch.optionStrPrc,
-          tradeSym: marketWatch.selectedTradeSym ?? widget.wlValue.tsym
-        );
-      }
+      await marketWatch.fetchOPtionChain(
+        context: context,
+        exchange: marketWatch.optionExch ?? widget.wlValue.exch,
+        numofStrike: marketWatch.numStrike,
+        strPrc: marketWatch.optionStrPrc,
+        tradeSym: marketWatch.selectedTradeSym ?? widget.wlValue.tsym
+      );
+      
+      // Ensure WebSocket subscription for option chain data after initial load
+      await marketWatch.requestWSOptChain(context: context, isSubscribe: true);
     });
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -239,11 +236,10 @@ class _OptionTopBar extends ConsumerWidget {
                     
                     // Set the script with a catch for error handling
                     try {
-                    tvChart.setOptionScript(context, tab.exch.toString(),
-                        tab.token.toString(), tab.tsym.toString());
+                      tvChart.setOptionScript(context, tab.exch.toString(),
+                          tab.token.toString(), tab.tsym.toString());
 
-                      // Always fetch option chain data to ensure we have the latest data
-                      // This provides a fallback for non-market hours
+                      // Fetch new option chain data immediately
                       await tvChart.fetchOPtionChain(
                         context: context,
                         exchange: tvChart.optionExch ?? tab.exch.toString(),
@@ -251,21 +247,9 @@ class _OptionTopBar extends ConsumerWidget {
                         strPrc: tvChart.optionStrPrc,
                         tradeSym: tvChart.selectedTradeSym ?? tab.tsym.toString()
                       );
-
-                      // Force reload if data still doesn't appear
-                      Future.delayed(const Duration(milliseconds: 1000), () {
-                        if (tvChart.optChainCallUP.isEmpty || 
-                            tvChart.optChainPutUp.isEmpty) {
-                          // Trigger a reload if data isn't loaded yet
-                          tvChart.fetchOPtionChain(
-                            context: context,
-                            exchange: tvChart.optionExch ?? tab.exch.toString(),
-                            numofStrike: tvChart.numStrike,
-                            strPrc: tvChart.optionStrPrc,
-                            tradeSym: tvChart.selectedTradeSym ?? tab.tsym.toString()
-                          );
-                        }
-                      });
+                      
+                      // Ensure WebSocket subscription for option chain data
+                      await tvChart.requestWSOptChain(context: context, isSubscribe: true);
                     } catch (e) {
                       // Handle any errors during script setting
                       debugPrint("Error loading option chain: $e");
@@ -274,10 +258,10 @@ class _OptionTopBar extends ConsumerWidget {
                       tvChart.singlePageloader(false);
                     }
 
-                    // Scroll to the current strike price after a delay
-                         Future.delayed(const Duration(milliseconds: 500), () {
-                        scrollToStrikePrice();
-                                                                          });
+                    // Scroll to the current strike price after a delay (only delay kept)
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      scrollToStrikePrice();
+                    });
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Chip(
@@ -427,15 +411,23 @@ class _DateSelectorTabs extends ConsumerWidget {
                     }
                     scripInfo.selecexpDate(scripInfo.sortDate[index]);
 
-                    await ref.read(marketWatchProvider).fetchOPtionChain(
-                      context: context,
-                      exchange: scripInfo.optionExch!,
-                      numofStrike: scripInfo.numStrike,
-                      strPrc: scripInfo.optionStrPrc,
-                      tradeSym: scripInfo.selectedTradeSym!
-                    );
+                    try {
+                      await ref.read(marketWatchProvider).fetchOPtionChain(
+                        context: context,
+                        exchange: scripInfo.optionExch!,
+                        numofStrike: scripInfo.numStrike,
+                        strPrc: scripInfo.optionStrPrc,
+                        tradeSym: scripInfo.selectedTradeSym!
+                      );
+                      
+                      // Ensure WebSocket subscription for option chain data
+                      await scripInfo.requestWSOptChain(context: context, isSubscribe: true);
+                    } catch (e) {
+                      // Handle any errors
+                      debugPrint("Error loading option chain for expiry: $e");
+                    }
                                 
-                    // Add a delay to ensure the UI is updated before scrolling
+                    // Add a delay to ensure the UI is updated before scrolling (only delay kept)
                     Future.delayed(const Duration(milliseconds: 300), () {
                       scrollToStrikePrice();
                     });
@@ -510,16 +502,24 @@ void _showStrikeCountSelector(BuildContext context, WidgetRef ref, MarketWatchPr
                     // First close the modal
                     Navigator.pop(context);
                     
-                    // Then fetch data with the new strike count
-                    await ref.read(marketWatchProvider).fetchOPtionChain(
-                      context: context,
-                      exchange: scripInfo.optionExch!,
-                      numofStrike: scripInfo.numStrikes[index],
-                      strPrc: scripInfo.optionStrPrc,
-                      tradeSym: scripInfo.selectedTradeSym!
-                    );
+                    try {
+                      // Then fetch data with the new strike count
+                      await ref.read(marketWatchProvider).fetchOPtionChain(
+                        context: context,
+                        exchange: scripInfo.optionExch!,
+                        numofStrike: scripInfo.numStrikes[index],
+                        strPrc: scripInfo.optionStrPrc,
+                        tradeSym: scripInfo.selectedTradeSym!
+                      );
+                      
+                      // Ensure WebSocket subscription for option chain data
+                      await scripInfo.requestWSOptChain(context: context, isSubscribe: true);
+                    } catch (e) {
+                      // Handle any errors
+                      debugPrint("Error loading option chain for strike count: $e");
+                    }
                     
-                    // Use a longer delay to ensure data is loaded and widgets are built
+                    // Use a longer delay to ensure data is loaded and widgets are built (only delay kept)
                     Future.delayed(const Duration(milliseconds: 500), () {
                       if (context.mounted) {
                         // Use the callback to main screen's scroll method
@@ -713,121 +713,21 @@ class _OptionChainContent extends ConsumerWidget {
     final scripInfo = ref.watch(marketWatchProvider);
     final depthData = scripInfo.getQuotes!;
     
-    // Determine if data is fully loaded
-    final bool isLoading = scripInfo.isLoad || 
-                        scripInfo.scripDepthloader;
-    
-    // Check if data is completely empty (potentially during non-market hours)
-    final bool isDataEmpty = scripInfo.optChainCallUP.isEmpty || 
-                        scripInfo.optChainPutUp.isEmpty ||
-                        scripInfo.optChainCallDown.isEmpty || 
-                        scripInfo.optChainPutDown.isEmpty;
-                        
-    if (isLoading) {
-      // Create a timeout to handle cases where loading gets stuck
-      return FutureBuilder(
-        future: Future.delayed(const Duration(seconds: 5)),
-        builder: (context, snapshot) {
-          // If the timeout completes and we're still loading, show a retry option
-          if (snapshot.connectionState == ConnectionState.done) {
-            return Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Data loading is taking longer than expected",
-                      style: TextStyle(fontSize: 14, color: Color(0xff666666)),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () async {
-                        // Reset loading state
-                        ref.read(marketWatchProvider).singlePageloader(true);
-                        
-                        // Retry fetching data
-                        if (scripInfo.oactiveTab != null) {
-                          // Force fetch data even during non-market hours
-                          await ref.read(marketWatchProvider).fetchOPtionChain(
-                            context: context,
-                            exchange: scripInfo.optionExch ?? scripInfo.oactiveTab!.exch.toString(),
-                            numofStrike: scripInfo.numStrike,
-                            strPrc: scripInfo.optionStrPrc,
-                            tradeSym: scripInfo.selectedTradeSym ?? scripInfo.oactiveTab!.tsym.toString()
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff0037B7),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      ),
-                      child: const Text(
-                        "Retry",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-          
-          // Show loading indicator while waiting
+    // Only show loading when there's no option chain structure at all
+    // This allows the UI to render immediately with empty/initial data
+    final bool isInitialLoading = scripInfo.isLoad && 
+                                scripInfo.optionChainModel == null;
+                                
+    if (isInitialLoading) {
       return const Expanded(
         child: Center(
           child: CircularProgressIndicator(color: Color(0xff0037B7))
         )
-          );
-        }
       );
     }
     
-    // Handle empty data scenario (possibly during non-market hours)
-    if (isDataEmpty) {
-      return Expanded(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "No option chain data available",
-                style: TextStyle(fontSize: 16, color: Color(0xff666666)),
-              ),
-              const Text(
-                "This may happen during non-market hours",
-                style: TextStyle(fontSize: 14, color: Color(0xff888888)),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  // Explicitly fetch option chain data
-                  ref.read(marketWatchProvider).singlePageloader(true);
-                  
-                  if (scripInfo.oactiveTab != null) {
-                    await ref.read(marketWatchProvider).fetchOPtionChain(
-                      context: context,
-                      exchange: scripInfo.optionExch ?? scripInfo.oactiveTab!.exch.toString(),
-                      numofStrike: scripInfo.numStrike,
-                      strPrc: scripInfo.optionStrPrc,
-                      tradeSym: scripInfo.selectedTradeSym ?? scripInfo.oactiveTab!.tsym.toString()
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff0037B7),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text(
-                  "Load Data",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    
+    // Always render the structure - even with empty data
+    // Socket updates will fill in the data as it arrives
     return Expanded(
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),

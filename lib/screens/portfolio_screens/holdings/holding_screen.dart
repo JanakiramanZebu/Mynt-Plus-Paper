@@ -80,6 +80,31 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   }
   
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Listen for theme changes here instead of in build
+    final theme = ref.read(themeProvider);
+    ref.listenManual(themeProvider, (previous, next) {
+      if (previous?.isDarkMode != next.isDarkMode) {
+        // Theme changed, clear caches
+        if (mounted) {
+          setState(() {
+            _cachedSummarySection = null;
+            _cachedActionButtons = null;
+            _cachedEmptyState = null;
+            _cachedActionButtonsKey = null;
+            _cachedSummaryKey = null;
+            // Clear static dividers
+            _cachedDarkDivider = null;
+            _cachedLightDivider = null;
+          });
+        }
+      }
+    });
+  }
+  
+  @override
   void dispose() {
     _socketSubscription?.cancel();
     super.dispose();

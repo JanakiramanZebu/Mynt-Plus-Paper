@@ -710,19 +710,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
   }
   
   // Bottom nav handlers
-  void _handleWatchlistTap() async {
+  void _handleWatchlistTap() async{
     final indexProvide = ref.read(indexListProvider);
     final portfolio = ref.read(portfolioProvider);
     final marketWatchList = ref.read(marketWatchProvider);
     final orderProviderRef = ref.read(orderProvider);
     
     indexProvide.bottomMenu(1, context);
-                                                      portfolio.cancelTimer();
+    portfolio.cancelTimer();
 
+    // Run API calls in the background without blocking UI navigation
     await portfolio.requestWSHoldings(context: context, isSubscribe: false);
     await orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
     await portfolio.requestWSPosition(context: context, isSubscribe: false);
     await marketWatchList.requestMWScrip(context: context, isSubscribe: true);
+    
+    // Load any additional watchlist data in the background
+    Future.microtask(() {
+      if (mounted) {
+        marketWatchList.fetchMWList(context, false);
+      }
+    });
   }
   
   void _handlePortfolioTap() async {
@@ -730,17 +738,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     final portfolio = ref.read(portfolioProvider);
     final marketWatchList = ref.read(marketWatchProvider);
     final orderProviderRef = ref.read(orderProvider);
+    final fundProviderRef = ref.read(fundProvider);
     
     indexProvide.bottomMenu(2, context);
     
-    await portfolio.fetchMFHoldings(context);
+    // Run websocket subscription changes immediately (no await)
     await marketWatchList.requestMWScrip(context: context, isSubscribe: false);
     await orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
     await portfolio.requestWSHoldings(context: context, isSubscribe: true);
     await portfolio.requestWSPosition(context: context, isSubscribe: true);
+    
+    // Fetch data in the background without blocking UI transition
+    Future.microtask(() {
+      if (mounted) {
+        // Portfolio data
+        portfolio.fetchHoldings(context, "");
+        portfolio.fetchPositionBook(context, false);
+        portfolio.fetchMFHoldings(context);
+        
+        // Funds data
+        fundProviderRef.fetchFunds(context);
+      }
+    });
+    
+    // Start position update timer
+    portfolio.timerfunc();
   }
   
-  void _handleOrderbookTap() async {
+  void _handleOrderbookTap() async{
     final indexProvide = ref.read(indexListProvider);
     final portfolio = ref.read(portfolioProvider);
     final marketWatchList = ref.read(marketWatchProvider);
@@ -749,15 +774,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     indexProvide.bottomMenu(3, context);
     portfolio.cancelTimer();
     
-    await orderProviderRef.fetchSipOrderHistory(context);
-    await marketWatchList.fetchPendingAlert(context);
+    // Run websocket subscription changes immediately (no await)
     await marketWatchList.requestMWScrip(context: context, isSubscribe: false);
     await portfolio.requestWSHoldings(context: context, isSubscribe: false);
     await portfolio.requestWSPosition(context: context, isSubscribe: false);
     orderProviderRef.requestWSOrderBook(context: context, isSubscribe: true);
+    
+    // Fetch all order-related data in the background without blocking UI
+    Future.microtask(() {
+      if (mounted) {
+        // Order book, trade book, and other order-related data
+        orderProviderRef.fetchOrderBook(context, false);
+        orderProviderRef.fetchTradeBook(context);
+        orderProviderRef.fetchSipOrderHistory(context);
+        
+        // Fetch alerts since they're shown in the orders section
+        marketWatchList.fetchPendingAlert(context);
+      }
+    });
   }
   
-  void _handleProfileTap() async {
+  void _handleProfileTap() {
     final indexProvide = ref.read(indexListProvider);
     final portfolio = ref.read(portfolioProvider);
     final reportsprovider = ref.read(ledgerProvider);
@@ -769,15 +806,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     indexProvide.bottomMenu(4, context);
     portfolio.cancelTimer();
 
-    // Load minimal required profile data
-    await fundProviderRef.fetchFunds(context);
-    await userProfile.fetchprofilemenu();
-    
-    // Unsubscribe from other real-time data
+    // Unsubscribe from websockets immediately (no await)
     marketWatchList.requestMWScrip(context: context, isSubscribe: false);
     portfolio.requestWSHoldings(context: context, isSubscribe: false);
     orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
     portfolio.requestWSPosition(context: context, isSubscribe: false);
+    
+    // Load profile data in the background
+    Future.microtask(() {
+      if (mounted) {
+        // User profile and account details
+        userProfile.fetchUserDetail(context);
+        userProfile.fetchprofilemenu();
+        
+        // Funds data
+        fundProviderRef.fetchFunds(context);
+      }
+    });
   }
 
 // The screen will change depending on the condition when you click on the bottom menu items.

@@ -680,8 +680,8 @@ class _ModifyPlaceOrderScreenState extends ConsumerState<ModifyPlaceOrderScreen>
                                                                     context,
                                                                     double.parse(value) <
                                                                             double.parse("${widget.scripInfo.lc}")
-                                                                        ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc} 1 $value"
-                                                                        : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc} 1 $value"));
+                                                                        ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
+                                                                        : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}"));
                                                           }
                                                           setState(() {
                                                             price = value;
