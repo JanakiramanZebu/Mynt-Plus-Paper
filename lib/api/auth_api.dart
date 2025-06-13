@@ -48,11 +48,7 @@ mixin AuthApi on ApiCore {
       final json = jsonDecode(res.body);
       if (res.statusCode == 200) {
         return MobileLoginModel.fromJson(json as Map<String, dynamic>);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            error(context, "${res.statusCode} ${res.reasonPhrase}"));
-        return MobileLoginModel.fromJson(json as Map<String, dynamic>);
-      }
+      } 
     } on SocketException catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
           error(context, "Network error. Please check your connection."));
@@ -98,11 +94,7 @@ mixin AuthApi on ApiCore {
       final json = jsonDecode(res.body);
       if (res.statusCode == 200) {
         return MobileOtpModel.fromJson(json as Map<String, dynamic>);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            error(context, "${res.statusCode} ${res.reasonPhrase}"));
-        return MobileOtpModel.fromJson(json as Map<String, dynamic>);
-      }
+      } 
     } on SocketException catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
           error(context, "Network error. Please check your connection."));
