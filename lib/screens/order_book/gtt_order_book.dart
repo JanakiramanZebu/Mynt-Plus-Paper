@@ -142,19 +142,69 @@ class GttOrderBook extends ConsumerWidget {
           builder: (context, snapshot) {
             final socketDatas = snapshot.data ?? {};
             
+            // ⚡ CRITICAL FIX: Initialize with existing socket data on first load
+            if (snapshot.data == null) {
+              // On first load, get existing socket data
+              final wsProvider = ref.watch(websocketProvider);
+              final existingSocketData = wsProvider.socketDatas;
+              
+              if (existingSocketData.isNotEmpty) {
+                print("=== GTT INITIAL SOCKET DATA LOAD ===");
+                for (var order in gttOrderBook) {
+                  if (existingSocketData.containsKey(order.token)) {
+                    final socketData = existingSocketData[order.token];
+                    final lp = socketData['ltp']?.toString() ?? socketData['lp']?.toString();
+                    final pc = socketData['pc']?.toString();
+                    
+                    if (lp != null && lp != "null" && lp.isNotEmpty) {
+                      order.ltp = lp;
+                      print("  ✅ Initial LTP set for ${order.token}: $lp");
+                    }
+                    
+                    if (pc != null && pc != "null" && pc.isNotEmpty) {
+                      order.perChange = pc;
+                      print("  ✅ Initial PC set for ${order.token}: $pc");
+                    }
+                  }
+                }
+                print("===================================");
+              }
+            }
+            
             // Update order book data with real-time values
             if (snapshot.hasData) {
+              // Debug: Print socket data updates for GTT orders
+              print("=== GTT ORDER SOCKET UPDATE DEBUG ===");
+              print("Socket data keys: ${socketDatas.length}");
+              
+              bool dataUpdated = false;
+              
               for (var order in gttOrderBook) {
                 if (socketDatas.containsKey(order.token)) {
-                  final lp = socketDatas[order.token]['lp']?.toString();
-                  final pc = socketDatas[order.token]['pc']?.toString();
+                  final socketData = socketDatas[order.token];
+                  final lp = socketData['ltp']?.toString() ?? socketData['lp']?.toString();
+                  final pc = socketData['pc']?.toString();
+                  final chng = socketData['chng']?.toString();
                   
-                  if (lp != null && lp != "null") {
+                  // Debug: Print update info
+                  print("Token ${order.token}: Socket LTP=$lp, PC=$pc, Current LTP=${order.ltp}");
+                  
+                  // ⚡ FIX: Accept ALL valid values including "0" and "0.00"
+                  if (lp != null && lp != "null" && lp.isNotEmpty && lp != order.ltp) {
                     order.ltp = lp;
+                    dataUpdated = true;
+                    print("  ✅ LTP updated to: $lp");
                   }
                   
-                  if (pc != null && pc != "null") {
+                  if (pc != null && pc != "null" && pc.isNotEmpty && pc != order.perChange) {
                     order.perChange = pc;
+                    dataUpdated = true;
+                    print("  ✅ PC updated to: $pc");
+                  }
+                  
+                  if (chng != null && chng != "null" && chng.isNotEmpty && chng != order.change) {
+                    order.change = chng;
+                    dataUpdated = true;
                   }
                 }
               }
@@ -162,19 +212,34 @@ class GttOrderBook extends ConsumerWidget {
               if (order.gttOrderBookSearch!.isNotEmpty) {
                 for (var searchOrder in order.gttOrderBookSearch!) {
                   if (socketDatas.containsKey(searchOrder.token)) {
-                    final lp = socketDatas[searchOrder.token]['lp']?.toString();
-                    final pc = socketDatas[searchOrder.token]['pc']?.toString();
+                    final socketData = socketDatas[searchOrder.token];
+                    final lp = socketData['ltp']?.toString() ?? socketData['lp']?.toString();
+                    final pc = socketData['pc']?.toString();
+                    final chng = socketData['chng']?.toString();
                     
-                    if (lp != null && lp != "null") {
+                    // ⚡ FIX: Accept ALL valid values including "0" and "0.00"
+                    if (lp != null && lp != "null" && lp.isNotEmpty && lp != searchOrder.ltp) {
                       searchOrder.ltp = lp;
+                      dataUpdated = true;
                     }
                     
-                    if (pc != null && pc != "null") {
+                    if (pc != null && pc != "null" && pc.isNotEmpty && pc != searchOrder.perChange) {
                       searchOrder.perChange = pc;
+                      dataUpdated = true;
+                    }
+                    
+                    if (chng != null && chng != "null" && chng.isNotEmpty && chng != searchOrder.change) {
+                      searchOrder.change = chng;
+                      dataUpdated = true;
                     }
                   }
                 }
               }
+              
+              if (dataUpdated) {
+                print("🔄 GTT Order data updated, triggering rebuild");
+              }
+              print("=====================================");
             }
             
             return ListView(
@@ -729,3 +794,4 @@ class GttOrderBook extends ConsumerWidget {
     ]);
   }
 }
+

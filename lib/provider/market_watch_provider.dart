@@ -982,49 +982,76 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  void setOptionScript(
+  Future<void> setOptionScript(
       BuildContext context, String exch, String token, String tsym) async {
-    toggleLoad(true);
-    singlePageloader(true);
-    notifyListeners();
-    await fetchScripQuoteIndex(token, exch, context);
-    if (exch == "BFO" ||
-        exch == "NFO" ||
-        (exch == "MCX" && _getQuotes.instname == "OPTFUT")) {
-      await fetchStikePrc(
-          "${_getQuotes.undTk}", "${_getQuotes.undExch}", context);
-    } else {
-      updateOptStrPrc(_getQuotes.lp.toString());
+    try {
+      toggleLoad(true);
+      singlePageloader(true);
+      notifyListeners();
+      
+      // STEP 1: Clear any previous option chain data immediately
+      clearOptionChainData();
+      
+      // STEP 1.5: CRITICAL FIX - Clear old socket data immediately to prevent stale LTP
+      await _clearOldOptionSocketData();
+      
+      // STEP 2: Fetch script quote for the new symbol
+      await fetchScripQuoteIndex(token, exch, context);
+      
+      // STEP 3: Determine strike price based on instrument type
+      if (exch == "BFO" ||
+          exch == "NFO" ||
+          (exch == "MCX" && _getQuotes.instname == "OPTFUT")) {
+        await fetchStikePrc(
+            "${_getQuotes.undTk}", "${_getQuotes.undExch}", context);
+      } else {
+        updateOptStrPrc(_getQuotes.lp.toString());
+      }
+
+      // STEP 4: Establish WebSocket connection for underlying
+      await ref.read(websocketProvider).establishConnection(
+          channelInput: (_getQuotes.exch == "BFO" ||
+                  _getQuotes.exch == "NFO" ||
+                  (_getQuotes.exch == "MCX" && _getQuotes.instname == "OPTFUT"))
+              ? '${_getQuotes.undExch}|${_getQuotes.undTk!}'
+              : '${_getQuotes.exch}|${_getQuotes.token!}',
+          task: "t",
+          context: context);
+
+      // STEP 5: Fetch linked scripts which will set optionExch and selectedTradeSym
+      await fetchLinkeScrip(token, exch, context);
+      
+      // STEP 6: Verify that required option parameters are set
+      if (_optionExch == null || _selectedTradeSym == null) {
+        throw Exception("Option parameters not properly initialized after fetchLinkeScrip");
+      }
+
+      // STEP 7: Fetch option chain with the properly initialized parameters
+      await fetchOPtionChain(
+          context: context,
+          exchange: _optionExch!,
+          numofStrike: numStrike,
+          strPrc: optionStrPrc,
+          tradeSym: _selectedTradeSym!);
+      
+      // STEP 8: Update tab management
+      if (_optionTabs.length == 5 &&
+          (_optionTabs.any((t) => t.token == token)) != true) {
+        removeChartTab(_optionTabs.last, true);
+      }
+      addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch), true);
+      selectChartTab(token.toString(), true);
+      scrollToSelectedTab(true);
+      
+    } catch (e) {
+      debugPrint("Error in setOptionScript: $e");
+      setOptionChainError("Failed to initialize option script: $e");
+      rethrow; // Re-throw to let caller handle the error
+    } finally {
+      singlePageloader(false);
+      toggleLoad(false);
+      notifyListeners();
     }
-
-    await ref.read(websocketProvider).establishConnection(
-        channelInput: (_getQuotes.exch == "BFO" ||
-                _getQuotes.exch == "NFO" ||
-                (_getQuotes.exch == "MCX" && _getQuotes.instname == "OPTFUT"))
-            ? '${_getQuotes.undExch}|${_getQuotes.undTk!}'
-            : '${_getQuotes.exch}|${_getQuotes.token!}',
-        task: "t",
-        context: context);
-
-    await fetchLinkeScrip(token, exch, context);
-
-    await fetchOPtionChain(
-        context: context,
-        exchange: optionExch!,
-        numofStrike: numStrike,
-        strPrc: optionStrPrc,
-        tradeSym: selectedTradeSym!);
-    singlePageloader(false);
-    toggleLoad(false);
-    if (_optionTabs.length == 5 &&
-        (_optionTabs.any((t) => t.token == token)) != true) {
-      removeChartTab(_optionTabs.last, true);
-    }
-    addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch), true);
-
-    selectChartTab(token.toString(), true);
-    scrollToSelectedTab(true);
-    notifyListeners();
   }
 
   void scrollToSelectedTab(bool type) {
@@ -1967,40 +1994,97 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       required String numofStrike}) async {
     try {
       toggleLoad(true);
+      
+      // STEP 1: Immediately clear old option chain data to prevent stale UI
+      _optChainCall.clear();
+      _optChainPut.clear();
+      _optChainCallDown.clear();
+      _optChainCallUp.clear();
+      _optChainPutDown.clear();
+      _optChainPutUp.clear();
+      
+      // STEP 2: Unsubscribe from old WebSocket connections AND clear socket data
       if (_optionChainModel != null) {
-        requestWSOptChain(context: context, isSubscribe: false);
+        await requestWSOptChain(context: context, isSubscribe: false);
+        
+        // CRITICAL FIX: Clear old option chain socket data from WebSocket provider
+        await _clearOldOptionSocketData();
       }
+      
+      // STEP 3: Clear the model to ensure fresh data
+      _optionChainModel = null;
+      notifyListeners(); // Update UI immediately with cleared data
+      
       print(
           "op Strike Price $strPrc ------ $tradeSym ------ $exchange ------ $numofStrike");
+      
+      // Debug: Print current socket data state
+      final socketDatas = ref.read(websocketProvider).socketDatas;
+      print("=== SOCKET DATA DEBUG ===");
+      print("Total socket entries: ${socketDatas.length}");
+      
+      // Print relevant socket data for current option chain context
+      if (socketDatas.isNotEmpty) {
+        print("Socket data keys: ${socketDatas.keys.take(10).toList()}...");
+        
+        // Try to find data for the underlying instrument
+        socketDatas.forEach((token, data) {
+          if (data['tsym'] != null && 
+              (data['tsym'].toString().contains('NIFTY') || 
+               data['tsym'].toString().contains('BANKNIFTY') ||
+               data['tsym'].toString().contains('SENSEX'))) {
+            print("Underlying Token: $token");
+            print("  TSYM: ${data['tsym']}");
+            print("  LTP: ${data['lp']}");
+            print("  Change: ${data['chng']}");
+            print("  PerChange: ${data['pc']}");
+          }
+        });
+      } else {
+        print("No socket data available");
+      }
+      print("========================");
+      
+      // STEP 4: Fetch new option chain data
       _optionChainModel = await api.getOptionChain(
           context: context,
           strPrc: strPrc,
           tradeSym: tradeSym,
           exchange: exchange,
           numofStrike: numofStrike);
+          
       if (_optionChainModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
 
-        // Seprating option chain scrips (Call / Put)
+        // STEP 5: Process and split option chain data
         await splitOptionChain(context, double.parse(strPrc));
       } else {
-        _optChainCall = [];
-        _optChainPut = [];
+        // STEP 6: Handle API failure - ensure data is cleared
+        _optChainCall.clear();
+        _optChainPut.clear();
+        _optChainCallDown.clear();
+        _optChainCallUp.clear();
+        _optChainPutDown.clear();
+        _optChainPutUp.clear();
+        
         if (_optionChainModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
-            _searchScripModel!.stat == "Not_Ok") {
+            _optionChainModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
 
       notifyListeners();
     } catch (e) {
+      // STEP 7: Handle errors by clearing data and logging
+      clearOptionChainData();
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API Option Chain", "Error": "$e"});
       notifyListeners();
-      debugPrint(e.toString());
+      debugPrint("Option Chain Error: ${e.toString()}");
+      rethrow; // Re-throw to let caller handle the error
     } finally {
       toggleLoad(false);
     }
@@ -2269,13 +2353,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   // Seprating option chain scrips (Call / Put)
-  splitOptionChain(BuildContext context, double strPrc) {
-    _optChainCall = [];
-    _optChainPut = [];
-    _optChainCallDown = [];
-    _optChainCallUp = [];
-    _optChainPutDown = [];
-    _optChainPutUp = [];
+  Future<void> splitOptionChain(BuildContext context, double strPrc) async {
+    _optChainCall.clear();
+    _optChainPut.clear();
+    _optChainCallDown.clear();
+    _optChainCallUp.clear();
+    _optChainPutDown.clear();
+    _optChainPutUp.clear();
 // Seperating Trade symbol(symbol,exp date, Option)
     final List<OptionValues>? opt = _optionChainModel!.optValue;
     for (var el in List<OptionValues>.from(opt!)) {
@@ -2328,14 +2412,38 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
       }
     }
+    
+    // Debug: Print socket data after option chain processing
+    final socketDatas = ref.read(websocketProvider).socketDatas;
+    print("=== POST-OPTION CHAIN SOCKET DEBUG ===");
+    print("Option chain processed with ${_optChainCall.length} calls and ${_optChainPut.length} puts");
+    print("Total socket entries: ${socketDatas.length}");
+    
+    // Print sample option chain tokens and their socket data
+    if (_optionChainModel?.optValue != null && _optionChainModel!.optValue!.isNotEmpty) {
+      print("Sample option tokens:");
+      for (int i = 0; i < min(5, _optionChainModel!.optValue!.length); i++) {
+        final option = _optionChainModel!.optValue![i];
+        final token = option.token;
+        print("  Option $i: ${option.tsym} (Token: $token)");
+        if (socketDatas.containsKey(token)) {
+          final data = socketDatas[token];
+          print("    Socket Data - LTP: ${data?['lp']}, Change: ${data?['chng']}");
+        } else {
+          print("    No socket data for this token");
+        }
+      }
+    }
+    print("=====================================");
+    
     notifyListeners();
-    requestWSOptChain(context: context, isSubscribe: true);
+    await requestWSOptChain(context: context, isSubscribe: true);
   }
 
 // websocket Connection Request for Option chain list
 
-  requestWSOptChain(
-      {required bool isSubscribe, required BuildContext context}) {
+  Future<void> requestWSOptChain(
+      {required bool isSubscribe, required BuildContext context}) async {
     String input = "";
     if (_optionChainModel != null) {
       if (_optionChainModel!.optValue != null) {
@@ -2347,7 +2455,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     if (input.isNotEmpty) {
       // lastScbTok(input);
-      ref.read(websocketProvider).establishConnection(
+      await ref.read(websocketProvider).establishConnection(
           channelInput: input.substring(0, input.length - 1),
           task: isSubscribe ? "t" : "u",
           context: context);
@@ -3070,6 +3178,28 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   // Socket data update method to maintain sorting
   void updateSocketData(Map<String, dynamic> socketDatas) {
     if (socketDatas == null || _scrips.isEmpty) return;
+    
+    // Debug: Log when socket data is being updated during option chain operations
+    if (_optionChainModel != null) {
+      print("=== SOCKET UPDATE DURING OPTION CHAIN ===");
+      print("Updating socket data with ${socketDatas.length} entries");
+      
+      // Check if any option chain tokens are in the update
+      int optionTokensUpdated = 0;
+      if (_optionChainModel!.optValue != null) {
+        for (var option in _optionChainModel!.optValue!) {
+          if (socketDatas.containsKey(option.token)) {
+            optionTokensUpdated++;
+            if (optionTokensUpdated <= 3) { // Limit debug output
+              final data = socketDatas[option.token];
+              print("  Updated Option: ${option.tsym} - LTP: ${data?['lp']}, Change: ${data?['chng']}");
+            }
+          }
+        }
+      }
+      print("Total option tokens updated: $optionTokensUpdated");
+      print("=======================================");
+    }
 
     bool dataUpdated = false;
 
@@ -3484,4 +3614,57 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
   ////
+
+  // Clear option chain data to prevent stale UI during symbol switching
+  void clearOptionChainData() {
+    _optChainCall.clear();
+    _optChainPut.clear();
+    _optChainCallDown.clear();
+    _optChainCallUp.clear();
+    _optChainPutDown.clear();
+    _optChainPutUp.clear();
+    _optionChainModel = null;
+    notifyListeners();
+  }
+
+  // CRITICAL FIX: Clear old option chain socket data to prevent stale LTP showing
+  Future<void> _clearOldOptionSocketData() async {
+    try {
+      final wsProvider = ref.read(websocketProvider);
+      final Map socketDatas = wsProvider.socketDatas;
+      
+      // Get all current option chain tokens that should be cleared
+      final List<String> tokensToRemove = [];
+      
+      if (_optionChainModel?.optValue != null) {
+        for (var option in _optionChainModel!.optValue!) {
+          if (option.token != null && socketDatas.containsKey(option.token)) {
+            tokensToRemove.add(option.token!);
+          }
+        }
+      }
+      
+      // Remove old option chain tokens from socket data
+      for (String token in tokensToRemove) {
+        socketDatas.remove(token);
+        print("Cleared stale socket data for token: $token");
+      }
+      
+      // Force update the socket data stream to notify UI components
+      if (tokensToRemove.isNotEmpty) {
+        print("Cleared ${tokensToRemove.length} stale option tokens from socket data");
+      }
+    } catch (e) {
+      print("Error clearing old option socket data: $e");
+    }
+  }
+
+  // Set option chain error state
+  void setOptionChainError(String error) {
+    // Clear data and set error state
+    clearOptionChainData();
+    // Could add error state management here if needed
+    debugPrint("Option Chain Error: $error");
+    notifyListeners();
+  }
 }

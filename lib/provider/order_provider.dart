@@ -1121,32 +1121,51 @@ class OrderProvider extends DefaultChangeNotifier {
               .map((e) => "${e.exch}|${e.token}")
               .toSet()
               .join("#");
-          print("input $input");
+          print("Regular orders input: $input");
         }
       }
 
       if (_gttOrderBookModel!.isNotEmpty) {
-        // for (var element in _gttOrderBookModel!) {
-        input += _gttOrderBookModel!
+        // Debug: Print GTT order tokens before subscription
+        print("=== GTT ORDER SOCKET SUBSCRIPTION ===");
+        print("GTT Orders count: ${_gttOrderBookModel!.length}");
+        print("Subscribe mode: ${isSubscribe ? 'SUBSCRIBE' : 'UNSUBSCRIBE'}");
+        
+        final gttTokens = _gttOrderBookModel!
             .map((e) => "${e.exch}|${e.token}")
             .toSet()
             .join("#");
-        // }
+        
+        // Debug: Print first 3 GTT order details
+        for (int i = 0; i < _gttOrderBookModel!.length && i < 3; i++) {
+          final gtt = _gttOrderBookModel![i];
+          print("  GTT $i: ${gtt.tsym} (${gtt.exch}|${gtt.token}) - Current LTP: ${gtt.ltp ?? 'null'}");
+        }
+        
+        if (input.isNotEmpty) {
+          input += "#$gttTokens";
+        } else {
+          input = gttTokens;
+        }
+        
+        print("Total subscription input length: ${input.length}");
+        print("First 100 chars: ${input.substring(0, input.length > 100 ? 100 : input.length)}");
+        print("=====================================");
       }
 
       if (input.isNotEmpty) {
-        // ConstantName.lastSubscribe = input;
         ref.read(websocketProvider).establishConnection(
             channelInput: input,
             task: isSubscribe ? "t" : "u",
             context: context);
+      } else {
+        print("🚨 No input to subscribe to in requestWSOrderBook");
       }
     } catch (e) {
+      print("❌ Error in requestWSOrderBook: $e");
     } finally {
       toggleLoadingOn(false);
     }
-
-    // notifyListeners();
   }
 
   filterTradeBook(String sorting) {

@@ -78,11 +78,21 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
   @override
   void initState() {
     super.initState();
-    // Initialize with current values
+    // Initialize with current values from API data first
     _lp = widget.option.lp ?? widget.option.close ?? "0.00";
     _perChange = widget.option.perChange ?? "0.00";
     _oiLack = widget.option.oiLack ?? "0.00";
     _oiPerChng = widget.option.oiPerChng ?? "0.00";
+
+    // Debug: Print initialization values
+    print("=== CALL OPTION INIT DEBUG ===");
+    print("Token: ${widget.option.token}");
+    print("TSYM: ${widget.option.tsym}");
+    print("API LTP: ${widget.option.lp}");
+    print("API Close: ${widget.option.close}");
+    print("Initialized _lp: $_lp");
+    print("Initialized _perChange: $_perChange");
+    print("=============================");
 
     // Don't set up the listener in initState - moved to didChangeDependencies
   }
@@ -93,8 +103,37 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
 
     // Only set up the listener once
     if (!_isListenerSetup) {
+      _initializeWithSocketData();
       _setupSocketListener();
       _isListenerSetup = true;
+    }
+  }
+
+  void _initializeWithSocketData() {
+    // Try to get current socket data for this token
+    final provider = ProviderScope.containerOf(context).read(websocketProvider);
+    final socketDatas = provider.socketDatas;
+    
+    if (socketDatas.containsKey(widget.option.token)) {
+      final data = socketDatas[widget.option.token];
+      if (data != null) {
+        // Override with socket data if available and valid
+        final socketLp = data['lp']?.toString();
+        if (socketLp != null && socketLp != "null" && socketLp.isNotEmpty) {
+          _lp = socketLp;
+        }
+        
+        final socketPc = data['pc']?.toString();
+        if (socketPc != null && socketPc != "null" && socketPc.isNotEmpty) {
+          _perChange = socketPc;
+        }
+        
+        print("=== CALL INIT WITH SOCKET ===");
+        print("Token: ${widget.option.token}");
+        print("Updated _lp: $_lp");
+        print("Updated _perChange: $_perChange");
+        print("============================");
+      }
     }
   }
 
@@ -117,6 +156,15 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
         final data = socketData[widget.option.token];
         if (data == null) return;
 
+        // Debug: Log socket updates for this token
+        print("=== CALL SOCKET UPDATE ===");
+        print("Token: ${widget.option.token}");
+        print("Socket LTP: ${data['lp']}");
+        print("Socket PC: ${data['pc']}");
+        print("Current _lp: $_lp");
+        print("Current _perChange: $_perChange");
+        print("==========================");
+
         // Check if values actually changed before updating state
         bool needsUpdate = false;
 
@@ -124,20 +172,20 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
         if (newLp != null &&
             newLp != _lp &&
             newLp != "null" &&
-            newLp != "0" &&
-            newLp != "0.0") {
+            newLp.isNotEmpty) {
           _lp = newLp;
           needsUpdate = true;
+          print("CALL LTP Updated: $_lp");
         }
 
         final newPc = data['pc']?.toString();
         if (newPc != null &&
             newPc != _perChange &&
             newPc != "null" &&
-            newPc != "0" &&
-            newPc != "0.0") {
+            newPc.isNotEmpty) {
           _perChange = newPc;
           needsUpdate = true;
+          print("CALL PC Updated: $_perChange");
         }
 
         // Calculate OI values only if needed

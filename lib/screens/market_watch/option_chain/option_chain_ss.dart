@@ -62,18 +62,31 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
       // Load default tabs first
       ref.read(marketWatchProvider).loadDefaultTabs();
       
-      // Fetch option chain data immediately
-      final marketWatch = ref.read(marketWatchProvider);
-      await marketWatch.fetchOPtionChain(
-        context: context,
-        exchange: marketWatch.optionExch ?? widget.wlValue.exch,
-        numofStrike: marketWatch.numStrike,
-        strPrc: marketWatch.optionStrPrc,
-        tradeSym: marketWatch.selectedTradeSym ?? widget.wlValue.tsym
-      );
-      
-      // Ensure WebSocket subscription for option chain data after initial load
-      await marketWatch.requestWSOptChain(context: context, isSubscribe: true);
+      try {
+        // Fetch option chain data immediately with proper error handling
+        final marketWatch = ref.read(marketWatchProvider);
+        
+        // Clear any stale data first
+        marketWatch.clearOptionChainData();
+        
+        await marketWatch.fetchOPtionChain(
+          context: context,
+          exchange: marketWatch.optionExch ?? widget.wlValue.exch,
+          numofStrike: marketWatch.numStrike,
+          strPrc: marketWatch.optionStrPrc,
+          tradeSym: marketWatch.selectedTradeSym ?? widget.wlValue.tsym
+        );
+        
+        // Ensure WebSocket subscription for option chain data after initial load
+        await marketWatch.requestWSOptChain(context: context, isSubscribe: true);
+        
+      } catch (e) {
+        debugPrint("Error in option chain initState: $e");
+        // Handle initialization error gracefully
+        if (mounted) {
+          ref.read(marketWatchProvider).setOptionChainError("Failed to load initial data");
+        }
+      }
     });
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -234,31 +247,58 @@ class _OptionTopBar extends ConsumerWidget {
                     // Show loading indicator immediately
                     tvChart.singlePageloader(true);
                     
-                    // Set the script with a catch for error handling
                     try {
-                      tvChart.setOptionScript(context, tab.exch.toString(),
+                      // STEP 1: Clear old option chain data immediately to prevent stale UI
+                      tvChart.clearOptionChainData();
+                      
+                      // STEP 1.5: CRITICAL FIX - Clear stale socket data immediately
+                      // This prevents old RELIANCE prices from showing when switching to NIFTY
+                      final wsProvider = ref.read(websocketProvider);
+                      final Map socketDatas = wsProvider.socketDatas;
+                      
+                      // Clear all option chain tokens from socket data to prevent stale LTP
+                      if (tvChart.optionChainModel?.optValue != null) {
+                        for (var option in tvChart.optionChainModel!.optValue!) {
+                          if (option.token != null && socketDatas.containsKey(option.token)) {
+                            socketDatas.remove(option.token);
+                            print("UI: Cleared stale socket data for token: ${option.token}");
+                          }
+                        }
+                      }
+                      
+                      // STEP 2: Set the script and wait for ALL setup to complete
+                      await tvChart.setOptionScript(context, tab.exch.toString(),
                           tab.token.toString(), tab.tsym.toString());
-
-                      // Fetch new option chain data immediately
+                      
+                      // STEP 3: Verify that option parameters are properly set
+                      if (tvChart.optionExch == null || tvChart.selectedTradeSym == null) {
+                        throw Exception("Option parameters not properly initialized");
+                      }
+                      
+                      // STEP 4: Fetch option chain with verified parameters
                       await tvChart.fetchOPtionChain(
                         context: context,
-                        exchange: tvChart.optionExch ?? tab.exch.toString(),
+                        exchange: tvChart.optionExch!,
                         numofStrike: tvChart.numStrike,
                         strPrc: tvChart.optionStrPrc,
-                        tradeSym: tvChart.selectedTradeSym ?? tab.tsym.toString()
+                        tradeSym: tvChart.selectedTradeSym!
                       );
                       
-                      // Ensure WebSocket subscription for option chain data
+                      // STEP 5: Ensure WebSocket subscription for option chain data
                       await tvChart.requestWSOptChain(context: context, isSubscribe: true);
+                      
                     } catch (e) {
                       // Handle any errors during script setting
                       debugPrint("Error loading option chain: $e");
                       
-                      // Ensure loading indicator is turned off in case of error
+                      // Ensure UI shows error state and is not stuck in loading
+                      tvChart.setOptionChainError("Failed to load option chain data");
+                    } finally {
+                      // Ensure loading indicator is always turned off
                       tvChart.singlePageloader(false);
                     }
 
-                    // Scroll to the current strike price after a delay (only delay kept)
+                    // Scroll to the current strike price after a delay
                     Future.delayed(const Duration(milliseconds: 500), () {
                       scrollToStrikePrice();
                     });
@@ -403,6 +443,7 @@ class _DateSelectorTabs extends ConsumerWidget {
                       );
                     }
 
+                    // Update expiry date selection
                     for (var i = 0; i < scripInfo.optExp!.length; i++) {
                       if (scripInfo.sortDate[index] == scripInfo.optExp![i].exd) {
                         scripInfo.selecTradSym("${scripInfo.optExp![i].tsym}");
@@ -412,6 +453,12 @@ class _DateSelectorTabs extends ConsumerWidget {
                     scripInfo.selecexpDate(scripInfo.sortDate[index]);
 
                     try {
+                      // Clear old data before fetching new expiry
+                      scripInfo.clearOptionChainData();
+                      
+                      debugPrint("Fetching option chain for expiry: ${scripInfo.sortDate[index]}");
+                      debugPrint("Exchange: ${scripInfo.optionExch}, TradeSym: ${scripInfo.selectedTradeSym}");
+                      
                       await ref.read(marketWatchProvider).fetchOPtionChain(
                         context: context,
                         exchange: scripInfo.optionExch!,
@@ -423,11 +470,12 @@ class _DateSelectorTabs extends ConsumerWidget {
                       // Ensure WebSocket subscription for option chain data
                       await scripInfo.requestWSOptChain(context: context, isSubscribe: true);
                     } catch (e) {
-                      // Handle any errors
+                      // Handle any errors with better user feedback
                       debugPrint("Error loading option chain for expiry: $e");
+                      scripInfo.setOptionChainError("Failed to load data for selected expiry");
                     }
                                 
-                    // Add a delay to ensure the UI is updated before scrolling (only delay kept)
+                    // Add a delay to ensure the UI is updated before scrolling
                     Future.delayed(const Duration(milliseconds: 300), () {
                       scrollToStrikePrice();
                     });
