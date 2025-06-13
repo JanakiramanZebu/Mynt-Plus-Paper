@@ -1220,42 +1220,26 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                       : const Color(
                                                                           0xffF1F3F8),
                                                                   onChanged: (value) {
-                                                                    if (value
-                                                                            .isNotEmpty &&
-                                                                        double.parse(
-                                                                                value) >
-                                                                            0) {
-                                                                      final regex = RegExp(
-                                                                          r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                                      if (!regex.hasMatch(
-                                                                          value)) {
-                                                                        orderInput
-                                                                                .priceCtrl
-                                                                                .text =
-                                                                            value.substring(
-                                                                                0,
-                                                                                value.length -
-                                                                                    1); // Revert to previous valid input
-                                                                        orderInput
-                                                                                .priceCtrl
-                                                                                .selection =
-                                                                            TextSelection.collapsed(
-                                                                                offset: orderInput
-                                                                                    .priceCtrl
-                                                                                    .text
-                                                                                    .length); // Keep cursor at the end
+                                                                    double inputPrice = double.tryParse(value) ?? 0;
+                                                                    if (value.isNotEmpty && inputPrice > 0) {
+                                                                      final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
+                                                                      if (!regex.hasMatch(value)) {
+                                                                        orderInput.priceCtrl.text = value.substring(0, value.length - 1);
+                                                                        orderInput.priceCtrl.selection = TextSelection.collapsed(
+                                                                          offset: orderInput.priceCtrl.text.length,
+                                                                        );
                                                                       }
                                                                     }
                                                                     ScaffoldMessenger.of(
                                                                             context)
                                                                         .removeCurrentSnackBar();
-                                                                    if (value.isEmpty || value == "0" || value == "0.00") {
+                                                                    if (value.isEmpty || inputPrice <= 0) {
                                                                       ScaffoldMessenger
                                                                               .of(context)
                                                                           .showSnackBar(
                                                                               warningMessage(
                                                                                   context,
-                                                                                  "Price can not be ${value == "0" || value == "0.00" ?'zero':'empty'}"));
+                                                                                  "Price can not be ${inputPrice <= 0?'zero':'empty'}"));
                                                                     } else {
                                                                       setState(() {
                                                                         ordPrice = value;
@@ -1709,31 +1693,22 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                                 0xffF1F3F8),
                                                                         onChanged:
                                                                             (value) {
-                                                                          if (value
-                                                                                  .isNotEmpty &&
-                                                                              double.parse(
-                                                                                      value) >
-                                                                                  0) {
-                                                                            final regex =
-                                                                                RegExp(
-                                                                                    r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                                            if (!regex
-                                                                                .hasMatch(
-                                                                                    value)) {
-                                                                              orderInput
-                                                                                      .ocoPriceCtrl
-                                                                                      .text =
-                                                                                  value.substring(
-                                                                                      0,
-                                                                                      value.length -
-                                                                                          1); // Revert to previous valid input
+                                                                              double inputPrice = double.tryParse(value) ?? 0;
+                                                                          if (value.isNotEmpty && inputPrice>0) {
+                                                                            final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
+                                                                            if (!regex.hasMatch(value)) {
+                                                                              orderInput.ocoPriceCtrl.text = value.substring(0, value.length - 1);
                                                                               orderInput.ocoPriceCtrl.selection = TextSelection.collapsed(
-                                                                                  offset: orderInput
-                                                                                      .ocoPriceCtrl
-                                                                                      .text
-                                                                                      .length); // Keep cursor at the end
+                                                                                offset: orderInput.ocoPriceCtrl.text.length,
+                                                                              );
                                                                             }
                                                                           }
+                                                                          if (value.isEmpty || inputPrice <= 0) {
+                                                                                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                                        warningMessage(context,
+                                                                                            "Price can not be ${inputPrice <= 0?'zero':'empty'}"));
+                                                                              }
                                                                         },
                                                                         hintText:
                                                                             "${widget.orderArg.ltp}",
@@ -2532,47 +2507,33 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                                       0xffF1F3F8),
                                                                               onChanged:
                                                                                   (value) {
-                                                                                if (value
-                                                                                        .isNotEmpty &&
-                                                                                    double.parse(
-                                                                                            value) >
-                                                                                        0) {
-                                                                                  final regex =
-                                                                                      RegExp(
-                                                                                          r'^\d+\.?\d{0,2}$'); // Allows numbers with up to 2 decimal places
-                                                                                  if (!regex
-                                                                                      .hasMatch(
-                                                                                          value)) {
-                                                                                    priceCtrl
-                                                                                            .text =
-                                                                                        value.substring(
-                                                                                            0,
-                                                                                            value.length -
-                                                                                                1); // Revert to previous valid input
-                                                                                    priceCtrl.selection = TextSelection.collapsed(
-                                                                                        offset: priceCtrl
-                                                                                            .text
-                                                                                            .length); // Keep cursor at the end
-                                                                                  }
-                                                                                }
-                                                                                ScaffoldMessenger.of(
-                                                                                        context)
-                                                                                    .hideCurrentSnackBar();
-                                                                                if (value
-                                                                                    .isEmpty) {
-                                                                                  ScaffoldMessenger.of(
-                                                                                          context)
-                                                                                      .showSnackBar(warningMessage(
-                                                                                          context,
-                                                                                          "Price can not be empty"));
-                                                                                } else {
-                                                                                  setState(() {
-                                                                                    ordPrice =
-                                                                                        value;
-                                                                                    marginUpdate();
-                                                                                  });
-                                                                                }
-                                                                              },
+                                                                                    double inputPrice = double.tryParse(value) ?? 0;
+                                                                                    if (value.isNotEmpty && inputPrice > 0) {
+                                                                                      final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
+                                                                                      if (!regex.hasMatch(value)) {
+                                                                                        priceCtrl.text = value.substring(0, value.length - 1);
+                                                                                        priceCtrl.selection = TextSelection.collapsed(
+                                                                                          offset: priceCtrl.text.length,
+                                                                                        );
+                                                                                      }
+                                                                                    }
+                                                                                    ScaffoldMessenger.of(
+                                                                                            context)
+                                                                                        .hideCurrentSnackBar();
+                                                                                    if (value.isEmpty || inputPrice <= 0) {
+                                                                                      ScaffoldMessenger.of(
+                                                                                              context)
+                                                                                          .showSnackBar(warningMessage(
+                                                                                              context,
+                                                                                              "Price can not be ${inputPrice <= 0?'zero':'empty'}"));
+                                                                                    } else {
+                                                                                      setState(() {
+                                                                                        ordPrice =
+                                                                                            value;
+                                                                                        marginUpdate();
+                                                                                      });
+                                                                                    }
+                                                                                  },
                                                                               hintText:
                                                                                   "${widget.orderArg.ltp}",
                                                                               hintStyle: textStyle(
