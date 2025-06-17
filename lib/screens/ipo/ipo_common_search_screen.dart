@@ -20,280 +20,388 @@ class IpoCommonSearch extends ConsumerWidget {
     final ipo = ref.watch(ipoProvide);
     final theme = ref.watch(themeProvider);
     final market = ref.watch(marketWatchProvider);
+    
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        appBar: AppBar(
-          elevation: .2,
-          leadingWidth: 40,
-          centerTitle: false,
-          titleSpacing: -8,
-          leading: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: InkWell(
-              onTap: () {
-                ipo.clearCommonIpoSearch();
-                Navigator.pop(context);
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Icon(
-                  Icons.arrow_back_ios,
-                 color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  size: 22,
-                ),
-              ),
+        appBar: _buildAppBar(context, ipo, theme),
+        body: _buildBody(context, ipo, theme, market),
+      ),
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context, IPOProvider ipo, ThemesProvider theme) {
+    return AppBar(
+      elevation: .2,
+      leadingWidth: 40,
+      centerTitle: false,
+      titleSpacing: -8,
+      leading: _BackButton(ipo: ipo, theme: theme),
+      shadowColor: const Color(0xffECEFF3),
+      title: _SearchField(ipo: ipo, theme: theme),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, IPOProvider ipo, ThemesProvider theme, MarketWatchProvider market) {
+    return SingleChildScrollView(
+      child: ipo.ipoCommonSearchList.isNotEmpty
+          ? _SearchResultsList(ipo: ipo, theme: theme, market: market)
+          : const _NoDataSection(),
+    );
+  }
+
+  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+    return TextStyle(
+      fontWeight: fWeight,
+      color: color,
+      fontSize: fontSize,
+    );
+  }
+}
+
+class _BackButton extends StatelessWidget {
+  final IPOProvider ipo;
+  final ThemesProvider theme;
+
+  const _BackButton({
+    required this.ipo,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: InkWell(
+        onTap: () {
+          ipo.clearCommonIpoSearch();
+          Navigator.pop(context);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Icon(
+            Icons.arrow_back_ios,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            size: 22,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchField extends StatelessWidget {
+  final IPOProvider ipo;
+  final ThemesProvider theme;
+
+  const _SearchField({
+    required this.ipo,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 62,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      child: TextFormField(
+        autofocus: true,
+        controller: ipo.ipocommonsearchcontroller,
+        style: IpoCommonSearch._textStyle(
+          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          14,
+          FontWeight.w500,
+        ),
+        decoration: InputDecoration(
+          fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+          filled: true,
+          hintStyle: IpoCommonSearch._textStyle(
+            const Color(0xff69758F),
+            14,
+            FontWeight.w500,
+          ),
+          prefixIconColor: const Color(0xff586279),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: SvgPicture.asset(
+              assets.searchIcon,
+              color: const Color(0xff586279),
+              fit: BoxFit.contain,
+              width: 20,
             ),
           ),
-
-          shadowColor: const Color(0xffECEFF3),
-          title: Container(
-              height: 62,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              child: TextFormField(
-                autofocus: true,
-                controller: ipo.ipocommonsearchcontroller,
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500),
-                decoration: InputDecoration(
-                    fillColor: theme.isDarkMode
-                        ? colors.darkGrey
-                        : const Color(0xffF1F3F8),
-                    filled: true,
-                    hintStyle: textStyle(
-                        const Color(0xff69758F), 14, FontWeight.w500),
-                    prefixIconColor: const Color(0xff586279),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: SvgPicture.asset(assets.searchIcon,
-                          color: const Color(0xff586279),
-                          fit: BoxFit.contain,
-                          width: 20),
-                    ),
-                    // if()
-                    suffixIcon: ValueListenableBuilder<TextEditingValue>(
-                      valueListenable: ipo.ipocommonsearchcontroller,
-                      builder: (context, value, child) {
-                        return value.text.isNotEmpty
-                            ? InkWell(
-                                onTap: () {
-                                  ipo.clearCommonIpoSearch();
-                                },
-                                borderRadius: BorderRadius.circular(50),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12.0),
-                                  child: SvgPicture.asset(
-                                    assets.removeIcon,
-                                    fit: BoxFit.scaleDown,
-                                    width: 20,
-                                  ),
-                                ),
-                              )
-                            : const SizedBox.shrink();
-                      },
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(20)),
-                    disabledBorder: InputBorder.none,
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(20)),
-                    hintText: "Search IPO",
-                    contentPadding: const EdgeInsets.only(top: 20),
-                    border: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(20))),
-                onChanged: (value) async {
-                  ipo.searchCommonIpo(value, context);
-                },
-              )),
-
-          // Text("IPO Search",
-          //     style: textStyles.appBarTitleTxt.copyWith(
-          //         color: theme.isDarkMode
-          //             ? colors.colorWhite
-          //             : colors.colorBlack))
+          suffixIcon: _ClearButton(ipo: ipo),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          disabledBorder: InputBorder.none,
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          hintText: "Search IPO",
+          contentPadding: const EdgeInsets.only(top: 20),
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(20),
+          ),
         ),
-        body: SingleChildScrollView(
-          child: ipo.ipoCommonSearchList.isNotEmpty
-              ? ListView.builder(
-                  shrinkWrap: true,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: ipo.ipoCommonSearchList.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final checkIpoStatus =
-                        ipo.ipoCommonSearchList[index].ipostatus;
-                    // DepthInputArgs depthArgs = DepthInputArgs(
-                    //     exch: "",
-                    //     token: "",
-                    //     tsym: '',
-                    //     instname: "",
-                    //     symbol: '',
-                    //     expDate: '',
-                    //     option: '');
+        onChanged: (value) async {
+          ipo.searchCommonIpo(value, context);
+        },
+      ),
+    );
+  }
+}
 
-                    return InkWell(
-                        onTap: () async {
-                          String pricerange = "";
-                          String mininvVal = "";
-                          String enddate = "";
-                          String startdate = "";
-                          String ipotype = "";
+class _ClearButton extends StatelessWidget {
+  final IPOProvider ipo;
 
-                          if (checkIpoStatus == "Listed") {
-                            var listdata =
-                                ipo.ipoCommonSearchList[index].toJson();
-                            listdata['exch'] =
-                                ipo.ipoCommonSearchList[index].exchange;
-                            listdata['expDate'] = "";
-                            listdata['option'] = "";
-                            listdata['instname'] = "";
-                            listdata['tsym'] = ipo
-                                .ipoCommonSearchList[index].symbol
-                                .split(":")[1];
-                            await market.calldepthApis(context, listdata, "");
-                          } else if (checkIpoStatus == "Live") {
-                            await ipo.getIpoSinglePage(
-                                ipoName:
-                                    "${ipo.ipoCommonSearchList[index].name}");
-                            pricerange =
-                                "₹${double.parse(ipo.ipoCommonSearchList[index].minPrice!).toInt()} - ₹${double.parse(ipo.ipoCommonSearchList[index].maxPrice!).toInt()}";
-                            mininvVal =
-                                "₹${convertCurrencyINRStandard(mininv(double.parse(ipo.ipoCommonSearchList[index].minPrice!).toDouble(), int.parse(ipo.ipoCommonSearchList[index].minBidQuantity!).toInt()).toInt())}";
-                            startdate =
-                                "${ipo.ipoCommonSearchList[index].biddingStartDate}";
-                            enddate =
-                                "${ipo.ipoCommonSearchList[index].biddingEndDate}";
-                            ipotype = "${ipo.ipoCommonSearchList[index].key}";
-                          } else {
-                            await ipo.getIpoSinglePage(
-                                ipoName:
-                                    "${ipo.ipoCommonSearchList[index].companyName}");
+  const _ClearButton({required this.ipo});
 
-                            pricerange =
-                                "₹${ipo.ipoCommonSearchList[index].priceRange!}";
-                            mininvVal =
-                                "₹${convertCurrencyINRStandard(mininv(ipo.ipoCommonSearchList[index].minPrice!.toDouble(), ipo.ipoCommonSearchList[index].minBidQu!.toInt()).toInt())}";
-                            enddate = convertClosedIpoDates(
-                                ipo.ipoCommonSearchList[index].iPOEndDate!,
-                                "MMM dd, yyyy",
-                                "EEE, dd MMM yyyy HH:mm:ss");
-                            startdate = convertClosedIpoDates(
-                                ipo.ipoCommonSearchList[index].iPOStartDate!,
-                                "MMM dd, yyyy",
-                                "dd-MM-yyyy");
-                          }
-
-                          if (checkIpoStatus != "Listed") {
-                            showModalBottomSheet(
-                              isScrollControlled: true,
-                              useSafeArea: true,
-                              isDismissible: true,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(16))),
-                              context: context,
-                              builder: (context) => Container(
-                                padding: EdgeInsets.only(
-                                  bottom:
-                                      MediaQuery.of(context).viewInsets.bottom,
-                                ),
-                                child: MainSmeSinglePage(
-                                    pricerange: pricerange,
-                                    mininv: mininvVal,
-                                    enddate: enddate,
-                                    startdate: startdate,
-                                    ipotype: ipotype,
-                                    ipodetails: jsonEncode(
-                                        ipo.ipoCommonSearchList[index])),
-                              ),
-                            );
-                          }
-                        },
-                        child: Container(
-                            decoration: BoxDecoration(
-                                border: Border.symmetric(
-                                    horizontal: BorderSide(
-                                        color: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : Color(0xffEEF0F2),
-                                        width: 1.5),
-                                    vertical: BorderSide(
-                                        color: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : Color(0xffEEF0F2),
-                                        width: 1.5))),
-                            padding: const EdgeInsets.all(8),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                            child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                              Text(
-                                                  "${ipo.ipoCommonSearchList[index].companyName == "" ? ipo.ipoCommonSearchList[index].name : ipo.ipoCommonSearchList[index].companyName}",
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      14,
-                                                      FontWeight.w500)),
-                                              const SizedBox(height: 4),
-                                              // SizedBox(
-                                              //     height: 18,
-                                              //     child: ListView(
-                                              //         scrollDirection:
-                                              //             Axis.horizontal,
-                                              //         children: [
-                                              //           CustomExchBadge(
-                                              //               exch: ipo
-                                              //                       .ipoCommonSearchList[index]
-                                              //                       .key),
-                                              //           // CustomExchBadge(
-                                              //           //     exch: mfData
-                                              //           //         .mutualFundsearchdata!
-                                              //           //         .data![
-                                              //           //             index]
-                                              //           //         .sCHEMESUBCATEGORY!
-                                              //           //         .replaceAll(
-                                              //           //             "Fund",
-                                              //           //             '')
-                                              //           //         .replaceAll(
-                                              //           //             "Hybrid",
-                                              //           //             "")
-                                              //           //         .toUpperCase())
-                                              //         ]))
-                                            ])),
-                                      ]),
-                                ])));
-                  },
-                )
-              : const Align(
-                  alignment: Alignment.center,
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 250),
-                    child: NoDataFound(),
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: ipo.ipocommonsearchcontroller,
+      builder: (context, value, child) {
+        return value.text.isNotEmpty
+            ? InkWell(
+                onTap: () => ipo.clearCommonIpoSearch(),
+                borderRadius: BorderRadius.circular(50),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: SvgPicture.asset(
+                    assets.removeIcon,
+                    fit: BoxFit.scaleDown,
+                    width: 20,
                   ),
                 ),
+              )
+            : const SizedBox.shrink();
+      },
+    );
+  }
+}
+
+class _SearchResultsList extends StatelessWidget {
+  final IPOProvider ipo;
+  final ThemesProvider theme;
+  final MarketWatchProvider market;
+
+  const _SearchResultsList({
+    required this.ipo,
+    required this.theme,
+    required this.market,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      shrinkWrap: true,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: ipo.ipoCommonSearchList.length,
+      itemBuilder: (context, index) {
+        return _SearchResultItem(
+          ipo: ipo,
+          theme: theme,
+          market: market,
+          index: index,
+        );
+      },
+    );
+  }
+}
+
+class _SearchResultItem extends StatelessWidget {
+  final IPOProvider ipo;
+  final ThemesProvider theme;
+  final MarketWatchProvider market;
+  final int index;
+
+  const _SearchResultItem({
+    required this.ipo,
+    required this.theme,
+    required this.market,
+    required this.index,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final checkIpoStatus = ipo.ipoCommonSearchList[index].ipostatus;
+    
+    return InkWell(
+      onTap: () => _handleItemTap(context, checkIpoStatus),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.symmetric(
+            horizontal: BorderSide(
+              color: theme.isDarkMode ? colors.darkGrey : const Color(0xffEEF0F2),
+              width: 1.5,
+            ),
+            vertical: BorderSide(
+              color: theme.isDarkMode ? colors.darkGrey : const Color(0xffEEF0F2),
+              width: 1.5,
+            ),
+          ),
         ),
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        _getCompanyName(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: IpoCommonSearch._textStyle(
+                          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          14,
+                          FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getCompanyName() {
+    final item = ipo.ipoCommonSearchList[index];
+    return item.companyName == "" ? item.name ?? "" : item.companyName ?? "";
+  }
+
+  Future<void> _handleItemTap(BuildContext context, String? checkIpoStatus) async {
+    String pricerange = "";
+    String mininvVal = "";
+    String enddate = "";
+    String startdate = "";
+    String ipotype = "";
+
+    if (checkIpoStatus == "Listed") {
+      await _handleListedIPO(context);
+    } else if (checkIpoStatus == "Live") {
+      final data = await _handleLiveIPO();
+      pricerange = data['pricerange'] ?? "";
+      mininvVal = data['mininvVal'] ?? "";
+      startdate = data['startdate'] ?? "";
+      enddate = data['enddate'] ?? "";
+      ipotype = data['ipotype'] ?? "";
+    } else {
+      final data = await _handleClosedIPO();
+      pricerange = data['pricerange'] ?? "";
+      mininvVal = data['mininvVal'] ?? "";
+      enddate = data['enddate'] ?? "";
+      startdate = data['startdate'] ?? "";
+    }
+
+    if (checkIpoStatus != "Listed" && context.mounted) {
+      _showIPOBottomSheet(context, pricerange, mininvVal, enddate, startdate, ipotype);
+    }
+  }
+
+  Future<void> _handleListedIPO(BuildContext context) async {
+    var listdata = ipo.ipoCommonSearchList[index].toJson();
+    listdata['exch'] = ipo.ipoCommonSearchList[index].exchange;
+    listdata['expDate'] = "";
+    listdata['option'] = "";
+    listdata['instname'] = "";
+    listdata['tsym'] = ipo.ipoCommonSearchList[index].symbol?.split(":")[1] ?? "";
+    await market.calldepthApis(context, listdata, "");
+  }
+
+  Future<Map<String, String>> _handleLiveIPO() async {
+    await ipo.getIpoSinglePage(ipoName: "${ipo.ipoCommonSearchList[index].name}");
+    
+    final minPrice = double.parse(ipo.ipoCommonSearchList[index].minPrice!).toInt();
+    final maxPrice = double.parse(ipo.ipoCommonSearchList[index].maxPrice!).toInt();
+    final minBidQty = int.parse(ipo.ipoCommonSearchList[index].minBidQuantity!);
+    
+    return {
+      'pricerange': "₹$minPrice - ₹$maxPrice",
+      'mininvVal': "₹${convertCurrencyINRStandard(mininv(minPrice.toDouble(), minBidQty).toInt())}",
+      'startdate': ipo.ipoCommonSearchList[index].biddingStartDate ?? "",
+      'enddate': ipo.ipoCommonSearchList[index].biddingEndDate ?? "",
+      'ipotype': ipo.ipoCommonSearchList[index].key ?? "",
+    };
+  }
+
+  Future<Map<String, String>> _handleClosedIPO() async {
+    await ipo.getIpoSinglePage(ipoName: "${ipo.ipoCommonSearchList[index].companyName}");
+    
+    return {
+      'pricerange': "₹${ipo.ipoCommonSearchList[index].priceRange ?? ""}",
+      'mininvVal': "₹${convertCurrencyINRStandard(mininv(ipo.ipoCommonSearchList[index].minPrice?.toDouble() ?? 0.0, ipo.ipoCommonSearchList[index].minBidQu?.toInt() ?? 0).toInt())}",
+      'enddate': convertClosedIpoDates(
+        ipo.ipoCommonSearchList[index].iPOEndDate ?? "",
+        "MMM dd, yyyy",
+        "EEE, dd MMM yyyy HH:mm:ss",
+      ),
+      'startdate': convertClosedIpoDates(
+        ipo.ipoCommonSearchList[index].iPOStartDate ?? "",
+        "MMM dd, yyyy",
+        "dd-MM-yyyy",
+      ),
+    };
+  }
+
+  void _showIPOBottomSheet(
+    BuildContext context,
+    String pricerange,
+    String mininvVal,
+    String enddate,
+    String startdate,
+    String ipotype,
+  ) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      useSafeArea: true,
+      isDismissible: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      context: context,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: MainSmeSinglePage(
+          pricerange: pricerange,
+          mininv: mininvVal,
+          enddate: enddate,
+          startdate: startdate,
+          ipotype: ipotype,
+          ipodetails: jsonEncode(ipo.ipoCommonSearchList[index]),
+        ),
+      ),
+    );
+  }
+}
+
+class _NoDataSection extends StatelessWidget {
+  const _NoDataSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Align(
+      alignment: Alignment.center,
+      child: Padding(
+        padding: EdgeInsets.only(top: 250),
+        child: NoDataFound(),
       ),
     );
   }

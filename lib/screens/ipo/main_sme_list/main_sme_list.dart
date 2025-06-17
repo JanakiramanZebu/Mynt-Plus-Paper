@@ -26,7 +26,7 @@ class MainSmeListCard extends StatelessWidget {
       final mainstreamipo = ref.watch(ipoProvide);
       final upi = ref.watch(transcationProvider);
       final theme = ref.watch(themeProvider);
-      final dev_height = MediaQuery.of(context).size.height;
+      final devHeight = MediaQuery.of(context).size.height;
 
       List<dynamic> openIpos = mainstreamipo.mainsme
           .where((ipo) =>
@@ -39,1001 +39,366 @@ class MainSmeListCard extends StatelessWidget {
               "Pre-open")
           .toList();
 
-          String formatDate(String date) {
-            List<String> parts = date.split('-');
-    int day = int.parse(parts[0]);
-    int month = int.parse(parts[1]);
-    int year = int.parse(parts[2]);
-  DateTime parsedDate = DateTime(year,month,day);
-  return DateFormat('d MMM').format(parsedDate); 
-}
+      final hasAnyData = openIpos.isNotEmpty || 
+                        preOpenIpos.isNotEmpty || 
+                        (ipos.ipoPreClose?.msg.isNotEmpty ?? false);
 
-      return ((openIpos.isEmpty) &&
-              (ipos.ipoPreClose?.msg.isEmpty ?? true) &&
-              (preOpenIpos.isEmpty))
-          ? Padding(
-              padding: const EdgeInsets.only(top: 225),
-              child: Container(
-                height: dev_height - 140,
-                child: const Column(
-                  children: [
-                    NoDataFound(),
-                  ],
-                ),
+      if (!hasAnyData) {
+        return Padding(
+          padding: const EdgeInsets.only(top: 225),
+          child: SizedBox(
+            height: devHeight - 140,
+            child: const Column(
+              children: [NoDataFound()],
+            ),
+          ),
+        );
+      }
+
+      return SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (openIpos.isNotEmpty) ...[
+              _IPOListSection(
+                ipos: openIpos,
+                ipoProvider: ipos,
+                upiProvider: upi,
+                theme: theme,
+                isPreOpen: false,
               ),
-            )
-          : SingleChildScrollView(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (openIpos.isNotEmpty) ...[
-                      // Padding(
-                      //   padding: const EdgeInsets.only(
-                      //       left: 16, right: 16, top: 8, bottom: 0),
-                      //   child: Text(
-                      //     "Live",
-                      //     style: textStyle(
-                      //         theme.isDarkMode
-                      //             ? colors.colorWhite.withOpacity(0.3)
-                      //             : colors.colorBlack.withOpacity(0.3),
-                      //         16,
-                      //         FontWeight.w600),
-                      //   ),
-                      // ),
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return InkWell(
-                            onTap: () async {
-                              await ipos.getIpoSinglePage(
-                                  ipoName: "${openIpos[index].name}");
-                              showModalBottomSheet(
-                                  isScrollControlled: true,
-                                  useSafeArea: true,
-                                  isDismissible: true,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16))),
-                                  context: context,
-                                  builder: (context) => Container(
-                                        padding: EdgeInsets.only(
-                                          bottom: MediaQuery.of(context)
-                                              .viewInsets
-                                              .bottom,
-                                        ),
-                                        child: MainSmeSinglePage(
-                                          pricerange:
-                                              "₹${double.parse(openIpos[index].minPrice!).toInt()} - ₹${double.parse(openIpos[index].maxPrice!).toInt()}",
-                                          mininv:
-                                              "₹${convertCurrencyINRStandard(mininv(double.parse(openIpos[index].minPrice!).toDouble(), int.parse(openIpos[index].minBidQuantity!).toInt()).toInt())}",
-                                          enddate:
-                                              "${openIpos[index].biddingEndDate}",
-                                          startdate:
-                                              "${openIpos[index].biddingStartDate}",
-                                          ipotype: "${openIpos[index].key}",
-                                          ipodetails:
-                                              jsonEncode(openIpos[index]),
-                                        ),
-                                      ));
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  
-                                   
-                              
-                                    // leading: ClipOval(
-                                    //   child: Container(
-                                    //     alignment: Alignment.center,
-                                    //     color: colors.colorDivider.withOpacity(.3),
-                                    //     width: 50,
-                                    //     height: 50,
-                                    //     child: Container(
-                                    //       padding: EdgeInsets.all(8),
-                                    //       child: Text(
-                                    //         "${mainstreamipo.mainsme[index].name.substring(0, 1)}",
-                                    //         style: textStyle(
-                                    //             theme.isDarkMode
-                                    //                 ? colors.colorWhite.withOpacity(0.3)
-                                    //                 : colors.colorBlack.withOpacity(0.3),
-                                    //             20,
-                                    //             FontWeight.w600),
-                                    //       ),
-                                    //     ),
-                                    //   ),
-                                    // ),
-                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                       children: [
-                                         Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                           children: [
-                                             // ClipOval(
-                                             //   child: Container(
-                                             //     color: colors.colorDivider.withOpacity(.3),
-                                             //     width: 40,
-                                             //     height: 40,
-                                             //     child: Container(
-                                             //       padding: const EdgeInsets.all(3),
-                                             //       child: Image.network(
-                                             //       openIpos[index].imageLink,
-                                                                       
-                                             //       ),
-                                             //     ),
-                                             //   ),
-                                             // ),
-                                                                       
-                                             // SizedBox(width: 8),
-                                                                       
-                                             SizedBox(
-                                               width: 250,
-                                               child: Text(
-                                                   openIpos[index]
-                                                       .name
-                                                      ,
-                                                   overflow:
-                                                       TextOverflow.ellipsis,
-                                                   style: textStyle(
-                                                       theme.isDarkMode
-                                                           ? colors.colorWhite
-                                                           : colors.colorBlack,
-                                                       14,
-                                                       FontWeight.w600)),
-                                             ),
-                                             SizedBox(height: 4,),
-                                              Container(
-                                                     padding: const EdgeInsets.symmetric(
-                                                         horizontal: 8,
-                                                         vertical: 4),
-                                                     decoration: BoxDecoration(
-                                                         color: openIpos[index].key ==
-                                                                 "SME"
-                                                             ? theme.isDarkMode
-                                                                 ? colors.colorGrey
-                                                                     .withOpacity(
-                                                                         .3)
-                                                                 : const Color.fromARGB(
-                                                                     255, 243, 242, 174)
-                                                             : theme.isDarkMode
-                                                                 ? colors.colorGrey
-                                                                     .withOpacity(
-                                                                         .3)
-                                                                 : const Color.fromARGB(
-                                                                     255,
-                                                                     251,
-                                                                     215,
-                                                                     148), //(0xffF1F3F8),
-                                                         borderRadius:
-                                                             BorderRadius.circular(
-                                                                 4)),
-                                                     child: Text(
-                                                         "${openIpos[index].key}",
-                                                         style: textStyle(const Color(0xff666666), 10, FontWeight.w500))),
-                                           ],
-                                         ),
-
-                                          openIpos[index].totalsub != null && openIpos[index].totalsub != ''
-                                           ? Column(
-                                               crossAxisAlignment:
-                                                   CrossAxisAlignment.start,
-                                               children: [
-                                                 Text(
-                                                     "${openIpos[index].totalsub}x",
-                                                     style: textStyle(
-                                                         theme.isDarkMode
-                                                             ? colors.colorWhite
-                                                             : colors.colorBlack,
-                                                         14,
-                                                         FontWeight.w500)),
-                                                 const SizedBox(
-                                                   height: 4,
-                                                 ),
-                                                 
-
-                                                         Text("Subscription",
-                                                     style: textStyle(
-                                                         const Color(0xff666666),
-                                                         10,
-                                                         FontWeight.w500)),
-                                               ],
-                                             )
-                                           : SizedBox.shrink(),
-                                       ],
-                                     ),
-                                     SizedBox(height: 8,),
-                              
-                                     Row(
-                                       mainAxisAlignment:
-                                           MainAxisAlignment.spaceBetween,
-                                       children: [
-                                         // open tag ----------
-                                     
-                                         // Container(
-                                         //     padding: const EdgeInsets.symmetric(
-                                         //         horizontal: 8, vertical: 4),
-                                         //     decoration: BoxDecoration(
-                                         //         color: theme.isDarkMode
-                                         //             ? colors.colorGrey.withOpacity(.1)
-                                         //             : const Color(0xffF1F3F8),
-                                         //         borderRadius: BorderRadius.circular(4)),
-                                         //     child: Text(
-                                         //         "${mainstreamipo.mainsme[index].symbol}",
-                                         //         style: textStyle(colors.colorGrey, 11,
-                                         //             FontWeight.w500))),
-                                         // const SizedBox(width: 10),
-                                         // Container(
-                                         //     padding: const EdgeInsets.symmetric(
-                                         //         horizontal: 8, vertical: 4),
-                                         //     decoration: BoxDecoration(
-                                         //         color: ipostartdate(
-                                         //                     "${mainstreamipo.mainsme[index].biddingStartDate}",
-                                         //                     "${mainstreamipo.mainsme[index].biddingEndDate}") ==
-                                         //                 "Open"
-                                         //             ? theme.isDarkMode
-                                         //                 ? const Color(0xffECF8F1)
-                                         //                     .withOpacity(.3)
-                                         //                 : const Color(0xffECF8F1)
-                                         //             : theme.isDarkMode
-                                         //                 ? const Color(0xffFFF6E6)
-                                         //                     .withOpacity(.3)
-                                         //                 : const Color(0xffFFF6E6),
-                                         //         borderRadius:
-                                         //             BorderRadius.circular(4)),
-                                         //     child: Text(
-                                         //         // for text open, closed or upcoming
-                                         //         ipostartdate(
-                                         //             "${mainstreamipo.mainsme[index].biddingStartDate}",
-                                         //             "${mainstreamipo.mainsme[index].biddingEndDate}"),
-                                         //         style: textStyle(
-                                         //             Color(
-                                         //                 ipostartdate("${mainstreamipo.mainsme[index].biddingStartDate}", "${mainstreamipo.mainsme[index].biddingEndDate}") == "Open"
-                                         //                     ? 0xff43A833
-                                         //                     : 0xffB37702),
-                                         //             11,
-                                         //             FontWeight.w500)
-                                         //             )
-                                         //             ),
-                                     
-                                         // Container(
-                                         //     margin: const EdgeInsets.symmetric(
-                                         //         horizontal: 4),
-                                         //         horizontal: 4),
-                                         //     padding: const EdgeInsets.symmetric(
-                                         //         horizontal: 8, vertical: 4),
-                                         //     decoration: BoxDecoration(
-                                         //         color:
-                                         //             mainstreamipo.mainsme[index].key ==
-                                         //                     "SME"
-                                         //                 ? theme.isDarkMode
-                                         //                     ? colors.colorGrey
-                                         //                         .withOpacity(.1)
-                                         //                     : const Color.fromARGB(
-                                         //                         255, 243, 242, 174)
-                                         //                 : theme.isDarkMode
-                                         //                     ? colors.colorGrey
-                                         //                         .withOpacity(.1)
-                                         //                     : const Color.fromARGB(
-                                         //                         255,
-                                         //                         251,
-                                         //                         215,
-                                         //                         148), //(0xffF1F3F8),
-                                         //         borderRadius: BorderRadius.circular(4)),
-                                         //     child: Text(
-                                         //         "${mainstreamipo.mainsme[index].key}",
-                                         //         style: textStyle(
-                                         //             const Color(0xff666666),
-                                         //             9,
-                                         //             FontWeight.w500))),
-                                         // const SizedBox(width: 10),
-                                     
-                                         // time period
-                                     
-                                         Column(
-                                           crossAxisAlignment:
-                                               CrossAxisAlignment.start,
-                                           children: [
-                                             Text("Closes on",
-                                                 style: textStyle(
-                                                     const Color(0xff666666),
-                                                     10,
-                                                     FontWeight.w500)),
-                                             const SizedBox(
-                                               height: 4,
-                                             ),
-                                             Text(
-                                                 "${openIpos[index].biddingEndDate!.substring(5, 11)}",
-                                                 style: textStyle(
-                                                     theme.isDarkMode
-                                                         ? colors.colorWhite
-                                                         : colors.colorBlack,
-                                                     14,
-                                                     FontWeight.w500)),
-                                           ],
-                                         ),
-                                     
-                                         
-                                     
-                                         SizedBox(
-                                          height: 30,
-                                           child: ElevatedButton(
-                                             style: ElevatedButton.styleFrom(
-                                                 elevation: 0,
-                                                 minimumSize: const Size(0, 30),
-                                                 padding:
-                                                     const EdgeInsets.symmetric(
-                                                         horizontal: 14,
-                                                         vertical: 5),
-                                                 backgroundColor: theme.isDarkMode
-                                                     ? colors.colorWhite
-                                                     : colors.colorBlack,
-                                                 shape: RoundedRectangleBorder(
-                                                   borderRadius:
-                                                       BorderRadius.circular(50),
-                                                 )),
-                                             onPressed: () async {
-                                               ipos.setisSMEPlaceOrderBtnActiveValue =
-                                                   false;
-                                               ipos.setisMainIPOPlaceOrderBtnActiveValue =
-                                                   false;
-                                               await upi.fetchupiIdView(
-                                                   upi.bankdetails!
-                                                       .dATA![upi.indexss][1],
-                                                   upi.bankdetails!
-                                                       .dATA![upi.indexss][2]);
-                                               openIpos[index].key == "SME"
-                                                   ? await ref
-                                                       .read(ipoProvide)
-                                                       .smeipocategory()
-                                                   : await ref
-                                                       .read(ipoProvide)
-                                                       .mainipocategory();
-                                                                                
-                                               openIpos[index].key == "SME"
-                                                   ? Navigator.pushNamed(
-                                                       context,
-                                                       Routes.smeapplyIPO,
-                                                       arguments: openIpos[index],
-                                                     )
-                                                   : Navigator.pushNamed(
-                                                       context, Routes.applyIPO,
-                                                       arguments: openIpos[index]);
-                                             },
-                                             child: ipos.loading
-                                                 ? const SizedBox(
-                                                     width: 18,
-                                                     height: 20,
-                                                     child:
-                                                         CircularProgressIndicator(
-                                                             strokeWidth: 2,
-                                                             color: Color(
-                                                                 0xff666666)),
-                                                   )
-                                                 : Text(
-                                                     'Apply',
-                                                     style: textStyle(
-                                                         theme.isDarkMode
-                                                             ? colors.colorBlack
-                                                             : colors.colorWhite,
-                                                         12,
-                                                         FontWeight.w500),
-                                                   ),
-                                                                                
-                                             // ipostartdate(
-                                             //               "${mainstreamipo.mainsme[index].biddingStartDate}",
-                                             //               "${mainstreamipo.mainsme[index].biddingEndDate}") ==
-                                             //           "Open"
-                                             //       ? "Apply"
-                                             //       : "Pre Apply"
-                                           ),
-                                         )
-                                         // ipostartdate(
-                                         //             "${mainstreamipo.mainsme[index].biddingStartDate}",
-                                         //             "${mainstreamipo.mainsme[index].biddingEndDate}") ==
-                                         //         "Open"
-                                         //     ? Text(
-                                         //         "Left ${mainstreamipo.mainsme[index]!.days_to_end_ipo} days"
-                                         //             .toString(),
-                                         //         style: textStyle(
-                                         //             const Color(0xff666666),
-                                         //             11,
-                                         //             FontWeight.w500))
-                                         //     : Container()
-                                       ],
-                                     ),
-                                  
-                                  // Divider(
-                                  //     color: theme.isDarkMode
-                                  //         ? colors.darkColorDivider
-                                  //         : colors.colorDivider),
-                              
-                                  // Price range and invest part
-                                  // Padding(
-                                  //   padding: const EdgeInsets.only(
-                                  //    left: 16, right: 16, bottom: 8),
-                                  //   child: Row(
-                                  //     mainAxisAlignment:
-                                  //         MainAxisAlignment.spaceBetween,
-                                  //     children: [
-                                  //       Column(
-                                  //         crossAxisAlignment:
-                                  //             CrossAxisAlignment.start,
-                                  //         children: [
-                                  //           Text("Price Range",
-                                  //               style: textStyle(
-                                  //                   const Color(0xff666666),
-                                  //                   10,
-                                  //                   FontWeight.w500)),
-                                  //           const SizedBox(
-                                  //             height: 4,
-                                  //           ),
-                                  //           Text(
-                                  //               "₹ ${double.parse(mainstreamipo.mainsme[index].minPrice!).toInt()} - ₹ ${double.parse(mainstreamipo.mainsme[index].maxPrice!).toInt()}",
-                                  //               style: textStyle(
-                                  //                   theme.isDarkMode
-                                  //                       ? colors.colorWhite
-                                  //                       : colors.colorBlack,
-                                  //                   15,
-                                  //                   FontWeight.w500)),
-                                  //         ],
-                                  //       ),
-                                  // Column(
-                                  //   crossAxisAlignment: CrossAxisAlignment.start,
-                                  //   children: [
-                                  //     Text("Issue size",
-                                  //         style: textStyle(const Color(0xff666666),
-                                  //             13, FontWeight.w500)),
-                                  //     Text(
-                                  //         "${mainstreamipo.mainsme[index].issueSize}",
-                                  //         style: textStyle(
-                                  //             theme.isDarkMode
-                                  //                 ? colors.colorWhite
-                                  //                 : colors.colorBlack,
-                                  //             15,
-                                  //             FontWeight.w500)),
-                                  //   ],
-                                  // ),
-                                  // ElevatedButton(
-                                  //     style: ElevatedButton.styleFrom(
-                                  //         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                                  //         // fixedSize: const Size(170, 30),
-                                  //         elevation: 0,
-                                  //         minimumSize: const Size(0, 30),
-                                  //         backgroundColor: theme.isDarkMode
-                                  //             ? colors.colorbluegrey
-                                  //             : const Color(0xffF1F3F8),
-                                  //         shape: RoundedRectangleBorder(
-                                  //           borderRadius:
-                                  //               BorderRadius.circular(50),
-                                  //         )),
-                                  //     onPressed: () async {
-                                  //       ipos.setisSMEPlaceOrderBtnActiveValue =
-                                  //           false;
-                                  //       ipos.setisMainIPOPlaceOrderBtnActiveValue =
-                                  //           false;
-                                  //       await upi.fetchupiIdView(
-                                  //           upi.bankdetails!
-                                  //               .dATA![upi.indexss][1],
-                                  //           upi.bankdetails!
-                                  //               .dATA![upi.indexss][2]);
-                                  //       mainstreamipo.mainsme[index].key ==
-                                  //               "SME"
-                                  //           ? await context
-                                  //               .read(ipoProvide)
-                                  //               .smeipocategory()
-                                  //           : await context
-                                  //               .read(ipoProvide)
-                                  //               .mainipocategory();
-                              
-                                  //       mainstreamipo.mainsme[index].key ==
-                                  //               "SME"
-                                  //           ? Navigator.pushNamed(
-                                  //               context,
-                                  //               Routes.smeapplyIPO,
-                                  //               arguments:
-                                  //                   ipos.mainsme[index],
-                                  //             )
-                                  //           : Navigator.pushNamed(
-                                  //               context, Routes.applyIPO,
-                                  //               arguments:
-                                  //                   ipos.mainsme[index]);
-                                  //     },
-                                  //     child: ipos.loading
-                                  //         ? const SizedBox(
-                                  //             width: 18,
-                                  //             height: 20,
-                                  //             child:
-                                  //                 CircularProgressIndicator(
-                                  //                     strokeWidth: 2,
-                                  //                     color:
-                                  //                         Color(0xff666666)),
-                                  //           )
-                                  //         : Column(
-                                  //             crossAxisAlignment:
-                                  //                 CrossAxisAlignment.start,
-                                  //             mainAxisAlignment:
-                                  //                 MainAxisAlignment.center,
-                                  //             children: [
-                                  //               // Text("Invest",
-                                  //               //     style: textStyle(
-                                  //               //         theme.isDarkMode
-                                  //               //             ? colors.colorBlack
-                                  //               //             : colors.colorBlue,
-                                  //               //         10,
-                                  //               //         FontWeight.w500)),
-                                  //               // const SizedBox(
-                                  //               //   height: 4,
-                                  //               // ),
-                                  //               Text(
-                                  //                   "Invest ₹ ${convertCurrencyINRStandard(mininv(double.parse(mainstreamipo.mainsme[index].minPrice!).toDouble(), int.parse(mainstreamipo.mainsme[index].minBidQuantity!).toInt()).toInt())}",
-                                  //                   style: textStyle(
-                                  //                       theme.isDarkMode
-                                  //                           ? colors
-                                  //                               .colorBlack
-                                  //                           : colors
-                                  //                               .colorBlue,
-                                  //                       12,
-                                  //                       FontWeight.w500))
-                                  //             ],
-                                  //           )),
-                                  // Column(
-                                  //   crossAxisAlignment: CrossAxisAlignment.start,
-                                  //   children: [
-                                  //     Text("Min Amount",
-                                  //         style: textStyle(
-                                  //             const Color(0xff666666),
-                                  //             10,
-                                  //             FontWeight.w500)),
-                                  //     const SizedBox(
-                                  //       height: 4,
-                                  //     ),
-                                  //     Text(
-                                  //         "₹${convertCurrencyINRStandard(mininv(double.parse(mainstreamipo.mainsme[index].minPrice!).toDouble(), int.parse(mainstreamipo.mainsme[index].minBidQuantity!).toInt()).toInt())}",
-                                  //         style: textStyle(
-                                  //             theme.isDarkMode
-                                  //                 ? colors.colorWhite
-                                  //                 : colors.colorBlack,
-                                  //             15,
-                                  //             FontWeight.w500))
-                                  //   ],
-                                  // )
-                                  //     ],
-                                  //   ),
-                                  // ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                        itemCount: openIpos.length,
-                        separatorBuilder: (context, index) {
-                          return 
-                          Divider(
-                            height: 0,
-                              color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider);
-                        },
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(top: 0),
-                        color: mainstreamipo.mainStreamIpoModel?.msg ==
-                                "no IPO found"
-                            ? Colors.transparent
-                            : theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : const Color(0xffF1F3F8),
-                        height: mainstreamipo.mainStreamIpoModel?.msg ==
-                                "no IPO found"
-                            ? 0
-                            : 7,
-                      ),
-                      Divider(
-                        height: 0,
-                          color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,),
-                    ],
-
-//Pre-open snippet
-
-                    if (preOpenIpos.isNotEmpty) ...[
-                      // Padding(
-                      //   padding: const EdgeInsets.only(
-                      //       left: 16, right: 16, top: 8, bottom: 0),
-                      //   child: Text(
-                      //     "Pre-open",
-                      //     style: textStyle(
-                      //         theme.isDarkMode
-                      //             ? colors.colorWhite.withOpacity(0.3)
-                      //             : colors.colorBlack.withOpacity(0.3),
-                      //         16,
-                      //         FontWeight.w600),
-                      //   ),
-                      // ),
-
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return InkWell(
-                            onTap: () async {
-                              await ipos.getIpoSinglePage(
-                                  ipoName: "${preOpenIpos[index].name}");
-                              showModalBottomSheet(
-                                  isScrollControlled: true,
-                                  useSafeArea: true,
-                                  isDismissible: true,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16))),
-                                  context: context,
-                                  builder: (context) => Container(
-                                        padding: EdgeInsets.only(
-                                          bottom: MediaQuery.of(context)
-                                              .viewInsets
-                                              .bottom,
-                                        ),
-                                        child: MainSmeSinglePage(
-                                          pricerange:
-                                              "₹${double.parse(preOpenIpos[index].minPrice!).toInt()} - ₹${double.parse(preOpenIpos[index].maxPrice!).toInt()}",
-                                          mininv:
-                                              "₹${convertCurrencyINRStandard(mininv(double.parse(preOpenIpos[index].minPrice!).toDouble(), int.parse(preOpenIpos[index].minBidQuantity!).toInt()).toInt())}",
-                                          enddate:
-                                              "${preOpenIpos[index].biddingEndDate}",
-                                          startdate:
-                                              "${preOpenIpos[index].biddingStartDate}",
-                                          ipotype: "${preOpenIpos[index].key}",
-                                          ipodetails:
-                                              jsonEncode(preOpenIpos[index]),
-                                        ),
-                                      ));
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment:
-                                               CrossAxisAlignment.start,
-                                children: [
-                                 
-                                  
-                              
-                                    // leading: ClipOval(
-                                    //   child: Container(
-                                    //     alignment: Alignment.center,
-                                    //     color: colors.colorDivider.withOpacity(.3),
-                                    //     width: 50,
-                                    //     height: 50,
-                                    //     child: Container(
-                                    //       padding: EdgeInsets.all(8),
-                                    //       child: Text(
-                                    //         "${mainstreamipo.mainsme[index].name.substring(0, 1)}",
-                                    //         style: textStyle(
-                                    //             theme.isDarkMode
-                                    //                 ? colors.colorWhite.withOpacity(0.3)
-                                    //                 : colors.colorBlack.withOpacity(0.3),
-                                    //             20,
-                                    //             FontWeight.w600),
-                                    //       ),
-                                    //     ),
-                                    //   ),
-                                    // ),
-                                     SizedBox(
-                                       width: 250,
-                                       child: Text(
-                                           preOpenIpos[index]
-                                               .name
-                                               ,
-                                           overflow:
-                                               TextOverflow.ellipsis,
-                                           style: textStyle(
-                                               theme.isDarkMode
-                                                   ? colors.colorWhite
-                                                   : colors.colorBlack,
-                                               14,
-                                               FontWeight.w600)),
-                                     ),
-                                     SizedBox(height: 4,),
-                                                                      
-                                      Container(
-                                         padding: const EdgeInsets.symmetric(
-                                             horizontal: 8,
-                                             vertical: 4),
-                                         decoration: BoxDecoration(
-                                             color: preOpenIpos[index].key ==
-                                                     "SME"
-                                                 ? theme.isDarkMode
-                                                     ? colors.colorGrey
-                                                         .withOpacity(
-                                                             .3)
-                                                     : const Color.fromARGB(
-                                                         255, 243, 242, 174)
-                                                 : theme.isDarkMode
-                                                     ? colors.colorGrey
-                                                         .withOpacity(
-                                                             .3)
-                                                     : const Color.fromARGB(
-                                                         255,
-                                                         251,
-                                                         215,
-                                                         148), //(0xffF1F3F8),
-                                             borderRadius:
-                                                 BorderRadius.circular(
-                                                     4)),
-                                         child: Text(
-                                             "${preOpenIpos[index].key}",
-                                             style: textStyle(const Color(0xff666666), 10, FontWeight.w500))),
-                                              SizedBox(height: 8,),
-                              
-                                     Row(
-                                       mainAxisAlignment:
-                                           MainAxisAlignment.spaceBetween,
-                                       children: [
-                                         // open tag ----------
-                                                                   
-                                         // Container(
-                                         //     padding: const EdgeInsets.symmetric(
-                                         //         horizontal: 8, vertical: 4),
-                                         //     decoration: BoxDecoration(
-                                         //         color: theme.isDarkMode
-                                         //             ? colors.colorGrey.withOpacity(.1)
-                                         //             : const Color(0xffF1F3F8),
-                                         //         borderRadius: BorderRadius.circular(4)),
-                                         //     child: Text(
-                                         //         "${mainstreamipo.mainsme[index].symbol}",
-                                         //         style: textStyle(colors.colorGrey, 11,
-                                         //             FontWeight.w500))),
-                                         // const SizedBox(width: 10),
-                                         // Container(
-                                         //     padding: const EdgeInsets.symmetric(
-                                         //         horizontal: 8, vertical: 4),
-                                         //     decoration: BoxDecoration(
-                                         //         color: ipostartdate(
-                                         //                     "${mainstreamipo.mainsme[index].biddingStartDate}",
-                                         //                     "${mainstreamipo.mainsme[index].biddingEndDate}") ==
-                                         //                 "Open"
-                                         //             ? theme.isDarkMode
-                                         //                 ? const Color(0xffECF8F1)
-                                         //                     .withOpacity(.3)
-                                         //                 : const Color(0xffECF8F1)
-                                         //             : theme.isDarkMode
-                                         //                 ? const Color(0xffFFF6E6)
-                                         //                     .withOpacity(.3)
-                                         //                 : const Color(0xffFFF6E6),
-                                         //         borderRadius:
-                                         //             BorderRadius.circular(4)),
-                                         //     child: Text(
-                                         //         // for text open, closed or upcoming
-                                         //         ipostartdate(
-                                         //             "${mainstreamipo.mainsme[index].biddingStartDate}",
-                                         //             "${mainstreamipo.mainsme[index].biddingEndDate}"),
-                                         //         style: textStyle(
-                                         //             Color(
-                                         //                 ipostartdate("${mainstreamipo.mainsme[index].biddingStartDate}", "${mainstreamipo.mainsme[index].biddingEndDate}") == "Open"
-                                         //                     ? 0xff43A833
-                                         //                     : 0xffB37702),
-                                         //             11,
-                                         //             FontWeight.w500)
-                                         //             )
-                                         //             ),
-                                                                   
-                                         // Container(
-                                         //     margin: const EdgeInsets.symmetric(
-                                         //         horizontal: 4),
-                                         //         horizontal: 4),
-                                         //     padding: const EdgeInsets.symmetric(
-                                         //         horizontal: 8, vertical: 4),
-                                         //     decoration: BoxDecoration(
-                                         //         color:
-                                         //             mainstreamipo.mainsme[index].key ==
-                                         //                     "SME"
-                                         //                 ? theme.isDarkMode
-                                         //                     ? colors.colorGrey
-                                         //                         .withOpacity(.1)
-                                         //                     : const Color.fromARGB(
-                                         //                         255, 243, 242, 174)
-                                         //                 : theme.isDarkMode
-                                         //                     ? colors.colorGrey
-                                         //                         .withOpacity(.1)
-                                         //                     : const Color.fromARGB(
-                                         //                         255,
-                                         //                         251,
-                                         //                         215,
-                                         //                         148), //(0xffF1F3F8),
-                                         //         borderRadius: BorderRadius.circular(4)),
-                                         //     child: Text(
-                                         //         "${mainstreamipo.mainsme[index].key}",
-                                         //         style: textStyle(
-                                         //             const Color(0xff666666),
-                                         //             9,
-                                         //             FontWeight.w500))),
-                                         // const SizedBox(width: 10),
-                                                                   
-                                         // time period
-                                                                   
-                                         Column(
-                                           crossAxisAlignment:
-                                               CrossAxisAlignment.start,
-                                           children: [
-                                             Text("Opens on",
-                                                 style: textStyle(
-                                                     const Color(0xff666666),
-                                                     10,
-                                                     FontWeight.w500)),
-                                             const SizedBox(
-                                               height: 4,
-                                             ),
-                                             Text(
-                                                 // "${preOpenIpos[index].biddingEndDate!.substring(5, 11)}",
-                                                                   
-                                                 // "${preOpenIpos[index].biddingStartDate!.substring(0, 2)} - ${preOpenIpos[index].biddingEndDate!.substring(5, 11)}", 
-                                                                   
-                                                 formatDate(preOpenIpos[index].biddingStartDate!),
-                                                                   
-                                                 style: textStyle(
-                                                     theme.isDarkMode
-                                                         ? colors.colorWhite
-                                                         : colors.colorBlack,
-                                                     14,
-                                                     FontWeight.w500)),
-                                           ],
-                                         ),
-                                                                   
-                                         SizedBox(
-                                          height: 30,
-                                           child: ElevatedButton(
-                                             style: ElevatedButton.styleFrom(
-                                                 elevation: 0,
-                                                 minimumSize: const Size(0, 30),
-                                                 padding:
-                                                     const EdgeInsets.symmetric(
-                                                         horizontal: 14,
-                                                         vertical: 5),
-                                                 backgroundColor: theme.isDarkMode
-                                                     ? colors.colorWhite
-                                                     : colors.colorBlack,
-                                                 shape: RoundedRectangleBorder(
-                                                   borderRadius:
-                                                       BorderRadius.circular(50),
-                                                 )),
-                                             onPressed: () async {
-                                               ipos.setisSMEPlaceOrderBtnActiveValue =
-                                                   false;
-                                               ipos.setisMainIPOPlaceOrderBtnActiveValue =
-                                                   false;
-                                               await upi.fetchupiIdView(
-                                                   upi.bankdetails!
-                                                       .dATA![upi.indexss][1],
-                                                   upi.bankdetails!
-                                                       .dATA![upi.indexss][2]);
-                                               preOpenIpos[index].key == "SME"
-                                                   ? await ref
-                                                       .read(ipoProvide)
-                                                       .smeipocategory()
-                                                   : await ref
-                                                       .read(ipoProvide)
-                                                       .mainipocategory();
-                                                                     
-                                               preOpenIpos[index].key == "SME"
-                                                   ? Navigator.pushNamed(
-                                                       context,
-                                                       Routes.smeapplyIPO,
-                                                       arguments:
-                                                           preOpenIpos[index],
-                                                     )
-                                                   : Navigator.pushNamed(
-                                                       context, Routes.applyIPO,
-                                                       arguments:
-                                                           preOpenIpos[index]);
-                                             },
-                                             child: ipos.loading
-                                                 ? const SizedBox(
-                                                     width: 18,
-                                                     height: 20,
-                                                     child:
-                                                         CircularProgressIndicator(
-                                                             strokeWidth: 2,
-                                                             color: Color(
-                                                                 0xff666666)),
-                                                   )
-                                                 : Text(
-                                                     'Pre Apply',
-                                                     style: textStyle(
-                                                         theme.isDarkMode
-                                                             ? colors.colorBlack
-                                                             : colors.colorWhite,
-                                                         12,
-                                                         FontWeight.w500),
-                                                   ),
-                                                                     
-                                             // ipostartdate(
-                                             //               "${mainstreamipo.mainsme[index].biddingStartDate}",
-                                             //               "${mainstreamipo.mainsme[index].biddingEndDate}") ==
-                                             //           "Open"
-                                             //       ? "Apply"
-                                             //       : "Pre Apply"
-                                           ),
-                                         )
-                                         // ipostartdate(
-                                         //             "${mainstreamipo.mainsme[index].biddingStartDate}",
-                                         //             "${mainstreamipo.mainsme[index].biddingEndDate}") ==
-                                         //         "Open"
-                                         //     ? Text(
-                                         //         "Left ${mainstreamipo.mainsme[index]!.days_to_end_ipo} days"
-                                         //             .toString(),
-                                         //         style: textStyle(
-                                         //             const Color(0xff666666),
-                                         //             11,
-                                         //             FontWeight.w500))
-                                         //     : Container()
-                                       ],
-                                     ),
-                                  
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                        itemCount: preOpenIpos.length,
-                        separatorBuilder: (context, index) {
-                          return Divider(
-                            height: 0,
-                              color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,);
-                        },
-                      ),
-                      // Container(
-                      //   margin: EdgeInsets.only(top: 8),
-                      //   color: mainstreamipo.mainStreamIpoModel?.msg ==
-                      //           "no IPO found"
-                      //       ? Colors.transparent
-                      //       : theme.isDarkMode
-                      //           ? colors.darkColorDivider
-                      //           : const Color(0xffF1F3F8),
-                      //   height: mainstreamipo.mainStreamIpoModel?.msg ==
-                      //           "no IPO found"
-                      //       ? 0
-                      //       : 7,
-                      // ),
-
-                     Divider(
-                      height: 0,
-                         color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
-                    ],
-
-                    if (ipos.ipoPreClose!.msg.isNotEmpty) ...[
-                      // Padding(
-                      //   padding: const EdgeInsets.only(
-                      //       left: 16, right: 16, top: 8, bottom: 0),
-                      //   child: Text(
-                      //     "Closed",
-                      //     style: textStyle(
-                      //         theme.isDarkMode
-                      //             ? colors.colorWhite.withOpacity(0.3)
-                      //             : colors.colorBlack.withOpacity(0.3),
-                      //         16,
-                      //         FontWeight.w600),
-                      //   ),
-                      // ),
-                      ClosedIPOScreen(),
-                    ],
-
-                    SizedBox(height: 24,)
-                  ]),
-            );
+              _buildDivider(theme),
+            ],
+            if (preOpenIpos.isNotEmpty) ...[
+              _IPOListSection(
+                ipos: preOpenIpos,
+                ipoProvider: ipos,
+                upiProvider: upi,
+                theme: theme,
+                isPreOpen: true,
+              ),
+              _buildDivider(theme),
+            ],
+            if (ipos.ipoPreClose!.msg.isNotEmpty) ...[
+              const ClosedIPOScreen(),
+            ],
+            const SizedBox(height: 24),
+          ],
+        ),
+      );
     });
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
+  Widget _buildDivider(ThemesProvider theme) {
+    return Divider(
+      height: 0,
+      color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+    );
+  }
+
+  static TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
     return GoogleFonts.inter(
       fontWeight: fWeight,
       color: color,
       fontSize: fontSize,
     );
+  }
+}
+
+class _IPOListSection extends StatelessWidget {
+  final List<dynamic> ipos;
+  final dynamic ipoProvider;
+  final dynamic upiProvider;
+  final ThemesProvider theme;
+  final bool isPreOpen;
+
+  const _IPOListSection({
+    required this.ipos,
+    required this.ipoProvider,
+    required this.upiProvider,
+    required this.theme,
+    required this.isPreOpen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: ipos.length,
+      itemBuilder: (context, index) {
+        return _IPOListItem(
+          ipo: ipos[index],
+          ipoProvider: ipoProvider,
+          upiProvider: upiProvider,
+          theme: theme,
+          isPreOpen: isPreOpen,
+        );
+      },
+      separatorBuilder: (context, index) {
+        return Divider(
+          height: 0,
+          color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        );
+      },
+    );
+  }
+}
+
+class _IPOListItem extends StatelessWidget {
+  final dynamic ipo;
+  final dynamic ipoProvider;
+  final dynamic upiProvider;
+  final ThemesProvider theme;
+  final bool isPreOpen;
+
+  const _IPOListItem({
+    required this.ipo,
+    required this.ipoProvider,
+    required this.upiProvider,
+    required this.theme,
+    required this.isPreOpen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _onIPOTap(context),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 8),
+            _buildFooter(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 250,
+                child: Text(
+                  ipo.name,
+                  overflow: TextOverflow.ellipsis,
+                  style: MainSmeListCard.textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              _buildIPOTypeChip(),
+            ],
+          ),
+        ),
+        if (!isPreOpen && ipo.totalsub != null && ipo.totalsub != '')
+          _buildSubscriptionInfo(),
+      ],
+    );
+  }
+
+  Widget _buildIPOTypeChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: ipo.key == "SME"
+            ? theme.isDarkMode
+                ? colors.colorGrey.withOpacity(.3)
+                : const Color.fromARGB(255, 243, 242, 174)
+            : theme.isDarkMode
+                ? colors.colorGrey.withOpacity(.3)
+                : const Color.fromARGB(255, 251, 215, 148),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        "${ipo.key}",
+        style: MainSmeListCard.textStyle(
+          const Color(0xff666666),
+          10,
+          FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubscriptionInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "${ipo.totalsub}x",
+          style: MainSmeListCard.textStyle(
+            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            14,
+            FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          "Subscription",
+          style: MainSmeListCard.textStyle(
+            const Color(0xff666666),
+            10,
+            FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFooter(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildDateInfo(),
+        _buildApplyButton(context),
+      ],
+    );
+  }
+
+  Widget _buildDateInfo() {
+    final dateText = isPreOpen ? "Opens on" : "Closes on";
+    final date = isPreOpen
+        ? _formatDate(ipo.biddingStartDate!)
+        : ipo.biddingEndDate!.substring(5, 11);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          dateText,
+          style: MainSmeListCard.textStyle(
+            const Color(0xff666666),
+            10,
+            FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          date,
+          style: MainSmeListCard.textStyle(
+            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            14,
+            FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildApplyButton(BuildContext context) {
+    return SizedBox(
+      height: 30,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          minimumSize: const Size(0, 30),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+          backgroundColor: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+        ),
+        onPressed: () => _onApplyPressed(context),
+        child: ipoProvider.loading
+            ? const SizedBox(
+                width: 18,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xff666666),
+                ),
+              )
+            : Text(
+                isPreOpen ? 'Pre Apply' : 'Apply',
+                style: MainSmeListCard.textStyle(
+                  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  12,
+                  FontWeight.w500,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Future<void> _onIPOTap(BuildContext context) async {
+    await ipoProvider.getIpoSinglePage(ipoName: "${ipo.name}");
+    if (context.mounted) {
+      showModalBottomSheet(
+        isScrollControlled: true,
+        useSafeArea: true,
+        isDismissible: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        context: context,
+        builder: (context) => Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: MainSmeSinglePage(
+            pricerange:
+                "₹${double.parse(ipo.minPrice!).toInt()} - ₹${double.parse(ipo.maxPrice!).toInt()}",
+            mininv:
+                "₹${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice!).toDouble(), int.parse(ipo.minBidQuantity!).toInt()).toInt())}",
+            enddate: "${ipo.biddingEndDate}",
+            startdate: "${ipo.biddingStartDate}",
+            ipotype: "${ipo.key}",
+            ipodetails: jsonEncode(ipo),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onApplyPressed(BuildContext context) async {
+    ipoProvider.setisSMEPlaceOrderBtnActiveValue = false;
+    ipoProvider.setisMainIPOPlaceOrderBtnActiveValue = false;
+    
+    await upiProvider.fetchupiIdView(
+      upiProvider.bankdetails!.dATA![upiProvider.indexss][1],
+      upiProvider.bankdetails!.dATA![upiProvider.indexss][2],
+    );
+
+    if (ipo.key == "SME") {
+      await ipoProvider.smeipocategory();
+      if (context.mounted) {
+        Navigator.pushNamed(
+          context,
+          Routes.smeapplyIPO,
+          arguments: ipo,
+        );
+      }
+    } else {
+      await ipoProvider.mainipocategory();
+      if (context.mounted) {
+        Navigator.pushNamed(
+          context,
+          Routes.applyIPO,
+          arguments: ipo,
+        );
+      }
+    }
+  }
+
+  String _formatDate(String date) {
+    List<String> parts = date.split('-');
+    int day = int.parse(parts[0]);
+    int month = int.parse(parts[1]);
+    int year = int.parse(parts[2]);
+    DateTime parsedDate = DateTime(year, month, day);
+    return DateFormat('d MMM').format(parsedDate);
   }
 }

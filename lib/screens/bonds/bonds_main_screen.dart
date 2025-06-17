@@ -16,139 +16,121 @@ class BondsScreen extends ConsumerStatefulWidget {
 }
 
 class _BondsmainScreenState extends ConsumerState<BondsScreen> {
+  // Static constants for better performance
+  static const double _iconSize = 22.0;
+  static const double _searchBarHeight = 45.0;
+  static const double _searchBarBorderRadius = 25.0;
+  static const double _searchBarFontSize = 14.0;
+  
   @override
   void initState() {
-    ref.read(bondsProvider).fetchAllBonds();
-    setState(() {});
     super.initState();
+    ref.read(bondsProvider).fetchAllBonds();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, WidgetRef ref, _) {
-      final theme = ref.watch(themeProvider);
+    final theme = ref.watch(themeProvider);
 
-      return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          elevation: 0,
-          centerTitle: false,
-          titleSpacing: -8,
-          leading: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: InkWell(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Icon(
-                Icons.arrow_back_ios,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                size: 22,
+    return Scaffold(
+      appBar: _buildAppBar(context, theme),
+      body: BondsExploreScreens(theme: theme),
+    );
+  }
+  
+  AppBar _buildAppBar(BuildContext context, ThemesProvider theme) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      elevation: 0,
+      centerTitle: false,
+      titleSpacing: -8,
+      leading: _buildBackButton(context, theme),
+      title: _buildSearchBar(context, theme),
+    );
+  }
+  
+  Widget _buildBackButton(BuildContext context, ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: InkWell(
+        onTap: () => Navigator.pop(context),
+        child: Icon(
+          Icons.arrow_back_ios,
+          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          size: _iconSize,
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildSearchBar(BuildContext context, ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 24),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: _searchBarHeight,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_searchBarBorderRadius),
+              ),
+              child: SearchBar(
+                onTap: () {
+                  FocusScope.of(context).requestFocus(FocusNode());
+                  Navigator.pushNamed(context, Routes.bondssearchScreen);
+                },
+                hintText: "Search Bonds",
+                hintStyle: WidgetStateProperty.all(
+                  const TextStyle(
+                    color: Color(0xff69758F),
+                    fontSize: _searchBarFontSize,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                backgroundColor: WidgetStateProperty.all(
+                  theme.isDarkMode
+                    ? colors.darkGrey
+                    : const Color(0xffF1F3F8)
+                ),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    side: BorderSide.none,
+                  ),
+                ),
+                textStyle: WidgetStateProperty.all(
+                  textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    _searchBarFontSize,
+                    FontWeight.w500
+                  ),
+                ),
+                elevation: WidgetStateProperty.all(0),
+                leading: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: SvgPicture.asset(
+                    assets.searchIcon,
+                    color: const Color(0xff586279),
+                    fit: BoxFit.contain,
+                    width: 20
+                  ),
+                ),
               ),
             ),
           ),
-          title: Padding(
-            padding: const EdgeInsets.only(
-              right: 24,
-            ),
-            child: Row(
-              children: [
-                // SvgPicture.asset(
-                //   'assets/icon/MYNT App Logo_v2.svg',
-                //   width: 40,
-                //   height: 40,
-                // ),
-                // const SizedBox(width: 10),
-                Expanded(
-                  child: Container(
-                      height: 45,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: SearchBar(
-                        onTap: () {
-                          FocusScope.of(context).requestFocus(FocusNode());
-                          Navigator.pushNamed(
-                              context, Routes.bondssearchScreen);
-                        },
-                        hintText: "Search Bonds",
-                        hintStyle: WidgetStateProperty.all(
-                          const TextStyle(
-                            color: Color(0xff69758F), // Change hint text color
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        backgroundColor: WidgetStateProperty.all(
-                            theme.isDarkMode
-                                ? colors.darkGrey
-                                : const Color(0xffF1F3F8)),
-                        shape: WidgetStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                            side: BorderSide.none,
-                          ),
-                        ),
-                        textStyle: WidgetStateProperty.all(
-                          textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500),
-                        ),
-                        elevation: WidgetStateProperty.all(0),
-                        leading: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: SvgPicture.asset(assets.searchIcon,
-                              color: const Color(0xff586279),
-                              fit: BoxFit.contain,
-                              width: 20),
-                        ), // Prefix icon
-                      )
-
-                      // SearchBar(
-                      //   hintText: "Search",
-                      //   backgroundColor: WidgetStateProperty.all(
-                      //       colors.kColorLightGrey), // Gray background
-                      //   shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                      //     borderRadius:
-                      //         BorderRadius.circular(50), // Rounded corners
-                      //     side: BorderSide.none, // No border
-                      //   )),
-                      //   elevation: WidgetStateProperty.all(0), // No shadow
-                      //   leading: const Icon(Icons.search,
-                      //       color: Colors.black54), // Prefix icon
-                      // ),
-                      ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        body: BondsExploreScreens(theme: theme),
-        // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () {
-        //     Navigator.pop(context);
-        //   },
-        //   elevation: 0,
-        //   // foregroundColor: customizations[index].$1,
-        //   backgroundColor: Colors.black.withOpacity(0.2),
-        //   child: const Icon(
-        //     Icons.arrow_back_rounded,
-        //     color: Colors.black,
-        //     weight: 10,
-        //   ),
-        // )
-      );
-    });
+        ],
+      ),
+    );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
+  TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
     return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+      textStyle: TextStyle(
+        fontWeight: fWeight,
+        color: color,
+        fontSize: fontSize
+      ),
+    );
   }
 }
 

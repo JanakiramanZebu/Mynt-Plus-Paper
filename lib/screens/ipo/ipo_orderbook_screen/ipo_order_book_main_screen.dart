@@ -32,123 +32,78 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     return Consumer(builder: (context, WidgetRef ref, _) {
       final ipo = ref.watch(ipoProvide);
       final theme = ref.watch(themeProvider);
-      final dev_height = MediaQuery.of(context).size.height;
+      final devHeight = MediaQuery.of(context).size.height;
 
       return Scaffold(
-        // appBar: AppBar(
-        //   elevation: .2,
-        //   centerTitle: false,
-        //   leadingWidth: 41,
-        //   titleSpacing: 6,
-        //   leading: InkWell(
-        //     onTap: () {
-        //       Navigator.pop(context);
-        //       // Navigator.pushReplacement(context,
-        //       //   PageRouteBuilder(
-        //       //     pageBuilder: (context, animation, secondaryAnimation) =>
-        //       //         const IPOScreen(),
-        //       //     transitionsBuilder:
-        //       //         (context, animation, secondaryAnimation, child) {
-        //       //       final tween = Tween<Offset>(
-        //       //           begin: const Offset(0, 1), end: const Offset(.0, .0));
-        //       //       return SlideTransition(
-        //       //           position: animation.drive(tween), child: child);
-        //       //     })
-        //       //   );
-
-        //     },
-        //     child: Padding(
-        //       padding: const EdgeInsets.symmetric(horizontal: 9),
-        //       child: SvgPicture.asset(assets.backArrow,
-        //           color:
-        //               theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-        //     ),
-        //   ),
-        //   backgroundColor:
-        //       theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        //   shadowColor: const Color(0xffECEFF3),
-        //   title: Text(
-        //     "Order Book",
-        //     style: textStyles.appBarTitleTxt.copyWith(
-        //       color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-        //     ),
-        //   ),
-        // ),
         body: TransparentLoaderScreen(
           isLoading: ipo.myBidsload!,
-          child: (ipo.openorder?.isEmpty ?? true) &&
-                      (ipo.closeorder?.isEmpty ?? true)
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 225),
-                        child: Container(
-                          height: dev_height - 140,
-                          child: Column(
-                            children: [
-                              NoDataFound(),
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
-                  : SingleChildScrollView(
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (ipo.openorder!.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 8),
-                                child: Text(
-                                  "Open Orders",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite.withOpacity(0.3)
-                                          : colors.colorBlack.withOpacity(0.3),
-                                      16,
-                                      FontWeight.w600),
-                                ),
-                              ),
-                              const IpoOpenOrder(),
-                            ],
-                            if (ipo.closeorder!.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 8),
-                                child: Text(
-                                  "Closed Orders",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite.withOpacity(0.3)
-                                          : colors.colorBlack.withOpacity(0.3),
-                                      16,
-                                      FontWeight.w600),
-                                ),
-                              ),
-                              const IpoCloseOrder(),
-                            ],
-                          ]),
-                    ),
+          child: _buildBody(ipo, theme, devHeight),
         ),
       );
-
-      // return SingleChildScrollView(
-      //   child: Container(
-      //     child: ipo.fundisLoad
-      //         ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      //             const ProgressiveDotsLoader(),
-      //             const SizedBox(height: 3),
-      //             Text('This will take a few seconds.',
-      //                 style: textStyle(colors.colorGrey, 13, FontWeight.w500)),
-      //           ])
-      //         : TabBarView(controller: ipo.ipoOrderBookScreenTab, children:[
-      //                 IpoOpenOrder(open: ipo),
-      //                 IpoCloseOrder(close: ipo)
-
-      //             ],
-      //           ),
-      //   ),
-      // );
     });
+  }
+
+  Widget _buildBody(ipo, theme, double devHeight) {
+    final hasOrders = (ipo.openorder?.isNotEmpty ?? false) || 
+                      (ipo.closeorder?.isNotEmpty ?? false);
+    
+    if (!hasOrders) {
+      return _buildNoDataState(devHeight);
+    }
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (ipo.openorder!.isNotEmpty) ...[
+            _buildSectionHeader("Open Orders", theme),
+            const IpoOpenOrder(),
+          ],
+          if (ipo.closeorder!.isNotEmpty) ...[
+            _buildSectionHeader("Closed Orders", theme),
+            const IpoCloseOrder(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoDataState(double devHeight) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 225),
+        child: SizedBox(
+          height: devHeight - 140,
+          child: const Column(
+            children: [
+              NoDataFound(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+      child: Text(
+        title,
+        style: _textStyle(
+            theme.isDarkMode
+                ? colors.colorWhite.withOpacity(0.3)
+                : colors.colorBlack.withOpacity(0.3),
+            16,
+            FontWeight.w600),
+      ),
+    );
+  }
+
+  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+    return TextStyle(
+      fontWeight: fWeight,
+      color: color,
+      fontSize: fontSize,
+    );
   }
 }

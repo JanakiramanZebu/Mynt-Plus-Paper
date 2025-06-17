@@ -19,8 +19,7 @@ class BondsOrderbookMainScreen extends ConsumerStatefulWidget {
       _BondsOrderbookMainScreenState();
 }
 
-class _BondsOrderbookMainScreenState extends ConsumerState<BondsOrderbookMainScreen>
-    with TickerProviderStateMixin {
+class _BondsOrderbookMainScreenState extends ConsumerState<BondsOrderbookMainScreen> {
   @override
   void initState() {
     super.initState();
@@ -35,78 +34,84 @@ class _BondsOrderbookMainScreenState extends ConsumerState<BondsOrderbookMainScr
     return Consumer(builder: (context, WidgetRef ref, _) {
       final bonds = ref.watch(bondsProvider);
       final theme = ref.watch(themeProvider);
-      final dev_height = MediaQuery.of(context).size.height;
+      final devHeight = MediaQuery.of(context).size.height;
 
       return LogoLoaderScreen(
         isLoading: bonds.bondsMyBidsload!,
-        child: (
-                bonds.openOrderBook!.isEmpty &&
-                bonds.closeOrderBook!.isEmpty)
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 225),
-                  child: Container(
-                    height: dev_height - 140,
-                    child: const Column(
-                      children: [
-                        NoDataFound(),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-            : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (bonds.openOrderBook != null &&
-                        bonds.openOrderBook!.isNotEmpty) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8),
-                        child: Text(
-                          "Open Orders",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite.withOpacity(0.3)
-                                  : colors.colorBlack.withOpacity(0.3),
-                              16,
-                              FontWeight.w600),
-                        ),
-                      ),
-                      const BondsOpenOrder(),
-                       Divider(
-                  height: 0,
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider)
-                    ],
-                    if (bonds.closeOrderBook != null &&
-                        bonds.closeOrderBook!.isNotEmpty) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8),
-                        child: Text(
-                          "Closed Orders",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite.withOpacity(0.3)
-                                  : colors.colorBlack.withOpacity(0.3),
-                              16,
-                              FontWeight.w600),
-                        ),
-                      ),
-                      const BondsCloseOrder(),
-                       Divider(
-                  height: 0,
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,)
-                    ],
-                  ],
-                ),
-              ),
+        child: _buildContent(bonds, theme, devHeight),
       );
     });
+  }
+
+  Widget _buildContent(BondsProvider bonds, ThemesProvider theme, double devHeight) {
+    final bool isEmpty = bonds.openOrderBook!.isEmpty && bonds.closeOrderBook!.isEmpty;
+
+    if (isEmpty) {
+      return _buildEmptyState(devHeight);
+    }
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (bonds.openOrderBook != null && bonds.openOrderBook!.isNotEmpty) 
+            _buildOrderSection(
+              "Open Orders", 
+              const BondsOpenOrder(), 
+              theme
+            ),
+          if (bonds.closeOrderBook != null && bonds.closeOrderBook!.isNotEmpty) 
+            _buildOrderSection(
+              "Closed Orders", 
+              const BondsCloseOrder(), 
+              theme
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(double devHeight) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 225),
+        child: SizedBox(
+          height: devHeight - 140,
+          child: const Column(
+            children: [
+              NoDataFound(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrderSection(String title, Widget orderWidget, ThemesProvider theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+          child: Text(
+            title,
+            style: textStyle(
+              theme.isDarkMode
+                ? colors.colorWhite.withOpacity(0.3)
+                : colors.colorBlack.withOpacity(0.3),
+              16,
+              FontWeight.w600
+            ),
+          ),
+        ),
+        orderWidget,
+        Divider(
+          height: 0,
+          color: theme.isDarkMode
+            ? colors.darkColorDivider
+            : colors.colorDivider,
+        ),
+      ],
+    );
   }
 }

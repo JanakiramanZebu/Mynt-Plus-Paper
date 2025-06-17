@@ -14,48 +14,72 @@ class LogoLoaderScreen extends StatelessWidget {
     required this.child,
   });
 
-   
- @override
+  @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, WidgetRef ref, _) {
-      final theme = ref.watch(themeProvider);
+    return Consumer(
+      builder: (context, WidgetRef ref, _) {
+        final theme = ref.watch(themeProvider);
+        
+        return Stack(
+          children: [
+            child,
+            if (isLoading) _LoadingOverlay(theme: theme),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _LoadingOverlay extends StatelessWidget {
+  final ThemesProvider theme;
+
+  const _LoadingOverlay({required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Container(
+        color: theme.isDarkMode
+            ? colors.colorBlack.withOpacity(0.5)
+            : colors.colorWhite.withOpacity(0.5),
+        child: const Center(
+          child: _LoadingIndicator(),
+        ),
+      ),
+    );
+  }
+}
+
+class _LoadingIndicator extends StatelessWidget {
+  const _LoadingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(
+      alignment: Alignment.center,
       children: [
-        child,
-        if (isLoading)
-          Positioned.fill(
-            child: Container(
-              color:   theme.isDarkMode ? colors.colorBlack.withOpacity(0.5) : colors.colorWhite.withOpacity(0.5),
-              child: Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SvgPicture.asset(
-                        'assets/icon/MYNT App Logo_v2.svg',
-                        width: 80,
-                        height: 80,
-                      ),
-                    ),
-                    const Positioned.fill(
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: SizedBox(
-                          width: 90,
-                          height: 90,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SvgPicture.asset(
+            'assets/icon/MYNT App Logo_v2.svg',
+            width: 80,
+            height: 80,
+          ),
+        ),
+        const Positioned.fill(
+          child: Align(
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: 90,
+              height: 90,
+              child: CircularProgressIndicator(
+                strokeWidth: 5,
               ),
             ),
           ),
+        ),
       ],
     );
-  });
-  }}
+  }
+}

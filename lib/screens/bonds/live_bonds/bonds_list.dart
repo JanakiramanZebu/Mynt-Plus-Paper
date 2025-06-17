@@ -2,19 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/models/bonds_model/all_bonds_list_model.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
-import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/bonds/bonds_order_screen/orderscreenbottompage.dart';
 import 'package:mynt_plus/screens/bonds/live_bonds/govt_bonds.dart';
 import 'package:mynt_plus/screens/bonds/live_bonds/sovereign_gold_bonds.dart';
 import 'package:mynt_plus/screens/bonds/live_bonds/state_bonds.dart';
 import 'package:mynt_plus/screens/bonds/live_bonds/treasury_bonds.dart';
-import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 class BondsListScreen extends StatelessWidget {
@@ -24,45 +18,56 @@ class BondsListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final bonds = ref.watch(bondsProvider);
-      // final mainstreamipo = ref.watch(ipoProvide);
-      // List<BondsList>? bondsList = bonds.bondsList;
-      // final upi = ref.watch(transcationProvider);
-      final theme = ref.watch(themeProvider);
-      final dev_height = MediaQuery.of(context).size.height;
+      final devHeight = MediaQuery.of(context).size.height;
+      
       return SingleChildScrollView(
         child: Column(
           children: [
-            bonds.govtBonds!.ncbGSec!.isEmpty &&
-                    bonds.treasuryBonds!.ncbTBill!.isEmpty &&
-                    bonds.stateBonds!.ncbSDL!.isEmpty &&
-                    bonds.sovereignGoldBonds!.ncbSGB!.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 225),
-                      child: Container(
-                        height: dev_height - 140,
-                        child: const Column(
-                          children: [
-                            NoDataFound(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                : const GovtBondsScreen(),
-            const TreasuryBondsScreen(),
-            const StateBondsScreen(),
-            const SovereignGoldBondsScreen(),
-            const SizedBox(
-              height: 24,
-            )
+            _buildContent(bonds, devHeight),
           ],
         ),
       );
     });
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
+  Widget _buildContent(BondsProvider bonds, double devHeight) {
+    final bool isEmpty = bonds.govtBonds!.ncbGSec!.isEmpty &&
+                         bonds.treasuryBonds!.ncbTBill!.isEmpty &&
+                         bonds.stateBonds!.ncbSDL!.isEmpty &&
+                         bonds.sovereignGoldBonds!.ncbSGB!.isEmpty;
+
+    if (isEmpty) {
+      return _buildEmptyState(devHeight);
+    }
+
+    return const Column(
+      children: [
+        GovtBondsScreen(),
+        TreasuryBondsScreen(),
+        StateBondsScreen(),
+        SovereignGoldBondsScreen(),
+        SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(double devHeight) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 225),
+        child: SizedBox(
+          height: devHeight - 140,
+          child: const Column(
+            children: [
+              NoDataFound(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
     return GoogleFonts.inter(
       fontWeight: fWeight,
       color: color,

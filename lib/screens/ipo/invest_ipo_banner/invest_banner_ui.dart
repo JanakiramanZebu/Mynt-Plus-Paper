@@ -7,15 +7,19 @@ import 'package:mynt_plus/res/res.dart';
 class InvestIPO extends ConsumerWidget {
   const InvestIPO({super.key});
 
+  static const Color _primaryColor = Color(0xff834EDA);
+  static const Color _titleColor = Color(0xffFEFDFD);
+  static const Color _subtitleColor = Color(0xffE6DCF8);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
     return Column(
       children: [
         Container(
-          decoration: BoxDecoration(
-              color: const Color(0xff834EDA),
-              borderRadius: BorderRadius.circular(5)),
+          decoration: const BoxDecoration(
+              color: _primaryColor,
+              borderRadius: BorderRadius.all(Radius.circular(5))),
           margin: const EdgeInsets.only(left: 16, right: 16, bottom: 2),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,21 +28,20 @@ class InvestIPO extends ConsumerWidget {
               ListTile(
                 title: Text("Invest in IPOs",
                     style: GoogleFonts.inter(
-                        textStyle: textStyle(
-                            const Color(0xffFEFDFD), 20, FontWeight.w600))),
-                subtitle: Column(
+                        textStyle: _textStyle(_titleColor, 20, FontWeight.w600))),
+                subtitle: const Column(
                   children: [
-                    const SizedBox(height: 3),
+                    SizedBox(height: 3),
                     Text(
                         "Initial public offering a new stock issuance for the first time.",
-                        style: GoogleFonts.inter(
-                            textStyle: textStyle(
-                                const Color(0xffE6DCF8), 14, FontWeight.w500))),
+                        style: TextStyle(
+                            color: _subtitleColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
               const SizedBox(height: 10),
-
               Container(
                 margin: const EdgeInsets.only(left: 14),
                 child: ElevatedButton(
@@ -47,13 +50,12 @@ class InvestIPO extends ConsumerWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 22, vertical: 0),
+                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 0),
                     backgroundColor: theme.isDarkMode
                         ? colors.colorWhite
                         : colors.colorBlack,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(50)),
                     ),
                   ),
                   child: Text(
@@ -67,21 +69,7 @@ class InvestIPO extends ConsumerWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 10)
-              // Container(
-              //   margin:
-              //       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              //   padding:
-              //       const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-              //   decoration: BoxDecoration(
-              //       color: const Color(0xff000000),
-              //       borderRadius: BorderRadius.circular(32)),
-              //   child: Text("Apply for an IPO",
-              //       style: GoogleFonts.inter(
-              //           textStyle: textStyle(
-              //               const Color(0xffFFFFFF), 14, FontWeight.w600))),
-              // )
             ],
           ),
         ),
@@ -89,7 +77,7 @@ class InvestIPO extends ConsumerWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
+  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
     return TextStyle(
       fontWeight: fWeight,
       color: color,

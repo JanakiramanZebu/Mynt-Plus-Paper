@@ -21,181 +21,201 @@ class BondsOpenOrder extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-              ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: bonds.openOrderBook!.length,
-                  itemBuilder: (context, index) {
-     
-                    // for (var i = 0;
-                    //     i < bonds.openOrderBook![index].bidDetail!.length;
-                    //     i++) {
-                    //   stringList.add( bonds.openOrderBook![index].type== "BSE" ? (double.parse(bonds.openOrderBook![index].bidDetail![i].rate!) * double.parse(bonds.openOrderBook![index].bidDetail![i].quantity!)).toString() : bonds.openOrderBook![index].bidDetail![i].amount.toString());
-                    //   bidqty.add(bonds.openOrderBook![index].bidDetail![i].quantity
-                    //       .toString());
-                    // }
-                    // String maxValue = stringList.reduce((curr, next) =>
-                    //     double.parse(curr) > double.parse(next) ? curr : next).toString();
-                    // String bidmaxvalue = bidqty.reduce((curr, next) =>
-                    //     double.parse(curr) > double.parse(next) ? curr : next).toString();
-                    return InkWell(
-                      onTap: () {
-                        Navigator.pushNamed(
-                            context, Routes.bondsopendetailsscreen,
-                            arguments: bonds.openOrderBook![index]);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                    bonds.openOrderBook![index].symbol
-                                        .toString(),
-                                    style: textStyles.scripNameTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
+          _OrdersList(bonds: bonds, theme: theme),
+        ],
+      ),
+    );
+  }
+}
 
-                                                Text(
-                                        // bonds.openOrderBook![index].type == "BSE"
-                                        //     ? "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}"
-                                        // : 
-                                            "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(bonds.openOrderBook![index].investmentValue!))}",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            14,
-                                            FontWeight.w600),
-                                      ),
-                                
-                               
-                                // SvgPicture.asset(assets.rightArrowIcon)
-                              ],
-                            ),
-                            // Padding(
-                            //   padding: const EdgeInsets.symmetric(horizontal: 16),
-                            //   child: Divider(
-                            //       color: theme.isDarkMode
-                            //           ? colors.darkColorDivider
-                            //           : const Color(0xffECEDEE),
-                            //       thickness: 1.2),
-                            // ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                                    
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      bonds.openOrderBook![index].responseDatetime
-                                                  .toString() ==
-                                              ""
-                                          ? "----"
-                                          : ipodateres(bonds.openOrderBook![index]
-                                              .responseDatetime
-                                              .toString()),
-                                      style:  textStyle(
-                                         const Color(0xff666666),
-                                          12,
-                                          FontWeight.w600),
-                                    ),
-                                    // const SizedBox(
-                                    //   height: 2,
-                                    // ),
-                                    // Text(
-                                    //   "Bid Date & time",
-                                    //   style: textStyle(colors.colorGrey, 12,
-                                    //       FontWeight.w500),
-                                    // )
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                     Row(
-                                children: [
-                                  SvgPicture.asset(bonds.openOrderBook![index]
-                                              .reponseStatus ==
-                                          "new success"
-                                      ? "assets/icon/success.svg"
-                                      : "assets/icon/pendingicon.svg"),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  Text(
-                                    bonds.openOrderBook![index]
-                                                .reponseStatus ==
-                                            "new success"
-                                        ? "Success"
-                                        : "Pending",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w600),
-                                  ),
-                                 
-                                  // Text(
-                                  //   "BID Qty: ",
-                                  //   style: textStyle(colors.colorGrey, 12,
-                                  //       FontWeight.w500),
-                                  // ),
-                                  // Text(
-                                  //   bonds.openOrderBook![index].investmentValue!,
-                                  //   style: textStyle(
-                                  //       theme.isDarkMode
-                                  //           ? colors.colorWhite
-                                  //           : colors.colorBlack,
-                                  //       13,
-                                  //       FontWeight.w600),
-                                  // )
-                                ],
-                              ),
-                                    
-                                    // const SizedBox(
-                                    //   height: 2,
-                                    // ),
-                                    // Text(
-                                    //   "Invested amount",
-                                    //   style: textStyle(colors.colorGrey, 12,
-                                    //       FontWeight.w500),
-                                    // )
-                                  ],
-                                )
-                              ],
-                            ),
-                            
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    return Divider(
-                  height: 0,
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,);
-                  },
-                )
-        ]
+class _OrdersList extends StatelessWidget {
+  final BondsProvider bonds;
+  final ThemesProvider theme;
+
+  const _OrdersList({
+    required this.bonds,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: bonds.openOrderBook!.length,
+      itemBuilder: (context, index) => _OrderItem(
+        order: bonds.openOrderBook![index],
+        theme: theme,
+      ),
+      separatorBuilder: (context, index) => _OrderDivider(theme: theme),
+    );
+  }
+}
+
+class _OrderItem extends StatelessWidget {
+  final dynamic order;
+  final ThemesProvider theme;
+
+  const _OrderItem({
+    required this.order,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _navigateToDetails(context),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _OrderHeader(order: order, theme: theme),
+            const SizedBox(height: 16),
+            _OrderFooter(order: order, theme: theme),
+          ],
+        ),
       ),
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  void _navigateToDetails(BuildContext context) {
+    Navigator.pushNamed(
+      context,
+      Routes.bondsopendetailsscreen,
+      arguments: order,
+    );
   }
+}
+
+class _OrderHeader extends StatelessWidget {
+  final dynamic order;
+  final ThemesProvider theme;
+
+  const _OrderHeader({
+    required this.order,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          order.symbol.toString(),
+          style: textStyles.scripNameTxtStyle.copyWith(
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          ),
+        ),
+        Text(
+          "₹${getFormatter(
+            noDecimal: true,
+            v4d: false,
+            value: double.parse(order.investmentValue!),
+          )}",
+          style: _textStyle(
+            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            14,
+            FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OrderFooter extends StatelessWidget {
+  final dynamic order;
+  final ThemesProvider theme;
+
+  const _OrderFooter({
+    required this.order,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              order.responseDatetime.toString() == ""
+                  ? "----"
+                  : ipodateres(order.responseDatetime.toString()),
+              style: _textStyle(
+                const Color(0xff666666),
+                12,
+                FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        _StatusBadge(order: order, theme: theme),
+      ],
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final dynamic order;
+  final ThemesProvider theme;
+
+  const _StatusBadge({
+    required this.order,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Row(
+          children: [
+            SvgPicture.asset(
+              order.reponseStatus == "new success"
+                  ? "assets/icon/success.svg"
+                  : "assets/icon/pendingicon.svg",
+            ),
+            const SizedBox(width: 5),
+            Text(
+              order.reponseStatus == "new success" ? "Success" : "Pending",
+              style: _textStyle(
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                14,
+                FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _OrderDivider extends StatelessWidget {
+  final ThemesProvider theme;
+
+  const _OrderDivider({required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 0,
+      color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+    );
+  }
+}
+
+TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+  return GoogleFonts.inter(
+    textStyle: TextStyle(
+      fontWeight: fWeight,
+      color: color,
+      fontSize: fontSize,
+    ),
+  );
 }

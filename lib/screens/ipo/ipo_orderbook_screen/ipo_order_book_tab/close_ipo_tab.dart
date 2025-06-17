@@ -9,197 +9,145 @@ import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
 
 class IpoCloseOrder extends ConsumerWidget {
-  // final IPOProvider ipo;
   const IpoCloseOrder({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
     final ipo = ref.watch(ipoProvide);
+    
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListView.separated(
-            
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: ipo.closeorder!.length,
-            itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  Navigator.pushNamed(context, Routes.ipoclosedetailsscreen,
-                      arguments: ipo.closeorder![index]);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: 250,
-                                child: Text(ipo.closeorder![index].companyName.toString(),
-                                    style: textStyles.scripNameTxtStyle.copyWith(
-                                        color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack), overflow: TextOverflow.ellipsis),
-                              ),
-                             
-                              // const Row(
-                              //   mainAxisAlignment: MainAxisAlignment.center,
-                              //   children: [
-                                 
-                              //     // const SizedBox(
-                              //     //   width: 8,
-                              //     // ),
-                              //     // Text(
-                              //     //   "BID Qty: ",
-                              //     //   style: textStyle(
-                              //     //       colors.colorGrey, 12, FontWeight.w500),
-                              //     // ),
-                              //     // Text(
-                              //     //   "${ipo.closeorder![index].bidDetail![0].quantity}",
-                              //     //   style: textStyle(
-                              //     //       theme.isDarkMode
-                              //     //           ? colors.colorWhite
-                              //     //           : colors.colorBlack,
-                              //     //       14,
-                              //     //       FontWeight.w600),
-                              //     // )
-                              //   ],
-                              // ),
-                            ],
-                          ),
-                          // SvgPicture.asset(assets.rightArrowIcon)
-
-                          Text(
-                                ipo.closeorder![index].type == "BSE"
-                                    ? "₹${getFormatter(noDecimal: true,v4d: false,value: double.parse(ipo.closeorder![index].bidDetail![0].rate!) * double.parse(ipo.closeorder![index].bidDetail![0].quantity!)).toString()}" 
-                                    : "₹${getFormatter(
-                                        noDecimal: true,
-                                        v4d: false,
-                                        value: double.parse(ipo
-                                                .closeorder![index]
-                                                .bidDetail![0]
-                                                .amount
-                                                .toString())
-                                            .toDouble(),
-                                      )}",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    14,
-                                    FontWeight.w600),
-                              ),
-                              // const SizedBox(
-                              //   height: 2,
-                              // ),
-                              // Text(
-                              //   "Invested amount",
-                              //   style: textStyle(
-                              //       colors.colorGrey, 12, FontWeight.w500),
-                              // )
-                        ],
-                      ),
-                      // Padding(
-                      //   padding: const EdgeInsets.symmetric(vertical: 16),
-                      //   child: Divider(
-                      //     height: 0,
-                      //       color: theme.isDarkMode
-                      //           ? colors.darkColorDivider
-                      //           : const Color(0xffECEDEE),
-                      //       thickness: 1.2),
-                      // ),
-
-                      SizedBox(height: 16,),
-                      
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                ipo.closeorder![index].responseDatetime
-                                            .toString() ==
-                                        ""
-                                    ? "----"
-                                    : ipodateres(ipo
-                                        .closeorder![index].responseDatetime
-                                        .toString()),
-                                style: textStyle(
-                                    const Color(0xff666666),
-                                    12,
-                                    FontWeight.w600),
-                              ),
-                              // const SizedBox(
-                              //   height: 2,
-                              // ),
-                              // Text(
-                              //   "Bid Date & time",
-                              //   style: textStyle(
-                              //       colors.colorGrey, 12, FontWeight.w500),
-                              // )
-                            ],
-                          ),
-                          
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-
-                               SvgPicture.asset(
-                                      ipo.closeorder![index].reponseStatus ==
-                                              "cancel success"
-                                          ? "assets/icon/failed.svg"
-                                          : "assets/icon/failed.svg"),
-                                  const SizedBox(
-                                    width: 4,
-                                  ),
-                                  Text(
-                                    ipo.closeorder![index].reponseStatus ==
-                                            "cancel success"
-                                        ? "Cancelled"
-                                        : "Failed",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w600),
-                                  ),
-                              
-                            ],
-                          ),
-                        ],
-                      ),
-                      
-                    ],
-                  ),
-                ),
-              );
-            },
+            itemBuilder: (context, index) => _CloseOrderItem(
+              order: ipo.closeorder![index],
+              theme: theme,
+            ),
             separatorBuilder: (BuildContext context, int index) {
               return Divider(
                   height: 0,
-                    color:theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider);
-
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider);
             },
           )
         ],
       ),
     );
   }
+}
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
+class _CloseOrderItem extends StatelessWidget {
+  final dynamic order;
+  final dynamic theme;
+
+  const _CloseOrderItem({
+    required this.order,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.pushNamed(context, Routes.ipoclosedetailsscreen,
+            arguments: order);
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildTopRow(),
+            const SizedBox(height: 16),
+            _buildBottomRow(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox(
+          width: 250,
+          child: Text(
+            order.companyName.toString(),
+            style: textStyles.scripNameTxtStyle.copyWith(
+                color: theme.isDarkMode
+                    ? colors.colorWhite
+                    : colors.colorBlack),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        Text(
+          _getInvestedAmount(),
+          style: _textStyle(
+              theme.isDarkMode
+                  ? colors.colorWhite
+                  : colors.colorBlack,
+              14,
+              FontWeight.w600),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          order.responseDatetime.toString() == ""
+              ? "----"
+              : ipodateres(order.responseDatetime.toString()),
+          style: _textStyle(
+              const Color(0xff666666),
+              12,
+              FontWeight.w600),
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            SvgPicture.asset(
+                order.reponseStatus == "cancel success"
+                    ? "assets/icon/failed.svg"
+                    : "assets/icon/failed.svg"),
+            const SizedBox(width: 4),
+            Text(
+              order.reponseStatus == "cancel success"
+                  ? "Cancelled"
+                  : "Failed",
+              style: _textStyle(
+                  theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.colorBlack,
+                  14,
+                  FontWeight.w600),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _getInvestedAmount() {
+    return order.type == "BSE"
+        ? "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate!) * double.parse(order.bidDetail![0].quantity!)).toString()}"
+        : "₹${getFormatter(
+            noDecimal: true,
+            v4d: false,
+            value: double.parse(order.bidDetail![0].amount.toString()).toDouble(),
+          )}";
+  }
+
+  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
     return GoogleFonts.inter(
         textStyle:
             TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));

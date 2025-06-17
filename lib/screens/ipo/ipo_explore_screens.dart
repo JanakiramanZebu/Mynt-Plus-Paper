@@ -24,7 +24,7 @@ class IpoExploreScreens extends ConsumerStatefulWidget {
 class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final tablistitems = [
+  static final List<Map<String, dynamic>> _tabItems = [
     {
       "Aimgpath": "",
       "imgpath": assets.exportIcon,
@@ -37,12 +37,6 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
       "title": "Upcoming",
       "index": 1,
     },
-    // {
-    //   "Aimgpath": "",
-    //   "imgpath": assets.bag,
-    //   "title": "Listed",
-    //   "index": 1,
-    // },
     {
       "Aimgpath": "",
       "imgpath": assets.bag,
@@ -56,119 +50,181 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
+    _tabController.animation!.addListener(_onTabChanged);
+  }
 
-     _tabController.animation!.addListener(() {
+  void _onTabChanged() {
     final newIndex = _tabController.animation!.value.round();
     if (activeTab != newIndex) {
       setState(() {
-        activeTab = newIndex; // Update activeTab immediately on swipe
+        activeTab = newIndex;
       });
     }
-  });
+  }
 
-   
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final explore = ref.watch(authProvider);
     final theme = ref.watch(themeProvider);
-    final ipo = ref.watch(ipoProvide);
 
     return TransparentLoaderScreen(
       isLoading: explore.loading,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // const CustomDragHandler(),
-          Container(
-              width: MediaQuery.of(context).size.width,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                  border: Border(
-                bottom: BorderSide(
-                    color: widget.theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,
-                    width: 0),
-              )),
-              child: TabBar(
-                  labelPadding: const EdgeInsets.only(right: 8),
-                  tabAlignment: TabAlignment.start,
-                  indicatorColor: const Color.fromARGB(255, 255, 255, 255),
-                  controller: _tabController,
-                  isScrollable: true,
-                  tabs: List.generate(
-                      tablistitems.length,
-                      (tab) => tabConstruce(
-                          // tablistitems[tab]['imgpath'].toString(),
-                          tablistitems[tab]['title'].toString(),
-                          theme,
-                          tab,
-                          () {})))),
+          _TabBarSection(
+            tabController: _tabController,
+            theme: widget.theme,
+            onTabPressed: _onTabPressed,
+          ),
           Expanded(
-            child: TabBarView(
-              // physics: const NeverScrollableScrollPhysics(),
-              controller: _tabController,
-              children: const [
-                MainSmeListCard(),
-                UpcomingIpo(),
-                IpoOrderbookMainScreen()
-              ],
-            ),
+            child: _TabBarViewSection(tabController: _tabController),
           ),
         ],
       ),
     );
   }
 
- Widget tabConstruce(String title, ThemesProvider theme, int tab, VoidCallback onPressed) {
-  return ValueListenableBuilder(
-    valueListenable: _tabController.animation!,
-    builder: (context, value, child) {
-      final isActive = value.round() == tab; 
-      return ElevatedButton(
-       onPressed: () {        
-  _tabController.animateTo(tab);
-},
+  void _onTabPressed(int tab) {
+    _tabController.animateTo(tab);
+  }
 
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          backgroundColor: theme.isDarkMode
-              ? isActive
-                  ? colors.colorbluegrey
-                  : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
-              : isActive
-                  ? const Color(0xff000000)
-                  : const Color.fromARGB(255, 255, 255, 255),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-            side: const BorderSide(
-              color: Colors.black,
-              width: 1,
-            ),
-          ),
-          minimumSize: const Size(0, 30),
-        ),
-        child: Text(
-          title,
-          style: textStyle(
-            theme.isDarkMode
-                ? Color(isActive ? 0xff000000 : 0xffffffff)
-                : Color(isActive ? 0xffffffff : 0xff000000),
-            14,
-            FontWeight.w500,
-          ),
-        ),
-      );
-    },
-  );
+  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+    return GoogleFonts.inter(
+      textStyle: TextStyle(
+        fontWeight: fWeight,
+        color: color,
+        fontSize: fontSize,
+      ),
+    );
+  }
 }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+class _TabBarSection extends StatelessWidget {
+  final TabController tabController;
+  final ThemesProvider theme;
+  final Function(int) onTabPressed;
+
+  const _TabBarSection({
+    required this.tabController,
+    required this.theme,
+    required this.onTabPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider,
+            width: 0,
+          ),
+        ),
+      ),
+      child: TabBar(
+        labelPadding: const EdgeInsets.only(right: 8),
+        tabAlignment: TabAlignment.start,
+        indicatorColor: const Color.fromARGB(255, 255, 255, 255),
+        controller: tabController,
+        isScrollable: true,
+        tabs: List.generate(
+          _ExploreScreensState._tabItems.length,
+          (tab) => _TabButton(
+            title: _ExploreScreensState._tabItems[tab]['title'].toString(),
+            theme: theme,
+            tab: tab,
+            tabController: tabController,
+            onPressed: () => onTabPressed(tab),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TabButton extends StatelessWidget {
+  final String title;
+  final ThemesProvider theme;
+  final int tab;
+  final TabController tabController;
+  final VoidCallback onPressed;
+
+  const _TabButton({
+    required this.title,
+    required this.theme,
+    required this.tab,
+    required this.tabController,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: tabController.animation!,
+      builder: (context, value, child) {
+        final isActive = value.round() == tab;
+        return ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            backgroundColor: theme.isDarkMode
+                ? isActive
+                    ? colors.colorbluegrey
+                    : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
+                : isActive
+                    ? const Color(0xff000000)
+                    : const Color.fromARGB(255, 255, 255, 255),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: const BorderSide(
+                color: Colors.black,
+                width: 1,
+              ),
+            ),
+            minimumSize: const Size(0, 30),
+          ),
+          child: Text(
+            title,
+            style: _ExploreScreensState._textStyle(
+              theme.isDarkMode
+                  ? Color(isActive ? 0xff000000 : 0xffffffff)
+                  : Color(isActive ? 0xffffffff : 0xff000000),
+              14,
+              FontWeight.w500,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TabBarViewSection extends StatelessWidget {
+  final TabController tabController;
+
+  const _TabBarViewSection({required this.tabController});
+
+  @override
+  Widget build(BuildContext context) {
+    return TabBarView(
+      controller: tabController,
+      children: const [
+        MainSmeListCard(),
+        UpcomingIpo(),
+        IpoOrderbookMainScreen(),
+      ],
+    );
   }
 }
