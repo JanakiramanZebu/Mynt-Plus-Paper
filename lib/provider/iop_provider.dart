@@ -38,8 +38,6 @@ class IPOProvider extends DefaultChangeNotifier {
   bool _isSMEPlaceOrderBtnActive = false;
   bool get isSMEPlaceOrderBtnActive => _isSMEPlaceOrderBtnActive;
 
-  
-
   set setisSMEPlaceOrderBtnActiveValue(bool value) {
     _isSMEPlaceOrderBtnActive = value;
   }
@@ -117,8 +115,6 @@ class IPOProvider extends DefaultChangeNotifier {
   SmeIpoModel? _smeIpoModel;
   SmeIpoModel? get smeIpoModel => _smeIpoModel;
 
- 
-
   DashbordIposIPOS? _dashboardIpoModel;
   DashbordIposIPOS? get dashboardIpoModel => _dashboardIpoModel;
 
@@ -178,10 +174,6 @@ class IPOProvider extends DefaultChangeNotifier {
   String _upierror = "";
   String get upierror => _upierror;
 
-  
-
-  
-
   mergemainsme() {
     _mainsme = [];
     _ipoCommonSearchAllIpos = [];
@@ -215,12 +207,12 @@ class IPOProvider extends DefaultChangeNotifier {
         return dateA.compareTo(dateB);
       });
 
-      return _mainsme = mainsme;     
+      return _mainsme = mainsme;
       //return _mainsme;
     } catch (e) {
       print("Error in mergemainsme: $e");
     }
-     print(' main sme :::::::::::::::::::::::: "  : $_mainsme');
+    print(' main sme :::::::::::::::::::::::: "  : $_mainsme');
   }
 
   IpoSinglePage? _ipoSinglePage;
@@ -558,9 +550,22 @@ class IPOProvider extends DefaultChangeNotifier {
   smequantityminusfunction(IpoDetails addIpo, bool ischecked, SMEIPO smeipo,
       double maxUPIAmt, String selectedChip) {
     if (addIpo.qualityController.text.isNotEmpty) {
-      addIpo.qualityController.text =
-          (int.parse(addIpo.qualityController.text) - addIpo.lotsize)
-              .toString();
+      if ((int.parse(addIpo.qualityController.text) % addIpo.lotsize) == 0) {
+        addIpo.qualityController.text =
+            (int.parse(addIpo.qualityController.text) - addIpo.lotsize)
+                .toString();
+      } else {
+        addIpo.qualityController.text =
+            (((int.parse(addIpo.qualityController.text) / addIpo.lotsize)
+                        .floor()) *
+                    addIpo.lotsize)
+                .toString();
+      }
+
+      // addIpo.qualityController.text =
+      //     (int.parse(addIpo.qualityController.text) - addIpo.lotsize)
+      //         .toString();
+
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(smeipo.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
@@ -581,6 +586,11 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
       setisSMEPlaceOrderBtnActiveValue = false;
+    } else if ((int.parse(addIpo.qualityController.text)) <
+        int.parse(smeipo.minBidQuantity.toString()).toInt()) {
+      addIpo.qualityerrortext =
+          "Minimum Bid quantity is ${smeipo.minBidQuantity.toString()} only ";
+      setisSMEPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.qualityerrortext = "";
     }
@@ -589,14 +599,18 @@ class IPOProvider extends DefaultChangeNotifier {
 
   smequalityplusefunction(IpoDetails addIpo, bool ischecked, SMEIPO smeipo,
       double maxUPIAmt, String selectedChip) {
-    print(addIpo);
-    print(ischecked);
-    print(smeipo);
-    print(maxUPIAmt);
     if (addIpo.qualityController.text.isNotEmpty) {
-      addIpo.qualityController.text =
-          (int.parse(addIpo.qualityController.text) + addIpo.lotsize)
-              .toString();
+      if ((int.parse(addIpo.qualityController.text) % addIpo.lotsize) == 0) {
+        addIpo.qualityController.text =
+            (int.parse(addIpo.qualityController.text) + addIpo.lotsize)
+                .toString();
+      } else {
+        addIpo.qualityController.text =
+            (((int.parse(addIpo.qualityController.text) / addIpo.lotsize)
+                        .round()) *
+                    addIpo.lotsize)
+                .toString();
+      }
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(smeipo.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
@@ -612,6 +626,11 @@ class IPOProvider extends DefaultChangeNotifier {
     } else if (selectedChip == "HNI" && addIpo.requriedprice < 200000) {
       addIpo.qualityerrortext = "Minimum investment for HNI is above ₹200000 ";
       // setisMainIPOPlaceOrderBtnActiveValue = false;
+      setisSMEPlaceOrderBtnActiveValue = false;
+    } else if ((int.parse(addIpo.qualityController.text)) <
+        int.parse(smeipo.minBidQuantity.toString()).toInt()) {
+      addIpo.qualityerrortext =
+          "Minimum Bid quantity is ${smeipo.minBidQuantity.toString()} only ";
       setisSMEPlaceOrderBtnActiveValue = false;
     } else if (addIpo.requriedprice > maxUPIAmt) {
       addIpo.qualityerrortext =
@@ -678,6 +697,11 @@ class IPOProvider extends DefaultChangeNotifier {
             "Minimum investment for HNI is above ₹200000";
         setisMainIPOPlaceOrderBtnActiveValue = false;
         setisSMEPlaceOrderBtnActiveValue = false;
+      } else if (((int.parse(singleIpo.qualityController.text)) <
+          singleIpo.lotsize)) {
+        singleIpo.qualityerrortext = "Provide bid with valid Quantity";
+        setisMainIPOPlaceOrderBtnActiveValue = false;
+        setisSMEPlaceOrderBtnActiveValue = false;
       } else {
         singleIpo.qualityerrortext = "";
         setisMainIPOPlaceOrderBtnActiveValue = false;
@@ -728,9 +752,17 @@ class IPOProvider extends DefaultChangeNotifier {
   qualityplusefunction(IpoDetails addIpo, bool ischecked, IPOProvider ipo,
       MainIPO mainstream, String selectedChip) {
     if (addIpo.qualityController.text.isNotEmpty) {
-      addIpo.qualityController.text =
-          (int.parse(addIpo.qualityController.text) + addIpo.lotsize)
-              .toString();
+      if ((int.parse(addIpo.qualityController.text) % addIpo.lotsize) == 0) {
+        addIpo.qualityController.text =
+            (int.parse(addIpo.qualityController.text) + addIpo.lotsize)
+                .toString();
+      } else {
+        addIpo.qualityController.text =
+            (((int.parse(addIpo.qualityController.text) / addIpo.lotsize)
+                        .round()) *
+                    addIpo.lotsize)
+                .toString();
+      }
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(mainstream.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
@@ -747,6 +779,11 @@ class IPOProvider extends DefaultChangeNotifier {
       addIpo.qualityerrortext = "Minimum investment for HNI is above ₹200000 ";
       setisMainIPOPlaceOrderBtnActiveValue = false;
       // setisSMEPlaceOrderBtnActiveValue = false;
+    } else if ((int.parse(addIpo.qualityController.text)) <
+        int.parse(mainstream.minBidQuantity.toString()).toInt()) {
+      addIpo.qualityerrortext =
+          "Minimum Bid quantity is ${mainstream.minBidQuantity.toString()} only ";
+      setisMainIPOPlaceOrderBtnActiveValue = false;
     } else if (addIpo.requriedprice > ipo.maxUPIAmt) {
       addIpo.qualityerrortext =
           "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ";
@@ -761,9 +798,17 @@ class IPOProvider extends DefaultChangeNotifier {
   quantityminusfunction(IpoDetails addIpo, bool ischecked, IPOProvider ipo,
       MainIPO mainstream, String selectedChip) {
     if (addIpo.qualityController.text.isNotEmpty) {
-      addIpo.qualityController.text =
-          (int.parse(addIpo.qualityController.text) - addIpo.lotsize)
-              .toString();
+      if ((int.parse(addIpo.qualityController.text) % addIpo.lotsize) == 0) {
+        addIpo.qualityController.text =
+            (int.parse(addIpo.qualityController.text) - addIpo.lotsize)
+                .toString();
+      } else {
+        addIpo.qualityController.text =
+            (((int.parse(addIpo.qualityController.text) / addIpo.lotsize)
+                        .floor()) *
+                    addIpo.lotsize)
+                .toString();
+      }
       addIpo.isChecked == true
           ? addIpo.requriedprice = double.parse(mainstream.maxPrice!).toInt() *
               (int.parse(addIpo.qualityController.text))
@@ -1260,7 +1305,8 @@ class IPOProvider extends DefaultChangeNotifier {
 
     notifyListeners();
   }
- Upcoming_ipo? _upcomingModel;
+
+  Upcoming_ipo? _upcomingModel;
   Upcoming_ipo? get upcomingModel => _upcomingModel;
 
 //// API CALLS
@@ -1279,7 +1325,7 @@ class IPOProvider extends DefaultChangeNotifier {
     }
   }
 
-   Future getUpcomingIpoModel() async {
+  Future getUpcomingIpoModel() async {
     try {
       // _displayload = true;
       _upcomingModel = await api.fetchIpoUpcomingApi();
@@ -1294,7 +1340,6 @@ class IPOProvider extends DefaultChangeNotifier {
       // _displayload = false;
     }
   }
-
 
   Future getipoorderbookmodel(bool isTrue) async {
     try {
