@@ -67,8 +67,7 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
         print("refresh ");
         await ledgerprovider.getYearlistTaxpnl();
         ledgerprovider.getCurrentDate('');
-        ledgerprovider.fetchtaxpnleqdata(
-            context, ledgerprovider.yearforTaxpnl);
+        ledgerprovider.fetchtaxpnleqdata(context, ledgerprovider.yearforTaxpnl);
 
         ledgerprovider.taxpnlExTabchange(0);
         ledgerprovider.chargesforeqtaxpnl(

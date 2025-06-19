@@ -17,7 +17,7 @@ class ApiLinks {
 
   String get newsurl => "$bemynt/news";
   String get weblog => "$bemynt/weblog/addlogversion";
-  
+
   String get getpref => "$bemynt/weblog/getpreference";
   String get setpref => "$bemynt/weblog/savepreference";
 
@@ -320,8 +320,9 @@ class ApiLinks {
   // reportss api
 
   String get reportsapi => 'https://rekycbe.mynt.in/report/';
+  String get reportsapiforcpaction => 'https://v3.mynt.in/ipo/';
   String get reportspledge => 'https://rekycbe.mynt.in/pledge/';
   String get fundforprofile => 'https://fundapi.mynt.in/api/';
-    String get caevents => 'https://v3.mynt.in/equity/';
-    String get position => 'https://be.zebull.in/api/';
+  String get caevents => 'https://v3.mynt.in/equity/';
+  String get position => 'https://be.zebull.in/api/';
 }

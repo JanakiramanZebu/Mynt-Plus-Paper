@@ -115,6 +115,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8)),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -124,11 +125,98 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                               headingstat(
                                   "Client Name",
                                   '${ledgerprovider.cdslresponsedata?.cLIENTNAME}',
-                                  theme),
-                              headingstat(
-                                  "Status",
-                                  '${ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resstatus == '1' ? 'Rejected' : ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resstatus == '0' ? 'Success' : 'Pending'}',
-                                  theme),
+                                  theme,
+                                  'left'),
+                              Column(
+                                children: [
+                                  TextWidget.subText(
+                                      text: "Status",
+                                      color: Color(0xFF696969),
+                                      textOverflow: TextOverflow.ellipsis,
+                                      theme: theme.isDarkMode,
+                                      fw: 0),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Container(
+                                      margin: const EdgeInsets.only(right: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: ledgerprovider
+                                                    .cdslresponsedata
+                                                    ?.cDSLResp
+                                                    ?.pledgeresdtls
+                                                    ?.pledgeresdtlstwo
+                                                    ?.resstatus ==
+                                                '0'
+                                            ? const Color.fromARGB(
+                                                    255, 177, 255, 208)
+                                                .withOpacity(.3)
+                                            : ledgerprovider
+                                                        .cdslresponsedata
+                                                        ?.cDSLResp
+                                                        ?.pledgeresdtls
+                                                        ?.pledgeresdtlstwo
+                                                        ?.resstatus ==
+                                                    '1'
+                                                ? const Color.fromARGB(
+                                                    255, 246, 197, 197)
+                                                : const Color.fromARGB(
+                                                    255, 246, 235, 197),
+                                      ),
+                                      child: Text(
+                                          ledgerprovider
+                                                      .cdslresponsedata
+                                                      ?.cDSLResp
+                                                      ?.pledgeresdtls
+                                                      ?.pledgeresdtlstwo
+                                                      ?.resstatus ==
+                                                  '0'
+                                              ? 'Completed'
+                                              : ledgerprovider
+                                                          .cdslresponsedata
+                                                          ?.cDSLResp
+                                                          ?.pledgeresdtls
+                                                          ?.pledgeresdtlstwo
+                                                          ?.resstatus ==
+                                                      '1'
+                                                  ? 'Rejected'
+                                                  : 'Pending',
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: textStyle(
+                                              ledgerprovider
+                                                          .cdslresponsedata
+                                                          ?.cDSLResp
+                                                          ?.pledgeresdtls
+                                                          ?.pledgeresdtlstwo
+                                                          ?.resstatus ==
+                                                      '0'
+                                                  ? const Color.fromARGB(
+                                                      193, 68, 168, 53)
+                                                  : ledgerprovider
+                                                              .cdslresponsedata
+                                                              ?.cDSLResp
+                                                              ?.pledgeresdtls
+                                                              ?.pledgeresdtlstwo
+                                                              ?.resstatus ==
+                                                          '1'
+                                                      ? const Color.fromARGB(
+                                                          255, 249, 57, 57)
+                                                      : const Color.fromARGB(
+                                                          255, 249, 201, 57),
+                                              10,
+                                              FontWeight.w500)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              // headingstat(
+                              //     "Status",
+                              //     '${ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resstatus == '1' ? 'Rejected' : ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resstatus == '0' ? 'Success' : 'Pending'}',
+                              //     theme),
                             ],
                           ),
                         ),
@@ -140,12 +228,14 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                             children: [
                               headingstat(
                                   "Client ID ",
-                                  '${ledgerprovider.cdslresponsedata?.clientBoId}',
-                                  theme),
+                                  '${ledgerprovider.cdslresponsedata?.uccid}',
+                                  theme,
+                                  'left'),
                               headingstat(
                                   "CDSL Req",
                                   '${ledgerprovider.cdslresponsedata?.pledgeReqTime}',
-                                  theme),
+                                  theme,
+                                  'right'),
                             ],
                           ),
                         ),
@@ -158,11 +248,13 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                               headingstat(
                                   "BO ID",
                                   '${ledgerprovider.cdslresponsedata?.clientBoId}',
-                                  theme),
+                                  theme,
+                                  'left'),
                               headingstat(
                                   "CDSL Res",
                                   '${ledgerprovider.cdslresponsedata?.cDSLRespTime}',
-                                  theme),
+                                  theme,
+                                  'right'),
                             ],
                           ),
                         ),
@@ -175,11 +267,13 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                               headingstat(
                                   "Request ID",
                                   '${ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.reqid}',
-                                  theme),
+                                  theme,
+                                  'left'),
                               headingstat(
                                   "CDSL ID",
                                   '${ledgerprovider.cdslresponsedata?.cDSLResp?.pledgeresdtls?.pledgeresdtlstwo?.resid}',
-                                  theme),
+                                  theme,
+                                  'right'),
                             ],
                           ),
                         ),
@@ -440,23 +534,73 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                           children: [
                                             Row(
                                               children: [
-                                                TextWidget.subText(
-                                                    text: "Status : ",
-                                                    color: Color(0xFF696969),
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
-                                                    text:
-                                                        "${val.status == '1' ? 'Rejected' : val.status == '0' ? 'Success' : 'Pending'}",
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 1),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 16.0),
+                                                  child: Container(
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                            right: 4),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 3),
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              2),
+                                                      color: val.status == '0'
+                                                          ? const Color
+                                                                  .fromARGB(255,
+                                                                  177, 255, 208)
+                                                              .withOpacity(.3)
+                                                          : const Color
+                                                              .fromARGB(255,
+                                                              246, 197, 197),
+                                                    ),
+                                                    child: Text(
+                                                        val.status == '0'
+                                                            ? 'Completed'
+                                                            : 'Rejected',
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        maxLines: 1,
+                                                        style: textStyle(
+                                                            val.status == '0'
+                                                                ? const Color
+                                                                    .fromARGB(
+                                                                    193,
+                                                                    68,
+                                                                    168,
+                                                                    53)
+                                                                : const Color
+                                                                    .fromARGB(
+                                                                    255,
+                                                                    249,
+                                                                    57,
+                                                                    57),
+                                                            10,
+                                                            FontWeight.w500)),
+                                                  ),
+                                                ),
+                                                // TextWidget.subText(
+                                                //     text: "Status : ",
+                                                //     color: Color(0xFF696969),
+                                                //     textOverflow:
+                                                //         TextOverflow.ellipsis,
+                                                //     theme: theme.isDarkMode,
+                                                //     fw: 0),
+                                                // TextWidget.subText(
+                                                //     text:
+                                                //         "${val.status == '1' ? 'Rejected' : val.status == '0' ? 'Success' : 'Pending'}",
+                                                //     color: theme.isDarkMode
+                                                //         ? colors.colorWhite
+                                                //         : colors.colorBlack,
+                                                //     textOverflow:
+                                                //         TextOverflow.ellipsis,
+                                                //     theme: theme.isDarkMode,
+                                                //     fw: 1),
                                               ],
                                             ),
                                           ],
@@ -521,9 +665,10 @@ class PledgenUnpledgeResponse extends StatelessWidget {
     return 0;
   }
 
-  headingstat(String heading, String value, theme) {
+  headingstat(String heading, String value, theme, String side) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+          side == 'right' ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         TextWidget.subText(
             text: heading,

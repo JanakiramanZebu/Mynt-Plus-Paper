@@ -18,10 +18,12 @@ import '../screens/bonds/bonds_order_screen/order_screen.dart';
 import '../screens/bonds/bonds_orderbook_screen/bonds_order_book_main_screen.dart';
 import '../screens/bonds/bonds_orderbook_screen/bonds_orderbook_details/close_order_details.dart';
 import '../screens/bonds/bonds_orderbook_screen/bonds_orderbook_details/open_order_details.dart';
+import '../screens/desk_reports/ca_action/ca_action_buyback.dart';
 import '../screens/desk_reports/ca_event_main_page.dart';
 import '../screens/desk_reports/calendarpnl_heatmap/headmap_calendar.dart';
 import '../screens/desk_reports/calenderPnl_screen.dart';
 import '../screens/desk_reports/cdsl_pledge.dart';
+import '../screens/desk_reports/cp_action_main_page.dart';
 import '../screens/desk_reports/equity_taxpnl_screen.dart';
 import '../screens/desk_reports/holding_screen.dart';
 import '../screens/desk_reports/ledger_screen.dart';
@@ -111,38 +113,41 @@ String? currentRouteName;
 
 class AppRoutes {
   // Define constants for transitions
-static const Duration _transitionDuration = Duration(milliseconds: 180); // Slightly faster
-static const Curve _standardCurve = Curves.easeOutQuart; // Smooth acceleration-deceleration
+  static const Duration _transitionDuration =
+      Duration(milliseconds: 180); // Slightly faster
+  static const Curve _standardCurve =
+      Curves.easeOutQuart; // Smooth acceleration-deceleration
 
 // Helper method to create optimized transitions
-static PageRouteBuilder _createRoute({
-  required Widget Function(BuildContext, Animation<double>, Animation<double>) pageBuilder,
-  Offset beginOffset = const Offset(0.0, 0.0),
-}) {
-  return PageRouteBuilder(
-    pageBuilder: pageBuilder,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      // Slide transition
-      final slideTween = Tween(
-        begin: beginOffset,
-        end: Offset.zero,
-      ).chain(CurveTween(curve: _standardCurve));
-      
-      // Add subtle fade for enhanced experience
-      final fadeTween = Tween(begin: 0.85, end: 1.0)
-          .chain(CurveTween(curve: _standardCurve));
-      
-      return FadeTransition(
-        opacity: animation.drive(fadeTween),
-        child: SlideTransition(
-          position: animation.drive(slideTween),
-          child: child,
-        ),
-      );
-    },
-    transitionDuration: _transitionDuration,
-  );
-}
+  static PageRouteBuilder _createRoute({
+    required Widget Function(BuildContext, Animation<double>, Animation<double>)
+        pageBuilder,
+    Offset beginOffset = const Offset(0.0, 0.0),
+  }) {
+    return PageRouteBuilder(
+      pageBuilder: pageBuilder,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        // Slide transition
+        final slideTween = Tween(
+          begin: beginOffset,
+          end: Offset.zero,
+        ).chain(CurveTween(curve: _standardCurve));
+
+        // Add subtle fade for enhanced experience
+        final fadeTween = Tween(begin: 0.85, end: 1.0)
+            .chain(CurveTween(curve: _standardCurve));
+
+        return FadeTransition(
+          opacity: animation.drive(fadeTween),
+          child: SlideTransition(
+            position: animation.drive(slideTween),
+            child: child,
+          ),
+        );
+      },
+      transitionDuration: _transitionDuration,
+    );
+  }
 
   // Safe method to log screen views to Firebase Analytics
   static void _logScreenView(String? screenName) {
@@ -165,7 +170,7 @@ static PageRouteBuilder _createRoute({
 
     // Log screen view using the safe method
     _logScreenView(currentRouteName);
-    
+
     final dynamic args = settings.arguments;
     switch (settings.name) {
       case Routes.splash:
@@ -247,7 +252,6 @@ static PageRouteBuilder _createRoute({
           beginOffset: const Offset(0.0, 1.0),
         );
 
-
       case Routes.optionChain:
         return _createRoute(
           pageBuilder: (_, __, ___) => OptionChainSS(wlValue: args),
@@ -284,9 +288,9 @@ static PageRouteBuilder _createRoute({
       case Routes.modifyOrder:
         return _createRoute(
           pageBuilder: (_, __, ___) => ModifyPlaceOrderScreen(
-                  orderArg: args['orderArg'],
-                  modifyOrderArgs: args['modifyOrderArgs'],
-                  scripInfo: args['scripInfo']),
+              orderArg: args['orderArg'],
+              modifyOrderArgs: args['modifyOrderArgs'],
+              scripInfo: args['scripInfo']),
           beginOffset: const Offset(0.0, 1.0),
         );
       // case Routes.chartWebView:
@@ -316,8 +320,7 @@ static PageRouteBuilder _createRoute({
       case Routes.holdingDetail:
         return _createRoute(
           pageBuilder: (_, __, ___) => HoldingDetailScreen(
-                  exchTsym: args['exchTsym'],
-                  holdingData: args['holdingData']),
+              exchTsym: args['exchTsym'], holdingData: args['holdingData']),
           beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.holdingExit:
@@ -327,8 +330,7 @@ static PageRouteBuilder _createRoute({
         );
       case Routes.edis:
         return _createRoute(
-          pageBuilder: (_, __, ___) => EdisWebview(
-                  params: args),
+          pageBuilder: (_, __, ___) => EdisWebview(params: args),
           beginOffset: const Offset(0.0, 1.0),
         );
 
@@ -449,6 +451,17 @@ static PageRouteBuilder _createRoute({
           beginOffset: const Offset(-1.0, 0.0),
         );
 
+      case Routes.cpactionmainpage:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => CPActionMainpage(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.cabuyback:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => CABuyback(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
       case Routes.eqtaxpnleq:
         return _createRoute(
           pageBuilder: (_, __, ___) => EqTaxpnlEq(),
@@ -476,6 +489,12 @@ static PageRouteBuilder _createRoute({
       case Routes.cdslWebView:
         return _createRoute(
           pageBuilder: (_, __, ___) => CDSLWebView(argument: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.pledgeandun:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PledgenUnpledge(ddd: args),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -612,7 +631,8 @@ static PageRouteBuilder _createRoute({
 
       case Routes.modifyipoorder:
         return _createRoute(
-          pageBuilder: (_, __, ___) => ModifyIpoOrderScreen(modifyipoorder: args),
+          pageBuilder: (_, __, ___) =>
+              ModifyIpoOrderScreen(modifyipoorder: args),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -706,13 +726,15 @@ static PageRouteBuilder _createRoute({
         );
       case Routes.bondsclosedetailsscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => BondsCloseOrderDetails(bondsCloseDetails: args),
+          pageBuilder: (_, __, ___) =>
+              BondsCloseOrderDetails(bondsCloseDetails: args),
           beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.bondsopendetailsscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => BondsOpenOrderDetails(bondsdetails: args),
+          pageBuilder: (_, __, ___) =>
+              BondsOpenOrderDetails(bondsdetails: args),
           beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.bondsorderbook:
@@ -724,8 +746,8 @@ static PageRouteBuilder _createRoute({
       case Routes.bondsPlaceOrder:
         return _createRoute(
           pageBuilder: (_, __, ___) => ApplyBondsScreen(
-                    bondInfo: args,
-                  ),
+            bondInfo: args,
+          ),
           beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.mfsearchscreen:

@@ -187,6 +187,9 @@ class Routes {
   static const String calenderpnlScreen = 'CalenderpnlScreen';
   static const String taxpnlscreen = 'Taxpnlscreen';
   static const String caeventmainpage = 'CAEventMainPage';
+  static const String cpactionmainpage = 'CPActionMainpage';
+  static const String cabuyback = 'CABuyback';
+
   static const String tradebook = 'Tradebook';
   static const String pledgeandun = 'PledgenUnpledge';
   static const String pledgehistorymainscreen = 'PledgeHistoryMainScreen';

@@ -8,11 +8,14 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/desk_reports_model/calender_pnl_model.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_switch_btn.dart';
+import '../../sharedWidget/snack_bar.dart';
+import 'bottom_sheets/sharing_screen.dart';
 
 class CalenderpnlScreen extends StatefulWidget {
   const CalenderpnlScreen({super.key});
@@ -32,12 +35,17 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
       final sortedDates = ledgerprovider.grouped.keys.toList()
         ..sort((a, b) => b.compareTo(a));
       Future<void> _refresh() async {
-        await Future.delayed(Duration(seconds: 0)); // simulate refresh delay
+        await Future.delayed(
+            const Duration(seconds: 0)); // simulate refresh delay
         print("refresh ");
         await ledgerprovider.getCurrentDate('else');
         ledgerprovider.calendarProvider();
-        ledgerprovider.fetchcalenderpnldata(context, ledgerprovider.startDate,
-            ledgerprovider.today, 'Equity');
+        ledgerprovider.fetchsharingdata(
+            ledgerprovider.startDate, ledgerprovider.today, 'Equity', context);
+        ledgerprovider.setSegment("Equity");
+
+        ledgerprovider.fetchcalenderpnldata(
+            context, ledgerprovider.startDate, ledgerprovider.today, 'Equity');
       }
 
       if (ledgerprovider.calenderpnlAllData != null) {
@@ -71,6 +79,69 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                ledgerprovider.noticenewfeature != 'yes'
+                    ? Container(
+                        width: screenWidth,
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? const Color.fromARGB(255, 207, 204, 181)
+                                      .withOpacity(.15)
+                                  : const Color.fromARGB(255, 255, 226, 129)),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 2.0, right: 2.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          iconSize: 20,
+                                          icon: Icon(
+                                              Icons.notification_important,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack),
+                                          onPressed: () {},
+                                        ),
+                                        Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 8.0),
+                                            child: TextWidget.subText(
+                                                align: TextAlign.start,
+                                                text:
+                                                    "Verified P&L Integrate in P&L Insights",
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                fw: 1)),
+                                      ],
+                                    ),
+                                    IconButton(
+                                      iconSize: 20,
+                                      icon: Icon(Icons.close,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack),
+                                      onPressed: () {
+                                        ledgerprovider.setthenotice();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : SizedBox(),
                 Row(
                   children: [
                     Container(
@@ -277,146 +348,288 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                     ),
                   ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 16, bottom: 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Container(
-                        // width: screenWidth * 0.45,
-                        height: 35.0,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? const Color(0xff3A3A3A)
-                              : const Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: ledgerprovider.selectedFinancialYear,
-                            dropdownColor: theme.isDarkMode
+                Column(
+                  children: [
+                    ledgerprovider.calenderpnlAllData?.data == null
+                        ? SizedBox()
+                        : Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16.0, right: 4.0, top: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    TextWidget.subText(
+                                        text: "Your trade is verified by ZEBU",
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 1),
+                                    IconButton(
+                                      iconSize: 20,
+                                      icon: const Icon(Icons.check_circle,
+                                          color: Colors.green),
+                                      onPressed: () => {},
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          top: 8.0, bottom: 8.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          CustomSwitch(
+                                              onChanged: (bool value) {
+                                                print(
+                                                    'object ${ledgerprovider.notsharing}');
+                                                ledgerprovider
+                                                    .sharingornotsharing(value);
+                                                if (value == false &&
+                                                    ledgerprovider.ucode ==
+                                                        '') {
+                                                  ledgerprovider.sendsharing(
+                                                      "",
+                                                      ledgerprovider
+                                                                  .changeornot ==
+                                                              'change'
+                                                          ? ledgerprovider
+                                                              .formattedStartDate
+                                                          : ledgerprovider
+                                                              .startDate,
+                                                      ledgerprovider
+                                                                  .changeornot ==
+                                                              'change'
+                                                          ? ledgerprovider
+                                                              .formattedendDate
+                                                          : ledgerprovider
+                                                              .today,
+                                                      ledgerprovider
+                                                          .calenderpnlAllData!
+                                                          .fullresponse!,
+                                                      ledgerprovider.notsharing,
+                                                      ledgerprovider
+                                                          .selectedSegment,
+                                                      context);
+                                                } else {
+                                                  ledgerprovider.sendsharing(
+                                                      ledgerprovider.ucode,
+                                                      "",
+                                                      "",
+                                                      "",
+                                                      ledgerprovider.notsharing,
+                                                      "",
+                                                      context);
+                                                }
+                                              },
+                                              color: theme.isDarkMode
+                                                  ? const Color(0xffB5C0CF)
+                                                      .withOpacity(.15)
+                                                  : const Color(0xffF1F3F8),
+                                              value: ledgerprovider.notsharing),
+                                          const SizedBox(width: 6),
+                                        ],
+                                      ),
+                                    ),
+                                    IconButton(
+                                      iconSize: 20,
+                                      icon: Icon(Icons.share_outlined,
+                                          color:
+                                              ledgerprovider.notsharing == false
+                                                  ? Colors.black
+                                                  : Colors.grey),
+                                      onPressed: () => {
+                                        if (ledgerprovider.notsharing == false)
+                                          {
+                                            _showBottomSheetSharing(
+                                                context, SharingScreen())
+                                          }
+                                        else
+                                          {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              warningMessage(
+                                                  context, 'Sharing is not on'),
+                                            )
+                                          }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                    ledgerprovider.calenderpnlAllData?.data == null
+                        ? SizedBox()
+                        : Divider(
+                            color: theme.isDarkMode
+                                ? const Color(0xffB5C0CF).withOpacity(.15)
+                                : const Color(0xffF1F3F8),
+                            thickness: 1.0,
+                          ),
+                    ledgerprovider.calenderpnlAllData?.data == null
+                        ? SizedBox(
+                            height: 10.0,
+                          )
+                        : SizedBox(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Container(
+                          // width: screenWidth * 0.45,
+                          height: 35.0,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
                                 ? const Color(0xff3A3A3A)
                                 : const Color(0xffF1F3F8),
-                            items: ledgerprovider.availableFinancialYears
-                                .map((fy) {
-                              return DropdownMenuItem<String>(
-                                value: fy,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 4.0),
-                                  child: Text(
-                                    fy,
-                                    style: textStyle(
-                                      theme.isDarkMode
-                                          ? Colors.white
-                                          : Colors.black,
-                                      12,
-                                      FontWeight.w500,
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: ledgerprovider.selectedFinancialYear,
+                              dropdownColor: theme.isDarkMode
+                                  ? const Color(0xff3A3A3A)
+                                  : const Color(0xffF1F3F8),
+                              items: ledgerprovider.availableFinancialYears
+                                  .map((fy) {
+                                return DropdownMenuItem<String>(
+                                  value: fy,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 4.0),
+                                    child: Text(
+                                      fy,
+                                      style: textStyle(
+                                        theme.isDarkMode
+                                            ? Colors.white
+                                            : Colors.black,
+                                        12,
+                                        FontWeight.w500,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (newFY) {
-                              if (newFY != null) {
-                                ledgerprovider.setFinancialYear(newFY);
-                                // Call API after updating financial year
-                                ledgerprovider.fetchcalenderpnldata(
-                                  context,
-                                  ledgerprovider.formattedStartDate,
-                                  ledgerprovider.formattedendDate,
-                                  ledgerprovider.selectedSegment,
                                 );
-                              }
-                            },
+                              }).toList(),
+                              onChanged: (newFY) {
+                                if (newFY != null) {
+                                  ledgerprovider.setFinancialYear(newFY);
+                                  // Call API after updating financial year
+                                  ledgerprovider.fetchsharingdata(
+                                      ledgerprovider.formattedStartDate,
+                                      ledgerprovider.formattedendDate,
+                                      ledgerprovider.selectedSegment,
+                                      context);
+                                  ledgerprovider
+                                      .changeormountedsharing("change");
+
+                                  ledgerprovider.fetchcalenderpnldata(
+                                    context,
+                                    ledgerprovider.formattedStartDate,
+                                    ledgerprovider.formattedendDate,
+                                    ledgerprovider.selectedSegment,
+                                  );
+                                }
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      Container(
-                        height: 35.0,
-                        // width: screenWidth * 0.45,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? const Color(0xff3A3A3A)
-                              : const Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: ledgerprovider.selectedSegment,
-                            dropdownColor: theme.isDarkMode
+                        Container(
+                          height: 35.0,
+                          // width: screenWidth * 0.45,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
                                 ? const Color(0xff3A3A3A)
                                 : const Color(0xffF1F3F8),
-                            items: ledgerprovider.availableSegments.map((seg) {
-                              return DropdownMenuItem<String>(
-                                value: seg,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 4.0),
-                                  child: Text(
-                                    seg,
-                                    style: textStyle(
-                                      theme.isDarkMode
-                                          ? Colors.white
-                                          : Colors.black,
-                                      12,
-                                      FontWeight.w500,
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: ledgerprovider.selectedSegment,
+                              dropdownColor: theme.isDarkMode
+                                  ? const Color(0xff3A3A3A)
+                                  : const Color(0xffF1F3F8),
+                              items:
+                                  ledgerprovider.availableSegments.map((seg) {
+                                return DropdownMenuItem<String>(
+                                  value: seg,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 4.0),
+                                    child: Text(
+                                      seg,
+                                      style: textStyle(
+                                        theme.isDarkMode
+                                            ? Colors.white
+                                            : Colors.black,
+                                        12,
+                                        FontWeight.w500,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (seg) {
-                              if (seg != null) {
-                                ledgerprovider.setSegment(seg);
-                                ledgerprovider.fetchcalenderpnldata(
-                                  context,
-                                  ledgerprovider.formattedStartDate,
-                                  ledgerprovider.formattedendDate,
-                                  ledgerprovider.selectedSegment,
                                 );
-                              }
-                            },
+                              }).toList(),
+                              onChanged: (seg) {
+                                if (seg != null) {
+                                  ledgerprovider.setSegment(seg);
+                                  ledgerprovider.fetchsharingdata(
+                                      ledgerprovider.formattedStartDate,
+                                      ledgerprovider.formattedendDate,
+                                      ledgerprovider.selectedSegment,
+                                      context);
+                                  ledgerprovider
+                                      .changeormountedsharing("change");
+                                  ledgerprovider.fetchcalenderpnldata(
+                                    context,
+                                    ledgerprovider.formattedStartDate,
+                                    ledgerprovider.formattedendDate,
+                                    ledgerprovider.selectedSegment,
+                                  );
+                                }
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 8.0, right: 2.0, bottom: 8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("M",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    12,
-                                    FontWeight.w500)),
-                            const SizedBox(width: 6),
-                            CustomSwitch(
-                                onChanged: (bool value) {
-                                  // print('object ${value}');
-                                  ledgerprovider.chngPnlmonthordaily(
-                                      !ledgerprovider.isMonthly);
-                                },
-                                color: theme.isDarkMode
-                                    ? const Color(0xffB5C0CF).withOpacity(.15)
-                                    : const Color(0xffF1F3F8),
-                                value: ledgerprovider.isMonthly),
-                            const SizedBox(width: 6),
-                            Text("D",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    12,
-                                    FontWeight.w500)),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: 8.0, right: 2.0, bottom: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("M",
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      12,
+                                      FontWeight.w500)),
+                              const SizedBox(width: 6),
+                              CustomSwitch(
+                                  onChanged: (bool value) {
+                                    // print('object ${value}');
+                                    ledgerprovider.chngPnlmonthordaily(
+                                        !ledgerprovider.isMonthly);
+                                  },
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffB5C0CF).withOpacity(.15)
+                                      : const Color(0xffF1F3F8),
+                                  value: ledgerprovider.isMonthly),
+                              const SizedBox(width: 6),
+                              Text("D",
+                                  style: textStyle(
+                                      theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      12,
+                                      FontWeight.w500)),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -425,13 +638,19 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                       padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
                       child: TextWidget.overlineText(
                           text: "M-Monthly and D-Daily",
-                          color: Color.fromARGB(255, 105, 105, 105),
+                          color: const Color.fromARGB(255, 105, 105, 105),
                           textOverflow: TextOverflow.ellipsis,
                           theme: theme.isDarkMode,
                           align: TextAlign.end,
                           fw: 0),
                     ),
                   ],
+                ),
+                Divider(
+                  color: theme.isDarkMode
+                      ? const Color(0xffB5C0CF).withOpacity(.15)
+                      : const Color(0xffF1F3F8),
+                  thickness: 1.0,
                 ),
                 ledgerprovider.calenderpnlAllData == null
                     ? const Center(
@@ -466,7 +685,8 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                           left: 16.0, top: 8.0, bottom: 8.0),
                                       child: TextWidget.titleText(
                                           text: "Date-specific Information",
-                                          color: Color.fromARGB(255, 0, 0, 0),
+                                          color: const Color.fromARGB(
+                                              255, 0, 0, 0),
                                           textOverflow: TextOverflow.ellipsis,
                                           theme: theme.isDarkMode,
                                           fw: 0)),
@@ -521,10 +741,10 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                         screenWidth);
                                                   },
                                                   child: Padding(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            vertical: 16.0,
-                                                            horizontal: 16.0),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 16.0,
+                                                        horizontal: 16.0),
                                                     child: Row(
                                                       mainAxisAlignment:
                                                           MainAxisAlignment
@@ -654,7 +874,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Net Qty :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -680,7 +900,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Buy Qty :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -698,7 +918,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Sell Qty :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -724,7 +944,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Buy Rate :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -742,7 +962,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Sell Rate :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -768,7 +988,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Buy Amount :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -786,7 +1006,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Sell Amount :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -812,7 +1032,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Realised :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -830,7 +1050,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 children: [
                   TextWidget.subText(
                       text: "Unrealised :  ",
-                      color: Color(0xFF696969),
+                      color: const Color(0xFF696969),
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 0),
@@ -863,6 +1083,22 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
     );
   }
 
+  void _showBottomSheetSharing(BuildContext context, Widget bottomSheet) {
+    showModalBottomSheet(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        useSafeArea: true,
+        isDismissible: true,
+        backgroundColor: Colors.white,
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: bottomSheet));
+  }
+
   void _showBottomSheet(BuildContext context, trade, ThemesProvider theme,
       String date, double widthval) {
     showModalBottomSheet(
@@ -888,8 +1124,8 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
                   color: theme.isDarkMode
-                      ? Color.fromARGB(255, 0, 0, 0)
-                      : Color.fromARGB(255, 255, 255, 255)),
+                      ? const Color.fromARGB(255, 0, 0, 0)
+                      : const Color.fromARGB(255, 255, 255, 255)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -901,9 +1137,9 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                         color: const Color.fromARGB(255, 219, 218, 218),
                         width: 40,
                         height: 4.0,
-                        padding: EdgeInsets.only(
+                        padding: const EdgeInsets.only(
                             top: 10, bottom: 25, left: 20, right: 20),
-                        margin: EdgeInsets.only(top: 16),
+                        margin: const EdgeInsets.only(top: 16),
                       ),
                     ],
                   ),
@@ -1001,7 +1237,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                             TextWidget.subText(
                                                 color: theme.isDarkMode
                                                     ? colors.colorWhite
-                                                    : Color(0xFF696969),
+                                                    : const Color(0xFF696969),
                                                 text: "Buy Qty : ",
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
@@ -1042,7 +1278,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                             TextWidget.subText(
                                                 color: theme.isDarkMode
                                                     ? colors.colorWhite
-                                                    : Color(0xFF696969),
+                                                    : const Color(0xFF696969),
                                                 text: "  Net Qty : ",
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
@@ -1071,7 +1307,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                             TextWidget.subText(
                                                 color: theme.isDarkMode
                                                     ? colors.colorWhite
-                                                    : Color(0xFF696969),
+                                                    : const Color(0xFF696969),
                                                 text: "Sell Qty : ",
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
@@ -1100,7 +1336,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                             TextWidget.subText(
                                                 color: theme.isDarkMode
                                                     ? colors.colorWhite
-                                                    : Color(0xFF696969),
+                                                    : const Color(0xFF696969),
                                                 text: 'Realised : ',
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
@@ -1164,7 +1400,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
 }
 
 class CalendarTabs extends StatefulWidget {
-  final dynamic theme; // Passed from your UI (e.g., ref.watch(themeProvider))
+  final dynamic theme; // Passed from your UI (e.g., watch(themeProvider))
   final Map<DateTime, double> heatmapData; // Data from ledgerprovider
 
   const CalendarTabs({
@@ -1481,7 +1717,7 @@ class _DailyCalendarState extends State<_DailyCalendar> {
         ),
         // Day headers (Mon–Sun)
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 4.0),
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -1685,4 +1921,5 @@ class _DailyCalendarState extends State<_DailyCalendar> {
     }
     return chunks;
   }
+  // ignore: unused_element
 }

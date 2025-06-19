@@ -29,7 +29,6 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
       "title": "Unpledge",
       "index": 1,
     },
-     
   ];
   late TabController _tabController;
   @override
@@ -55,13 +54,12 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
       return Scaffold(
         appBar: AppBar(
           // automaticallyImplyLeading: false,
-           elevation: 0.2,
+          elevation: 0.2,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.heroText(
                   text: "Pledge History",
-                  
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
                   fw: 1),
@@ -105,64 +103,56 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
         ),
         body: TransparentLoaderScreen(
           isLoading: ledgerprovider.pledgehistory,
-          child:  
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Padding(
-                  //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
-                  //   child: BarChartWidget(),
-                  // ),
-                   
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Padding(
+              //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
+              //   child: BarChartWidget(),
+              // ),
 
-                  Padding(
-                    padding: const EdgeInsets.only(top :8.0),
-                    child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        padding:
-                            const EdgeInsets.only(bottom: 0, left: 15, top: 2),
-                        decoration: BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.darkColorDivider
-                                        : colors.colorDivider,
-                                    width: 0.4))),
-                        // height: 60,
-                        child: TabBar(
-                            labelPadding:
-                                const EdgeInsets.only(right: 16, bottom: 0),
-                            tabAlignment: TabAlignment.start,
-                            indicatorColor: Colors.transparent,
-                            controller: _tabController,
-                            isScrollable: true,
-                            tabs: List.generate(
-                                tablistitems.length,
-                                (tab) => tabConstruce(
-                                    tablistitems[tab]['title'].toString(),
-                                    theme,
-                                    tab,
-                                    () {},
-                                    ledgerprovider)))),
-                  ),
-                  
-              
-                  Expanded(
-                    child: TabBarView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      controller: _tabController,
-                      children: [ 
-                        PledgeHistoryScreen(),
-                        UnpledgeHistoryScreen(),
-                        
-                      ],
-                    ),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.only(bottom: 0, left: 15, top: 2),
+                    decoration: BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(
+                                color: theme.isDarkMode
+                                    ? colors.darkColorDivider
+                                    : colors.colorDivider,
+                                width: 0.4))),
+                    // height: 60,
+                    child: TabBar(
+                        labelPadding:
+                            const EdgeInsets.only(right: 16, bottom: 0),
+                        tabAlignment: TabAlignment.start,
+                        indicatorColor: Colors.transparent,
+                        controller: _tabController,
+                        isScrollable: true,
+                        tabs: List.generate(
+                            tablistitems.length,
+                            (tab) => tabConstruce(
+                                tablistitems[tab]['title'].toString(),
+                                theme,
+                                tab,
+                                () {},
+                                ledgerprovider)))),
               ),
-               
-            
-         
+
+              Expanded(
+                child: TabBarView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: _tabController,
+                  children: [
+                    PledgeHistoryScreen(),
+                    UnpledgeHistoryScreen(),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       );
     });
@@ -195,7 +185,7 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
           print("object act tab $tab");
         },
         style: ElevatedButton.styleFrom(
-            elevation: 0, 
+            elevation: 0,
             side: const BorderSide(
                 color: Color.fromARGB(255, 0, 0, 0),
                 width: 1), // Border color & width

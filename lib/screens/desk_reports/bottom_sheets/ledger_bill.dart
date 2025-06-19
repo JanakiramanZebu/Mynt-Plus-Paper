@@ -8,21 +8,21 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
-class LedgerBillBottom extends ConsumerStatefulWidget {
+class LedgerBillBottom extends StatefulWidget {
   const LedgerBillBottom({super.key});
 
   @override
-  ConsumerState<LedgerBillBottom> createState() => _LedgerBillBottomState();
+  State<LedgerBillBottom> createState() => _LedgerBillBottomState();
 }
 
-class _LedgerBillBottomState extends ConsumerState<LedgerBillBottom> {
+class _LedgerBillBottomState extends State<LedgerBillBottom> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
     return Consumer(builder: (context, WidgetRef ref, _) {
       final ledgerdata = ref.watch(ledgerProvider);
+      final theme = ref.read(themeProvider);
 
       return DraggableScrollableSheet(
         initialChildSize: 0.88,
@@ -125,7 +125,7 @@ class _LedgerBillBottomState extends ConsumerState<LedgerBillBottom> {
                               itemBuilder: (context, index) {
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0,vertical : 4.0),
+                                      horizontal: 16.0, vertical: 4.0),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -133,8 +133,8 @@ class _LedgerBillBottomState extends ConsumerState<LedgerBillBottom> {
                                       Row(
                                         children: [
                                           Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 8.0),
+                                            padding:
+                                                const EdgeInsets.only(top: 8.0),
                                             child: TextWidget.subText(
                                                 text: ledgerdata
                                                     .ledgerBillData!
@@ -280,15 +280,33 @@ class _LedgerBillBottomState extends ConsumerState<LedgerBillBottom> {
                                                 TextWidget.subText(
                                                     text:
                                                         " ${double.tryParse(ledgerdata.ledgerBillData!.transactions![index].sQTY.toString())!.toInt()} @ ₹${double.parse(ledgerdata.ledgerBillData!.transactions![index].sRATE.toString()).toStringAsFixed(2)}",
-                                                    color:double.tryParse(ledgerdata.ledgerBillData!.transactions![index].sQTY.toString())!.toInt() > 0 ? Colors.red : double.tryParse(ledgerdata.ledgerBillData!.transactions![index].sQTY.toString())!.toInt() < 0 ?Colors.red : theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
+                                                    color: double.tryParse(ledgerdata
+                                                                    .ledgerBillData!
+                                                                    .transactions![
+                                                                        index]
+                                                                    .sQTY
+                                                                    .toString())!
+                                                                .toInt() >
+                                                            0
+                                                        ? Colors.red
+                                                        : double.tryParse(ledgerdata
+                                                                        .ledgerBillData!
+                                                                        .transactions![
+                                                                            index]
+                                                                        .sQTY
+                                                                        .toString())!
+                                                                    .toInt() <
+                                                                0
+                                                            ? Colors.red
+                                                            : theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
                                                     fw: 1),
-                                                    
-                                                 
                                               ],
                                             ),
                                             Row(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,17 +8,13 @@ import 'package:mynt_plus/models/desk_reports_model/pnl_seg_charges_model.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../api/core/api_core.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
-import '../models/client_profile_all_details/profile_all_details_model.dart';
-import '../models/desk_reports_model/SharingResponseCalendar_model.dart';
 import '../models/desk_reports_model/ca_events_model.dart';
 import '../models/desk_reports_model/calender_pnl_model.dart';
 import '../models/desk_reports_model/cdsl_response_model.dart';
-import '../models/desk_reports_model/cp_action_model.dart';
 import '../models/desk_reports_model/dercomcur_taxpnl_model.dart';
 import '../models/desk_reports_model/holdings_model.dart';
 import '../models/desk_reports_model/ledger_bill_model.dart';
@@ -28,7 +25,6 @@ import '../models/desk_reports_model/pledge_unpledge_model.dart';
 import '../models/desk_reports_model/pnl_model.dart';
 import '../models/desk_reports_model/pnl_summary_model.dart';
 import '../models/desk_reports_model/position_model.dart';
-import '../models/desk_reports_model/sharing_on_off_model.dart';
 import '../models/desk_reports_model/tax_pnl_Eq_charge_model.dart';
 import '../models/desk_reports_model/taxpnl_eq_model.dart';
 import '../models/desk_reports_model/tradebook_model.dart';
@@ -66,12 +62,6 @@ class LDProvider extends DefaultChangeNotifier {
 
   LedgerModelData? _ledgerAllDataDummy;
   LedgerModelData? get ledgerAllDataDummy => _ledgerAllDataDummy;
-
-  CPActionModule? _cpactiondata;
-  CPActionModule? get cpactiondata => _cpactiondata;
-
-  // ProfileAllDetails? _profiledetails;
-  // ProfileAllDetails? get profiledetails => _profiledetails;
 
   PnlModel? _pnlAllData;
   PnlModel? get pnlAllData => _pnlAllData;
@@ -131,12 +121,6 @@ class LDProvider extends DefaultChangeNotifier {
   HoldingModel? _holdingsAllData;
   HoldingModel? get holdingsAllData => _holdingsAllData;
 
-  SharingResponse? _sharingdatacalendar;
-  SharingResponse? get sharingdatacalendar => _sharingdatacalendar;
-
-  OnorOffSharingModel? _sharingturonandoff;
-  OnorOffSharingModel? get sharingturonandoff => _sharingturonandoff;
-
   LedgerBillModel? _ledgerBillData;
   LedgerBillModel? get ledgerBillData => _ledgerBillData;
 
@@ -173,19 +157,12 @@ class LDProvider extends DefaultChangeNotifier {
 
   String _timedis = '';
   String get timedis => _timedis;
-
-  String _noticenewfeature = '';
-  String get noticenewfeature => _noticenewfeature;
-
   set settime(String? val) {
     _timedis = val.toString();
   }
 
   bool _valforcheck = false;
   bool get valforcheck => _valforcheck;
-
-  bool _pnlrmtm = true;
-  bool get pnlrmtm => _pnlrmtm;
 
   bool _loader = false;
   bool get loader => _loader;
@@ -214,15 +191,10 @@ class LDProvider extends DefaultChangeNotifier {
     _pledgeandunpledge = val;
     _positiondata = val;
     _caeventalldata = val;
-    _sharingdatacalendar = val;
-    _cpactiondata = val;
   }
 
   String _eqtypestring = "";
   String get eqtypestring => _eqtypestring;
-
-  String _ucode = "";
-  String get ucode => _ucode;
 
   String _dayforpledgeunpledge = "";
   String get dayforpledgeunpledge => _dayforpledgeunpledge;
@@ -259,48 +231,12 @@ class LDProvider extends DefaultChangeNotifier {
     _currentfilterpage = val;
   }
 
-  String _selectvalueofcpaction = "Buyback";
-  String get selectvalueofcpaction => _selectvalueofcpaction;
-
-  set setselectvalueofcpaction(val) {
-    _selectvalueofcpaction = val;
-    notifyListeners();
-  }
-
-  // Filtered CP Action data based on selected action type
-  List<dynamic> get filteredCPActionData {
-    if (_cpactiondata?.corporateAction == null) return [];
-
-    return _cpactiondata!.corporateAction!.where((item) {
-      switch (_selectvalueofcpaction) {
-        case 'Buyback':
-          return item.issueType == 'BB' || item.issueType == 'BUYBACK';
-        case 'Delisting':
-          return item.issueType == 'DLST' || item.issueType == 'DS';
-        case 'Takeover':
-          return item.issueType == 'TAKEOVER' || item.issueType == 'TO';
-        case 'OFS':
-          return item.issueType == 'IS' || item.issueType == 'RS';
-        case 'RIGHTS':
-          return item.issueType == 'RIGHTS';
-        default:
-          return false;
-      }
-    }).toList();
-  }
-
 //loadingsssssssssssssssssssssssssssssssss reportssssssssssssssss
   bool _reportsloading = false;
   bool get reportsloading => _reportsloading;
 
-  bool _pledgeloader = false;
-  bool get pledgeloader => _pledgeloader;
-
   bool _ledgerloading = false;
   bool get ledgerloading => _ledgerloading;
-
-  bool _cpactionloader = true;
-  bool get cpactionloader => _cpactionloader;
 
   bool _pledgehistory = false;
   bool get pledgehistory => _pledgehistory;
@@ -394,11 +330,6 @@ class LDProvider extends DefaultChangeNotifier {
 
   String _endDate = "";
   String get endDate => _endDate;
-
-  set clickchangemtmandpnl(val) {
-    _pnlrmtm = val;
-    notifyListeners();
-  }
 
   getYearlistTaxpnl() {
     DateTime today = DateTime.now();
@@ -678,20 +609,6 @@ class LDProvider extends DefaultChangeNotifier {
   }
   ////API CALL
 
-  // Future fetchprofiledata() async {
-  //   try {
-  //     notifyListeners();
-
-  //     _profiledetails = await api.getClientProfileAllDetailsApi();
-  //     notifyListeners();
-  //   } catch (e) {
-  //     // ScaffoldMessenger.of(context).showSnackBar(
-  //     //   warningMessage(context, 'Error occurred try again later'),
-  //     // );
-  //     debugPrint("$e");
-  //   }
-  // }
-
   Future fetchLegerData(BuildContext context, String from, String to) async {
     try {
       _ledgerloading = true;
@@ -709,9 +626,9 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _ledgerloading = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
@@ -723,11 +640,14 @@ class LDProvider extends DefaultChangeNotifier {
 
       _unPledgeHistoryData = await api.getunpledgehistory();
       //  _ledgerAllData = new LedgerModelData();
+
+      _pledgehistory = false;
+      notifyListeners();
     } catch (e) {
       _pledgehistory = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
@@ -742,9 +662,9 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _pledgehistory = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
@@ -760,48 +680,25 @@ class LDProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      _positionloading = false;
-      notifyListeners();
-
+      _ledgerloading = false;
       ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error occurred in positions try again later'),
+        warningMessage(context, 'Error occurred try again later'),
       );
       debugPrint("$e");
     }
   }
 
   calltimes() {
-    if (_timer != null) {
-      _timer!.cancel();
-
-      print("Timer cancelled");
-      _timer = null;
-      notifyListeners();
-    } else {
-      print("No active timer to cancel");
-    }
     if (_timedis == '') {
       final time = DateFormat('hh:mm:ss a').format(DateTime.now());
       _timedis = time;
     }
-    _timer = Timer.periodic(Duration(seconds: 5), (_) async {
+    _timer = Timer.periodic(Duration(seconds: 5), (_) {
       final time = DateFormat('hh:mm:ss a').format(DateTime.now());
       _timedis = time;
-      _positiondata = await api.getposition();
       print("objectobjectobjectobjectobjectobjectobjectobject $time");
       notifyListeners();
     });
-  }
-
-  ccancelalltimes() {
-    if (_timer != null) {
-      _timer!.cancel();
-      print("Timer cancelled");
-      _timer = null;
-      notifyListeners();
-    } else {
-      print("No active timer to cancel");
-    }
   }
 
   Future fetchholdingsData(String from, BuildContext context) async {
@@ -817,139 +714,13 @@ class LDProvider extends DefaultChangeNotifier {
       print("${_holdingsAllData}rererere");
     } catch (e) {
       _holdingsloading = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
-      debugPrint("$e");
-      print("${e}eeeeee");
-    } finally {
-      await requestWS(context: context, isSubscribe: true);
-      notifyListeners();
-    }
-  }
-
-  Future fetchcpactiondata(BuildContext context) async {
-    try {
-      // _cpactionloader = true;
-      // notifyListeners();
-
-      _cpactiondata = await api.getcpactiondata();
-      print(
-          "${_cpactiondata?.corporateAction} ........................._cpactiondata");
-      if (_cpactiondata != null) {
-        for (var i = 0; i < _cpactiondata!.corporateAction!.length; i++) {
-          final data = _cpactiondata!.corporateAction![i];
-          data.eligibleornot = 'no';
-          if (_holdingsAllData != null) {
-            for (var y = 0; y < _holdingsAllData!.holdings!.length; y++) {
-              final data2 = _holdingsAllData!.holdings![y];
-              if (data.isin == data2['ISIN']) {
-                print(
-                    "${data.isin} /////${data2['ISIN']} ............................data.isin == data2['ISIN']");
-                data.eligibleornot = 'yes';
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      //  _ledgerAllData = new LedgerModelData();
-
-      _cpactionloader = false;
-      notifyListeners();
-    } catch (e) {
-      _cpactionloader = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
-      debugPrint("$e");
-      notifyListeners();
-    }
-  }
-
-  Future fetchsharingdata(
-      String from, String to, String seg, BuildContext context) async {
-    try {
-      _sharingdatacalendar = await api.getsharingdata(from, to, seg);
-      if (_sharingdatacalendar?.data != null) {
-        if (_sharingdatacalendar!.data![0].sharing == 'True') {
-          _ucode = "${_sharingdatacalendar!.data![0].uqCode}";
-          notsharing = false;
-        } else {
-          notsharing = true;
-          _ucode = '';
-        }
-      } else {
-        notsharing = true;
-        _ucode = '';
-      }
-    } catch (e) {
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
-
-      debugPrint("$e");
-      print("${e}eeeeee");
-    } finally {
-      notifyListeners();
-    }
-  }
-
-  Future sendsharing(String ucode, from, to, res, bool status, seg,
-      BuildContext context) async {
-    try {
-      _calendarpnlloading = true;
-      notifyListeners();
-
-      _sharingturonandoff =
-          await api.senddharingdataapi(ucode, from, to, res, status, seg);
-
-      if (_sharingturonandoff != null &&
-          _sharingturonandoff!.data != null &&
-          _sharingturonandoff!.data!.uqCode != null) {
-        notsharing = false;
-        _calendarpnlloading = false;
-
-        _ucode = "${_sharingturonandoff!.data!.uqCode}";
-        ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, "Sharing Turned on"),
-        );
-      } else {
-        if (_sharingturonandoff!.msg != null) {
-          if (_sharingturonandoff!.msg == 'Sharing Turned Off') {
-            notsharing = true;
-            _calendarpnlloading = false;
-            ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "Sharing Turned off"),
-            );
-          } else {
-            notsharing = false;
-            _calendarpnlloading = false;
-            ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "Sharing Turned on"),
-            );
-          }
-        }
-      }
-      print("${_calendarpnlloading} printprint");
-    } catch (e) {
-      _calendarpnlloading = false;
-
-      if (notsharing == false) {
-        notsharing == true;
-      } else {
-        notsharing == false;
-      }
-      notifyListeners();
-
       ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Sharing error'),
+        warningMessage(context, 'Error occurred try again later'),
       );
       debugPrint("$e");
       print("${e}eeeeee");
     } finally {
-      _calendarpnlloading = false;
+      await requestWS(context: context, isSubscribe: true);
       notifyListeners();
     }
   }
@@ -990,30 +761,16 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _pnlloading = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
-  }
-
-  setthenotice() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString("notice", "yes");
-    print(prefs.getString('notice'));
-    _noticenewfeature = prefs.getString('notice').toString();
-    notifyListeners();
   }
 
   Future fetchcalenderpnldata(
       BuildContext context, String from, String to, String type) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      // await prefs.remove("notice");
-      _noticenewfeature = prefs.getString("notice").toString();
-
-      print(_noticenewfeature);
-
       _calendarpnlloading = true;
       notifyListeners();
       _calenderpnlAllData = await api.getcalenderpnldata(from, to, type);
@@ -1064,9 +821,9 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _calendarpnlloading = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
@@ -1086,9 +843,9 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _tradebookloading = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
@@ -1131,9 +888,9 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _pdfdownloadloading = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
@@ -1224,9 +981,9 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       _pnlloading = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
@@ -1251,15 +1008,15 @@ class LDProvider extends DefaultChangeNotifier {
       debugPrint("$e");
       _pdfdownloadloading = false;
 
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
     }
   }
 
   Future fetchpledgeandunpledge(BuildContext context) async {
     try {
-      _pledgeloader = true;
+      _reportsloading = true;
       notifyListeners();
       _pledgeandunpledge = await api.getpledgeandunpledge();
       _pledgesegmentcheck = await api.getsegforpledge();
@@ -1276,15 +1033,15 @@ class LDProvider extends DefaultChangeNotifier {
       // _tradebookfilterarray = dummy.toSet().toList();
       // print(_tradebookfilterarray);
       _filterval = SingingCharacter.all;
-      _pledgeloader = false;
+      _reportsloading = false;
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-      _pledgeloader = false;
+      _reportsloading = false;
 
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
     }
   }
 
@@ -1308,9 +1065,9 @@ class LDProvider extends DefaultChangeNotifier {
       debugPrint("$e");
       _caeventloading = false;
 
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
     }
   }
 
@@ -1407,9 +1164,9 @@ class LDProvider extends DefaultChangeNotifier {
       } catch (e) {
         _taxderloading = false;
 
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   warningMessage(context, 'Error occurred try again later'),
-        // );
+        ScaffoldMessenger.of(context).showSnackBar(
+          warningMessage(context, 'Error occurred try again later'),
+        );
         debugPrint("Error fetching tax pnl data: $e");
       }
     } else {
@@ -1461,9 +1218,9 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       _pnlloading = false;
 
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       debugPrint("$e");
     }
   }
@@ -1471,7 +1228,7 @@ class LDProvider extends DefaultChangeNotifier {
   Future sendunpledgerequest(BuildContext context, String uccid, String boid,
       String cname, List list) async {
     try {
-      _pledgeloader = true;
+      _reportsloading = true;
       notifyListeners();
       final responce = await api.sendunpledgeapi(uccid, boid, cname, list);
       if (responce['msg'] == 'data updated successfully') {
@@ -1489,11 +1246,11 @@ class LDProvider extends DefaultChangeNotifier {
       //   // }
       // }
       // formatedList(_ledgerBillData!.fullStat!);
-      _pledgeloader = false;
+      _reportsloading = false;
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-      _pledgeloader = false;
+      _reportsloading = false;
 
       ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, 'Error occurred try again later'),
@@ -1503,7 +1260,7 @@ class LDProvider extends DefaultChangeNotifier {
 
   Future unpldgedeletefun(BuildContext context, String uccid, List list) async {
     try {
-      _pledgeloader = true;
+      _reportsloading = true;
       notifyListeners();
       final responce = await api.sendunpledgedeleteapi(uccid, list);
       if (responce['msg'] == 'request deleted') {
@@ -1520,10 +1277,10 @@ class LDProvider extends DefaultChangeNotifier {
       //   // }
       // }
       // formatedList(_ledgerBillData!.fullStat!);
-      _pledgeloader = false;
+      _reportsloading = false;
       notifyListeners();
     } catch (e) {
-      _pledgeloader = false;
+      _reportsloading = false;
 
       ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, 'Error occurred try again later'),
@@ -1552,7 +1309,7 @@ class LDProvider extends DefaultChangeNotifier {
       _reportsloadingforcharges = false;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        warningMessage(context, 'Error in getting charges'),
+        warningMessage(context, 'Error occurred try again later'),
       );
       debugPrint("$e");
     }
@@ -1908,11 +1665,6 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  sharingornotsharing(bool value) {
-    notsharing = value;
-    notifyListeners();
-  }
-
   falseloader(String value) {
     if (value == 'ledger') {
       _ledgerloading = false;
@@ -1966,18 +1718,15 @@ class LDProvider extends DefaultChangeNotifier {
   // True if Monthly tab is active; false if Daily tab is active.
   bool isMonthly = true;
 
-  bool notsharing = true;
-
   // The selected financial year, e.g., "2024-2025"
   late String selectedFinancialYear;
 
   String selectedSegment = 'Equity';
-  String changeornot = '';
 
   // A list of available financial years (last 5 years).
   late List<String> availableFinancialYears;
 
-  List<String> availableSegments = ['Equity', 'Fno', 'Commodity', 'Currency'];
+  List<String> availableSegments = ['Equity', 'FnO', 'Commodity', 'Currency'];
   List<String> dailyormonthly = ['Monthly', 'Daily'];
 
   // Start and end dates for the selected financial year.
@@ -2030,8 +1779,7 @@ class LDProvider extends DefaultChangeNotifier {
 
       if (((int.tryParse(setnet) != null ? int.tryParse(setnet)! : 0) <=
               (int.tryParse(net) != null ? int.tryParse(net)! : 0)) &&
-          int.tryParse(setnet) != 0 &&
-          setnet != "") {
+          int.tryParse(setnet) != 0) {
         _pledgeerrormsg = '';
         pledgesubtn = true;
       } else {
@@ -2092,11 +1840,6 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  void changeormountedsharing(String change) {
-    changeornot = change;
-    notifyListeners();
-  }
-
   void changesegval(String seg, int index) {
     _pledgeandunpledge!.data![index].segmentselect = seg;
 
@@ -2154,24 +1897,22 @@ class LDProvider extends DefaultChangeNotifier {
   Future beforecdsl(BuildContext context, String ccode, String boid,
       String cname, List list) async {
     try {
-      _pledgeloader = true;
-      notifyListeners();
-
+      _reportsloading = true;
       final res = await api.geturlforcdsl(ccode, boid, cname, list);
-      Navigator.pop(context);
-
       Navigator.pushNamed(context, Routes.cdslWebView, arguments: res);
 
+      cancelpledgetotal('pledge');
+      print("wdwdwdwdwwdwdwdwd $res");
       // Navigator.pushNamed(context, Routes.camsWebView,
       //     arguments: res);+
-      Future.delayed(Duration(milliseconds: 1000));
-
-      cancelpledgetotal('pledge');
-      _pledgeloader = false;
+      _reportsloading = false;
       notifyListeners();
     } catch (e) {
-      _pledgeloader = false;
+      _reportsloading = false;
 
+      ScaffoldMessenger.of(context).showSnackBar(
+        warningMessage(context, 'Error occurred try again later'),
+      );
       notifyListeners();
     } finally {
       toggleLoad(false);
@@ -2180,18 +1921,14 @@ class LDProvider extends DefaultChangeNotifier {
 
   Future cdslresponsepage(BuildContext context, String response) async {
     try {
-      _pledgeloader = true;
-      notifyListeners();
-
+      _reportsloading = true;
       _cdslresponsedata = await api.getresponsefromcdsl(response);
-      _pledgeloader = false;
+      _reportsloading = false;
 
       // Navigator.pushNamed(context, Routes.camsWebView,
       //     arguments: res);
       notifyListeners();
     } catch (e) {
-      _pledgeloader = false;
-
       notifyListeners();
     } finally {
       toggleLoad(false);
@@ -2272,26 +2009,20 @@ class LDProvider extends DefaultChangeNotifier {
     pledgesubtn = false;
 
     if (type == 'pledge') {
-      if (_pledgeandunpledge != null && _pledgeandunpledge!.data != null) {
-        for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
-          _pledgeandunpledge!.data![i].dummvalue = 'null';
-          _pledgeandunpledge!.data![i].segmentselect = 'null';
-          _pledgeandunpledge!.data![i].deleteselected = '';
-        }
+      for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
+        _pledgeandunpledge!.data![i].dummvalue = 'null';
+        _pledgeandunpledge!.data![i].segmentselect = 'null';
+        _pledgeandunpledge!.data![i].deleteselected = '';
       }
-
       _pledgeoruppledgedelete = '';
       _pledgeorunpledge = '';
 
       _listforpledge = [];
     } else {
-      if (_pledgeandunpledge != null && _pledgeandunpledge!.data != null) {
-        for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
-          _pledgeandunpledge!.data![i].dummunpledgevalue = 'null';
-          _pledgeandunpledge!.data![i].deleteselected = '';
-        }
+      for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
+        _pledgeandunpledge!.data![i].dummunpledgevalue = 'null';
+        _pledgeandunpledge!.data![i].deleteselected = '';
       }
-
       _listforpledge = [];
       _pledgeorunpledge = '';
     }

@@ -1,12 +1,8 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/desk_reports/bottom_sheets/ledger_bill.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
@@ -14,7 +10,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
-import 'bottom_sheets/ledger_filter.dart';
+import '../../sharedWidget/custom_switch_btn.dart';
 
 class PositionScreen extends StatefulWidget {
   final String ddd;
@@ -56,24 +52,46 @@ class _PositionScreen extends State<PositionScreen>
       }
 
       double realised = 0.0;
+      double realisedmtm = 0.0;
       int closed = 0;
       // int negative = 0;
       // int positive = 0;
       double unrealised = 0.0;
-      final pnl = 0;
+      double unrealisedmtm = 0.0;
+      double netpnl = 0.0;
       if (ledgerprovider.positiondata?.data != null) {
         for (var i = 0; i < ledgerprovider.positiondata!.data!.length; i++) {
           if (double.tryParse(
                       ledgerprovider.positiondata!.data![i].netqty.toString())!
                   .toInt() ==
               0) {
-            realised += double.tryParse(
-                ledgerprovider.positiondata!.data![i].rpnl.toString())!;
+            final rpnl = double.tryParse(
+                    ledgerprovider.positiondata!.data![i].rpnl.toString()) ??
+                0;
+            realised += double.parse(
+                rpnl.toStringAsFixed(2)); // rounds to 2 decimal places
+
+            final rmtm = double.tryParse(
+                    ledgerprovider.positiondata!.data![i].rmtm.toString()) ??
+                0.0;
+            realisedmtm +=
+                double.parse(rmtm.toStringAsFixed(2)); // optional rounding
+            ;
             closed = closed + 1;
           } else {
-            unrealised += double.tryParse(
-                ledgerprovider.positiondata!.data![i].rpnl.toString())!;
+            final rpnl = double.tryParse(
+                    ledgerprovider.positiondata!.data![i].rpnl.toString()) ??
+                0.0;
+            unrealised +=
+                double.parse(rpnl.toStringAsFixed(2)); // optional rounding
+
+            final rmtm = double.tryParse(
+                    ledgerprovider.positiondata!.data![i].rmtm.toString()) ??
+                0.0;
+            unrealisedmtm +=
+                double.parse(rmtm.toStringAsFixed(2)); // Optional rounding
           }
+
           // if (double.tryParse(
           //             ledgerprovider.positiondata!.data![i].rpnl.toString())!
           //         .toInt() >
@@ -83,6 +101,7 @@ class _PositionScreen extends State<PositionScreen>
           //   negative = negative + 1;
           // }
         }
+        netpnl = realised + unrealised;
       }
       // String tdebit = ledgerprovider.ledgerAllData?.drAmt ?? '0.0';
       // String tcredit = ledgerprovider.ledgerAllData?.crAmt ?? '0.0';
@@ -93,9 +112,12 @@ class _PositionScreen extends State<PositionScreen>
           onWillPop: () async {
             ledgerprovider.falseloader('ledger');
             ledgerprovider.settime = '';
-            ledgerprovider.timer?.cancel();
+            ledgerprovider.ccancelalltimes();
             Navigator.pop(context);
-            print("objectobjectobjectobjectobjectobjectobjectobject");
+            // print('Timer before cancel: ${ledgerprovider.timer}');
+            // ledgerprovider.timer?.cancel();
+            // print('Timer before cancel 2: ${ledgerprovider.timer}');
+
             return true;
           },
           child: Scaffold(
@@ -130,14 +152,14 @@ class _PositionScreen extends State<PositionScreen>
                       textOverflow: TextOverflow.ellipsis,
                       theme: theme.isDarkMode,
                       fw: 1),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: TextWidget.captionText(
-                        text: "Last update : ${ledgerprovider.timedis}",
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        fw: 1),
-                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.only(right: 8.0),
+                  //   child: TextWidget.captionText(
+                  //       text: "Last update : ${ledgerprovider.timedis}",
+                  //       textOverflow: TextOverflow.ellipsis,
+                  //       theme: theme.isDarkMode,
+                  //       fw: 1),
+                  // ),
                 ],
               ),
               // leading: InkWell(
@@ -181,7 +203,8 @@ class _PositionScreen extends State<PositionScreen>
                                           CrossAxisAlignment.start,
                                       children: [
                                         TextWidget.subText(
-                                            text: "Realised",
+                                            text:
+                                                "${ledgerprovider.pnlrmtm == true ? "Realised" : "Realised MTM"}",
                                             color: Color(0xFF696969),
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
@@ -196,14 +219,29 @@ class _PositionScreen extends State<PositionScreen>
                                               const EdgeInsets.only(top: 8.0),
                                           child: TextWidget.titleText(
                                               text:
-                                                  "₹ ${realised.toStringAsFixed(2)}",
+                                                  "₹ ${ledgerprovider.pnlrmtm == true ? realised.toStringAsFixed(2) : realisedmtm.toStringAsFixed(2)}",
                                               textOverflow:
                                                   TextOverflow.ellipsis,
-                                              color: realised < 0
-                                                  ? Colors.red
-                                                  : realised < 0
+                                              color: ledgerprovider.pnlrmtm ==
+                                                      true
+                                                  ? realised > 0
                                                       ? Colors.green
-                                                      : Colors.black,
+                                                      : realised < 0
+                                                          ? Colors.red
+                                                          : theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack
+                                                  : realisedmtm > 0
+                                                      ? Colors.green
+                                                      : realisedmtm < 0
+                                                          ? Colors.red
+                                                          : theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
                                               theme: theme.isDarkMode,
                                               fw: 1),
                                         ),
@@ -214,7 +252,8 @@ class _PositionScreen extends State<PositionScreen>
                                           CrossAxisAlignment.end,
                                       children: [
                                         TextWidget.subText(
-                                            text: "Unrealised",
+                                            text:
+                                                "${ledgerprovider.pnlrmtm == true ? "Unrealised" : "Unrealised MTM"}",
                                             color: Color(0xFF696969),
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
@@ -224,12 +263,27 @@ class _PositionScreen extends State<PositionScreen>
                                               const EdgeInsets.only(top: 8.0),
                                           child: TextWidget.titleText(
                                               text:
-                                                  "₹ ${unrealised.toStringAsFixed(2)}",
-                                              color: unrealised < 0
-                                                  ? Colors.red
-                                                  : unrealised < 0
+                                                  "₹ ${ledgerprovider.pnlrmtm == true ? unrealised.toStringAsFixed(2) : unrealisedmtm.toStringAsFixed(2)}",
+                                              color: ledgerprovider.pnlrmtm ==
+                                                      true
+                                                  ? unrealised > 0
                                                       ? Colors.green
-                                                      : Colors.black,
+                                                      : unrealised < 0
+                                                          ? Colors.red
+                                                          : theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack
+                                                  : unrealisedmtm > 0
+                                                      ? Colors.green
+                                                      : unrealisedmtm < 0
+                                                          ? Colors.red
+                                                          : theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
@@ -304,7 +358,8 @@ class _PositionScreen extends State<PositionScreen>
                                           CrossAxisAlignment.start,
                                       children: [
                                         TextWidget.subText(
-                                            text: "Net P&L",
+                                            text:
+                                                "${ledgerprovider.pnlrmtm == true ? "Net P&L" : "Net MTM"}",
                                             color: Color(0xFF696969),
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
@@ -314,12 +369,33 @@ class _PositionScreen extends State<PositionScreen>
                                               const EdgeInsets.only(top: 8.0),
                                           child: TextWidget.titleText(
                                               text:
-                                                  "₹ ${(unrealised + realised).toStringAsFixed(2)}",
-                                              color: unrealised + realised > 0
-                                                  ? Colors.green
-                                                  : unrealised + realised < 0
-                                                      ? Colors.red
-                                                      : Colors.black,
+                                                  "₹ ${ledgerprovider.pnlrmtm == true ? "${(unrealised + realised).toStringAsFixed(2)}" : "${(unrealisedmtm + realisedmtm).toStringAsFixed(2)}"}",
+                                              color: ledgerprovider.pnlrmtm ==
+                                                      true
+                                                  ? (unrealised + realised) > 0
+                                                      ? Colors.green
+                                                      : (unrealised +
+                                                                  realised) <
+                                                              0
+                                                          ? Colors.red
+                                                          : theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack
+                                                  : (unrealisedmtm +
+                                                              realisedmtm) >
+                                                          0
+                                                      ? Colors.green
+                                                      : (unrealisedmtm +
+                                                                  realisedmtm) <
+                                                              0
+                                                          ? Colors.red
+                                                          : theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
@@ -466,7 +542,58 @@ class _PositionScreen extends State<PositionScreen>
                   //     ],
                   //   ),
                   // ),
-
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: 16.0, right: 16.0, top: 16.0, bottom: 10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextWidget.paraText(
+                            text: "Last update : ${ledgerprovider.timedis}",
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 1),
+                        Row(
+                          children: [
+                            Text("P&L",
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    13,
+                                    FontWeight.w500)),
+                            const SizedBox(width: 6),
+                            CustomSwitch(
+                                onChanged: (bool value) {
+                                  // print('object ${value}');
+                                  ledgerprovider.clickchangemtmandpnl = value;
+                                },
+                                color: Color.fromARGB(255, 211, 211, 211),
+                                value: ledgerprovider.pnlrmtm),
+                            const SizedBox(width: 6),
+                            Text("MTM",
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    13,
+                                    FontWeight.w500)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 0.0,
+                    ),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8),
+                      thickness: 7.0,
+                    ),
+                  ),
                   ledgerprovider.positiondata?.data?.isEmpty ?? true
                       ? Center(
                           child: Padding(
@@ -510,18 +637,39 @@ class _PositionScreen extends State<PositionScreen>
                                             child: TextWidget.subText(
                                                 align: TextAlign.right,
                                                 text:
-                                                    "₹ ${double.tryParse(val.rpnl.toString())!.toStringAsFixed(2)}",
-                                                color: double.tryParse(
-                                                                val.rpnl!)!
-                                                            .toInt() >
-                                                        0
-                                                    ? Colors.green
-                                                    : double.tryParse(
+                                                    "₹ ${ledgerprovider.pnlrmtm == true ? double.tryParse(val.rpnl.toString())!.toStringAsFixed(2) : double.tryParse(val.rmtm.toString())!.toStringAsFixed(2)}",
+                                                color: ledgerprovider.pnlrmtm ==
+                                                        true
+                                                    ? double.tryParse(
                                                                     val.rpnl!)!
-                                                                .toInt() <
+                                                                .toInt() >
                                                             0
-                                                        ? Colors.red
-                                                        : Colors.black,
+                                                        ? Colors.green
+                                                        : double.tryParse(val
+                                                                        .rpnl!)!
+                                                                    .toInt() <
+                                                                0
+                                                            ? Colors.red
+                                                            : theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack
+                                                    : double.tryParse(
+                                                                    val.rmtm!)!
+                                                                .toInt() >
+                                                            0
+                                                        ? Colors.green
+                                                        : double.tryParse(val
+                                                                        .rmtm!)!
+                                                                    .toInt() <
+                                                                0
+                                                            ? Colors.red
+                                                            : theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
@@ -602,7 +750,7 @@ class _PositionScreen extends State<PositionScreen>
                                               TextWidget.subText(
                                                   align: TextAlign.right,
                                                   text:
-                                                      " ${val.buyPrice} @ ₹${val.buyValue}",
+                                                      " ${val.buyQuantity} @ ₹${ledgerprovider.pnlrmtm == true ? val.buyValue : val.buyvaluemtm}",
                                                   color: theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
@@ -628,7 +776,7 @@ class _PositionScreen extends State<PositionScreen>
                                                 TextWidget.subText(
                                                     align: TextAlign.right,
                                                     text:
-                                                        " ₹${double.tryParse(val.netAvgPrc.toString())!.toStringAsFixed(2)}",
+                                                        "₹ ${ledgerprovider.pnlrmtm == true ? double.tryParse(val.netAvgPrc.toString())!.toStringAsFixed(2) : double.tryParse(val.netavgpricemtm.toString())!.toStringAsFixed(2)}",
                                                     color: theme.isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
@@ -644,7 +792,7 @@ class _PositionScreen extends State<PositionScreen>
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(
-                                          top: 4.0, left: 16.0, bottom: 8.0),
+                                          top: 8.0, left: 16.0, bottom: 8.0),
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
@@ -662,7 +810,7 @@ class _PositionScreen extends State<PositionScreen>
                                               TextWidget.subText(
                                                   align: TextAlign.right,
                                                   text:
-                                                      " ${val.sellQuantity} @ ₹${val.sellValue}",
+                                                      " ${val.sellQuantity} @ ₹${ledgerprovider.pnlrmtm == true ? val.sellValue : val.sellValuemtm} ",
                                                   color: theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,

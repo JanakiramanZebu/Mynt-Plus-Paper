@@ -5,6 +5,7 @@ import '../api/core/api_core.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+
 String globalcurrmail = '';
 String globalNewEmail = '';
 String globaldpcode = '';
@@ -17,7 +18,6 @@ final profileres = ProviderContainer().read(transcationProvider);
 var profileres2 = profileres;
 
 mixin ProfileAllDetailsApi on ApiCore {
-
   Future<DetailsChangeCurrentStatus> getDetailsChangeCurrentStatusApi() async {
     try {
       final uri = Uri.parse(apiLinks.detailschangecurrentstatusURL);
@@ -25,9 +25,7 @@ mixin ProfileAllDetailsApi on ApiCore {
         uri,
         headers: funddefaultHeaders,
         body: jsonEncode(
-          {
-            "client_id": "${prefs.clientId}"
-          },
+          {"client_id": "${prefs.clientId}"},
         ),
       );
       final json = jsonDecode(res.body);
@@ -37,7 +35,8 @@ mixin ProfileAllDetailsApi on ApiCore {
     }
   }
 
-  sendOTPtoChangeEmailApi(String newEmail,String oldEmail,String clientName,String dpcode) async {
+  sendOTPtoChangeEmailApi(String newEmail, String oldEmail, String clientName,
+      String dpcode) async {
     globalcurrmail = oldEmail;
     globalNewEmail = newEmail;
     globaldpcode = dpcode;
@@ -208,8 +207,7 @@ mixin ProfileAllDetailsApi on ApiCore {
     // // print("eSign workflow finished.");
   }
 
-
-   Future<ProfileAllDetails> getClientProfileAllDetailsApi() async {
+  Future<ProfileAllDetails> getClientProfileAllDetailsApi() async {
     String payload = jsonEncode({"client_id": prefs.clientId});
     String encryptedPayload = encryptionFunction(payload);
     try {
@@ -222,7 +220,8 @@ mixin ProfileAllDetailsApi on ApiCore {
         return ProfileAllDetails.fromJson(json);
       } else {
         final decryptedData = decryptionFunction(json["str"]);
-      //  log("client Data------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+        //  log("client Data------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+        print("decryptedData------------ ${jsonDecode(decryptedData)}");
         return ProfileAllDetails.fromJson(jsonDecode(decryptedData));
       }
     } catch (e) {
@@ -791,7 +790,7 @@ mixin ProfileAllDetailsApi on ApiCore {
     // print("segments: $bankDataString");
     // print("reason: ${dpid == '' ? 'no' : 'yes'}");
     // print(
-        // "address: ${fulldataprf.toJson()['CL_RESI_ADD1']},${fulldataprf.toJson()['CL_RESI_ADD2']},${fulldataprf.toJson()['CL_RESI_ADD3']}");
+    // "address: ${fulldataprf.toJson()['CL_RESI_ADD1']},${fulldataprf.toJson()['CL_RESI_ADD2']},${fulldataprf.toJson()['CL_RESI_ADD3']}");
     // print("transfer_client_id: $dpid");
     // print("transfer_dp_id: $boid");
     try {

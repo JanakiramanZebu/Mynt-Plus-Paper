@@ -47,9 +47,10 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                 ledgerprovider.setFinancialYear("");
                 Navigator.pop(context);
               },
-            child: SvgPicture.asset(assets.backArrow,
-                color:
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack)),
+              child: SvgPicture.asset(assets.backArrow,
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.colorBlack)),
           elevation: 0.2,
           title: TextWidget.heroText(
               text: "Calender P&L",
@@ -292,7 +293,13 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                             if (newFY != null) {
                               ledgerprovider.setFinancialYear(newFY);
                               // Call API after updating financial year
-                              ledgerprovider.fetchcalenderpnldata(context,
+                              ledgerprovider.fetchsharingdata(
+                                  ledgerprovider.formattedStartDate,
+                                  ledgerprovider.formattedendDate,
+                                  ledgerprovider.selectedSegment,
+                                  context);
+                              ledgerprovider.fetchcalenderpnldata(
+                                context,
                                 ledgerprovider.formattedStartDate,
                                 ledgerprovider.formattedendDate,
                                 ledgerprovider.selectedSegment,
@@ -339,7 +346,13 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           onChanged: (seg) {
                             if (seg != null) {
                               ledgerprovider.setSegment(seg);
-                              ledgerprovider.fetchcalenderpnldata(context,
+                              ledgerprovider.fetchsharingdata(
+                                  ledgerprovider.formattedStartDate,
+                                  ledgerprovider.formattedendDate,
+                                  ledgerprovider.selectedSegment,
+                                  context);
+                              ledgerprovider.fetchcalenderpnldata(
+                                context,
                                 ledgerprovider.formattedStartDate,
                                 ledgerprovider.formattedendDate,
                                 ledgerprovider.selectedSegment,
@@ -406,7 +419,6 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                       child: SingleChildScrollView(
                         physics: const ScrollPhysics(),
                         child: Column(
-                          
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -416,129 +428,126 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                               ),
                             ),
                             Column(
-
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Divider(
-                                                  color: theme.isDarkMode
-                                                      ? const Color(0xffB5C0CF)
-                                                          .withOpacity(.15)
-                                                      : const Color(0xffF1F3F8),
-                                                  thickness: 1.0,
-                                                ),
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffB5C0CF).withOpacity(.15)
+                                      : const Color(0xffF1F3F8),
+                                  thickness: 1.0,
+                                ),
                                 Padding(
-                                    padding: const EdgeInsets.only(left: 16.0 ,top: 8.0,bottom : 8.0),
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0, top: 8.0, bottom: 8.0),
                                     child: TextWidget.titleText(
                                         text: "Date-specific Information",
                                         color: Color.fromARGB(255, 0, 0, 0),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0)),
-                              Divider(
-                                                  color: theme.isDarkMode
-                                                      ? const Color(0xffB5C0CF)
-                                                          .withOpacity(.15)
-                                                      : const Color(0xffF1F3F8),
-                                                  thickness: 1.0,
-                                                ),
-                            ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: sortedDates.length,
-                              itemBuilder: (context, index) {
-                                final dateKey = sortedDates[index];
-                                final tradesForDate =
-                                    ledgerprovider.grouped[dateKey]!; 
-                                // Calculate total realized PnL for this date
-                                final totalRealisedPnl =
-                                    tradesForDate.fold<double>(
+                                Divider(
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffB5C0CF).withOpacity(.15)
+                                      : const Color(0xffF1F3F8),
+                                  thickness: 1.0,
+                                ),
+                                ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: sortedDates.length,
+                                  itemBuilder: (context, index) {
+                                    final dateKey = sortedDates[index];
+                                    final tradesForDate =
+                                        ledgerprovider.grouped[dateKey]!;
+                                    // Calculate total realized PnL for this date
+                                    final totalRealisedPnl = tradesForDate.fold<
+                                            double>(
                                         0.0,
                                         (sum, item) =>
                                             sum +
                                             double.parse(item.realisedpnl!));
 
-                                // Format the date (e.g. "03 Oct 2024")
-                                final dateString =
-                                    '${dateKey.day.toString().padLeft(2, '0')} '
-                                    '${_monthName(dateKey.month)} '
-                                    '${dateKey.year}';
+                                    // Format the date (e.g. "03 Oct 2024")
+                                    final dateString =
+                                        '${dateKey.day.toString().padLeft(2, '0')} '
+                                        '${_monthName(dateKey.month)} '
+                                        '${dateKey.year}';
 
-                                return Theme(
-                                  data: Theme.of(context).copyWith(
-                                      dividerColor: Colors.transparent),
-                                  child: ExpansionTile(
-                                    collapsedBackgroundColor:
-                                        Colors.transparent,
-                                    childrenPadding: EdgeInsets.zero,
-                                    backgroundColor: Colors.transparent,
-                                    title: Text(
-                                        "$dateString  (${tradesForDate.length})",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? Colors.white
-                                                : Colors.black,
-                                            14,
-                                            FontWeight.w500)),
-                                    trailing: Text(
-                                        '₹ ${totalRealisedPnl.toStringAsFixed(2)}',
-                                        style: totalRealisedPnl != 0
-                                            ? totalRealisedPnl > 0
-                                                ? textStyle(Colors.green, 14,
-                                                    FontWeight.w500)
-                                                : textStyle(Colors.red, 14,
-                                                    FontWeight.w500)
-                                            : textStyle(
+                                    return Theme(
+                                      data: Theme.of(context).copyWith(
+                                          dividerColor: Colors.transparent),
+                                      child: ExpansionTile(
+                                        collapsedBackgroundColor:
+                                            Colors.transparent,
+                                        childrenPadding: EdgeInsets.zero,
+                                        backgroundColor: Colors.transparent,
+                                        title: Text(
+                                            "$dateString  (${tradesForDate.length})",
+                                            style: textStyle(
                                                 theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
+                                                    ? Colors.white
+                                                    : Colors.black,
                                                 14,
                                                 FontWeight.w500)),
-                                    children: [
-                                      Column(
-                                        children: List.generate(
-                                            tradesForDate.length, (index) {
-                                          final trade = tradesForDate[index];
-                                          return Column(
-                                            children: [
-                                              _buildTradeItem(trade, theme),
-                                              if (index !=
-                                                  tradesForDate.length - 1)
-                                                Divider(
-                                                  color: theme.isDarkMode
-                                                      ? const Color(0xffB5C0CF)
-                                                          .withOpacity(.15)
-                                                      : const Color(0xffF1F3F8),
-                                                  thickness: 7.0,
-                                                ),
-                                              SizedBox(
-                                                height: 5,
-                                              )
-                                            ],
-                                          );
-                                        }),
-                                      )
-                                    ],
-                                  ),
-                                );
-                              },
-                              separatorBuilder:
-                                  (BuildContext context, int index) {
-                                return Divider(
-                                  color: theme.isDarkMode
-                                      ? const Color(0xffB5C0CF).withOpacity(.15)
-                                      : const Color(0xffF1F3F8),
-                                  thickness: 7.0,
-                                );
-                              },
-                            )
-                          ],
+                                        trailing: Text(
+                                            '₹ ${totalRealisedPnl.toStringAsFixed(2)}',
+                                            style: totalRealisedPnl != 0
+                                                ? totalRealisedPnl > 0
+                                                    ? textStyle(Colors.green,
+                                                        14, FontWeight.w500)
+                                                    : textStyle(Colors.red, 14,
+                                                        FontWeight.w500)
+                                                : textStyle(
+                                                    theme.isDarkMode
+                                                        ? colors.colorWhite
+                                                        : colors.colorBlack,
+                                                    14,
+                                                    FontWeight.w500)),
+                                        children: [
+                                          Column(
+                                            children: List.generate(
+                                                tradesForDate.length, (index) {
+                                              final trade =
+                                                  tradesForDate[index];
+                                              return Column(
+                                                children: [
+                                                  _buildTradeItem(trade, theme),
+                                                  if (index !=
+                                                      tradesForDate.length - 1)
+                                                    Divider(
+                                                      color: theme.isDarkMode
+                                                          ? const Color(
+                                                                  0xffB5C0CF)
+                                                              .withOpacity(.15)
+                                                          : const Color(
+                                                              0xffF1F3F8),
+                                                      thickness: 7.0,
+                                                    ),
+                                                  SizedBox(
+                                                    height: 5,
+                                                  )
+                                                ],
+                                              );
+                                            }),
+                                          )
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  separatorBuilder:
+                                      (BuildContext context, int index) {
+                                    return Divider(
+                                      color: theme.isDarkMode
+                                          ? const Color(0xffB5C0CF)
+                                              .withOpacity(.15)
+                                          : const Color(0xffF1F3F8),
+                                      thickness: 7.0,
+                                    );
+                                  },
+                                )
+                              ],
                             ),
-                          
-                          ]
-
-
-                          
-                          ,
+                          ],
                         ),
                       ),
                     ),
@@ -847,7 +856,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
 }
 
 class CalendarTabs extends StatefulWidget {
-  final dynamic theme; // Passed from your UI (e.g., ref.watch(themeProvider))
+  final dynamic theme; // Passed from your UI (e.g., watch(themeProvider))
   final Map<DateTime, double> heatmapData; // Data from ledgerprovider
 
   const CalendarTabs({

@@ -59,17 +59,17 @@ class ReportsScreen extends ConsumerWidget {
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
                 //     arguments: "ledger");
 
-                // await ledgerdate.getCurrentDate('else');
+                await ledgerdate.getCurrentDate('else');
 
-                // ledgerdate.fetchLegerData(
-                //     ledgerdate.startDate, ledgerdate.endDate);
+                // ledgerdate.fetchsharingdata(
+                //     ledgerdate.startDate,ledgerdate.today,'Equity',context);
 
                 Navigator.pushNamed(context, Routes.calenderpnlScreen,
                     arguments: "DDDDD");
               } else if (index == 1) {
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
                 //     arguments: "holding");
-                // await ledgerdate.getCurrentDate('else');
+                await ledgerdate.getCurrentDate('else');
 
                 // ledgerdate.fetchholdingsData(ledgerdate.today, context);
                 Navigator.pushNamed(context, Routes.ledgerscreen,
@@ -80,7 +80,7 @@ class ReportsScreen extends ConsumerWidget {
               //       arguments: "positions");
               // }
               else if (index == 2) {
-                // await ledgerdate.getCurrentDate('else');
+                await ledgerdate.getCurrentDate('else');
 
                 // ledgerdate.fetchpnldata(
                 //     ledgerdate.startDate, ledgerdate.today, true);
@@ -94,16 +94,15 @@ class ReportsScreen extends ConsumerWidget {
                 //       arguments: "positions");
                 // }
               } else if (index == 3) {
-                      // ledgerdate.fetchposition(context);
-                //               ledgerdate.fetchposition(context);
+                ledgerdate.fetchposition(context);
 
-                // Navigator.pushNamed(context, Routes.positionscreen,
-                //     arguments: "DDDDD");
+                Navigator.pushNamed(context, Routes.positionscreen,
+                    arguments: "DDDDD");
 
-                Navigator.pushNamed(context, Routes.reportWebViewApp,
-                    arguments: "positions");
+                // Navigator.pushNamed(context, Routes.reportWebViewApp,
+                //     arguments: "positions");
               } else if (index == 4) {
-                //   await ledgerdate.getCurrentDate('else');
+                await ledgerdate.getCurrentDate('else');
 
                 //       ledgerdate.calendarProvider();
                 // ledgerdate.fetchcalenderpnldata(
@@ -113,7 +112,7 @@ class ReportsScreen extends ConsumerWidget {
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
                 //     arguments: "calenderpnl");
               } else if (index == 5) {
-                // await ledgerdate.getYearlistTaxpnl();
+                await ledgerdate.getYearlistTaxpnl();
                 // ledgerdate.getCurrentDate('');
                 // print("year${ledgerdate.taxpnlyeararray[0]}");
 
@@ -133,7 +132,7 @@ class ReportsScreen extends ConsumerWidget {
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
                 //     arguments: "taxpnl");
               } else if (index == 6) {
-                // await ledgerdate.getCurrentDate('tradebook');
+                await ledgerdate.getCurrentDate('tradebook');
                 // ledgerdate.fetchtradebookdata(
                 //     ledgerdate.startDate, ledgerdate.today);
 
@@ -145,7 +144,7 @@ class ReportsScreen extends ConsumerWidget {
                 // launch(
                 //     'https://profile.mynt.in/pdfdownload/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}'
                 //     );
-                //  await ledgerdate.getCurrentDate('else');
+                await ledgerdate.getCurrentDate('else');
 
                 //  ledgerdate.fetchpdfdownload(
                 //     ledgerdate.startDate, ledgerdate.today);
@@ -154,11 +153,59 @@ class ReportsScreen extends ConsumerWidget {
                 // Navigator.pushNamed(context, Routes.reportWebViewApp,
                 //     arguments: "pdfdownload");
               }
+              // cop action
+              //  else if (index == 8) {
+              //   // launch(
+              //   //     'https://profile.mynt.in/pdfdownload/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}'
+              //   //     );
+              //   //  await ledgerdate.getCurrentDate('else');
+
+              //   //  ledgerdate.fetchpdfdownload(
+              //   //     ledgerdate.startDate, ledgerdate.today);
+              //   ledgerdate.getCurrentDate('caevent');
+              //   Navigator.pushNamed(context, Routes.cabuyback,
+              //       arguments: "DDDDD");
+              //   // Navigator.pushNamed(context, Routes.reportWebViewApp,
+              //   //     arguments: "pdfdownload");
+              // }
+              else if (index == 8) {
+                // launch(
+                //     'https://profile.mynt.in/pdfdownload/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}'
+                //     );
+                //  await ledgerdate.getCurrentDate('else');
+
+                //  ledgerdate.fetchpdfdownload(
+                //     ledgerdate.startDate, ledgerdate.today);
+                ledgerdate.getCurrentDate('caevent');
+                Navigator.pushNamed(context, Routes.caeventmainpage,
+                    arguments: "DDDDD");
+                // Navigator.pushNamed(context, Routes.reportWebViewApp,
+                //     arguments: "pdfdownload");
+              } else if (index == 9) {
+                // launch(
+                //     'https://profile.mynt.in/pdfdownload/?sAccountId=${pref.clientId}&sToken=${hstoken.fundHstoken!.hstk}'
+                //     );
+                //  await ledgerdate.getCurrentDate('else');
+
+                //  ledgerdate.fetchpdfdownload(
+                //     ledgerdate.startDate, ledgerdate.today);
+                Navigator.pushNamed(context, Routes.pledgeandun,
+                    arguments: "DDDDD");
+                // Navigator.pushNamed(context, Routes.reportWebViewApp,
+                //     arguments: "pdfdownload");
+              }
             },
             dense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            title: Text(userProfile.reporttMenu[index]['title'],
-                style: textStyle(const Color(0xff666666), 14, FontWeight.w500)),
+            title: Text(
+              userProfile.reporttMenu[index]['Subtitle'],
+              style: textStyle(theme.isDarkMode ? Colors.white : Colors.black,
+                  16, FontWeight.w500),
+            ),
+            subtitle: Text(
+              userProfile.reporttMenu[index]['title'],
+              style: textStyle(const Color(0xff666666), 12, FontWeight.w400),
+            ),
             trailing:
                 SvgPicture.asset(userProfile.reporttMenu[index]['trailing']),
           );

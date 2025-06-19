@@ -11,23 +11,23 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
-class HoldingInnerDetails extends ConsumerStatefulWidget {
+class HoldingInnerDetails extends StatefulWidget {
   final Map data;
   const HoldingInnerDetails({super.key, required this.data});
 
   @override
-  ConsumerState<HoldingInnerDetails> createState() => _HoldingInnerDetails();
+  State<HoldingInnerDetails> createState() => _HoldingInnerDetails();
 }
 
-class _HoldingInnerDetails extends ConsumerState<HoldingInnerDetails> {
+class _HoldingInnerDetails extends State<HoldingInnerDetails> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
     double notional = 0.0;
     return Consumer(builder: (context, WidgetRef ref, _) {
       final ledgerdata = ref.watch(ledgerProvider);
+      final theme = ref.read(themeProvider);
 
       return DraggableScrollableSheet(
         initialChildSize: 0.88,
@@ -112,7 +112,8 @@ class _HoldingInnerDetails extends ConsumerState<HoldingInnerDetails> {
                                           fw: 1),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0),
                                       child: Divider(
                                         color: const Color.fromARGB(
                                             255, 212, 212, 212),

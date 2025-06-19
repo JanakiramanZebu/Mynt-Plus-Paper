@@ -6,9 +6,11 @@ import 'package:mynt_plus/models/desk_reports_model/pnl_seg_charges_model.dart';
 // import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_core.dart';
+import '../models/desk_reports_model/SharingResponseCalendar_model.dart';
 import '../models/desk_reports_model/ca_events_model.dart';
 import '../models/desk_reports_model/calender_pnl_model.dart';
 import '../models/desk_reports_model/cdsl_response_model.dart';
+import '../models/desk_reports_model/cp_action_model.dart';
 import '../models/desk_reports_model/dercomcur_taxpnl_model.dart';
 import '../models/desk_reports_model/holdings_model.dart';
 import '../models/desk_reports_model/ledger_bill_model.dart';
@@ -19,6 +21,7 @@ import '../models/desk_reports_model/pledge_unpledge_model.dart';
 import '../models/desk_reports_model/pnl_model.dart';
 import '../models/desk_reports_model/pnl_summary_model.dart';
 import '../models/desk_reports_model/position_model.dart';
+import '../models/desk_reports_model/sharing_on_off_model.dart';
 import '../models/desk_reports_model/tax_pnl_Eq_charge_model.dart';
 import '../models/desk_reports_model/taxpnl_eq_model.dart';
 import '../models/desk_reports_model/tradebook_model.dart';
@@ -30,6 +33,28 @@ import '../sharedWidget/fund_function.dart';
 
 // import 'package:open_file/open_file.dart';
 mixin LedgerApi on ApiCore {
+  Future<CPActionModule> getcpactiondata() async {
+    try {
+      final uri =
+          // Uri.parse('${apiLinks.reportsapiforcpaction}/getCorporateAction');
+          Uri.parse('http://192.168.5.207:5010/getCorporateAction');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body: jsonEncode({}));
+
+      final json = jsonDecode((res.body));
+      // print("${json['stat']}");
+      if (json['stat'] != 'Not Ok') {
+        return CPActionModule.fromJson(json as Map<String, dynamic>);
+      } else {
+        return CPActionModule.fromJson({});
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<LedgerModelData> getLedgerdata(String from, String to) async {
     try {
       final uri = Uri.parse('${apiLinks.reportsapi}/getLedger');
@@ -62,16 +87,15 @@ mixin LedgerApi on ApiCore {
           headers: funddefaultHeaders,
           // headers: testingrameshheader,
           body: jsonEncode({
-            "clientid": "${prefs.clientId}", 
-            "date": "", 
-
+            "clientid": "${prefs.clientId}",
+            "date": "",
           }));
 
-      final json = jsonDecode((res.body)); 
+      final json = jsonDecode((res.body));
       // if (json['stat'] != 'Not Ok') {
-        return UnpledgeHistoryModel.fromJson(json as Map<String, dynamic>);
+      return UnpledgeHistoryModel.fromJson(json as Map<String, dynamic>);
       // } else {
-        // return UnpledgeHistoryModel.fromJson({});
+      // return UnpledgeHistoryModel.fromJson({});
       // }
     } catch (e) {
       rethrow;
@@ -84,16 +108,13 @@ mixin LedgerApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           // headers: testingrameshheader,
-          body: jsonEncode({
-            "clientid": "${prefs.clientId}"
+          body: jsonEncode({"clientid": "${prefs.clientId}"}));
 
-          }));
-
-      final json = jsonDecode((res.body)); 
+      final json = jsonDecode((res.body));
       // if (json['stat'] != 'Not Ok') {
-        return PledgeHistoryModel.fromJson(json as Map<String, dynamic>);
+      return PledgeHistoryModel.fromJson(json as Map<String, dynamic>);
       // } else {
-        // return UnpledgeHistoryModel.fromJson({});
+      // return UnpledgeHistoryModel.fromJson({});
       // }
     } catch (e) {
       rethrow;
@@ -108,11 +129,11 @@ mixin LedgerApi on ApiCore {
           // headers: testingrameshheader,
           body: jsonEncode({
             "cc": "${prefs.clientId}",
-            // "cc": "ZO00172",
+            // "cc": "TN1V2",
 
-            "from": from,
+            // "from": from,
             "to": from,
-            "withopen": "Y"
+            // "withopen": "Y"
           }));
       if (res.body != 'no data found') {
         final json = jsonDecode((res.body));
@@ -125,30 +146,138 @@ mixin LedgerApi on ApiCore {
     }
   }
 
+  Future<SharingResponse> getsharingdata(
+      String from, String to, String seg) async {
+    try {
+      final uri = Uri.parse('${apiLinks.reportsapi}/getclientsharelist');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body: jsonEncode({
+            "cc": "${prefs.clientId}",
+            "from": from,
+            "to": to,
+            "segment": seg
+          }));
+      final json = jsonDecode((res.body));
+      if (json['msg'] != 'No Data Available') {
+        return SharingResponse.fromJson(json as Map<String, dynamic>);
+      } else {
+        return SharingResponse.fromJson({});
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<OnorOffSharingModel> senddharingdataapi(
+      ucode, String from, String to, response, status, String seg) async {
+    try {
+      final uri = Uri.parse('${apiLinks.reportsapi}/sharenew');
+
+      // Convert numeric strings to numbers in the request payload
+      var clientId = int.tryParse(prefs.clientId ?? "") ?? prefs.clientId;
+      var responseData = response;
+
+      // If response is a string that contains JSON, parse and convert numeric values
+      if (response is String && response.isNotEmpty) {
+        try {
+          // Try to parse as JSON if it's a JSON string
+          var parsedResponse = jsonDecode(response);
+          responseData = _convertStringsToNumbers(parsedResponse);
+        } catch (e) {
+          // If not JSON, try to convert to number if possible
+          var numValue = num.tryParse(response);
+          if (numValue != null) {
+            responseData = numValue;
+          }
+        }
+      } else if (response is Map || response is List) {
+        // If already a Map or List, convert numeric strings inside it
+        responseData = _convertStringsToNumbers(response);
+      }
+
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body: jsonEncode({
+            "cc": clientId,
+            "from": from,
+            "to": to,
+            "sharing": !status, // Using status directly as per corrected logic
+            "response": responseData,
+            "Unique_Code": ucode,
+            "uname": "${prefs.clientName}",
+            "segment": seg
+          }));
+
+      final json = jsonDecode((res.body));
+      if (json['stat'] == 'Ok') {
+        return OnorOffSharingModel.fromJson(json as Map<String, dynamic>);
+      } else {
+        return OnorOffSharingModel.fromJson({});
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Helper function to recursively convert string numbers to actual numbers
+  dynamic _convertStringsToNumbers(dynamic data) {
+    if (data is Map) {
+      final result = <String, dynamic>{};
+      data.forEach((key, value) {
+        if (value is String) {
+          // Try to convert strings to numbers if possible
+          final numValue = num.tryParse(value);
+          result[key] = numValue ?? value;
+        } else if (value is Map || value is List) {
+          result[key] = _convertStringsToNumbers(value);
+        } else {
+          result[key] = value;
+        }
+      });
+      return result;
+    } else if (data is List) {
+      return data.map((item) {
+        if (item is String) {
+          // Try to convert strings to numbers if possible
+          final numValue = num.tryParse(item);
+          return numValue ?? item;
+        } else if (item is Map || item is List) {
+          return _convertStringsToNumbers(item);
+        }
+        return item;
+      }).toList();
+    }
+    return data;
+  }
+
   Future<PositionModel> getposition() async {
     try {
-      const ip = '192.168.5.22'; // the real server IP
-      const hostHeader = 'be.zebull.in'; // whatever your fake hostname was
-      final uri = Uri(
-        scheme: 'https',
-        host: ip,
-        path: '/api/GetPosition',
-      );
-      // final uri = Uri.parse('${apiLinks.position}GetPosition');
+      // const ip = '192.168.5.22'; // the real server IP
+      // const hostHeader = 'be.zebull.in'; // whatever your fake hostname was
+      // final uri = Uri(
+      //   scheme: 'https',
+      //   host: ip,
+      //   path: '/_link/GetPosition',
+      // );
+      final uri = Uri.parse('${apiLinks.position}GetPosition');
       final res = await apiClient.post(uri,
-          headers: {
-            'Content-Type': 'application/json',
-            'Host': hostHeader,
-          },
-          // headers: testingrameshheader,
+          // headers: {
+          //   'Content-Type': 'application/json',
+          //   'Host': hostHeader,
+          // },
+          headers: funddefaultHeaders,
           body: jsonEncode({"client_id": "${prefs.clientId}"}));
+      // body: jsonEncode({"client_id": "ZVK0106"}));
 
-      final json = jsonDecode((res.body)); 
+      final json = jsonDecode((res.body));
       // if (json['stat'] != 'Not Ok') {
-        // return PositionModel.fromJson(json as Map<String, dynamic>);
-      return PositionModel.fromJson({'data': json}); 
+      // return PositionModel.fromJson(json as Map<String, dynamic>);
+      return PositionModel.fromJson({'data': json});
       // } else {
-        // return PositionModel.fromJson({});
+      // return PositionModel.fromJson({});
       // }
     } catch (e) {
       rethrow;
@@ -214,7 +343,7 @@ mixin LedgerApi on ApiCore {
   Future<CalenderpnlModel> getcalenderpnldata(
       String from, String to, String type) async {
     try {
-      final uri = Uri.parse('${apiLinks.reportsapi}getJournal');
+      final uri = Uri.parse('${apiLinks.reportsapi}getJournalDiary');
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           // headers: testingrameshheader,
@@ -228,7 +357,7 @@ mixin LedgerApi on ApiCore {
             "to": to,
             "segment": type == 'Equity'
                 ? "NSE_CASH,BSE_CASH"
-                : type == 'FnO'
+                : type == 'Fno'
                     ? 'NSE_FNO,BSE_FNO'
                     : type == 'Commodity'
                         ? 'MCX,NCDEX,NSE_COM,BSE_COM'
