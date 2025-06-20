@@ -60,7 +60,6 @@ class comTaxpnlScreen extends State<comTaxpnl> {
       final eqtypestring = ref.watch(ledgerProvider).eqtypestring;
       final dertypestring = ref.watch(ledgerProvider).dertypestring;
       final ledgerprovider = ref.watch(ledgerProvider);
-  
 
       return Scaffold(
         body: TransparentLoaderScreen(
@@ -101,11 +100,9 @@ class comTaxpnlScreen extends State<comTaxpnl> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
                                   child: Text(
-                                    double.parse(ledgerprovider
-                                                        .taxpnldercomcur!
-                                                        .data!
-                                                        .commodity!
-                                                        .commFutPnl!).toStringAsFixed(2),
+                                    double.parse(ledgerprovider.taxpnldercomcur!
+                                            .data!.commodity!.commFutPnl!)
+                                        .toStringAsFixed(2),
                                     style: textStyle(
                                         (ledgerprovider.taxpnldercomcur!.data!
                                                     .commodity!.commFutPnl !=
@@ -126,7 +123,8 @@ class comTaxpnlScreen extends State<comTaxpnl> {
                                                     ? Colors.red
                                                     : Colors.black)
                                             : Colors.black,
-                                         16, FontWeight.w600),
+                                        16,
+                                        FontWeight.w600),
                                   ),
                                 )
                               ],
@@ -143,14 +141,11 @@ class comTaxpnlScreen extends State<comTaxpnl> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
                                   child: Text(
-                                    double.parse(ledgerprovider
-                                                        .taxpnldercomcur!
-                                                        .data!
-                                                        .commodity!
-                                                        .commFutTo!).toStringAsFixed(2),
-                                    
+                                    double.parse(ledgerprovider.taxpnldercomcur!
+                                            .data!.commodity!.commFutTo!)
+                                        .toStringAsFixed(2),
                                     style: textStyle(
-                                         (ledgerprovider.taxpnldercomcur!.data!
+                                        (ledgerprovider.taxpnldercomcur!.data!
                                                     .commodity!.commFutTo !=
                                                 null)
                                             ? (double.parse(ledgerprovider
@@ -168,7 +163,9 @@ class comTaxpnlScreen extends State<comTaxpnl> {
                                                         0
                                                     ? Colors.red
                                                     : Colors.black)
-                                            : Colors.black,16, FontWeight.w600),
+                                            : Colors.black,
+                                        16,
+                                        FontWeight.w600),
                                   ),
                                 )
                               ],
@@ -192,15 +189,13 @@ class comTaxpnlScreen extends State<comTaxpnl> {
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
-                                  child: Text( 
-                                    double.parse(ledgerprovider
-                                                        .taxpnldercomcur!
-                                                        .data!
-                                                        .commodity!
-                                                        .commOptPnl!).toStringAsFixed(2),
+                                  child: Text(
+                                    double.parse(ledgerprovider.taxpnldercomcur!
+                                            .data!.commodity!.commOptPnl!)
+                                        .toStringAsFixed(2),
                                     textAlign: TextAlign.right,
                                     style: textStyle(
-                                         (ledgerprovider.taxpnldercomcur!.data!
+                                        (ledgerprovider.taxpnldercomcur!.data!
                                                     .commodity!.commOptPnl !=
                                                 null)
                                             ? (double.parse(ledgerprovider
@@ -218,7 +213,9 @@ class comTaxpnlScreen extends State<comTaxpnl> {
                                                         0
                                                     ? Colors.red
                                                     : Colors.black)
-                                            : Colors.black, 16, FontWeight.w600),
+                                            : Colors.black,
+                                        16,
+                                        FontWeight.w600),
                                   ),
                                 )
                               ],
@@ -234,12 +231,10 @@ class comTaxpnlScreen extends State<comTaxpnl> {
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
-                                  child: Text( 
-                                    double.parse(ledgerprovider
-                                                        .taxpnldercomcur!
-                                                        .data!
-                                                        .commodity!
-                                                        .commOptTo!).toStringAsFixed(2),
+                                  child: Text(
+                                    double.parse(ledgerprovider.taxpnldercomcur!
+                                            .data!.commodity!.commOptTo!)
+                                        .toStringAsFixed(2),
                                     textAlign: TextAlign.right,
                                     style: textStyle(
                                         (ledgerprovider.taxpnldercomcur!.data!
@@ -260,7 +255,9 @@ class comTaxpnlScreen extends State<comTaxpnl> {
                                                         0
                                                     ? Colors.red
                                                     : Colors.black)
-                                            : Colors.black,16, FontWeight.w600),
+                                            : Colors.black,
+                                        16,
+                                        FontWeight.w600),
                                   ),
                                 )
                               ],
@@ -284,12 +281,10 @@ class comTaxpnlScreen extends State<comTaxpnl> {
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
-                                  child: Text( 
-                                    double.parse(ledgerprovider
-                                                        .taxpnldercomcur!
-                                                        .data!
-                                                        .commodity!
-                                                        .commFutPnl!).toStringAsFixed(2),
+                                  child: Text(
+                                    double.parse(ledgerprovider.taxpnldercomcur!
+                                            .data!.commodity!.commFutPnl!)
+                                        .toStringAsFixed(2),
                                     textAlign: TextAlign.right,
                                     style: textStyle(
                                         Colors.red, 16, FontWeight.w600),
@@ -304,13 +299,14 @@ class comTaxpnlScreen extends State<comTaxpnl> {
                   ),
                 ),
               ),
-Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_left , color: Colors.black),
+                    icon: Icon(Icons.arrow_left, color: Colors.black),
                     onPressed: () => {
-                      ledgerprovider.fetchtaxpnleqdata(context, ledgerprovider.yearforTaxpnl - 1)
+                      ledgerprovider.fetchtaxpnleqdata(
+                          context, ledgerprovider.yearforTaxpnl - 1)
                     },
                   ),
                   // Center(
@@ -326,22 +322,23 @@ Row(
                   //             : const Color(0xffF1F3F8)),
                   //     child: Center(
                   //       child:
-                         Text("${ledgerprovider.yearforTaxpnl}",
-                            textAlign: TextAlign.right,
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
+                  Text("${ledgerprovider.yearforTaxpnl}",
+                      textAlign: TextAlign.right,
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500)),
 
                   //     ),
                   //   ),
                   // ),
                   IconButton(
-                    icon: Icon(Icons.arrow_right , color: Colors.black),
+                    icon: Icon(Icons.arrow_right, color: Colors.black),
                     onPressed: () => {
-                      ledgerprovider.fetchtaxpnleqdata(context,ledgerprovider.yearforTaxpnl + 1)
+                      ledgerprovider.fetchtaxpnleqdata(
+                          context, ledgerprovider.yearforTaxpnl + 1)
                     },
                   ),
                 ],
@@ -644,10 +641,9 @@ Row(
                     //         : colors.colorDivider),
                     // const SizedBox(height: 2),
                     IconButton(
-                                        icon: Icon(Icons.download,
-                                            color: Colors.black),
-                                        onPressed: () =>  {},
-                                      ),
+                      icon: Icon(Icons.download, color: Colors.black),
+                      onPressed: () => {},
+                    ),
                     Text("Here you can download your ",
                         style: textStyle(
                             const Color(0xff777777), 14, FontWeight.w500)),

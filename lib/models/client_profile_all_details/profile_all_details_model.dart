@@ -16,12 +16,11 @@ class ProfileAllDetails {
       });
     }
     if (json['nominee_data'] != 'error') {
-          nomineeData = <NomineeDetails>[];
-          json['nominee_data'].forEach((v) {
-            nomineeData!.add(NomineeDetails.fromJson(v));
-          });
+      nomineeData = <NomineeDetails>[];
+      json['nominee_data'].forEach((v) {
+        nomineeData!.add(NomineeDetails.fromJson(v));
+      });
     }
- 
   }
 
   Map<String, dynamic> toJson() {
@@ -124,46 +123,46 @@ class ClientData {
       this.segmentsData});
 
   ClientData.fromJson(Map<String, dynamic> json) {
-    cLIENTID = json['CLIENT_ID'];
-    cLIENTNAME = json['CLIENT_NAME'];
-    mOBILENO = json['MOBILE_NO'];
-    cLIENTIDMAIL = json['CLIENT_ID_MAIL'];
-    pANNO = json['PAN_NO'];
-    aadharCard = json['AadharCard'];
-    cLRESIADD1 = json['CL_RESI_ADD1'];
-    cLRESIADD2 = json['CL_RESI_ADD2'];
-    cLRESIADD3 = json['CL_RESI_ADD3'];
-    dPNAME = json['DP_NAME'];
-    cLIENTDPCODE = json['CLIENT_DP_CODE'];
-    dPID = json['DP_ID'];
-    pOA = json['POA'];
-    dPACTIVE = json['DP_ACTIVE'];
-    aNNUALINCOME = json['ANNUAL_INCOME'];
-    grossAnnualIncomeDate = json['GrossAnnualIncomeDate'];
-    netWorthDate = json['Net_Worth_Date'];
-    kRASTATUS = json['KRA_STATUS'];
-    fORMNO = json['FORM_NO'];
-    ckycrefno = json['ckycrefno'];
-    nomineeName = json['Nominee_Name'];
-    nomineeDOB = json['Nominee_DOB'];
-    nomineePan = json['Nominee_pan'];
-    nomineePhone = json['Nominee_phone'];
-    nomineeRelation = json['Nominee_Relation'];
-    nomineeAddress = json['Nominee_address'];
-    nomineeOptOut = json['NomineeOptOut'];
-    dDPI = json['DDPI'];
-    ddpiMarginPledge = json['ddpi_margin_pledge'];
-    ddpiBuyBack = json['ddpi_buy_back'];
-    mFTInterest = json['MFT_Interest'];
-    mFTMaxAmount = json['MFT_Max_Amount'];
-    mFTScripMaxAmount = json['MFT_Scrip_Max_Amount'];
-    mTFCl = json['MTFCl'];
-    mTFClAuto = json['MTFClAuto'];
-    panName = json['Pan_Name'];
-    sEX = json['SEX'];
-    bIRTHDATE = json['BIRTH_DATE'];
-    oCCUPATION = json['OCCUPATION'];
-    maritalStatus = json['Marital_status'];
+    cLIENTID = json['CLIENT_ID'].toString();
+    cLIENTNAME = json['CLIENT_NAME'].toString();
+    mOBILENO = json['MOBILE_NO'].toString();
+    cLIENTIDMAIL = json['CLIENT_ID_MAIL'].toString();
+    pANNO = json['PAN_NO'].toString();
+    aadharCard = json['AadharCard'].toString();
+    cLRESIADD1 = json['CL_RESI_ADD1'].toString();
+    cLRESIADD2 = json['CL_RESI_ADD2'].toString();
+    cLRESIADD3 = json['CL_RESI_ADD3'].toString();
+    dPNAME = json['DP_NAME'].toString();
+    cLIENTDPCODE = json['CLIENT_DP_CODE'].toString();
+    dPID = json['DP_ID'].toString();
+    pOA = json['POA'].toString();
+    dPACTIVE = json['DP_ACTIVE'].toString();
+    aNNUALINCOME = json['ANNUAL_INCOME'].toString();
+    grossAnnualIncomeDate = json['GrossAnnualIncomeDate'].toString();
+    netWorthDate = json['Net_Worth_Date'].toString();
+    kRASTATUS = json['KRA_STATUS'].toString();
+    fORMNO = json['FORM_NO'].toString();
+    ckycrefno = json['ckycrefno'].toString();
+    nomineeName = json['Nominee_Name'].toString();
+    nomineeDOB = json['Nominee_DOB'].toString();
+    nomineePan = json['Nominee_pan'].toString();
+    nomineePhone = json['Nominee_phone'].toString();
+    nomineeRelation = json['Nominee_Relation'].toString();
+    nomineeAddress = json['Nominee_address'].toString();
+    nomineeOptOut = json['NomineeOptOut'].toString();
+    dDPI = json['DDPI'].toString();
+    ddpiMarginPledge = json['ddpi_margin_pledge'].toString();
+    ddpiBuyBack = json['ddpi_buy_back'].toString();
+    mFTInterest = json['MFT_Interest'].toString();
+    mFTMaxAmount = json['MFT_Max_Amount'].toString();
+    mFTScripMaxAmount = json['MFT_Scrip_Max_Amount'].toString();
+    mTFCl = json['MTFCl'].toString();
+    mTFClAuto = json['MTFClAuto'].toString();
+    panName = json['Pan_Name'].toString();
+    sEX = json['SEX'].toString();
+    bIRTHDATE = json['BIRTH_DATE'].toString();
+    oCCUPATION = json['OCCUPATION'].toString();
+    maritalStatus = json['Marital_status'].toString();
     if (json['segments_data'] != null) {
       segmentsData = <SegmentsData>[];
       json['segments_data'].forEach((v) {
@@ -215,8 +214,7 @@ class ClientData {
     data['OCCUPATION'] = oCCUPATION;
     data['Marital_status'] = maritalStatus;
     if (segmentsData != null) {
-      data['segments_data'] =
-          segmentsData!.map((v) => v.toJson()).toList();
+      data['segments_data'] = segmentsData!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -237,11 +235,11 @@ class SegmentsData {
       this.rEGISTRATIONDATE});
 
   SegmentsData.fromJson(Map<String, dynamic> json) {
-    cOMPANYCODE = json['COMPANY_CODE'];
-    aCTIVEINACTIVE = json['ACTIVE_INACTIVE'];
-    exchangeACTIVEINACTIVE = json['Exchange_ACTIVE_INACTIVE'];
-    inactivetypeDESC = json['inactivetype_DESC'];
-    rEGISTRATIONDATE = json['REGISTRATION_DATE'];
+    cOMPANYCODE = json['COMPANY_CODE'].toString();
+    aCTIVEINACTIVE = json['ACTIVE_INACTIVE'].toString();
+    exchangeACTIVEINACTIVE = json['Exchange_ACTIVE_INACTIVE'].toString();
+    inactivetypeDESC = json['inactivetype_DESC'].toString();
+    rEGISTRATIONDATE = json['REGISTRATION_DATE'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -276,14 +274,14 @@ class BankData {
       this.bankActive});
 
   BankData.fromJson(Map<String, dynamic> json) {
-    accountCode = json['Account_Code'];
-    bankName = json['Bank_Name'];
-    bankAcNo = json['Bank_AcNo'];
-    iFSCCode = json['IFSC_Code'];
-    micrCode = json['Micr_code'];
-    defaultAc = json['Default_Ac'];
-    bANKACCTYPE = json['BANK_ACCTYPE'];
-    bankActive = json['BankActive'];
+    accountCode = json['Account_Code'].toString();
+    bankName = json['Bank_Name'].toString();
+    bankAcNo = json['Bank_AcNo'].toString();
+    iFSCCode = json['IFSC_Code'].toString();
+    micrCode = json['Micr_code'].toString();
+    defaultAc = json['Default_Ac'].toString();
+    bANKACCTYPE = json['BANK_ACCTYPE'].toString();
+    bankActive = json['BankActive'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -298,12 +296,7 @@ class BankData {
     data['BankActive'] = bankActive;
     return data;
   }
-
-
-
-
 }
-
 
 class NomineeDetails {
   String? cLIENTID;
@@ -434,68 +427,68 @@ class NomineeDetails {
       this.relationShip});
 
   NomineeDetails.fromJson(Map<String, dynamic> json) {
-    cLIENTID = json['CLIENT_ID'];
-    nominationName = json['Nomination_Name'];
-    nomRelation = json['Nom_Relation'];
-    nomPan = json['Nom_pan'];
-    nomAddress = json['Nom_address'];
-    nomPhone = json['Nom_Phone'];
-    nomDOB = json['Nom_DOB'];
-    nOMEMAIL = json['NOM_EMAIL'];
+    cLIENTID = json['CLIENT_ID'].toString();
+    nominationName = json['Nomination_Name'].toString();
+    nomRelation = json['Nom_Relation'].toString();
+    nomPan = json['Nom_pan'].toString();
+    nomAddress = json['Nom_address'].toString();
+    nomPhone = json['Nom_Phone'].toString();
+    nomDOB = json['Nom_DOB'].toString();
+    nOMEMAIL = json['NOM_EMAIL'].toString();
     nOMINEEPINCODE = json['NOMINEE_PIN_CODE'];
-    nomCity = json['Nom_City'];
-    nomState = json['Nom_State'];
-    nomAddress2 = json['Nom_address2'];
-    nomAddress3 = json['Nom_address3'];
-    aadharCardNominee = json['AadharCard_Nominee'];
-    sharePercentage = json['Share_Percentage'];
-    nomineeTelno = json['nominee_telno'];
-    noOfNominee = json['No_Of_Nominee'];
-    nomMinor2 = json['Nom_minor2'];
-    nomMinor3 = json['Nom_minor3'];
-    aadharCardNominee2 = json['AadharCard_Nominee2'];
-    aadharCardNominee3 = json['AadharCard_Nominee3'];
-    nomCity2 = json['Nom_City2'];
-    nomCountry = json['Nom_country'];
-    nomCountry2 = json['Nom_country2'];
-    nomCountry3 = json['Nom_country3'];
-    nomDOB2 = json['Nom_DOB2'];
-    nomDOB3 = json['Nom_DOB3'];
-    nomEmail2 = json['Nom_Email2'];
-    nomEmail3 = json['Nom_Email3'];
-    nomPan2 = json['Nom_pan2'];
-    nomPan3 = json['Nom_pan3'];
-    nomPhone2 = json['Nom_Phone2'];
-    nomPhone3 = json['Nom_Phone3'];
-    nomRelation2 = json['Nom_Relation2'];
-    nomRelation3 = json['Nom_Relation3'];
-    nomState3 = json['Nom_State3'];
-    nomCity3 = json['Nom_City3'];
-    nomState2 = json['Nom_State2'];
-    nom3Address = json['Nom3_address'];
-    nom3Address2 = json['Nom3_address2'];
-    nominationName2 = json['Nomination_Name2'];
-    nominationName3 = json['Nomination_Name3'];
-    nomineePinCode2 = json['Nominee_Pin_Code2'];
-    nomineePinCode3 = json['Nominee_Pin_Code3'];
-    sameRegAddForNom2 = json['SameRegAddFor_Nom2'];
-    sameRegAddForNom3 = json['SameRegAddFor_Nom3'];
-    sharePercentage2 = json['Share_Percentage2'];
-    sharePercentage3 = json['Share_Percentage3'];
-    nOMINATIONTITLE = json['NOMINATION_TITLE'];
-    nOMINATIONTITLE2 = json['NOMINATION_TITLE2'];
-    nOMINATIONTITLE3 = json['NOMINATION_TITLE3'];
-    nomProofId = json['Nom_proof_id'];
-    nomProofDetails = json['Nom_proof_details'];
-    nomProofId2 = json['Nom_proof_id2'];
-    nomProofDetails2 = json['Nom_proof_details2'];
-    nomProofId3 = json['Nom_proof_id3'];
-    nom3Address3 = json['Nom3_address3'];
-    nom2Address = json['Nom2_address'];
-    nom2Address2 = json['Nom2_address2'];
-    nom2Address3 = json['Nom2_address3'];
-    nomineeOptOut = json['NomineeOptOut'];
-    relationShip = json['RelationShip'];
+    nomCity = json['Nom_City'].toString();
+    nomState = json['Nom_State'].toString();
+    nomAddress2 = json['Nom_address2'].toString();
+    nomAddress3 = json['Nom_address3'].toString();
+    aadharCardNominee = json['AadharCard_Nominee'].toString();
+    sharePercentage = json['Share_Percentage'].toString();
+    nomineeTelno = json['nominee_telno'].toString();
+    noOfNominee = json['No_Of_Nominee'].toString();
+    nomMinor2 = json['Nom_minor2'].toString();
+    nomMinor3 = json['Nom_minor3'].toString();
+    aadharCardNominee2 = json['AadharCard_Nominee2'].toString();
+    aadharCardNominee3 = json['AadharCard_Nominee3'].toString();
+    nomCity2 = json['Nom_City2'].toString();
+    nomCountry = json['Nom_country'].toString();
+    nomCountry2 = json['Nom_country2'].toString();
+    nomCountry3 = json['Nom_country3'].toString();
+    nomDOB2 = json['Nom_DOB2'].toString();
+    nomDOB3 = json['Nom_DOB3'].toString();
+    nomEmail2 = json['Nom_Email2'].toString();
+    nomEmail3 = json['Nom_Email3'].toString();
+    nomPan2 = json['Nom_pan2'].toString();
+    nomPan3 = json['Nom_pan3'].toString();
+    nomPhone2 = json['Nom_Phone2'].toString();
+    nomPhone3 = json['Nom_Phone3'].toString();
+    nomRelation2 = json['Nom_Relation2'].toString();
+    nomRelation3 = json['Nom_Relation3'].toString();
+    nomState3 = json['Nom_State3'].toString();
+    nomCity3 = json['Nom_City3'].toString();
+    nomState2 = json['Nom_State2'].toString();
+    nom3Address = json['Nom3_address'].toString();
+    nom3Address2 = json['Nom3_address2'].toString();
+    nominationName2 = json['Nomination_Name2'].toString();
+    nominationName3 = json['Nomination_Name3'].toString();
+    nomineePinCode2 = json['Nominee_Pin_Code2'].toString();
+    nomineePinCode3 = json['Nominee_Pin_Code3'].toString();
+    sameRegAddForNom2 = json['SameRegAddFor_Nom2'].toString();
+    sameRegAddForNom3 = json['SameRegAddFor_Nom3'].toString();
+    sharePercentage2 = json['Share_Percentage2'].toString();
+    sharePercentage3 = json['Share_Percentage3'].toString();
+    nOMINATIONTITLE = json['NOMINATION_TITLE'].toString();
+    nOMINATIONTITLE2 = json['NOMINATION_TITLE2'].toString();
+    nOMINATIONTITLE3 = json['NOMINATION_TITLE3'].toString();
+    nomProofId = json['Nom_proof_id'].toString();
+    nomProofDetails = json['Nom_proof_details'].toString();
+    nomProofId2 = json['Nom_proof_id2'].toString();
+    nomProofDetails2 = json['Nom_proof_details2'].toString();
+    nomProofId3 = json['Nom_proof_id3'].toString();
+    nom3Address3 = json['Nom3_address3'].toString();
+    nom2Address = json['Nom2_address'].toString();
+    nom2Address2 = json['Nom2_address2'].toString();
+    nom2Address3 = json['Nom2_address3'].toString();
+    nomineeOptOut = json['NomineeOptOut'].toString();
+    relationShip = json['RelationShip'].toString();
   }
 
   Map<String, dynamic> toJson() {

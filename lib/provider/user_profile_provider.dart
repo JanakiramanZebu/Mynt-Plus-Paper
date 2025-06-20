@@ -74,28 +74,68 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   final List _reporttMenu = [
     {
-      "title": "P&L Insights",
+      "Subtitle": "P&L Insights",
+      "title": "Access P&L reports by date for better insights.",
       "trailing": "assets/profile/greater_arrow.svg"
     },
-    {"title": "Ledger", "trailing": "assets/profile/greater_arrow.svg"},
-    {"title": "Holdings", "trailing": "assets/profile/greater_arrow.svg"},
-     {
-      "title": "Positions - (Beta)",
-      "trailing": "assets/profile/ex-link.svg"
+    {
+      "title": "View & Track Financial Transactions",
+      "Subtitle": "Ledger",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
+    {
+      "title": "Monitor Your Investment Portfolio",
+      "Subtitle": "Holdings",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
+    {
+      "title": "Track Open & Closed Trading Positions",
+      "Subtitle": "Positions - (Beta)",
+      // "trailing": "assets/profile/ex-link.svg"
+      "trailing": "assets/profile/greater_arrow.svg"
     },
     // {
     //   "title": "Positions - (Beta)",
     //   "trailing": "assets/profile/greater_arrow.svg"
     // },
-    {"title": "Profit & Loss", "trailing": "assets/profile/greater_arrow.svg"}, 
-    
-    {"title": "Tax P&L", "trailing": "assets/profile/greater_arrow.svg"},
     {
-      "title": "TradeBook/Contract",
+      "title": "Analyze Trading Profit & Loss",
+      "Subtitle": "Profit and Loss",
       "trailing": "assets/profile/greater_arrow.svg"
     },
-    {"title": "PDF Download", "trailing": "assets/profile/greater_arrow.svg"},
-    
+
+    {
+      "title": "Generate Tax Reports & P&L for Filing",
+      "Subtitle": "Tax P&L",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
+    {
+      "title": "Access Trade History & Contract Notes",
+      "Subtitle": "Tradebook/Contract",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
+    {
+      "title": "Download reports as PDFs for easy access",
+      "Subtitle": "Downloads",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
+    // cop action
+    // {
+    //   "title": "View & Manage Corporate Announcements",
+    //   "Subtitle": "Corporate Action",
+    //   "trailing": "assets/profile/greater_arrow.svg"
+    // },
+    {
+      "title": "View & Manage Corporate Announcements",
+      "Subtitle": "CA Events",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
+    {
+      "title": "Manage Pledge & Unpledged Securities",
+      "Subtitle": "Pledge & Unpledge",
+      "trailing": "assets/profile/greater_arrow.svg"
+    },
+
     // {"title": "Pledge & Unpledge", "trailing": "assets/profile/greater_arrow.svg"}
   ];
 
@@ -162,7 +202,8 @@ class UserProfileProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _userDetailModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API User Detail", "Error": "$e"});
       notifyListeners();
@@ -185,7 +226,8 @@ class UserProfileProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _clientDetailModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Client Detail", "Error": "$e"});
       notifyListeners();
@@ -271,14 +313,14 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "key": ref.read(showcaseProvide).reportcase,
         "case": "Click here to view the report page."
       },
-      {
-        "title": "Verified P&L",
-        "subTitle": "Verified P&L",
-        "leading": "assets/profileimage/verifiedpl.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": "",
-        "case": "Click here to view the Verified P&L page."
-      },
+      // {
+      //   "title": "Verified P&L",
+      //   "subTitle": "Verified P&L",
+      //   "leading": "assets/profileimage/verifiedpl.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Verified P&L page."
+      // },
       {
         "title": "Corporate Action",
         "subTitle": "Corporate Action",
@@ -287,22 +329,22 @@ class UserProfileProvider extends DefaultChangeNotifier {
         "key": ref.read(showcaseProvide).corporateactioncase,
         "case": "Click here to view the Corporate Action page."
       },
-      {
-        "title": "CA Events",
-        "subTitle": "CA Event",
-        "leading": "assets/profileimage/caevent.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": "",
-        "case": "Click here to view the Corporate Action page."
-      },
-      {
-        "title": "Pledge & Unpledge",
-        "subTitle": "Pledge & Unpledge",
-        "leading": "assets/profileimage/pledge.svg",
-        "trailing": "assets/profile/greater_arrow.svg",
-        "key": ref.read(showcaseProvide).pledgeunpcase,
-        "case": "Click here to view the Pledge & Unpledge page."
-      },
+      // {
+      //   "title": "CA Events",
+      //   "subTitle": "CA Event",
+      //   "leading": "assets/profileimage/caevent.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": "",
+      //   "case": "Click here to view the Corporate Action page."
+      // },
+      // {
+      //   "title": "Pledge & Unpledge",
+      //   "subTitle": "Pledge & Unpledge",
+      //   "leading": "assets/profileimage/pledge.svg",
+      //   "trailing": "assets/profile/greater_arrow.svg",
+      //   "key": ref.read(showcaseProvide).pledgeunpcase,
+      //   "case": "Click here to view the Pledge & Unpledge page."
+      // },
       {
         "title": "IPO",
         "subTitle": "A company's first public stock offering",

@@ -62,18 +62,18 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                     child: SingleChildScrollView(
                       child: ListView.separated(
                         physics: ScrollPhysics(),
-                        itemCount: ledgerprovider
-                                .unPledgeHistoryData?.data?.length ??
-                            0,
+                        itemCount:
+                            ledgerprovider.unPledgeHistoryData?.data?.length ??
+                                0,
                         shrinkWrap: true,
                         itemBuilder: (context, index) {
-                          final value = ledgerprovider
-                              .unPledgeHistoryData!.data![index];
+                          final value =
+                              ledgerprovider.unPledgeHistoryData!.data![index];
                           return Column(
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 16.0, top: 8.0),
+                                padding:
+                                    const EdgeInsets.only(left: 16.0, top: 8.0),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -85,8 +85,7 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                                             color: theme.isDarkMode
                                                 ? colors.colorWhite
                                                 : colors.colorBlack,
-                                            textOverflow:
-                                                TextOverflow.ellipsis,
+                                            textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             fw: 1),
                                       ],
@@ -94,13 +93,32 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                                     Padding(
                                       padding:
                                           const EdgeInsets.only(right: 16.0),
-                                      child: TextWidget.subText(
-                                          align: TextAlign.right,
-                                          text: "${value.status}",
-                                          color: Colors.black,
-                                          textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
-                                          fw: 0),
+                                      child: Container(
+                                        margin: const EdgeInsets.only(right: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(2),
+                                          color: value.status == 'Approved'
+                                              ? const Color.fromARGB(
+                                                      255, 177, 255, 208)
+                                                  .withOpacity(.3)
+                                              : const Color.fromARGB(
+                                                  255, 246, 197, 197),
+                                        ),
+                                        child: Text("${value.status}",
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: textStyle(
+                                                value.status == 'Approved'
+                                                    ? const Color.fromARGB(
+                                                        193, 68, 168, 53)
+                                                    : const Color.fromARGB(
+                                                        193, 187, 41, 41),
+                                                10,
+                                                FontWeight.w600)),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -108,8 +126,8 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(top: 2.0),
                                 child: Divider(
-                                  color: const Color.fromARGB(
-                                      255, 212, 212, 212),
+                                  color:
+                                      const Color.fromARGB(255, 212, 212, 212),
                                   thickness: 0.5,
                                 ),
                               ),
@@ -192,8 +210,8 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 8.0, left: 14.0),
+                                padding:
+                                    const EdgeInsets.only(top: 8.0, left: 14.0),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -269,13 +287,9 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              
                             ],
-                            
                           );
-                          
                         },
-                        
                         separatorBuilder: (BuildContext context, int index) {
                           // if (index != 0 &&
                           //     ledgerprovider.ledgerAllData!.fullStat![index - 1]
@@ -299,14 +313,10 @@ class UnpledgeHistoryScreen extends StatelessWidget {
                           // }
                         },
                       ),
-                      
                     ),
-        
                   ),
-                              SizedBox(height: 4.0),
-        
+            SizedBox(height: 4.0),
           ],
-          
         ),
       );
     });

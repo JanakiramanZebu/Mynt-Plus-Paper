@@ -63,7 +63,13 @@ class UserAccountScreen extends ConsumerWidget {
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 16),
                         onTap: () async {
-                          if (["Verified P&L", "Corporate Action", "CA Events", "Pledge & Unpledge", "OptionZ"].contains(acttitle)) {
+                          if ([
+                            "Verified P&L",
+                            "Corporate Action",
+                            "CA Events",
+                            "Pledge & Unpledge",
+                            "OptionZ"
+                          ].contains(acttitle)) {
                             await funds.fetchHstoken(context);
                           }
                           if (acttitle == "Fund") {
@@ -81,11 +87,7 @@ class UserAccountScreen extends ConsumerWidget {
                                   reportsprovider.startDate,
                                   reportsprovider.endDate);
                             }
-                            if (reportsprovider.holdingsAllData == null) {
-                              await reportsprovider.getCurrentDate('else');
-                              reportsprovider.fetchholdingsData(
-                                  reportsprovider.today, context);
-                            }
+
                             if (reportsprovider.pnlAllData == null) {
                               await reportsprovider.getCurrentDate('else');
                               reportsprovider.fetchpnldata(
@@ -128,15 +130,41 @@ class UserAccountScreen extends ConsumerWidget {
                                   reportsprovider.startDate,
                                   reportsprovider.today);
                             }
+                            if (reportsprovider.caeventalldata == null) {
+                              await reportsprovider.getCurrentDate('caevent');
+                              reportsprovider.fetchcaeventsdata(
+                                  context,
+                                  reportsprovider.startDate,
+                                  reportsprovider.endDate);
+                            }
+                            if (reportsprovider.pledgeandunpledge == null) {
+                              reportsprovider.getCurrentDate("pandu");
+                              reportsprovider.fetchpledgeandunpledge(context);
+                            }
+                            Navigator.pushNamed(context, Routes.reports);
+
+                            if (reportsprovider.holdingsAllData == null) {
+                              await reportsprovider.getCurrentDate('else');
+                              await reportsprovider.fetchholdingsData(
+                                  reportsprovider.today, context);
+                            }
+
+                            // cop action
+                            // if (reportsprovider.cpactiondata == null) {
+                            //   reportsprovider.fetchcpactiondata(context);
+                            // }
+                            // reportsprovider.fetchprofiledata();
+
                             // if (reportsprovider.positiondata == null) {
                             //   reportsprovider.fetchposition(context);
                             // }
-                            Navigator.pushNamed(context, Routes.reports);
-                          } else if (acttitle == "Verified P&L") {
-                            Navigator.pushNamed(
-                                context, Routes.reportWebViewApp,
-                                arguments: "tradeverify");
-                          } else if (acttitle == "Corporate Action") {
+                          }
+                          // else if (acttitle == "Verified P&L") {
+                          //   Navigator.pushNamed(
+                          //       context, Routes.reportWebViewApp,
+                          //       arguments: "tradeverify");
+                          // }
+                          else if (acttitle == "Corporate Action") {
                             Navigator.pushNamed(
                                 context, Routes.reportWebViewApp,
                                 arguments: "corporateaction");
@@ -158,19 +186,21 @@ class UserAccountScreen extends ConsumerWidget {
                             Navigator.pushNamed(
                                 context, Routes.reportWebViewApp,
                                 arguments: "event");
-                          } else if (acttitle == "Pledge & Unpledge") {
-                            // reportsprovider.fetchpledgeandunpledge(context);
-                            // reportsprovider.getCurrentDate("pandu");
-                            // // if (reportsprovider.pledgeandunpledge == null) {
-                            // //   reportsprovider.getCurrentDate("pandu");
-                            // //   reportsprovider.fetchpledgeandunpledge(context);
-                            // // }
-                            // Navigator.pushNamed(context, Routes.pledgeandun,
-                            //     arguments: "DDDDD");
-                            Navigator.pushNamed(
-                                context, Routes.reportWebViewApp,
-                                arguments: "pledge");
-                          } else if (acttitle == "IPO") {
+                          }
+                          // else if (acttitle == "Pledge & Unpledge") {
+                          //   // reportsprovider.fetchpledgeandunpledge(context);
+                          //   // reportsprovider.getCurrentDate("pandu");
+                          //   // // if (reportsprovider.pledgeandunpledge == null) {
+                          //   // //   reportsprovider.getCurrentDate("pandu");
+                          //   // //   reportsprovider.fetchpledgeandunpledge(context);
+                          //   // // }
+                          //   // Navigator.pushNamed(context, Routes.pledgeandun,
+                          //   //     arguments: "DDDDD");
+                          //   Navigator.pushNamed(
+                          //       context, Routes.reportWebViewApp,
+                          //       arguments: "pledge");
+                          // }
+                          else if (acttitle == "IPO") {
                             Navigator.pushNamed(context, Routes.ipo);
                             // launch(
                             //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
@@ -183,12 +213,8 @@ class UserAccountScreen extends ConsumerWidget {
                               "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
                             );
                           } else if (acttitle == "Settings") {
-                            await ref
-                                .read(userProfileProvider)
-                                .fetchsetting();
-                            await ref
-                                .read(apikeyprovider)
-                                .fetchapikey(context);
+                            await ref.read(userProfileProvider).fetchsetting();
+                            await ref.read(apikeyprovider).fetchapikey(context);
                             Navigator.pushNamed(
                                 context, Routes.profilesettingscreen);
                           } else if (acttitle == "Notification") {
@@ -461,10 +487,9 @@ class UserAccountScreen extends ConsumerWidget {
                                       : colors.colorWhite,
                               titleTextStyle: textStyles.appBarTitleTxt
                                   .copyWith(
-                                      color:
-                                          ref.read(themeProvider).isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack),
+                                      color: ref.read(themeProvider).isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack),
                               contentTextStyle: textStyles.menuTxt,
                               titlePadding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 12),
@@ -513,9 +538,7 @@ class UserAccountScreen extends ConsumerWidget {
                                         )),
                                     child: Text("Yes",
                                         style: textStyle(
-                                            !ref
-                                                    .read(themeProvider)
-                                                    .isDarkMode
+                                            !ref.read(themeProvider).isDarkMode
                                                 ? colors.colorWhite
                                                 : colors.colorBlack,
                                             14,

@@ -40,7 +40,7 @@ class _LedgerFilter extends State<LedgerFilter> {
   @override
   void initState() {
     setState(() {
-      // _character = ref.read(ledgerProvider).filterval;
+      // _character = context.read(ledgerProvider).filterval;
     });
     super.initState();
   }
@@ -66,11 +66,10 @@ class _LedgerFilter extends State<LedgerFilter> {
         builder: (BuildContext context, ScrollController scrollController) {
           return Container(
             decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                   color: theme.isDarkMode
-                ? Color.fromARGB(255, 0, 0, 0)
-                : const Color(0xffF1F3F8)),
-          
+                borderRadius: BorderRadius.circular(30),
+                color: theme.isDarkMode
+                    ? Color.fromARGB(255, 0, 0, 0)
+                    : const Color(0xffF1F3F8)),
             child: Column(
               children: [
                 Container(
@@ -290,7 +289,7 @@ class _LedgerFilter extends State<LedgerFilter> {
   void _handleSelection(SingingCharacter? newvalue, LDProvider ledgerprovider) {
     if (newvalue != null) {
       ledgerprovider.setfilterval = newvalue;
-      ledgerprovider.ledgerfiltercall(context,newvalue);
+      ledgerprovider.ledgerfiltercall(context, newvalue);
       Navigator.pop(context);
     }
   }

@@ -63,13 +63,12 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
       return Scaffold(
         appBar: AppBar(
           // automaticallyImplyLeading: false,
-           elevation: 0.2,
+          elevation: 0.2,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.heroText(
                   text: "Tax P&L",
-                  
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
                   fw: 1),
@@ -130,11 +129,10 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                   ? const Color(0xffB5C0CF).withOpacity(.15)
                                   : const Color(0xffF1F3F8)),
                           child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 16.0, right: 16.0),
+                            padding:
+                                const EdgeInsets.only(left: 16.0, right: 16.0),
                             child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   "Financial Year",
@@ -150,8 +148,8 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                     IconButton(
                                       icon: Icon(Icons.arrow_left,
                                           color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack),
+                                              ? colors.colorWhite
+                                              : colors.colorBlack),
                                       onPressed: () => {
                                         ledgerprovider.fetchtaxpnleqdata(
                                             context,
@@ -179,15 +177,15 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                                 : colors.colorBlack,
                                             14,
                                             FontWeight.w500)),
-              
+
                                     //     ),
                                     //   ),
                                     // ),
                                     IconButton(
                                       icon: Icon(Icons.arrow_right,
                                           color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack),
+                                              ? colors.colorWhite
+                                              : colors.colorBlack),
                                       onPressed: () => {
                                         ledgerprovider.fetchtaxpnleqdata(
                                             context,
@@ -201,7 +199,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                           ))),
 
                   Padding(
-                    padding: const EdgeInsets.only(top :8.0),
+                    padding: const EdgeInsets.only(top: 8.0),
                     child: Container(
                         width: MediaQuery.of(context).size.width,
                         padding:
@@ -230,8 +228,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                     () {},
                                     ledgerprovider)))),
                   ),
-                  
-              
+
                   Expanded(
                     child: TabBarView(
                       physics: const NeverScrollableScrollPhysics(),
@@ -252,7 +249,6 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                 child: Container(
                     height: 40,
                     width: 65,
-                    
                     margin: const EdgeInsets.only(right: 12, top: 15),
                     child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -281,7 +277,9 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                 12,
                                 FontWeight.w500)))),
               ),
-              SizedBox(height: 20.0,)
+              SizedBox(
+                height: 20.0,
+              )
             ],
           ),
         ),
@@ -316,7 +314,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
           print("object act tab $tab");
         },
         style: ElevatedButton.styleFrom(
-            elevation: 0, 
+            elevation: 0,
             side: const BorderSide(
                 color: Color.fromARGB(255, 0, 0, 0),
                 width: 1), // Border color & width

@@ -20,7 +20,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
   @override
   void initState() {
     setState(() {
-      // _character = ref.read(ledgerProvider).filterval;
+      // _character = context.read(ledgerProvider).filterval;
     });
     super.initState();
   }
@@ -301,13 +301,14 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                   ),
                 ),
               ),
-Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_left , color: Colors.black),
+                    icon: Icon(Icons.arrow_left, color: Colors.black),
                     onPressed: () => {
-                      ledgerprovider.fetchtaxpnleqdata(context, ledgerprovider.yearforTaxpnl - 1)
+                      ledgerprovider.fetchtaxpnleqdata(
+                          context, ledgerprovider.yearforTaxpnl - 1)
                     },
                   ),
                   // Center(
@@ -323,22 +324,23 @@ Row(
                   //             : const Color(0xffF1F3F8)),
                   //     child: Center(
                   //       child:
-                         Text("${ledgerprovider.yearforTaxpnl}",
-                            textAlign: TextAlign.right,
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
+                  Text("${ledgerprovider.yearforTaxpnl}",
+                      textAlign: TextAlign.right,
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500)),
 
                   //     ),
                   //   ),
                   // ),
                   IconButton(
-                    icon: Icon(Icons.arrow_right , color: Colors.black),
+                    icon: Icon(Icons.arrow_right, color: Colors.black),
                     onPressed: () => {
-                      ledgerprovider.fetchtaxpnleqdata(context,ledgerprovider.yearforTaxpnl + 1)
+                      ledgerprovider.fetchtaxpnleqdata(
+                          context, ledgerprovider.yearforTaxpnl + 1)
                     },
                   ),
                 ],

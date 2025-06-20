@@ -20,7 +20,7 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
   @override
   void initState() {
     setState(() {
-      // _character = ref.read(ledgerProvider).filterval;
+      // _character = context.read(ledgerProvider).filterval;
     });
     super.initState();
   }
@@ -1874,7 +1874,8 @@ class EqTaxpnl extends State<EqTaxpnlEq> {
                         ledgerprovider.pdfdownloadfortaxpnl(
                             context,
                             ledgerprovider.taxpnleq?.data?.toJson() ?? {},
-                            ledgerprovider.taxpnldercomcur?.data?.toJson() ?? {},
+                            ledgerprovider.taxpnldercomcur?.data?.toJson() ??
+                                {},
                             ledgerprovider.taxpnleqCharge?.toJson() ?? {},
                             ledgerprovider.yearforTaxpnl);
                       },

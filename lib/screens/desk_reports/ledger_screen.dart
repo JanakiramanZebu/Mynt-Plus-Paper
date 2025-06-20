@@ -56,8 +56,8 @@ class LedgerScreen extends StatelessWidget {
       // String tcredit = ledgerprovider.ledgerAllData?.crAmt ?? '0.0';
       String clbalance = ledgerprovider.ledgerAllData?.closingBalance ?? '0.0';
 
-      return  RefreshIndicator(
-          onRefresh: _refresh,
+      return RefreshIndicator(
+        onRefresh: _refresh,
         child: Scaffold(
           appBar: AppBar(
             // automaticallyImplyLeading: false,
@@ -78,7 +78,7 @@ class LedgerScreen extends StatelessWidget {
                 fw: 1),
             // leading: InkWell(
             //   onTap: () {
-        
+
             //   },
             //   child: Icon(Icons.ios_share)),
           ),
@@ -222,12 +222,12 @@ class LedgerScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-          
+
                     // Expanded(
                     //   child: Padding(
                     //     padding: const EdgeInsets.all(14.0),
                     //     child: TextField(
-          
+
                     //       decoration: InputDecoration(
                     //         filled: true,
                     //          fillColor: const Color(0xffF1F3F8),
@@ -258,11 +258,11 @@ class LedgerScreen extends StatelessWidget {
                     //       ),
                     //     ),
                     //   ),
-          
+
                     // ),
                   ],
                 ),
-          
+
                 Padding(
                   padding: const EdgeInsets.only(
                       right: 16.0, left: 16.0, top: 16.0, bottom: 8.0),
@@ -409,7 +409,7 @@ class LedgerScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-          
+
                 // Padding(
                 //   padding: const EdgeInsets.only(left: 30 , right: 30),
                 //   child: Row(
@@ -432,7 +432,7 @@ class LedgerScreen extends StatelessWidget {
                 //             Container(
                 //               width: 100, // Fixed width for the static column
                 //               height: 50,
-          
+
                 //               padding: EdgeInsets.all(8.0),
                 //               decoration: BoxDecoration(
                 //                 border: Border.all(color: const Color.fromARGB(255, 224, 224, 224)),
@@ -444,7 +444,7 @@ class LedgerScreen extends StatelessWidget {
                 //         ],
                 //       ),
                 //       // Scrollable Content
-          
+
                 //       Expanded(
                 //         child: SingleChildScrollView(
                 //           scrollDirection: Axis.horizontal,
@@ -457,7 +457,7 @@ class LedgerScreen extends StatelessWidget {
                 //                     Container(
                 //                        margin: EdgeInsets.only(top: 20),
                 //                       width: i == 4 ? 275 : 100, // Column width
-          
+
                 //                       padding: EdgeInsets.all(8.0),
                 //                       color: Color(0xFFEEEEEE),
                 //                       child: Text(
@@ -518,7 +518,7 @@ class LedgerScreen extends StatelessWidget {
                       ))
                     : Expanded(
                         child: SingleChildScrollView(
-                           physics: const AlwaysScrollableScrollPhysics(),
+                          physics: const AlwaysScrollableScrollPhysics(),
                           child: ListView.separated(
                             physics: ScrollPhysics(),
                             itemCount: ledgerprovider
@@ -536,7 +536,7 @@ class LedgerScreen extends StatelessWidget {
                                           'Yes') {
                                     final ledgerEntry = ledgerprovider
                                         .ledgerAllData?.fullStat?[index];
-          
+
                                     if (ledgerEntry != null) {
                                       await ledgerprovider.fetchBillDetails(
                                         context,

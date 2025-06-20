@@ -63,16 +63,16 @@ class PledgeHistoryScreen extends StatelessWidget {
                     child: SingleChildScrollView(
                       child: ListView.separated(
                         physics: ScrollPhysics(),
-                        itemCount: ledgerprovider
-                                .pledgeHistoryData?.data?.length ??
-                            0,
+                        itemCount:
+                            ledgerprovider.pledgeHistoryData?.data?.length ?? 0,
                         shrinkWrap: true,
                         itemBuilder: (context, index) {
-                          final value = ledgerprovider
-                              .pledgeHistoryData!.data![index];
+                          final value =
+                              ledgerprovider.pledgeHistoryData!.data![index];
                           return InkWell(
-                            onTap: (){
-                              _showBottomSheet(context,PledgeHistoryDetails(data : value ));
+                            onTap: () {
+                              _showBottomSheet(
+                                  context, PledgeHistoryDetails(data: value));
                             },
                             child: Column(
                               children: [
@@ -85,8 +85,27 @@ class PledgeHistoryScreen extends StatelessWidget {
                                     children: [
                                       Row(
                                         children: [
+                                          TextWidget.captionText(
+                                              text: ((value.reqid).toString())
+                                                  .substring(
+                                                      0,
+                                                      (value.reqid)
+                                                              .toString()
+                                                              .length -
+                                                          4),
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                              fw: 1),
                                           TextWidget.subText(
-                                              text: "${value.reqid}",
+                                              text: ((value.reqid).toString())
+                                                  .substring((value.reqid)
+                                                          .toString()
+                                                          .length -
+                                                      4),
                                               color: theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,
@@ -99,13 +118,34 @@ class PledgeHistoryScreen extends StatelessWidget {
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(right: 16.0),
-                                        child: TextWidget.subText(
-                                            align: TextAlign.right,
-                                            text: "${value.status}",
-                                            color: Colors.black,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            fw: 0),
+                                        child: Container(
+                                          margin:
+                                              const EdgeInsets.only(right: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(2),
+                                            color: value.status == 'completed'
+                                                ? const Color.fromARGB(
+                                                        255, 177, 255, 208)
+                                                    .withOpacity(.3)
+                                                : const Color(0xffF6F6C5),
+                                          ),
+                                          child: Text(
+                                              value.status == 'completed'
+                                                  ? 'Completed'
+                                                  : 'Requested',
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: textStyle(
+                                                  value.status == 'completed'
+                                                      ? const Color.fromARGB(
+                                                          193, 68, 168, 53)
+                                                      : const Color(0xffF9B039),
+                                                  10,
+                                                  FontWeight.w500)),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -125,7 +165,6 @@ class PledgeHistoryScreen extends StatelessWidget {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                       
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(right: 16.0),
@@ -143,8 +182,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                                               children: [
                                                 TextWidget.subText(
                                                     align: TextAlign.right,
-                                                    text:
-                                                        " ${value.cdslReqTime }",
+                                                    text: " ${value.datTim}",
                                                     color: theme.isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
@@ -178,7 +216,6 @@ class PledgeHistoryScreen extends StatelessWidget {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                       
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(right: 16.0),
@@ -197,7 +234,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                                                 TextWidget.subText(
                                                     align: TextAlign.right,
                                                     text:
-                                                        " ${value.datTim }",
+                                                        " ${value.cdslReqTime}",
                                                     color: theme.isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
@@ -205,7 +242,7 @@ class PledgeHistoryScreen extends StatelessWidget {
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
                                                     fw: 0),
-                                                    
+
                                                 // TextWidget.captionText(
                                                 //     align: TextAlign.right,
                                                 //     text:
@@ -225,15 +262,10 @@ class PledgeHistoryScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                 
-                                
                               ],
-                              
                             ),
                           );
-                          
                         },
-                        
                         separatorBuilder: (BuildContext context, int index) {
                           // if (index != 0 &&
                           //     ledgerprovider.ledgerAllData!.fullStat![index - 1]
@@ -257,14 +289,10 @@ class PledgeHistoryScreen extends StatelessWidget {
                           // }
                         },
                       ),
-                      
                     ),
-        
                   ),
-                              SizedBox(height: 4.0),
-        
+            SizedBox(height: 4.0),
           ],
-          
         ),
       );
     });

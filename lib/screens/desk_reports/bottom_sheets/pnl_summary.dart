@@ -8,22 +8,22 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
-class PnlSummarBottom extends ConsumerStatefulWidget {
+class PnlSummarBottom extends StatefulWidget {
   const PnlSummarBottom({super.key});
 
   @override
-  ConsumerState<PnlSummarBottom> createState() => _PnlSummarBottom();
+  State<PnlSummarBottom> createState() => _PnlSummarBottom();
 }
 
-class _PnlSummarBottom extends ConsumerState<PnlSummarBottom> {
+class _PnlSummarBottom extends State<PnlSummarBottom> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
     double notional = 0.0;
     return Consumer(builder: (context, WidgetRef ref, _) {
       final ledgerdata = ref.watch(ledgerProvider);
+      final theme = ref.read(themeProvider);
 
       if (ledgerdata.reportsloading == false) {
         for (var i = 0; i < ledgerdata.pnlSummaryData!.data!.length; i++) {
@@ -87,21 +87,20 @@ class _PnlSummarBottom extends ConsumerState<PnlSummarBottom> {
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 16.0,top: 12.0),
+                    padding: const EdgeInsets.only(right: 16.0, top: 12.0),
                     child: TextWidget.titleText(
                         text: "${notional.toStringAsFixed(2)}",
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
                         color: notional != 0
-                                                        ? notional > 0
-                                                            ? Colors.green
-                                                            : notional <
-                                                                    0
-                                                                ? Colors.red
-                                                                : Colors.black
-                                                        : theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
+                            ? notional > 0
+                                ? Colors.green
+                                : notional < 0
+                                    ? Colors.red
+                                    : Colors.black
+                            : theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
                         fw: 1),
                   ),
                 ],
@@ -205,15 +204,20 @@ class _PnlSummarBottom extends ConsumerState<PnlSummarBottom> {
                                                 "${double.tryParse(value.bQTY.toString())!.toInt()} @ ₹${double.parse(value.bRATE.toString()).toStringAsFixed(2)}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            color: double.tryParse(value.bQTY.toString())!.toInt() != 0
-                                                        ? double.tryParse(value.bQTY.toString())!.toInt() > 0
-                                                            ? Colors.green
-                                                              
-                                                                : Colors.black
-                                                        : theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                            fw:1),
+                                            color: double.tryParse(value.bQTY
+                                                            .toString())!
+                                                        .toInt() !=
+                                                    0
+                                                ? double.tryParse(value.bQTY
+                                                                .toString())!
+                                                            .toInt() >
+                                                        0
+                                                    ? Colors.green
+                                                    : Colors.black
+                                                : theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                            fw: 1),
                                       ],
                                     ),
                                     Row(
@@ -355,14 +359,19 @@ class _PnlSummarBottom extends ConsumerState<PnlSummarBottom> {
                                                 "${double.tryParse(value.sQTY.toString())!.toInt()} @ ₹ ${double.parse(value.sRATE.toString()).toStringAsFixed(2)}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
-                                            color: double.tryParse(value.sQTY.toString())!.toInt() != 0
-                                                        ? double.tryParse(value.sQTY.toString())!.toInt() > 0
-                                                            
-                                                            ? Colors.red
-                                                                : Colors.black
-                                                        : theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
+                                            color: double.tryParse(value.sQTY
+                                                            .toString())!
+                                                        .toInt() !=
+                                                    0
+                                                ? double.tryParse(value.sQTY
+                                                                .toString())!
+                                                            .toInt() >
+                                                        0
+                                                    ? Colors.red
+                                                    : Colors.black
+                                                : theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
                                             fw: 1),
                                       ],
                                     ),
@@ -379,8 +388,8 @@ class _PnlSummarBottom extends ConsumerState<PnlSummarBottom> {
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
                                             fw: 1),
                                       ],
                                     ),

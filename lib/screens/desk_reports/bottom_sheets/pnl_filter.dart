@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_user.dart';
 
-
 enum SingingCharacter { all, eq, fno, com, cur }
 
 class PnlFliter extends StatefulWidget {

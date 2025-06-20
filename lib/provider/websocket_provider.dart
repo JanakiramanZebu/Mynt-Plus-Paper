@@ -642,6 +642,7 @@ class WebSocketProvider extends ChangeNotifier {
   void _handleConnectionClosed(BuildContext context) {
     if (!_reconnecting) {
       _connectionCount++;
+
       notifyListeners(); // Notify to update UI with new connection count
     }
 

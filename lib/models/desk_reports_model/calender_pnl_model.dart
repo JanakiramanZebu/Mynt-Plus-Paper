@@ -1,17 +1,23 @@
 class CalenderpnlModel {
   List<TradeData>? data;
+  Map? data2;
+  Map? summary;
+  Map? symbolarr;
+  Map? fullresponse;
+  
   List<Journal>? journal;
   double realized = 0;
   double unrealized = 0;
-   double? totalCharges;
-  CalenderpnlModel({this.data, this.journal,this.totalCharges});
+  double? totalCharges;
+  CalenderpnlModel(
+      {this.data, this.data2, this.journal, this.totalCharges, this.summary,this.symbolarr,this.fullresponse});
 
   CalenderpnlModel.fromJson(Map<String, dynamic> json) {
-    if (json['Data'] != null) {
+    if (json['Data2'] != null) {
       data = <TradeData>[];
-      json['Data'].forEach((v) {
-      realized += v['realisedpnl'];
-      unrealized += v['unrealisedpnl'];
+      json['Data2'].forEach((v) {
+        realized += v['realisedpnl'];
+        unrealized += v['unrealisedpnl'];
         data!.add(TradeData.fromJson(v));
       });
     }
@@ -21,18 +27,41 @@ class CalenderpnlModel {
         journal!.add(Journal.fromJson(v));
       });
     }
+    if (json['Data'] != null) {
+      data2 = json['Data'];
+    }
+     if (json['summary'] != null) {
+      this.summary = json['summary'];
+    }
+
+    if (json['symbolarr'] != null) {
+      this.symbolarr = json['symbolarr'];
+    }
+    fullresponse = json;
     totalCharges = json['total_charges'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = Map<String, dynamic>();
     if (this.data != null) {
-      data['Data'] = this.data!.map((v) => v.toJson()).toList();
+      data['Data2'] = this.data!.map((v) => v.toJson()).toList();
     }
+    if (this.data2 != null) {
+      data['Data'] = this.data2;
+    }
+      if (this.summary != null) {
+      data['summary'] = this.summary;
+    }
+        if (this.symbolarr != null) {
+      data['symbolarr'] = this.symbolarr;
+    }
+    
     if (journal != null) {
       data['journal'] = journal!.map((v) => v.toJson()).toList();
     }
-     data['total_charges'] = this.totalCharges;
+      data['fullresponse'] = fullresponse ;
+
+    data['total_charges'] = this.totalCharges;
     return data;
   }
 }
@@ -196,5 +225,5 @@ class Journal {
     data['total_bill_net'] = totalBillNet;
     data['unrealisedpnl'] = unrealisedpnl;
     return data;
-}
+  }
 }

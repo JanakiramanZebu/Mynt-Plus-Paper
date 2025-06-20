@@ -18,7 +18,6 @@ class curTaxpnl extends StatefulWidget {
 
 class curTaxpnlScreen extends State<curTaxpnl> {
   @override
- 
   void initState() {
     setState(() {});
     super.initState();
@@ -77,40 +76,36 @@ class curTaxpnlScreen extends State<curTaxpnl> {
               //     )),
 
               Container(
-                    width: screenWidth,
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? const Color(0xffB5C0CF).withOpacity(.15)
-                              : const Color(0xffF1F3F8)),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                width: screenWidth,
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: theme.isDarkMode
+                          ? const Color(0xffB5C0CF).withOpacity(.15)
+                          : const Color(0xffF1F3F8)),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Futures",
-                                      style: textStyle(Color(0xFF696969), 14,
-                                          FontWeight.w500),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        double.parse(ledgerprovider
-                                                        .taxpnldercomcur!
-                                                        .data!
-                                                        .currency!
-                                                        .currFutPnl!).toStringAsFixed(2),
-                                    
-                                        style: textStyle(
-                                         (ledgerprovider.taxpnldercomcur!.data!
-                                                    .currency!
-                                                        .currFutPnl !=
+                                Text(
+                                  "Futures",
+                                  style: textStyle(
+                                      Color(0xFF696969), 14, FontWeight.w500),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    double.parse(ledgerprovider.taxpnldercomcur!
+                                            .data!.currency!.currFutPnl!)
+                                        .toStringAsFixed(2),
+                                    style: textStyle(
+                                        (ledgerprovider.taxpnldercomcur!.data!
+                                                    .currency!.currFutPnl !=
                                                 null)
                                             ? (double.parse(ledgerprovider
                                                         .taxpnldercomcur!
@@ -123,35 +118,33 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                                                             .taxpnldercomcur!
                                                             .data!
                                                             .currency!
-                                                        .currFutPnl!) <
+                                                            .currFutPnl!) <
                                                         0
                                                     ? Colors.red
                                                     : Colors.black)
                                             : Colors.black,
-                                          16,
-                                            FontWeight.w600),
-                                      ),
-                                    )
-                                  ],
+                                        16,
+                                        FontWeight.w600),
+                                  ),
+                                )
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "Futures Turnover",
+                                  textAlign: TextAlign.right,
+                                  style: textStyle(
+                                      Color(0xFF696969), 14, FontWeight.w500),
                                 ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      "Futures Turnover",
-                                      textAlign: TextAlign.right,
-                                      style: textStyle(Color(0xFF696969), 14,
-                                          FontWeight.w500),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                         '0.0'
-                                            ,
-                                        style: textStyle(
-                                           (ledgerprovider.taxpnldercomcur!.data!
-                                                    .currency!
-                                                        .currFutTo !=
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    '0.0',
+                                    style: textStyle(
+                                        (ledgerprovider.taxpnldercomcur!.data!
+                                                    .currency!.currFutTo !=
                                                 null)
                                             ? (double.parse(ledgerprovider
                                                         .taxpnldercomcur!
@@ -164,49 +157,44 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                                                             .taxpnldercomcur!
                                                             .data!
                                                             .currency!
-                                                        .currFutTo!) <
+                                                            .currFutTo!) <
                                                         0
                                                     ? Colors.red
                                                     : Colors.black)
                                             : Colors.black,
-                                             16, FontWeight.w600),
-                                      ),
-                                    )
-                                  ],
-                                ),
+                                        16,
+                                        FontWeight.w600),
+                                  ),
+                                )
                               ],
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 18.0,
-                                right: 18.0,
-                                top: 4.0,
-                                bottom: 18.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 18.0, right: 18.0, top: 4.0, bottom: 18.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Options",
-                                      style: textStyle(Color(0xFF696969), 14,
-                                          FontWeight.w500),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                         double.parse(ledgerprovider
-                                                        .taxpnldercomcur!
-                                                        .data!
-                                                        .currency!
-                                                        .currOptPnl!).toStringAsFixed(2),
-                                        textAlign: TextAlign.right,
-                                        style: textStyle(
+                                Text(
+                                  "Options",
+                                  style: textStyle(
+                                      Color(0xFF696969), 14, FontWeight.w500),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    double.parse(ledgerprovider.taxpnldercomcur!
+                                            .data!.currency!.currOptPnl!)
+                                        .toStringAsFixed(2),
+                                    textAlign: TextAlign.right,
+                                    style: textStyle(
                                         (ledgerprovider.taxpnldercomcur!.data!
-                                                    .currency!
-                                                        .currOptPnl !=
+                                                    .currency!.currOptPnl !=
                                                 null)
                                             ? (double.parse(ledgerprovider
                                                         .taxpnldercomcur!
@@ -219,36 +207,35 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                                                             .taxpnldercomcur!
                                                             .data!
                                                             .currency!
-                                                        .currOptPnl!) <
+                                                            .currOptPnl!) <
                                                         0
                                                     ? Colors.red
                                                     : Colors.black)
                                             : Colors.black,
                                         16,
-                                            FontWeight.w600),
-                                      ),
-                                    )
-                                  ],
+                                        FontWeight.w600),
+                                  ),
+                                )
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "Options Turnover",
+                                  textAlign: TextAlign.right,
+                                  style: textStyle(
+                                      Color(0xFF696969), 14, FontWeight.w500),
                                 ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      "Options Turnover",
-                                      textAlign: TextAlign.right,
-                                      style: textStyle(Color(0xFF696969), 14,
-                                          FontWeight.w500),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text( double.parse(ledgerprovider
-                                                        .taxpnldercomcur!
-                                                        .data!
-                                                        .currency!
-                                                        .currOptTo!).toStringAsFixed(2),
-                                        textAlign: TextAlign.right,
-                                        style: textStyle(
-                                         (ledgerprovider.taxpnldercomcur!.data!
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    double.parse(ledgerprovider.taxpnldercomcur!
+                                            .data!.currency!.currOptTo!)
+                                        .toStringAsFixed(2),
+                                    textAlign: TextAlign.right,
+                                    style: textStyle(
+                                        (ledgerprovider.taxpnldercomcur!.data!
                                                     .derivatives!.derFutPnl !=
                                                 null)
                                             ? (double.parse(ledgerprovider
@@ -262,64 +249,60 @@ class curTaxpnlScreen extends State<curTaxpnl> {
                                                             .taxpnldercomcur!
                                                             .data!
                                                             .currency!
-                                                        .currOptTo!) <
+                                                            .currOptTo!) <
                                                         0
                                                     ? Colors.red
                                                     : Colors.black)
-                                            : Colors.black, 
-                                            16, FontWeight.w600),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                           Padding(
-                            padding: const EdgeInsets.only(
-                                left: 18.0,
-                                right: 18.0,
-                                top: 4.0,
-                                bottom: 18.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Total Charges",
-                                      style: textStyle(Color(0xFF696969), 14,
-                                          FontWeight.w500),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                         '0.0',
-                                        textAlign: TextAlign.right,
-                                        style: textStyle(
-                                          Colors.red, 
+                                            : Colors.black,
                                         16,
-                                            FontWeight.w600),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                 
+                                        FontWeight.w600),
+                                  ),
+                                )
                               ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 18.0, right: 18.0, top: 4.0, bottom: 18.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Total Charges",
+                                  style: textStyle(
+                                      Color(0xFF696969), 14, FontWeight.w500),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    '0.0',
+                                    textAlign: TextAlign.right,
+                                    style: textStyle(
+                                        Colors.red, 16, FontWeight.w600),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-Row(
+                ),
+              ),
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_left , color: Colors.black),
+                    icon: Icon(Icons.arrow_left, color: Colors.black),
                     onPressed: () => {
-                      ledgerprovider.fetchtaxpnleqdata(context, ledgerprovider.yearforTaxpnl - 1)
+                      ledgerprovider.fetchtaxpnleqdata(
+                          context, ledgerprovider.yearforTaxpnl - 1)
                     },
                   ),
                   // Center(
@@ -335,22 +318,23 @@ Row(
                   //             : const Color(0xffF1F3F8)),
                   //     child: Center(
                   //       child:
-                         Text("${ledgerprovider.yearforTaxpnl}",
-                            textAlign: TextAlign.right,
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
+                  Text("${ledgerprovider.yearforTaxpnl}",
+                      textAlign: TextAlign.right,
+                      style: textStyle(
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500)),
 
                   //     ),
                   //   ),
                   // ),
                   IconButton(
-                    icon: Icon(Icons.arrow_right , color: Colors.black),
+                    icon: Icon(Icons.arrow_right, color: Colors.black),
                     onPressed: () => {
-                      ledgerprovider.fetchtaxpnleqdata(context,ledgerprovider.yearforTaxpnl + 1)
+                      ledgerprovider.fetchtaxpnleqdata(
+                          context, ledgerprovider.yearforTaxpnl + 1)
                     },
                   ),
                 ],
@@ -666,10 +650,9 @@ Row(
                     //         : colors.colorDivider),
                     // const SizedBox(height: 2),
                     IconButton(
-                                        icon: Icon(Icons.download,
-                                            color: Colors.black),
-                                        onPressed: () =>  {},
-                                      ),
+                      icon: Icon(Icons.download, color: Colors.black),
+                      onPressed: () => {},
+                    ),
                     Text("Here you can download your ",
                         style: textStyle(
                             const Color(0xff777777), 14, FontWeight.w500)),

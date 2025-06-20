@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/res/res.dart'; 
+import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
-import '../../provider/thems.dart'; 
+import '../../provider/thems.dart';
 
 class DercomcurTaxpnl extends StatefulWidget {
   const DercomcurTaxpnl({super.key});
@@ -15,14 +15,15 @@ class DercomcurTaxpnl extends StatefulWidget {
 }
 
 class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
-    @override
+  @override
   void initState() {
-    setState(() { 
-          // ref.read(ledgerProvider).taxpnlderselectedtab((ref.read(ledgerProvider).eqdertabvalue).toString());
-          // ref.read(ledgerProvider).checkactivetabincur((ref.read(ledgerProvider).eqdertabvalue).toString());
+    setState(() {
+      // context.read(ledgerProvider).taxpnlderselectedtab((context.read(ledgerProvider).eqdertabvalue).toString());
+      // context.read(ledgerProvider).checkactivetabincur((context.read(ledgerProvider).eqdertabvalue).toString());
     });
     super.initState();
   }
+
   Widget build(BuildContext context) {
     final List<String> staticColumn = [
       'Row 1',
@@ -61,8 +62,8 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
       final dertypestring = ref.watch(ledgerProvider).dertypestring;
       final ledgerprovider = ref.watch(ledgerProvider);
       double netvalue = (ledgerprovider.calenderpnlAllData!.realized ?? 0.0) -
-          (ledgerprovider.calenderpnlAllData!.totalCharges ?? 0.0); 
-          
+          (ledgerprovider.calenderpnlAllData!.totalCharges ?? 0.0);
+
       return Scaffold(
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +104,8 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                 height: 20.0,
                               ),
 
-                              headingstat("Long Term Realized P&L ${ledgerprovider.eqdertabvalue}",
+                              headingstat(
+                                  "Long Term Realized P&L ${ledgerprovider.eqdertabvalue}",
                                   "${ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2)}"),
                               headingstat("Short Term Realized P&L",
                                   "${ledgerprovider.calenderpnlAllData!.unrealized.toStringAsFixed(2)}"),
@@ -111,9 +113,9 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                   "${ledgerprovider.calenderpnlAllData!.totalCharges!.toStringAsFixed(2)}"),
                               headingstat("Assets P&L",
                                   "${netvalue.toStringAsFixed(2)}"),
-                                   headingstat("Trading Turnover",
+                              headingstat("Trading Turnover",
                                   "${netvalue.toStringAsFixed(2)}"),
-                                     headingstat("Total Charges",
+                              headingstat("Total Charges",
                                   "${netvalue.toStringAsFixed(2)}"),
 
                               //                         NestedScrollView(
@@ -291,7 +293,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
             //   ),
             // ),
             Padding(
-              padding: const EdgeInsets.only(right: 15, left: 15,bottom : 15.0),
+              padding: const EdgeInsets.only(right: 15, left: 15, bottom: 15.0),
               child: Row(
                 children: [
                   tabsbutton(
@@ -302,7 +304,6 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                   tabsbutton('Future Open', ledgerprovider, theme),
                   tabsbutton('Option Closed', ledgerprovider, theme),
                   tabsbutton('Option Open', ledgerprovider, theme),
-
                 ],
               ),
             ),
@@ -316,22 +317,24 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                 : Expanded(
                     child: SingleChildScrollView(
                       child: ListView.builder(
-                         controller: ScrollController(),
+                          controller: ScrollController(),
                           physics: ScrollPhysics(),
-                          itemCount:  ledgerprovider.taxpnlderselectedtabdata == null ? 0 : ledgerprovider.taxpnlderselectedtabdata.length,
+                          itemCount: ledgerprovider.taxpnlderselectedtabdata ==
+                                  null
+                              ? 0
+                              : ledgerprovider.taxpnlderselectedtabdata.length,
                           shrinkWrap: true,
                           itemBuilder: (context, index) {
-                            
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.only(
                                       right: 30.0, left: 30.0, top: 25.0),
-                                  child: Text( 
+                                  child: Text(
                                     "${ledgerprovider.taxpnlderselectedtabdata[index]['SCRIP_SYMBOL']}",
-                                    style: textStyle(Colors.black, 14,
-                                        FontWeight.w700),
+                                    style: textStyle(
+                                        Colors.black, 14, FontWeight.w700),
                                   ),
                                 ),
                                 Padding(
@@ -342,7 +345,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                         255, 117, 117, 117),
                                   ),
                                 ),
-                               Padding(
+                                Padding(
                                   padding: const EdgeInsets.only(
                                       right: 30.0, left: 30.0, top: 10.0),
                                   child: Row(
@@ -420,7 +423,7 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                     Row(
+                                      Row(
                                         children: [
                                           Row(
                                             children: [
@@ -469,8 +472,6 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
                                     ],
                                   ),
                                 ),
-                                 
-                                
                                 Padding(
                                   padding: const EdgeInsets.only(top: 10),
                                   child: Divider(
@@ -505,36 +506,36 @@ class DerComCurTaxpnl extends State<DercomcurTaxpnl> {
             ),
             child: bottomSheet));
   }
-  tabsbutton(String text, LDProvider ledgerprovider, ThemesProvider theme) { 
-      
+
+  tabsbutton(String text, LDProvider ledgerprovider, ThemesProvider theme) {
     // if (isDerivativesConditionMet || isCommodityConditionMet) {
-        
-      return Container(
-          height: 35,
-          margin: const EdgeInsets.only(right: 12, top: 15),
-          child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  shadowColor: Colors.transparent,
-                  backgroundColor:
-                      theme.isDarkMode || ledgerprovider.dertypestring != text
-                          ? colors.colorbluegrey
-                          : colors.colorBlack,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50))),
-              onPressed: (){
-                setState(() {
-                  // Ensure UI rebuilds when selection changes 
-                  // ledgerprovider.clickedvalueder = text;
-                  // ledgerprovider.taxpnlderselectedtab(ledgerprovider.eqdertabvalue.toString());
-                });
-              },
-              child: Text("${text}",
-                  textAlign: TextAlign.center,
-                  style: textStyle(
-                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w500))));
+
+    return Container(
+        height: 35,
+        margin: const EdgeInsets.only(right: 12, top: 15),
+        child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                backgroundColor:
+                    theme.isDarkMode || ledgerprovider.dertypestring != text
+                        ? colors.colorbluegrey
+                        : colors.colorBlack,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50))),
+            onPressed: () {
+              setState(() {
+                // Ensure UI rebuilds when selection changes
+                // ledgerprovider.clickedvalueder = text;
+                // ledgerprovider.taxpnlderselectedtab(ledgerprovider.eqdertabvalue.toString());
+              });
+            },
+            child: Text("${text}",
+                textAlign: TextAlign.center,
+                style: textStyle(
+                    !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    12,
+                    FontWeight.w500))));
     // } else {
     // print("${ledgerprovider.taxpnleq!.data!.aSSETS}");
     // return SizedBox();
@@ -560,5 +561,3 @@ headingstat(String heading, String value) {
   );
 }
 // }
-
-

@@ -137,8 +137,8 @@ class PledgenUnpledge extends StatelessWidget {
                   theme: theme.isDarkMode,
                   fw: 1),
               IconButton(
-                  onPressed: () {
-                    ledgerprovider.fetchunpledgehistory(context);
+                  onPressed: () async {
+                    await ledgerprovider.fetchunpledgehistory(context);
                     ledgerprovider.fetchpledgehistory(context);
                     ledgerprovider.taxpnlExTabchange(0);
                     Navigator.pushNamed(context, Routes.pledgehistorymainscreen,
@@ -159,7 +159,7 @@ class PledgenUnpledge extends StatelessWidget {
           child: Stack(
             children: [
               TransparentLoaderScreen(
-                isLoading: ledgerprovider.reportsloading,
+                isLoading: ledgerprovider.pledgeloader,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -188,11 +188,13 @@ class PledgenUnpledge extends StatelessWidget {
                                   headingstat(
                                       "Total value",
                                       '${ledgerprovider.pledgeandunpledge?.stocksValue ?? 0}',
-                                      theme),
+                                      theme,
+                                      "left"),
                                   headingstat(
                                       "Est/Ava Mrg",
                                       " ${ledgerprovider.pledgeandunpledge?.marginTotalAvailable ?? 0} / ${ledgerprovider.pledgeandunpledge?.estTotalAvailable ?? 0}",
-                                      theme),
+                                      theme,
+                                      "right"),
                                 ],
                               ),
                             ),
@@ -206,11 +208,13 @@ class PledgenUnpledge extends StatelessWidget {
                                   headingstat(
                                       "Cash Equivalent ",
                                       "${ledgerprovider.pledgeandunpledge?.cashEquivalent ?? 0}",
-                                      theme),
+                                      theme,
+                                      "left"),
                                   headingstat(
                                       "Total/Pledged",
                                       "${ledgerprovider.pledgeandunpledge?.noOfStocks ?? 0} / ${displaypledgedvalue.length}",
-                                      theme),
+                                      theme,
+                                      "right"),
                                 ],
                               ),
                             ),
@@ -224,11 +228,13 @@ class PledgenUnpledge extends StatelessWidget {
                                   headingstat(
                                       "Cash Equivalent ",
                                       "${ledgerprovider.pledgeandunpledge?.noncashEquivalent ?? 0}",
-                                      theme),
+                                      theme,
+                                      "left"),
                                   headingstat(
                                       "Non-approved",
                                       '${ledgerprovider.pledgeandunpledge?.noOfNonApprovedStocks ?? 0}',
-                                      theme),
+                                      theme,
+                                      "right"),
                                 ],
                               ),
                             ),
@@ -560,26 +566,44 @@ class PledgenUnpledge extends StatelessWidget {
                                                         if (ledgerprovider
                                                                 .pledgeorunpledge !=
                                                             'unpledge') {
-                                                          ledgerprovider
-                                                                  .screenclickedpledge =
-                                                              'pledge';
-                                                          String val =
-                                                              "${double.parse(value.nSOHQTY.toString()).toInt() + double.parse(value.sOHQTY.toString()).toInt()}";
-                                                          String val2 =
-                                                              "${value.dummvalue != 'null' ? double.parse(value.dummvalue.toString()).toInt() : "null"}";
-                                                          ledgerprovider
-                                                              .setselectnetpledge(
-                                                                  val2 == 'null'
-                                                                      ? val
-                                                                      : val2,
-                                                                  val2 == 'null'
-                                                                      ? val
-                                                                      : val2);
-                                                          _showBottomSheet(
-                                                              context,
-                                                              PledgeDeytails(
-                                                                data: index,
-                                                              ));
+                                                          print(double.parse(value
+                                                                  .initiated
+                                                                  .toString())
+                                                              .toInt());
+                                                          if (double.parse(value
+                                                                      .initiated
+                                                                      .toString())
+                                                                  .toInt() ==
+                                                              0) {
+                                                            ledgerprovider
+                                                                    .screenclickedpledge =
+                                                                'pledge';
+                                                            String val =
+                                                                "${double.parse(value.nSOHQTY.toString()).toInt() + double.parse(value.sOHQTY.toString()).toInt()}";
+                                                            String val2 =
+                                                                "${value.dummvalue != 'null' ? double.parse(value.dummvalue.toString()).toInt() : "null"}";
+                                                            ledgerprovider
+                                                                .setselectnetpledge(
+                                                                    val2 == 'null'
+                                                                        ? val
+                                                                        : val2,
+                                                                    val2 == 'null'
+                                                                        ? val
+                                                                        : val2);
+                                                            _showBottomSheet(
+                                                                context,
+                                                                PledgeDeytails(
+                                                                  data: index,
+                                                                ));
+                                                          } else {
+                                                            ScaffoldMessenger
+                                                                    .of(context)
+                                                                .showSnackBar(
+                                                              warningMessage(
+                                                                  context,
+                                                                  '${value.initiated} Qty is processing'),
+                                                            );
+                                                          }
                                                         } else {
                                                           ScaffoldMessenger.of(
                                                                   context)
@@ -789,8 +813,13 @@ class PledgenUnpledge extends StatelessWidget {
                                                   Row(
                                                     children: [
                                                       TextWidget.subText(
-                                                          text:
-                                                              "Mrg/Est & % :  ",
+                                                          text: (double.parse(value
+                                                                          .cOLQTY
+                                                                          .toString())
+                                                                      .toInt()) ==
+                                                                  0
+                                                              ? 'Est : '
+                                                              : "Mrg : ",
                                                           color:
                                                               Color(0xFF696969),
                                                           textOverflow:
@@ -800,10 +829,19 @@ class PledgenUnpledge extends StatelessWidget {
                                                               theme.isDarkMode,
                                                           fw: 0),
                                                       TextWidget.subText(
-                                                          text: value.estimated !=
-                                                                  null
-                                                              ? "${double.parse(value.estimated.toString()).toStringAsFixed(2)} "
-                                                              : "0.0",
+                                                          text: (double.parse(value
+                                                                          .cOLQTY
+                                                                          .toString())
+                                                                      .toInt()) ==
+                                                                  0
+                                                              ? value.estimated !=
+                                                                      null
+                                                                  ? "${double.parse(value.estimated.toString()).toStringAsFixed(2)} "
+                                                                  : "0.0"
+                                                              : value.margin !=
+                                                                      null
+                                                                  ? "${double.parse(value.margin.toString()).toStringAsFixed(2)} "
+                                                                  : "0.0",
                                                           color: theme.isDarkMode
                                                               ? colors
                                                                   .colorWhite
@@ -815,7 +853,7 @@ class PledgenUnpledge extends StatelessWidget {
                                                           theme:
                                                               theme.isDarkMode,
                                                           fw: 1),
-                                                      TextWidget.paraText(
+                                                      TextWidget.captionText(
                                                           text: value.estimated !=
                                                                   null
                                                               ? "(${double.parse(value.estPercentage.toString()).toInt()}%)"
@@ -835,168 +873,184 @@ class PledgenUnpledge extends StatelessWidget {
                                                   ),
                                                 ],
                                               ),
-                                              Row(
-                                                children: [
-                                                  TextWidget.subText(
-                                                      text: "Pledged Qty : ",
-                                                      color: Color(0xFF696969),
-                                                      textOverflow:
-                                                          TextOverflow.ellipsis,
-                                                      theme: theme.isDarkMode,
-                                                      fw: 0),
-                                                  (double.parse(value.cOLQTY
-                                                                  .toString())
-                                                              .toInt()) !=
-                                                          0
-                                                      ? InkWell(
-                                                          onTap: () {
-                                                            print(
-                                                                "${ledgerprovider.pledgeorunpledge} fdaedfaefwef");
-                                                            if (value.deleteselected !=
-                                                                    'selected' &&
-                                                                value.unPlegeQty ==
-                                                                    '') {
-                                                              if (ledgerprovider
-                                                                      .pledgeorunpledge !=
-                                                                  'pledge') {
-                                                                ledgerprovider
-                                                                        .screenclickedpledge =
-                                                                    'unpledge';
-                                                                String val =
-                                                                    "${double.parse(value.cOLQTY.toString()).toInt()}";
-                                                                String val2 =
-                                                                    "${value.dummunpledgevalue != 'null' ? double.parse(value.dummunpledgevalue.toString()).toInt() : "null"}";
-                                                                ledgerprovider.setselectnetpledge(
-                                                                    val2 == 'null'
-                                                                        ? val
-                                                                        : val2,
-                                                                    val2 == 'null'
-                                                                        ? val
-                                                                        : val2);
-                                                                _showBottomSheet(
-                                                                    context,
-                                                                    PledgeDeytails(
-                                                                      data:
-                                                                          index,
-                                                                    ));
-                                                                // ledgerprovider
-                                                                //     .setselectnetpledge(
-                                                                //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
-                                                                //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
-                                                              } else {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
-                                                                  warningMessage(
-                                                                      context,
-                                                                      'Pledged initiated so can\'t unpledge'),
-                                                                );
-                                                              }
-                                                            } else {
-                                                              ScaffoldMessenger
-                                                                      .of(context)
-                                                                  .showSnackBar(
-                                                                warningMessage(
-                                                                    context,
-                                                                    'Already pledged cant edit'),
-                                                              );
-                                                            }
+                                              (double.parse(value.cOLQTY
+                                                              .toString())
+                                                          .toInt()) !=
+                                                      0
+                                                  ? Row(
+                                                      children: [
+                                                        TextWidget.subText(
+                                                            text:
+                                                                "Pledged Qty : ",
+                                                            color: Color(
+                                                                0xFF696969),
+                                                            textOverflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            theme: theme
+                                                                .isDarkMode,
+                                                            fw: 0),
+                                                        (double.parse(value
+                                                                        .cOLQTY
+                                                                        .toString())
+                                                                    .toInt()) !=
+                                                                0
+                                                            ? InkWell(
+                                                                onTap: () {
+                                                                  print(
+                                                                      "${ledgerprovider.pledgeorunpledge} fdaedfaefwef");
+                                                                  if (value.deleteselected !=
+                                                                          'selected' &&
+                                                                      value.unPlegeQty ==
+                                                                          '') {
+                                                                    if (ledgerprovider
+                                                                            .pledgeorunpledge !=
+                                                                        'pledge') {
+                                                                      ledgerprovider
+                                                                              .screenclickedpledge =
+                                                                          'unpledge';
+                                                                      String
+                                                                          val =
+                                                                          "${double.parse(value.cOLQTY.toString()).toInt()}";
+                                                                      String
+                                                                          val2 =
+                                                                          "${value.dummunpledgevalue != 'null' ? double.parse(value.dummunpledgevalue.toString()).toInt() : "null"}";
+                                                                      ledgerprovider.setselectnetpledge(
+                                                                          val2 == 'null'
+                                                                              ? val
+                                                                              : val2,
+                                                                          val2 == 'null'
+                                                                              ? val
+                                                                              : val2);
+                                                                      _showBottomSheet(
+                                                                          context,
+                                                                          PledgeDeytails(
+                                                                            data:
+                                                                                index,
+                                                                          ));
+                                                                      // ledgerprovider
+                                                                      //     .setselectnetpledge(
+                                                                      //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
+                                                                      //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
+                                                                    } else {
+                                                                      ScaffoldMessenger.of(
+                                                                              context)
+                                                                          .showSnackBar(
+                                                                        warningMessage(
+                                                                            context,
+                                                                            'Pledged initiated so can\'t unpledge'),
+                                                                      );
+                                                                    }
+                                                                  } else {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(
+                                                                      warningMessage(
+                                                                          context,
+                                                                          'Already pledged cant edit'),
+                                                                    );
+                                                                  }
 
-                                                            print(
-                                                                "value.cOLQTY.toString() ${value.cOLQTY.toString()}");
-                                                          },
-                                                          child: Container(
-                                                            decoration: BoxDecoration(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            6),
-                                                                color: value.dummunpledgevalue !=
-                                                                            'null' ||
-                                                                        value.deleteselected ==
-                                                                            'selected'
-                                                                    ? const Color(
-                                                                        0xffF6EFD9)
-                                                                    : const Color
-                                                                        .fromARGB(
-                                                                        255,
-                                                                        255,
-                                                                        196,
-                                                                        196)),
+                                                                  print(
+                                                                      "value.cOLQTY.toString() ${value.cOLQTY.toString()}");
+                                                                },
+                                                                child:
+                                                                    Container(
+                                                                  decoration: BoxDecoration(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              6),
+                                                                      color: value.dummunpledgevalue !=
+                                                                                  'null' ||
+                                                                              value.deleteselected ==
+                                                                                  'selected'
+                                                                          ? const Color(
+                                                                              0xffF6EFD9)
+                                                                          : const Color
+                                                                              .fromARGB(
+                                                                              255,
+                                                                              255,
+                                                                              196,
+                                                                              196)),
+                                                                  child:
+                                                                      Padding(
+                                                                    padding:
+                                                                        const EdgeInsets
+                                                                            .all(
+                                                                            8.0),
+                                                                    child: TextWidget
+                                                                        .paraText(
+                                                                      text:
+                                                                          "${(value.unPlegeQty != "0" && value.unPlegeQty != "") ? "${value.unPlegeQty! + " /"} " : value.dummunpledgevalue != 'null' ? "${value.dummunpledgevalue!} /" : ''} ${(double.parse(value.cOLQTY.toString()).toInt())} -",
+                                                                      textOverflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
+                                                                      theme: theme
+                                                                          .isDarkMode,
+                                                                      color: value.dummunpledgevalue !=
+                                                                                  'null' ||
+                                                                              value.deleteselected ==
+                                                                                  'selected'
+                                                                          ? const Color(
+                                                                              0xffFFC107)
+                                                                          : const Color
+                                                                              .fromARGB(
+                                                                              255,
+                                                                              255,
+                                                                              97,
+                                                                              97),
+                                                                      fw: 1,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              )
+                                                            : Text("-"),
+                                                        if ((value.unPlegeQty !=
+                                                                "0" &&
+                                                            value.unPlegeQty !=
+                                                                ""))
+                                                          InkWell(
+                                                            onTap: () {
+                                                              ledgerprovider
+                                                                  .unpledgedeletereqfun(
+                                                                      context,
+                                                                      value.iSIN
+                                                                          .toString(),
+                                                                      index);
+                                                            },
                                                             child: Padding(
                                                               padding:
                                                                   const EdgeInsets
-                                                                      .all(8.0),
-                                                              child: TextWidget
-                                                                  .paraText(
-                                                                text:
-                                                                    "${(value.unPlegeQty != "0" && value.unPlegeQty != "") ? "${value.unPlegeQty! + " /"} " : value.dummunpledgevalue != 'null' ? "${value.dummunpledgevalue!} /" : ''} ${(double.parse(value.cOLQTY.toString()).toInt())} -",
-                                                                textOverflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                theme: theme
-                                                                    .isDarkMode,
-                                                                color: value.dummunpledgevalue !=
-                                                                            'null' ||
-                                                                        value.deleteselected ==
-                                                                            'selected'
-                                                                    ? const Color(
-                                                                        0xffFFC107)
-                                                                    : const Color
-                                                                        .fromARGB(
-                                                                        255,
-                                                                        255,
-                                                                        97,
-                                                                        97),
-                                                                fw: 1,
-                                                              ),
+                                                                      .only(
+                                                                      left:
+                                                                          8.0),
+                                                              child: SvgPicture
+                                                                  .asset(assets
+                                                                      .cancelledIcon),
                                                             ),
-                                                          ),
-                                                        )
-                                                      : Text("-"),
-                                                  if ((value.unPlegeQty !=
-                                                          "0" &&
-                                                      value.unPlegeQty != ""))
-                                                    InkWell(
-                                                      onTap: () {
-                                                        ledgerprovider
-                                                            .unpledgedeletereqfun(
-                                                                context,
-                                                                value.iSIN
-                                                                    .toString(),
-                                                                index);
-                                                      },
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                left: 8.0),
-                                                        child: SvgPicture.asset(
-                                                            assets
-                                                                .cancelledIcon),
-                                                      ),
-                                                    )
-                                                  // TextWidget.subText(
-                                                  //     text:
-                                                  //         "${(double.parse(value.cOLQTY.toString()).toInt()) > 0 ? (double.parse(value.cOLQTY.toString()).toInt()) : ''} ",
-                                                  //     color: theme.isDarkMode
-                                                  //         ? colors.colorWhite
-                                                  //         : colors.colorBlack,
-                                                  //     textOverflow:
-                                                  //         TextOverflow.ellipsis,
-                                                  //     theme: theme.isDarkMode,
-                                                  //     fw: 1),
+                                                          )
+                                                        // TextWidget.subText(
+                                                        //     text:
+                                                        //         "${(double.parse(value.cOLQTY.toString()).toInt()) > 0 ? (double.parse(value.cOLQTY.toString()).toInt()) : ''} ",
+                                                        //     color: theme.isDarkMode
+                                                        //         ? colors.colorWhite
+                                                        //         : colors.colorBlack,
+                                                        //     textOverflow:
+                                                        //         TextOverflow.ellipsis,
+                                                        //     theme: theme.isDarkMode,
+                                                        //     fw: 1),
 
-                                                  //         Text(
-                                                  // " (${value.tRADEDATE})",
-                                                  // style: textStyle(
-                                                  //     theme.isDarkMode
-                                                  //         ? colors.colorWhite
-                                                  //         : colors.colorBlack,
-                                                  //     12,
-                                                  //     FontWeight.w600)),
-                                                ],
-                                              ),
+                                                        //         Text(
+                                                        // " (${value.tRADEDATE})",
+                                                        // style: textStyle(
+                                                        //     theme.isDarkMode
+                                                        //         ? colors.colorWhite
+                                                        //         : colors.colorBlack,
+                                                        //     12,
+                                                        //     FontWeight.w600)),
+                                                      ],
+                                                    )
+                                                  : SizedBox(),
                                             ],
                                           ),
                                         ),
@@ -1199,9 +1253,10 @@ class PledgenUnpledge extends StatelessWidget {
     return 0;
   }
 
-  headingstat(String heading, String value, theme) {
+  headingstat(String heading, String value, theme, String side) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+          side == 'right' ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         TextWidget.subText(
             text: heading,

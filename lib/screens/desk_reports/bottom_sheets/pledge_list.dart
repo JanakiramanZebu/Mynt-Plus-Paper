@@ -1,6 +1,7 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_user.dart'
     as auth;
@@ -13,11 +14,11 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
-class PledgeList extends ConsumerStatefulWidget {
+class PledgeList extends StatefulWidget {
   const PledgeList({super.key, required});
 
   @override
-  ConsumerState<PledgeList> createState() => _PledgeList();
+  State<PledgeList> createState() => _PledgeList();
 }
 
 class DropdownItem {
@@ -32,16 +33,16 @@ class DropdownItem {
   });
 }
 
-class _PledgeList extends ConsumerState<PledgeList> {
+class _PledgeList extends State<PledgeList> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
     double notional = 0.0;
     return Consumer(builder: (context, WidgetRef ref, _) {
       final ledgerprovider = ref.watch(ledgerProvider);
       String selectedValue = ledgerprovider.segmentvalue;
+      final theme = ref.read(themeProvider);
 
       List<DropdownItem> dropdownItems = [];
 
@@ -119,7 +120,8 @@ class _PledgeList extends ConsumerState<PledgeList> {
                               itemCount: ledgerprovider.listforpledge.length,
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
-                                final value = ledgerprovider.listforpledge[index];
+                                final value =
+                                    ledgerprovider.listforpledge[index];
                                 return Column(
                                   children: [
                                     Row(
@@ -292,8 +294,11 @@ class _PledgeList extends ConsumerState<PledgeList> {
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(50))),
                               onPressed: () async {
-                                
-                                 ledgerprovider.beforecdsl(
+                                // Give UI time to update before navigation
+
+                                // Now call the CDSL navigation method
+
+                                ledgerprovider.beforecdsl(
                                     context,
                                     ledgerprovider.pledgeandunpledge!.cLIENTCODE
                                         .toString(),
@@ -301,17 +306,22 @@ class _PledgeList extends ConsumerState<PledgeList> {
                                         .toString(),
                                     ledgerprovider.pledgeandunpledge!.cLIENTNAME
                                         .toString(),
-                                    ledgerprovider.listforpledge); 
-                                Navigator.pop(context); 
+                                    ledgerprovider.listforpledge);
+                                // First close this bottom sheet to avoid context issues
                               },
-                              child: Text("Submit",
-                                  textAlign: TextAlign.center,
-                                  style: textStyle(
-                                      !theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)))),
+                              child: ledgerprovider.pledgeloader == true
+                                  ? SpinKitThreeBounce(
+                                      color: Colors.grey,
+                                      size: 24,
+                                    )
+                                  : Text("Submit",
+                                      textAlign: TextAlign.center,
+                                      style: textStyle(
+                                          !theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          12,
+                                          FontWeight.w500)))),
                     ),
                   ],
                 ),
