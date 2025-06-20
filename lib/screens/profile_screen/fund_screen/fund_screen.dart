@@ -536,6 +536,23 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                               ),
                                                             ],
                                                           ),
+                                                          index == 0 ? 
+                                                          Row(
+                                                            children: [
+                                                              const SizedBox(
+                                                        height: 5,
+                                                      ),
+                                                              Text(
+                                                                "We are facing some issue with this payment method.",
+                                                                style: textStyle(
+                                                                    colors.darkred,
+                                                                    12,
+                                                                    FontWeight.w500),
+                                                              ),
+                                                            ],
+                                                          )
+                                                          :
+                                                          const SizedBox()
                                                         ],
                                                       ),
                                                     ],
@@ -577,20 +594,22 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                       style: ElevatedButton
                                                           .styleFrom(
                                                               elevation: 0,
-                                                              backgroundColor: fund
-                                                                          .amount
-                                                                          .text
-                                                                          .isEmpty ||
-                                                                      fund.intValue <
-                                                                          50
-                                                                  ? colors
-                                                                      .darkGrey
-                                                                  : theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .colorbluegrey
-                                                                      : colors
-                                                                          .colorBlack,
+                                                              backgroundColor: 
+                                                              // fund
+                                                              //             .amount
+                                                              //             .text
+                                                              //             .isEmpty ||
+                                                              //         fund.intValue <
+                                                              //             50
+                                                              //     ? 
+                                                                  colors
+                                                                      .darkGrey,
+                                                                  // : theme
+                                                                  //         .isDarkMode
+                                                                  //     ? colors
+                                                                  //         .colorbluegrey
+                                                                  //     : colors
+                                                                  //         .colorBlack,
                                                               padding:
                                                                   const EdgeInsets
                                                                       .symmetric(
@@ -603,124 +622,125 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                                         .circular(
                                                                             30),
                                                               )),
-                                                      onPressed: fund
-                                                                  .amount
-                                                                  .text
-                                                                  .isEmpty ||
-                                                              fund.intValue < 50
-                                                          ? () {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      warningMessage(
-                                                                          context,
-                                                                          "Min amount ₹50"));
-                                                            }
-                                                          : defaultTargetPlatform ==
-                                                                  TargetPlatform
-                                                                      .android
-                                                              ? () async {
-                                                                  await fund
-                                                                      .fetchValidateToken(
-                                                                          context);
-                                                                  fund.focusNode
-                                                                      .unfocus();
-                                                                  await fund
-                                                                      .fetchUPIPaymet(
-                                                                    context,
-                                                                    "${fund.amount.text}.00",
-                                                                    fund.multipleAccno,
-                                                                    fund
-                                                                        .decryptclientcheck!
-                                                                        .clientCheck!
-                                                                        .dATA![fund.indexss][0],
-                                                                    fund
-                                                                        .decryptclientcheck!
-                                                                        .clientCheck!
-                                                                        .dATA![fund.indexss][2],
-                                                                  );
+                                                      onPressed: () {},
+                                                      // fund
+                                                      //             .amount
+                                                      //             .text
+                                                      //             .isEmpty ||
+                                                      //         fund.intValue < 50
+                                                      //     ? () {
+                                                      //         ScaffoldMessenger
+                                                      //                 .of(
+                                                      //                     context)
+                                                      //             .showSnackBar(
+                                                      //                 warningMessage(
+                                                      //                     context,
+                                                      //                     "Min amount ₹50"));
+                                                      //       }
+                                                      //     : defaultTargetPlatform ==
+                                                      //             TargetPlatform
+                                                      //                 .android
+                                                      //         ? () async {
+                                                      //             await fund
+                                                      //                 .fetchValidateToken(
+                                                      //                     context);
+                                                      //             fund.focusNode
+                                                      //                 .unfocus();
+                                                      //             await fund
+                                                      //                 .fetchUPIPaymet(
+                                                      //               context,
+                                                      //               "${fund.amount.text}.00",
+                                                      //               fund.multipleAccno,
+                                                      //               fund
+                                                      //                   .decryptclientcheck!
+                                                      //                   .clientCheck!
+                                                      //                   .dATA![fund.indexss][0],
+                                                      //               fund
+                                                      //                   .decryptclientcheck!
+                                                      //                   .clientCheck!
+                                                      //                   .dATA![fund.indexss][2],
+                                                      //             );
 
-                                                                  await fund
-                                                                      .fetchUpiPaymentstatus(
-                                                                    context,
-                                                                    "${fund.hdfcdirectpayment?.data?.orderNumber}",
-                                                                    "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
-                                                                  );
-                                                                }
-                                                              : () async {
-                                                                  if (availableApps
-                                                                      .isEmpty) {
-                                                                    showModalBottomSheet(
-                                                                        enableDrag:
-                                                                            false,
-                                                                        useSafeArea:
-                                                                            true,
-                                                                        isScrollControlled:
-                                                                            true,
-                                                                        shape: const RoundedRectangleBorder(
-                                                                            borderRadius: BorderRadius.vertical(
-                                                                                top: Radius.circular(
-                                                                                    16))),
-                                                                        backgroundColor:
-                                                                            const Color(
-                                                                                0xffffffff),
-                                                                        context:
-                                                                            context,
-                                                                        builder:
-                                                                            (context) {
-                                                                          return IosNOUpiAppsSheet(
-                                                                              theme: theme);
-                                                                        });
-                                                                  } else {
-                                                                    fund.focusNode
-                                                                        .unfocus();
+                                                      //             await fund
+                                                      //                 .fetchUpiPaymentstatus(
+                                                      //               context,
+                                                      //               "${fund.hdfcdirectpayment?.data?.orderNumber}",
+                                                      //               "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
+                                                      //             );
+                                                      //           }
+                                                      //         : () async {
+                                                      //             if (availableApps
+                                                      //                 .isEmpty) {
+                                                      //               showModalBottomSheet(
+                                                      //                   enableDrag:
+                                                      //                       false,
+                                                      //                   useSafeArea:
+                                                      //                       true,
+                                                      //                   isScrollControlled:
+                                                      //                       true,
+                                                      //                   shape: const RoundedRectangleBorder(
+                                                      //                       borderRadius: BorderRadius.vertical(
+                                                      //                           top: Radius.circular(
+                                                      //                               16))),
+                                                      //                   backgroundColor:
+                                                      //                       const Color(
+                                                      //                           0xffffffff),
+                                                      //                   context:
+                                                      //                       context,
+                                                      //                   builder:
+                                                      //                       (context) {
+                                                      //                     return IosNOUpiAppsSheet(
+                                                      //                         theme: theme);
+                                                      //                   });
+                                                      //             } else {
+                                                      //               fund.focusNode
+                                                      //                   .unfocus();
 
-                                                                    await fund
-                                                                        .fetchUPIPaymet(
-                                                                      context,
-                                                                      "${fund.amount.text}.00",
-                                                                      fund.multipleAccno,
-                                                                      fund
-                                                                          .decryptclientcheck!
-                                                                          .clientCheck!
-                                                                          .dATA![fund.indexss][0],
-                                                                      fund
-                                                                          .decryptclientcheck!
-                                                                          .clientCheck!
-                                                                          .dATA![fund.indexss][2],
-                                                                    );
+                                                      //               await fund
+                                                      //                   .fetchUPIPaymet(
+                                                      //                 context,
+                                                      //                 "${fund.amount.text}.00",
+                                                      //                 fund.multipleAccno,
+                                                      //                 fund
+                                                      //                     .decryptclientcheck!
+                                                      //                     .clientCheck!
+                                                      //                     .dATA![fund.indexss][0],
+                                                      //                 fund
+                                                      //                     .decryptclientcheck!
+                                                      //                     .clientCheck!
+                                                      //                     .dATA![fund.indexss][2],
+                                                      //               );
 
-                                                                    await fund
-                                                                        .fetchUpiPaymentstatus(
-                                                                      context,
-                                                                      "${fund.hdfcdirectpayment?.data?.orderNumber}",
-                                                                      "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
-                                                                    );
-                                                                    showModalBottomSheet(
-                                                                        enableDrag:
-                                                                            false,
-                                                                        useSafeArea:
-                                                                            true,
-                                                                        isScrollControlled:
-                                                                            true,
-                                                                        shape: const RoundedRectangleBorder(
-                                                                            borderRadius: BorderRadius.vertical(
-                                                                                top: Radius.circular(
-                                                                                    16))),
-                                                                        backgroundColor:
-                                                                            const Color(
-                                                                                0xffffffff),
-                                                                        context:
-                                                                            context,
-                                                                        builder:
-                                                                            (context) {
-                                                                          return UpiAppsBottomSheet(
-                                                                              upiapps: availableApps,
-                                                                              theme: theme);
-                                                                        });
-                                                                  }
-                                                                },
+                                                      //               await fund
+                                                      //                   .fetchUpiPaymentstatus(
+                                                      //                 context,
+                                                      //                 "${fund.hdfcdirectpayment?.data?.orderNumber}",
+                                                      //                 "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
+                                                      //               );
+                                                      //               showModalBottomSheet(
+                                                      //                   enableDrag:
+                                                      //                       false,
+                                                      //                   useSafeArea:
+                                                      //                       true,
+                                                      //                   isScrollControlled:
+                                                      //                       true,
+                                                      //                   shape: const RoundedRectangleBorder(
+                                                      //                       borderRadius: BorderRadius.vertical(
+                                                      //                           top: Radius.circular(
+                                                      //                               16))),
+                                                      //                   backgroundColor:
+                                                      //                       const Color(
+                                                      //                           0xffffffff),
+                                                      //                   context:
+                                                      //                       context,
+                                                      //                   builder:
+                                                      //                       (context) {
+                                                      //                     return UpiAppsBottomSheet(
+                                                      //                         upiapps: availableApps,
+                                                      //                         theme: theme);
+                                                      //                   });
+                                                      //             }
+                                                      //           },
                                                       child: fund.fundisLoad
                                                           ? const SizedBox(
                                                               width: 18,
@@ -734,18 +754,19 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                           : Text(
                                                               "PAY VIA UPI APPS",
                                                               style: textStyle(
-                                                                  fund.amount.text
-                                                                              .isEmpty ||
-                                                                          fund.intValue <
-                                                                              50
-                                                                      ? colors
-                                                                          .colorGrey
-                                                                      : theme
-                                                                              .isDarkMode
-                                                                          ? colors
-                                                                              .colorBlack
-                                                                          : colors
-                                                                              .colorWhite,
+                                                                  // fund.amount.text
+                                                                  //             .isEmpty ||
+                                                                  //         fund.intValue <
+                                                                  //             50
+                                                                      // ? 
+                                                                      colors
+                                                                          .colorGrey,
+                                                                      // : theme
+                                                                      //         .isDarkMode
+                                                                      //     ? colors
+                                                                      //         .colorBlack
+                                                                      //     : colors
+                                                                      //         .colorWhite,
                                                                   14,
                                                                   FontWeight
                                                                       .w500)),

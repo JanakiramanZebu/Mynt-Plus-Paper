@@ -622,6 +622,12 @@ static PageRouteBuilder _createRoute({
           beginOffset: const Offset(0.0, 1.0),
         );
 
+        case Routes.ipoopendetailsscreen:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => IpoOpenOrderDetails(ipodetails: args),
+          beginOffset: const Offset(0.0, 1.0),
+        );
+
       case Routes.sectorThematicDetail:
         return _createRoute(
           pageBuilder: (_, __, ___) => SectorThematicDetail(data: args),

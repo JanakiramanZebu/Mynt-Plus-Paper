@@ -573,7 +573,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     int.parse("${element.npoadt1qty ?? 0}") +
                     int.parse("${element.holdqty ?? 0}") +
                     int.parse("${element.btstqty ?? 0}")) -
-                int.parse("${element.usedqty ?? 0}");
+                int.parse("${element.trdqty ?? 0}");
             element.currentQty = qty;
             ref.read(websocketProvider)
                 .socketDatas["${element.exchTsym![0].token}"] = {'holdQty': ""};

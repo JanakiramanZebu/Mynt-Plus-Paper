@@ -36,15 +36,17 @@ class _BondsOrderbookMainScreenState extends ConsumerState<BondsOrderbookMainScr
       final theme = ref.watch(themeProvider);
       final devHeight = MediaQuery.of(context).size.height;
 
-      return LogoLoaderScreen(
-        isLoading: bonds.bondsMyBidsload!,
-        child: _buildContent(bonds, theme, devHeight),
+      return Scaffold(
+        body: LogoLoaderScreen(
+          isLoading: bonds.bondsMyBidsload!,
+          child: _buildContent(bonds, theme, devHeight),
+        ),
       );
     });
   }
 
   Widget _buildContent(BondsProvider bonds, ThemesProvider theme, double devHeight) {
-    final bool isEmpty = bonds.openOrderBook!.isEmpty && bonds.closeOrderBook!.isEmpty;
+    final bool isEmpty = (bonds.openOrderBook?.isEmpty ?? true) && (bonds.closeOrderBook?.isEmpty ?? true);
 
     if (isEmpty) {
       return _buildEmptyState(devHeight);

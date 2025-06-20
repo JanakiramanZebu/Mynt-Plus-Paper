@@ -157,13 +157,13 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
         if (data == null) return;
 
         // Debug: Log socket updates for this token
-        print("=== CALL SOCKET UPDATE ===");
-        print("Token: ${widget.option.token}");
-        print("Socket LTP: ${data['lp']}");
-        print("Socket PC: ${data['pc']}");
-        print("Current _lp: $_lp");
-        print("Current _perChange: $_perChange");
-        print("==========================");
+        // print("=== CALL SOCKET UPDATE ===");
+        // print("Token: ${widget.option.token}");
+        // print("Socket LTP: ${data['lp']}");
+        // print("Socket PC: ${data['pc']}");
+        // print("Current _lp: $_lp");
+        // print("Current _perChange: $_perChange");
+        // print("==========================");
 
         // Check if values actually changed before updating state
         bool needsUpdate = false;

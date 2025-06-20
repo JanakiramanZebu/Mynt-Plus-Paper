@@ -154,13 +154,13 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
         if (data == null) return;
 
         // Debug: Log socket updates for this token
-        print("=== PUT SOCKET UPDATE ===");
-        print("Token: ${widget.option.token}");
-        print("Socket LTP: ${data['lp']}");
-        print("Socket PC: ${data['pc']}");
-        print("Current _lp: $_lp");
-        print("Current _perChange: $_perChange");
-        print("==========================");
+        // print("=== PUT SOCKET UPDATE ===");
+        // print("Token: ${widget.option.token}");
+        // print("Socket LTP: ${data['lp']}");
+        // print("Socket PC: ${data['pc']}");
+        // print("Current _lp: $_lp");
+        // print("Current _perChange: $_perChange");
+        // print("==========================");
 
         // Check if values actually changed before updating state
         bool needsUpdate = false;

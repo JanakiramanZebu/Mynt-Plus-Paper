@@ -3181,8 +3181,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     
     // Debug: Log when socket data is being updated during option chain operations
     if (_optionChainModel != null) {
-      print("=== SOCKET UPDATE DURING OPTION CHAIN ===");
-      print("Updating socket data with ${socketDatas.length} entries");
+      // print("=== SOCKET UPDATE DURING OPTION CHAIN ===");
+      // print("Updating socket data with ${socketDatas.length} entries");
       
       // Check if any option chain tokens are in the update
       int optionTokensUpdated = 0;
@@ -3192,13 +3192,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             optionTokensUpdated++;
             if (optionTokensUpdated <= 3) { // Limit debug output
               final data = socketDatas[option.token];
-              print("  Updated Option: ${option.tsym} - LTP: ${data?['lp']}, Change: ${data?['chng']}");
+              // print("  Updated Option: ${option.tsym} - LTP: ${data?['lp']}, Change: ${data?['chng']}");
             }
           }
         }
       }
-      print("Total option tokens updated: $optionTokensUpdated");
-      print("=======================================");
+      // print("Total option tokens updated: $optionTokensUpdated");
+      // print("=======================================");
     }
 
     bool dataUpdated = false;
@@ -3268,10 +3268,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     if (dataUpdated && _sortByWL.isNotEmpty) {
       try {
         // Log pre-sort data for debugging
-        if (_scrips.isNotEmpty) {
-          print(
-              "Socket update - Pre-sort: ${_scrips[0]['tsym']} LTP: ${_scrips[0]['ltp']} PerChange: ${_scrips[0]['perChange']}");
-        }
+        // if (_scrips.isNotEmpty) {
+        //   print(
+        //       "Socket update - Pre-sort: ${_scrips[0]['tsym']} LTP: ${_scrips[0]['ltp']} PerChange: ${_scrips[0]['perChange']}");
+        // }
 
         // Create a copy of the list to preserve object references
         final List<dynamic> tempScrips = List<dynamic>.from(_scrips);
@@ -3322,10 +3322,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
 
         // Log post-sort data for debugging
-        if (tempScrips.isNotEmpty) {
-          print(
-              "Socket update - Post-sort: ${tempScrips[0]['tsym']} LTP: ${tempScrips[0]['ltp']} PerChange: ${tempScrips[0]['perChange']}");
-        }
+        // if (tempScrips.isNotEmpty) {
+        //   print(
+        //       "Socket update - Post-sort: ${tempScrips[0]['tsym']} LTP: ${tempScrips[0]['ltp']} PerChange: ${tempScrips[0]['perChange']}");
+        // }
 
         // Update the list with the sorted data
         _scrips = tempScrips;
