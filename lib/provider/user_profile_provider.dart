@@ -240,13 +240,13 @@ class UserProfileProvider extends DefaultChangeNotifier {
     _settingMenu = [
       {
         "title": "API Key",
-        "subTitle": "API Key",
+        "subTitle": "Generate & Manage API Key for Secure Trading",
         "leading": "assets/icon/key-01.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
       {
         "title": "TOTP",
-        "subTitle": "Time-based One-Time Password",
+        "subTitle": "Enable Two-Factor Authentication (TOTP)",
         "leading": "assets/icon/key-01.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
@@ -258,25 +258,25 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Change Password",
-        "subTitle": "Change Password",
+        "subTitle": "Update Your Account Password Securely",
         "leading": "assets/icon/key-01.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
       {
         "title": "Theme",
-        "subTitle": ref.read(themeProvider).deviceTheme,
+        "subTitle": "Customize Theme & Interface Settings",
         "leading": "assets/icon/theme_icon.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
       {
         "title": "Log",
-        "subTitle": "Log message",
+        "subTitle": "View Account & Trading Logs",
         "leading": "assets/profile/privacy_settings.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
       {
         "title": "Order Preference",
-        "subTitle": "Trading Order Preferences & Exchange Settings",
+        "subTitle": "Set Trading Order Preferences",
         "leading": "assets/profile/privacy_settings.svg",
         "trailing": "assets/profile/greater_arrow.svg"
       },
@@ -291,7 +291,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
     _profileMenu = [
       {
         "title": "Fund",
-        "subTitle": "Add Fund, Withdraw",
+        "subTitle": "Deposit & Withdraw Funds",
         "leading": "assets/profileimage/wallet.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref.read(showcaseProvide).fundcase,
@@ -299,7 +299,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "My Account",
-        "subTitle": "Profile Details, Bank Accounts",
+        "subTitle": "Account Settings & Profile Management",
         "leading": "assets/profileimage/user_logo.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref.read(showcaseProvide).accountcase,
@@ -307,7 +307,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Reports",
-        "subTitle": "P&L Insights, Ledger, Holdings",
+        "subTitle": "Trading & Financial Reports",
         "leading": "assets/profileimage/reports.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref.read(showcaseProvide).reportcase,
@@ -323,7 +323,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       // },
       {
         "title": "Corporate Action",
-        "subTitle": "Corporate Action",
+        "subTitle": "Track Corporate Events & Actions",
         "leading": "assets/profileimage/coa_edited.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref.read(showcaseProvide).corporateactioncase,
@@ -347,7 +347,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       // },
       {
         "title": "IPO",
-        "subTitle": "A company's first public stock offering",
+        "subTitle": "Apply & Invest in IPOs",
         "leading": "assets/profileimage/reports.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": "",
@@ -355,7 +355,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Mutual Fund",
-        "subTitle": "Invest in diversified assets managed by professionals",
+        "subTitle": "Explore & Invest in Mutual Funds",
         "leading": "assets/icon/mf_icon.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": "",
@@ -363,7 +363,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Bonds",
-        "subTitle": "Bonds",
+        "subTitle": "Explore & Invest in Bonds",
         "leading": "assets/profileimage/reports.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": "",
@@ -371,7 +371,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "OptionZ",
-        "subTitle": "OptionZ",
+        "subTitle": "Trade in Advanced Derivatives with OptionZ",
         "leading": "assets/profileimage/pledge.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref.read(showcaseProvide).pledgeunpcase,
@@ -395,7 +395,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Settings",
-        "subTitle": "Change Password, API key, Theme",
+        "subTitle": "Manage Security, API, & Account Preferences",
         "leading": "assets/profileimage/privacy_settings.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref.read(showcaseProvide).logcase,
@@ -404,7 +404,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       {
         "title": "Rate Us",
         "subTitle":
-            "Share your experience! Rate us to help others discover our great service.",
+            "Share Your Feedback & Experience.",
         "leading": "assets/icon/appbarIcon/star.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref.read(showcaseProvide).notificationcase,
@@ -412,7 +412,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Notification",
-        "subTitle": "Message, Exchange Status",
+        "subTitle": "Manage Alerts & Notifications",
         "leading": "assets/icon/appbarIcon/bell.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref.read(showcaseProvide).notificationcase,

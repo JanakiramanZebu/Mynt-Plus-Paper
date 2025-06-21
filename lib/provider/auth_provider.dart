@@ -1482,10 +1482,10 @@ void _showAuthenticationErrorDialog(BuildContext context, String s, String error
           ref.read(transcationProvider).fetchc(context);
 
           // FirebaseAnalytics.instance.setUserId(id: pref.clientId);
-          // IPOs
-          setIposAPicalls();
-          // mf
-          setmfapicalls(context);
+          // // IPOs
+          // setIposAPicalls();
+          // // mf
+          // setmfapicalls(context);
           // Explore
           // await ref.read(stocksProvide).fetchStockMonitor("NSE", "NIFTY50", "VolUpPriceUp");
           // await ref.read(indexListProvider).fetchStockTopIndex();

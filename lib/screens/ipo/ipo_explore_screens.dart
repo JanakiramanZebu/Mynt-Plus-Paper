@@ -15,7 +15,8 @@ import 'preclose_ipo/preclose_ipo_screen.dart';
 
 class IpoExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider theme;
-  const IpoExploreScreens({super.key, required this.theme});
+  final int? initialTabIndex;
+  const IpoExploreScreens({super.key, required this.theme, this.initialTabIndex});
 
   @override
   ConsumerState<IpoExploreScreens> createState() => _ExploreScreensState();
@@ -49,7 +50,11 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
+    _tabController = TabController(
+      length: 3, 
+      vsync: this, 
+      initialIndex: widget.initialTabIndex ?? 0
+    );
     _tabController.animation!.addListener(_onTabChanged);
   }
 

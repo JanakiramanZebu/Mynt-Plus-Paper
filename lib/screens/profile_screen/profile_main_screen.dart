@@ -568,7 +568,7 @@ class UserAccountScreen extends ConsumerWidget {
                                   : colors.colorBlack,
                             ),
                             const SizedBox(width: 8),
-                            Text("Log Out",
+                            Text("Sign Out Securely",
                                 style: textStyle(
                                     !theme.isDarkMode
                                         ? colors.colorWhite

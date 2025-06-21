@@ -35,7 +35,14 @@ class _WatchlistsBottomSheetState
     // Get the current sort from provider
     final sortByWL = ref.read(marketWatchProvider).sortByWL;
 
-    if (sortByWL.isEmpty) return;
+    // Reset all sort states to default when no sorting is active
+    if (sortByWL.isEmpty) {
+      currentSortType = "";
+      scripisAscending = true;
+      pricepisAscending = true;
+      perchangisAscending = true;
+      return;
+    }
 
     // Determine current sort type and direction
     if (sortByWL.startsWith("Scrip")) {

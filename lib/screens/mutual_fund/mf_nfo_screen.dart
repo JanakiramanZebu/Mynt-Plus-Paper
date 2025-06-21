@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
@@ -30,10 +31,9 @@ class MFNFOScreen extends ConsumerWidget {
           leading: Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios, 
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
-              ),
+              icon: Icon(Icons.arrow_back_ios,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -53,18 +53,13 @@ class MFNFOScreen extends ConsumerWidget {
       ),
     );
   }
-  
-  Widget _buildContent(BuildContext context, MFProvider mf, ThemesProvider theme) {
-    final hasData = mf.investloader == false && 
-                    mf.mfNFOList != null && 
-                    mf.mfNFOList!.nfoList != null && 
-                    mf.mfNFOList!.nfoList!.isNotEmpty;
-                    
-    if (!hasData) {
-      return const Center(child: Text("No New Fund Offers available"));
+
+  Widget _buildContent(
+      BuildContext context, MFProvider mf, ThemesProvider theme) {
+    if(mf.mfNFOList!.nfoList!.isEmpty){
+      return const Center(child: NoDataFound());
     }
-    
-    return Column(
+else{    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
@@ -75,7 +70,7 @@ class MFNFOScreen extends ConsumerWidget {
             itemCount: mf.mfNFOList!.nfoList!.length,
             itemBuilder: (BuildContext context, int index) {
               final nfoItem = mf.mfNFOList!.nfoList![index];
-              
+
               return Column(
                 children: [
                   InkWell(
@@ -84,35 +79,41 @@ class MFNFOScreen extends ConsumerWidget {
                         mf.chngMandate("Lumpsum");
                         await mf.fetchUpiDetail();
                         await mf.fetchBankDetail();
-                      
+
                         if (nfoItem.sIPFLAG == "Y") {
                           await mf.fetchMFSipData(
-                            nfoItem.iSIN ?? "",
-                            nfoItem.schemeCode ?? "",
+                            nfoItem.iSIN!,
+                            nfoItem.schemeCode!,
                           );
                           await mf.fetchMFMandateDetail();
                         }
                         mf.orderpagetite("NFO");
-                        
-                        Navigator.pushNamed(
-                          context,
-                          Routes.mforderScreen,
-                          arguments: nfoItem,
-                        );
+
+                        if (context.mounted) {
+                          Navigator.pushNamed(
+                            context,
+                            Routes.mforderScreen,
+                            arguments: nfoItem,
+                          );
+                        }
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Error: ${e.toString()}"),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Error: ${e.toString()}"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       }
                     },
                     child: Container(
                       decoration: BoxDecoration(
                         border: Border.symmetric(
                           vertical: BorderSide(
-                            color: theme.isDarkMode ? colors.darkGrey : const Color(0xffEEF0F2),
+                            color: theme.isDarkMode
+                                ? colors.darkGrey
+                                : const Color(0xffEEF0F2),
                             width: 0,
                           ),
                         ),
@@ -138,15 +139,20 @@ class MFNFOScreen extends ConsumerWidget {
                                     Row(
                                       children: [
                                         SizedBox(
-                                          width: MediaQuery.of(context).size.width * 0.65,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.65,
                                           child: Text(
-                                            nfoItem.fSchemeName ?? "Unknown Fund",
+                                            nfoItem.fSchemeName ??
+                                                "Unknown Fund",
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
-                                            style: textStyles.scripNameTxtStyle.copyWith(
-                                              color: theme.isDarkMode 
-                                                ? colors.colorWhite 
-                                                : colors.colorBlack,
+                                            style: textStyles.scripNameTxtStyle
+                                                .copyWith(
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
                                             ),
                                           ),
                                         ),
@@ -154,24 +160,30 @@ class MFNFOScreen extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           "Open ${_formatDate(nfoItem.startDate)}",
                                           style: textStyle(
-                                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                            theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
                                             12,
                                             FontWeight.w400,
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.only(right: 8.0),
+                                          padding:
+                                              const EdgeInsets.only(right: 8.0),
                                           child: Text(
                                             "Closing ${_formatDate(nfoItem.endDate)}",
                                             style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w400,
-                                              color: theme.isDarkMode ? colors.colorWhite : Colors.black,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : Colors.black,
                                             ),
                                           ),
                                         ),
@@ -184,7 +196,9 @@ class MFNFOScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Divider(
-                            color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : colors.colorDivider,
                             thickness: 1.0,
                           ),
                         ],
@@ -198,8 +212,9 @@ class MFNFOScreen extends ConsumerWidget {
         ),
       ],
     );
+}
   }
-  
+
   // Helper method to format date strings
   String _formatDate(String? date) {
     if (date == null || date.isEmpty) {

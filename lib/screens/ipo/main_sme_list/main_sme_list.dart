@@ -368,8 +368,8 @@ class _IPOListItem extends StatelessWidget {
     ipoProvider.setisMainIPOPlaceOrderBtnActiveValue = false;
     
     await upiProvider.fetchupiIdView(
-      upiProvider.bankdetails!.dATA![upiProvider.indexss][1],
-      upiProvider.bankdetails!.dATA![upiProvider.indexss][2],
+      upiProvider.bankdetails?.dATA?[upiProvider.indexss][1] ?? "",
+      upiProvider.bankdetails?.dATA?[upiProvider.indexss][2] ?? "",
     );
 
     if (ipo.key == "SME") {

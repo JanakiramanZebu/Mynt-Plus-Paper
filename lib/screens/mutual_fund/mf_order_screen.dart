@@ -58,9 +58,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               child: IconButton(
                 icon: Icon(
                   Icons.arrow_back_ios,
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   // size: 18,
                 ),
                 onPressed: () {
@@ -332,6 +331,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                 onTap: () {
                                   mfOrder.chngOrderType(
                                       mfOrder.mfOrderTpyes[index]);
+                                  mfOrder.resetmfordervalidation();
                                   FocusScope.of(context).unfocus();
                                 },
                                 child: Container(
@@ -356,14 +356,13 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                                     theme.isDarkMode
                                                 ? colors.colorWhite
                                                 : mfOrder.mfOrderTpye ==
-                                                        mfOrder.mfOrderTpyes[
-                                                            index]
+                                                        mfOrder
+                                                            .mfOrderTpyes[index]
                                                     ? colors.colorBlack
                                                     : const Color(0xff666666),
                                             14,
                                             mfOrder.mfOrderTpye ==
-                                                    mfOrder
-                                                        .mfOrderTpyes[index]
+                                                    mfOrder.mfOrderTpyes[index]
                                                 ? FontWeight.w600
                                                 : FontWeight.w500))));
                           },
@@ -377,9 +376,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
             if (mfOrder.mfOrderTpye != "One-time") ...[
               Text("Mandates",
                   style: textStyle(
-                      theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       16,
                       FontWeight.w600)),
               const SizedBox(height: 4),
@@ -491,9 +488,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                         hintText: '${widget.mfData.minimumPurchaseAmount}',
                         hintStyle: textStyle(
                             const Color(0xff666666), 15, FontWeight.w400),
-                        inputFormate: [
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
+                        inputFormate: [FilteringTextInputFormatter.digitsOnly],
                         style: textStyle(
                             theme.isDarkMode
                                 ? colors.colorWhite
@@ -540,7 +535,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                         onChanged: (value) {
                           mfOrder.isValidUpiId(widget.mfData);
                         })),
-              if (mfOrder.invAmtError != null) ...[
+              if (mfOrder.mfOrderTpye == "One-time" &&
+                  mfOrder.invAmtError != null) ...[
                 const SizedBox(height: 6),
                 Text("${mfOrder.invAmtError}",
                     style:
@@ -569,8 +565,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                     hintText: mfOrder.mfOrderTpye == "One-time"
                         ? '${widget.mfData.minimumPurchaseAmount}'
                         : '${widget.mfData.faceValue}',
-                    hintStyle: textStyle(
-                        const Color(0xff666666), 15, FontWeight.w400),
+                    hintStyle:
+                        textStyle(const Color(0xff666666), 15, FontWeight.w400),
                     inputFormate: [FilteringTextInputFormatter.digitsOnly],
                     style: textStyle(
                         theme.isDarkMode
@@ -692,40 +688,43 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                         const SizedBox(height: 13),
                         DropdownButtonHideUnderline(
                             child: DropdownButton2(
-                                menuItemStyleData: MenuItemStyleData(
-                                    customHeights: mfOrder.frqCustHeight()),
-                                buttonStyleData: ButtonStyleData(
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                        color: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : Color(0xffF1F3F8),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(32)))),
-                                dropdownStyleData: DropdownStyleData(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 6),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  offset: const Offset(0, 8),
-                                ),
-                                isExpanded: true,
-                                style: textStyle(theme.isDarkMode ? colors.colorWhite :const Color(0XFF000000), 13,
-                                    FontWeight.w500),
-                                hint: Text(mfOrder.freqName,
-                                    style: textStyle(theme.isDarkMode ? colors.colorWhite :const Color(0XFF000000),
-                                        13, FontWeight.w500)),
-                 
-                                items: mfOrder.addFrqDividers(),
-                                value: mfOrder.freqName,
-                                onChanged: (value) async {
-                                  mfOrder.chngFrequency("$value");
-                                },
-                                
-                                
-                                )),
-                                  
+                          menuItemStyleData: MenuItemStyleData(
+                              customHeights: mfOrder.frqCustHeight()),
+                          buttonStyleData: ButtonStyleData(
+                              height: 36,
+                              decoration: BoxDecoration(
+                                  color: theme.isDarkMode
+                                      ? colors.darkGrey
+                                      : Color(0xffF1F3F8),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(32)))),
+                          dropdownStyleData: DropdownStyleData(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            offset: const Offset(0, 8),
+                          ),
+                          isExpanded: true,
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : const Color(0XFF000000),
+                              13,
+                              FontWeight.w500),
+                          hint: Text(mfOrder.freqName,
+                              style: textStyle(
+                                  theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : const Color(0XFF000000),
+                                  13,
+                                  FontWeight.w500)),
+                          items: mfOrder.addFrqDividers(),
+                          value: mfOrder.freqName,
+                          onChanged: (value) async {
+                            mfOrder.chngFrequency("$value");
+                          },
+                        )),
                       ],
                     ),
                   ),
@@ -794,8 +793,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                           FontWeight.w600)),
                   Text(
                       "${mfOrder.invDuration.text} ${mfOrder.freqName == "DAILY" ? "Days" : mfOrder.freqName == "MONTHLY" ? "Months" : "Qtrs"}",
-                      style: textStyle(
-                          colors.kColorRedText, 16, FontWeight.w600)),
+                      style:
+                          textStyle(colors.kColorRedText, 16, FontWeight.w600)),
                 ],
               ),
               Container(
@@ -831,9 +830,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               const SizedBox(height: 9),
               Text("Payment method",
                   style: textStyle(
-                      theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       16,
                       FontWeight.w600)),
               const SizedBox(height: 14),
@@ -869,9 +866,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               const SizedBox(height: 17),
               Text("Bank account",
                   style: textStyle(
-                      theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       16,
                       FontWeight.w600)),
               const SizedBox(height: 14),
@@ -936,8 +931,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                         })),
                 if (mfOrder.upiError != null) ...[
                   Text("${mfOrder.upiError}",
-                      style: textStyle(
-                          colors.kColorRedText, 10, FontWeight.w500)),
+                      style:
+                          textStyle(colors.kColorRedText, 10, FontWeight.w500)),
                   const SizedBox(height: 6)
                 ]
               ],
@@ -945,33 +940,31 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               const SizedBox(height: 14),
               Text("Payment method",
                   style: textStyle(
-                      theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       16,
                       FontWeight.w600)),
               const SizedBox(height: 14),
               DropdownButtonHideUnderline(
                   child: DropdownButton2<String>(
-                       dropdownStyleData: DropdownStyleData(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : const Color.fromARGB(255, 255, 255, 255))),
-                            buttonStyleData: ButtonStyleData(
-                    decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? const Color(0xffB5C0CF).withOpacity(.15)
-                            : const Color(0xffF1F3F8),
-                        // border: Border.all(color: Colors.grey),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(32)))),
+                      dropdownStyleData: DropdownStyleData(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : const Color.fromARGB(255, 255, 255, 255))),
+                      buttonStyleData: ButtonStyleData(
+                          decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? const Color(0xffB5C0CF).withOpacity(.15)
+                                  : const Color(0xffF1F3F8),
+                              // border: Border.all(color: Colors.grey),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(32)))),
                       menuItemStyleData: MenuItemStyleData(
                           customHeights: mfOrder.getCustItemsHeight()),
                       isExpanded: true,
-                      style: textStyle( 
-                          const Color.fromARGB(255, 0, 0, 0), 13, FontWeight.w500),
+                      style: textStyle(const Color.fromARGB(255, 0, 0, 0), 13,
+                          FontWeight.w500),
                       hint: Text(mfOrder.paymentName,
                           style: textStyle(
                               const Color(0XFF000000), 13, FontWeight.w500)),
@@ -981,62 +974,60 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                       value: mfOrder.paymentName,
                       onChanged: (value) async {
                         mfOrder.chngPayName("$value");
-                      }
-
-                      )),
-            
-            
+                      })),
               const SizedBox(height: 18),
               Text("Bank account",
                   style: textStyle(
-                      theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       16,
                       FontWeight.w600)),
               const SizedBox(height: 12),
-             DropdownButtonHideUnderline(
-child: DropdownButton2(
-  menuItemStyleData: MenuItemStyleData(
-    customHeights: mfOrder.getBankCustItemsHeight(),
-  ),
-  buttonStyleData: ButtonStyleData(
-    padding: const EdgeInsets.only(top: 10, left: 16),
-    height: 50,
-    width: MediaQuery.of(context).size.width,
-    decoration: BoxDecoration(
-      color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-      borderRadius: const BorderRadius.all(Radius.circular(32)),
-    ),
-  ),
-  dropdownStyleData: DropdownStyleData(
-    decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
-    offset: const Offset(0, 1),
-  ),
-  isExpanded: true,
-  style: textStyle(
-    theme.isDarkMode ? colors.colorWhite : const Color(0XFF000000),
-    13,
-    FontWeight.w500,
-  ),
-  hint: Text(
-    mfOrder.accNum,
-    style: textStyle(
-      theme.isDarkMode ? colors.colorWhite : const Color(0XFF000000),
-      13,
-      FontWeight.w500,
-    ),
-  ),
-  items: mfOrder.addBankDividers(),
-  value: mfOrder.accNum,
-  onChanged: (value) async {
-    mfOrder.chngBankAcc("$value");
-  },
-  
-),
-),
-
-                        
+              DropdownButtonHideUnderline(
+                child: DropdownButton2(
+                  menuItemStyleData: MenuItemStyleData(
+                    customHeights: mfOrder.getBankCustItemsHeight(),
+                  ),
+                  buttonStyleData: ButtonStyleData(
+                    padding: const EdgeInsets.only(top: 10, left: 16),
+                    height: 50,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      color: theme.isDarkMode
+                          ? colors.darkGrey
+                          : const Color(0xffF1F3F8),
+                      borderRadius: const BorderRadius.all(Radius.circular(32)),
+                    ),
+                  ),
+                  dropdownStyleData: DropdownStyleData(
+                    decoration:
+                        BoxDecoration(borderRadius: BorderRadius.circular(4)),
+                    offset: const Offset(0, 1),
+                  ),
+                  isExpanded: true,
+                  style: textStyle(
+                    theme.isDarkMode
+                        ? colors.colorWhite
+                        : const Color(0XFF000000),
+                    13,
+                    FontWeight.w500,
+                  ),
+                  hint: Text(
+                    mfOrder.accNum,
+                    style: textStyle(
+                      theme.isDarkMode
+                          ? colors.colorWhite
+                          : const Color(0XFF000000),
+                      13,
+                      FontWeight.w500,
+                    ),
+                  ),
+                  items: mfOrder.addBankDividers(),
+                  value: mfOrder.accNum,
+                  onChanged: (value) async {
+                    mfOrder.chngBankAcc("$value");
+                  },
+                ),
+              ),
               const SizedBox(height: 8),
               if (mfOrder.paymentName == "UPI") ...[
                 const SizedBox(height: 12),
@@ -1071,8 +1062,8 @@ child: DropdownButton2(
                         })),
                 if (mfOrder.upiError != null) ...[
                   Text("${mfOrder.upiError}",
-                      style: textStyle(
-                          colors.kColorRedText, 10, FontWeight.w500)),
+                      style:
+                          textStyle(colors.kColorRedText, 10, FontWeight.w500)),
                   const SizedBox(height: 6)
                 ]
               ]
@@ -1083,8 +1074,7 @@ child: DropdownButton2(
               Expanded(
                   child: Text(
                       " NAV will be allotted on the day funds are realised at the clearing corporation.",
-                      style:
-                          textStyle(colors.colorBlue, 13, FontWeight.w500)))
+                      style: textStyle(colors.colorBlue, 13, FontWeight.w500)))
             ]),
             const SizedBox(
               height: 100,
@@ -1167,8 +1157,7 @@ child: DropdownButton2(
                             if (mfOrder.mfOrderTpye == "One-time") {
                               print(mfOrder.isValidUpiId(widget.mfData));
                               print(widget.mfData);
-                              if (mfOrder.isValidUpiId(widget.mfData) ==
-                                  true) {
+                              if (mfOrder.isValidUpiId(widget.mfData) == true) {
                                 mfPlaceorder(widget.mfData, mfOrder, context);
                               } else if (mfOrder.paymentName != "UPI") {
                                 mfPlaceorder(widget.mfData, mfOrder, context);
@@ -1212,7 +1201,7 @@ child: DropdownButton2(
                                   ? colors.colorbluegrey
                                   : colors.colorBlack),
                           shape: const StadiumBorder()),
-                      child: mfOrder.loading == true 
+                      child: mfOrder.loading == true
                           ? const SizedBox(
                               height: 15,
                               width: 15,
@@ -1250,7 +1239,8 @@ mfPlaceorder(
   MfPlaceOrderInput input = MfPlaceOrderInput(
     transcode: "NEW", //NEW/CXL
     schemecode:
-        "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${mfData.schemeCode}-L1" : mfData.schemeCode}",
+        "${(double.tryParse(mfOrder.installmentAmt.text.trim()) ?? 0) >= 200000 ? "${mfData.schemeCode}-L1" : mfData.schemeCode}",
+    // "${double.parse(mfOrder.installmentAmt.text).toInt() >= 200000 ? "${mfData.schemeCode}-L1" : mfData.schemeCode}",
     buysell: "P",
     buyselltype: "FRESH",
     dptxn: "C",

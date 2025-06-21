@@ -38,7 +38,7 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const CustomDragHandler(),
-            Text("Can we help you?",
+            Text("Customer Support & Assistance",
                 style: textStyle(
                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                     14,

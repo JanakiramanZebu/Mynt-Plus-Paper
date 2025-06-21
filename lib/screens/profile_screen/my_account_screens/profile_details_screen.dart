@@ -319,7 +319,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                         headerBuilder: (context, isExpanded) {
                           return ListTile(
                             title: TextWidget.titleText(
-                                text: "Margin Trading Facility (MTF)", theme: theme.isDarkMode, fw: 1),
+                                text: "Enable & Manage Margin Trading", theme: theme.isDarkMode, fw: 1),
 
                             // Text("Nominee",
                             //     style: TextStyle(
@@ -353,7 +353,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                         headerBuilder: (context, isExpanded) {
                           return ListTile(
                             title: TextWidget.titleText(
-                                text: "Trading Preferences",
+                                text: "Customize Trading Preferences",
                                 theme: theme.isDarkMode,
                                 fw: 1),
 
@@ -400,7 +400,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                         headerBuilder: (context, isExpanded) {
                           return ListTile(
                             title: TextWidget.titleText(
-                                text: "Nominee",
+                                text: "Manage Nominee Details",
                                 theme: theme.isDarkMode,
                                 fw: 1),
 
@@ -495,7 +495,7 @@ class _ProfileInfoDetailsState extends ConsumerState<ProfileInfoDetails> {
                         headerBuilder: (context, isExpanded) {
                           return ListTile(
                             title: TextWidget.titleText(
-                                text: "Closure",
+                                text: "Request Account Closure",
                                 theme: theme.isDarkMode,
                                 fw: 1),
 
@@ -1678,7 +1678,7 @@ class UserInfoCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextWidget.titleText(
-                    text: "Personal Details", theme: theme.isDarkMode, fw: 1),
+                    text: "Manage Personal Information", theme: theme.isDarkMode, fw: 1),
 
                 // const Text("Personal Details",
                 //     style:

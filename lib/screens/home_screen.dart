@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../locator/constant.dart';
 import '../locator/preference.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
+import '../provider/auth_provider.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
@@ -805,6 +806,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final userProfile = ref.read(userProfileProvider);
     final marketWatchList = ref.read(marketWatchProvider);
     final orderProviderRef = ref.read(orderProvider);
+    final authProviderRef = ref.read(authProvider);
 
     indexProvide.bottomMenu(4, context);
     portfolio.cancelTimer();
@@ -824,6 +826,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
         // Funds data
         fundProviderRef.fetchFunds(context);
+
+        // IPOs
+          authProviderRef.setIposAPicalls();
+          // mf
+          authProviderRef.setmfapicalls(context);
 
         //// reports/////
         if (reportsprovider.ledgerAllData == null) {

@@ -660,19 +660,32 @@ class _SMEApplyIpoScreenState extends ConsumerState<SMEApplyIpoScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text("Bid Price",
-                                          style: textStyle(
-                                              theme.isDarkMode
-                                                  ? addIpo[index].isChecked ==
-                                                          true
-                                                      ? colors.colorGrey
-                                                      : colors.colorWhite
-                                                  : addIpo[index].isChecked ==
-                                                          true
-                                                      ? colors.colorGrey
-                                                      : colors.colorBlack,
-                                              14,
-                                              FontWeight.w600)),
+                                      Row(
+                                        children: [
+                                          Text("Bid Price",
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? addIpo[index].isChecked ==
+                                                              true
+                                                          ? colors.colorGrey
+                                                          : colors.colorWhite
+                                                      : addIpo[index].isChecked ==
+                                                              true
+                                                          ? colors.colorGrey
+                                                          : colors.colorBlack,
+                                                  14,
+                                                  FontWeight.w600)),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            "(₹${double.parse(widget.smeipo.minPrice!).toInt()}- ₹${double.parse(widget.smeipo.maxPrice!).toInt()})",
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                10,
+                                                FontWeight.w600)),
+                                        ],
+                                      ),
                                       const SizedBox(height: 8),
                                       SizedBox(
                                         height: 44,

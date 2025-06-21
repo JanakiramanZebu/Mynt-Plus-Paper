@@ -607,7 +607,7 @@ class AppRoutes {
 
       case Routes.ipo:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const IPOScreen(),
+          pageBuilder: (_, __, ___) => IPOScreen(initialTabIndex: args as int?),
           beginOffset: const Offset(0.0, 1.0),
         );
 

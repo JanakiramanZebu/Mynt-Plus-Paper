@@ -62,6 +62,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleBackNavigation(BuildContext context, Preferences pref, AuthProvider auth, 
       UserProfileProvider userProfile, WidgetRef ref) async {
+    // Check if there's navigation history
+    if (!Navigator.canPop(context)) {
+      // No route history - show exit confirmation dialog
+      final shouldExit = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Exit App'),
+          content: const Text('Do you want to exit the app?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Stay in app
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Exit app
+              },
+              child: const Text('Exit'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldExit == true) {
+        SystemNavigator.pop(); // Exit the app
+      }
+      return; // Don't proceed with normal back navigation
+    }
+
+    // There is route history - proceed with existing logic
     final theme = ref.watch(themeProvider);
     if (pref.islogOut! &&
         (pref.clientId!.isEmpty || pref.clientId!.isNotEmpty || pref.clientMob!.isEmpty || pref.clientMob!.isNotEmpty)) {
@@ -176,7 +208,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     titleSpacing: 6,
                     leading: InkWell(
                         onTap: () async {
-                          print("dfghj tapped");
                           await _handleBackNavigation(context, pref, auth, userProfile, ref);
                         },
                         child: Padding(

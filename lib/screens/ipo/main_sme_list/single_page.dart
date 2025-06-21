@@ -290,7 +290,8 @@ class _IPODetailsContainer extends StatelessWidget {
         ),
         _buildDivider(),
         _SubscriptionSection(theme: theme, singlepage: singlepage),
-        _buildDivider(),
+
+        
         _IPOTimelineSection(theme: theme, singlepage: singlepage),
         _buildDivider(),
         _AboutCompanySection(
@@ -629,6 +630,12 @@ class _SubscriptionSection extends StatelessWidget {
                   return _ipoDateDisplay(category, subscriptionTimes);
                 },
               ),
+               Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Divider(
+        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+      ),
+    )
             ],
           );
         },

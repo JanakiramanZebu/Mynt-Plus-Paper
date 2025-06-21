@@ -298,8 +298,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   StreamSubscription? _socketDataSubscription;
 
   MarketWatchProvider(this.ref) {
-    // Load sort preference asynchronously - don't block the constructor
-    _loadSortPreference();
+    // Reset sort preference on app start instead of loading saved preference
+    _resetSortPreference();
     _setupWebSocketListener();
     // Load saved page index
     _loadCurrentPageIndex();
@@ -374,6 +374,19 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       print("Error loading sort preference: $e");
+    }
+  }
+
+  // Method to reset sort preference on app start and when adding scrips
+  Future<void> _resetSortPreference() async {
+    try {
+      _sortByWL = "";
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.remove("sortByWL");
+      notifyListeners();
+      print("Sort preference reset on app start");
+    } catch (e) {
+      print("Error resetting sort preference: $e");
     }
   }
 
@@ -2541,10 +2554,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _scrips = [];
       }
 
-      // Apply sorting if there's a saved sort preference and if there are scrips to sort
-      if (_scrips.isNotEmpty && _sortByWL.isNotEmpty) {
-        _applySavedSorting();
-      }
+      // Don't apply any saved sorting - keep the default order from server
+      // This ensures watchlists always show in their natural order when switched
 
       // Handle portfolio holdings data if "My Stocks" watchlist
       if (wName == "My Stocks") {
@@ -2592,31 +2603,27 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           isAdd: false, scripToken: input, wlname: walName);
 
     if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
-        // If the deleted watchlist is the active one, change to a different watchlist
-        if (walName == _wlName) {
-          // Find the first available watchlist that's not the one being deleted
-          String newWlName = "";
-          if (_marketWatchlist != null &&
-              _marketWatchlist!.values!.isNotEmpty) {
-            for (String wl in _marketWatchlist!.values!) {
-              if (wl != walName) {
-                newWlName = wl;
-                break;
-              }
-            }
-          }
+        // Clean up cached data for deleted watchlist
+        _marketWatchScripData.remove(walName);
 
-          // If we found an alternative, switch to it
-          if (newWlName.isNotEmpty) {
-            await changeWlName(newWlName, "No");
-          } else {
-            // If no alternative found, reset to empty
-      await changeWlName("", "No");
-          }
+        // If the deleted watchlist is the active one, clear current scrips immediately
+        if (walName == _wlName) {
+          // Clear scrips immediately to prevent showing deleted watchlist data
+          _scrips = [];
+
+          // Unsubscribe from websocket for deleted watchlist scrips
+          await requestMWScrip(context: context, isSubscribe: false);
+
+          // Clear current watchlist name temporarily to avoid confusion
+          _wlName = "";
+          _isPreDefWLs = "No";
         }
 
         // Refresh the watchlist data
         await fetchMWList(context, false, true);
+
+        // Update UI to reflect changes
+        notifyListeners();
       }
     } finally {
       toggleLoadingOn(false);
@@ -2653,6 +2660,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
       ConstantName.sessCheck = true;
       if (!isReOrder) {
+        // Reset sorting when adding/deleting scrips (but not for reordering)
+        if (isAdd) {
+          await _resetSortPreference();
+        }
         await fetchMWScrip(wlName, context);
         await changeWLScrip(wlName, context);
       } else {
@@ -3340,7 +3351,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
-  // Add scrip method with sort maintenance
+  // Add scrip method with sort reset
   Future<void> addScrip(
       Map<String, dynamic> scrip, String wlName, BuildContext context) async {
     // Add the scrip to the list
@@ -3348,10 +3359,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _scrips.add(scrip);
     }
 
-    // If sorting is active, maintain the sort order
-    if (_sortByWL != null && _sortByWL.isNotEmpty) {
-      await filterMWScrip(sorting: _sortByWL, wlName: wlName, context: context);
-    }
+    // Reset sorting when adding new scrips to show natural order
+    await _resetSortPreference();
+    notifyListeners();
   }
 
 // Assing Del Qty =0
@@ -3389,13 +3399,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-// Market watch scrip re-order
+  // Market watch scrip re-order
   void reOrderList(
       {required int oldIndex,
       required int newIndex,
       required String wlName,
       required BuildContext context}) async {
-    final localstorage = await SharedPreferences.getInstance();
     final int oldI = oldIndex;
     int newI = newIndex;
     if (newI > oldI) {
@@ -3421,9 +3430,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     await addDelMarketScrip(
         wlName, addInput, context, true, true, false, false);
-    _sortByWL = "";
-
-    localstorage.setString("sortByWL", _sortByWL);
+    
+    // Reset sorting after reordering to maintain natural order
+    await _resetSortPreference();
     notifyListeners();
   }
 

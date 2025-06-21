@@ -19,7 +19,11 @@ class IndexBottomSheet extends ConsumerWidget {
   final dynamic defaultIndex;
   final bool src;
   final int indexPosition;
-  const IndexBottomSheet({super.key, required this.defaultIndex, required this.src, required this.indexPosition});
+  const IndexBottomSheet(
+      {super.key,
+      required this.defaultIndex,
+      required this.src,
+      required this.indexPosition});
 
   // int tabIndex = 0;
   @override
@@ -152,6 +156,7 @@ class IndexBottomSheet extends ConsumerWidget {
                                 ischeck: ischeck,
                                 src: src,
                                 isDarkMode: theme.isDarkMode,
+                                indexPosition: indexPosition,
                               );
                             })
                         : Center(
@@ -176,6 +181,7 @@ class IndexListItemWithStream extends StatefulWidget {
   final bool ischeck;
   final bool src;
   final bool isDarkMode;
+  final int indexPosition;
 
   const IndexListItemWithStream({
     Key? key,
@@ -185,6 +191,7 @@ class IndexListItemWithStream extends StatefulWidget {
     required this.ischeck,
     required this.src,
     required this.isDarkMode,
+    required this.indexPosition,
   }) : super(key: key);
 
   @override
@@ -418,6 +425,7 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
                   itemData: widget.itemData,
                   indexProvider: widget.indexProvider,
                   isDarkMode: widget.isDarkMode,
+                  indexPosition: widget.indexPosition,
                 ),
               ),
           ],
@@ -588,6 +596,7 @@ class _ActionButton extends StatelessWidget {
   final dynamic itemData;
   final dynamic indexProvider;
   final bool isDarkMode;
+  final int indexPosition;
   
   const _ActionButton({
     Key? key,
@@ -595,6 +604,7 @@ class _ActionButton extends StatelessWidget {
     required this.itemData,
     required this.indexProvider,
     required this.isDarkMode,
+    required this.indexPosition,
   }) : super(key: key);
   
   @override
@@ -608,9 +618,7 @@ class _ActionButton extends StatelessWidget {
         } else {
           // Get the first available position in the index list (0 by default)
           await indexProvider.changeIndex(
-              itemData,
-              context,
-              0); // Pass position index as integer
+              itemData, context, indexPosition); // Use the actual position that was long-pressed
 
           Navigator.of(context).pop();
         }

@@ -102,7 +102,10 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                         itemBuilder: (BuildContext context, int index) {
                           return ElevatedButton(
                               onPressed: () async {
-                                ref.read(marketWatchProvider).setCurrentWatchlistPageIndex(index + watchlist.length - 4);
+                                ref
+                                    .read(marketWatchProvider)
+                                    .setCurrentWatchlistPageIndex(
+                                        index + watchlist.length - 4);
                                 ref
                                     .read(marketWatchProvider)
                                     .changeWlName(preDefWl[index], "Yes");
@@ -286,10 +289,111 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                       _isDeleting =
                                                                           true;
                                                                     });
-                                                                    await marketWatch.deleteWatchList(
+
+                                                                    // Store the current watchlist name and index for comparison
+                                                                    final deletingWatchlist =
                                                                         watchlist[
-                                                                            index],
+                                                                            index];
+                                                                    final currentWlName =
+                                                                        widget
+                                                                            .currentWLName;
+                                                                    final wasCurrentWl =
+                                                                        deletingWatchlist ==
+                                                                            currentWlName;
+
+                                                                    // Delete the watchlist
+                                                                    await marketWatch.deleteWatchList(
+                                                                        deletingWatchlist,
                                                                         context);
+
+                                                                    // If the deleted watchlist was the current one, we need to switch
+                                                                    if (wasCurrentWl &&
+                                                                        context
+                                                                            .mounted) {
+                                                                      // Get updated watchlist after deletion
+                                                                      final updatedMarketWatch =
+                                                                          ref.read(
+                                                                              marketWatchProvider);
+                                                                      final updatedWatchlist = updatedMarketWatch
+                                                                          .marketWatchlist
+                                                                          ?.values;
+
+                                                                      if (updatedWatchlist !=
+                                                                              null &&
+                                                                          updatedWatchlist
+                                                                              .isNotEmpty) {
+                                                                        // Find a valid watchlist to switch to (first available custom or predefined)
+                                                                        String
+                                                                            newWatchlist =
+                                                                            "";
+                                                                        int newIndex =
+                                                                            0;
+
+                                                                        // First try to find a custom watchlist (non-predefined)
+                                                                        for (int i =
+                                                                                0;
+                                                                            i < updatedWatchlist.length - 4;
+                                                                            i++) {
+                                                                          if (updatedWatchlist[i] !=
+                                                                              deletingWatchlist) {
+                                                                            newWatchlist =
+                                                                                updatedWatchlist[i];
+                                                                            newIndex =
+                                                                                i;
+                                                                            break;
+                                                                          }
+                                                                        }
+
+                                                                        // If no custom watchlist found, use a predefined one
+                                                                        if (newWatchlist.isEmpty &&
+                                                                            updatedWatchlist.length >
+                                                                                4) {
+                                                                          newWatchlist =
+                                                                              "My Stocks"; // Default to My Stocks
+                                                                          newIndex =
+                                                                              updatedWatchlist.length - 4; // Index for My Stocks
+                                                                        }
+
+                                                                        // Switch to the new watchlist if found
+                                                                        if (newWatchlist
+                                                                            .isNotEmpty) {
+                                                                          // Unsubscribe from current scrips first
+                                                                          await updatedMarketWatch.requestMWScrip(
+                                                                              context: context,
+                                                                              isSubscribe: false);
+
+                                                                          // Update page index
+                                                                          updatedMarketWatch
+                                                                              .setCurrentWatchlistPageIndex(newIndex);
+
+                                                                          // Change watchlist name and flag
+                                                                          if (newWatchlist == "My Stocks" ||
+                                                                              newWatchlist == "Nifty50" ||
+                                                                              newWatchlist == "Niftybank" ||
+                                                                              newWatchlist == "Sensex") {
+                                                                            await updatedMarketWatch.changeWlName(newWatchlist,
+                                                                                "Yes");
+                                                                          } else {
+                                                                            await updatedMarketWatch.changeWlName(newWatchlist,
+                                                                                "No");
+                                                                          }
+
+                                                                          // Switch to new watchlist scrips
+                                                                          await updatedMarketWatch.changeWLScrip(
+                                                                              newWatchlist,
+                                                                              context);
+
+                                                                          // Handle special subscription for My Stocks
+                                                                          if (newWatchlist ==
+                                                                              "My Stocks") {
+                                                                            ref.read(portfolioProvider).requestWSHoldings(
+                                                                                context: context,
+                                                                                isSubscribe: true);
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+
                                                                     if (context
                                                                         .mounted) {
                                                                       await Future.delayed(const Duration(
@@ -299,7 +403,8 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                           context);
                                                                       Navigator.pop(
                                                                           context);
-                                                                    } // Go back
+                                                                    }
+
                                                                     if (mounted) {
                                                                       setDialogState(
                                                                           () {

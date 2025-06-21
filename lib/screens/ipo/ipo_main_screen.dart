@@ -11,7 +11,8 @@ import '../../provider/thems.dart';
 import '../../routes/route_names.dart';
 
 class IPOScreen extends StatefulWidget {
-  const IPOScreen({super.key});
+  final int? initialTabIndex;
+  const IPOScreen({super.key, this.initialTabIndex});
 
   @override
   State<IPOScreen> createState() => _IPOmainScreenState();
@@ -31,7 +32,7 @@ class _IPOmainScreenState extends State<IPOScreen> {
         
         return Scaffold(
           appBar: _buildAppBar(context, theme),
-          body: IpoExploreScreens(theme: theme),
+          body: IpoExploreScreens(theme: theme, initialTabIndex: widget.initialTabIndex),
         );
       },
     );

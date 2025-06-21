@@ -913,6 +913,13 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  resetmfordervalidation() {
+    invAmtError = "";
+    upiError = "";
+    installmentAmtError = "";
+    invDurationError = "";
+  }
+
   chngComYear(String year, String yearName, String isin) async {
     _comYear = yearName;
     await fetchSchemePeer(isin, year);
