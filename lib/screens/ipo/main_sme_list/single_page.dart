@@ -23,7 +23,7 @@ class MainSmeSinglePage extends StatefulWidget {
   final String mininv;
   final String pricerange;
   final String ipodetails;
-  
+
   const MainSmeSinglePage({
     super.key,
     required this.ipotype,
@@ -150,7 +150,7 @@ class _IPODetailsContainer extends StatelessWidget {
     if (singlepage.iposinglepage!.data["status"] == "CLOSED") {
       return const SizedBox();
     }
-    
+
     return Container(
       height: 35,
       color: const Color(0xFFE6F7E4),
@@ -237,7 +237,7 @@ class _IPODetailsContainer extends StatelessWidget {
   Widget _buildStatusChip() {
     final status = ipostartdate(widget.startdate, widget.enddate);
     final isOpen = status == "Open";
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -314,6 +314,7 @@ class _IPODetailsContainer extends StatelessWidget {
   }
 
   Widget _buildApplyButton(BuildContext context) {
+    bool isApplyButtonEnabled = true;
     if (singlepage.iposinglepage!.data['status'] == "CLOSED") {
       return const SizedBox();
     }
@@ -324,12 +325,20 @@ class _IPODetailsContainer extends StatelessWidget {
         width: double.infinity,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            backgroundColor:
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(50),
             ),
           ),
-          onPressed: () => _handleApplyIPO(context),
+          onPressed: () {
+            if (isApplyButtonEnabled) {
+              isApplyButtonEnabled = false;
+              _handleApplyIPO(context);
+            } else {
+              return;
+            }
+          },
           child: Text(
             "Apply for IPO",
             style: _textStyle(
@@ -347,7 +356,7 @@ class _IPODetailsContainer extends StatelessWidget {
     if (widget.ipodetails.isNotEmpty) {
       try {
         final Map<String, dynamic> decodedJson = jsonDecode(widget.ipodetails);
-        
+
         // Fetch UPI ID View
         await upi.fetchupiIdView(
           upi.bankdetails!.dATA![upi.indexss][1],
@@ -379,7 +388,8 @@ class _IPODetailsContainer extends StatelessWidget {
     }
   }
 
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+  static TextStyle _textStyle(
+      Color color, double fontSize, FontWeight fWeight) {
     return TextStyle(
       fontWeight: fWeight,
       color: color,
@@ -434,7 +444,8 @@ class _IPODetailsSection extends StatelessWidget {
             singlepage.iposinglepage!.data["IpoDetails"]["tlShares"],
             "Lot size",
             singlepage.iposinglepage!.data["IpoDetails"]["LotSize"] == "" ||
-                singlepage.iposinglepage!.data["IpoDetails"]["LotSize"] == null
+                    singlepage.iposinglepage!.data["IpoDetails"]["LotSize"] ==
+                        null
                 ? "--"
                 : "${singlepage.iposinglepage!.data!["IpoDetails"]['LotSize']}",
           ),
@@ -459,8 +470,11 @@ class _IPODetailsSection extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                singlepage.iposinglepage!.data["IpoDetails"]["ListingAt"] == "" ||
-                    singlepage.iposinglepage!.data["IpoDetails"]["ListingAt"] == null
+                singlepage.iposinglepage!.data["IpoDetails"]["ListingAt"] ==
+                            "" ||
+                        singlepage.iposinglepage!.data["IpoDetails"]
+                                ["ListingAt"] ==
+                            null
                     ? "--"
                     : "${singlepage.iposinglepage!.data['IpoDetails']['ListingAt']}",
                 style: _textStyle(
@@ -470,7 +484,9 @@ class _IPODetailsSection extends StatelessWidget {
                 ),
               ),
               Divider(
-                color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider,
               ),
             ],
           ),
@@ -483,18 +499,22 @@ class _IPODetailsSection extends StatelessWidget {
               children: [
                 Text(
                   "RHP DOC",
-                  style: _textStyle(const Color(0xff666666), 12, FontWeight.w400),
+                  style:
+                      _textStyle(const Color(0xff666666), 12, FontWeight.w400),
                 ),
                 const SizedBox(height: 4),
                 InkWell(
-                  onTap: () => _launchURL(singlepage.iposinglepage!.data!['IpoDetails']['RHP']),
+                  onTap: () => _launchURL(
+                      singlepage.iposinglepage!.data!['IpoDetails']['RHP']),
                   child: Text(
                     "Download",
                     style: _textStyle(colors.colorBlue, 14, FontWeight.w600),
                   ),
                 ),
                 Divider(
-                  color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider,
                 ),
               ],
             ),
@@ -503,7 +523,8 @@ class _IPODetailsSection extends StatelessWidget {
     );
   }
 
-  Widget _rowOfInfoData(String title1, String value1, String title2, String value2) {
+  Widget _rowOfInfoData(
+      String title1, String value1, String title2, String value2) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -526,7 +547,9 @@ class _IPODetailsSection extends StatelessWidget {
                 ),
               ),
               Divider(
-                color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider,
               ),
             ],
           ),
@@ -550,7 +573,9 @@ class _IPODetailsSection extends StatelessWidget {
                 ),
               ),
               Divider(
-                color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider,
               ),
             ],
           ),
@@ -566,7 +591,8 @@ class _IPODetailsSection extends StatelessWidget {
     }
   }
 
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+  static TextStyle _textStyle(
+      Color color, double fontSize, FontWeight fWeight) {
     return TextStyle(
       fontWeight: fWeight,
       color: color,
@@ -588,10 +614,12 @@ class _SubscriptionSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      color: theme.isDarkMode ? const Color(0xFF2A2A2A) : colors.kColorLightGrey,
+      color:
+          theme.isDarkMode ? const Color(0xFF2A2A2A) : colors.kColorLightGrey,
       child: Builder(
         builder: (context) {
-          final subscriptionData = singlepage.iposinglepage!.data['subsciption'];
+          final subscriptionData =
+              singlepage.iposinglepage!.data['subsciption'];
 
           if (subscriptionData == null || subscriptionData.isEmpty) {
             return Container();
@@ -624,8 +652,12 @@ class _SubscriptionSection extends StatelessWidget {
                   child: Divider(color: colors.colorDivider),
                 ),
                 itemBuilder: (context, index) {
-                  final category = subscriptionData[index]["Category"] ?? "Unknown";
-                  final subscriptionTimes = subscriptionData[index]["Subscription (times)"]?.toString() ?? "N/A";
+                  final category =
+                      subscriptionData[index]["Category"] ?? "Unknown";
+                  final subscriptionTimes = subscriptionData[index]
+                              ["Subscription (times)"]
+                          ?.toString() ??
+                      "N/A";
 
                   return _ipoDateDisplay(category, subscriptionTimes);
                 },
@@ -686,8 +718,8 @@ class _SubscriptionSection extends StatelessWidget {
             minHeight: 10,
             value: progress,
             backgroundColor: Colors.grey[300],
-            color: progress < 1 
-                ? const Color.fromARGB(255, 233, 196, 7) 
+            color: progress < 1
+                ? const Color.fromARGB(255, 233, 196, 7)
                 : const Color(0xFF148564),
           ),
         ),
@@ -715,7 +747,8 @@ class _SubscriptionSection extends StatelessWidget {
     }
   }
 
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+  static TextStyle _textStyle(
+      Color color, double fontSize, FontWeight fWeight) {
     return TextStyle(
       fontWeight: fWeight,
       color: color,
@@ -750,17 +783,20 @@ class _IPOTimelineSection extends StatelessWidget {
             ),
           ),
           ListView.builder(
-            itemCount: singlepage.iposinglepage!.data['IPO_Timeline'].length - 1,
+            itemCount:
+                singlepage.iposinglepage!.data['IPO_Timeline'].length - 1,
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
               final isFirst = index == 0;
-              final isLasts = index == singlepage.iposinglepage!.data['IPO_Timeline'].length - 2;
+              final isLasts = index ==
+                  singlepage.iposinglepage!.data['IPO_Timeline'].length - 2;
 
               return IpoTimeLineWidget(
                 isfFrist: isFirst,
                 isLast: isLasts,
-                orderHistoryData: singlepage.iposinglepage!.data['IPO_Timeline'][index],
+                orderHistoryData: singlepage.iposinglepage!.data['IPO_Timeline']
+                    [index],
               );
             },
           ),
@@ -769,7 +805,8 @@ class _IPOTimelineSection extends StatelessWidget {
     );
   }
 
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+  static TextStyle _textStyle(
+      Color color, double fontSize, FontWeight fWeight) {
     return TextStyle(
       fontWeight: fWeight,
       color: color,
@@ -808,7 +845,8 @@ class _AboutCompanySection extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Padding(
-            padding: const EdgeInsets.only(left: 0, right: 0, top: 8, bottom: 0),
+            padding:
+                const EdgeInsets.only(left: 0, right: 0, top: 8, bottom: 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -821,7 +859,8 @@ class _AboutCompanySection extends StatelessWidget {
                     FontWeight.w400,
                   ).copyWith(height: 1.7),
                   maxLines: isExpanded ? null : 3,
-                  overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                  overflow:
+                      isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
                 ),
                 TextButton(
                   style: TextButton.styleFrom(minimumSize: const Size(0, 0)),
@@ -843,7 +882,8 @@ class _AboutCompanySection extends StatelessWidget {
     );
   }
 
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+  static TextStyle _textStyle(
+      Color color, double fontSize, FontWeight fWeight) {
     return TextStyle(
       fontWeight: fWeight,
       color: color,

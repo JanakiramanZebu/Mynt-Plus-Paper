@@ -15,10 +15,11 @@ class OrderScreenbottomPage extends ConsumerStatefulWidget {
   final List<IpoDetails> addIpo;
   final mainstream;
   const OrderScreenbottomPage(
-      {super.key,required this.addIpo, required this.mainstream});
+      {super.key, required this.addIpo, required this.mainstream});
 
   @override
-  ConsumerState<OrderScreenbottomPage> createState() => _OrderScreenbottomPage();
+  ConsumerState<OrderScreenbottomPage> createState() =>
+      _OrderScreenbottomPage();
 }
 
 class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
@@ -126,7 +127,7 @@ class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
                 child: Row(
-                  crossAxisAlignment:CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     IconButton(
                       // padding:const EdgeInsets.all(0) ,
@@ -147,7 +148,7 @@ class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
                                   // ischecked = false;
                                   ipo.setisMainIPOPlaceOrderBtnActiveValue =
                                       false;
-                                  ischecked=false;
+                                  ischecked = false;
                                 }
                               });
                             },
@@ -175,8 +176,7 @@ class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
                 ),
               ),
 
-              const SizedBox(height: 16
-              ),
+              const SizedBox(height: 16),
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -195,19 +195,24 @@ class _OrderScreenbottomPage extends ConsumerState<OrderScreenbottomPage> {
                       borderRadius: BorderRadius.circular(32),
                     ),
                   ),
-                  onPressed: ischecked == true ? () {
-                    
-                    if (upiid.upiid.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          warningMessage(context, '* UPI ID cannot be empty'));
-                    } else if (!RegExp(r'^[\w.-]+@[\w]+$')
-                        .hasMatch(upiid.upiid.text)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          warningMessage(context, 'Invalid UPI ID format'));
-                    } else {
-                      ipoplaceorder(upiid, ipo);
-                    }
-                  }: (){},
+                  onPressed: ischecked == true
+                      ? ipo.loading
+                          ? null
+                          : () {
+                              if (upiid.upiid.text.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    warningMessage(
+                                        context, '* UPI ID cannot be empty'));
+                              } else if (!RegExp(r'^[\w.-]+@[\w]+$')
+                                  .hasMatch(upiid.upiid.text)) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    warningMessage(
+                                        context, 'Invalid UPI ID format'));
+                              } else {
+                                ipoplaceorder(upiid, ipo);
+                              }
+                            }
+                      : () {},
                   child: ipo.loading
                       ? const SizedBox(
                           width: 18,

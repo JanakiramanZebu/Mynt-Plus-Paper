@@ -39,9 +39,9 @@ class MainSmeListCard extends StatelessWidget {
               "Pre-open")
           .toList();
 
-      final hasAnyData = openIpos.isNotEmpty || 
-                        preOpenIpos.isNotEmpty || 
-                        (ipos.ipoPreClose?.msg.isNotEmpty ?? false);
+      final hasAnyData = openIpos.isNotEmpty ||
+          preOpenIpos.isNotEmpty ||
+          (ipos.ipoPreClose?.msg.isNotEmpty ?? false);
 
       if (!hasAnyData) {
         return Padding(
@@ -138,7 +138,8 @@ class _IPOListSection extends StatelessWidget {
       separatorBuilder: (context, index) {
         return Divider(
           height: 0,
-          color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
         );
       },
     );
@@ -299,6 +300,8 @@ class _IPOListItem extends StatelessWidget {
   }
 
   Widget _buildApplyButton(BuildContext context) {
+    bool isApplyButtonEnabled = true;
+
     return SizedBox(
       height: 30,
       child: ElevatedButton(
@@ -306,12 +309,20 @@ class _IPOListItem extends StatelessWidget {
           elevation: 0,
           minimumSize: const Size(0, 30),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-          backgroundColor: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          backgroundColor:
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(50),
           ),
         ),
-        onPressed: () => _onApplyPressed(context),
+        onPressed: () {
+          if (isApplyButtonEnabled) {
+            isApplyButtonEnabled = false;
+            _onApplyPressed(context);
+          } else {
+            return;
+          }
+        },
         child: ipoProvider.loading
             ? const SizedBox(
                 width: 18,
@@ -366,7 +377,7 @@ class _IPOListItem extends StatelessWidget {
   Future<void> _onApplyPressed(BuildContext context) async {
     ipoProvider.setisSMEPlaceOrderBtnActiveValue = false;
     ipoProvider.setisMainIPOPlaceOrderBtnActiveValue = false;
-    
+
     await upiProvider.fetchupiIdView(
       upiProvider.bankdetails?.dATA?[upiProvider.indexss][1] ?? "",
       upiProvider.bankdetails?.dATA?[upiProvider.indexss][2] ?? "",
