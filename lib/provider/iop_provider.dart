@@ -1391,7 +1391,7 @@ class IPOProvider extends DefaultChangeNotifier {
   Future getipoplaceorder(BuildContext context, MenuData menudata,
       List<IposBid> iposbids, String iposupiid) async {
     try {
-      toggleLoad(true);
+      toggleLoadingOn(true);
 
       _ipoOrderResponcesModel =
           await api.fetchipoplaceorder(menudata, iposbids, iposupiid);
@@ -1406,7 +1406,7 @@ class IPOProvider extends DefaultChangeNotifier {
       print("IPOs placeorder error:: $e");
       notifyListeners();
     } finally {
-      toggleLoad(false);
+      toggleLoadingOn(false);
     }
   }
 
