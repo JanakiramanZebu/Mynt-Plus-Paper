@@ -50,54 +50,51 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
       return Scaffold(
         body: Stack(
           children: [
-            TransparentLoaderScreen(
-              isLoading: mforderbook.bestmfloader ?? false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(bottom: 0, left: 0, top: 2),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        top: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          width: 0.4,
-                        ),
-                        bottom: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          width: 0.4,
-                        ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: const EdgeInsets.only(bottom: 0, left: 0, top: 2),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: theme.isDarkMode
+                            ? colors.darkColorDivider
+                            : colors.colorDivider,
+                        width: 0.4,
                       ),
-                    ),
-                    child: TabBar(
-                      labelPadding: const EdgeInsets.only(right: 0, bottom: 0),
-                      tabAlignment: TabAlignment.start,
-                      indicatorColor: const Color.fromARGB(255, 0, 0, 0),
-                      controller: _tabController,
-                      isScrollable: true,
-                      tabs: List.generate(
-                        tablistitems.length,
-                        (tab) => _buildTab(tab, theme),
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? colors.darkColorDivider
+                            : colors.colorDivider,
+                        width: 0.4,
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: TabBarView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      controller: _tabController,
-                      children: [
-                        const MfHoldNewScreen(),
-                        _buildOrdersTab(mforderbook, theme, context),
-                      ],
+                  child: TabBar(
+                    labelPadding: const EdgeInsets.only(right: 0, bottom: 0),
+                    tabAlignment: TabAlignment.start,
+                    indicatorColor: const Color.fromARGB(255, 0, 0, 0),
+                    controller: _tabController,
+                    isScrollable: true,
+                    tabs: List.generate(
+                      tablistitems.length,
+                      (tab) => _buildTab(tab, theme),
                     ),
                   ),
-                ],
-              ),
+                ),
+                Expanded(
+                  child: TabBarView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    controller: _tabController,
+                    children: [
+                      const MfHoldNewScreen(),
+                      _buildOrdersTab(mforderbook, theme, context),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),

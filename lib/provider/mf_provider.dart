@@ -1336,7 +1336,7 @@ class MFProvider extends DefaultChangeNotifier {
 
       // print("holdinglist${_mfholdingnew?.toJson()}");
 
-      notifyListeners();
+      // notifyListeners();
     } catch (e, stackTrace) {
       _holdstatload = false;
       debugPrint("Error fetching mfliiist: $e\n$stackTrace");

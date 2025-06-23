@@ -21,7 +21,7 @@ class MfHoldNewScreen extends ConsumerWidget {
 
     return Scaffold(
       body: TransparentLoaderScreen(
-        isLoading: mfData.bestmfloader ?? false,
+        isLoading: mfData.holdstatload ?? false,
         child: Column(
           children: [
             // Summary container
