@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../locator/constant.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 
 class EdisWebview extends ConsumerStatefulWidget {
@@ -57,13 +58,8 @@ class _EdisWebviewState extends ConsumerState<EdisWebview> {
               centerTitle: false,
               elevation: 1,
               leadingWidth: 41,
-              title: Text(
-                "Verify Holdings",
-                style: textStyles.appBarTitleTxt.copyWith(
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack),
-              ),
+              title: TextWidget.titleText(
+                  text: "Verify Holdings", theme: theme.isDarkMode, fw: 1),
               leading: InkWell(
                   onTap: () async {
                     // Use a safer approach for AppBar back button too

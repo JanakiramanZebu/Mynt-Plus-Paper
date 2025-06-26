@@ -5,6 +5,7 @@ import 'package:mynt_plus/models/order_book_model/sip_order_book.dart';
 import '../../../res/res.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../sharedWidget/functions.dart';
 
 class SipCancelAlert extends ConsumerWidget {
@@ -32,13 +33,7 @@ class SipCancelAlert extends ConsumerWidget {
       ),
       content: Column(
         children: [
-          Text(
-              "Are you sure you want to cancel the (${sipdetails.scrips![0].tsym.toString().toUpperCase()})",
-              textAlign: TextAlign.center,
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w600))
+          TextWidget.titleText(text: "Are you sure you want to cancel the (${sipdetails.scrips![0].tsym.toString().toUpperCase()})",theme:theme.isDarkMode,fw: 1,align: TextAlign.center),
         ],
       ),
       actions: [
@@ -56,8 +51,7 @@ class SipCancelAlert extends ConsumerWidget {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: Text("No",
-                      style: textStyle(colors.colorGrey, 12, FontWeight.w600))),
+                  child: TextWidget.paraText(text: "No",theme: false, color: colors.colorGrey,fw: 1)),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -74,13 +68,7 @@ class SipCancelAlert extends ConsumerWidget {
                     ref.read(orderProvider).fetchSipOrderCancel(
                         "${sipdetails.internal!.sipId}", context);
                   },
-                  child: Text("Yes",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          12,
-                          FontWeight.w600))),
+                  child: TextWidget.paraText(text: "Yes",theme: theme.isDarkMode,fw: 1)),
             )
           ],
         ),

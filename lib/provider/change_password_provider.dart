@@ -53,9 +53,9 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
 
 // Clear all text field values form change password screen
   void clearTextField() {
+    _isDisableforgetbtn = true;
     oldPassword.clear();
     newPassword.clear();
-
     forGetloginMethCtrl.clear();
     notifyListeners();
   }
@@ -65,7 +65,6 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
     userIdChangepassError = null;
     oldPasswordError = null;
     newPasswordError = null;
-
     forgetpassError = null;
     notifyListeners();
   }
@@ -174,11 +173,11 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
       if (_forgetPasswordModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         ScaffoldMessenger.of(context).showSnackBar(successMessage(
-            context, 'New Password is Sended Through Email/Sms'));
+            context, 'New password is sended through Email/SMS'));
 
         userIdController.text = '${_forgetPasswordModel!.clientid}';
 
-        Future.delayed(const Duration(seconds: 2), () {
+        Future.delayed(const Duration(milliseconds: 200), () {
           forgetMethod();
           clearError();
           Navigator.pushNamed(context, Routes.changePass, arguments: "No");

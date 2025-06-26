@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/nofitication_coustom_switch.dart'; 
+import '../../../sharedWidget/nofitication_coustom_switch.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -45,21 +46,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Scaffold(
       backgroundColor: const Color(0xffFFFFFF),
       appBar: AppBar(
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading: InkWell(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 9),
-              child: SvgPicture.asset(assets.backArrow),
-            ),
+        leadingWidth: 41,
+        titleSpacing: 6,
+        leading: InkWell(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 9),
+            child: SvgPicture.asset(assets.backArrow),
           ),
-          backgroundColor: const Color(0xffFFFFFF),
-          elevation: 0.3,
-          iconTheme: const IconThemeData(color: Color(0xff000000)),
-          ),
+        ),
+        backgroundColor: const Color(0xffFFFFFF),
+        elevation: 0.3,
+        iconTheme: const IconThemeData(color: Color(0xff000000)),
+      ),
       body: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Padding(
@@ -67,18 +68,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Notification Preferences',
-                  style:
-                      textStyle(const Color(0xff000000), 18, FontWeight.w600),
+                TextWidget.headText(
+                  text: 'Notification Preferences',
+                  theme: false,
+                  color: const Color(0xff000000),
+                  fw: 1,
                 ),
                 const SizedBox(
                   height: 5,
                 ),
-                Text(
-                  'View bank details and add new banks.',
-                  style:
-                      textStyle(const Color(0xff666666), 14, FontWeight.w500),
+                TextWidget.subText(
+                  text: 'View bank details and add new banks.',
+                  theme: false,
+                  color: const Color(0xff666666),
+                  fw: 0,
                 ),
               ],
             ),
@@ -92,33 +95,37 @@ class _NotificationScreenState extends State<NotificationScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Category',
-                  style:
-                      textStyle(const Color(0xff666666), 12, FontWeight.w500),
+                TextWidget.paraText(
+                  text: 'Category',
+                  theme: false,
+                  color: const Color(0xff666666),
+                  fw: 0,
                 ),
                 Row(
                   children: [
-                    Text(
-                      'E-mail',
-                      style: textStyle(
-                          const Color(0xff666666), 12, FontWeight.w500),
+                    TextWidget.paraText(
+                      text: 'E-mail',
+                      theme: false,
+                      color: const Color(0xff666666),
+                      fw: 0,
                     ),
                     const SizedBox(
                       width: 30,
                     ),
-                    Text(
-                      'SMS',
-                      style: textStyle(
-                          const Color(0xff666666), 12, FontWeight.w500),
+                    TextWidget.paraText(
+                      text: 'SMS',
+                      theme: false,
+                      color: const Color(0xff666666),
+                      fw: 0,
                     ),
                     const SizedBox(
                       width: 30,
                     ),
-                    Text(
-                      'On Site',
-                      style: textStyle(
-                          const Color(0xff666666), 12, FontWeight.w500),
+                    TextWidget.paraText(
+                      text: 'On Site',
+                      theme: false,
+                      color: const Color(0xff666666),
+                      fw: 0,
                     ),
                   ],
                 ),
@@ -145,12 +152,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         children: [
                           SizedBox(
                             width: 198,
-                            child: Text(
-                              notifydata[index].topic,
-                              style: textStyle(
-                                  const Color.fromRGBO(0, 0, 0, 0.80),
-                                  14,
-                                  FontWeight.w600),
+                            child: TextWidget.subText(
+                              text: notifydata[index].topic,
+                              theme: false,
+                              color: const Color.fromRGBO(0, 0, 0, 0.80),
+                              fw: 1,
                             ),
                           ),
                           Flexible(
@@ -213,15 +219,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
         ]),
       ),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle: TextStyle(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    ));
   }
 }
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../res/global_state_text.dart';
 
 class CurStrkprice extends ConsumerWidget {
   final String token;
@@ -44,9 +45,18 @@ class CurStrkprice extends ConsumerWidget {
                 color: const Color(0xff666666),
                 borderRadius: BorderRadius.circular(40)),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            child: Text("₹$price",
-                style:
-                    textStyle(const Color(0xffffffff), 13, FontWeight.w600))),
+            child: 
+                    
+                    
+                     TextWidget.paraText(
+                      text:"₹$price" ,
+                      color:Color(0xffffffff) ,
+                      theme: false,
+                      fw: 1),
+                    
+                    
+                    
+                    ),
         const Expanded(
           child: Divider(height: 0, thickness: 2.5, color: Color(0xff666666)),
         ),
@@ -54,9 +64,5 @@ class CurStrkprice extends ConsumerWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

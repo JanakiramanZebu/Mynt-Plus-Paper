@@ -18,6 +18,7 @@ import '../../../provider/webview_chart_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
+import '../../res/global_state_text.dart';
 // import '../scrip_depth_info.dart';
 
 class ChartScreenWebView extends ConsumerStatefulWidget {
@@ -129,9 +130,16 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                                   : colors.ltpgreen.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(60)),
                           child: Center(
-                              child: Text("BUY",
-                                  style: textStyle(const Color(0XFFFFFFFF), 16,
-                                      FontWeight.w600)))),
+                              child: 
+                                      
+                                      TextWidget.titleText(
+                      text: "BUY",
+                      color:Color(0XFFFFFFFF) ,
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                                      
+                                      
+                                      )),
                     )),
                     const SizedBox(width: 18),
                     Expanded(
@@ -151,11 +159,15 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                                         : colors.darkred.withOpacity(0.2),
                                     borderRadius: BorderRadius.circular(60)),
                                 child: Center(
-                                    child: Text("SELL",
-                                        style: textStyle(
-                                            const Color(0XFFFFFFFF),
-                                            16,
-                                            FontWeight.w600))))))
+                                    child: 
+                                            
+                                             TextWidget.titleText(
+                      text: "SELL",
+                      color: Color(0XFFFFFFFF) ,
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                                            
+                                            ))))
                   ]),
             )
           ],
@@ -244,16 +256,14 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                       padding: index > 1
                           ? const EdgeInsets.only(left: 16)
                           : const EdgeInsets.symmetric(horizontal: 8),
-                      label: Text(
-                        tab.tsym,
-                        style: textStyle(
-                          theme.isDarkMode
+                      label: 
+                       TextWidget.paraText(
+                      text: tab.tsym,
+                      color: theme.isDarkMode
                               ? Color(isSelected ? 0xff000000 : 0xffffffff)
-                              : Color(isSelected ? 0xffffffff : 0xff000000),
-                          12,
-                          FontWeight.w500,
-                        ),
-                      ),
+                              : Color(isSelected ? 0xffffffff : 0xff000000) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       backgroundColor: theme.isDarkMode
                           ? (isSelected
                               ? const Color(0xffffffff)

@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/marketwatch_model/alert_model/alert_pending_model.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -94,11 +95,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
         titleSpacing: 6,
         leading: const CustomBackBtn(),
         elevation: 0.3,
-        title: Text('Alert',
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w600)),
+        title: TextWidget.subText(text: 'Alert',theme:theme.isDarkMode,fw: 1),
       ),
       resizeToAvoidBottomInset: true,
       bottomNavigationBar:
@@ -167,13 +164,9 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                   strokeWidth: 2,
                                   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                                 ))
-                            : Text("Modify Alert",
-                            style: textStyle(
-                                !theme.isDarkMode
+                            : TextWidget.subText(text: "Modify Alert",theme: false,color: !theme.isDarkMode
                                     ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w500)))),
+                                    : colors.colorBlack,fw: 0))),
                 const SizedBox(width: 16),
                 Expanded(
                     child: ElevatedButton(
@@ -228,9 +221,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                   strokeWidth: 2,
                                   color: colors.colorWhite,
                                 ))
-                            : Text("Cancel Alert",
-                            style: textStyle(
-                                const Color(0xffFFFFFF), 14, FontWeight.w500)))),
+                            : TextWidget.subText(text: "Cancel Alert",theme: false,color: const Color(0xffFFFFFF),fw: 0))),
               ],
             ),
                  ),
@@ -254,25 +245,11 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("${widget.alert.tsym} ",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyles.scripNameTxtStyle.copyWith(
-                                color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack)),
+                        TextWidget.subText(text: "${widget.alert.tsym} ",theme:theme.isDarkMode,fw: 0,textOverflow: TextOverflow.ellipsis),
                         Row(
                           children: [
-                            Text(" LTP: ",
-                                style: textStyle(const Color(0xff5E6B7D), 13,
-                                    FontWeight.w600)),
-                            Text(
-                                "₹${widget.alert.ltp ?? widget.alert.close ?? 0.00}",
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    14,
-                                    FontWeight.w500)),
+                            TextWidget.paraText(text: " LTP: ",theme: false,color: const Color(0xff5E6B7D),fw: 1),
+                            TextWidget.subText(text: "₹${widget.alert.ltp ?? widget.alert.close ?? 0.00}",theme: theme.isDarkMode ,fw: 0),
                           ],
                         )
                       ]),
@@ -282,17 +259,13 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         CustomExchBadge(exch: "${widget.alert.exch}"),
-                        Text(" (${widget.alert.perChange ?? 0.00}%)",
-                            style: textStyle(
-                                widget.alert.perChange == null
+                        TextWidget.paraText(text: " (${widget.alert.perChange ?? 0.00}%)",theme: false, color: widget.alert.perChange == null
                                     ? colors.ltpgrey
                                     : widget.alert.perChange!.startsWith("-")
                                     ? colors.darkred
                                     : widget.alert.perChange == "0.00"
                                         ? colors.ltpgrey
-                                        : colors.ltpgreen,
-                                12,
-                                FontWeight.w500))
+                                        : colors.ltpgreen,fw: 0),
                       ]),
                 ]),
           ),
@@ -301,13 +274,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Details",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      15,
-                      FontWeight.w600),
-                ),
+                TextWidget.titleText(text: "Details",theme:theme.isDarkMode,fw: 1),
               ],
             ),
           ),
@@ -327,29 +294,16 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Condition",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w500)),
+                  TextWidget.subText(text: "Condition",theme: theme.isDarkMode,fw: 0),
                   Row(
                     children: [
-                      Text(
-                          widget.alert.aiT == "LTP_A"
+                      TextWidget.subText(text: widget.alert.aiT == "LTP_A"
                               ? "Above"
                               : widget.alert.aiT == "LTP_B"
                                   ? "Below"
                                   : widget.alert.aiT == "CH_PER_A"
                                       ? "above"
-                                      : "Below",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500)),
+                                      : "Below",theme:theme.isDarkMode,fw: 0),
                       Transform.rotate(
                         angle: 55 * (pi / 180),
                         child: Icon(
@@ -388,13 +342,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                Text("Modify Alert value",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        14,
-                        FontWeight.w500)),
+                TextWidget.subText(text: "Modify Alert value",theme:theme.isDarkMode,fw: 0),
                 const SizedBox(
                   width: 50,
                 ),
@@ -463,8 +411,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
           if (errorText.isNotEmpty) ...[
             Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, top: 4),
-              child: Text(errorText,
-                  style: textStyle(colors.darkred, 10, FontWeight.w500)),
+              child: TextWidget.captionText(text: errorText,theme: false,color: colors.darkred,fw: 0),
             ),
           ],
           const SizedBox(
@@ -484,23 +431,11 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                       const SizedBox(
                         height: 8,
                       ),
-                      Text("Remark",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500)),
+                      TextWidget.subText(text: "Remark",theme: theme.isDarkMode,fw: 0),
                       const SizedBox(
                         height: 5,
                       ),
-                      Text("${widget.alert.remarks}",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500)),
+                      TextWidget.subText(text: "${widget.alert.remarks}",theme: theme.isDarkMode,fw: 0),
                     ],
                   ),
                 ),
@@ -520,16 +455,8 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title1,
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
-            Text(value,
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
+            TextWidget.subText(text: title1,theme:theme.isDarkMode,fw: 0),
+            TextWidget.subText(text: value,theme:theme.isDarkMode,fw: 0),
           ],
         ),
         const SizedBox(
@@ -541,11 +468,5 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                 : colors.colorDivider)
       ]),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

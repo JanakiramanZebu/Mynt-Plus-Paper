@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../../provider/thems.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_exch_badge.dart';
 import '../../../../sharedWidget/custom_switch_btn.dart';
@@ -50,11 +51,13 @@ class _OptionStrategyEditState extends ConsumerState<OptionStrategyEdit> {
         titlePadding: const EdgeInsets.only(left: 16),
         title:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text('Modify Scrip',
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w600)),
+         
+
+                    TextWidget.titleText(
+                      text: 'Modify Scrip',
+                    
+                      theme: theme.isDarkMode,
+                      fw: 1),
           IconButton(
             onPressed: () {
               Navigator.pop(context);
@@ -71,29 +74,32 @@ class _OptionStrategyEditState extends ConsumerState<OptionStrategyEdit> {
               const ListDivider(),
               const SizedBox(height: 14),
               Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                Text("${widget.scripData.symbol!} ",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        16,
-                        FontWeight.w600),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1),
+              
+
+                    TextWidget.titleText(
+                      text:"${widget.scripData.symbol!} " ,
+                     textOverflow: TextOverflow.ellipsis,
+                     maxLines: 1,
+                      theme: theme.isDarkMode,
+                      fw: 1),
                 if (widget.scripData.option!.isNotEmpty)
-                  Text(widget.scripData.option!,
-                      style: textStyles.scripNameTxtStyle
-                          .copyWith(color: const Color(0xff666666)),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1),
+                 
+
+
+                        TextWidget.subText(
+                      text: widget.scripData.option!,
+                      color:Color(0xff666666) ,
+                      textOverflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      theme: theme.isDarkMode,
+                      fw: 1),
                 if (widget.scripData.expDate!.isNotEmpty)
-                  Text(" ${widget.scripData.expDate} ",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w600)),
+                  
+                           TextWidget.subText(
+                      text:" ${widget.scripData.expDate} ",
+                   
+                      theme: theme.isDarkMode,
+                      fw: 1),
                 CustomExchBadge(exch: "${widget.scripData.exch}"),
               ]),
               Row(
@@ -103,22 +109,22 @@ class _OptionStrategyEditState extends ConsumerState<OptionStrategyEdit> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text("₹${widget.scripData.lp} ",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w600)),
-                        Text(
-                          " (${widget.scripData.perChange ?? 0.00}%)",
-                          style: textStyle(
-                              widget.scripData.perChange!.startsWith("-")
+                       
+
+                                 TextWidget.titleText(
+                      text:"₹${widget.scripData.lp} " ,
+                  
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                        
+
+                         TextWidget.paraText(
+                      text:  " (${widget.scripData.perChange ?? 0.00}%)",
+                      color: widget.scripData.perChange!.startsWith("-")
                                   ? colors.darkred
-                                  : colors.ltpgreen,
-                              13,
-                              FontWeight.w600),
-                        ),
+                                  : colors.ltpgreen ,
+                      theme: theme.isDarkMode,
+                      fw: 1),
                       ],
                     ),
                     Row(children: [
@@ -148,31 +154,39 @@ class _OptionStrategyEditState extends ConsumerState<OptionStrategyEdit> {
                     ])
                   ]),
               const SizedBox(height: 8),
-              Text("Lot size",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w500)),
+             
+
+                       TextWidget.subText(
+                      text:"Lot size" ,
+                  
+                      theme: theme.isDarkMode,
+                      fw: 0),
               const SizedBox(height: 8),
               TextFormField(
                   controller: textCtrl,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  style: textStyles.textFieldLabelStyle.copyWith(
-                      color: theme.isDarkMode
+                  style: 
+TextWidget.textStyle(
+                 fontSize: 14 , color: theme.isDarkMode
                           ? colors.colorWhite
-                          : colors.colorBlue),
+                          : colors.colorBlue , theme: theme.isDarkMode , fw: 1 ),	
+
                   decoration: InputDecoration(
                       fillColor: theme.isDarkMode
                           ? colors.darkGrey
                           : const Color(0xffF1F3F8),
                       filled: true,
                       hintText: "Enter lot size",
-                      hintStyle: textStyle(Colors.grey, 13, FontWeight.w400),
+                      hintStyle: 
+                      TextWidget.textStyle(
+                 fontSize: 12 , color: Colors.grey , theme: theme.isDarkMode , fw: 00 ),	
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 16),
                       errorText: errorText,
                       errorStyle:
-                          textStyle(colors.darkred, 10, FontWeight.w600),
+                        
+                            TextWidget.textStyle(
+                 fontSize: 10 , color: colors.darkred, theme: theme.isDarkMode , fw: 1 ),	
                       enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide.none,
                           borderRadius: BorderRadius.circular(50)),
@@ -214,14 +228,19 @@ class _OptionStrategyEditState extends ConsumerState<OptionStrategyEdit> {
                       borderRadius: BorderRadius.circular(50),
                     ),
                   ),
-                  child: Text("Modify",
-                      style: GoogleFonts.inter(
-                          textStyle: textStyle(
-                              !theme.isDarkMode
+                  child: 
+                              
+                              
+                               TextWidget.subText(
+                      text: "Modify",
+                      color:  !theme.isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
-                              14,
-                              FontWeight.w500)))))
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                              
+                              
+                              ))
         ]);
   }
 }

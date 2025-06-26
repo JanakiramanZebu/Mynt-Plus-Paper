@@ -8,6 +8,8 @@ import '../../../models/tv_chart_model/drawings.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/scroll_behavior.dart'; 
+import '../../../res/global_state_text.dart';
+
 class DrawingBottomSheet extends ConsumerWidget {
   const DrawingBottomSheet({
     super.key,
@@ -31,13 +33,13 @@ class DrawingBottomSheet extends ConsumerWidget {
               shrinkWrap: true,
               children: [
                 ListTile(
-                    title: Text("Drawings",
-                        style: textStyle(
-                            !theme.isDarkMode
+                    title: TextWidget.subText(
+                        text: "Drawings",
+                        color: !theme.isDarkMode
                                 ? colors.colorBlack
                                 : colors.colorWhite,
-                            14,
-                            FontWeight.w500)),
+                        theme: theme.isDarkMode,
+                        fw: 0),
                     trailing: IconButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -77,13 +79,13 @@ class DrawingBottomSheet extends ConsumerWidget {
                             ? colors.colorBlack
                             : colors.colorWhite,
                         initiallyExpanded: true,
-                        title: Text("Trend lines",
-                            style: textStyle(
-                                !theme.isDarkMode
+                        title: TextWidget.subText(
+                            text: "Trend lines",
+                            color: !theme.isDarkMode
                                     ? colors.colorBlack
                                     : colors.colorWhite,
-                                14,
-                                FontWeight.w600)),
+                            theme: theme.isDarkMode,
+                            fw: 1),
                         children: [
                           GridView.count(
                               physics: const NeverScrollableScrollPhysics(),
@@ -122,18 +124,17 @@ class DrawingBottomSheet extends ConsumerWidget {
                                           color: !theme.isDarkMode
                                               ? colors.colorBlack
                                               : colors.colorWhite),
-                                      title: Text(
-                                        TrendingLineModel
+                                      title: TextWidget.subText(
+                                        text: TrendingLineModel
                                             .trendingLineList[index]
                                             .drawingName,
-                                        style: textStyle(
-                                            !theme.isDarkMode
+                                        color: !theme.isDarkMode
                                                 ? colors.colorBlack
                                                 : colors.colorWhite,
-                                            14,
-                                            FontWeight.w500),
+                                        theme: theme.isDarkMode,
+                                        fw: 0,
                                         maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
+                                        textOverflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ),
@@ -149,13 +150,13 @@ class DrawingBottomSheet extends ConsumerWidget {
                             ? colors.colorBlack
                             : colors.colorWhite,
                         initiallyExpanded: true,
-                        title: Text("GANN & Fibnocci",
-                            style: textStyle(
-                                !theme.isDarkMode
+                        title: TextWidget.subText(
+                            text: "GANN & Fibnocci",
+                            color: !theme.isDarkMode
                                     ? colors.colorBlack
                                     : colors.colorWhite,
-                                14,
-                                FontWeight.w600)),
+                            theme: theme.isDarkMode,
+                            fw: 1),
                         children: [
                           GridView.count(
                               physics: const NeverScrollableScrollPhysics(),
@@ -193,17 +194,16 @@ class DrawingBottomSheet extends ConsumerWidget {
                                           color: !theme.isDarkMode
                                               ? colors.colorBlack
                                               : colors.colorWhite),
-                                      title: Text(
-                                        FibonacciModel
+                                      title: TextWidget.subText(
+                                        text: FibonacciModel
                                             .fibonacciList[index].drawingName,
-                                        style: textStyle(
-                                            !theme.isDarkMode
+                                        color: !theme.isDarkMode
                                                 ? colors.colorBlack
                                                 : colors.colorWhite,
-                                            14,
-                                            FontWeight.w500),
+                                        theme: theme.isDarkMode,
+                                        fw: 0,
                                         maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
+                                        textOverflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ),

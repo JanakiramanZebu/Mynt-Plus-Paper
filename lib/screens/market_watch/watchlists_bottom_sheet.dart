@@ -51,387 +51,508 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                              "My Watchlist (${watchlist.length >= 10 ? 10 : watchlist.length})",
-                              style: textStyles.appBarTitleTxt.copyWith(
-                                  color: theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack)),
+                          TextWidget.titleText(
+                              text: "Manage Watchlist",
+                              // (${watchlist.length >= 10 ? 10 : watchlist.length})
+                              theme: theme.isDarkMode,
+                              fw: 1),
                           if (watchlist.length - 4 < 10)
-                            InkWell(
-                                onTap: () async {
-                                  if (context.mounted) {
-                                    Navigator.pop(context);
-                                  }
-                                  await showDialog(
-                                      context: context,
-                                      barrierDismissible: false,
-                                      builder: (BuildContext context) {
-                                        // int selectedValue = 1;
-                                        return CreatewatchList(
-                                            wList: watchlist);
-                                      });
-                                },
-                                child: Padding(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Row(children: [
-                                      SvgPicture.asset(assets.addCircleIcon,
-                                          color: theme.isDarkMode
-                                              ? colors.colorLightBlue
-                                              : colors.colorBlue),
-                                      const SizedBox(width: 3),
-                                      Text("Create New Watchlist",
-                                          style: textStyles.textBtn.copyWith(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorLightBlue
-                                                  : colors.colorBlue))
-                                    ])))
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                  onTap: () async {
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                    }
+                                    await showModalBottomSheet(
+                                        context: context,
+                                        useSafeArea: true,
+                                        isScrollControlled: true,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                              top: Radius.circular(16)),
+                                        ),
+                                        builder: (BuildContext context) {
+                                          return CreatewatchList(
+                                              wList: watchlist);
+                                        });
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  splashColor: theme.isDarkMode
+                                      ? Colors.white24
+                                      : Colors.black12,
+                                  highlightColor: theme.isDarkMode
+                                      ? Colors.white12
+                                      : Colors.black.withOpacity(0.06),
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(5),
+                                      child: Row(children: [
+                                        SvgPicture.asset(assets.addCircleIcon,
+                                            color: theme.isDarkMode
+                                                ? colors.colorLightBlue
+                                                : colors.colorBlue),
+                                        const SizedBox(width: 3),
+                                        TextWidget.paraText(
+                                            text: "Add Watchlist",
+                                            color: theme.isDarkMode
+                                                ? colors.colorLightBlue
+                                                : colors.colorBlue,
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                      ]))),
+                            )
                         ])),
                 const SizedBox(height: 10),
 
-                // Pre-defined watchlist items
+                // Remove pre-defined watchlist buttons and just keep the divider
+                Divider(
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider,
+                  height: 0,
+                ),
 
-                Container(
-                    padding: const EdgeInsets.only(left: 16),
-                    height: 36,
+                // Flexible scrollable list with max height constraint
+                Flexible(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height *
+                          0.6, // Max 60% of screen height
+                    ),
                     child: ListView.separated(
                         shrinkWrap: true,
                         padding: EdgeInsets.zero,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: preDefWl.length,
+                        itemCount: (watchlist.length - 4 >= 10
+                                    ? 10
+                                    : math.max(0, watchlist.length - 4))
+                                .toInt() +
+                            preDefWl.length,
                         itemBuilder: (BuildContext context, int index) {
-                          return ElevatedButton(
-                              onPressed: () async {
-                                ref
-                                    .read(marketWatchProvider)
-                                    .setCurrentWatchlistPageIndex(
-                                        index + watchlist.length - 4);
-                                ref
-                                    .read(marketWatchProvider)
-                                    .changeWlName(preDefWl[index], "Yes");
-                                if (preDefWl[index] == "My Stocks") {
-                                  // await context
-                                  //     .read(portfolioProvider)
-                                  //     .fetchHoldings(context,"");
-                                  ref.read(portfolioProvider).requestWSHoldings(
-                                      context: context, isSubscribe: true);
-                                } else {
+                          // First show custom watchlists
+                          if (index <
+                              (watchlist.length - 4 >= 10
+                                      ? 10
+                                      : math.max(0, watchlist.length - 4))
+                                  .toInt()) {
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () async {
+                                  // click to switch watch list
+                                  ref
+                                      .read(marketWatchProvider)
+                                      .setCurrentWatchlistPageIndex(index);
+
+                                  ref
+                                      .read(marketWatchProvider)
+                                      .changeWlName(watchlist[index], "No");
+
                                   await marketWatch.changeWLScrip(
-                                      preDefWl[index], context);
-                                }
-                                if (context.mounted) {
+                                      watchlist[index], context);
+
                                   Navigator.pop(context);
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 0),
-                                  backgroundColor: theme.isDarkMode
-                                      ? widget.currentWLName == preDefWl[index]
-                                          ? colors.colorbluegrey
-                                          : const Color(0xffB5C0CF)
-                                              .withOpacity(.15)
-                                      : widget.currentWLName == preDefWl[index]
-                                          ? const Color(0xff000000)
-                                          : const Color(0xffF1F3F8),
-                                  shape: const StadiumBorder()),
-                              child: Text(
-                                  preDefWl[index] == "My Stocks"
-                                      ? preDefWl[index]
-                                      : "${preDefWl[index][0]}${preDefWl[index].substring(1)}",
-                                  style: textStyles.prdText.copyWith(
-                                      color: theme.isDarkMode
-                                          ? Color(widget.currentWLName ==
-                                                  preDefWl[index]
-                                              ? 0xff000000
-                                              : 0xffffffff)
-                                          : Color(widget.currentWLName ==
-                                                  preDefWl[index]
-                                              ? 0xffffffff
-                                              : 0xff000000))));
-                        },
-                        separatorBuilder: (BuildContext context, int index) {
-                          return const SizedBox(width: 10);
-                        })),
-                Divider(
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
+                                },
+                                splashColor: theme.isDarkMode
+                                    ? Colors.white24
+                                    : Colors.black12,
+                                highlightColor: theme.isDarkMode
+                                    ? Colors.white12
+                                    : Colors.black.withOpacity(0.06),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 0),
+                                  dense: true,
+                                  minLeadingWidth: 16,
+                                  leading: SvgPicture.asset(theme.isDarkMode
+                                      ? widget.currentWLName == watchlist[index]
+                                          ? assets.darkActProductIcon
+                                          : assets.darkProductIcon
+                                      : widget.currentWLName == watchlist[index]
+                                          ? assets.actProductIcon
+                                          : assets.productIcon),
+                                  title:
+                                      //  TextWidget.subText(
+                                      //     text:  watchlist[index].isEmpty
+                                      //         ? watchlist[index]
+                                      //         : "${watchlist[index][0].toUpperCase()}${watchlist[index].substring(1)}",
+                                      //     color: ,
+                                      //     theme: theme.isDarkMode,
+                                      //     fw: 0),
 
-// My watchlist items
-                ListView.separated(
-                    shrinkWrap: true,
-                    padding: EdgeInsets.zero,
-                    itemCount: watchlist.length - 4 >= 10
-                        ? 10
-                        : math.max(0, watchlist.length - 4),
-                    itemBuilder: (BuildContext context, int index) {
-                      return ListTile(
-                          onTap: () async {
-                            // click to switch watch list
-                            ref
-                                .read(marketWatchProvider)
-                                .setCurrentWatchlistPageIndex(index);
-
-                            ref
-                                .read(marketWatchProvider)
-                                .changeWlName(watchlist[index], "No");
-
-                            await marketWatch.changeWLScrip(
-                                watchlist[index], context);
-
-                            Navigator.pop(context);
-                          },
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 0),
-                          dense: true,
-                          minLeadingWidth: 22,
-                          leading: SvgPicture.asset(theme.isDarkMode
-                              ? widget.currentWLName == watchlist[index]
-                                  ? assets.darkActProductIcon
-                                  : assets.darkProductIcon
-                              : widget.currentWLName == watchlist[index]
-                                  ? assets.actProductIcon
-                                  : assets.productIcon),
-                          title: Text(
-                              watchlist[index].isEmpty
-                                  ? watchlist[index]
-                                  : "${watchlist[index][0].toUpperCase()}${watchlist[index].substring(1)}",
-                              style: textStyles.prdText.copyWith(
-                                  color:
-                                      widget.currentWLName != watchlist[index]
-                                          ? colors.colorGrey
-                                          : theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack)),
-                          trailing: watchlist.length > 1
-                              ? Row(mainAxisSize: MainAxisSize.min, children: [
-                                  // Click to Edit watchlist name
-                                  InkWell(
-                                      onTap: () async {
-                                        showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (BuildContext context) {
-                                              return WatchListRename(
-                                                  wlname: watchlist[index]);
-                                            });
-                                      },
-                                      child: const Icon(
-                                        Icons.edit_outlined,
-                                        color: Color(0xff666666),
-                                      )),
-                                  const SizedBox(width: 10),
-                                  SizedBox(
-                                      height: 35,
-                                      width: 35,
-                                      child: InkWell(
-                                          child: const Icon(
-                                            Icons.delete_outlined,
-                                            color: Color(0xff666666),
-                                          ),
-                                          onTap: () async {
-                                            // Click to Delete watchlist name
-                                            await showDialog(
-                                                context: context,
-                                                builder: (
-                                                  BuildContext context,
-                                                ) {
-                                                  return StatefulBuilder(
-                                                    builder: (BuildContext
-                                                            context,
-                                                        StateSetter
-                                                            setDialogState) {
-                                                      return AlertDialog(
-                                                        shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        16)),
-                                                        title: TextWidget.titleText(
-                                                            text:
-                                                                "Delete Watchlist",
-                                                            theme: theme
-                                                                .isDarkMode,
-                                                            fw: 1),
-                                                        //  const Divider(thickness: 0.6,color: Colors.grey,),
-
-                                                        content: TextWidget.subText(
-                                                            text:
-                                                                'Do you really want to Delete?',
-                                                            theme: theme
-                                                                .isDarkMode,
-                                                            fw: 0),
-                                                        actions: [
-                                                          TextButton(
-                                                            onPressed: () {
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop();
-                                                            },
-                                                            child: TextWidget
-                                                                .subText(
-                                                                    text:
-                                                                        'Cancel',
-                                                                    theme: theme
-                                                                        .isDarkMode,
-                                                                    fw: 1),
-                                                          ),
-                                                          TextButton(
-                                                            onPressed: (_isDeleting ||
-                                                                    marketWatch
-                                                                        .loading)
-                                                                ? null
-                                                                : () async {
-                                                                    setDialogState(
-                                                                        () {
-                                                                      _isDeleting =
-                                                                          true;
-                                                                    });
-
-                                                                    // Store the current watchlist name and index for comparison
-                                                                    final deletingWatchlist =
-                                                                        watchlist[
-                                                                            index];
-                                                                    final currentWlName =
-                                                                        widget
-                                                                            .currentWLName;
-                                                                    final wasCurrentWl =
-                                                                        deletingWatchlist ==
-                                                                            currentWlName;
-
-                                                                    // Delete the watchlist
-                                                                    await marketWatch.deleteWatchList(
-                                                                        deletingWatchlist,
-                                                                        context);
-
-                                                                    // If the deleted watchlist was the current one, we need to switch
-                                                                    if (wasCurrentWl &&
-                                                                        context
-                                                                            .mounted) {
-                                                                      // Get updated watchlist after deletion
-                                                                      final updatedMarketWatch =
-                                                                          ref.read(
-                                                                              marketWatchProvider);
-                                                                      final updatedWatchlist = updatedMarketWatch
-                                                                          .marketWatchlist
-                                                                          ?.values;
-
-                                                                      if (updatedWatchlist !=
-                                                                              null &&
-                                                                          updatedWatchlist
-                                                                              .isNotEmpty) {
-                                                                        // Find a valid watchlist to switch to (first available custom or predefined)
-                                                                        String
-                                                                            newWatchlist =
-                                                                            "";
-                                                                        int newIndex =
-                                                                            0;
-
-                                                                        // First try to find a custom watchlist (non-predefined)
-                                                                        for (int i =
-                                                                                0;
-                                                                            i < updatedWatchlist.length - 4;
-                                                                            i++) {
-                                                                          if (updatedWatchlist[i] !=
-                                                                              deletingWatchlist) {
-                                                                            newWatchlist =
-                                                                                updatedWatchlist[i];
-                                                                            newIndex =
-                                                                                i;
-                                                                            break;
-                                                                          }
-                                                                        }
-
-                                                                        // If no custom watchlist found, use a predefined one
-                                                                        if (newWatchlist.isEmpty &&
-                                                                            updatedWatchlist.length >
-                                                                                4) {
-                                                                          newWatchlist =
-                                                                              "My Stocks"; // Default to My Stocks
-                                                                          newIndex =
-                                                                              updatedWatchlist.length - 4; // Index for My Stocks
-                                                                        }
-
-                                                                        // Switch to the new watchlist if found
-                                                                        if (newWatchlist
-                                                                            .isNotEmpty) {
-                                                                          // Unsubscribe from current scrips first
-                                                                          await updatedMarketWatch.requestMWScrip(
-                                                                              context: context,
-                                                                              isSubscribe: false);
-
-                                                                          // Update page index
-                                                                          updatedMarketWatch
-                                                                              .setCurrentWatchlistPageIndex(newIndex);
-
-                                                                          // Change watchlist name and flag
-                                                                          if (newWatchlist == "My Stocks" ||
-                                                                              newWatchlist == "Nifty50" ||
-                                                                              newWatchlist == "Niftybank" ||
-                                                                              newWatchlist == "Sensex") {
-                                                                            await updatedMarketWatch.changeWlName(newWatchlist,
-                                                                                "Yes");
-                                                                          } else {
-                                                                            await updatedMarketWatch.changeWlName(newWatchlist,
-                                                                                "No");
-                                                                          }
-
-                                                                          // Switch to new watchlist scrips
-                                                                          await updatedMarketWatch.changeWLScrip(
-                                                                              newWatchlist,
-                                                                              context);
-
-                                                                          // Handle special subscription for My Stocks
-                                                                          if (newWatchlist ==
-                                                                              "My Stocks") {
-                                                                            ref.read(portfolioProvider).requestWSHoldings(
-                                                                                context: context,
-                                                                                isSubscribe: true);
-                                                                          }
-                                                                        }
-                                                                      }
-                                                                    }
-
-                                                                    if (context
-                                                                        .mounted) {
-                                                                      await Future.delayed(const Duration(
-                                                                          milliseconds:
-                                                                              50));
+                                      Text(
+                                    watchlist[index].isEmpty
+                                        ? watchlist[index]
+                                        : watchlist[index] == "My Stocks"
+                                            ? "Holdings"
+                                            : watchlist[index] == "Nifty50"
+                                                ? "Nifty 50"
+                                                : watchlist[index] ==
+                                                        "Niftybank"
+                                                    ? "Nifty Bank"
+                                                    : "${watchlist[index][0].toUpperCase()}${watchlist[index].substring(1)}",
+                                    style: TextWidget.textStyle(
+                                        fontSize: 13,
+                                        color: widget.currentWLName !=
+                                                watchlist[index]
+                                            ? colors.colorGrey
+                                            : theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                        theme: theme.isDarkMode,
+                                        fw: 0),
+                                  ),
+                                  trailing: watchlist.length > 1
+                                      ? Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Edit button with circular splash
+                                            Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                onTap: () async {
+                                                  showModalBottomSheet(
+                                                    context: context,
+                                                    useSafeArea: true,
+                                                    isScrollControlled: true,
+                                                    shape:
+                                                        const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.vertical(
+                                                              top: Radius
+                                                                  .circular(
+                                                                      16)),
+                                                    ),
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return WatchListRename(
+                                                          wlname:
+                                                              watchlist[index]);
+                                                    },
+                                                  );
+                                                },
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                child: const Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  child: Icon(
+                                                    Icons.edit_outlined,
+                                                    color:
+                                                        const Color(0xff666666),
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 5),
+                                            // Delete button with circular splash
+                                            Material(
+                                              color: Colors.transparent,
+                                              child: InkWell(
+                                                onTap: () async {
+                                                  // Click to Delete watchlist name
+                                                  await showDialog(
+                                                    context: context,
+                                                    barrierDismissible: false,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return StatefulBuilder(
+                                                        builder: (BuildContext
+                                                                context,
+                                                            StateSetter
+                                                                setDialogState) {
+                                                          return AlertDialog(
+                                                            backgroundColor: theme
+                                                                    .isDarkMode
+                                                                ? const Color
+                                                                    .fromARGB(
+                                                                    255,
+                                                                    18,
+                                                                    18,
+                                                                    18)
+                                                                : colors
+                                                                    .colorWhite,
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius: BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            16))),
+                                                            scrollable: true,
+                                                            actionsPadding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    left: 16,
+                                                                    right: 16,
+                                                                    bottom: 14,
+                                                                    top: 10),
+                                                            contentPadding:
+                                                                EdgeInsets.zero,
+                                                            insetPadding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        16),
+                                                            titlePadding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    left: 16,
+                                                                    right: 8,
+                                                                    top: 0,
+                                                                    bottom: 0),
+                                                            title: Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceBetween,
+                                                                children: [
+                                                                  TextWidget.titleText(
+                                                                      text:
+                                                                          "Delete Watchlist",
+                                                                      theme: theme
+                                                                          .isDarkMode,
+                                                                      fw: 1),
+                                                                  InkWell(
+                                                                    onTap: () {
                                                                       Navigator.pop(
                                                                           context);
-                                                                      Navigator.pop(
-                                                                          context);
-                                                                    }
-
-                                                                    if (mounted) {
-                                                                      setDialogState(
-                                                                          () {
-                                                                        _isDeleting =
-                                                                            false;
-                                                                      });
-                                                                    }
-                                                                  },
-                                                            child: TextWidget
-                                                                .subText(
-                                                                    text: 'Yes',
-                                                                    theme: theme
-                                                                        .isDarkMode,
-                                                                    fw: 1),
-                                                          ),
-                                                        ],
+                                                                    },
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            32), // Makes the ripple circular
+                                                                    splashColor: theme
+                                                                            .isDarkMode
+                                                                        ? Colors
+                                                                            .white
+                                                                            .withOpacity(
+                                                                                0.2)
+                                                                        : Colors
+                                                                            .black
+                                                                            .withOpacity(0.1),
+                                                                    highlightColor:
+                                                                        Colors
+                                                                            .transparent, // Optional: remove highlight if not needed
+                                                                    customBorder:
+                                                                        const CircleBorder(), // Ensures ripple is circular
+                                                                    child:
+                                                                        Padding(
+                                                                      padding: const EdgeInsets
+                                                                          .all(
+                                                                          8.0), // Ensures enough space for ripple
+                                                                      child:
+                                                                          Icon(
+                                                                        Icons
+                                                                            .close_rounded,
+                                                                        size:
+                                                                            22,
+                                                                        color: theme.isDarkMode
+                                                                            ? const Color(0xffBDBDBD)
+                                                                            : colors.colorGrey,
+                                                                      ),
+                                                                    ),
+                                                                  )
+                                                                ]),
+                                                            content: SizedBox(
+                                                                width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width,
+                                                                child: Column(
+                                                                    children: [
+                                                                      const ListDivider(),
+                                                                      const SizedBox(
+                                                                          height:
+                                                                              14),
+                                                                      Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal:
+                                                                                16),
+                                                                        child: TextWidget.subText(
+                                                                            text:
+                                                                                'Do you really want to delete "${watchlist[index]}" watchlist?',
+                                                                            theme:
+                                                                                theme.isDarkMode,
+                                                                            fw: 0),
+                                                                      ),
+                                                                    ])),
+                                                            actions: [
+                                                              Row(
+                                                                children: [
+                                                                  Expanded(
+                                                                    child:
+                                                                        OutlinedButton(
+                                                                      onPressed: (_isDeleting ||
+                                                                              marketWatch.loading)
+                                                                          ? null
+                                                                          : () async {
+                                                                              setDialogState(() {
+                                                                                _isDeleting = true;
+                                                                              });
+                                                                              await marketWatch.deleteWatchList(watchlist[index], context);
+                                                                              if (context.mounted) {
+                                                                                await Future.delayed(const Duration(milliseconds: 50));
+                                                                                Navigator.pop(context);
+                                                                                Navigator.pop(context);
+                                                                              }
+                                                                              if (mounted) {
+                                                                                setDialogState(() {
+                                                                                  _isDeleting = false;
+                                                                                });
+                                                                              }
+                                                                            },
+                                                                      style: OutlinedButton
+                                                                          .styleFrom(
+                                                                        side: BorderSide(
+                                                                            color:
+                                                                                colors.darkred), // Outline border color
+                                                                        shape:
+                                                                            RoundedRectangleBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(50),
+                                                                        ),
+                                                                        backgroundColor:
+                                                                            Colors.transparent, // Transparent background
+                                                                      ),
+                                                                      child: (_isDeleting ||
+                                                                              marketWatch
+                                                                                  .loading)
+                                                                          ? const SizedBox(
+                                                                              width: 18,
+                                                                              height: 20,
+                                                                              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xff666666)),
+                                                                            )
+                                                                          : TextWidget.subText(
+                                                                              text: "Delete",
+                                                                              color: colors.kColorRedText,
+                                                                              theme: theme.isDarkMode,
+                                                                              fw: 0),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
                                                       );
                                                     },
                                                   );
-                                                });
-                                          }))
-                                ])
-                              : Container(width: .2));
-                    },
-                    separatorBuilder: (BuildContext context, int index) {
-                      return const ListDivider();
-                    }),
+                                                },
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  child: Icon(
+                                                    Icons.delete_outlined,
+                                                    color:
+                                                        const Color(0xff666666),
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : Container(width: .2),
+                                ),
+                              ),
+                            );
+                          } else {
+                            // Then show pre-defined watchlists
+                            final preDefIndex = (index -
+                                    (watchlist.length - 4 >= 10
+                                            ? 10
+                                            : math.max(0, watchlist.length - 4))
+                                        .toInt())
+                                .toInt();
+                            final isSelected =
+                                widget.currentWLName == preDefWl[preDefIndex];
+
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () async {
+                                  ref
+                                      .read(marketWatchProvider)
+                                      .setCurrentWatchlistPageIndex(
+                                          preDefIndex + watchlist.length - 4);
+                                  ref.read(marketWatchProvider).changeWlName(
+                                      preDefWl[preDefIndex], "Yes");
+
+                                  if (preDefWl[preDefIndex] == "My Stocks") {
+                                    ref
+                                        .read(portfolioProvider)
+                                        .requestWSHoldings(
+                                            context: context,
+                                            isSubscribe: true);
+                                  } else {
+                                    await marketWatch.changeWLScrip(
+                                        preDefWl[preDefIndex], context);
+                                  }
+
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                splashColor: theme.isDarkMode
+                                    ? Colors.white24
+                                    : Colors.black12,
+                                highlightColor: theme.isDarkMode
+                                    ? Colors.white12
+                                    : Colors.black.withOpacity(0.06),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 0),
+                                  dense: true,
+                                  minLeadingWidth: 16,
+                                  leading: SvgPicture.asset(theme.isDarkMode
+                                      ? isSelected
+                                          ? assets.darkActProductIcon
+                                          : assets.darkProductIcon
+                                      : isSelected
+                                          ? assets.actProductIcon
+                                          : assets.productIcon),
+                                  title:
+                                      // TextWidget.subText(
+                                      //     text: preDefWl[preDefIndex] == "My Stocks"
+                                      //         ? preDefWl[preDefIndex]
+                                      //         : "${preDefWl[preDefIndex][0].toUpperCase()}${preDefWl[preDefIndex].substring(1)}",
+                                      //     color: isSelected
+                                      //         ? theme.isDarkMode
+                                      //             ? colors.colorWhite
+                                      //             : colors.colorBlack
+                                      //         : colors.colorGrey,
+                                      //     theme: theme.isDarkMode,
+                                      //     fw: 0),
+
+                                      Text(
+                                    preDefWl[preDefIndex] == "My Stocks"
+                                        ? "Holdings"
+                                        : preDefWl[preDefIndex] == "Nifty50"
+                                            ? "Nifty 50"
+                                            : preDefWl[preDefIndex] ==
+                                                    "Niftybank"
+                                                ? "Nifty Bank"
+                                                : "${preDefWl[preDefIndex][0].toUpperCase()}${preDefWl[preDefIndex].substring(1)}",
+                                    style: TextWidget.textStyle(
+                                        fontSize: 13,
+                                        color: isSelected
+                                            ? (theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack)
+                                            : colors.colorGrey,
+                                        theme: theme.isDarkMode,
+                                        fw: 0),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        separatorBuilder: (BuildContext context, int index) {
+                          return const ListDivider();
+                        }),
+                  ),
+                ),
                 const SizedBox(
                   height: 24,
                 )

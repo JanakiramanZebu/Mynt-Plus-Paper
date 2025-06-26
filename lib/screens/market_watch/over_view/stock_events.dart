@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/market_watch_provider.dart'; 
 import '../../../provider/stocks_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
@@ -17,9 +18,11 @@ class StockEvents extends ConsumerWidget {
     final stockEve = ref.watch(stocksProvide);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Events",
-            style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 20, FontWeight.w600)),
+      children: [      
+              TextWidget.heroText(
+                      text:"Events" ,
+                      theme: theme.isDarkMode,
+                      fw: 1),	
         const SizedBox(height: 16),
         SizedBox(
             height: 36,
@@ -47,9 +50,11 @@ class StockEvents extends ConsumerWidget {
                           onTap: () async {
                             stockEve.chngEvent(stockEve.eveType[index]);
                           },
-                          child: Text(stockEve.eveType[index],
-                              style: textStyle(
-                                  theme.isDarkMode
+                          child: 
+
+                                  TextWidget.subText(
+                      text: stockEve.eveType[index],
+                      color:  theme.isDarkMode
                                       ? stockEve.selectedevent ==
                                               stockEve.eveType[index]
                                           ? colors.colorBlack
@@ -58,8 +63,11 @@ class StockEvents extends ConsumerWidget {
                                               stockEve.eveType[index]
                                           ? colors.colorWhite
                                           : colors.colorBlack,
-                                  14,
-                                 stockEve.selectedevent == stockEve.eveType[index]?  FontWeight.w500:FontWeight.w400))));
+                      theme: theme.isDarkMode,
+                      fw:  stockEve.selectedevent == stockEve.eveType[index]?  0 : 00),	
+                                 
+                                 
+                                 ));
                 },
                 separatorBuilder: (BuildContext context, int index) {
                   return const SizedBox(width: 10);
@@ -81,46 +89,58 @@ class StockEvents extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Agenda",
-                        style: textStyle(
-                            const Color(0XFF666666), 14, FontWeight.w500)),
-                    const SizedBox(height: 4),
-                    Text(
-                        funData.fundamentalData!.stockEvents!
+                   
+
+                             TextWidget.subText(
+                      text: "Agenda",
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
+                    const SizedBox(height: 4),               
+
+                             TextWidget.subText(
+                      text:funData.fundamentalData!.stockEvents!
                             .announcement![index].agenda!
-                            .substring(1),
-                
-                        style: textStyle(
-                            theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                            .substring(1) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Board meeting date",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Source date",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                      children: [   
+                                 TextWidget.subText(
+                      text:"Board meeting date" ,
+                      textOverflow: TextOverflow.ellipsis,
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	                      
+
+                                TextWidget.subText(
+                      text:"Source date",
+                      textOverflow: TextOverflow.ellipsis,
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!
-                                .announcement![index].boardMeetingDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!
-                                .announcement![index].sourceDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                      children: [                       
+
+                                TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!
+                                .announcement![index].boardMeetingDate! ,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),	                      
+
+                            TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!
+                                .announcement![index].sourceDate! ,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
                       ],
                     ),
                   ],
@@ -146,94 +166,132 @@ class StockEvents extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Cum Bonus Date",
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Ex Bonus Date",
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                      
+
+                                TextWidget.subText(
+                      text:"Cum Bonus Date" ,
+                      textOverflow: TextOverflow.ellipsis,
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
+                        
+
+                                TextWidget.subText(
+                      text:"Ex Bonus Date" ,
+                      textOverflow: TextOverflow.ellipsis,
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!.bonus![index]
-                                .cumBonusDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                      theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!.bonus![index]
-                                .exBonusDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                              theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                       
+
+                      TextWidget.subText(
+                      text:funData.fundamentalData!.stockEvents!.bonus![index]
+                                .cumBonusDate! ,
+                      textOverflow: TextOverflow.ellipsis,
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
+                        
+                              TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.bonus![index]
+                                .exBonusDate! ,
+                      textOverflow: TextOverflow.ellipsis,
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
                       ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Ratio D",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Ratio N",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                        
+                                TextWidget.subText(
+                      text:"Ratio D",
+                      textOverflow: TextOverflow.ellipsis,
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
+                       
+
+                                TextWidget.subText(
+                      text:"Ratio N" ,
+                      textOverflow: TextOverflow.ellipsis,
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!.bonus![index]
+                     
+
+                                  TextWidget.subText(
+                      text:  funData.fundamentalData!.stockEvents!.bonus![index]
                                 .ratioD!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!.bonus![index]
-                                .ratioN!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                   
+					  textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                       
+
+  TextWidget.subText(
+                      text:funData.fundamentalData!.stockEvents!.bonus![index]
+                                .ratioN! ,
+                 
+					  textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Record Date",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Source Date",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                       
+
+                                TextWidget.subText(
+                      text:"Record Date" ,
+                      textOverflow: TextOverflow.ellipsis,
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
+                       
+
+                                 TextWidget.subText(
+                      text:"Source Date",
+                      textOverflow: TextOverflow.ellipsis,
+                      color:Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!.bonus![index]
-                                .recordDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                             theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!.bonus![index]
-                                .sourceDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                       theme.isDarkMode?colors.colorWhite:colors.colorBlack,14, FontWeight.w500)),
+                      children: [                    
+
+                              TextWidget.subText(
+                      text:funData.fundamentalData!.stockEvents!.bonus![index]
+                                .recordDate! ,                 
+					  textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                         TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.bonus![index]
+                                .sourceDate! ,
+                 
+					  textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                   ],
@@ -258,95 +316,110 @@ theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Dividend Percent",
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Dividend Date",
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                      children: [                        
+                                  TextWidget.subText(
+                      text: "Dividend Percent",
+                      color: Color(0XFF666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                       
+
+                                  TextWidget.subText(
+                      text:"Dividend Date" ,
+                      color: Color(0XFF666666),
+					  textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!
                                 .dividend![index].dividendPercent!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                         theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!
                                 .dividend![index].dividendDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Dividend Per Share",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Ex Date",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                        TextWidget.subText(
+                      text: "Dividend Per Share",
+                      textOverflow: TextOverflow.ellipsis,
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: "Ex Date",
+                      textOverflow: TextOverflow.ellipsis,
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!
                                 .dividend![index].dividendpershare!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                         theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!
                                 .dividend![index].exDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                       theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Details",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Record Date",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                        TextWidget.subText(
+                      text: "Details",
+                      textOverflow: TextOverflow.ellipsis,
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: "Record Date",
+                      textOverflow: TextOverflow.ellipsis,
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!
                                 .dividend![index].details!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                    theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!
                                 .dividend![index].recordDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                        theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                   ],
@@ -372,94 +445,106 @@ theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Ex Rights Date",
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Offer Price",
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                        TextWidget.subText(
+                      text: "Ex Rights Date",
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: "Offer Price",
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!.rights![index]
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.rights![index]
                                 .exRightsDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                              theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!.rights![index]
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.rights![index]
                                 .offerPrice!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                          theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Premium Rs",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Ration D",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                        TextWidget.subText(
+                      text: "Premium Rs",
+                      textOverflow: TextOverflow.ellipsis,
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: "Ration D",
+                      textOverflow: TextOverflow.ellipsis,
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!.rights![index]
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.rights![index]
                                 .premiumRs!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                    theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!.rights![index]
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.rights![index]
                                 .rationD!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                         theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Ration N",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Record Date",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                        TextWidget.subText(
+                      text: "Ration N",
+                      textOverflow: TextOverflow.ellipsis,
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: "Record Date",
+                      textOverflow: TextOverflow.ellipsis,
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!.rights![index]
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.rights![index]
                                 .ratioN!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                          theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!
                                 .dividend![index].recordDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                            theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                   ],
@@ -485,62 +570,70 @@ theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Ex Date",
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Face Value Change From",
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                        TextWidget.subText(
+                      text: "Ex Date",
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: "Face Value Change From",
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!.split![index]
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.split![index]
                                 .exDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                              theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!.split![index]
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.split![index]
                                 .fvChangeFrom!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                            theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Face Value Change To",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
-                        Text("Record Date",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                                const Color(0XFF666666), 14, FontWeight.w500)),
+                        TextWidget.subText(
+                      text: "Face Value Change To",
+                      textOverflow: TextOverflow.ellipsis,
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: "Record Date",
+                      textOverflow: TextOverflow.ellipsis,
+                      color: Color(0XFF666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                            funData.fundamentalData!.stockEvents!.split![index]
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.split![index]
                                 .fvChangeTo!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                  theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                        Text(
-                            funData.fundamentalData!.stockEvents!.split![index]
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                        TextWidget.subText(
+                      text: funData.fundamentalData!.stockEvents!.split![index]
                                 .recordDate!,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyle(
-                   theme.isDarkMode?colors.colorWhite:colors.colorBlack,14, FontWeight.w500)),
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                       ],
                     ),
                   ],
@@ -552,10 +645,5 @@ theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
       ],
     );
   }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

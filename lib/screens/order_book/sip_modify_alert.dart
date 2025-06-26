@@ -7,6 +7,7 @@ import 'package:mynt_plus/provider/thems.dart';
 
 import '../../models/order_book_model/sip_place_order.dart';
 import '../../provider/order_provider.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/functions.dart';
 
@@ -45,13 +46,7 @@ class SipModifyAlert extends ConsumerWidget {
       ),
       content: Column(
         children: [
-          Text(
-              "Are you sure you want to modify the (${sipdetails.scrips![0].tsym.toString().toUpperCase()})",
-              textAlign: TextAlign.center,
-              style: textStyle(
-                  themes.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w600))
+          TextWidget.titleText(text: "Are you sure you want to modify the (${sipdetails.scrips![0].tsym.toString().toUpperCase()})",theme:themes.isDarkMode,fw: 1,align: TextAlign.center),
         ],
       ),
       actions: [
@@ -69,8 +64,7 @@ class SipModifyAlert extends ConsumerWidget {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: Text("No",
-                      style: textStyle(colors.colorGrey, 12, FontWeight.w600))),
+                  child: TextWidget.paraText(text: "No",theme: false, color: colors.colorGrey,fw: 1)),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -114,13 +108,7 @@ class SipModifyAlert extends ConsumerWidget {
                         );
                     
                   },
-                  child: Text("Yes",
-                      style: textStyle(
-                          themes.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          12,
-                          FontWeight.w600))),
+                  child: TextWidget.paraText(text: "Yes",theme: themes.isDarkMode,fw: 1)),
             )
           ],
         ),
@@ -128,9 +116,5 @@ class SipModifyAlert extends ConsumerWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+  
 }

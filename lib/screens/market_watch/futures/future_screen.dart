@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/list_divider.dart';
 
@@ -75,15 +76,31 @@ class FutureScreen extends ConsumerWidget {
                 title: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text("${displayData.symbol} ",
-                        style: textStyles.scripNameTxtStyle.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack)),
-                    if (displayData.option!.isNotEmpty)
-                      Text("${displayData.option}",
-                          style: textStyles.scripNameTxtStyle
-                              .copyWith(color: const Color(0xff666666))),
+                  
+
+                               
+
+                       Text(
+           "${displayData.symbol}",
+            style: TextWidget.textStyle(
+                fontSize: 13,
+                color: theme.isDarkMode ? Colors.white : Colors.black,
+                theme: theme.isDarkMode,
+                fw: 0),
+          ),
+SizedBox(width: 2,),
+                      
+                    if (displayData.option!.isNotEmpty)                     
+                               
+
+                       Text(
+              "${displayData.option}",
+              style: TextWidget.textStyle(
+                  fontSize: 13,
+                  color: Color(0xff666666),
+                  theme: theme.isDarkMode,
+                  fw: 0),
+            )
                   ],
                 ),
                 subtitle: Column(
@@ -93,12 +110,20 @@ class FutureScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text("${displayData.exch}  ",
-                            style: textStyles.scripExchTxtStyle),
+                        
+                             TextWidget.paraText(
+                      text: "${displayData.exch}  ",
+                      color: colors.colorGrey,
+                      theme: theme.isDarkMode,
+                      fw: 00),
                         if (displayData.expDate!.isNotEmpty)
-                          Text("${displayData.expDate}  ",
-                              style: textStyles.scripExchTxtStyle
-                                  .copyWith(color: colors.colorBlack)),
+                          
+
+                                   TextWidget.paraText(
+                      text: "${displayData.expDate}  ",
+                     
+                      theme: theme.isDarkMode,
+                      fw: 00),
                       ],
                     ),
                   ],
@@ -107,20 +132,20 @@ class FutureScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                        "₹${displayData.ltp ?? displayData.close ?? 0.00}",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            14,
-                            FontWeight.w600)),
+                   
+
+                             TextWidget.subText(
+                      text: "₹${displayData.ltp ?? displayData.close ?? 0.00}",
+                    
+                      theme: theme.isDarkMode,
+                      fw: 0),
                     const SizedBox(height: 4),
-                    Text(
-                      "${displayData.change == "null" ? "0.00 " : double.parse("${displayData.change}").toStringAsFixed(2)} "
+                   
+
+                     TextWidget.paraText(
+                      text:  "${displayData.change == "null" ? "0.00 " : double.parse("${displayData.change}").toStringAsFixed(2)} "
                       "${displayData.perChange == "null" ? "(0.00%)" : "(${displayData.perChange ?? 0.00}%)"}",
-                      style: textStyle(
-                          displayData.change!.startsWith("-") ||
+                      color:  displayData.change!.startsWith("-") ||
                                   displayData.perChange!.startsWith('-')
                               ? colors.darkred
                               : (displayData.change == "null" ||
@@ -129,10 +154,9 @@ class FutureScreen extends ConsumerWidget {
                                       (displayData.change == "0.00" ||
                                           displayData.perChange == "0.00")
                                   ? colors.ltpgrey
-                                  : colors.ltpgreen,
-                          12,
-                          FontWeight.w600),
-                    ),
+                                  : colors.ltpgreen ,
+                      theme: theme.isDarkMode,
+                      fw: 2),
                   ],
                 ),
               )
@@ -143,9 +167,5 @@ class FutureScreen extends ConsumerWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

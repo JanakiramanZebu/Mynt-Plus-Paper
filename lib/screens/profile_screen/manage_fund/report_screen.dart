@@ -9,6 +9,7 @@ import '../../../locator/preference.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
@@ -42,11 +43,11 @@ class ReportsScreen extends ConsumerWidget {
         centerTitle: false,
         leading: const CustomBackBtn(),
         elevation: 0.2,
-        title: Text('Reports',
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w600)),
+        title: TextWidget.subText(
+            text: 'Reports',
+            theme: false,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            fw: 1),
       ),
       body: ListView.separated(
         itemCount: userProfile.reporttMenu.length,
@@ -197,15 +198,16 @@ class ReportsScreen extends ConsumerWidget {
             },
             dense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            title: Text(
-              userProfile.reporttMenu[index]['Subtitle'],
-              style: textStyle(theme.isDarkMode ? Colors.white : Colors.black,
-                  16, FontWeight.w500),
-            ),
-            subtitle: Text(
-              userProfile.reporttMenu[index]['title'],
-              style: textStyle(const Color(0xff666666), 12, FontWeight.w400),
-            ),
+            title: TextWidget.titleText(
+                text: userProfile.reporttMenu[index]['Subtitle'],
+                theme: false,
+                color: const Color(0xff666666),
+                fw: 0),
+            subtitle: TextWidget.paraText(
+                text: userProfile.reporttMenu[index]['title'],
+                theme: false,
+                color: const Color(0xff666666),
+                fw: 0),
             trailing:
                 SvgPicture.asset(userProfile.reporttMenu[index]['trailing']),
           );
@@ -215,11 +217,5 @@ class ReportsScreen extends ConsumerWidget {
         },
       ),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

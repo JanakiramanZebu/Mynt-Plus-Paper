@@ -12,6 +12,7 @@ import '../../provider/order_provider.dart';
 import '../../provider/shocase_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -404,13 +405,19 @@ class _OrderBookState extends ConsumerState<OrderBook> {
                     textCapitalization: TextCapitalization.characters,
                     inputFormatters: [UpperCaseTextFormatter()],
                     controller: order.orderSearchCtrl,
-              style: textStyle(const Color(0xff000000), 16, FontWeight.w600),
+              style: TextWidget.textStyle(
+                  color: const Color(0xff000000),
+                  theme: theme.isDarkMode,
+                  fontSize: 16,
+                  fw: 1),
                     decoration: InputDecoration(
                         fillColor: const Color(0xffF1F3F8),
                         filled: true,
-                        hintStyle: GoogleFonts.inter(
-                            textStyle: textStyle(
-                                const Color(0xff69758F), 15, FontWeight.w500)),
+                  hintStyle: TextWidget.textStyle(
+                      theme: theme.isDarkMode,
+                      color: const Color(0xff69758F),
+                      fontSize: 14,
+                      fw: 0),
                         prefixIconColor: const Color(0xff586279),
                         prefixIcon: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -451,7 +458,11 @@ class _OrderBookState extends ConsumerState<OrderBook> {
                       order.showOrderSearch(false);
                       order.clearOrderSearch();
                     },
-                    child: Text("Close", style: textStyles.textBtn))
+              child: TextWidget.subText(
+                  text: "Close",
+                  theme: false,
+                  color: colors.colorLightBlue,
+                  fw: 0))
               ],
             ),
     );
@@ -696,28 +707,33 @@ class _OrderItemState extends State<_OrderItem> {
 
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                                                         Row(children: [
-        Text("${widget.orderItem.symbol} ",
-            overflow: TextOverflow.ellipsis,
-            style: textStyles.scripNameTxtStyle.copyWith(
-                color:
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack)),
-        Text("${widget.orderItem.option} ",
-            overflow: TextOverflow.ellipsis,
-            style: textStyles.scripNameTxtStyle.copyWith(
-                color:
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack)),
+        TextWidget.subText(
+            text: "${widget.orderItem.symbol} ",
+            theme: false,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            fw: 1,
+            textOverflow: TextOverflow.ellipsis),
+        TextWidget.subText(
+            text: "${widget.orderItem.option} ",
+            theme: false,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            fw: 1,
+            textOverflow: TextOverflow.ellipsis),
       ]),
       // Wrap in RepaintBoundary since LTP updates frequently
       RepaintBoundary(
         child: Row(
                                                           children: [
-                                                            Text(" LTP: ",
-                style: textStyle(const Color(0xff5E6B7D), 13, FontWeight.w600)),
-            Text("₹$displayPrice",
-                                                                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
+            TextWidget.paraText(
+                text: " LTP: ",
+                theme: false,
+                color: const Color(0xff5E6B7D),
+                fw: 1),
+            TextWidget.subText(
+                text: "₹$displayPrice",
+                theme: false,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                fw: 0),
           ],
         ),
       ),
@@ -733,12 +749,12 @@ class _OrderItemState extends State<_OrderItem> {
                                                         Row(
                                                           children: [
               CustomExchBadge(exch: "${widget.orderItem.exch}"),
-              Text(" ${widget.orderItem.expDate} ",
-                  overflow: TextOverflow.ellipsis,
-                  style: textStyles.scripExchTxtStyle.copyWith(
-                                                                        color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack)),
+              TextWidget.paraText(
+                  text: " ${widget.orderItem.expDate} ",
+                  theme: false,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  fw: 0),
                                                             Container(
                   margin: const EdgeInsets.only(left: 7),
                   padding:
@@ -748,9 +764,11 @@ class _OrderItemState extends State<_OrderItem> {
                                                                     color: theme.isDarkMode
                           ? const Color(0xff666666).withOpacity(.2)
                           : const Color(0xff999999).withOpacity(.2)),
-                  child: Text("${widget.orderItem.sPrdtAli}",
-                                                                    style: textStyle(
-                          const Color(0xff666666), 11, FontWeight.w600))),
+                  child: TextWidget.captionText(
+                      text: "${widget.orderItem.sPrdtAli}",
+                      theme: false,
+                      color: const Color(0xff666666),
+                      fw: 1)),
                                                             Container(
                   margin: const EdgeInsets.only(left: 7),
                   padding:
@@ -760,17 +778,21 @@ class _OrderItemState extends State<_OrderItem> {
                                                                     color: theme.isDarkMode
                           ? const Color(0xff666666).withOpacity(.2)
                           : const Color(0xff999999).withOpacity(.2)),
-                  child: Text("${widget.orderItem.prctyp}",
-                                                                    style: textStyle(
-                          const Color(0xff666666), 11, FontWeight.w600)))
+                child: TextWidget.captionText(
+                    text: "${widget.orderItem.prctyp}",
+                    theme: false,
+                    color: const Color(0xff666666),
+                    fw: 1),
+              )
             ],
           ),
           // Wrap percent change in RepaintBoundary as it updates frequently
           RepaintBoundary(
-            child: Text(" (${widget.orderItem.perChange ?? 0.00}%)",
-                style:
-                    textStyle(_getPercentChangeColor(), 12, FontWeight.w500)),
-          ),
+              child: TextWidget.paraText(
+                  text: " (${widget.orderItem.perChange ?? 0.00}%)",
+                  theme: false,
+                  color: _getPercentChangeColor(),
+                  fw: 0)),
         ]);
   }
 
@@ -806,27 +828,29 @@ class _OrderItemState extends State<_OrderItem> {
                     : Color(widget.orderItem.trantype == "S"
                                                                               ? 0xffFCF3F3
                                                                               : 0xffECF8F1)),
-            child: Text(widget.orderItem.trantype == "S" ? "SELL" : "BUY",
-                                                                  style: textStyle(
-                    widget.orderItem.trantype == "S"
+            child: TextWidget.paraText(
+                text: widget.orderItem.trantype == "S" ? "SELL" : "BUY",
+                theme: false,
+                color: widget.orderItem.trantype == "S"
                                                                           ? colors.darkred
                                                                           : colors.ltpgreen,
-                                                                      12,
-                                                                      FontWeight.w600))),
+                fw: 1)),
                                                           const SizedBox(width: 8),
-        Text(formatDateTime(value: widget.orderItem.norentm!).substring(13, 21),
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500))
+        TextWidget.paraText(
+            text: formatDateTime(value: widget.orderItem.norentm!)
+                .substring(13, 21),
+            theme: false,
+            color: const Color(0xff666666),
+            fw: 0)
                                                         ]),
                                                         Row(children: [
-                                                          Text("Qty: ",
-            style: textStyle(const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                                                          Text(
-          "$displayFilledQty/$displayTotalQty",
-                                                            style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                                14,
-                                                                FontWeight.w500),
-                                                          )
+        TextWidget.subText(
+            text: "Qty: ", theme: false, color: const Color(0xff5E6B7D), fw: 0),
+        TextWidget.subText(
+            text: "$displayFilledQty/$displayTotalQty",
+            theme: false,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            fw: 0)
                                                         ])
     ]);
   }
@@ -841,31 +865,34 @@ class _OrderItemState extends State<_OrderItem> {
                     widget.orderItem.status == "REJECTED"
                 ? assets.cancelledIcon
                 : assets.warningIcon),
-                                                          Text(
+        TextWidget.subText(
+            text:
             " ${widget.orderItem.stIntrn![0].toUpperCase()}${widget.orderItem.stIntrn!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
-                                                              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                                  13,
-                                                                  FontWeight.w500)),
+            theme: false,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            fw: 0),
                                                         ]),
                                                         Row(children: [
-                                                          Text("Prc: ",
-            style: textStyle(const Color(0xff5E6B7D), 14, FontWeight.w500)),
-        Text("${widget.orderItem.avgprc ?? widget.orderItem.prc ?? 0.00}",
-                                                              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                                  14,
-                                                                  FontWeight.w500)),
+        TextWidget.subText(
+            text: "Prc: ", theme: false, color: const Color(0xff5E6B7D), fw: 0),
+        TextWidget.subText(
+            text: "${widget.orderItem.avgprc ?? widget.orderItem.prc ?? 0.00}",
+            theme: false,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            fw: 0),
         if (widget.orderItem.prctyp == "SL-LMT" ||
             widget.orderItem.prctyp == "SL-MKT") ...[
           const SizedBox(child: Text(' / ')),
-                                                            Text("TP: ",
-              style: textStyle(const Color(0xff5E6B7D), 14, FontWeight.w500)),
-          Text("${widget.orderItem.trgprc ?? 0.00}",
-                                                                style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w500))
+          TextWidget.subText(
+              text: "TP: ",
+              theme: false,
+              color: const Color(0xff5E6B7D),
+              fw: 0),
+          TextWidget.subText(
+              text: "${widget.orderItem.trgprc ?? 0.00}",
+              theme: false,
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              fw: 0),
         ]
       ])
     ]);

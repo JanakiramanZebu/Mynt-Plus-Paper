@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import 'chart.dart';
 import 'stock_row_data.dart';
@@ -17,18 +18,17 @@ class PriceComparision extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final peersData = ref.watch(marketWatchProvider);
     final theme = ref.watch(themeProvider);
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text("Peers Comparison",
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              20,
-              FontWeight.w600)),
-      const SizedBox(height: 5),
-      Text("Peers Comparison breakdown of Refineries information",
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              12,
-              FontWeight.w500)),
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [     
+
+              TextWidget.heroText(
+                      text: "Peers Comparison",                     
+                      theme: theme.isDarkMode,
+                      fw: 1),
+      const SizedBox(height: 5),  
+              TextWidget.paraText(
+                      text:"Peers Comparison breakdown of Refineries information" ,                  
+                      theme: theme.isDarkMode,
+                      fw: 0),		
       Container(
         padding: const EdgeInsets.only(bottom: 6, top: 12),
         decoration: const BoxDecoration(
@@ -36,9 +36,12 @@ class PriceComparision extends ConsumerWidget {
                 bottom: BorderSide(color: Color(0xff999999), width: .5))),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("Stocks",
-                style: textStyle(const Color(0xff666666), 14, FontWeight.w500)),
+          children: [    
+                 TextWidget.subText(
+                      text:"Stocks" ,
+                      color:Color(0xff666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
             DropdownButtonHideUnderline(
                 child: DropdownButton2(
               dropdownStyleData: DropdownStyleData(
@@ -66,15 +69,16 @@ class PriceComparision extends ConsumerWidget {
               //     borderRadius: BorderRadius.all(Radius.circular(32))),
               // buttonSplashColor: Colors.transparent,
               isExpanded: true,
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  13,
-                  FontWeight.w500),
-              hint: Text(peersData.selctedPeers,
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorBlack : colors.colorBlack,
-                      13,
-                      FontWeight.w500)),
+              style: 
+
+                   TextWidget.textStyle(
+                 fontSize: 12 , theme: theme.isDarkMode , fw: 0 ),		
+              hint: 
+                       TextWidget.paraText(
+                      text:peersData.selctedPeers ,
+                      color:theme.isDarkMode ? colors.colorBlack : colors.colorBlack ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
 
               items: peersData.addDividersAfterStock(peersData.peersType),
               // customItemsHeights: peersData
@@ -156,9 +160,5 @@ class PriceComparision extends ConsumerWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

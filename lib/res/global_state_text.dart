@@ -24,12 +24,13 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-         fontWeight: fw == 2
+        fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                :  fw == 0
-                ? FontWeight.w500 : FontWeight.normal,
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
       )),
     );
   }
@@ -55,12 +56,13 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-         fontWeight: fw == 2
+        fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                :  fw == 0
-                ? FontWeight.w500 : FontWeight.normal,
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
       )),
     );
   }
@@ -86,44 +88,50 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-         fontWeight: fw == 2
+        fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                :  fw == 0
-                ? FontWeight.w500 : FontWeight.normal,
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
       )),
     );
   }
 
-  static Widget subText(
-      {required String text,
-      required bool theme,
-      Color? color,
-      int? fw,
-      int? maxLines,
-      TextAlign? align,
-      TextOverflow? textOverflow}) {
+  static Widget subText({
+    required String text,
+    required bool theme,
+    Color? color,
+    int? fw,
+    int? maxLines,
+    TextAlign? align,
+    TextOverflow? textOverflow,
+    double? letterSpacing, // ✅ Added optional letter spacing
+  }) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
       textAlign: align,
       style: GoogleFonts.inter(
-          textStyle: TextStyle(
-        fontSize: 14,
-        color: (color != null)
-            ? color
-            : theme
-                ? colors.colorWhite
-                : colors.colorBlack,
-         fontWeight: fw == 2
-            ? FontWeight.bold
-            : fw == 1
-                ? FontWeight.w600
-                :  fw == 0
-                ? FontWeight.w500 : FontWeight.normal,
-      )),
+        textStyle: TextStyle(
+          fontSize: 14,
+          color: (color != null)
+              ? color
+              : theme
+                  ? colors.colorWhite
+                  : colors.colorBlack,
+          fontWeight: fw == 2
+              ? FontWeight.bold
+              : fw == 1
+                  ? FontWeight.w600
+                  : fw == 0
+                      ? FontWeight.w500
+                      : FontWeight.normal,
+          letterSpacing: letterSpacing,
+        ),
+      ),
     );
   }
 
@@ -152,8 +160,11 @@ class TextWidget {
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                :  fw == 0
-                ? FontWeight.w500 : FontWeight.normal,
+                : fw == 0
+                    ? FontWeight.w500
+                    : fw == 00
+                        ? FontWeight.w400
+                        : FontWeight.normal,
       )),
     );
   }
@@ -179,12 +190,13 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-         fontWeight: fw == 2
+        fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                :  fw == 0
-                ? FontWeight.w500 : FontWeight.normal,
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
       )),
     );
   }
@@ -210,25 +222,28 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-         fontWeight: fw == 2
+        fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                :  fw == 0
-                ? FontWeight.w500 : FontWeight.normal,
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
       )),
     );
   }
 
-  static Widget custmText(
-      {required String text,
-      required int fs,
-      required bool theme,
-      Color? color,
-      int? fw,
-      int? maxLines,
-      TextAlign? align,
-      TextOverflow? textOverflow}) {
+  static Widget custmText({
+    required String text,
+    required int fs,
+    required bool theme,
+    Color? color,
+    int? fw,
+    int? maxLines,
+    TextAlign? align,
+    TextOverflow? textOverflow,
+    double? letterSpacing,
+  }) {
     return Text(
       text,
       maxLines: maxLines,
@@ -242,13 +257,46 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-         fontWeight: fw == 2
+        fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
                 ? FontWeight.w600
-                :  fw == 0
-                ? FontWeight.w500 : FontWeight.normal,
+                : fw == 0
+                    ? FontWeight.w500
+                    : FontWeight.normal,
+        letterSpacing: letterSpacing,
       )),
+    );
+  }
+
+  static TextStyle textStyle({
+    required double fontSize,
+    required bool theme,
+    Color? color,
+    int? fw,
+    double? height,
+    double? letterSpacing,
+    TextDecoration? decoration,
+  }) {
+    return GoogleFonts.inter(
+      textStyle: TextStyle(
+        fontSize: fontSize,
+        color: color ?? (theme ? colors.colorWhite : colors.colorBlack),
+        fontWeight: fw == 2
+            ? FontWeight.bold
+            : fw == 1
+                ? FontWeight.w600
+                : fw == 0
+                    ? FontWeight.w500
+                    : fw == 00
+                        ? FontWeight.w400
+                        : fw == 3
+                            ? FontWeight.w400
+                            : FontWeight.normal,
+        height: height,
+        letterSpacing: letterSpacing,
+        decoration: decoration,
+      ),
     );
   }
 }

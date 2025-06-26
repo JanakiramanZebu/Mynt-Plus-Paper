@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 
 class StockRowTable extends ConsumerWidget {
@@ -25,22 +26,24 @@ class StockRowTable extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title,
-              style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack , 13, FontWeight.w500)),
-          Text(
-              showIcon
+          
+
+               TextWidget.paraText(
+                      text:title ,                     
+                      theme: theme.isDarkMode,
+                      fw: 0),	
+               TextWidget.paraText(
+                      text: showIcon
                   ? "₹${double.parse(value == "null" ? "0.00" : value).toStringAsFixed(2)}"
                   : double.parse(value == "null" ? "0.00" : value)
-                      .toStringAsFixed(2),
-              style: textStyle(const Color(0xff444444), 13, FontWeight.w500)),
+                      .toStringAsFixed(2) ,
+                      color:Color(0xff444444) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
         ],
       ),
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

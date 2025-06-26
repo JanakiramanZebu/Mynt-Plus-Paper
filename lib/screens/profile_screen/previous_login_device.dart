@@ -12,6 +12,7 @@ import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/network_state_provider.dart';
 // import '../../provider/user_profile_provider.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/no_internet_widget.dart';
@@ -48,10 +49,12 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
           appBar: AppBar(
               elevation: .2,
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-              title: Text(
-                "Previously signed in account's on this device",
-                style: textStyle(const Color(0xff000000), 15, FontWeight.w600),
-                overflow: TextOverflow.ellipsis,
+              title: TextWidget.titleText(
+                text: "Previously signed in account's on this device",
+                theme: false,
+                color: const Color(0xff000000),
+                fw: 1,
+                textOverflow: TextOverflow.ellipsis,
               )),
           body: Stack(
             children: [
@@ -150,18 +153,27 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
                           dense: true,
                           contentPadding:
                               const EdgeInsets.symmetric(horizontal: 14),
-                          title: Text(loggedUser.loggedMobile[index].mobile,
-                              style: textStyle(const Color(0xff000000), 14,
-                                  FontWeight.w600)),
-                          subtitle: Text(
-                              "User ID ${loggedUser.loggedMobile[index].clientId}",
-                              style: textStyle(const Color(0xff666666), 12,
-                                  FontWeight.w500)),
+                          title: TextWidget.subText(
+                            text: loggedUser.loggedMobile[index].mobile,
+                            theme: false,
+                            color: const Color(0xff000000),
+                            fw: 1,
+                          ),
+                          subtitle: TextWidget.paraText(
+                            text:
+                                "User ID ${loggedUser.loggedMobile[index].clientId}",
+                            theme: false,
+                            color: const Color(0xff666666),
+                            fw: 0,
+                          ),
                           trailing: loggedUser.loggedMobile[index].clientId ==
                                   pref.clientId
-                              ? Text("Last active",
-                                  style: textStyle(const Color(0xff0037B7), 13,
-                                      FontWeight.w600))
+                              ? TextWidget.subText(
+                                  text: "Last active",
+                                  theme: false,
+                                  color: const Color(0xff0037B7),
+                                  fw: 1,
+                                )
                               : Container(
                                   width: .3,
                                 ),
@@ -190,9 +202,12 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
                               SvgPicture.asset(assets.addCircleIcon,
                                   color: const Color(0xff000000)),
                               const SizedBox(width: 8),
-                              Text("Add another account",
-                                  style: textStyle(const Color(0xff000000), 14,
-                                      FontWeight.w600))
+                              TextWidget.subText(
+                                text: "Add another account",
+                                theme: false,
+                                color: const Color(0xff000000),
+                                fw: 1,
+                              )
                             ])),
                   ),
                   if (defaultTargetPlatform == TargetPlatform.iOS)
@@ -225,16 +240,33 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
                   horizontal: 14,
                 ),
                 insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-                title: const Text("Exit App"),
+                title: TextWidget.titleText(
+                  text: "Exit App",
+                  theme: false,
+                  color: Color(0xff000000),
+                  fw: 0,
+                ),
                 content: SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    child: const Column(
+                    child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [Text("Do you want to Exit an App?")])),
+                        children: [
+                          TextWidget.paraText(
+                            text: "Do you want to Exit an App?",
+                            theme: false,
+                            color: Color(0xff000000),
+                            fw: 0,
+                          )
+                        ])),
                 actions: [
                   TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: Text("No", style: textStyles.textBtn)),
+                      child: TextWidget.subText(
+                        text: "No",
+                        theme: false,
+                        color: colors.colorBlue,
+                        fw: 0,
+                      )),
                   ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(true),
                       style: ElevatedButton.styleFrom(
@@ -243,9 +275,12 @@ class _PreviousLoginDeciveState extends State<PreviousLoginDecive> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50),
                           )),
-                      child: Text("Yes",
-                          style: textStyle(
-                              const Color(0xffFFFFFF), 14, FontWeight.w500)))
+                      child: TextWidget.subText(
+                        text: "Yes",
+                        theme: false,
+                        color: const Color(0xffFFFFFF),
+                        fw: 0,
+                      ))
                 ]);
           },
         ) ??

@@ -7,6 +7,7 @@ import '../../provider/order_provider.dart';
 import '../../provider/shocase_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -86,12 +87,12 @@ class GttOrderBook extends ConsumerWidget {
                   inputFormatters: [UpperCaseTextFormatter()],
                   controller: order.orderGttSearchCtrl,
                   style:
-                      textStyle(const Color(0xff000000), 16, FontWeight.w600),
+                     TextWidget.textStyle(color:  const Color(0xff000000),fontSize: 16, fw: 1,theme: false),
                   decoration: InputDecoration(
                       fillColor: const Color(0xffF1F3F8),
                       filled: true,
-                      hintStyle: textStyle(
-                          const Color(0xff69758F), 15, FontWeight.w500),
+                      hintStyle: TextWidget.textStyle(color:  
+                          const Color(0xff69758F),fontSize: 14,fw: 0,theme: false),
                       prefixIconColor: const Color(0xff586279),
                       prefixIcon: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -132,7 +133,7 @@ class GttOrderBook extends ConsumerWidget {
                     order.showGTTOrderSearch(false);
                     order.clearGttOrderSearch();
                   },
-                  child: Text("Close", style: textStyles.textBtn))
+                  child: TextWidget.subText(text: "Close",theme: false,color:colors.colorBlue,fw: 0))
             ],
           ),
         ),
@@ -293,50 +294,14 @@ class GttOrderBook extends ConsumerWidget {
                                                   MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Row(children: [
-                                                  Text(
-                                                      "${gttOrderBook[index].symbol} ",
-                                                      overflow: TextOverflow
-                                                          .ellipsis,
-                                                      style: textStyles
-                                                          .scripNameTxtStyle
-                                                          .copyWith(
-                                                              color: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack)),
-                                                  Text(
-                                                      "${gttOrderBook[index].option} ",
-                                                      overflow: TextOverflow
-                                                          .ellipsis,
-                                                      style: textStyles
-                                                          .scripNameTxtStyle
-                                                          .copyWith(
-                                                              color: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack)),
+                                                  TextWidget.subText(text: "${gttOrderBook[index].symbol} ",theme: false,color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,fw: 1,textOverflow: TextOverflow.ellipsis),
+                                                  TextWidget.subText(text: "${gttOrderBook[index].option} ",theme: false,color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,fw: 1,textOverflow: TextOverflow.ellipsis),
                                                 ]),
                                                 Row(
                                                   children: [
-                                                    Text(" LTP: ",
-                                                        style: textStyle(
-                                                            const Color(0xff5E6B7D),
-                                                            13,
-                                                            FontWeight.w600)),
-                                                    Text(
-                                                        "₹${gttOrderBook[index].ltp ?? gttOrderBook[index].close ?? 0.00}",
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            14,
-                                                            FontWeight.w500)),
+                                                    TextWidget.paraText(text: " LTP: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                    TextWidget.subText(text: "₹${gttOrderBook[index].ltp ?? gttOrderBook[index].close ?? 0.00}",theme: false,color: theme.isDarkMode
+                                                                ? colors.colorWhite : colors.colorBlack,fw: 0),
                                                   ],
                                                 )
                                               ]),
@@ -352,33 +317,13 @@ class GttOrderBook extends ConsumerWidget {
                                                     CustomExchBadge(
                                                         exch:
                                                             "${gttOrderBook[index].exch}"),
-                                                    Text(
-                                                        " ${gttOrderBook[index].expDate} ",
-                                                        overflow:
-                                                            TextOverflow.ellipsis,
-                                                        style: textStyles
-                                                            .scripExchTxtStyle
-                                                            .copyWith(
-                                                          color: theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                        ))
+                                                            TextWidget.captionText(text:" ${gttOrderBook[index].expDate} " ,theme: false,color: theme.isDarkMode
+                                                              ? colors.colorWhite : colors.colorBlack,fw: 0,textOverflow: TextOverflow.ellipsis),
                                                   ],
                                                 ),
-                                                Text(
-                                                    " (${gttOrderBook[index].perChange ?? 0.00}%)",
-                                                    style: textStyle(
-                                                        gttOrderBook[index]
-                                                                .perChange!
-                                                                .startsWith("-")
-                                                            ? colors.darkred
-                                                            : gttOrderBook[index]
-                                                                        .perChange ==
-                                                                    "0.00"
+                                                TextWidget.paraText(text: " (${gttOrderBook[index].perChange ?? 0.00}%)",theme: false, color: gttOrderBook[index].perChange!.startsWith("-") ? colors.darkred : gttOrderBook[index] .perChange == "0.00"
                                                                 ? colors.ltpgrey
-                                                                : colors.ltpgreen,
-                                                        12,
-                                                        FontWeight.w500)),
+                                                                : colors.ltpgreen,fw: 0),
                                               ]),
                                           const SizedBox(height: 4),
                                           Divider(
@@ -407,13 +352,9 @@ class GttOrderBook extends ConsumerWidget {
                                                                   gttOrderBook[index].trantype == "S"
                                                                       ? 0xffFCF3F3
                                                                       : 0xffECF8F1)),
-                                                      child: Text(gttOrderBook[index].trantype == "S" ? "SELL" : "BUY",
-                                                          style: textStyle(
-                                                              gttOrderBook[index].trantype == "S"
+                                                      child: TextWidget.paraText(text: gttOrderBook[index].trantype == "S" ? "SELL" : "BUY",theme: false, color: gttOrderBook[index].trantype == "S"
                                                                   ? colors.darkred
-                                                                  : colors.ltpgreen,
-                                                              12,
-                                                              FontWeight.w600))),
+                                                                  : colors.ltpgreen,fw: 1),),
                                                             Container(
                                                                 margin: const EdgeInsets.only(
                                                                     left: 7),
@@ -430,12 +371,7 @@ class GttOrderBook extends ConsumerWidget {
                                                                             .withOpacity(.2)
                                                                         : const Color(0xff999999)
                                                                             .withOpacity(.2)),
-                                                                child: Text(
-                                                                    "${gttOrderBook[index].placeOrderParams!.sPrdtAli}",
-                                                                    style: textStyle(
-                                                                        const Color(0xff666666),
-                                                                        11,
-                                                                        FontWeight.w600))),
+                                                                child: TextWidget.captionText(text: "${gttOrderBook[index].placeOrderParams!.sPrdtAli}",theme: false,color: const Color(0xff666666),fw: 1)),
                                                               Container(
                                                                     margin: const EdgeInsets.only(
                                                                         left: 7),
@@ -452,27 +388,12 @@ class GttOrderBook extends ConsumerWidget {
                                                                                 .withOpacity(.2)
                                                                             : const Color(0xff999999)
                                                                                 .withOpacity(.2)),
-                                                                    child: Text(
-                                                                        gttOrderBook[index].gttOrderCurrentStatus??'',
-                                                                        style: textStyle(
-                                                                            const Color(0xff666666),
-                                                                            11,
-                                                                            FontWeight.w600)))
+                                                                    child: TextWidget.captionText(text: gttOrderBook[index].gttOrderCurrentStatus??'',theme: false,color: const Color(0xff666666),fw: 0))
                                                 ]),
                                                 Row(children: [
-                                                  Text("Qty: ",
-                                                      style: textStyle(
-                                                          const Color(0xff5E6B7D),
-                                                          14,
-                                                          FontWeight.w500)),
-                                                  Text(
-                                                      "${gttOrderBook[index].placeOrderParams?.qty ?? ''} ${gttOrderBook[index].placeOrderParamsLeg2?.qty != null ? ' / ${gttOrderBook[index].placeOrderParamsLeg2?.qty}' : ''}",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                          14,
-                                                          FontWeight.w500))
+                                                  TextWidget.subText(text: "Qty: ",theme: false,color: const Color(0xff5E6B7D),fw: 0),
+                                                  TextWidget.subText(text: "${gttOrderBook[index].placeOrderParams?.qty ?? ''} ${gttOrderBook[index].placeOrderParamsLeg2?.qty != null ? ' / ${gttOrderBook[index].placeOrderParamsLeg2?.qty}' : ''}",
+                                                  theme: theme.isDarkMode,fw: 0),
                                                 ])
                                               ]),
                                           const SizedBox(height: 10),
@@ -490,32 +411,13 @@ class GttOrderBook extends ConsumerWidget {
                                                     //             : colors.colorBlack,
                                                     //         14,
                                                     //         FontWeight.w500)),
-                                                    Text(
-                                                        formatDateTime(
-                                                            value:
-                                                                gttOrderBook[index]
-                                                                    .norentm!),
-                                                        style: textStyle(
-                                                            const Color(0xff666666),
-                                                            12,
-                                                            FontWeight.w500)),
+                                                    TextWidget.paraText(text: formatDateTime(value:gttOrderBook[index].norentm!),theme: false, color: const Color(0xff666666),fw: 0),
                                                   ],
                                                 ),
                                                 Row(children: [
-                                                  Text("Price: ",
-                                                      style: textStyle(
-                                                          const Color(0xff5E6B7D),
-                                                          14,
-                                                          FontWeight.w500)),
-                                                  Text(
-                                                    "${gttOrderBook[index].placeOrderParams?.prctyp=="MKT" ? "MKT" : gttOrderBook[index].placeOrderParams?.prc ?? ''} ${gttOrderBook[index].placeOrderParamsLeg2?.prc != null ? ' / ${ gttOrderBook[index].placeOrderParamsLeg2?.prctyp=="MKT" ? "MKT" : gttOrderBook[index].placeOrderParamsLeg2?.prc}' : ''}",
-                                                    //  gttOrderBook[index].prctyp=="MKT"? "MKT": "${gttOrderBook[index].placeOrderParams?.prc ?? ''} ${gttOrderBook[index].placeOrderParamsLeg2?.prc != null ? ' / ${gttOrderBook[index].placeOrderParamsLeg2?.prc}' : ''}",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                          14,
-                                                          FontWeight.w500))
+                                                  TextWidget.subText(text: "Price: ",theme: false,color: const Color(0xff5E6B7D),fw: 0),
+                                                  TextWidget.subText(text: "${gttOrderBook[index].placeOrderParams?.prctyp=="MKT" ? "MKT" : gttOrderBook[index].placeOrderParams?.prc ?? ''} ${gttOrderBook[index].placeOrderParamsLeg2?.prc != null ? ' / ${ gttOrderBook[index].placeOrderParamsLeg2?.prctyp=="MKT" ? "MKT" : gttOrderBook[index].placeOrderParamsLeg2?.prc}' : ''}",
+                                                  theme: theme.isDarkMode,fw: 0),
                                                 ])
                                               ])
                                         ]))
@@ -578,41 +480,16 @@ class GttOrderBook extends ConsumerWidget {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Row(children: [
-                                            Text(
-                                                "${order.gttOrderBookSearch![index].symbol} ",
-                                                overflow: TextOverflow.ellipsis,
-                                                style: textStyles.scripNameTxtStyle
-                                                    .copyWith(
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack)),
-                                            Text(
-                                                "${order.gttOrderBookSearch![index].option} ",
-                                                overflow: TextOverflow.ellipsis,
-                                                style: textStyles.scripNameTxtStyle
-                                                    .copyWith(
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack)),
+                                            TextWidget.subText(text: "${order.gttOrderBookSearch![index].symbol} ",theme: theme.isDarkMode,fw: 1,textOverflow: TextOverflow.ellipsis),
+                                            TextWidget.subText(text: "${order.gttOrderBookSearch![index].option} ",theme: theme.isDarkMode,fw: 1,textOverflow: TextOverflow.ellipsis),
                                           ]),
                                           Row(
                                             children: [
-                                              Text(" LTP: ",
-                                                  style: textStyle(
-                                                      const Color(0xff5E6B7D),
-                                                      13,
-                                                      FontWeight.w600)),
+                                              TextWidget.paraText(text: " LTP: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
                                               if (socketDatas.containsKey(order
                                                   .gttOrderBookSearch![index]
                                                   .token)) ...[
-                                                Text(
-                                                    "₹${order.gttOrderBookSearch![index].ltp ?? order.gttOrderBookSearch![index].close ?? 0.00}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                              TextWidget.subText(text: "₹${order.gttOrderBookSearch![index].ltp ?? order.gttOrderBookSearch![index].close ?? 0.00}",theme: theme.isDarkMode,fw: 0),
                                               ]
                                               // SvgPicture.asset(assets.rightArrowIcon),
                                             ],
@@ -630,22 +507,10 @@ class GttOrderBook extends ConsumerWidget {
                                               CustomExchBadge(
                                                   exch:
                                                       "${order.gttOrderBookSearch![index].exch}"),
-                                              Text(
-                                                  " ${order.gttOrderBookSearch![index].expDate} ",
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: textStyles
-                                                      .scripExchTxtStyle
-                                                      .copyWith(
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                  ))
+                                                TextWidget.captionText(text: " ${order.gttOrderBookSearch![index].expDate} ",theme:theme.isDarkMode,fw: 0,textOverflow: TextOverflow.ellipsis),
                                             ],
                                           ),
-                                          Text(
-                                              " (${order.gttOrderBookSearch![index].perChange ?? 0.00}%)",
-                                              style: textStyle(
-                                                  order.gttOrderBookSearch![index]
+                                          TextWidget.paraText(text: " (${order.gttOrderBookSearch![index].perChange ?? 0.00}%)",theme: false, color: order.gttOrderBookSearch![index]
                                                           .perChange!
                                                           .startsWith("-")
                                                       ? colors.darkred
@@ -655,9 +520,7 @@ class GttOrderBook extends ConsumerWidget {
                                                                   .perChange ==
                                                               "0.00"
                                                           ? colors.ltpgrey
-                                                          : colors.ltpgreen,
-                                                  12,
-                                                  FontWeight.w500)),
+                                                          : colors.ltpgreen,fw: 0),
                                         ]),
                                     const SizedBox(height: 4),
                                     Divider(
@@ -682,16 +545,11 @@ class GttOrderBook extends ConsumerWidget {
                                                         : Color(order.gttOrderBookSearch![index].trantype == "S"
                                                             ? 0xffFCF3F3
                                                             : 0xffECF8F1)),
-                                                child: Text(
-                                                    gttOrderBook[index].trantype == "S"
+                                                child: TextWidget.paraText(text: gttOrderBook[index].trantype == "S"
                                                         ? "SELL"
-                                                        : "BUY",
-                                                    style: textStyle(
-                                                        order.gttOrderBookSearch![index].trantype == "S"
+                                                        : "BUY",theme: false, color: order.gttOrderBookSearch![index].trantype == "S"
                                                             ? colors.darkred
-                                                            : colors.ltpgreen,
-                                                        12,
-                                                        FontWeight.w600))),
+                                                            : colors.ltpgreen,fw: 1)),
                                             Container(
                                                 margin:
                                                     const EdgeInsets.only(left: 7),
@@ -705,28 +563,12 @@ class GttOrderBook extends ConsumerWidget {
                                                             .withOpacity(.2)
                                                         : const Color(0xff999999)
                                                             .withOpacity(.2)),
-                                                child: Text(
-                                                    "${order.gttOrderBookSearch![index].placeOrderParams!.sPrdtAli}",
-                                                    style: textStyle(
-                                                        const Color(0xff666666),
-                                                        11,
-                                                        FontWeight.w600)))
+                                                child: TextWidget.captionText(text: "${order.gttOrderBookSearch![index].placeOrderParams!.sPrdtAli}",theme: false,color: const Color(0xff666666),fw: 1),)
                                           ]),
                                           Row(children: [
-                                            Text("Qty: ",
-                                                style: textStyle(
-                                                    const Color(0xff5E6B7D),
-                                                    14,
-                                                    FontWeight.w500)),
-                                            Text(
-                                                // "${order.gttOrderBookSearch![index].qty ?? 0}",
-                                                "${order.gttOrderBookSearch![index].placeOrderParams?.qty ?? ''} ${order.gttOrderBookSearch![index].placeOrderParamsLeg2?.qty != null ? ' / ${order.gttOrderBookSearch![index].placeOrderParamsLeg2?.qty}' : ''}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    14,
-                                                    FontWeight.w500))
+                                            TextWidget.subText(text: "Qty: ",theme: false,color:const Color(0xff5E6B7D) ,fw: 0),
+                                            TextWidget.subText(text: "${order.gttOrderBookSearch![index].placeOrderParams?.qty ?? ''} ${order.gttOrderBookSearch![index].placeOrderParamsLeg2?.qty != null ? ' / ${order.gttOrderBookSearch![index].placeOrderParamsLeg2?.qty}' : ''}",
+                                            theme: theme.isDarkMode,fw: 0),
                                           ])
                                         ]),
                                     const SizedBox(height: 10),
@@ -744,31 +586,15 @@ class GttOrderBook extends ConsumerWidget {
                                             //               : colors.colorBlack,
                                             //           14,
                                             //           FontWeight.w500)),
-                                              Text(
-                                                  formatDateTime(
+                                            TextWidget.paraText(text: formatDateTime(
                                                       value: gttOrderBook[index]
-                                                          .norentm!),
-                                                  style: textStyle(
-                                                      const Color(0xff666666),
-                                                      12,
-                                                      FontWeight.w500)),
+                                                          .norentm!),theme: false, color: const Color(0xff666666),fw: 0),
                                             ],
                                           ),
                                           Row(children: [
-                                            Text("Price: ",
-                                                style: textStyle(
-                                                    const Color(0xff5E6B7D),
-                                                    14,
-                                                    FontWeight.w500)),
-                                            Text(
-                                                // "${order.gttOrderBookSearch![index].prc ?? 0.00}",
-                                                "${order.gttOrderBookSearch![index].placeOrderParams?.prctyp=="MKT" ? "MKT" : order.gttOrderBookSearch![index].placeOrderParams?.prc ?? ''} ${order.gttOrderBookSearch![index].placeOrderParamsLeg2?.prc != null ? ' / ${ order.gttOrderBookSearch![index].placeOrderParamsLeg2?.prctyp=="MKT" ? "MKT" : order.gttOrderBookSearch![index].placeOrderParamsLeg2?.prc}' : ''}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    14,
-                                                    FontWeight.w500))
+                                            TextWidget.subText(text: "Price: ",theme: false,color: const Color(0xff5E6B7D),fw: 0),
+                                            TextWidget.subText(text: "${order.gttOrderBookSearch![index].placeOrderParams?.prctyp=="MKT" ? "MKT" : order.gttOrderBookSearch![index].placeOrderParams?.prc ?? ''} ${order.gttOrderBookSearch![index].placeOrderParamsLeg2?.prc != null ? ' / ${ order.gttOrderBookSearch![index].placeOrderParamsLeg2?.prctyp=="MKT" ? "MKT" : order.gttOrderBookSearch![index].placeOrderParamsLeg2?.prc}' : ''}",
+                                            theme: theme.isDarkMode,fw: 0),
                                           ])
                                         ])
                                   ]))

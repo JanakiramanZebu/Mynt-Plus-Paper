@@ -7,6 +7,7 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
@@ -53,15 +54,8 @@ class BasketList extends ConsumerWidget {
                               ),
                               content: Column(
                                 children: [
-                                  Text(
-                                      "Are you sure you want to delete this basket ${basket.bsktList[index]['bsketName'].toString().toUpperCase()}",
-                                      textAlign: TextAlign.center,
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          16,
-                                          FontWeight.w600))
+                                  TextWidget.titleText(text: "Are you sure you want to delete this basket ${basket.bsktList[index]['bsketName'].toString().toUpperCase()}",
+                                  theme: theme.isDarkMode,fw: 1,align: TextAlign.center),
                                 ],
                               ),
                               actions: [
@@ -83,13 +77,7 @@ class BasketList extends ConsumerWidget {
                                             onPressed: () {
                                               Navigator.pop(context);
                                             },
-                                            child: Text("No",
-                                                style: textStyle(
-                                                  theme.isDarkMode
-                                                          ? colors.colorBlack
-                                                          : colors.colorWhite,
-                                                    12,
-                                                    FontWeight.w600))),
+                                            child: TextWidget.paraText(text: "No",theme:theme.isDarkMode,fw: 1)),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
@@ -108,11 +96,7 @@ class BasketList extends ConsumerWidget {
                                                     .removeBasket(index);
                                                 Navigator.pop(context);
                                               },
-                                              child: Text("Yes",
-                                                  style: textStyle(
-                                                      colors.colorGrey,
-                                                      12,
-                                                      FontWeight.w600))))
+                                              child: TextWidget.paraText(text: "Yes",theme:theme.isDarkMode,fw: 1)))
                                     ])
                               ]);
                         });
@@ -124,24 +108,16 @@ class BasketList extends ConsumerWidget {
                         basket.bsktList[index]['bsketName'], context);
                   },
                   dense: true,
-                  trailing: Text(
-                      "${basket.bsktList[index]['curLength']} / ${basket.bsktList[index]['max']}",
-                      style: textStyles.scripExchTxtStyle.copyWith(
-                          color: theme.isDarkMode
+                  trailing: TextWidget.captionText(text: "${basket.bsktList[index]['curLength']} / ${basket.bsktList[index]['max']}",
+                  theme: false,color:theme.isDarkMode ? colors.colorWhite
+                              : colors.colorBlack ,fw: 0),
+                  title: TextWidget.subText(text: "Basket name: ${basket.bsktList[index]['bsketName']}",
+                  theme: false,color:theme.isDarkMode
                               ? colors.colorWhite
-                              : colors.colorBlack)),
-                  title: Text(
-                      "Basket name: ${basket.bsktList[index]['bsketName']}",
-                      style: textStyles.scripNameTxtStyle.copyWith(
-                          color: theme.isDarkMode
+                              : colors.colorBlack ,fw: 0),
+                  subtitle: TextWidget.captionText(text: "Created on: ${basket.bsktList[index]['createdDate']}",theme: false,color: theme.isDarkMode
                               ? colors.colorWhite
-                              : colors.colorBlack)),
-                  subtitle: Text(
-                      "Created on: ${basket.bsktList[index]['createdDate']}",
-                      style: textStyles.scripExchTxtStyle.copyWith(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack)));
+                              : colors.colorBlack,fw: 0));
             },
             separatorBuilder: (BuildContext context, int index) {
               return const ListDivider();
@@ -183,11 +159,8 @@ class BasketScripList extends ConsumerWidget {
             titleSpacing: 6,
             leading: const CustomBackBtn(),
             shadowColor: const Color(0xffECEFF3),
-            title: Text("${bsktName}   (${basket.bsktScripList.length} / ${20})",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600)),
+            title: TextWidget.subText(text: "${bsktName}   (${basket.bsktScripList.length} / ${20})",theme: false,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,fw: 1),
             actions: basket.bsktScripList.length < 20
                 ? [
                     Row(
@@ -223,13 +196,9 @@ class BasketScripList extends ConsumerWidget {
                                     shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(32)))),
-                                child: Text("Add symbol",
-                                    style: textStyle(
-                                        theme.isDarkMode
+                                child: TextWidget.paraText(text: "Add symbol",theme: false, color: theme.isDarkMode
                                             ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        12,
-                                        FontWeight.w600)))),
+                                            : colors.colorBlack,fw: 1))),
                       ],
                     ),
                   ]
@@ -250,41 +219,23 @@ class BasketScripList extends ConsumerWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Pre Trade Margin",
-                                  style: textStyle(const Color(0xff5E6B7D), 12,
-                                      FontWeight.w500)),
+                              TextWidget.paraText(text: "Pre Trade Margin",theme: false, color: const Color(0xff5E6B7D),fw: 0),
                               const SizedBox(height: 6),
-                              Text(
-                                  basket.bsktScripList.isEmpty ||
+                              TextWidget.subText(text: basket.bsktScripList.isEmpty ||
                                           basket.bsktOrderMargin == null
                                       ? "₹0.00"
-                                      : "₹${basket.bsktOrderMargin!.marginusedtrade ?? 0.00}",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w500)),
+                                      : "₹${basket.bsktOrderMargin!.marginusedtrade ?? 0.00}",theme: theme.isDarkMode,fw: 0),
                             ],
                           ),
                           Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text("Post Trade Margin",
-                                    style: textStyle(const Color(0xff5E6B7D),
-                                        12, FontWeight.w500)),
+                                TextWidget.paraText(text: "Post Trade Margin",theme: false, color: const Color(0xff5E6B7D),fw: 0),
                                 const SizedBox(height: 6),
-                                Text(
-                                    basket.bsktScripList.isEmpty ||
+                                TextWidget.titleText(text: basket.bsktScripList.isEmpty ||
                                             basket.bsktOrderMargin == null
                                         ? "₹0.00"
-                                        : "₹${basket.bsktOrderMargin!.marginused ?? 0.00}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        16,
-                                        FontWeight.w500)),
+                                        : "₹${basket.bsktOrderMargin!.marginused ?? 0.00}",theme: theme.isDarkMode,fw: 0),
                               ])
                         ]),
                     
@@ -302,10 +253,7 @@ class BasketScripList extends ConsumerWidget {
                           children: [
                             Icon(Icons.error_outline, color: colors.darkred, size: 16),
                             const SizedBox(width: 8),
-                            Text(
-                              "Basket should contain orders of only 1 exchange",
-                              style: textStyle(colors.darkred, 13, FontWeight.w500),
-                            ),
+                            TextWidget.subText(text: "Basket should contain orders of only 1 exchange",theme: false,color:colors.darkred,fw: 0),
                           ],
                         ),
                       ),
@@ -317,8 +265,7 @@ class BasketScripList extends ConsumerWidget {
               child:
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
-                Text(" On Script Tap to edit / long press to delete.",
-                    style: textStyle(colors.colorBlue, 12, FontWeight.w500))
+                TextWidget.paraText(text: " On Script Tap to edit / long press to delete.",theme: false, color: colors.colorBlue,fw: 0),
               ])),
           Expanded(
               child: basket.bsktScripList.isEmpty
@@ -424,15 +371,8 @@ class BasketScripList extends ConsumerWidget {
                                           ),
                                           content: Column(
                                             children: [
-                                              Text(
-                                                  "Are you sure you want to delete this basket Scrip ${basket.bsktScripList[index]['symbol']}",
-                                                  textAlign: TextAlign.center,
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      16,
-                                                      FontWeight.w600))
+                                              TextWidget.titleText(text: "Are you sure you want to delete this basket Scrip ${basket.bsktScripList[index]['symbol']}",
+                                              theme:theme.isDarkMode,fw: 1,align: TextAlign.center),
                                             ],
                                           ),
                                           actions: [
@@ -458,11 +398,7 @@ class BasketScripList extends ConsumerWidget {
                                                         onPressed: () {
                                                           Navigator.pop(context);
                                                         },
-                                                        child: Text("No",
-                                                            style: textStyle(
-                                                                colors.colorGrey,
-                                                                12,
-                                                                FontWeight.w600))),
+                                                        child: TextWidget.paraText(text: "No",theme: false, color: colors.colorGrey,fw: 1)),
                                                   ),
                                                   const SizedBox(width: 16),
                                                   Expanded(
@@ -492,16 +428,7 @@ class BasketScripList extends ConsumerWidget {
                                                                 .fetchBasketMargin();
                                                             Navigator.pop(context);
                                                           },
-                                                          child: Text("Yes",
-                                                              style: textStyle(
-                                                                  theme.isDarkMode
-                                                                      ? colors
-                                                                          .colorBlack
-                                                                      : colors
-                                                                          .colorWhite,
-                                                                  12,
-                                                                  FontWeight
-                                                                      .w600))))
+                                                          child: TextWidget.paraText(text: "Yes",theme: theme.isDarkMode,fw: 1)))
                                                 ])
                                           ]);
                                     });
@@ -565,42 +492,13 @@ class BasketScripList extends ConsumerWidget {
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
                                               Row(children: [
-                                                Text(
-                                                    "${basket.bsktScripList[index]['symbol']}",
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: textStyles
-                                                        .scripNameTxtStyle
-                                                        .copyWith(
-                                                            color: theme.isDarkMode
-                                                                ? colors.colorWhite
-                                                                : colors
-                                                                    .colorBlack)),
-                                                Text(
-                                                    " ${basket.bsktScripList[index]['option']} ",
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: textStyles
-                                                        .scripNameTxtStyle
-                                                        .copyWith(
-                                                            color: theme.isDarkMode
-                                                                ? colors.colorWhite
-                                                                : colors
-                                                                    .colorBlack)),
+                                                TextWidget.subText(text: "${basket.bsktScripList[index]['symbol']}",theme: theme.isDarkMode,fw: 1,textOverflow: TextOverflow.ellipsis),
+                                                TextWidget.subText(text: " ${basket.bsktScripList[index]['option']} ",theme: theme.isDarkMode,fw: 1,textOverflow: TextOverflow.ellipsis),
                                               ]),
                                               Row(
                                                 children: [
-                                                  Text(" LTP: ",
-                                                      style: textStyle(
-                                                          const Color(0xff5E6B7D),
-                                                          13,
-                                                          FontWeight.w600)),
-                                                  Text(
-                                                      "₹${basket.bsktScripList[index]['lp']?.toString() ?? "0.00"}",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                          14,
-                                                          FontWeight.w500)),
+                                                  TextWidget.paraText(text: " LTP: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                  TextWidget.subText(text: "₹${basket.bsktScripList[index]['lp']?.toString() ?? "0.00"}",theme:theme.isDarkMode,fw: 0),
                                                 ],
                                               ),
                                             ]),
@@ -616,25 +514,11 @@ class BasketScripList extends ConsumerWidget {
                                                   CustomExchBadge(
                                                       exch:
                                                           "${basket.bsktScripList[index]["exch"]}"),
-                                                  Text(
-                                                      " ${basket.bsktScripList[index]['expDate']} ",
-                                                      overflow: TextOverflow
-                                                          .ellipsis,
-                                                      style: textStyles
-                                                          .scripExchTxtStyle
-                                                          .copyWith(
-                                                              color: theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .colorWhite
-                                                                  : colors
-                                                                      .colorBlack))
+                                                  TextWidget.captionText(text: " ${basket.bsktScripList[index]['expDate']} ",
+                                                  theme:theme.isDarkMode,fw: 0,textOverflow: TextOverflow.ellipsis),
                                                 ],
                                               ),
-                                              Text(
-                                                  " (${basket.bsktScripList[index]['pc']?.toString() ?? "0.00"}%)",
-                                                  style: textStyle(
-                                                      basket.bsktScripList[index]
+                                              TextWidget.paraText(text: " (${basket.bsktScripList[index]['pc']?.toString() ?? "0.00"}%)",theme: false, color: basket.bsktScripList[index]
                                                                   ['pc']
                                                               ?.toString()
                                                               .startsWith("-") ??
@@ -646,9 +530,7 @@ class BasketScripList extends ConsumerWidget {
                                                                       ?.toString() ==
                                                                   "0.00"
                                                               ? colors.ltpgrey
-                                                              : colors.ltpgreen,
-                                                      12,
-                                                      FontWeight.w500)),
+                                                              : colors.ltpgreen,fw: 0),
                                             ]),
                                         const SizedBox(height: 4),
                                         Divider(
@@ -679,15 +561,11 @@ class BasketScripList extends ConsumerWidget {
                                                                 basket.bsktScripList[index]["trantype"] == "S"
                                                                     ? 0xffFCF3F3
                                                                     : 0xffECF8F1)),
-                                                    child: Text(basket.bsktScripList[index]["trantype"] == "S" ? "SELL" : "BUY",
-                                                        style: textStyle(
-                                                            basket.bsktScripList[index]
+                                                    child: TextWidget.paraText(text: basket.bsktScripList[index]["trantype"] == "S" ? "SELL" : "BUY",theme: false, color: basket.bsktScripList[index]
                                                                         ["trantype"] ==
                                                                     "S"
                                                                 ? colors.darkred
-                                                                : colors.ltpgreen,
-                                                            12,
-                                                            FontWeight.w600))),
+                                                                : colors.ltpgreen,fw: 1)),
                                                 Container(
                                                     margin: const EdgeInsets.only(
                                                         left: 7),
@@ -705,12 +583,7 @@ class BasketScripList extends ConsumerWidget {
                                                             : const Color(
                                                                 0xff999999)
                                                                 .withOpacity(.2)),
-                                                    child: Text(
-                                                        "${basket.bsktScripList[index]["prctype"]}",
-                                                        style: textStyle(
-                                                            const Color(0xff666666),
-                                                            11,
-                                                            FontWeight.w600))),
+                                                    child: TextWidget.paraText(text: "${basket.bsktScripList[index]["prctype"]}",theme: false, color: const Color(0xff666666),fw: 1)),
                                                 Container(
                                                     margin: const EdgeInsets.only(
                                                         left: 7),
@@ -728,27 +601,11 @@ class BasketScripList extends ConsumerWidget {
                                                             : const Color(
                                                                 0xff999999)
                                                                 .withOpacity(.2)),
-                                                    child: Text(
-                                                        "${basket.bsktScripList[index]["ordType"]}",
-                                                        style: textStyle(
-                                                            const Color(0xff666666),
-                                                            11,
-                                                            FontWeight.w600)))
+                                                    child: TextWidget.paraText(text: "${basket.bsktScripList[index]["ordType"]}",theme: false, color: const Color(0xff666666),fw: 1))
                                               ]),
                                               Row(children: [
-                                                Text("Qty: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        14,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "${basket.bsktScripList[index]["dscqty"]}/${basket.bsktScripList[index]["qty"]}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500))
+                                                  TextWidget.paraText(text: "Qty: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                  TextWidget.subText(text: "${basket.bsktScripList[index]["dscqty"]}/${basket.bsktScripList[index]["qty"]}",theme:theme.isDarkMode,fw: 0),
                                               ])
                                             ]),
                                         const SizedBox(height: 10),
@@ -757,28 +614,14 @@ class BasketScripList extends ConsumerWidget {
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
                                               Row(children: [
-                                                Text(
-                                                    "${basket.bsktScripList[index]["date"]}",
-                                                    style: textStyle(
-                                                        const Color(0xff666666),
-                                                        12,
-                                                        FontWeight.w500))
+                                                TextWidget.paraText(text: "${basket.bsktScripList[index]["date"]}",theme: false, color: const Color(0xff666666),fw: 0),
                                               ]),
                                               Row(children: [
                                                 if(basket.bsktScripList[index]["prctype"] != "MKT")...[
-                                                Text("Price: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        14,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "${basket.bsktScripList[index]['prc'] ?? 0.00}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
+                                                  TextWidget.subText(text: "Price: ",theme: false,color: const Color(0xff5E6B7D),fw: 0),
+                                                  TextWidget.subText(text: "${basket.bsktScripList[index]['prc'] ?? 0.00}",theme: false,color: theme.isDarkMode
                                                             ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500))
+                                                            : colors.colorBlack,fw: 0),
                                                 ]
                                               ])
                                             ])
@@ -828,14 +671,10 @@ class BasketScripList extends ConsumerWidget {
                               basket.placeBasketOrder(context);
                             },
                         child: Center(
-                            child: Text("Place Order",
-                                style: textStyle(
-                                    _hasMultipleExchanges(basket.bsktScripList)
+                            child: TextWidget.subText(text: "Place Order",theme: false,color: _hasMultipleExchanges(basket.bsktScripList)
                                       ? Colors.grey
                                       : (theme.isDarkMode
                                         ? colors.colorWhite
-                                        : colors.colorBlack),
-                                    14,
-                                    FontWeight.w600)))))));
+                                        : colors.colorBlack),fw: 1),)))));
   }
 }

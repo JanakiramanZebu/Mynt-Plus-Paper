@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../locator/constant.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
 import '../../res/res.dart';
-import '../../sharedWidget/custom_drag_handler.dart'; 
+import '../../sharedWidget/custom_drag_handler.dart';
 
 class NeedHelpScreen extends ConsumerStatefulWidget {
   const NeedHelpScreen({super.key});
@@ -38,11 +39,11 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const CustomDragHandler(),
-            Text("Customer Support & Assistance",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600)),
+            TextWidget.subText(
+                text: "Customer Support & Assistance",
+                theme: false,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                fw: 1),
             const SizedBox(height: 10),
             InkWell(
               onTap: () async {
@@ -52,8 +53,11 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
               child: Row(children: [
                 SvgPicture.asset(assets.phone, color: colors.colorGrey),
                 const SizedBox(width: 10),
-                Text(ConstantName.phoneNum,
-                    style: textStyle(colors.colorGrey, 12, FontWeight.w500))
+                TextWidget.paraText(
+                    text: ConstantName.phoneNum,
+                    theme: false,
+                    color: colors.colorGrey,
+                    fw: 0)
               ]),
             ),
             const SizedBox(height: 8),
@@ -65,16 +69,19 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
               child: Row(children: [
                 SvgPicture.asset(assets.sendMsg, color: colors.colorGrey),
                 const SizedBox(width: 10),
-                Text(ConstantName.gamil,
-                    style: textStyle(colors.colorGrey, 12, FontWeight.w500))
+                TextWidget.paraText(
+                    text: ConstantName.gamil,
+                    theme: false,
+                    color: colors.colorGrey,
+                    fw: 0)
               ]),
             ),
             const SizedBox(height: 10),
-            Text("Investor grievance:",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600)),
+            TextWidget.subText(
+                text: "Investor grievance:",
+                theme: false,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                fw: 1),
             const SizedBox(height: 3),
             InkWell(
               onTap: () async {
@@ -84,8 +91,11 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(vertical: 5),
-                child: Text(ConstantName.gamil1,
-                    style: textStyle(colors.colorGrey, 12, FontWeight.w500)),
+                child: TextWidget.paraText(
+                    text: ConstantName.gamil1,
+                    theme: false,
+                    color: colors.colorGrey,
+                    fw: 0),
               ),
             ),
             Divider(
@@ -93,8 +103,11 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
                     ? colors.darkColorDivider
                     : colors.colorDivider,
                 thickness: 1),
-            Text("Follow us",
-                style: textStyle(colors.colorGrey, 14, FontWeight.w600)),
+            TextWidget.subText(
+                text: "Follow us",
+                theme: false,
+                color: colors.colorGrey,
+                fw: 1),
             const SizedBox(height: 10),
             SizedBox(
                 height: 30,
@@ -113,11 +126,5 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
             const SizedBox(height: 20)
           ]),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

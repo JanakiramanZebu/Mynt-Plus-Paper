@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart'; 
 
 import '../../../provider/market_watch_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 // import '../../../provider/thems.dart';
 
@@ -15,9 +16,13 @@ class TexhDataWidget extends ConsumerWidget {
     // final theme =  ref.watch(themeProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [  
-        Text("Returns",
-            style: textStyle(const Color(0xff000000), 14, FontWeight.w600)),
+      children: [        
+
+             TextWidget.subText(
+                      text:"Returns" ,
+                      color:Color(0xff000000) ,
+                      theme: false,
+                      fw: 1),	
         const SizedBox(height: 8),
         GridView.count(
           crossAxisCount: 3,
@@ -47,21 +52,23 @@ class TexhDataWidget extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text("${techData.returnsGridview[index]['percent']}%",
-                        style: textStyle(
-                            techData.returnsGridview[index]['percent']
+                  children: [                   
+                              TextWidget.headText(
+                      text:"${techData.returnsGridview[index]['percent']}%" ,
+                      color:  techData.returnsGridview[index]['percent']
                                     .toString()
                                     .startsWith("-")
                                 ? colors.darkred
                                 : colors.ltpgreen,
-                            18,
-                            FontWeight.w500)),
-                    const SizedBox(height: 12),
-                    Text("${techData.returnsGridview[index]['duration']}",
-                        textAlign: TextAlign.center,
-                        style: textStyle(
-                            const Color(0xff666666), 12, FontWeight.w500)),
+                      theme:false,
+                      fw: 0),	
+                    const SizedBox(height: 12),                   
+                              TextWidget.paraText(
+                      text: "${techData.returnsGridview[index]['duration']}",
+                      align: TextAlign.center,
+                      color: Color(0xff666666),
+                      theme: false,
+                      fw: 0),	
                   ],
                 ),
               ),
@@ -72,9 +79,5 @@ class TexhDataWidget extends ConsumerWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

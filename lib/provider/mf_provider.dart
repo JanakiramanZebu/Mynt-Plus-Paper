@@ -275,6 +275,12 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  loaderfunfalse() {
+    _bestmfloader = false;
+    // print("ttttttttttt");
+    notifyListeners();
+  }
+
   mfApicallinit(BuildContext ctx, int tab) async {
     // loaderfun();
     mfExTabchange(tab);

@@ -24,6 +24,7 @@ import '../provider/user_profile_provider.dart';
 import '../provider/version_provider.dart';
 import '../provider/websocket_provider.dart';
 import '../provider/webview_chart_provider.dart';
+import '../res/global_state_text.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/functions.dart';
@@ -424,6 +425,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       return null;
     }
 
+    // For watchlist tab, only show the index list
+    if (selectedTab == 1) {
+      return AppBar(
+        shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        elevation: 0,
+        backgroundColor:
+            isDarkMode ? const Color(0xff121212) : colors.colorWhite,
+        automaticallyImplyLeading: false,
+        title: null,
+        bottom: _buildAppBarBottom(selectedTab),
+      );
+    }
+
+    // if (selectedTab == 1) {
+    //   return null;
+    // }
+
+    // For other tabs
+
     return AppBar(
       shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
       leadingWidth: 205,
@@ -541,7 +561,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // Watchlist actions (tab 1)
     if (selectedTab == 1) {
       // Return the extracted widget within a list
-      return [_WatchlistActions()];
+      // return [_WatchlistActions()];
+      return null;
     }
 
     // Portfolio actions (tab 2)
@@ -563,10 +584,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   // App bar bottom component
   PreferredSizeWidget? _buildAppBarBottom(int selectedTab) {
     if (selectedTab == 1) {
-      return const PreferredSize(
+      return PreferredSize(
           preferredSize:
-              const Size(double.infinity, 44), // Use double.infinity for width
-          child: DefaultIndexList(src: false));
+              const Size(double.infinity, 10), // Use double.infinity for width
+          child: Consumer(builder: (context, WidgetRef ref, _) {
+            final theme = ref.watch(themeProvider);
+            return Container(
+              color: theme.isDarkMode
+                  ? const Color(0xFF1A1A1A)
+                  : const Color(0xFFF1F3F8),
+              child: const DefaultIndexList(src: false),
+            );
+          }));
     } else if (selectedTab == 4) {
       return PreferredSize(
         preferredSize: const Size(20, 8), // Adjust height as needed
@@ -689,8 +718,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: textStyle(_getBottomNavColor(theme, isSelected), 12,
-                      isSelected ? FontWeight.w600 : FontWeight.w500),
+                  style: TextWidget.textStyle(
+                      fontSize: 10,
+                      color: _getBottomNavColor(theme, isSelected),
+                      theme: theme.isDarkMode,
+                      fw: isSelected ? 1 : 00),
                 ),
               ],
             ),
@@ -721,7 +753,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     indexProvide.bottomMenu(1, context);
     portfolio.cancelTimer();
 
-    // Run API calls in the background without blocking UI navigation
     await portfolio.requestWSHoldings(context: context, isSubscribe: false);
     await orderProviderRef.requestWSOrderBook(
         context: context, isSubscribe: false);
@@ -778,7 +809,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     indexProvide.bottomMenu(3, context);
     portfolio.cancelTimer();
 
-    // Run websocket subscription changes immediately (no await)
+    await orderProviderRef.fetchSipOrderHistory(context);
+    await marketWatchList.fetchPendingAlert(context);
     await marketWatchList.requestMWScrip(context: context, isSubscribe: false);
     await portfolio.requestWSHoldings(context: context, isSubscribe: false);
     await portfolio.requestWSPosition(context: context, isSubscribe: false);
@@ -811,7 +843,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     indexProvide.bottomMenu(4, context);
     portfolio.cancelTimer();
 
-    // Unsubscribe from websockets immediately (no await)
+    // Load minimal required profile data
+    // fundProviderRef.fetchFunds(context);
+    userProfile.fetchprofilemenu();
+
+    // Unsubscribe from other real-time data
     marketWatchList.requestMWScrip(context: context, isSubscribe: false);
     portfolio.requestWSHoldings(context: context, isSubscribe: false);
     orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
@@ -828,9 +864,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         fundProviderRef.fetchFunds(context);
 
         // IPOs
-          authProviderRef.setIposAPicalls();
-          // mf
-          authProviderRef.setmfapicalls(context);
+        authProviderRef.setIposAPicalls();
+        // mf
+        authProviderRef.setmfapicalls(context);
 
         //// reports/////
         if (reportsprovider.ledgerAllData == null) {
@@ -1074,7 +1110,7 @@ class _PortfolioActions extends ConsumerWidget {
         .select((portfolio) => portfolio.allPostionList.length));
 
     if (selectedTab == 0 && allPostionListLength > 0) {
-      return _PositionGroupActions();
+      // return _PositionGroupActions();
     } else if (selectedTab == 2) {
       return _FundsWebActions();
     }
@@ -1084,7 +1120,7 @@ class _PortfolioActions extends ConsumerWidget {
 }
 
 // Position group actions
-class _PositionGroupActions extends ConsumerWidget {
+class PositionGroupActions extends ConsumerWidget {
   // Make this a ConsumerWidget
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1147,10 +1183,7 @@ class _PositionGroupActions extends ConsumerWidget {
                     ? null // Disable button while exiting
                     : () => _showExitAllDialog(context, portfolio, ref),
                 style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                        color: theme.isDarkMode
-                            ? colors.colorGrey
-                            : colors.colorBlack),
+                    side: BorderSide.none,
                     shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(32)))),
                 child: ref.watch(portfolioProvider).isExitingAll

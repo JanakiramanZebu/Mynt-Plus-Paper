@@ -16,6 +16,7 @@ import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'filter_trade_book.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 
 class TradeBook extends ConsumerWidget {
   List<TradeBookModel> tradeBook;
@@ -87,13 +88,19 @@ class TradeBook extends ConsumerWidget {
                   textCapitalization: TextCapitalization.characters,
                   inputFormatters: [UpperCaseTextFormatter()],
                   controller: order.orderTradebookCtrl,
-                  style:
-                      textStyle(const Color(0xff000000), 16, FontWeight.w600),
+                  style: TextWidget.textStyle(
+                      fontSize: 16, 
+                      theme: theme.isDarkMode,
+                      color: const Color(0xff000000), 
+                      fw: 1),
                   decoration: InputDecoration(
                       fillColor: const Color(0xffF1F3F8),
                       filled: true,
-                      hintStyle: textStyle(
-                          const Color(0xff69758F), 15, FontWeight.w500),
+                      hintStyle: TextWidget.textStyle(
+                          fontSize: 15, 
+                          theme: theme.isDarkMode,
+                          color: const Color(0xff69758F), 
+                          fw: 5),
                       prefixIconColor: const Color(0xff586279),
                       prefixIcon: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -134,7 +141,11 @@ class TradeBook extends ConsumerWidget {
                     order.showTradeSearch(false);
                     order.clearTradeBookSearch();
                   },
-                  child: Text("Close", style: textStyles.textBtn))
+                  child: TextWidget.subText(
+                      text: "Close", 
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                      fw: 0))
             ],
           ),
         ),
@@ -196,24 +207,8 @@ class TradeBook extends ConsumerWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(children: [
-                                          Text(
-                                              "${tradeBook[itemIndex].symbol} ",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles
-                                                  .scripNameTxtStyle
-                                                  .copyWith(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack)),
-                                          Text(
-                                              "${tradeBook[itemIndex].option} ",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles
-                                                  .scripNameTxtStyle
-                                                  .copyWith(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack))
+                                          TextWidget.subText(text: "${tradeBook[itemIndex].symbol} ",theme: theme.isDarkMode,fw: 1,textOverflow: TextOverflow.ellipsis),
+                                          TextWidget.subText(text: "${tradeBook[itemIndex].option} ",theme: theme.isDarkMode,fw: 1,textOverflow: TextOverflow.ellipsis),
                                         ]),
                                         SvgPicture.asset(assets.rightArrowIcon)
                                       ]),
@@ -221,13 +216,7 @@ class TradeBook extends ConsumerWidget {
                                   Row(children: [
                                     CustomExchBadge(
                                         exch: "${tradeBook[itemIndex].exch}"),
-                                    Text(" ${tradeBook[itemIndex].expDate} ",
-                                        overflow: TextOverflow.ellipsis,
-                                        style: textStyles.scripExchTxtStyle
-                                            .copyWith(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack))
+                                        TextWidget.paraText(text: " ${tradeBook[itemIndex].expDate} ",theme:theme.isDarkMode,fw: 0,textOverflow: TextOverflow.ellipsis),
                                   ]),
                                   const SizedBox(height: 3),
                                   Divider(
@@ -252,16 +241,12 @@ class TradeBook extends ConsumerWidget {
                                                       : Color(tradeBook[itemIndex].trantype == "S"
                                                           ? 0xffFCF3F3
                                                           : 0xffECF8F1)),
-                                              child: Text(
-                                                  tradeBook[itemIndex].trantype == "S"
-                                                      ? "SELL"
-                                                      : "BUY",
-                                                  style: textStyle(
-                                                      tradeBook[itemIndex].trantype == "S"
-                                                          ? colors.darkred
-                                                          : colors.ltpgreen,
-                                                      12,
-                                                      FontWeight.w600))),
+                                              child: TextWidget.paraText(text: tradeBook[itemIndex].trantype == "S"
+                                                      ? "SELL" : "BUY",theme: false, color: tradeBook[itemIndex].trantype == "S"
+                                                           ? colors.darkred
+                                                           : colors.ltpgreen,fw: 1),
+
+                                              ),
                                           Container(
                                             margin:
                                                 const EdgeInsets.only(left: 7),
@@ -275,13 +260,9 @@ class TradeBook extends ConsumerWidget {
                                                         .withOpacity(.2)
                                                     : const Color(0xff999999)
                                                         .withOpacity(.2)),
-                                            child: Text(
-                                                "${tradeBook[itemIndex].sPrdtAli}",
-                                                style: textStyle(
-                                                    const Color(0xff666666),
-                                                    12,
-                                                    FontWeight.w600)),
-                                          ),
+                                            child: TextWidget.paraText(text: "${tradeBook[itemIndex].sPrdtAli}",theme: false, color: const Color(0xff666666),fw: 1),
+
+                                            ),
                                           Container(
                                               margin: const EdgeInsets.only(
                                                   left: 7),
@@ -297,12 +278,9 @@ class TradeBook extends ConsumerWidget {
                                                           .withOpacity(.2)
                                                       : const Color(0xff999999)
                                                           .withOpacity(.2)),
-                                              child: Text(
-                                                  "${tradeBook[itemIndex].prctyp}",
-                                                  style: textStyle(
-                                                      const Color(0xff666666),
-                                                      12,
-                                                      FontWeight.w600)))
+                                              child: TextWidget.paraText(text: "${tradeBook[itemIndex].prctyp}",theme: false, color: const Color(0xff666666),fw: 1),
+
+                                              )
                                         ]),
                                         // Row(children: [
                                         //   Text("Prc: ",
@@ -326,34 +304,13 @@ class TradeBook extends ConsumerWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(children: [
-                                          Text("Fill Qty: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              "${((int.tryParse(tradeBook[itemIndex].flqty.toString()) ?? 0) / (tradeBook[itemIndex].exch == 'MCX' ? (int.tryParse(tradeBook[itemIndex].ls.toString()) ?? 1) : 1)).toInt()}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500))
+                                          TextWidget.subText(text: "Fill Qty: ",theme: theme.isDarkMode,color: const Color(0xff5E6B7D),fw: 1),
+                                          TextWidget.subText(text: "${((int.tryParse(tradeBook[itemIndex].flqty.toString()) ?? 0) / (tradeBook[itemIndex].exch == 'MCX' ? (int.tryParse(tradeBook[itemIndex].ls.toString()) ?? 1) : 1)).toInt()}",
+                                          theme: theme.isDarkMode,fw: 1),
                                         ]),
                                         Row(children: [
-                                          Text("Price: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              "${tradeBook[itemIndex].avgprc ?? 0.00}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500))
+                                          TextWidget.subText(text: "Price: ",theme: theme.isDarkMode,color: const Color(0xff5E6B7D),fw: 1),
+                                          TextWidget.subText(text: "${tradeBook[itemIndex].avgprc ?? 0.00}", theme: theme.isDarkMode,fw: 1),
                                         ])
                                       ]),
                                   const SizedBox(height: 8),
@@ -362,28 +319,10 @@ class TradeBook extends ConsumerWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(children: [
-                                          Text("Order No: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              "${tradeBook[itemIndex].norenordno ?? 0}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500))
+                                          TextWidget.subText(text: "Order No: ",theme: theme.isDarkMode,color: const Color(0xff5E6B7D),fw: 1),
+                                          TextWidget.subText(text: "${tradeBook[itemIndex].norenordno ?? 0}", theme: theme.isDarkMode,fw: 1),
                                         ]),
-                                        Text(
-                                            formatDateTime(
-                                                value: tradeBook[itemIndex]
-                                                    .norentm!),
-                                            style: textStyle(
-                                                const Color(0xff666666),
-                                                12,
-                                                FontWeight.w500))
+                                        TextWidget.paraText(text: formatDateTime(value: tradeBook[itemIndex].norentm!),theme: false, color: const Color(0xff666666),fw: 0),
                                       ])
                                 ]),
                           ));
@@ -448,24 +387,8 @@ class TradeBook extends ConsumerWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(children: [
-                                          Text(
-                                              "${order.tradeBooksearch![itemIndex].symbol} ",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles
-                                                  .scripNameTxtStyle
-                                                  .copyWith(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack)),
-                                          Text(
-                                              "${order.tradeBooksearch![itemIndex].option} ",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles
-                                                  .scripNameTxtStyle
-                                                  .copyWith(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack))
+                                          TextWidget.subText(text: "${order.tradeBooksearch![itemIndex].symbol} ",theme: theme.isDarkMode ,fw: 1,textOverflow: TextOverflow.ellipsis),
+                                          TextWidget.subText(text: "${order.tradeBooksearch![itemIndex].option} ",theme: theme.isDarkMode ,fw: 1,textOverflow: TextOverflow.ellipsis),
                                         ]),
                                         SvgPicture.asset(assets.rightArrowIcon)
                                       ]),
@@ -474,14 +397,7 @@ class TradeBook extends ConsumerWidget {
                                     CustomExchBadge(
                                         exch:
                                             "${order.tradeBooksearch![itemIndex].exch}"),
-                                    Text(
-                                        " ${order.tradeBooksearch![itemIndex].expDate} ",
-                                        overflow: TextOverflow.ellipsis,
-                                        style: textStyles.scripExchTxtStyle
-                                            .copyWith(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack))
+                                    TextWidget.paraText(text: " ${order.tradeBooksearch![itemIndex].expDate} ",theme: theme.isDarkMode,fw: 0,textOverflow: TextOverflow.ellipsis),
                                   ]),
                                   const SizedBox(height: 3),
                                   Divider(
@@ -506,15 +422,8 @@ class TradeBook extends ConsumerWidget {
                                                       : Color(order.tradeBooksearch![itemIndex].trantype == "S"
                                                           ? 0xffFCF3F3
                                                           : 0xffECF8F1)),
-                                              child: Text(order.tradeBooksearch![itemIndex].trantype == "S" ? "SELL" : "BUY",
-                                                  style: textStyle(
-                                                      order.tradeBooksearch![itemIndex]
-                                                                  .trantype ==
-                                                              "S"
-                                                          ? colors.darkred
-                                                          : colors.ltpgreen,
-                                                      12,
-                                                      FontWeight.w600))),
+                                              child: TextWidget.paraText(text: order.tradeBooksearch![itemIndex].trantype == "S" ? "SELL" : "BUY",theme: false, color: order.tradeBooksearch![itemIndex]
+                                                                 .trantype == "S" ? colors.darkred : colors.ltpgreen,fw: 1)),
                                           Container(
                                             margin:
                                                 const EdgeInsets.only(left: 7),
@@ -528,13 +437,7 @@ class TradeBook extends ConsumerWidget {
                                                         .withOpacity(.2)
                                                     : const Color(0xff999999)
                                                         .withOpacity(.2)),
-                                            child: Text(
-                                                "${order.tradeBooksearch![itemIndex].sPrdtAli}",
-                                                style: textStyle(
-                                                    const Color(0xff666666),
-                                                    12,
-                                                    FontWeight.w600)),
-                                          ),
+                                            child: TextWidget.paraText(text: "${order.tradeBooksearch![itemIndex].sPrdtAli}",theme: false, color: const Color(0xff666666),fw: 1)),
                                           Container(
                                               margin: const EdgeInsets.only(
                                                   left: 7),
@@ -550,27 +453,11 @@ class TradeBook extends ConsumerWidget {
                                                           .withOpacity(.2)
                                                       : const Color(0xff999999)
                                                           .withOpacity(.2)),
-                                              child: Text(
-                                                  "${order.tradeBooksearch![itemIndex].prctyp}",
-                                                  style: textStyle(
-                                                      const Color(0xff666666),
-                                                      12,
-                                                      FontWeight.w600)))
+                                              child: TextWidget.paraText(text: "${order.tradeBooksearch![itemIndex].prctyp}",theme: false, color: const Color(0xff666666),fw: 1))
                                         ]),
                                         Row(children: [
-                                          Text("Prc: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              "₹${order.tradeBooksearch![itemIndex].prc ?? 0.00}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500))
+                                          TextWidget.subText(text: "Prc: ",theme: false,color: const Color(0xff5E6B7D),fw: 1),
+                                          TextWidget.subText(text: "₹${order.tradeBooksearch![itemIndex].prc ?? 0.00}",theme: theme.isDarkMode,fw: 1),
                                         ])
                                       ]),
                                   const SizedBox(height: 8),
@@ -579,34 +466,12 @@ class TradeBook extends ConsumerWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(children: [
-                                          Text("Fill Qty: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              "${order.tradeBooksearch![itemIndex].flqty ?? 0}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500))
+                                          TextWidget.subText(text: "Fill Qty: ",theme: false,color: const Color(0xff5E6B7D),fw: 1),
+                                          TextWidget.subText(text: "${order.tradeBooksearch![itemIndex].flqty ?? 0}",theme:theme.isDarkMode,fw: 1),
                                         ]),
                                         Row(children: [
-                                          Text("Avg.Price: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              "${order.tradeBooksearch![itemIndex].avgprc ?? 0.00}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500))
+                                          TextWidget.subText(text: "Avg.Price: ",theme: false,color: const Color(0xff5E6B7D),fw: 1),
+                                          TextWidget.subText(text: "${order.tradeBooksearch![itemIndex].avgprc ?? 0.00}",theme:theme.isDarkMode,fw: 1),
                                         ])
                                       ]),
                                   const SizedBox(height: 8),
@@ -615,29 +480,10 @@ class TradeBook extends ConsumerWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(children: [
-                                          Text("Fill Id: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              "${order.tradeBooksearch![itemIndex].flid ?? 0}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500))
+                                          TextWidget.subText(text: "Fill Id: ",theme: theme.isDarkMode,color: const Color(0xff5E6B7D),fw: 1),
+                                          TextWidget.subText(text: "${order.tradeBooksearch![itemIndex].flid ?? 0}",theme: theme.isDarkMode,fw: 1),
                                         ]),
-                                        Text(
-                                            formatDateTime(
-                                                value: order
-                                                    .tradeBooksearch![itemIndex]
-                                                    .norentm!),
-                                            style: textStyle(
-                                                const Color(0xff666666),
-                                                12,
-                                                FontWeight.w500))
+                                        TextWidget.paraText(text: formatDateTime(value: order.tradeBooksearch![itemIndex].norentm!),theme: false, color: const Color(0xff666666),fw: 0),
                                       ])
                                 ]),
                           ));
@@ -650,11 +496,5 @@ class TradeBook extends ConsumerWidget {
                   ),
       ))
     ]);
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

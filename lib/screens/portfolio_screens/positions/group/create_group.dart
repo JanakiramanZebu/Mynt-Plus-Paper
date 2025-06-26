@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
 
 import '../../../../provider/thems.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/list_divider.dart';  
 
@@ -34,15 +35,16 @@ class _CreateGroupPosState extends ConsumerState<CreateGroupPos> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('Create Group',
-              style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 16, FontWeight.w600)),
+          TextWidget.titleText(
+              text: 'Create Group', theme: theme.isDarkMode, fw: 1),
           IconButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: const Icon(Icons.close_rounded),  color: theme.isDarkMode
-                            ? const Color(0xffBDBDBD)
-                            : colors.colorGrey,)
+            icon: const Icon(Icons.close_rounded),
+            color:
+                theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
+          )
         ],
       ),
       content: SizedBox(
@@ -56,18 +58,30 @@ class _CreateGroupPosState extends ConsumerState<CreateGroupPos> {
               inputFormatters: [
                 FilteringTextInputFormatter.deny(RegExp("[π£•₹€℅™∆√¶÷℅/]"))
               ],
-              style: textStyles.textFieldLabelStyle.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlue),
+              style: TextWidget.textStyle(
+                  fontSize: 16,
+                  theme: theme.isDarkMode,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlue,
+                  fw: 1),
               decoration: InputDecoration(
                   fillColor: theme.isDarkMode?colors.darkGrey: const Color(0xffF1F3F8),
                   filled: true,
                   hintText: "Enter group name",
-                  hintStyle: textStyle(Colors.grey, 13, FontWeight.w400),
+                  hintStyle: TextWidget.textStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                      fw: 00,
+                      theme: theme.isDarkMode),
                   contentPadding:
                       const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   
                   errorText: errorText,
-                  errorStyle:
-                      textStyle(colors.darkred, 10, FontWeight.w600),
+                  errorStyle: TextWidget.textStyle(
+                      color: colors.darkred,
+                      fontSize: 10,
+                      fw: 1,
+                      theme: theme.isDarkMode),
                   enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide.none,
                       borderRadius: BorderRadius.circular(50)),
@@ -114,22 +128,15 @@ class _CreateGroupPosState extends ConsumerState<CreateGroupPos> {
                 borderRadius: BorderRadius.circular(50),
               ),
             ),
-            child: Text("Create",
-                style: GoogleFonts.inter(
-                    textStyle: textStyle(
-                     !theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500))),
+            child: TextWidget.subText(
+                text: "Create",
+                theme: false,
+                color:
+                    !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                fw: 0),
           ),
         ),
       ],
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle: TextStyle(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    ));
   }
 }

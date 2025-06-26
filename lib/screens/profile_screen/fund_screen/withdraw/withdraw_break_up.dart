@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import '../../../../provider/thems.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/list_divider.dart';
@@ -44,15 +45,13 @@ class _BreakUpDetailsState extends ConsumerState<BreakUpDetails> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 16),
-                    child: Text(
-                      "Withdraw Summary",
-                      style: textStyle(
-                          theme.isDarkMode
+                    child: TextWidget.titleText(
+                        text: "Withdraw Summary",
+                        theme: false,
+                        color: theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack,
-                          15,
-                          FontWeight.w600),
-                    ),
+                        fw: 1),
                   ),
                   IconButton(
                       splashRadius: 20,
@@ -137,17 +136,16 @@ class _BreakUpDetailsState extends ConsumerState<BreakUpDetails> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         headerTitleText("Margin Used"),
-                        Text(
-                          "₹ ${widget.withdraw.payoutdetails!.margin}",
-                          style: widget.withdraw.payoutdetails?.margin == "0.00"
-                              ? textStyle(
-                                  theme.isDarkMode
+                        TextWidget.subText(
+                            text: "₹ ${widget.withdraw.payoutdetails!.margin}",
+                            theme: false,
+                            color:
+                                widget.withdraw.payoutdetails?.margin == "0.00"
+                                    ? (theme.isDarkMode
                                       ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  14,
-                                  FontWeight.w600)
-                              : textStyle(colors.darkred, 14, FontWeight.w600),
-                        )
+                                        : colors.colorBlack)
+                                    : colors.darkred,
+                            fw: 1),
                       ],
                     ),
                     const SizedBox(
@@ -178,24 +176,16 @@ class _BreakUpDetailsState extends ConsumerState<BreakUpDetails> {
         ));
   }
 
-  Text headerTitleText(String text) {
-    return Text(
-      text,
-      style: textStyle(colors.colorGrey, 14, FontWeight.w500),
-    );
+  Widget headerTitleText(String text) {
+    return TextWidget.subText(
+        text: text, theme: false, color: colors.colorGrey, fw: 0);
   }
 
-  Text contantTitleText(String text, ThemesProvider theme) {
-    return Text(
-      text,
-      style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          14, FontWeight.w600),
-    );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  Widget contantTitleText(String text, ThemesProvider theme) {
+    return TextWidget.subText(
+        text: text,
+        theme: false,
+        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        fw: 1);
   }
 }

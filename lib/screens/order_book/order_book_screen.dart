@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../provider/order_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import 'basket/basket_list.dart';
 import 'gtt_order_book.dart';
@@ -75,17 +76,16 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                               ? colors.colorLightBlue
                               : colors.colorBlue,
                           unselectedLabelColor: const Color(0XFF777777),
-                          unselectedLabelStyle: GoogleFonts.inter(
-                              textStyle: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: -0.28)),
+                          unselectedLabelStyle: TextWidget.textStyle(
+                              fontSize: 12,
+                              theme: false,
+                              fw: 0,
+                              letterSpacing: -0.28),
                           labelColor: theme.isDarkMode
                               ? colors.colorLightBlue
                               : colors.colorBlue,
-                          labelStyle: GoogleFonts.inter(
-                              textStyle: const TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w600)),
+                          labelStyle: TextWidget.textStyle(
+                              fontSize: 14, theme: false, fw: 1),
                           controller: orderBook.tabCtrl,
                           tabs: orderBook.orderTabName)),
                   Expanded(

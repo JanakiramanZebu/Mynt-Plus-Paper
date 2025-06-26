@@ -11,6 +11,7 @@ import '../../locator/preference.dart';
 import '../../models/marketwatch_model/scrip_info.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/shocase_provider.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/cust_text_formfield.dart';
@@ -64,10 +65,10 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
       qtyCtrl = TextEditingController(text: "${localdata['qty']}");
       mktProtCtrl = TextEditingController(text: "${localdata['mrkprot']}");
     }
-    
+
     // Initialize priceTypes and expriceTypes arrays
     final showcaseProvider = ref.read(showcaseProvide);
-    
+
     priceTypes = [
       {
         "type": "Limit",
@@ -137,11 +138,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             : colors.colorBlack)))
             : const CustomBackBtn(),
         elevation: 0.2,
-        title: Text('Order Preference',
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w600)),
+        title: TextWidget.subText(
+          text: 'Order Preference',
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          fw: 1,
+        ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -186,20 +188,19 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                         orderTypes[index] == "Delivery"
                                             ? "Delivery / Carry"
                                             : orderTypes[index],
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? orderType !=
-                                                        orderTypes[index]
+                                        style: TextWidget.textStyle(
+                                            color: !theme.isDarkMode
+                                                ? orderType != orderTypes[index]
                                                     ? const Color(0xff666666)
                                                     : colors.colorWhite
-                                                : orderType !=
-                                                        orderTypes[index]
+                                                : orderType != orderTypes[index]
                                                     ? const Color(0xff666666)
                                                     : colors.colorBlack,
-                                            14,
-                                            orderType == orderTypes[index]
-                                                ? FontWeight.w600
-                                                : FontWeight.w500)));
+                                            fontSize: 14,
+                                            theme: theme.isDarkMode,
+                                            fw: orderType == orderTypes[index]
+                                                ? 1
+                                                : 0)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
@@ -239,8 +240,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                 : colors.colorbluegrey,
                                         shape: const StadiumBorder()),
                                     child: Text(priceTypes[index]['type'],
-                                        style: textStyle(
-                                            !theme.isDarkMode
+                                        style: TextWidget.textStyle(
+                                            color: !theme.isDarkMode
                                                 ? priceType !=
                                                         priceTypes[index]
                                                             ['type']
@@ -251,11 +252,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                             ['type']
                                                     ? const Color(0xff666666)
                                                     : colors.colorBlack,
-                                            14,
-                                            priceType ==
+                                            fontSize: 14,
+                                            theme: theme.isDarkMode,
+                                            fw: priceType ==
                                                     priceTypes[index]['type']
-                                                ? FontWeight.w600
-                                                : FontWeight.w500)));
+                                                ? 1
+                                                : 0)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
@@ -293,8 +295,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                 : colors.colorbluegrey,
                                         shape: const StadiumBorder()),
                                     child: Text(validityTypes[index],
-                                        style: textStyle(
-                                            !theme.isDarkMode
+                                        style: TextWidget.textStyle(
+                                            color: !theme.isDarkMode
                                                 ? validity !=
                                                         validityTypes[index]
                                                     ? const Color(0xff666666)
@@ -303,10 +305,11 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                         validityTypes[index]
                                                     ? const Color(0xff666666)
                                                     : colors.colorBlack,
-                                            14,
-                                            validity == validityTypes[index]
-                                                ? FontWeight.w600
-                                                : FontWeight.w500)));
+                                            fontSize: 14,
+                                            theme: theme.isDarkMode,
+                                            fw: validity == validityTypes[index]
+                                                ? 1
+                                                : 0)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
@@ -339,16 +342,17 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           });
                         }),
                     Text('Minimum Qty',
-                        style: textStyle(
-                            theme.isDarkMode
+                        style: TextWidget.textStyle(
+                            color: theme.isDarkMode
                                 ? Color(QtyPrefer == OrdQtyPref.mktqty
                                     ? 0xffffffff
                                     : 0xff666666)
                                 : Color(QtyPrefer == OrdQtyPref.mktqty
                                     ? 0xff3E4763
                                     : 0xff666666),
-                            14,
-                            FontWeight.w500)),
+                            fontSize: 14,
+                            theme: theme.isDarkMode,
+                            fw: 0)),
                     Radio<OrdQtyPref>(
                         fillColor: MaterialStateProperty.resolveWith<Color>(
                             (Set<MaterialState> states) {
@@ -370,16 +374,17 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           });
                         }),
                     Text("No.of Market Lots",
-                        style: textStyle(
-                            theme.isDarkMode
+                        style: TextWidget.textStyle(
+                            color: theme.isDarkMode
                                 ? Color(QtyPrefer == OrdQtyPref.mktqty
                                     ? 0xffffffff
                                     : 0xff666666)
                                 : Color(QtyPrefer == OrdQtyPref.mktqty
                                     ? 0xff3E4763
                                     : 0xff666666),
-                            14,
-                            FontWeight.w500))
+                            fontSize: 14,
+                            theme: theme.isDarkMode,
+                            fw: 0))
                   ]),
                   if (QtyPrefer == OrdQtyPref.mktlot) ...[
                     Container(
@@ -392,19 +397,21 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       ? colors.darkGrey
                                       : const Color(0xffF1F3F8),
                                   hintText: qtyCtrl.text,
-                                  hintStyle: textStyle(
-                                      const Color(0xff666666),
-                                      15,
-                                      FontWeight.w400),
+                                  hintStyle: TextWidget.textStyle(
+                                      color: const Color(0xff666666),
+                                      fontSize: 15,
+                                      theme: theme.isDarkMode,
+                                      fw: 0),
                                   inputFormate: [
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
-                                  style: textStyle(
-                                      theme.isDarkMode
+                                  style: TextWidget.textStyle(
+                                      color: theme.isDarkMode
                                           ? colors.colorWhite
                                           : colors.colorBlack,
-                                      16,
-                                      FontWeight.w600),
+                                      fontSize: 16,
+                                      theme: theme.isDarkMode,
+                                      fw: 1),
                                   textCtrl: qtyCtrl,
                                   textAlign: TextAlign.start,
                                   onChanged: (value) {
@@ -413,8 +420,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
 
                                     if (value.isEmpty) {
                                       ScaffoldMessenger.of(context)
-                                          .showSnackBar(warningMessage(
-                                              context,
+                                          .showSnackBar(warningMessage(context,
                                               "Quantity cannot be empty"));
                                     } else {
                                       String newValue = value.replaceAll(
@@ -425,8 +431,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                           qtyCtrl.selection =
                                               TextSelection.fromPosition(
                                                   TextPosition(
-                                                      offset:
-                                                          newValue.length));
+                                                      offset: newValue.length));
                                         });
                                       }
                                     }
@@ -471,12 +476,13 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                     }
                                   });
                                 },
-                                style: textStyle(
-                                    theme.isDarkMode
+                                style: TextWidget.textStyle(
+                                    color: theme.isDarkMode
                                         ? colors.colorWhite
                                         : colors.colorBlack,
-                                    14,
-                                    FontWeight.w600),
+                                    fontSize: 14,
+                                    theme: theme.isDarkMode,
+                                    fw: 1),
                                 textCtrl: mktProtCtrl,
                                 prefixIcon: Container(
                                   margin: const EdgeInsets.all(12),
@@ -520,35 +526,31 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             horizontal: 12, vertical: 0),
                                         backgroundColor: !theme.isDarkMode
                                             ? expriceType !=
-                                                    expriceTypes[index]
-                                                        ['type']
+                                                    expriceTypes[index]['type']
                                                 ? const Color(0xffF1F3F8)
                                                 : colors.colorBlack
                                             : expriceType !=
-                                                    expriceTypes[index]
-                                                        ['type']
+                                                    expriceTypes[index]['type']
                                                 ? colors.darkGrey
                                                 : colors.colorbluegrey,
                                         shape: const StadiumBorder()),
-                                    child: Text(expriceTypes[index]['type'],
-                                        style: textStyle(
-                                            !theme.isDarkMode
-                                                ? expriceType !=
-                                                        expriceTypes[index]
-                                                            ['type']
-                                                    ? const Color(0xff666666)
-                                                    : colors.colorWhite
-                                                : expriceType !=
-                                                        expriceTypes[index]
-                                                            ['type']
-                                                    ? const Color(0xff666666)
-                                                    : colors.colorBlack,
-                                            14,
-                                            expriceType ==
-                                                    expriceTypes[index]
-                                                        ['type']
-                                                ? FontWeight.w600
-                                                : FontWeight.w500)));
+                                    child: TextWidget.subText(
+                                      text: expriceTypes[index]['type'],
+                                      theme: false,
+                                      color: !theme.isDarkMode
+                                          ? expriceType !=
+                                                  expriceTypes[index]['type']
+                                              ? const Color(0xff666666)
+                                              : colors.colorWhite
+                                          : expriceType !=
+                                                  expriceTypes[index]['type']
+                                              ? const Color(0xff666666)
+                                              : colors.colorBlack,
+                                      fw: expriceType ==
+                                              expriceTypes[index]['type']
+                                          ? 1
+                                          : 0,
+                                    ));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
@@ -560,62 +562,64 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
             ),
           ),
           Container(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
               child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: 46,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                          backgroundColor: theme.isDarkMode
-                              ? colors.colorbluegrey
-                              : colors.colorBlack,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          )),
-                      onPressed: () async {
-                        if (mktProtCtrl.text.isEmpty ||
-                            int.parse(mktProtCtrl.text) > 20 ||
-                            int.parse(mktProtCtrl.text) < 1) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              warningMessage(context,
-                                  "Market Protection between 1% to 20%"));
-                        } else if ((QtyPrefer == OrdQtyPref.mktlot) &&
-                            qtyCtrl.text == "") {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              warningMessage(
-                                  context, "Quantity can not be 0 or empty"));
-                        } else {
-                          await setPrefOrderPrefer(context);
-                        }
-                      },
-                      child: Text("Save",
-                          textAlign: TextAlign.center,
-                          style: textStyle(
-                              !theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500)))))
+                width: MediaQuery.of(context).size.width,
+                height: 46,
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorbluegrey
+                            : colors.colorBlack,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        )),
+                    onPressed: () async {
+                      if (mktProtCtrl.text.isEmpty ||
+                          int.parse(mktProtCtrl.text) > 20 ||
+                          int.parse(mktProtCtrl.text) < 1) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            warningMessage(context,
+                                "Market Protection between 1% to 20%"));
+                      } else if ((QtyPrefer == OrdQtyPref.mktlot) &&
+                          qtyCtrl.text == "") {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            warningMessage(
+                                context, "Quantity can not be 0 or empty"));
+                      } else {
+                        await setPrefOrderPrefer(context);
+                      }
+                    },
+                    child: TextWidget.subText(
+                      text: "Save",
+                      theme: false,
+                      color: !theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      fw: 0,
+                      align: TextAlign.center,
+                    )),
+              ))
         ],
       ),
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+  // TextStyle textStyle(Color color, double fontSize, fWeight) {
+  //   return GoogleFonts.inter(
+  //       textStyle:
+  //           TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  // }
 
-  Text headerTitleText(String text, ThemesProvider theme) {
-    return Text(text,
-        style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w500));
+  Widget headerTitleText(String text, ThemesProvider theme) {
+    return TextWidget.subText(
+      text: text,
+      theme: theme.isDarkMode,
+      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+      fw: 0,
+    );
   }
 
   Future<void> setPrefOrderPrefer(BuildContext context) async {
@@ -632,7 +636,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
       },
       "source": "MOB"
     };
-    
+
     final authProv = ref.read(authProvider);
     await authProv.getPrefOrderPrefer(local, true, context);
 

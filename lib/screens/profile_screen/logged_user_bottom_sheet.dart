@@ -6,11 +6,13 @@ import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/index_list_provider.dart';
 import '../../provider/ledger_provider.dart';
+import '../../provider/mf_provider.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
 import '../../provider/websocket_provider.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../screens/authentication/login/login_screen.dart';
@@ -30,6 +32,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
     final orders = ref.watch(orderProvider);
     final userProfile = ref.watch(userProfileProvider);
     final ledgerprovider = ref.watch(ledgerProvider);
+    final mf = ref.watch(mfProvider);
 
     final Preferences pref = locator<Preferences>();
     return DraggableScrollableSheet(
@@ -57,13 +60,13 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                     const CustomDragHandler(),
                     Padding(
                         padding: const EdgeInsets.only(left: 14.0, bottom: 10),
-                        child: Text("Add / Switch account",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w500))),
+                        child: TextWidget.titleText(
+                            text: "Add / Switch account",
+                            theme: false,
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            fw: 1)),
                     Divider(
                         height: 1,
                         thickness: 1,
@@ -85,8 +88,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                     if (loggedUser
                                             .loggedMobile[index].clientId !=
                                         pref.clientId) {
-                                      userProfile.profilePageloader(true);
-
+                                      mf.loaderfun();
                                       // Clear data from previous account
                                       portfolio.clearAllportfolio();
                                       orders.clearAllorders();
@@ -124,37 +126,41 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                                   .loggedMobile[index].imei,
                                               true);
 
-                                      userProfile.profilePageloader(false);
-
                                       // Reset WebSocket connection count and reconnect
                                       websocket.changeconnectioncount();
+                                      Future.delayed(const Duration(seconds: 2),
+                                          () {
+                                        mf.loaderfunfalse();
+                                      });
                                     }
                                   },
                                   dense: true,
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 14),
-                                  title: Text(
-                                      loggedUser.loggedMobile[index].userName,
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w500)),
-                                  subtitle: Text(
-                                      "Client ID ${loggedUser.loggedMobile[index].clientId}",
-                                      style: textStyle(const Color(0xff666666),
-                                          12, FontWeight.w500)),
+                                  title: TextWidget.paraText(
+                                      text: loggedUser
+                                          .loggedMobile[index].userName,
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      fw: 0),
+                                  subtitle: TextWidget.paraText(
+                                      text:
+                                          "Client ID ${loggedUser.loggedMobile[index].clientId}",
+                                      theme: false,
+                                      color: const Color(0xff666666),
+                                      fw: 0),
                                   trailing: loggedUser
                                               .loggedMobile[index].clientId ==
                                           pref.clientId
-                                      ? Text("Active",
-                                          style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorLightBlue
-                                                  : colors.colorBlue,
-                                              13,
-                                              FontWeight.w600))
+                                      ? TextWidget.subText(
+                                          text: "Active",
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.colorLightBlue
+                                              : colors.colorBlue,
+                                          fw: 0)
                                       : InkWell(
                                           onTap: () {
                                             loggedUser.removeUsers(
@@ -162,13 +168,13 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                                 index,
                                                 context);
                                           },
-                                          child: Text("Remove",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.kColorLightRed
-                                                      : colors.kColorRedButton,
-                                                  13,
-                                                  FontWeight.w600)),
+                                          child: TextWidget.subText(
+                                              text: "Remove",
+                                              theme: false,
+                                              color: theme.isDarkMode
+                                                  ? colors.kColorLightRed
+                                                  : colors.kColorRedButton,
+                                              fw: 1),
                                         ));
                             })),
                     Padding(
@@ -243,13 +249,13 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                           ? colors.colorWhite
                                           : colors.colorBlack),
                                   const SizedBox(width: 8),
-                                  Text("Add account",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w500))
+                                  TextWidget.subText(
+                                      text: "Add account",
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.colorWhite
+                                          : colors.colorBlack,
+                                      fw: 0)
                                 ]))),
                     const SizedBox(height: 12)
                   ]));

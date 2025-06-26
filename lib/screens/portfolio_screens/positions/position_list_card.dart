@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -77,11 +78,18 @@ class _PositionListCardState extends ConsumerState<PositionListCard> {
   }
   
   // Get cached text style to avoid rebuilding styles
-  TextStyle _getStyle(Color color, double size, FontWeight weight, {String? key}) {
-    final cacheKey = key ?? '${color.value}|$size|${weight.index}';
+  TextStyle _getStyle(Color color, double size, int? fw, {String? key}) {
+    final cacheKey = key ?? '${color.value}|$size|${fw}';
+
     if (!_cachedStyles.containsKey(cacheKey)) {
-      _cachedStyles[cacheKey] = textStyle(color, size, weight);
+      _cachedStyles[cacheKey] = TextWidget.textStyle(
+        fontSize: size,
+        color: color,
+        theme: false,
+        fw: fw,
+      );
     }
+
     return _cachedStyles[cacheKey]!;
   }
 
@@ -162,16 +170,19 @@ class _PositionListCardState extends ConsumerState<PositionListCard> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween, 
       children: [
         Row(children: [
-          Text(
+          TextWidget.subText(
+              text:
             "${widget.positionList.symbol} ${widget.positionList.expDate} ",
-            overflow: TextOverflow.ellipsis,
-            style: textStyles.scripNameTxtStyle.copyWith(color: txtColor),
-          ),
-          Text(
-            "${widget.positionList.option} ",
-            overflow: TextOverflow.ellipsis,
-            style: textStyles.scripNameTxtStyle.copyWith(color: txtColor),
-          ),
+              theme: false,
+              fw: 1,
+              textOverflow: TextOverflow.ellipsis,
+              color: txtColor),
+          TextWidget.subText(
+              text: "${widget.positionList.option} ",
+              theme: false,
+              fw: 1,
+              textOverflow: TextOverflow.ellipsis,
+              color: txtColor),
         ]),
         Row(children: [
           Container(
@@ -186,7 +197,7 @@ class _PositionListCardState extends ConsumerState<PositionListCard> {
               style: _getStyle(
                 theme.isDarkMode ? colors.colorWhite : const Color(0xff666666),
                 10,
-                FontWeight.w500,
+                0,
               ),
             ),
           ),
@@ -203,7 +214,7 @@ class _PositionListCardState extends ConsumerState<PositionListCard> {
               style: _getStyle(
                 theme.isDarkMode ? colors.colorWhite : const Color(0xff666666),
                 10,
-                FontWeight.w500,
+                0,
               ),
             ),
           ),
@@ -219,18 +230,18 @@ class _PositionListCardState extends ConsumerState<PositionListCard> {
         Row(children: [
           Text(
             "Qty: ",
-            style: _getStyle(const Color(0xff5E6B7D), 14, FontWeight.w500, key: 'qty-label'),
+            style: _getStyle(const Color(0xff5E6B7D), 14, 0, key: 'qty-label'),
           ),
           Text(
             qty,
-            style: _getStyle(txtColor, 14, FontWeight.w500, key: 'qty-value'),
+            style: _getStyle(txtColor, 14, 0, key: 'qty-value'),
           )
         ]),
         // Wrap the PNL in RepaintBoundary as it changes frequently
         RepaintBoundary(
           child: Text(
             pnlValue,
-            style: _getStyle(pnlColor, 15, FontWeight.w600),
+            style: _getStyle(pnlColor, 15, 1),
           ),
         )
       ],
@@ -244,11 +255,11 @@ class _PositionListCardState extends ConsumerState<PositionListCard> {
         Row(children: [
           Text(
             "Avg: ",
-            style: _getStyle(const Color(0xff5E6B7D), 14, FontWeight.w500, key: 'avg-label'),
+            style: _getStyle(const Color(0xff5E6B7D), 14, 0, key: 'avg-label'),
           ),
           Text(
             avgPrice,
-            style: _getStyle(txtColor, 14, FontWeight.w500, key: 'avg-value'),
+            style: _getStyle(txtColor, 14, 0, key: 'avg-value'),
           )
         ]),
         // Wrap LTP in RepaintBoundary as it changes frequently
@@ -258,11 +269,12 @@ class _PositionListCardState extends ConsumerState<PositionListCard> {
             children: [
               Text(
                 " LTP: ",
-                style: _getStyle(const Color(0xff5E6B7D), 13, FontWeight.w600, key: 'ltp-label'),
+                style:
+                    _getStyle(const Color(0xff5E6B7D), 13, 1, key: 'ltp-label'),
               ),
               Text(
                 "₹${widget.positionList.lp}",
-                style: _getStyle(txtColor, 14, FontWeight.w500, key: 'ltp-value'),
+                style: _getStyle(txtColor, 14, 0, key: 'ltp-value'),
               )
             ],
           ),

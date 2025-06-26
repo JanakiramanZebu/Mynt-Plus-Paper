@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/transcation_provider.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
@@ -74,13 +75,13 @@ class _PaymentCancelAlertState extends ConsumerState<PaymentCancelAlert> {
                   Container(
                     padding: const EdgeInsets.only(top: 10, bottom: 5),
                     alignment: Alignment.center,
-                    child: Text('Awaiting UPI conformation',
-                        style: textStyle(
-                            theme.isDarkMode
+                    child: TextWidget.titleText(
+                        text: 'Awaiting UPI conformation',
+                        theme: false,
+                        color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            16,
-                            FontWeight.w600)),
+                        fw: 1),
                   ),
                   SizedBox(
                       width: MediaQuery.of(context).size.width,
@@ -89,9 +90,11 @@ class _PaymentCancelAlertState extends ConsumerState<PaymentCancelAlert> {
                         const SizedBox(height: 3),
                         const ProgressiveDotsLoader(),
                         const SizedBox(height: 3),
-                        Text('This will take a few seconds.',
-                            style: textStyle(
-                                colors.colorGrey, 13, FontWeight.w500)),
+                        TextWidget.subText(
+                            text: 'This will take a few seconds.',
+                            theme: false,
+                            color: colors.colorGrey,
+                            fw: 0),
                       ])),
                   SizedBox(
                     height: 10,
@@ -113,14 +116,13 @@ class _PaymentCancelAlertState extends ConsumerState<PaymentCancelAlert> {
                               borderRadius: BorderRadius.circular(50),
                             ),
                           ),
-                          child: Text("Cancel Transaction",
-                              style: GoogleFonts.inter(
-                                  textStyle: textStyle(
-                                      !theme.isDarkMode
+                          child: TextWidget.subText(
+                              text: "Cancel Transaction",
+                              theme: false,
+                              color: !theme.isDarkMode
                                           ? colors.colorWhite
                                           : colors.colorBlack,
-                                      14,
-                                      FontWeight.w500))))),
+                              fw: 0))),
                   SizedBox(
                     height: 10,
                   )

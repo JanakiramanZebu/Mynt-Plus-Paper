@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
@@ -84,12 +85,11 @@ class _SetAlertState extends State<SetAlert> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 16),
-            Text('Type',
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
+            const SizedBox(height: 16),            
+                    TextWidget.subText(
+                      text: 'Type',                    
+                      theme: theme.isDarkMode,
+                      fw: 0),
             const SizedBox(
               height: 12,
             ),
@@ -116,30 +116,28 @@ class _SetAlertState extends State<SetAlert> {
                               const BorderRadius.all(Radius.circular(32)))),
 
                   isExpanded: true,
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w500),
-                  hint: Text(
-                    alertTypeVal,
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        14,
-                        FontWeight.w500),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  style:
+                       TextWidget.textStyle(
+                 fontSize: 14 ,  theme: theme.isDarkMode , fw: 0 ),	
+                  hint: 
+                  TextWidget.subText(
+                      text: alertTypeVal,
+                     textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                   items: alertType
                       .map((String item) => DropdownMenuItem<String>(
                             value: item,
                             child: Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 10.0),
-                              child: Text(
-                                item,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                              child: 
+
+                              TextWidget.subText(
+                      text: item,
+                      textOverflow: TextOverflow.ellipsis,                      
+                      theme: theme.isDarkMode,
+                      fw: 0),
                             ),
                           ))
                       .toList(),
@@ -164,11 +162,10 @@ class _SetAlertState extends State<SetAlert> {
             const SizedBox(
               height: 16,
             ),
-            Text('Alert me',
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
+                     TextWidget.subText(
+                      text: 'Alert me',          
+                      theme: theme.isDarkMode,
+                      fw: 0),
             const SizedBox(
               height: 12,
             ),
@@ -192,28 +189,25 @@ class _SetAlertState extends State<SetAlert> {
                               const BorderRadius.all(Radius.circular(32)))),
 
                   isExpanded: true,
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w500),
+                  style:
+                       TextWidget.textStyle(
+                 fontSize: 14 ,  theme: theme.isDarkMode , fw: 0 ),		
 
-                  hint: Text(
-                    alertValue,
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        14,
-                        FontWeight.w500),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  hint: 
+                  TextWidget.subText(
+                      text:alertValue ,
+                      textOverflow: TextOverflow.ellipsis,                     
+                      theme: theme.isDarkMode,
+                      fw: 0),
                   items: alterItems
                       .map((String item) => DropdownMenuItem<String>(
                             value: item,
-                            child: Text(
-                              item,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                            child: 
+                            TextWidget.subText(
+                      text: item,
+                      textOverflow: TextOverflow.ellipsis,                  
+                      theme: theme.isDarkMode,
+                      fw: 0),
                           ))
                       .toList(),
                   value: alertValue,
@@ -236,21 +230,19 @@ class _SetAlertState extends State<SetAlert> {
             const SizedBox(
               height: 16,
             ),
-            Text('Enter Value',
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
+                    TextWidget.subText(
+                      text: 'Enter Value',                      
+                      theme: theme.isDarkMode,
+                      fw: 0),
             const SizedBox(
               height: 12,
             ),
             SizedBox(
               height: 44,
               child: TextFormField(
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    15,
-                    FontWeight.w500),
+                style: 
+                     TextWidget.textStyle(
+                 fontSize: 14 ,  theme: theme.isDarkMode , fw: 0 ),	
                 controller: valueCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
@@ -259,11 +251,13 @@ class _SetAlertState extends State<SetAlert> {
                         : const Color(0xffF1F3F8),
                     filled: true,
                     hintText: "0",
-                    hintStyle:
-                        textStyle(const Color(0xff666666), 16, FontWeight.w600),
+                    hintStyle:                  
+                        TextWidget.textStyle(
+                 fontSize: 16 , color: const Color(0xff666666), theme: theme.isDarkMode , fw: 1 ),	
                     contentPadding:
                         const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    labelStyle: textStyles.textFieldLabelStyle,
+                    labelStyle: TextWidget.textStyle(
+                 fontSize: 14 , theme: theme.isDarkMode , fw: 1 )	,
                     prefixIconColor: const Color(0xff586279),
                     prefixIcon: /*alertTypeVal == "Perc.Change"
                         ? const Icon(
@@ -296,8 +290,11 @@ class _SetAlertState extends State<SetAlert> {
               ),
             ),
             if (errorText.isNotEmpty) ...[
-              Text(errorText,
-                  style: textStyle(colors.darkred, 10, FontWeight.w500)),
+                      TextWidget.captionText(
+                      text:errorText ,
+                      color:colors.darkred ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
             ],
             const SizedBox(
               height: 16,
@@ -306,11 +303,11 @@ class _SetAlertState extends State<SetAlert> {
             const SizedBox(
               height: 16,
             ),
-            Text('Remark',
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
+                     TextWidget.subText(
+                      text:'Remark' ,
+                     
+                      theme: theme.isDarkMode,
+                      fw: 0),
             const SizedBox(
               height: 12,
             ),
@@ -321,21 +318,22 @@ class _SetAlertState extends State<SetAlert> {
                   maxLines: null,
                   expands: true,
                   controller: remark,
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      15,
-                      FontWeight.w500),
+                  style: 
+                       TextWidget.textStyle(
+                 fontSize: 14 ,  theme: theme.isDarkMode , fw: 0 ),	
                   decoration: InputDecoration(
                       fillColor: theme.isDarkMode
                           ? const Color(0xffB5C0CF).withOpacity(.15)
                           : const Color(0xffF1F3F8),
                       filled: true,
                       hintText: "Remark",
-                      hintStyle: textStyle(
-                          const Color(0xff666666), 16, FontWeight.w600),
+                      hintStyle: 
+                           TextWidget.textStyle(
+                 fontSize: 16 , color: const Color(0xff666666), theme: theme.isDarkMode , fw: 1 ),	
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 16),
-                      labelStyle: textStyles.textFieldLabelStyle,
+                      labelStyle:  TextWidget.textStyle(
+                 fontSize: 14 ,  theme: theme.isDarkMode , fw: 1 ),	
                       prefixIconColor: const Color(0xff586279),
                       enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide.none,
@@ -385,16 +383,14 @@ class _SetAlertState extends State<SetAlert> {
                                           ? const Color.fromARGB(
                                               255, 18, 18, 18)
                                           : colors.colorWhite,
-                                      titleTextStyle: textStyles.appBarTitleTxt
-                                          .copyWith(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack),
-                                      contentTextStyle: textStyles.menuTxt
-                                          .copyWith(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack),
+                                      titleTextStyle:
+                                                   TextWidget.textStyle(
+                 fontSize: 14 ,  theme: theme.isDarkMode , fw: 1 ),	
+
+                                                  
+                                      contentTextStyle:
+                                                   TextWidget.textStyle(
+                 fontSize: 12 , theme: theme.isDarkMode , fw: 0 ),	
                                       titlePadding: const EdgeInsets.symmetric(
                                           horizontal: 14, vertical: 12),
                                       shape: const RoundedRectangleBorder(
@@ -408,9 +404,13 @@ class _SetAlertState extends State<SetAlert> {
                                       insetPadding: const EdgeInsets.symmetric(
                                           horizontal: 16),
                                       // ignore: prefer_const_constructors
-                                      title: Text(
-                                        "Confirmation Alert",
-                                      ),
+                                      title:
+                                      TextWidget.titleText(
+                      text:"Confirmation Alert" ,                  
+                      theme: theme.isDarkMode,
+                      fw: 0),
+
+                                      
                                       content: SizedBox(
                                         width:
                                             MediaQuery.of(context).size.width,
@@ -418,8 +418,12 @@ class _SetAlertState extends State<SetAlert> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                                "Alert me when $alertTypeVal of ${widget.wlvalue.tsym} is $alertValue ${valueCtrl.text}")
+                                           
+                                                TextWidget.subText(
+                      text: "Alert me when $alertTypeVal of ${widget.wlvalue.tsym} is $alertValue ${valueCtrl.text}",
+                     
+                      theme: theme.isDarkMode,
+                      fw: 0),
                                           ],
                                         ),
                                       ),
@@ -427,14 +431,19 @@ class _SetAlertState extends State<SetAlert> {
                                         TextButton(
                                             onPressed: () =>
                                                 Navigator.pop(context),
-                                            child: Text("Cancel",
-                                                style: textStyles.textBtn
-                                                    .copyWith(
-                                                        color: theme.isDarkMode
+                                            child: 
+                                                                
+                                                                TextWidget.paraText(
+                      text: "Cancel",
+                      color: theme.isDarkMode
                                                             ? colors
                                                                 .colorLightBlue
                                                             : colors
-                                                                .colorBlue))),
+                                                                .colorBlue,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                                                                
+                                                                ),
                                         ElevatedButton(
                                             style: ElevatedButton.styleFrom(
                                                 elevation: 0,
@@ -498,13 +507,16 @@ class _SetAlertState extends State<SetAlert> {
                               height: 20,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Color(0xff666666)),
-                            ) :  Text("Ok",
-                                                style: textStyles.btnText
-                                                    .copyWith(
-                                                        color: !theme.isDarkMode
+                            ) :  
+
+                                                                TextWidget.paraText(
+                      text: "Ok",
+                      color: !theme.isDarkMode
                                                             ? colors.colorWhite
                                                             : colors
-                                                                .colorBlack))
+                                                                .colorBlack,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                                                                 
                                                                 
                                                                 )
@@ -516,16 +528,17 @@ class _SetAlertState extends State<SetAlert> {
                             }
                           });
                         },
-                  child: Text(
-                    'Set my alert',
-                    style: GoogleFonts.inter(
-                        letterSpacing: 0.28,
-                        fontSize: 14,
-                        color: !theme.isDarkMode
+                  child:                   
+                  TextWidget.subText(
+                      text: 'Set my alert',
+                      letterSpacing:0.28 ,
+                      color:!theme.isDarkMode
                             ? colors.colorWhite
-                            : colors.colorBlack,
-                        fontWeight: FontWeight.w600),
-                  )),
+                            : colors.colorBlack ,
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                  
+                  ),
             )
           ],
         ),

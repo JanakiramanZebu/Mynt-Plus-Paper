@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/change_password_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
@@ -21,6 +22,22 @@ class ForgotPassUnblockUser extends StatefulWidget {
 
 class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
   bool _isProcessing = false;
+  late FocusNode focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    focusNode = FocusNode();
+    focusNode.addListener(() {
+      setState(() {}); // Rebuild when focus changes
+    });
+  }
+
+  @override
+  void dispose() {
+    focusNode.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleContinue(
       ChangePasswordProvider authForgetpassword) async {
@@ -30,6 +47,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
 
     try {
       await authForgetpassword.submitForgetPassword(context);
+      FocusScope.of(context).unfocus();
     } finally {
       if (mounted) {
         setState(() => _isProcessing = false);
@@ -49,8 +67,8 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
           canPop: true, // Allows back navigation
           onPopInvokedWithResult: (didPop, result) {
             if (didPop) return; // If system handled back, do nothing
-
             FocusScope.of(context).unfocus();
+            auth.clearError();
             authForgetpassword.clearTextField();
             Navigator.of(context).pop(); // Proceed with back navigation
           },
@@ -66,17 +84,22 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                 leadingWidth: 41,
                 titleSpacing: 6,
                 leading: InkWell(
-                  onTap: () {
-                    auth.clearError();
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 9),
-                      child: Icon(Icons.arrow_back_ios,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack)),
-                ),
+                    onTap: () {
+                      auth.clearError();
+                      authForgetpassword.clearTextField();
+                      Navigator.pop(context);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: SvgPicture.asset(
+                        "assets/icon/appbarIcon/arrow-back.svg",
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : const Color(0xFF141414),
+                        height: 24,
+                        width: 24,
+                      ),
+                    )),
                 actions: [
                   Padding(
                     padding: const EdgeInsets.only(right: 16, top: 5),
@@ -90,154 +113,197 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
               body: SafeArea(
                 child: Column(
                   children: [
-                    Expanded(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 10),
-                                  Text("Forgot password",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          21,
-                                          FontWeight.w900)),
-                                  const SizedBox(height: 30),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                          // authForgetpassword.isMobileForgetpass
-                                          //     ? "Client ID"
-                                          //     : "Mobile Number",
-                                          "Mobile / Client ID",
-                                          style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              17,
-                                              FontWeight.w600)),
-                                    ],
-                                  ),
-                                  TextFormField(
-                                    style: textStyles.textFieldLabelStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack),
-                                    controller:
-                                        authForgetpassword.forGetloginMethCtrl,
-                                    readOnly: (_isProcessing ||
-                                            authForgetpassword.loading)
-                                        ? true
-                                        : false,
-                                    maxLength: 10,
-                                    textCapitalization:
-                                        TextCapitalization.characters,
-                                    inputFormatters: [
-                                      UpperCaseTextFormatter(),
-                                      FilteringTextInputFormatter.allow(
-                                          RegExp(r'[a-zA-Z0-9]')),
-                                    ],
-                                    decoration: InputDecoration(
-                                      contentPadding:
-                                          const EdgeInsets.only(top: 4),
-                                      errorStyle: textStyle(
-                                          colors.kColorRedText,
-                                          10,
-                                          FontWeight.w500),
-                                      errorText:
-                                          authForgetpassword.forgetpassError,
-                                      prefixIconConstraints:
-                                          const BoxConstraints(
-                                              minHeight: 0, minWidth: 30),
-                                      prefixIcon: Container(
-                                        margin: const EdgeInsets.only(
-                                            left: 0, right: 15),
-                                        child: SvgPicture.asset(
-                                          authForgetpassword.isMobileForgetpass
-                                              ? "assets/keyboardicons/keyboard_profile.svg"
-                                              : "assets/keyboardicons/keybord_mobile.svg",
-                                          color: const Color(0xff666666),
-                                          width: 20,
-                                        ),
-                                      ),
-                                      hintStyle: textStyle(
-                                          Colors.grey, 13, FontWeight.w400),
-                                      enabledBorder: const UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Color(0xff999999)),
-                                      ),
-                                      focusedBorder: const UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Color(0xff666666)),
-                                      ),
-                                    ),
-                                    onChanged: (v) {
-                                      authForgetpassword
-                                          .validateForgetpassWord();
-                                      authForgetpassword.activateFrogetbtn();
-                                    },
-                                  ),
-                                ]),
-                          ),
-                        ],
-                      ),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 10),
+                            TextWidget.heroText(
+                                text: "Forgot password",
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                fw: 2),
+                            const SizedBox(height: 30),
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            //   children: [
+                            //     Text(
+                            //         // authForgetpassword.isMobileForgetpass
+                            //         //     ? "Client ID"
+                            //         //     : "Mobile Number",
+                            //         "Mobile / Client ID",
+                            //         style: textStyle(
+                            //             theme.isDarkMode
+                            //                 ? colors.colorWhite
+                            //                 : colors.colorBlack,
+                            //             17,
+                            //             FontWeight.w600)),
+                            //   ],
+                            // ),
+                            TextFormField(
+                              focusNode: focusNode,
+                              style: TextWidget.textStyle(
+                                fontSize: 16,
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                fw: 0,
+                              ),
+                              controller:
+                                  authForgetpassword.forGetloginMethCtrl,
+                              readOnly:
+                                  (_isProcessing || authForgetpassword.loading)
+                                      ? true
+                                      : false,
+                              maxLength: 10,
+                              textCapitalization: TextCapitalization.characters,
+                              inputFormatters: [
+                                UpperCaseTextFormatter(),
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[a-zA-Z0-9]')),
+                              ],
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xffFFFFFF),
+                                labelText: "Mobile / Client ID",
+
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.auto,
+                                labelStyle: TextWidget.textStyle(
+                                  fontSize: 16,
+                                  theme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  fw: 3,
+                                ),
+                                floatingLabelStyle: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    fw: 3),
+                                enabledBorder: const UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Color(0xFFDBDBDB), width: 1),
+                                ),
+                                focusedBorder: const UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Color(0xFFDBDBDB), width: 1),
+                                ),
+                                counterText: "",
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 20),
+
+                                // prefixIconConstraints: const BoxConstraints(
+                                //     minHeight: 0, minWidth: 30),
+                                // prefixIcon: Container(
+                                //   margin:
+                                //       const EdgeInsets.only(left: 0, right: 15),
+                                //   child: SvgPicture.asset(
+                                //     authForgetpassword.isMobileForgetpass
+                                //         ? "assets/keyboardicons/keyboard_profile.svg"
+                                //         : "assets/keyboardicons/keybord_mobile.svg",
+                                //     color: const Color(0xff666666),
+                                //     width: 20,
+                                //   ),
+                                // ),
+                                // hintStyle: TextWidget.textStyle(
+                                //     color: Colors.grey,
+                                //     fontSize: 13,
+                                //     fw: 00,
+                                //     theme: false),
+                                // enabledBorder: UnderlineInputBorder(
+                                //   borderSide: BorderSide(
+                                //       color: focusNode.hasFocus
+                                //           ? Colors.transparent
+                                //           : const Color(0xff999999)),
+                                // ),
+                                // focusedBorder: const UnderlineInputBorder(
+                                //   borderSide:
+                                //       BorderSide(color: Color(0xff666666)),
+                                // ),
+                              ),
+                              onChanged: (v) {
+                                authForgetpassword.validateForgetpassWord();
+                                authForgetpassword.activateFrogetbtn();
+                              },
+                            ),
+                            const SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                authForgetpassword.forgetpassError != null
+                                    ? TextWidget.captionText(
+                                        text:
+                                            "${authForgetpassword.forgetpassError}",
+                                        theme: false,
+                                        color: colors.kColorRedText,
+                                        fw: 0)
+                                    : const SizedBox(),
+                                TextWidget.captionText(
+                                    text:
+                                        "${authForgetpassword.forGetloginMethCtrl.text.length}/10",
+                                    theme: theme.isDarkMode,
+                                    fw: 0),
+                              ],
+                            )
+                          ]),
                     ),
                     Container(
-                        margin:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 20),
                         width: screenWidth,
                         height: 46,
-                        child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                backgroundColor: !theme.isDarkMode
-                                    ? authForgetpassword.isDisableforgetbtn
-                                        ? const Color(0xfff5f5f5)
-                                        : colors.colorBlack
-                                    : authForgetpassword.isDisableforgetbtn
-                                        ? colors.darkGrey
-                                        : colors.colorbluegrey,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 13),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                )),
-                            onPressed: authForgetpassword
-                                    .forGetloginMethCtrl.text.isEmpty
-                                ? null
-                                : (_isProcessing || authForgetpassword.loading)
-                                    ? null
-                                    : () => _handleContinue(authForgetpassword),
-                            child: (_isProcessing || authForgetpassword.loading)
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Color(0xff666666)),
-                                  )
-                                : Text("Continue",
-                                    style: textStyle(
-                                        !theme.isDarkMode
-                                            ? authForgetpassword
-                                                    .isDisableforgetbtn
-                                                ? const Color(0xff999999)
-                                                : colors.colorWhite
-                                            : authForgetpassword
-                                                    .isDisableforgetbtn
-                                                ? colors.darkGrey
-                                                : colors.colorBlack,
-                                        15,
-                                        FontWeight.w500)))),
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: !theme.isDarkMode
+                                  ? authForgetpassword.isDisableforgetbtn
+                                      ? const Color(0xffFFFFFF)
+                                      : const Color(0xff0037B7)
+                                  : authForgetpassword.isDisableforgetbtn
+                                      ? colors.darkGrey
+                                      : colors.colorbluegrey,
+                              side: const BorderSide(
+                                color: Color(0xff0037B7),
+                                width: 1,
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              )),
+                          onPressed: authForgetpassword
+                                  .forGetloginMethCtrl.text.isEmpty
+                              ? null
+                              : (_isProcessing || authForgetpassword.loading)
+                                  ? null
+                                  : () => _handleContinue(authForgetpassword),
+                          child: (_isProcessing || authForgetpassword.loading)
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: colors.colorWhite),
+                                )
+                              : TextWidget.subText(
+                                  text: "Reset",
+                                  theme: false,
+                                  color: !theme.isDarkMode
+                                      ? authForgetpassword.isDisableforgetbtn
+                                          ? const Color(0xff0037B7)
+                                          : const Color(0xffFFFFFF)
+                                      : authForgetpassword.isDisableforgetbtn
+                                          ? colors.darkGrey
+                                          : colors.colorBlack,
+                                  fw: 0),
+                        )),
                   ],
                 ),
               ),

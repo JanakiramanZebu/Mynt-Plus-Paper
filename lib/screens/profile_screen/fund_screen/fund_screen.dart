@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -17,6 +16,7 @@ import '../../../../provider/transcation_provider.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/custom_switch_btn.dart';
 import '../../../../sharedWidget/fund_function.dart';
+import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/loader_ui.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
 import 'ios_fund_screen/ios_no_upi_apps_ui.dart';
@@ -84,11 +84,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 ),
               ),
               elevation: .2,
-              title: Text('Funds',
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      16,
-                      FontWeight.w600)),
+              title: TextWidget.titleText(
+                text: 'Funds',
+                theme: theme.isDarkMode,
+                fw: 1,
+              ),
             ),
             body:
                 // fund.loading
@@ -110,27 +110,23 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                   children: [
                     Padding(
                         padding: const EdgeInsets.only(left: 16, top: 10),
-                        child: Text("Choose type",
-                            style: textStyle(
-                                !theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorWhite,
-                                14,
-                                FontWeight.w600))),
+                        child: TextWidget.subText(
+                            text: "Choose type",
+                            theme: !theme.isDarkMode,
+                            fw: 1)),
                     Padding(
                       padding: const EdgeInsets.only(left: 16, top: 10),
                       child: Row(
                         children: [
-                          Text(
-                            'Deposit Money',
-                            style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: fund.enable
-                                    ? theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : const Color(0xff000000)
-                                    : Colors.grey),
+                          TextWidget.subText(
+                            text: 'Deposit Money',
+                            theme: false,
+                            color: fund.enable
+                                ? theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : const Color(0xff000000)
+                                : Colors.grey,
+                            fw: 1,
                           ),
                           const SizedBox(
                             width: 16,
@@ -147,16 +143,15 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                           const SizedBox(
                             width: 16,
                           ),
-                          Text(
-                            'Withdraw Money',
-                            style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: fund.enable == false
-                                    ? theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack
-                                    : colors.colorGrey),
+                          TextWidget.subText(
+                            text: 'Withdraw Money',
+                            theme: false,
+                            color: fund.enable == false
+                                ? theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack
+                                : colors.colorGrey,
+                            fw: 1,
                           ),
                         ],
                       ),
@@ -174,12 +169,10 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
                                   keyboardType: TextInputType.number,
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      35,
-                                      FontWeight.w600),
+                                  style: TextWidget.textStyle(
+                                      theme: theme.isDarkMode,
+                                      fontSize: 35,
+                                      fw: 1),
                                   controller: fund.amount,
                                   onChanged: (value) {
                                     fund.textFiledonChange(value);
@@ -201,14 +194,15 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     fillColor: Colors.transparent,
                                     filled: true,
                                     hintText: "0",
-                                    hintStyle: textStyle(
-                                        colors.colorGrey, 40, FontWeight.w600),
-                                    labelStyle: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        40,
-                                        FontWeight.w600),
+                                    hintStyle: TextWidget.textStyle(
+                                        theme: false,
+                                        color: colors.colorGrey,
+                                        fontSize: 40,
+                                        fw: 1),
+                                    labelStyle: TextWidget.textStyle(
+                                        theme: theme.isDarkMode,
+                                        fontSize: 40,
+                                        fw: 1),
                                     prefixIcon: Container(
                                         margin: const EdgeInsets.all(6),
                                         child: SvgPicture.asset(
@@ -228,33 +222,30 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                     left: 16,
                                   ),
                                   child: fund.amount.text.isEmpty
-                                      ? Text(
-                                          "Enter the amount",
-                                          style: textStyle(colors.colorGrey, 14,
-                                              FontWeight.w500),
-                                        )
+                                      ? TextWidget.subText(
+                                          text: "Enter the amount",
+                                          theme: false,
+                                          color: colors.colorGrey,
+                                          fw: 0)
                                       : fund.amount.text.isEmpty ||
                                               fund.intValue < 50
-                                          ? Text(
-                                              fund.funderror,
-                                              style: textStyle(colors.darkred,
-                                                  14, FontWeight.w500),
-                                            )
+                                          ? TextWidget.subText(
+                                              text: fund.funderror,
+                                              theme: false,
+                                              color: colors.darkred,
+                                              fw: 0)
                                           : fund.intValue > 5000000
-                                              ? Text(
-                                                  fund.maxfunderror,
-                                                  style: textStyle(
-                                                      colors.darkred,
-                                                      14,
-                                                      FontWeight.w500),
-                                                )
-                                              : Text(
-                                                  "${fund.textResult}only",
-                                                  style: textStyle(
-                                                      colors.colorGrey,
-                                                      14,
-                                                      FontWeight.w500),
-                                                )),
+                                              ? TextWidget.subText(
+                                                  text: fund.maxfunderror,
+                                                  theme: false,
+                                                  color: colors.darkred,
+                                                  fw: 0)
+                                              : TextWidget.subText(
+                                                  text:
+                                                      "${fund.textResult}only",
+                                                  theme: false,
+                                                  color: colors.colorGrey,
+                                                  fw: 0)),
                               const SizedBox(
                                 height: 10,
                               ),
@@ -287,27 +278,23 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          fund.textValue,
-                                          style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              15,
-                                              FontWeight.w600),
-                                        ),
+                                        TextWidget.titleText(
+                                            text: fund.textValue,
+                                            theme: theme.isDarkMode,
+                                            fw: 1),
                                         SvgPicture.asset(assets.downArrow)
                                       ],
                                     )),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 16,
-                                ),
-                                child: headerTitleText(
-                                  "Bank account",
-                                ),
-                              ),
+                                  padding: const EdgeInsets.only(
+                                    left: 16,
+                                  ),
+                                  child: TextWidget.subText(
+                                      text: "Bank account",
+                                      theme: false,
+                                      fw: 0,
+                                      color: colors.colorGrey)),
                               GestureDetector(
                                 onTap: () {
                                   fund.focusNode.unfocus();
@@ -331,29 +318,27 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
-                                          child: Text(
-                                            fund.initbank,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              15,
-                                              FontWeight.w600,
-                                            ),
-                                          ),
+                                          child: TextWidget.titleText(
+                                              text: fund.initbank,
+                                              theme: theme.isDarkMode,
+                                              fw: 1,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis),
                                         ),
                                         SvgPicture.asset(assets.downArrow)
                                       ],
                                     )),
                               ),
                               Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                  ),
-                                  child: headerTitleText(
-                                    "Payment method",
-                                  )),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: TextWidget.subText(
+                                    text: "Payment method",
+                                    theme: false,
+                                    color: colors.colorGrey,
+                                    fw: 0),
+                              ),
                               const SizedBox(
                                 height: 10,
                               ),
@@ -415,18 +400,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                         children: [
                                                           Row(
                                                             children: [
-                                                              Text(
-                                                                '${fund.defaultUpiapps[index]['name']}',
-                                                                style: textStyle(
-                                                                    theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                    15,
-                                                                    FontWeight
-                                                                        .w600),
-                                                              ),
+                                                              TextWidget.titleText(
+                                                                  text:
+                                                                      '${fund.defaultUpiapps[index]['name']}',
+                                                                  theme: theme
+                                                                      .isDarkMode,
+                                                                  fw: 1),
                                                               Container(
                                                                 decoration: BoxDecoration(
                                                                     color: const Color(
@@ -443,15 +422,14 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                                     .symmetric(
                                                                     horizontal:
                                                                         4),
-                                                                child: Text(
-                                                                  "free",
-                                                                  style: textStyle(
-                                                                      const Color(
-                                                                          0xff0037B7),
-                                                                      12,
-                                                                      FontWeight
-                                                                          .w500),
-                                                                ),
+                                                                child: TextWidget.paraText(
+                                                                    text:
+                                                                        "free",
+                                                                    theme:
+                                                                        false,
+                                                                    color: const Color(
+                                                                        0xff0037B7),
+                                                                    fw: 0),
                                                               ),
                                                             ],
                                                           ),
@@ -475,29 +453,20 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                                           'NET BANKING'
                                                               ? Row(
                                                                   children: [
-                                                                    Text(
-                                                                      '₹',
-                                                                      style: textStyle(
-                                                                          theme.isDarkMode
-                                                                              ? colors.colorWhite
-                                                                              : colors.colorBlack,
-                                                                          15,
-                                                                          FontWeight.w600),
-                                                                    ),
-                                                                    Text(
-                                                                      fund.amount.text
-                                                                              .isEmpty
-                                                                          ? "0.00"
-                                                                          : fund
-                                                                              .amount
-                                                                              .text,
-                                                                      style: textStyle(
-                                                                          theme.isDarkMode
-                                                                              ? colors.colorWhite
-                                                                              : colors.colorBlack,
-                                                                          15,
-                                                                          FontWeight.w600),
-                                                                    ),
+                                                                    TextWidget.titleText(
+                                                                        text:
+                                                                            '₹',
+                                                                        theme: theme
+                                                                            .isDarkMode,
+                                                                        fw: 1),
+                                                                    TextWidget.titleText(
+                                                                        text: fund.amount.text.isEmpty
+                                                                            ? "0.00"
+                                                                            : fund
+                                                                                .amount.text,
+                                                                        theme: theme
+                                                                            .isDarkMode,
+                                                                        fw: 1),
                                                                   ],
                                                                 )
                                                               : Container()
@@ -513,26 +482,22 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                         children: [
                                                           Row(
                                                             children: [
-                                                              Text(
-                                                                'Max Limit:',
-                                                                style: textStyle(
-                                                                    colors
-                                                                        .colorGrey,
-                                                                    13,
-                                                                    FontWeight
-                                                                        .w500),
+                                                              TextWidget
+                                                                  .paraText(
+                                                                text:
+                                                                    'Max Limit:',
+                                                                theme: false,
+                                                                color: colors
+                                                                    .colorGrey,
+                                                                fw: 0,
                                                               ),
-                                                              Text(
-                                                                '₹${fund.defaultUpiapps[index]['limit']}',
-                                                                style: textStyle(
-                                                                    theme.isDarkMode
-                                                                        ? colors
-                                                                            .colorWhite
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                    13,
-                                                                    FontWeight
-                                                                        .w500),
+                                                              TextWidget
+                                                                  .paraText(
+                                                                text:
+                                                                    '₹${fund.defaultUpiapps[index]['limit']}',
+                                                                theme: theme
+                                                                    .isDarkMode,
+                                                                fw: 0,
                                                               ),
                                                             ],
                                                           ),
@@ -731,24 +696,26 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                                   color: Color(
                                                                       0xff666666)),
                                                             )
-                                                          : Text(
-                                                              "PAY VIA UPI APPS",
-                                                              style: textStyle(
-                                                                  fund.amount.text
-                                                                              .isEmpty ||
-                                                                          fund.intValue <
-                                                                              50
+                                                          : TextWidget.subText(
+                                                              text:
+                                                                  "PAY VIA UPI APPS",
+                                                              theme: false,
+                                                              color: fund
+                                                                          .amount
+                                                                          .text
+                                                                          .isEmpty ||
+                                                                      fund.intValue <
+                                                                          50
+                                                                  ? colors
+                                                                      .colorGrey
+                                                                  : theme
+                                                                          .isDarkMode
                                                                       ? colors
-                                                                          .colorGrey
-                                                                      : theme
-                                                                              .isDarkMode
-                                                                          ? colors
-                                                                              .colorBlack
-                                                                          : colors
-                                                                              .colorWhite,
-                                                                  14,
-                                                                  FontWeight
-                                                                      .w500)),
+                                                                          .colorBlack
+                                                                      : colors
+                                                                          .colorWhite,
+                                                              fw: 0,
+                                                            ),
                                                     ),
                                                   )
                                                 ],
@@ -763,13 +730,16 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                   TextFormField(
                                                     controller: fund.upiid,
                                                     style: theme.isDarkMode
-                                                        ? textStyles
-                                                            .textFieldLabelStyle
-                                                            .copyWith(
-                                                                color: colors
-                                                                    .colorWhite)
-                                                        : textStyles
-                                                            .textFieldLabelStyle,
+                                                        ? TextWidget.textStyle(
+                                                            fontSize: 14,
+                                                            theme: false,
+                                                            color: colors
+                                                                .colorWhite)
+                                                        : TextWidget.textStyle(
+                                                            fontSize: 14,
+                                                            theme: false,
+                                                            color: colors
+                                                                .colorBlack),
                                                     inputFormatters: [
                                                       NoEmojiInputFormatter(),
                                                       FilteringTextInputFormatter
@@ -781,11 +751,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                     decoration: InputDecoration(
                                                       hintText:
                                                           "example: username@upi",
-                                                      hintStyle: textStyles
-                                                          .textFieldLabelStyle
-                                                          .copyWith(
-                                                        color: colors.colorGrey,
-                                                      ),
+                                                      hintStyle:
+                                                          TextWidget.textStyle(
+                                                              fontSize: 14,
+                                                              theme: false,
+                                                              color: colors
+                                                                  .colorGrey),
                                                       contentPadding:
                                                           const EdgeInsets
                                                               .symmetric(
@@ -838,16 +809,15 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                           padding:
                                                               const EdgeInsets
                                                                   .only(top: 5),
-                                                          child: Text(
-                                                            "${fund.upiiderror}",
-                                                            textAlign:
-                                                                TextAlign.left,
-                                                            style: textStyle(
-                                                                colors.darkred,
-                                                                12,
-                                                                FontWeight
-                                                                    .w500),
-                                                          ),
+                                                          child: TextWidget.paraText(
+                                                              text:
+                                                                  "${fund.upiiderror}",
+                                                              theme: false,
+                                                              color: colors
+                                                                  .darkred,
+                                                              fw: 0,
+                                                              align: TextAlign
+                                                                  .left),
                                                         ),
                                                   SizedBox(
                                                       height: fund.selectedindex ==
@@ -865,178 +835,163 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                             .size
                                                             .width,
                                                     child: ElevatedButton(
-                                                      style: ElevatedButton
-                                                          .styleFrom(
-                                                              elevation: 0,
-                                                              backgroundColor: fund
-                                                                              .upiiderror ==
-                                                                          'Please enter a UPI ID' ||
-                                                                      fund.upiiderror ==
-                                                                          'Please enter a valid UPI ID' ||
-                                                                      fund
-                                                                          .upiid
-                                                                          .text
-                                                                          .isEmpty ||
-                                                                      fund
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                                elevation: 0,
+                                                                backgroundColor: fund.upiiderror == 'Please enter a UPI ID' ||
+                                                                        fund.upiiderror ==
+                                                                            'Please enter a valid UPI ID' ||
+                                                                        fund
+                                                                            .upiid
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        fund
+                                                                            .amount
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        fund.intValue <
+                                                                            50
+                                                                    ? colors
+                                                                        .darkGrey
+                                                                    : theme
+                                                                            .isDarkMode
+                                                                        ? colors
+                                                                            .colorbluegrey
+                                                                        : colors
+                                                                            .colorBlack,
+                                                                padding:
+                                                                    const EdgeInsets.symmetric(
+                                                                        vertical:
+                                                                            13),
+                                                                shape:
+                                                                    RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              30),
+                                                                )),
+                                                        onPressed:
+                                                            fund.upiiderror == 'Please enter a UPI ID' ||
+                                                                    fund.upiiderror ==
+                                                                        'Please enter a valid UPI ID' ||
+                                                                    fund
+                                                                        .upiid
+                                                                        .text
+                                                                        .isEmpty ||
+                                                                    fund
+                                                                        .amount
+                                                                        .text
+                                                                        .isEmpty ||
+                                                                    fund.intValue <
+                                                                        50
+                                                                ? () {
+                                                                    ScaffoldMessenger.of(
+                                                                            context)
+                                                                        .showSnackBar(warningMessage(
+                                                                            context,
+                                                                            "Min amount ₹50"));
+                                                                  }
+                                                                : () async {
+                                                                    await fund.fetcUPIIDPayment(
+                                                                        context,
+                                                                        fund.upiid
+                                                                            .text,
+                                                                        fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss]
+                                                                            [0],
+                                                                        fund.bankdetails!.dATA![fund.indexss]
+                                                                            [
+                                                                            2]);
+                                                                    await fund
+                                                                        .fetchHdfctranction(
+                                                                      context,
+                                                                      fund.upiid
+                                                                          .text,
+                                                                      int.parse(fund
                                                                           .amount
-                                                                          .text
-                                                                          .isEmpty ||
-                                                                      fund.intValue <
-                                                                          50
-                                                                  ? colors
-                                                                      .darkGrey
-                                                                  : theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .colorbluegrey
-                                                                      : colors
-                                                                          .colorBlack,
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      vertical:
-                                                                          13),
-                                                              shape:
-                                                                  RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            30),
-                                                              )),
-                                                      onPressed: fund
-                                                                      .upiiderror ==
-                                                                  'Please enter a UPI ID' ||
-                                                              fund.upiiderror ==
-                                                                  'Please enter a valid UPI ID' ||
-                                                              fund.upiid.text
-                                                                  .isEmpty ||
-                                                              fund.amount.text
-                                                                  .isEmpty ||
-                                                              fund.intValue < 50
-                                                          ? () {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      warningMessage(
-                                                                          context,
-                                                                          "Min amount ₹50"));
-                                                            }
-                                                          : () async {
-                                                              await fund.fetcUPIIDPayment(
-                                                                  context,
-                                                                  fund.upiid
-                                                                      .text,
-                                                                  fund
+                                                                          .text),
+                                                                      fund.accno,
+                                                                      fund
                                                                           .decryptclientcheck!
                                                                           .clientCheck!
-                                                                          .dATA![fund.indexss]
-                                                                      [0],
-                                                                  fund.bankdetails!
-                                                                          .dATA![
-                                                                      fund.indexss][2]);
-                                                              await fund
-                                                                  .fetchHdfctranction(
-                                                                context,
-                                                                fund.upiid.text,
-                                                                int.parse(fund
-                                                                    .amount
-                                                                    .text),
-                                                                fund.accno,
-                                                                fund
-                                                                    .decryptclientcheck!
-                                                                    .clientCheck!
-                                                                    .dATA![fund.indexss][0],
-                                                              );
-                                                              if (fund
-                                                                          .hdfcpaymentdata!
-                                                                          .data!
-                                                                          .verifiedVPAStatus1 ==
-                                                                      "Available" ||
-                                                                  fund
-                                                                          .hdfcpaymentdata!
-                                                                          .data!
-                                                                          .verifiedVPAStatus2 ==
-                                                                      "Available") {
-                                                                showModalBottomSheet(
-                                                                    shape: const RoundedRectangleBorder(
-                                                                        borderRadius: BorderRadius.vertical(
-                                                                            top: Radius.circular(
-                                                                                16))),
-                                                                    backgroundColor:
-                                                                        const Color(
-                                                                            0xffffffff),
-                                                                    isDismissible:
-                                                                        false,
-                                                                    enableDrag:
-                                                                        false,
-                                                                    showDragHandle:
-                                                                        false,
-                                                                    useSafeArea:
-                                                                        false,
-                                                                    isScrollControlled:
-                                                                        true,
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (BuildContext
-                                                                            context) {
-                                                                      return PopScope(
-                                                                          canPop:
-                                                                              true, // Allows default back navigation
-                                                                          onPopInvokedWithResult: (didPop,
-                                                                              result) {
-                                                                            if (didPop)
-                                                                              return; // If system handled back, do nothing
-                                                                          },
-                                                                          child:
-                                                                              const UPIIDPaymentCancelAlert());
-                                                                    });
+                                                                          .dATA![fund.indexss][0],
+                                                                    );
+                                                                    if (fund.hdfcpaymentdata!.data!.verifiedVPAStatus1 ==
+                                                                            "Available" ||
+                                                                        fund.hdfcpaymentdata!.data!.verifiedVPAStatus2 ==
+                                                                            "Available") {
+                                                                      showModalBottomSheet(
+                                                                          shape: const RoundedRectangleBorder(
+                                                                              borderRadius: BorderRadius.vertical(
+                                                                                  top: Radius.circular(
+                                                                                      16))),
+                                                                          backgroundColor: const Color(
+                                                                              0xffffffff),
+                                                                          isDismissible:
+                                                                              false,
+                                                                          enableDrag:
+                                                                              false,
+                                                                          showDragHandle:
+                                                                              false,
+                                                                          useSafeArea:
+                                                                              false,
+                                                                          isScrollControlled:
+                                                                              true,
+                                                                          context:
+                                                                              context,
+                                                                          builder:
+                                                                              (BuildContext context) {
+                                                                            return PopScope(
+                                                                                canPop: true, // Allows default back navigation
+                                                                                onPopInvokedWithResult: (didPop, result) {
+                                                                                  if (didPop) return; // If system handled back, do nothing
+                                                                                },
+                                                                                child: const UPIIDPaymentCancelAlert());
+                                                                          });
 
-                                                                await fund.fetchHdfcpaymetstatus(
-                                                                    context,
-                                                                    '${fund.hdfctranction!.data!.orderNumber}',
-                                                                    '${fund.hdfctranction!.data!.upiTransactionNo}');
-                                                              }
-                                                            },
-                                                      child: fund.fundisLoad
-                                                          ? const SizedBox(
-                                                              width: 18,
-                                                              height: 20,
-                                                              child: CircularProgressIndicator(
-                                                                  strokeWidth:
-                                                                      2,
-                                                                  color: Color(
-                                                                      0xff666666)),
-                                                            )
-                                                          : Text(
-                                                              "PAY VIA UPI ID",
-                                                              style: textStyle(
-                                                                  fund.upiiderror == 'Please enter a UPI ID' ||
-                                                                          fund.upiiderror ==
-                                                                              'Please enter a valid UPI ID' ||
-                                                                          fund
-                                                                              .upiid
-                                                                              .text
-                                                                              .isEmpty ||
-                                                                          fund
-                                                                              .amount
-                                                                              .text
-                                                                              .isEmpty ||
-                                                                          fund.intValue <
-                                                                              50
-                                                                      ? colors
-                                                                          .colorGrey
-                                                                      : theme
-                                                                              .isDarkMode
-                                                                          ? colors
-                                                                              .colorBlack
-                                                                          : colors
-                                                                              .colorWhite,
-                                                                  14,
-                                                                  FontWeight
-                                                                      .w500)),
-                                                    ),
+                                                                      await fund.fetchHdfcpaymetstatus(
+                                                                          context,
+                                                                          '${fund.hdfctranction!.data!.orderNumber}',
+                                                                          '${fund.hdfctranction!.data!.upiTransactionNo}');
+                                                                    }
+                                                                  },
+                                                        child: fund.fundisLoad
+                                                            ? const SizedBox(
+                                                                width: 18,
+                                                                height: 20,
+                                                                child: CircularProgressIndicator(
+                                                                    strokeWidth:
+                                                                        2,
+                                                                    color: Color(
+                                                                        0xff666666)),
+                                                              )
+                                                            : TextWidget
+                                                                .subText(
+                                                                text:
+                                                                    "PAY VIA UPI ID",
+                                                                theme: false,
+                                                                color: fund.upiiderror == 'Please enter a UPI ID' ||
+                                                                        fund.upiiderror ==
+                                                                            'Please enter a valid UPI ID' ||
+                                                                        fund
+                                                                            .upiid
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        fund
+                                                                            .amount
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        fund.intValue <
+                                                                            50
+                                                                    ? colors
+                                                                        .colorGrey
+                                                                    : theme
+                                                                            .isDarkMode
+                                                                        ? colors
+                                                                            .colorBlack
+                                                                        : colors
+                                                                            .colorWhite,
+                                                                fw: 0,
+                                                              )),
                                                   )
                                                 ],
                                               ),
@@ -1064,120 +1019,120 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                                             .size
                                                             .width,
                                                     child: ElevatedButton(
-                                                      style: ElevatedButton
-                                                          .styleFrom(
-                                                              elevation: 0,
-                                                              backgroundColor: fund
-                                                                          .amount
-                                                                          .text
-                                                                          .isEmpty ||
-                                                                      fund.intValue <
-                                                                          50 ||
-                                                                      fund.intValue >
-                                                                          5000000
-                                                                  ? colors
-                                                                      .darkGrey
-                                                                  : theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .colorbluegrey
-                                                                      : colors
-                                                                          .colorBlack,
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      vertical:
-                                                                          13),
-                                                              shape:
-                                                                  RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            30),
-                                                              )),
-                                                      onPressed: fund
-                                                                  .amount
-                                                                  .text
-                                                                  .isEmpty ||
-                                                              fund.intValue <
-                                                                  50 ||
-                                                              fund.intValue >
-                                                                  5000000
-                                                          ? () {
-                                                              if (fund.intValue >
-                                                                  5000000) {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
-                                                                        context,
-                                                                        "Max amount ₹5,000,000"));
-                                                              } else {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(warningMessage(
-                                                                        context,
-                                                                        "Min amount ₹50"));
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                                elevation: 0,
+                                                                backgroundColor: fund
+                                                                            .amount
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        fund.intValue <
+                                                                            50 ||
+                                                                        fund.intValue >
+                                                                            5000000
+                                                                    ? colors
+                                                                        .darkGrey
+                                                                    : theme
+                                                                            .isDarkMode
+                                                                        ? colors
+                                                                            .colorbluegrey
+                                                                        : colors
+                                                                            .colorBlack,
+                                                                padding:
+                                                                    const EdgeInsets.symmetric(
+                                                                        vertical:
+                                                                            13),
+                                                                shape:
+                                                                    RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              30),
+                                                                )),
+                                                        onPressed: fund
+                                                                    .amount
+                                                                    .text
+                                                                    .isEmpty ||
+                                                                fund.intValue <
+                                                                    50 ||
+                                                                fund.intValue >
+                                                                    5000000
+                                                            ? () {
+                                                                if (fund.intValue >
+                                                                    5000000) {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "Max amount ₹5,000,000"));
+                                                                } else {
+                                                                  ScaffoldMessenger.of(
+                                                                          context)
+                                                                      .showSnackBar(warningMessage(
+                                                                          context,
+                                                                          "Min amount ₹50"));
+                                                                }
                                                               }
-                                                            }
-                                                          : () async {
-                                                              Razorpay
-                                                                  razorpay =
-                                                                  Razorpay();
-                                                              await fund
-                                                                  .fetchrazorpay(
-                                                                context,
-                                                                int.parse(fund
-                                                                        .amount
-                                                                        .text)
-                                                                    .toString(),
-                                                                fund.accno,
-                                                                fund
-                                                                    .decryptclientcheck!
-                                                                    .clientCheck!
-                                                                    .dATA![fund.indexss][2],
-                                                                fund.ifsc,
-                                                                razorpay,
-                                                              );
-                                                              razorpay.on(
-                                                                  Razorpay
-                                                                      .EVENT_PAYMENT_ERROR,
-                                                                  handlePaymentErrorResponse);
-                                                              razorpay.on(
-                                                                  Razorpay
-                                                                      .EVENT_PAYMENT_SUCCESS,
-                                                                  handlePaymentSuccessResponse);
-                                                            },
-                                                      child: fund.fundisLoad
-                                                          ? const SizedBox(
-                                                              width: 18,
-                                                              height: 20,
-                                                              child: CircularProgressIndicator(
-                                                                  strokeWidth:
-                                                                      2,
-                                                                  color: Color(
-                                                                      0xff666666)),
-                                                            )
-                                                          : Text(
-                                                              "PAY VIA NET BANKING",
-                                                              style: textStyle(
-                                                                  fund.amount.text
-                                                                              .isEmpty ||
-                                                                          fund.intValue <
-                                                                              50 ||
-                                                                          fund.intValue >
-                                                                              5000000
-                                                                      ? colors
-                                                                          .colorGrey
-                                                                      : theme
-                                                                              .isDarkMode
-                                                                          ? colors
-                                                                              .colorBlack
-                                                                          : colors
-                                                                              .colorWhite,
-                                                                  14,
-                                                                  FontWeight
-                                                                      .w500)),
-                                                    ),
+                                                            : () async {
+                                                                Razorpay
+                                                                    razorpay =
+                                                                    Razorpay();
+                                                                await fund
+                                                                    .fetchrazorpay(
+                                                                  context,
+                                                                  int.parse(fund
+                                                                          .amount
+                                                                          .text)
+                                                                      .toString(),
+                                                                  fund.accno,
+                                                                  fund
+                                                                      .decryptclientcheck!
+                                                                      .clientCheck!
+                                                                      .dATA![fund.indexss][2],
+                                                                  fund.ifsc,
+                                                                  razorpay,
+                                                                );
+                                                                razorpay.on(
+                                                                    Razorpay
+                                                                        .EVENT_PAYMENT_ERROR,
+                                                                    handlePaymentErrorResponse);
+                                                                razorpay.on(
+                                                                    Razorpay
+                                                                        .EVENT_PAYMENT_SUCCESS,
+                                                                    handlePaymentSuccessResponse);
+                                                              },
+                                                        child: fund.fundisLoad
+                                                            ? const SizedBox(
+                                                                width: 18,
+                                                                height: 20,
+                                                                child: CircularProgressIndicator(
+                                                                    strokeWidth:
+                                                                        2,
+                                                                    color: Color(
+                                                                        0xff666666)),
+                                                              )
+                                                            : TextWidget.subText(
+                                                                text:
+                                                                    "PAY VIA NET BANKING",
+                                                                theme: false,
+                                                                color: fund
+                                                                            .amount
+                                                                            .text
+                                                                            .isEmpty ||
+                                                                        fund.intValue <
+                                                                            50 ||
+                                                                        fund.intValue >
+                                                                            5000000
+                                                                    ? colors
+                                                                        .colorGrey
+                                                                    : theme
+                                                                            .isDarkMode
+                                                                        ? colors
+                                                                            .colorBlack
+                                                                        : colors
+                                                                            .colorWhite,
+                                                                fw: 0,
+                                                              )),
                                                   )
                                                 ],
                                               ),
@@ -1205,24 +1160,17 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     );
   }
 
-  Text headerTitleText(String text) {
-    return Text(
-      text,
-      style: textStyle(colors.colorGrey, 14, FontWeight.w500),
-    );
+  Widget headerTitleText(String text) {
+    return TextWidget.subText(
+        text: text, theme: false, color: colors.colorGrey, fw: 0);
   }
 
-  Text contantTitleText(String text) {
-    return Text(
-      text,
-      style: textStyle(colors.colorBlack, 15, FontWeight.w600),
+  Widget contantTitleText(String text) {
+    return TextWidget.titleText(
+      text: text,
+      theme: false,
+      fw: 1,
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 
   final List<Map<String, dynamic>> upiApptest = [
@@ -1291,7 +1239,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
               const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.only(left: 16),
-                child: headerTitleText('Choose an Segment:'),
+                child: TextWidget.subText(
+                  text: 'Choose an Segment:',
+                  theme: false,
+                  color: colors.colorGrey,
+                  fw: 0,
+                ),
               ),
               const SizedBox(height: 10),
               ListView.builder(
@@ -1313,14 +1266,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                             horizontal: 16, vertical: 15),
                         child: Row(
                           children: [
-                            Text(
-                              fund.decryptclientcheck!.companyCode![index],
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  15,
-                                  FontWeight.w600),
+                            TextWidget.titleText(
+                              text:
+                                  fund.decryptclientcheck!.companyCode![index],
+                              theme: theme.isDarkMode,
+                              fw: 1,
                             ),
                           ],
                         ),
@@ -1367,7 +1317,12 @@ class _FundScreenState extends ConsumerState<FundScreen> {
               const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.only(left: 16, bottom: 10),
-                child: headerTitleText('Choose an bank:'),
+                child: TextWidget.subText(
+                  text: 'Choose an bank:',
+                  theme: false,
+                  color: colors.colorGrey,
+                  fw: 0,
+                ),
               ),
               ListView.builder(
                 shrinkWrap: true,
@@ -1375,9 +1330,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 itemBuilder: (BuildContext context, int index) {
                   return InkWell(
                     onTap: () {
-
                       fund.bankselection(index);
-                      fund.setAccountslist(fund.bankdetails!.dATA![index][2].toString());
+                      fund.setAccountslist(
+                          fund.bankdetails!.dATA![index][2].toString());
 
                       Navigator.pop(context);
                     },
@@ -1387,14 +1342,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                       color: fund.bankdetails!.dATA![index][1] == fund.bankname
                           ? const Color(0xff999999).withOpacity(0.2)
                           : Colors.transparent,
-                      child: Text(
-                        '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            15,
-                            FontWeight.w600),
+                      child: TextWidget.titleText(
+                        text:
+                            '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
+                        theme: theme.isDarkMode,
+                        fw: 1,
                       ),
                     ),
                   );
@@ -1438,9 +1390,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
   }
 
   handlePaymentSuccessResponse(PaymentSuccessResponse response) {
-    ref
-        .read(transcationProvider)
-        .fetchrazorpayStatus("${response.paymentId}");
+    ref.read(transcationProvider).fetchrazorpayStatus("${response.paymentId}");
 
     showModalBottomSheet(
         shape: const RoundedRectangleBorder(

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 
 import '../../../../sharedWidget/nofitication_coustom_switch.dart';
-
- 
 
 class NavigationSettings extends StatefulWidget {
   const NavigationSettings({super.key});
@@ -50,13 +49,17 @@ class _NavigationSettingsState extends State<NavigationSettings> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Type',
-                  style: textStyle(const Color(0xff666666), 12, FontWeight.w400),
+                TextWidget.paraText(
+                  text: 'Type',
+                  theme: false,
+                  color: const Color(0xff666666),
+                  fw: 0,
                 ),
-                Text(
-                  'Status',
-                  style: textStyle(const Color(0xff666666), 12, FontWeight.w400),
+                TextWidget.paraText(
+                  text: 'Status',
+                  theme: false,
+                  color: const Color(0xff666666),
+                  fw: 0,
                 )
               ],
             ),
@@ -79,14 +82,13 @@ class _NavigationSettingsState extends State<NavigationSettings> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            navset[index].topic,
-                            style: textStyle(
-                                isActiveOrder[index]
-                                    ? const Color(0xff666666)
-                                    : const Color(0xff000000),
-                                14,
-                                FontWeight.w600),
+                          TextWidget.subText(
+                            text: navset[index].topic,
+                            theme: false,
+                            color: isActiveOrder[index]
+                                ? const Color(0xff666666)
+                                : const Color(0xff000000),
+                            fw: 1,
                           ),
                           NotifyCustomSwitch(
                             value: isActiveOrder[index],
@@ -113,9 +115,11 @@ class _NavigationSettingsState extends State<NavigationSettings> {
           const SizedBox(
             height: 15,
           ),
-          Text(
-            'You can select up-to 5 options to display on top nav bar ',
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500),
+          TextWidget.paraText(
+            text: 'You can select up-to 5 options to display on top nav bar ',
+            theme: false,
+            color: const Color(0xff666666),
+            fw: 0,
           )
         ],
       ),

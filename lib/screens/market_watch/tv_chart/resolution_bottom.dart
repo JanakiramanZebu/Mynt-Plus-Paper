@@ -7,6 +7,7 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/scroll_behavior.dart'; 
+import '../../../res/global_state_text.dart';
 
 class ResolutionBottom extends ConsumerStatefulWidget {
   const ResolutionBottom({super.key});
@@ -42,13 +43,13 @@ class _ResolutionBottomState extends ConsumerState<ResolutionBottom> {
               shrinkWrap: true,
               children: [
                 ListTile(
-                    title: Text("Interval",
-                        style: textStyle(
-                            theme.isDarkMode
+                    title: TextWidget.titleText(
+                        text: "Interval",
+                        color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            16,
-                            FontWeight.w600)),
+                        theme: theme.isDarkMode,
+                        fw: 1),
                     trailing: IconButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -78,37 +79,37 @@ class _ResolutionBottomState extends ConsumerState<ResolutionBottom> {
                   padding: const EdgeInsets.all(10),
                   children: [
                     // Sizer.qtr(),
-                    Text("Minutes",
-                        style: textStyle(
-                            theme.isDarkMode
+                    TextWidget.subText(
+                        text: "Minutes",
+                        color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            14,
-                            FontWeight.w600)),
+                        theme: theme.isDarkMode,
+                        fw: 1),
                     minutes(theme),
                     Divider(
                         color: theme.isDarkMode
                             ? colors.darkColorDivider
                             : colors.colorDivider),
-                    Text("Hours",
-                        style: textStyle(
-                            theme.isDarkMode
+                    TextWidget.subText(
+                        text: "Hours",
+                        color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            14,
-                            FontWeight.w600)),
+                        theme: theme.isDarkMode,
+                        fw: 1),
                     hours(theme),
                     Divider(
                         color: theme.isDarkMode
                             ? colors.darkColorDivider
                             : colors.colorDivider),
-                    Text("Days",
-                        style: textStyle(
-                            theme.isDarkMode
+                    TextWidget.subText(
+                        text: "Days",
+                        color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            14,
-                            FontWeight.w600)),
+                        theme: theme.isDarkMode,
+                        fw: 1),
                     days(theme)
                   ],
                 ),
@@ -150,17 +151,16 @@ class _ResolutionBottomState extends ConsumerState<ResolutionBottom> {
                             : colors.darkGrey,
                     borderRadius: const BorderRadius.all(Radius.circular(10))),
                 child: Center(
-                  child: Text(
-                    minute[index],
-                    style: textStyle(
-                        theme.isDarkMode && minute[index] == tvChart.duration
+                  child: TextWidget.paraText(
+                    text: minute[index],
+                    color: theme.isDarkMode && minute[index] == tvChart.duration
                             ? colors.colorBlack
                             : minute[index] == tvChart.duration
                                 ? colors.colorWhite
                                 : colors.colorGrey,
-                        13,
-                        FontWeight.w500),
-                    overflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    textOverflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -205,17 +205,16 @@ class _ResolutionBottomState extends ConsumerState<ResolutionBottom> {
                             : colors.darkGrey,
                     borderRadius: const BorderRadius.all(Radius.circular(10))),
                 child: Center(
-                  child: Text(
-                    hour[index],
-                    style: textStyle(
-                        theme.isDarkMode && hour[index] == tvChart.duration
+                  child: TextWidget.paraText(
+                    text: hour[index],
+                    color: theme.isDarkMode && hour[index] == tvChart.duration
                             ? colors.colorBlack
                             : hour[index] == tvChart.duration
                                 ? colors.colorWhite
                                 : colors.colorGrey,
-                        13,
-                        FontWeight.w500),
-                    overflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    textOverflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -260,17 +259,16 @@ class _ResolutionBottomState extends ConsumerState<ResolutionBottom> {
                             : colors.darkGrey,
                     borderRadius: const BorderRadius.all(Radius.circular(10))),
                 child: Center(
-                  child: Text(
-                    day[index],
-                    style: textStyle(
-                        theme.isDarkMode && day[index] == tvChart.duration
+                  child: TextWidget.paraText(
+                    text: day[index],
+                    color: theme.isDarkMode && day[index] == tvChart.duration
                             ? colors.colorBlack
                             : day[index] == tvChart.duration
                                 ? colors.colorWhite
                                 : colors.colorGrey,
-                        13,
-                        FontWeight.w500),
-                    overflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    textOverflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -286,9 +284,5 @@ class _ResolutionBottomState extends ConsumerState<ResolutionBottom> {
     });
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+
 }

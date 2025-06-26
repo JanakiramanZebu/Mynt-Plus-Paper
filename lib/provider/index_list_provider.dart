@@ -17,6 +17,7 @@ import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/indices/all_index_model.dart';
 import '../models/indices/index_list_model.dart';
 import '../models/indices/index_order_model.dart';
+import '../res/global_state_text.dart';
 import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/snack_bar.dart';
@@ -171,8 +172,12 @@ class IndexListProvider extends DefaultChangeNotifier {
         DropdownMenuItem<String>(
             value: item.toString(),
             child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 11.0),
-                child: Text(item.toString()))),
+              padding: const EdgeInsets.symmetric(horizontal: 11.0),
+              child: TextWidget.paraText(
+                  text: item.toString(),
+                  theme: ref.read(themeProvider).isDarkMode,
+                  fw: 0),
+            )),
         //If it's last item, we will not add Divider after it.
         if (item != indexExch.last)
           DropdownMenuItem<String>(

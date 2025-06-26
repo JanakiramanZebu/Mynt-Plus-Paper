@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/list_divider.dart';
@@ -66,13 +67,8 @@ class _MFHoldingsScripFilterBottomSheetState
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "Sort by",
-                    style: textStyles.appBarTitleTxt.copyWith(
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack),
-                  ),
+                  TextWidget.titleText(
+                      text: "Sort by", theme: theme.isDarkMode, fw: 1),
                 ],
               ),
             ),
@@ -115,10 +111,11 @@ class _MFHoldingsScripFilterBottomSheetState
                         const SizedBox(
                           width: 15,
                         ),
-                        Text(
-                          "Scrip Name",
-                          style: textStyles.prdText,
-                        ),
+                        TextWidget.subText(
+                            text: "Scrip Name",
+                            theme: theme.isDarkMode,
+                            color: colors.colorGrey,
+                            fw: 0),
                       ],
                     ),
                   ),
@@ -161,10 +158,11 @@ class _MFHoldingsScripFilterBottomSheetState
                         const SizedBox(
                           width: 15,
                         ),
-                        Text(
-                          "LTP",
-                          style: textStyles.prdText,
-                        ),
+                        TextWidget.subText(
+                            text: "LTP",
+                            theme: theme.isDarkMode,
+                            color: colors.colorGrey,
+                            fw: 0),
                       ],
                     ),
                   ),
@@ -207,10 +205,11 @@ class _MFHoldingsScripFilterBottomSheetState
                         const SizedBox(
                           width: 15,
                         ),
-                        Text(
-                          "Qty",
-                          style: textStyles.prdText,
-                        ),
+                        TextWidget.subText(
+                            text: "Qty",
+                            theme: theme.isDarkMode,
+                            color: colors.colorGrey,
+                            fw: 0),
                       ],
                     ),
                   ),
@@ -253,10 +252,11 @@ class _MFHoldingsScripFilterBottomSheetState
                         const SizedBox(
                           width: 15,
                         ),
-                        Text(
-                          "Perc.Change",
-                          style: textStyles.prdText,
-                        ),
+                        TextWidget.subText(
+                            text: "Perc.Change",
+                            theme: theme.isDarkMode,
+                            color: colors.colorGrey,
+                            fw: 0),
                       ],
                     ),
                   ),
@@ -299,10 +299,11 @@ class _MFHoldingsScripFilterBottomSheetState
                         const SizedBox(
                           width: 15,
                         ),
-                        Text(
-                          "Invested Price",
-                          style: textStyles.prdText,
-                        ),
+                        TextWidget.subText(
+                            text: "Invested Price",
+                            theme: theme.isDarkMode,
+                            color: colors.colorGrey,
+                            fw: 0),
                       ],
                     ),
                   ),

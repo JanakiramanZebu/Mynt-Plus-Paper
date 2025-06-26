@@ -10,6 +10,7 @@ import '../../models/notification_model/broker_message_model.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/notification_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -34,17 +35,17 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
     super.initState();
     // Fetch initial data when widget is created
     _refreshData();
-    
+
     // Add post-frame callback to ensure context is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshData();
     });
   }
-  
+
   // Combined method to refresh all data
   Future<void> _refreshData() async {
     if (!mounted) return;
-    
+
     // Fetch both types of data
     await ref.read(marketWatchProvider).fetchPendingAlert(context);
     await _fetchTriggeredAlerts();
@@ -77,572 +78,682 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
     });
 
     // Filter broker messages that are related to alerts
-    triggeredAlerts = notification.brokermsg?.where((msg) => 
-        msg.dmsg != null && 
-        msg.dmsg!.contains("Ltp") && 
-        (msg.dmsg!.contains("above") || msg.dmsg!.contains("below"))
-    ).toList() ?? [];
-    
+    triggeredAlerts = notification.brokermsg
+            ?.where((msg) =>
+                msg.dmsg != null &&
+                msg.dmsg!.contains("Ltp") &&
+                (msg.dmsg!.contains("above") || msg.dmsg!.contains("below")))
+            .toList() ??
+        [];
+
     return RefreshIndicator(
-      onRefresh: _refreshData,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-            // Pending Alerts Expandable Section
-          Container(
-              decoration: BoxDecoration(
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  border: Border(
-                      bottom: BorderSide(
-                    color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                    width: 1
-                  )
-                )
-              ),
-              child: ExpansionTile(
-                initiallyExpanded: _isPendingAlertsExpanded,
-                onExpansionChanged: (expanded) {
-                  setState(() {
-                    _isPendingAlertsExpanded = expanded;
-                  });
-                },
-                title: Text(
-                  "Pending Alerts (${manage.alertPendingModel!.length > 0 && manage.alertPendingModel![0].stat != "Not_Ok" ? manage.alertPendingModel!.length : 0})",
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w600
-                  ),
-                ),
-                trailing: Icon(
-                  _isPendingAlertsExpanded ? Icons.expand_less : Icons.expand_more,
-                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                ),
-                children: [
-                  // Search and Filter Controls
-                  if (manage.alertPendingModel!.length > 1)
-                    Container(
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                        border: Border(
-                          bottom: BorderSide(
-                            color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                            width: 1
-                          )
-                        )
-                      ),
-              child: Padding(
-                        padding: const EdgeInsets.only(left: 16, right: 2, top: 8, bottom: 8),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                            Row(
-                              children: [
-                          InkWell(
-                              onTap: () async {
-                                FocusScope.of(context).unfocus();
-                                showModalBottomSheet(
-                                    useSafeArea: true,
-                                    isScrollControlled: true,
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(top: Radius.circular(16))
-                                      ),
-                                    context: context,
-                                    builder: (context) {
-                                      return const OrderbookPendingAlertkFilterBottomSheet();
-                                      }
-                                    );
-                              },
-                              child: Padding(
-                                  padding: const EdgeInsets.only(right: 12),
-                                    child: SvgPicture.asset(
-                                      assets.filterLines,
-                                      color: const Color(0xff333333)
-                                    )
-                                  )
-                                ),
-                          InkWell(
-                              onTap: () {
-                                manage.showAlertPendingSearch(true);
-                              },
-                              child: Padding(
-                                    padding: const EdgeInsets.only(right: 12, left: 10),
-                                    child: SvgPicture.asset(
-                                      assets.searchIcon,
-                                      width: 19,
-                                      color: const Color(0xff333333)
-                                    )
-                                  )
-                                )
-                              ]
-                            )
-                          ]
-                        )
-                      )
-                    ),
-                  
-                  // Search Box
-        if (manage.showAlertSearch)
-          Container(
-            height: 62,
-            padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-            decoration: BoxDecoration(
-                border: Border(
-                    bottom: BorderSide(
-                            color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                            width: 1
-                          )
-                        )
-                      ),
-            child: Row(
+        onRefresh: _refreshData,
+        child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextFormField(
-                    textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [UpperCaseTextFormatter()],
-                    controller: manage.alertPendingSearchtext,
-                              style: textStyle(const Color(0xff000000), 16, FontWeight.w600),
-                    decoration: InputDecoration(
-                        fillColor: const Color(0xffF1F3F8),
-                        filled: true,
-                                hintStyle: textStyle(const Color(0xff69758F), 15, FontWeight.w500),
-                        prefixIconColor: const Color(0xff586279),
-                        prefixIcon: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                  child: SvgPicture.asset(
-                                    assets.searchIcon,
-                              color: const Color(0xff586279),
-                              fit: BoxFit.contain,
-                                    width: 20
-                                  ),
-                        ),
-                        suffixIcon: InkWell(
-                          onTap: () async {
-                            manage.clearAlertSearch();
-                          },
-                          child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                    child: SvgPicture.asset(
-                                      assets.removeIcon,
-                                      fit: BoxFit.scaleDown,
-                                      width: 20
-                                    ),
+                // Pending Alerts Expandable Section
+                Container(
+                  decoration: BoxDecoration(
+                      color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                      border: Border(
+                          bottom: BorderSide(
+                              color: theme.isDarkMode
+                                  ? colors.darkGrey
+                                  : const Color(0xffF1F3F8),
+                              width: 1))),
+                  child: ExpansionTile(
+                    initiallyExpanded: _isPendingAlertsExpanded,
+                    onExpansionChanged: (expanded) {
+                      setState(() {
+                        _isPendingAlertsExpanded = expanded;
+                      });
+                    },
+                    title: TextWidget.titleText(
+                        text:
+                            "Pending Alerts (${manage.alertPendingModel!.length > 0 && manage.alertPendingModel![0].stat != "Not_Ok" ? manage.alertPendingModel!.length : 0})",
+                        theme: theme.isDarkMode,
+                        fw: 1),
+                    trailing: Icon(
+                      _isPendingAlertsExpanded
+                          ? Icons.expand_less
+                          : Icons.expand_more,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                    ),
+                    children: [
+                      // Search and Filter Controls
+                      if (manage.alertPendingModel!.length > 1)
+                        Container(
+                            decoration: BoxDecoration(
+                                color: theme.isDarkMode
+                                    ? colors.colorBlack
+                                    : colors.colorWhite,
+                                border: Border(
+                                    bottom: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? colors.darkGrey
+                                            : const Color(0xffF1F3F8),
+                                        width: 1))),
+                            child: Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16, right: 2, top: 8, bottom: 8),
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Row(children: [
+                                        InkWell(
+                                            onTap: () async {
+                                              FocusScope.of(context).unfocus();
+                                              showModalBottomSheet(
+                                                  useSafeArea: true,
+                                                  isScrollControlled: true,
+                                                  shape: const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.vertical(
+                                                              top: Radius
+                                                                  .circular(
+                                                                      16))),
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return const OrderbookPendingAlertkFilterBottomSheet();
+                                                  });
+                                            },
+                                            child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 12),
+                                                child: SvgPicture.asset(
+                                                    assets.filterLines,
+                                                    color: const Color(
+                                                        0xff333333)))),
+                                        InkWell(
+                                            onTap: () {
+                                              manage
+                                                  .showAlertPendingSearch(true);
+                                            },
+                                            child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 12, left: 10),
+                                                child: SvgPicture.asset(
+                                                    assets.searchIcon,
+                                                    width: 19,
+                                                    color: const Color(
+                                                        0xff333333))))
+                                      ])
+                                    ]))),
+
+                      // Search Box
+                      if (manage.showAlertSearch)
+                        Container(
+                          height: 62,
+                          padding: const EdgeInsets.only(
+                              left: 16, top: 8, bottom: 8),
+                          decoration: BoxDecoration(
+                              border: Border(
+                                  bottom: BorderSide(
+                                      color: theme.isDarkMode
+                                          ? colors.darkGrey
+                                          : const Color(0xffF1F3F8),
+                                      width: 1))),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  textCapitalization:
+                                      TextCapitalization.characters,
+                                  inputFormatters: [UpperCaseTextFormatter()],
+                                  controller: manage.alertPendingSearchtext,
+                                  style: textStyle(const Color(0xff000000), 16,
+                                      FontWeight.w600),
+                                  decoration: InputDecoration(
+                                      fillColor: const Color(0xffF1F3F8),
+                                      filled: true,
+                                      hintStyle: textStyle(
+                                          const Color(0xff69758F),
+                                          15,
+                                          FontWeight.w500),
+                                      prefixIconColor: const Color(0xff586279),
+                                      prefixIcon: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20.0),
+                                        child: SvgPicture.asset(
+                                            assets.searchIcon,
+                                            color: const Color(0xff586279),
+                                            fit: BoxFit.contain,
+                                            width: 20),
+                                      ),
+                                      suffixIcon: InkWell(
+                                        onTap: () async {
+                                          manage.clearAlertSearch();
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20.0),
+                                          child: SvgPicture.asset(
+                                              assets.removeIcon,
+                                              fit: BoxFit.scaleDown,
+                                              width: 20),
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      disabledBorder: InputBorder.none,
+                                      focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      hintText: "Search Scrip Name",
+                                      contentPadding:
+                                          const EdgeInsets.only(top: 20),
+                                      border: OutlineInputBorder(
+                                          borderSide: BorderSide.none,
+                                          borderRadius:
+                                              BorderRadius.circular(20))),
+                                  onChanged: (value) async {
+                                    manage.orderAletrPendingSearch(
+                                        value, context);
+                                  },
+                                ),
+                              ),
+                              TextButton(
+                                  onPressed: () {
+                                    manage.showAlertPendingSearch(false);
+                                    manage.clearAlertSearch();
+                                  },
+                                  child: TextWidget.subText(
+                                      text: "Close",
+                                      theme: false,
+                                      color: colors.colorBlue,
+                                      fw: 0)),
+                            ],
                           ),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(20)
-                                ),
-                        disabledBorder: InputBorder.none,
-                        focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(20)
-                                ),
-                        hintText: "Search Scrip Name",
-                        contentPadding: const EdgeInsets.only(top: 20),
-                        border: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(20)
-                                )
-                              ),
-                    onChanged: (value) async {
-                      manage.orderAletrPendingSearch(value, context);
-                    },
+
+                      // Pending Alerts List
+                      if (manage.alertPendingSearch!.isEmpty)
+                        manage.alertPendingModel!.isNotEmpty &&
+                                manage.alertPendingModel![0].stat != "Not_Ok"
+                            ? ListView.separated(
+                                primary: false,
+                                reverse: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) {
+                                  return InkWell(
+                                      onTap: () async {
+                                        Navigator.pushNamed(
+                                            context, Routes.pendingalertdetails,
+                                            arguments: manage
+                                                .alertPendingModel![index]);
+                                      },
+                                      child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      TextWidget.subText(
+                                                          text:
+                                                              "${manage.alertPendingModel![index].tsym} ",
+                                                          theme:
+                                                              theme.isDarkMode,
+                                                          fw: 1,
+                                                          textOverflow:
+                                                              TextOverflow
+                                                                  .ellipsis),
+                                                      Row(
+                                                        children: [
+                                                          TextWidget.paraText(
+                                                              text: " LTP: ",
+                                                              theme: false,
+                                                              color: const Color(
+                                                                  0xff5E6B7D),
+                                                              fw: 1),
+                                                          TextWidget.subText(
+                                                              text:
+                                                                  "₹${manage.alertPendingModel![index].ltp ?? manage.alertPendingModel![index].close ?? 0.00}",
+                                                              theme: theme
+                                                                  .isDarkMode,
+                                                              fw: 0),
+                                                        ],
+                                                      )
+                                                    ]),
+                                                const SizedBox(height: 4),
+                                                Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      CustomExchBadge(
+                                                          exch:
+                                                              "${manage.alertPendingModel![index].exch}"),
+                                                      TextWidget.paraText(
+                                                          text:
+                                                              " (${manage.alertPendingModel![index].perChange ?? 0.00}%)",
+                                                          theme: false,
+                                                          color: manage
+                                                                      .alertPendingModel![
+                                                                          index]
+                                                                      .perChange ==
+                                                                  null
+                                                              ? colors.ltpgrey
+                                                              : manage
+                                                                      .alertPendingModel![
+                                                                          index]
+                                                                      .perChange!
+                                                                      .startsWith(
+                                                                          "-")
+                                                                  ? colors
+                                                                      .darkred
+                                                                  : manage.alertPendingModel![index].perChange ==
+                                                                          "0.00"
+                                                                      ? colors
+                                                                          .ltpgrey
+                                                                      : colors
+                                                                          .ltpgreen,
+                                                          fw: 0),
+                                                    ]),
+                                                const SizedBox(height: 4),
+                                                Divider(
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .darkColorDivider
+                                                        : colors.colorDivider),
+                                                const SizedBox(height: 5),
+                                                Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          TextWidget.paraText(
+                                                              text: "Alert: ",
+                                                              theme: false,
+                                                              color: const Color(
+                                                                  0xff5E6B7D),
+                                                              fw: 1),
+                                                          TextWidget.subText(
+                                                              text: manage
+                                                                          .alertPendingModel![
+                                                                              index]
+                                                                          .aiT ==
+                                                                      "LTP_A"
+                                                                  ? "LTP Above"
+                                                                  : manage.alertPendingModel![index].aiT ==
+                                                                          "LTP_B"
+                                                                      ? "LTP Below"
+                                                                      : manage.alertPendingModel![index].aiT ==
+                                                                              "CH_PER_A"
+                                                                          ? "Perc.Change Above"
+                                                                          : "Perc.Change below",
+                                                              theme: theme
+                                                                  .isDarkMode,
+                                                              fw: 0),
+                                                          Transform.rotate(
+                                                            angle:
+                                                                angleInRadians,
+                                                            child: Icon(
+                                                                manage.alertPendingModel![index].aiT ==
+                                                                        "LTP_A"
+                                                                    ? Icons
+                                                                        .arrow_upward
+                                                                    : manage.alertPendingModel![index].aiT ==
+                                                                            "LTP_B"
+                                                                        ? Icons
+                                                                            .arrow_downward
+                                                                        : manage.alertPendingModel![index].aiT ==
+                                                                                "CH_PER_A"
+                                                                            ? Icons
+                                                                                .arrow_upward
+                                                                            : Icons
+                                                                                .arrow_downward,
+                                                                size: 18,
+                                                                color: manage
+                                                                            .alertPendingModel![
+                                                                                index]
+                                                                            .aiT ==
+                                                                        "LTP_A"
+                                                                    ? colors
+                                                                        .ltpgreen
+                                                                    : manage.alertPendingModel![index].aiT ==
+                                                                            "LTP_B"
+                                                                        ? colors
+                                                                            .darkred
+                                                                        : manage.alertPendingModel![index].aiT ==
+                                                                                "CH_PER_A"
+                                                                            ? colors.ltpgreen
+                                                                            : colors.darkred),
+                                                          ),
+                                                          Text(manage
+                                                                          .alertPendingModel![
+                                                                              index]
+                                                                          .aiT ==
+                                                                      "CH_PER_A" ||
+                                                                  manage.alertPendingModel![index]
+                                                                          .aiT ==
+                                                                      "CH_PER_B"
+                                                              ? "%${manage.alertPendingModel![index].d}"
+                                                              : "₹${manage.alertPendingModel![index].d}"),
+                                                        ],
+                                                      ),
+                                                    ])
+                                              ])));
+                                },
+                                itemCount: manage.alertPendingModel!.length,
+                                separatorBuilder:
+                                    (BuildContext context, int index) {
+                                  return Container(
+                                      color: theme.isDarkMode
+                                          ? colors.darkGrey
+                                          : const Color(0xffF1F3F8),
+                                      height: 6);
+                                },
+                              )
+                            : const SizedBox(
+                                height: 200,
+                                child: Center(child: NoDataFound()))
+                    ],
                   ),
                 ),
-                TextButton(
-                    onPressed: () {
-                      manage.showAlertPendingSearch(false);
-                      manage.clearAlertSearch();
+
+                // Triggered Alerts Expandable Section
+                Container(
+                  decoration: BoxDecoration(
+                      color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                      border: Border(
+                          bottom: BorderSide(
+                              color: theme.isDarkMode
+                                  ? colors.darkGrey
+                                  : const Color(0xffF1F3F8),
+                              width: 1))),
+                  child: ExpansionTile(
+                    initiallyExpanded: _isTriggeredAlertsExpanded,
+                    onExpansionChanged: (expanded) {
+                      setState(() {
+                        _isTriggeredAlertsExpanded = expanded;
+                      });
                     },
-                            child: Text("Close", style: textStyles.textBtn)
-                          )
-              ],
-            ),
-          ),
-                  
-                  // Pending Alerts List
-        if (manage.alertPendingSearch!.isEmpty)
-          manage.alertPendingModel!.isNotEmpty &&
-                  manage.alertPendingModel![0].stat != "Not_Ok"
-              ? ListView.separated(
-                          primary: false,
-                  reverse: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    return InkWell(
-                        onTap: () async {
-                                Navigator.pushNamed(context, Routes.pendingalertdetails,
-                              arguments: manage.alertPendingModel![index]);
-                        },
-                        child: Container(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                            "${manage.alertPendingModel![index].tsym} ",
-                                            overflow: TextOverflow.ellipsis,
-                                          style: textStyles.scripNameTxtStyle.copyWith(
-                                            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
+                    title: TextWidget.titleText(
+                        text:
+                            "Triggered Alerts (${triggeredAlerts?.length ?? 0})",
+                        theme: theme.isDarkMode,
+                        fw: 1),
+                    trailing: Icon(
+                      _isTriggeredAlertsExpanded
+                          ? Icons.expand_less
+                          : Icons.expand_more,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                    ),
+                    children: [
+                      // Triggered Alerts List
+                      triggeredAlerts != null && triggeredAlerts!.isNotEmpty
+                          ? ListView.separated(
+                              primary: false,
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemBuilder: (context, index) {
+                                return Container(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      TextWidget.paraText(
+                                          text:
+                                              "${triggeredAlerts![index].norentm}",
+                                          theme: false,
+                                          color: const Color(0xff5E6B7D),
+                                          fw: 0),
+                                      const SizedBox(height: 8),
+                                      TextWidget.subText(
+                                          text:
+                                              "${triggeredAlerts![index].dmsg}",
+                                          theme: theme.isDarkMode,
+                                          fw: 0),
+                                    ],
+                                  ),
+                                );
+                              },
+                              itemCount: triggeredAlerts!.length,
+                              separatorBuilder:
+                                  (BuildContext context, int index) {
+                                return Divider(
+                                  color: theme.isDarkMode
+                                      ? colors.darkColorDivider
+                                      : colors.colorDivider,
+                                );
+                              },
+                            )
+                          : const SizedBox(
+                              height: 200, child: Center(child: NoDataFound()))
+                    ],
+                  ),
+                ),
+
+                // Show the list item based on search
+                if (manage.alertPendingSearch!.isNotEmpty)
+                  ListView.separated(
+                    primary: false,
+                    reverse: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                          onTap: () async {
+                            Navigator.pushNamed(
+                                context, Routes.pendingalertdetails,
+                                arguments: manage.alertPendingSearch![index]);
+                          },
+                          child: Container(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          TextWidget.subText(
+                                              text:
+                                                  "${manage.alertPendingSearch![index].tsym} ",
+                                              theme: theme.isDarkMode,
+                                              fw: 0,
+                                              textOverflow:
+                                                  TextOverflow.ellipsis),
+                                          Row(
+                                            children: [
+                                              TextWidget.paraText(
+                                                  text: " LTP: ",
+                                                  theme: false,
+                                                  color:
+                                                      const Color(0xff5E6B7D),
+                                                  fw: 1),
+                                              TextWidget.subText(
+                                                  text:
+                                                      "₹${manage.alertPendingSearch![index].ltp ?? manage.alertPendingSearch![index].close ?? 0.00}",
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+                                            ],
                                           )
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              " LTP: ",
-                                              style: textStyle(const Color(0xff5E6B7D), 13, FontWeight.w600)
-                                            ),
-                                            Text(
-                                                "₹${manage.alertPendingModel![index].ltp ?? manage.alertPendingModel![index].close ?? 0.00}",
-                                                style: textStyle(
-                                                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                    14,
-                                                FontWeight.w500
-                                              )
-                                            ),
-                                          ],
-                                        )
-                                      ]
-                                    ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        CustomExchBadge(exch: "${manage.alertPendingModel![index].exch}"),
-                                        Text(
-                                            " (${manage.alertPendingModel![index].perChange ?? 0.00}%)",
-                                            style: textStyle(
-                                            manage.alertPendingModel![index].perChange == null
-                                                    ? colors.ltpgrey
-                                              : manage.alertPendingModel![index].perChange!.startsWith("-")
-                                                        ? colors.darkred
-                                                : manage.alertPendingModel![index].perChange == "0.00"
-                                                            ? colors.ltpgrey
-                                                            : colors.ltpgreen,
-                                                12,
-                                            FontWeight.w500
-                                          )
-                                        )
-                                      ]
-                                    ),
-                                  const SizedBox(height: 4),
-                                  Divider(
-                                      color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider
-                                    ),
-                                  const SizedBox(height: 5),
-                                  Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "Alert: ",
-                                              style: textStyle(const Color(0xff5E6B7D), 13, FontWeight.w600)
-                                            ),
-                                            Text(
-                                              manage.alertPendingModel![index].aiT == "LTP_A"
-                                                    ? "LTP Above"
-                                                : manage.alertPendingModel![index].aiT == "LTP_B"
-                                                        ? "LTP Below"
-                                                  : manage.alertPendingModel![index].aiT == "CH_PER_A"
-                                                                ? "Perc.Change Above"
-                                                                : "Perc.Change below",
-                                                style: textStyle(
-                                                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                                    14,
-                                                FontWeight.w500
-                                              )
-                                            ),
-                                            Transform.rotate(
-                                              angle: angleInRadians,
-                                              child: Icon(
-                                                manage.alertPendingModel![index].aiT == "LTP_A"
-                                                  ? Icons.arrow_upward
-                                                  : manage.alertPendingModel![index].aiT == "LTP_B"
-                                                    ? Icons.arrow_downward
-                                                    : manage.alertPendingModel![index].aiT == "CH_PER_A"
-                                                      ? Icons.arrow_upward
-                                                      : Icons.arrow_downward,
-                                                  size: 18,
-                                                color: manage.alertPendingModel![index].aiT == "LTP_A"
-                                                  ? colors.ltpgreen
-                                                  : manage.alertPendingModel![index].aiT == "LTP_B"
-                                                    ? colors.darkred
-                                                    : manage.alertPendingModel![index].aiT == "CH_PER_A"
-                                                      ? colors.ltpgreen
-                                                      : colors.darkred
+                                        ]),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          CustomExchBadge(
+                                              exch:
+                                                  "${manage.alertPendingSearch![index].exch}"),
+                                          TextWidget.paraText(
+                                              text:
+                                                  " (${manage.alertPendingSearch![index].perChange ?? 0.00}%)",
+                                              theme: false,
+                                              color: manage
+                                                          .alertPendingSearch![
+                                                              index]
+                                                          .perChange ==
+                                                      null
+                                                  ? colors.ltpgrey
+                                                  : manage
+                                                          .alertPendingSearch![
+                                                              index]
+                                                          .perChange!
+                                                          .startsWith("-")
+                                                      ? colors.darkred
+                                                      : manage
+                                                                  .alertPendingSearch![
+                                                                      index]
+                                                                  .perChange ==
+                                                              "0.00"
+                                                          ? colors.ltpgrey
+                                                          : colors.ltpgreen,
+                                              fw: 0),
+                                        ]),
+                                    const SizedBox(height: 4),
+                                    Divider(
+                                        color: theme.isDarkMode
+                                            ? colors.darkColorDivider
+                                            : colors.colorDivider),
+                                    const SizedBox(height: 5),
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              TextWidget.paraText(
+                                                  text: "Alert: ",
+                                                  theme: false,
+                                                  color:
+                                                      const Color(0xff5E6B7D),
+                                                  fw: 1),
+                                              TextWidget.subText(
+                                                  text: manage
+                                                              .alertPendingSearch![
+                                                                  index]
+                                                              .aiT ==
+                                                          "LTP_A"
+                                                      ? "LTP Above"
+                                                      : manage
+                                                                  .alertPendingSearch![
+                                                                      index]
+                                                                  .aiT ==
+                                                              "LTP_B"
+                                                          ? "LTP Below"
+                                                          : manage
+                                                                      .alertPendingSearch![
+                                                                          index]
+                                                                      .aiT ==
+                                                                  "CH_PER_A"
+                                                              ? "Perc.Change Above"
+                                                              : "Perc.Change below",
+                                                  theme: theme.isDarkMode,
+                                                  fw: 0),
+                                              Transform.rotate(
+                                                angle: angleInRadians,
+                                                child: Icon(
+                                                    manage
+                                                                .alertPendingSearch![
+                                                                    index]
+                                                                .aiT ==
+                                                            "LTP_A"
+                                                        ? Icons.arrow_upward
+                                                        : manage
+                                                                    .alertPendingSearch![
+                                                                        index]
+                                                                    .aiT ==
+                                                                "LTP_B"
+                                                            ? Icons
+                                                                .arrow_downward
+                                                            : manage
+                                                                        .alertPendingSearch![
+                                                                            index]
+                                                                        .aiT ==
+                                                                    "CH_PER_A"
+                                                                ? Icons
+                                                                    .arrow_upward
+                                                                : Icons
+                                                                    .arrow_downward,
+                                                    size: 18,
+                                                    color: manage
+                                                                .alertPendingSearch![
+                                                                    index]
+                                                                .aiT ==
+                                                            "LTP_A"
+                                                        ? colors.ltpgreen
+                                                        : manage
+                                                                    .alertPendingSearch![
+                                                                        index]
+                                                                    .aiT ==
+                                                                "LTP_B"
+                                                            ? colors.darkred
+                                                            : manage
+                                                                        .alertPendingSearch![
+                                                                            index]
+                                                                        .aiT ==
+                                                                    "CH_PER_A"
+                                                                ? colors
+                                                                    .ltpgreen
+                                                                : colors
+                                                                    .darkred),
                                               ),
-                                              ),
-                                            Text(
-                                              manage.alertPendingModel![index].aiT == "CH_PER_A" ||
-                                                manage.alertPendingModel![index].aiT == "CH_PER_B"
-                                                  ? "%${manage.alertPendingModel![index].d}"
-                                                  : "₹${manage.alertPendingModel![index].d}"
-                                            ),
+                                              Text(manage
+                                                              .alertPendingSearch![
+                                                                  index]
+                                                              .aiT ==
+                                                          "CH_PER_A" ||
+                                                      manage
+                                                              .alertPendingSearch![
+                                                                  index]
+                                                              .aiT ==
+                                                          "CH_PER_B"
+                                                  ? "%${manage.alertPendingSearch![index].d}"
+                                                  : "₹${manage.alertPendingSearch![index].d}"),
                                             ],
                                           ),
-                                      ]
-                                    )
-                                  ]
-                                )
-                              )
-                            );
-                  },
-                  itemCount: manage.alertPendingModel!.length,
-                  separatorBuilder: (BuildContext context, int index) {
-                    return Container(
-                              color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                              height: 6
-                            );
-                          },
-                        )
-                      : const SizedBox(height: 200, child: Center(child: NoDataFound()))
-                ],
-              ),
-            ),
-            
-            // Triggered Alerts Expandable Section
-            Container(
-              decoration: BoxDecoration(
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                    width: 1
-                  )
-                )
-              ),
-              child: ExpansionTile(
-                initiallyExpanded: _isTriggeredAlertsExpanded,
-                onExpansionChanged: (expanded) {
-                  setState(() {
-                    _isTriggeredAlertsExpanded = expanded;
-                  });
-                },
-                title: Text(
-                  "Triggered Alerts (${triggeredAlerts?.length ?? 0})",
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w600
+                                        ])
+                                  ])));
+                    },
+                    itemCount: manage.alertPendingSearch!.length,
+                    separatorBuilder: (BuildContext context, int index) {
+                      return Container(
+                          color: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
+                          height: 6);
+                    },
                   ),
-                ),
-                trailing: Icon(
-                  _isTriggeredAlertsExpanded ? Icons.expand_less : Icons.expand_more,
-                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                ),
-                children: [
-                  // Triggered Alerts List
-                  triggeredAlerts != null && triggeredAlerts!.isNotEmpty
-                    ? ListView.separated(
-                        primary: false,
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${triggeredAlerts![index].norentm}",
-                                  style: textStyle(
-                                    const Color(0xff5E6B7D),
-                                    12,
-                                    FontWeight.w500
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  "${triggeredAlerts![index].dmsg}",
-                                  style: textStyle(
-                                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                    14,
-                                    FontWeight.w500
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        itemCount: triggeredAlerts!.length,
-                        separatorBuilder: (BuildContext context, int index) {
-                          return Divider(
-                            color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-                          );
-                  },
-                )
-              : const SizedBox(
-                        height: 100,
-                        child: Center(child: NoDataFound())
-                      )
-                ],
-              ),
-            ),
-            
-            // Show the list item based on search
-        if (manage.alertPendingSearch!.isNotEmpty)
-          ListView.separated(
-                primary: false,
-            reverse: true,
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              return InkWell(
-                  onTap: () async {
-                    Navigator.pushNamed(context, Routes.pendingalertdetails,
-                        arguments: manage.alertPendingSearch![index]);
-                  },
-                  child: Container(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                      "${manage.alertPendingSearch![index].tsym} ",
-                                      overflow: TextOverflow.ellipsis,
-                                style: textStyles.scripNameTxtStyle.copyWith(
-                                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
-                                )
-                              ),
-                                  Row(
-                                    children: [
-                                  Text(
-                                    " LTP: ",
-                                    style: textStyle(const Color(0xff5E6B7D), 13, FontWeight.w600)
-                                  ),
-                                      Text(
-                                          "₹${manage.alertPendingSearch![index].ltp ?? manage.alertPendingSearch![index].close ?? 0.00}",
-                                          style: textStyle(
-                                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                              14,
-                                      FontWeight.w500
-                                    )
-                                  ),
-                                    ],
-                                  )
-                            ]
-                          ),
-                            const SizedBox(height: 4),
-                            Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                              CustomExchBadge(exch: "${manage.alertPendingSearch![index].exch}"),
-                                  Text(
-                                      " (${manage.alertPendingSearch![index].perChange ?? 0.00}%)",
-                                      style: textStyle(
-                                  manage.alertPendingSearch![index].perChange == null
-                                              ? colors.ltpgrey
-                                    : manage.alertPendingSearch![index].perChange!
-                                                      .startsWith("-")
-                                                  ? colors.darkred
-                                      : manage.alertPendingSearch![index].perChange == "0.00"
-                                                      ? colors.ltpgrey
-                                                      : colors.ltpgreen,
-                                          12,
-                                  FontWeight.w500
-                                )
-                              )
-                            ]
-                          ),
-                            const SizedBox(height: 4),
-                            Divider(
-                            color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider
-                          ),
-                            const SizedBox(height: 5),
-                            Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                    "Alert: ",
-                                    style: textStyle(const Color(0xff5E6B7D), 13, FontWeight.w600)
-                                  ),
-                                  Text(
-                                    manage.alertPendingSearch![index].aiT == "LTP_A"
-                                              ? "LTP Above"
-                                      : manage.alertPendingSearch![index].aiT == "LTP_B"
-                                                  ? "LTP Below"
-                                        : manage.alertPendingSearch![index].aiT == "CH_PER_A"
-                                                          ? "Perc.Change Above"
-                                                          : "Perc.Change below",
-                                          style: textStyle(
-                                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                              14,
-                                      FontWeight.w500
-                                    )
-                                  ),
-                                      Transform.rotate(
-                                        angle: angleInRadians,
-                                        child: Icon(
-                                      manage.alertPendingSearch![index].aiT == "LTP_A"
-                                                ? Icons.arrow_upward
-                                        : manage.alertPendingSearch![index].aiT == "LTP_B"
-                                                    ? Icons.arrow_downward
-                                          : manage.alertPendingSearch![index].aiT == "CH_PER_A"
-                                                        ? Icons.arrow_upward
-                                            : Icons.arrow_downward,
-                                            size: 18,
-                                      color: manage.alertPendingSearch![index].aiT == "LTP_A"
-                                                ? colors.ltpgreen
-                                        : manage.alertPendingSearch![index].aiT == "LTP_B"
-                                                    ? colors.darkred
-                                          : manage.alertPendingSearch![index].aiT == "CH_PER_A"
-                                                            ? colors.ltpgreen
-                                            : colors.darkred
-                                    ),
-                                        ),
-                                  Text(
-                                    manage.alertPendingSearch![index].aiT == "CH_PER_A" ||
-                                      manage.alertPendingSearch![index].aiT == "CH_PER_B"
-                                            ? "%${manage.alertPendingSearch![index].d}"
-                                        : "₹${manage.alertPendingSearch![index].d}"
-                                  ),
-                                    ],
-                                  ),
-                            ]
-                          )
-                        ]
-                      )
-                    )
-                  );
-              },
-              itemCount: manage.alertPendingSearch!.length,
-              separatorBuilder: (BuildContext context, int index) {
-                return Container(
-                    color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                    height: 6
-                  );
-              },
-            ),
-      ],
-        )
-      )
-    );
+              ],
+            )));
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
     return GoogleFonts.inter(
-      textStyle: TextStyle(
-        fontWeight: fWeight, 
-        color: color, 
-        fontSize: fontSize
-      )
-    );
+        textStyle:
+            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

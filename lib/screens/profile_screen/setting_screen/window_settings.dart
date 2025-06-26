@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import 'window_setting_tabbar_screens/navigationsetting.dart';
 import 'window_setting_tabbar_screens/productsetting.dart';
@@ -47,7 +48,6 @@ class _WindowSettingsState extends State<WindowSettings>
         backgroundColor: const Color(0xffFFFFFF),
         elevation: 0.3,
         iconTheme: const IconThemeData(color: Color(0xff000000)),
-        
         bottom: PreferredSize(
             preferredSize: const Size.fromHeight(125),
             child: Container(
@@ -65,18 +65,20 @@ class _WindowSettingsState extends State<WindowSettings>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Window Settings',
-                          style: textStyle(
-                              const Color(0xff000000), 18, FontWeight.w600),
+                        TextWidget.headText(
+                          text: 'Window Settings',
+                          theme: false,
+                          color: const Color(0xff000000),
+                          fw: 1,
                         ),
                         const SizedBox(
                           height: 5,
                         ),
-                        Text(
-                          'View bank details and add new banks.',
-                          style: textStyle(
-                              const Color(0xff666666), 14, FontWeight.w500),
+                        TextWidget.subText(
+                          text: 'View bank details and add new banks.',
+                          theme: false,
+                          color: const Color(0xff666666),
+                          fw: 0,
                         ),
                       ],
                     ),
@@ -106,14 +108,5 @@ class _WindowSettingsState extends State<WindowSettings>
         children: const [NavigationSettings(), ProductSettings()],
       ),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle: TextStyle(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    ));
   }
 }

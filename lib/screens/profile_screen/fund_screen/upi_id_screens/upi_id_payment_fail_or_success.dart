@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../provider/transcation_provider.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
@@ -66,45 +67,45 @@ class _UpiIdSucessorFaliureScreenState
                       const SizedBox(
                         height: 10,
                       ),
-                      Text(
-                        "${fund.hdfcpaymentstatus!.upiId!.status}",
-                        style: textStyle(
-                            theme.isDarkMode
+                      TextWidget.titleText(
+                          text: "${fund.hdfcpaymentstatus!.upiId!.status}",
+                          theme: false,
+                          color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            16,
-                            FontWeight.w600),
-                      ),
+                          fw: 1),
                       const SizedBox(
                         height: 5,
                       ),
-                      Text(
+                      TextWidget.subText(
+                          text:
                         fund.hdfcpaymentstatus!.upiId!.status == "SUCCESS"
                             ? "Transaction Success"
                             : "Transaction fail",
-                        style: textStyle(colors.colorGrey, 14, FontWeight.w500),
-                      ),
+                          theme: false,
+                          color: colors.colorGrey,
+                          fw: 0),
                       const SizedBox(
                         height: 10,
                       ),
-                      Text(
-                        "₹${fund.hdfcpaymentstatus!.upiId!.amount}",
-                        style: textStyle(
-                            theme.isDarkMode
+                      TextWidget.custmText(
+                          text: "₹${fund.hdfcpaymentstatus!.upiId!.amount}",
+                          theme: false,
+                          color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            40,
-                            FontWeight.w600),
-                      ),
+                          fw: 1,
+                          fs: 40),
                       const SizedBox(
                         height: 10,
                       ),
-                      Text(
-                        formatDateTimepaymet(
+                      TextWidget.subText(
+                          text: formatDateTimepaymet(
                             value:
                                 "${fund.hdfcpaymentstatus!.upiId!.transactionAuthDate}"),
-                        style: textStyle(colors.colorGrey, 13, FontWeight.w500),
-                      ),
+                          theme: false,
+                          color: colors.colorGrey,
+                          fw: 0),
                     ],
                   ),
                 ),
@@ -158,15 +159,13 @@ class _UpiIdSucessorFaliureScreenState
                         Navigator.pop(context);
                         FocusScope.of(context).unfocus();
                       },
-                      child: Text(
-                        'Done',
-                        style: textStyle(
-                            theme.isDarkMode
+                      child: TextWidget.titleText(
+                          text: 'Done',
+                          theme: false,
+                          color: theme.isDarkMode
                                 ? colors.colorBlack
                                 : colors.colorWhite,
-                            15,
-                            FontWeight.w600),
-                      )),
+                          fw: 1)),
                 ),
                 const SizedBox(
                   height: 10,
@@ -179,24 +178,16 @@ class _UpiIdSucessorFaliureScreenState
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  Widget headerTitleText(String text) {
+    return TextWidget.subText(
+        text: text, theme: false, color: colors.colorGrey, fw: 0);
   }
 
-  Text headerTitleText(String text) {
-    return Text(
-      text,
-      style: textStyle(colors.colorGrey, 14, FontWeight.w500),
-    );
-  }
-
-  Text contantTitleText(String text, ThemesProvider theme) {
-    return Text(
-      text,
-      style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          15, FontWeight.w600),
-    );
+  Widget contantTitleText(String text, ThemesProvider theme) {
+    return TextWidget.titleText(
+        text: text,
+        theme: false,
+        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        fw: 1);
   }
 }

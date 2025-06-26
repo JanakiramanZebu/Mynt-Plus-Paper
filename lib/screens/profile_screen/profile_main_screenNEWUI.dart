@@ -17,6 +17,7 @@ import '../../provider/fund_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/transcation_provider.dart';
 import '../../provider/user_profile_provider.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
@@ -75,15 +76,13 @@ class UserAccountScreen extends ConsumerWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                "Funds",
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    color: Color(theme.isDarkMode
-                                        ? 0xffffffff
-                                        : 0xff000000),
-                                    fontWeight: FontWeight.w600),
-                              ),
+                              TextWidget.headText(
+                                  text: "Funds",
+                                  theme: false,
+                                  color: Color(theme.isDarkMode
+                                      ? 0xffffffff
+                                      : 0xff000000),
+                                  fw: 1),
                               Icon(Icons.arrow_forward,
                                   size: 20,
                                   color: theme.isDarkMode
@@ -92,23 +91,20 @@ class UserAccountScreen extends ConsumerWidget {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          Text(
-                            "₹${getFormatter(value: double.parse(funds.fundDetailModel!.avlMrg ?? "0.00"), v4d: false, noDecimal: false)}",
-                            style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w600,
-                                color: Color(theme.isDarkMode
-                                    ? 0xffffffff
-                                    : 0xff000000)),
-                          ),
+                          TextWidget.custmText(
+                              text:
+                                  "₹${getFormatter(value: double.parse(funds.fundDetailModel!.avlMrg ?? "0.00"), v4d: false, noDecimal: false)}",
+                              theme: false,
+                              color: Color(
+                                  theme.isDarkMode ? 0xffffffff : 0xff000000),
+                              fw: 1,
+                              fs: 28),
                           const SizedBox(height: 5),
-                          const Text(
-                            "Cash + Collateral - Margin Used ",
-                            style: TextStyle(
-                                color: Color(0xFF666666),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500),
-                          ),
+                          TextWidget.subText(
+                              text: "Cash + Collateral - Margin Used ",
+                              theme: false,
+                              color: Color(0xFF666666),
+                              fw: 0),
                           const SizedBox(height: 24),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -150,13 +146,13 @@ class UserAccountScreen extends ConsumerWidget {
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(60))),
                                     ),
-                                    label: Text("Add Fund",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? const Color(0xFFffffff)
-                                                : const Color(0xFF000000),
-                                            14,
-                                            FontWeight.w600)),
+                                    label: TextWidget.subText(
+                                        text: "Add Fund",
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? const Color(0xFFffffff)
+                                            : const Color(0xFF000000),
+                                        fw: 1),
                                   ),
                                 ),
                               ),
@@ -198,13 +194,13 @@ class UserAccountScreen extends ConsumerWidget {
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(60))),
                                     ),
-                                    label: Text("Withdraw",
-                                        style: textStyle(
-                                            theme.isDarkMode
-                                                ? const Color(0xFFffffff)
-                                                : const Color(0xFF000000),
-                                            14,
-                                            FontWeight.w500)),
+                                    label: TextWidget.subText(
+                                        text: "Withdraw",
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? const Color(0xFFffffff)
+                                            : const Color(0xFF000000),
+                                        fw: 0),
                                   ),
                                 ),
                               )
@@ -236,7 +232,7 @@ class UserAccountScreen extends ConsumerWidget {
                     "Invest in experts managed portfolio.",
                     "assets/profileimage/prd-mf.svg",
                     theme, () async {
-                      await mf.fetchBestMF();
+                  await mf.fetchBestMF();
                   await portfolio.fetchMFHoldings(context);
                   // await mf.fetchMFCategoryType();
                   // await mf.fetchmfNFO(context);
@@ -268,14 +264,12 @@ class UserAccountScreen extends ConsumerWidget {
                   contentPadding: const EdgeInsets.fromLTRB(18, 4, 24, 0),
                   title: Row(
                     children: [
-                      Text(
-                        "Desk",
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Color(
-                                theme.isDarkMode ? 0xffffffff : 0xff000000),
-                            fontWeight: FontWeight.w600),
-                      ),
+                      TextWidget.headText(
+                          text: "Desk",
+                          theme: false,
+                          color:
+                              Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+                          fw: 1),
                       const SizedBox(width: 12),
                       Icon(Icons.arrow_forward,
                           size: 20,
@@ -294,15 +288,13 @@ class UserAccountScreen extends ConsumerWidget {
                             chips.length,
                             (index) => ChoiceChip(
                                   pressElevation: 0,
-                                  label: Text(
-                                    chips[index],
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: theme.isDarkMode
-                                            ? colors.colorLightBlue
-                                            : colors.colorBlue),
-                                  ),
+                                  label: TextWidget.subText(
+                                      text: chips[index],
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.colorLightBlue
+                                          : colors.colorBlue,
+                                      fw: 1),
                                   elevation: 0,
                                   materialTapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
@@ -368,12 +360,8 @@ class UserAccountScreen extends ConsumerWidget {
                         description: "Freeze Account",
                         actiontype: true,
                         action: () async {
-                          await ref
-                              .read(userProfileProvider)
-                              .fetchsetting();
-                          await ref
-                              .read(apikeyprovider)
-                              .fetchapikey(context);
+                          await ref.read(userProfileProvider).fetchsetting();
+                          await ref.read(apikeyprovider).fetchapikey(context);
                           Navigator.pushNamed(
                               context, Routes.profilesettingscreen);
                         },
@@ -388,11 +376,10 @@ class UserAccountScreen extends ConsumerWidget {
                                         : colors.colorWhite,
                                 titleTextStyle: textStyles.appBarTitleTxt
                                     .copyWith(
-                                        color: ref
-                                                .read(themeProvider)
-                                                .isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack),
+                                        color:
+                                            ref.read(themeProvider).isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack),
                                 titlePadding: const EdgeInsets.symmetric(
                                     horizontal: 14, vertical: 12),
                                 shape: const RoundedRectangleBorder(
@@ -403,39 +390,43 @@ class UserAccountScreen extends ConsumerWidget {
                                     const EdgeInsets.symmetric(horizontal: 14),
                                 insetPadding:
                                     const EdgeInsets.symmetric(horizontal: 20),
-                                title: const Text("Freeze Account!"),
+                                title: TextWidget.titleText(
+                                    text: "Freeze Account!",
+                                    theme: theme.isDarkMode,
+                                    fw: 1),
                                 content: SizedBox(
                                     width: MediaQuery.of(context).size.width,
                                     child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            "Are you sure you want to Freeze yor Account?",
-                                            style: textStyle(
-                                                theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                16,
-                                                FontWeight.w600),
-                                          ),
+                                          TextWidget.titleText(
+                                              text:
+                                                  "Are you sure you want to Freeze yor Account?",
+                                              theme: false,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              fw: 1),
                                           const SizedBox(height: 10),
-                                          Text(
-                                            "* Note: Open order(s) will be cancelled, but position(s) will not be closed",
-                                            style: textStyle(colors.colorGrey,
-                                                12, FontWeight.w600),
-                                          )
+                                          TextWidget.paraText(
+                                              text:
+                                                  "* Note: Open order(s) will be cancelled, but position(s) will not be closed",
+                                              theme: false,
+                                              color: colors.colorGrey,
+                                              fw: 1),
                                         ])),
                                 actions: [
                                   TextButton(
                                       onPressed: () =>
                                           Navigator.of(context).pop(),
-                                      child: Text("Cancel",
-                                          style: textStyles.textBtn.copyWith(
-                                              color: ref.read(themeProvider)
-                                                      .isDarkMode
-                                                  ? colors.colorLightBlue
-                                                  : colors.colorBlue))),
+                                      child: TextWidget.subText(
+                                          text: "Cancel",
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.colorLightBlue
+                                              : colors.colorBlue,
+                                          fw: 0)),
                                   ElevatedButton(
                                       onPressed: () async {
                                         userProfile.fetchFreezeAc(context);
@@ -448,14 +439,13 @@ class UserAccountScreen extends ConsumerWidget {
                                           shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(50))),
-                                      child: Text("Continue",
-                                          style: textStyle(
-                                              !ref.read(themeProvider)
-                                                      .isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              14,
-                                              FontWeight.w500))),
+                                      child: TextWidget.subText(
+                                          text: "Continue",
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          fw: 0)),
                                 ],
                               );
                             },
@@ -518,14 +508,13 @@ class UserAccountScreen extends ConsumerWidget {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    Text('Share',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 14,
-                                          color: theme.isDarkMode
-                                              ? colors.colorLightBlue
-                                              : colors.colorBlue,
-                                        )),
+                                    TextWidget.subText(
+                                        text: 'Share',
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.colorLightBlue
+                                            : colors.colorBlue,
+                                        fw: 0),
                                     const SizedBox(width: 4),
                                     Icon(Icons.arrow_forward,
                                         size: 20,
@@ -538,22 +527,20 @@ class UserAccountScreen extends ConsumerWidget {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          Text(
-                            'Invite your family and friends',
-                            style: TextStyle(
+                          TextWidget.headText(
+                              text: 'Invite your family and friends',
+                              theme: false,
                               color: Color(
                                   theme.isDarkMode ? 0xffffffff : 0xff000000),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                              fw: 1),
                           const SizedBox(height: 12),
-                          Text(
-                              'Get discount on brokerages by referring them with your referral link.',
-                              style: TextStyle(
-                                color: Color(
-                                    theme.isDarkMode ? 0xffffffff : 0xff000000),
-                              )),
+                          TextWidget.titleText(
+                              text:
+                                  'Get discount on brokerages by referring them with your referral link.',
+                              theme: false,
+                              color: Color(
+                                  theme.isDarkMode ? 0xffffffff : 0xff000000),
+                              fw: 0),
                         ])),
                 Divider(
                     color: theme.isDarkMode
@@ -610,14 +597,13 @@ class UserAccountScreen extends ConsumerWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text('Write a Review',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                    color: theme.isDarkMode
-                                        ? colors.colorLightBlue
-                                        : colors.colorBlue,
-                                  )),
+                              TextWidget.subText(
+                                  text: 'Write a Review',
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.colorLightBlue
+                                      : colors.colorBlue,
+                                  fw: 0),
                               const SizedBox(width: 4),
                               Icon(Icons.arrow_forward,
                                   size: 20,
@@ -647,10 +633,10 @@ class UserAccountScreen extends ConsumerWidget {
                                       : colors.colorWhite,
                                   titleTextStyle: textStyles.appBarTitleTxt
                                       .copyWith(
-                                          color: ref.read(themeProvider)
-                                                  .isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack),
+                                          color:
+                                              ref.read(themeProvider).isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack),
                                   contentTextStyle: textStyles.menuTxt,
                                   titlePadding: const EdgeInsets.symmetric(
                                       horizontal: 14, vertical: 12),
@@ -662,27 +648,33 @@ class UserAccountScreen extends ConsumerWidget {
                                       horizontal: 14),
                                   insetPadding: const EdgeInsets.symmetric(
                                       horizontal: 40),
-                                  title: const Text("Confirmation"),
+                                  title: TextWidget.titleText(
+                                      text: "Confirmation",
+                                      theme: theme.isDarkMode,
+                                      fw: 1),
                                   content: SizedBox(
                                       width: MediaQuery.of(context).size.width,
-                                      child: const Column(
+                                      child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                                "Are you sure you want to logout?")
+                                            TextWidget.titleText(
+                                                text:
+                                                    "Are you sure you want to logout?",
+                                                theme: theme.isDarkMode,
+                                                fw: 1),
                                           ])),
                                   actions: [
                                     TextButton(
                                         onPressed: () =>
                                             Navigator.of(context).pop(),
-                                        child: Text("No",
-                                            style: textStyles.textBtn.copyWith(
-                                                color: ref
-                                                        .read(themeProvider)
-                                                        .isDarkMode
-                                                    ? colors.colorLightBlue
-                                                    : colors.colorBlue))),
+                                        child: TextWidget.subText(
+                                            text: "No",
+                                            theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.colorLightBlue
+                                                : colors.colorBlue,
+                                            fw: 0)),
                                     ElevatedButton(
                                         onPressed: () async {
                                           ref
@@ -698,15 +690,13 @@ class UserAccountScreen extends ConsumerWidget {
                                               borderRadius:
                                                   BorderRadius.circular(50),
                                             )),
-                                        child: Text("Yes",
-                                            style: textStyle(
-                                                !ref
-                                                        .read(themeProvider)
-                                                        .isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                14,
-                                                FontWeight.w500))),
+                                        child: TextWidget.subText(
+                                            text: "Yes",
+                                            theme: false,
+                                            color: !theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            fw: 0)),
                                   ],
                                 );
                               },
@@ -733,23 +723,26 @@ class UserAccountScreen extends ConsumerWidget {
                                       : colors.colorBlack,
                                 ),
                                 const SizedBox(width: 8),
-                                Text("Log Out",
-                                    style: textStyle(
-                                        !theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        14,
-                                        FontWeight.w600))
+                                TextWidget.subText(
+                                    text: "Log Out",
+                                    theme: false,
+                                    color: !theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    fw: 1)
                               ])),
                     )),
                 Center(
                   child: Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                          "Version 3.0.2 Build 1.0.64(01) Released on 15 Feb",
-                          style: textStyle(
-                              const Color(0xff666666), 11, FontWeight.w500))),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextWidget.captionText(
+                        text:
+                            "Version 3.0.2 Build 1.0.64(01) Released on 15 Feb",
+                        theme: false,
+                        color: const Color(0xff666666),
+                        fw: 0),
+                  ),
                 )
               ]),
         ),
@@ -768,13 +761,11 @@ class UserAccountScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                      fontSize: 18,
-                      color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-                      fontWeight: FontWeight.w600),
-                ),
+                TextWidget.headText(
+                    text: title,
+                    theme: false,
+                    color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+                    fw: 1),
                 const SizedBox(width: 12),
                 Icon(Icons.arrow_forward,
                     size: 20,
@@ -784,13 +775,8 @@ class UserAccountScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                  color: Color(0xFF666666),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500),
-            )
+            TextWidget.subText(
+                text: subtitle, theme: false, color: Color(0xFF666666), fw: 0),
           ],
         ),
         trailing: Container(
@@ -855,30 +841,23 @@ class UserAccountScreen extends ConsumerWidget {
                     : const Color(0xff000000),
               ),
               const SizedBox(height: 16),
-              Text(
-                title,
-                style: TextStyle(
+              TextWidget.headText(
+                  text: title,
+                  theme: false,
                   color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+                  fw: 1),
               const SizedBox(height: 8),
               InkWell(
-                onTap: subaction,
-                child: Text(
-                  description,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 13,
-                    color: actiontype
-                        ? theme.isDarkMode
-                            ? colors.colorLightBlue
-                            : colors.colorBlue
-                        : colors.colorGrey,
-                  ),
-                ),
-              ),
+                  onTap: subaction,
+                  child: TextWidget.subText(
+                      text: description,
+                      theme: false,
+                      color: actiontype
+                          ? theme.isDarkMode
+                              ? colors.colorLightBlue
+                              : colors.colorBlue
+                          : colors.colorGrey,
+                      fw: 0)),
               const SizedBox(height: 8),
             ],
           ),

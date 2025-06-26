@@ -279,6 +279,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   // Method to update current watchlist page index
   void setCurrentWatchlistPageIndex(int index) {
     _currentWatchlistPageIndex = index;
+    print("index change to ${index}");
     // Store in SharedPreferences for persistence
     _saveCurrentPageIndex();
   }
@@ -636,6 +637,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         isScrollControlled: true,
         useSafeArea: true,
         isDismissible: true,
+        enableDrag: true,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
         context: context,
@@ -999,18 +1001,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       BuildContext context, String exch, String token, String tsym) async {
     try {
       toggleLoad(true);
-      singlePageloader(true);
+      // singlePageloader(true);
       notifyListeners();
-      
+
       // STEP 1: Clear any previous option chain data immediately
       clearOptionChainData();
-      
+
       // STEP 1.5: CRITICAL FIX - Clear old socket data immediately to prevent stale LTP
       await _clearOldOptionSocketData();
-      
+
       // STEP 2: Fetch script quote for the new symbol
       await fetchScripQuoteIndex(token, exch, context);
-      
+
       // STEP 3: Determine strike price based on instrument type
       if (exch == "BFO" ||
           exch == "NFO" ||
@@ -1033,10 +1035,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       // STEP 5: Fetch linked scripts which will set optionExch and selectedTradeSym
       await fetchLinkeScrip(token, exch, context);
-      
+
       // STEP 6: Verify that required option parameters are set
       if (_optionExch == null || _selectedTradeSym == null) {
-        throw Exception("Option parameters not properly initialized after fetchLinkeScrip");
+        throw Exception(
+            "Option parameters not properly initialized after fetchLinkeScrip");
       }
 
       // STEP 7: Fetch option chain with the properly initialized parameters
@@ -1046,7 +1049,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           numofStrike: numStrike,
           strPrc: optionStrPrc,
           tradeSym: _selectedTradeSym!);
-      
+
       // STEP 8: Update tab management
       if (_optionTabs.length == 5 &&
           (_optionTabs.any((t) => t.token == token)) != true) {
@@ -1055,7 +1058,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       addChartTab(ChartArgs(tsym: tsym, token: token, exch: exch), true);
       selectChartTab(token.toString(), true);
       scrollToSelectedTab(true);
-      
     } catch (e) {
       debugPrint("Error in setOptionScript: $e");
       setOptionChainError("Failed to initialize option script: $e");
@@ -1090,7 +1092,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _alertPendingSearch = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _alertPendingSearch = _alertPendingModel!
-          .where((element) => element.tsym!.toLowerCase().contains(value.toLowerCase()))
+          .where((element) =>
+              element.tsym!.toLowerCase().contains(value.toLowerCase()))
           .toList();
       if (_alertPendingSearch!.isEmpty) {
         ScaffoldMessenger.of(context)
@@ -1193,27 +1196,40 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           }
         }
 
-        // Set default watchlist name only if not already set
         if (_wlName.isEmpty) {
-          // Try to use saved page index to determine watchlist
-          if (_currentWatchlistPageIndex >= 0 && 
-              _currentWatchlistPageIndex < _marketWatchlist!.values!.length) {
-            _wlName = _marketWatchlist!.values![_currentWatchlistPageIndex];
-          } else {
-            // Fallback to first watchlist
           _wlName = _marketWatchlist!.values!.first;
         }
-        }
-        
-        // Add predefined watchlists
-        _marketWatchlist!.values!.addAll(_preDefWL);
-        
-        // Fetch predefined watchlists data
-        await fetchPreDefMWScrip(context);
-        
-        // If not during a switch operation, change to the selected watchlist
+
+        // Debug: Print watchlist before adding predefined lists
+        print(
+            "DEBUG: Watchlist before adding predefined: ${_marketWatchlist!.values}");
+
+        // Create a completely new MarketWatchlist object to ensure reactive updates work
+        final updatedValues = List<String>.from(_marketWatchlist!.values!);
+        updatedValues.addAll(_preDefWL);
+
+        // Create a new MarketWatchlist object to trigger proper change detection
+        _marketWatchlist = MarketWatchlist(
+          requestTime: _marketWatchlist!.requestTime,
+          stat: _marketWatchlist!.stat,
+          values: updatedValues,
+          emsg: _marketWatchlist!.emsg,
+        );
+
+        // Debug: Print watchlist after adding predefined lists
+        print(
+            "DEBUG: Watchlist after adding predefined: ${_marketWatchlist!.values}");
+        print("DEBUG: Predefined list being added: $_preDefWL");
+
+        // Force immediate UI update with the predefined tabs visible
+        notifyListeners();
+
+        await fetchPreDefMWScrip(context); // Make sure to await this!
+
+        // Force another immediate UI update after predefined data is loaded
+        notifyListeners();
         if (swit == false) {
-        await changeWLScrip(_wlName, context);
+          await changeWLScrip(_wlName, context);
         }
       } else {
         if (_marketWatchlist!.emsg ==
@@ -1225,7 +1241,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _marketWatchlist;
     } catch (e) {
-      print("Failed to fetch market watchlist: $e");
+      print("Failed $e");
       ref
           .read(indexListProvider)
           .logError
@@ -1433,13 +1449,32 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               {"Niftybank": jsonEncode(_preDefinedMWlist!.nIFTYBANKNSE!)});
           _marketWatchScripData
               .addAll({"Sensex": jsonEncode(_preDefinedMWlist!.sENSEXBSE!)});
+          // If current watchlist is a predefined one, make sure to update scrips
+          if (_wlName == "Nifty50" ||
+              _wlName == "Niftybank" ||
+              _wlName == "Sensex") {
+            print("Current watchlist is $_wlName, updating scrips list");
+            if (_wlName == "Nifty50") {
+              _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.nIFTY50NSE!));
+            } else if (_wlName == "Niftybank") {
+              _scrips =
+                  jsonDecode(jsonEncode(_preDefinedMWlist!.nIFTYBANKNSE!));
+            } else if (_wlName == "Sensex") {
+              _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.sENSEXBSE!));
+            }
+
+            // Apply any saved sorting
+            if (_sortByWL.isNotEmpty) {
+              _applySavedSorting();
+            }
+          }
           notifyListeners();
 
           // await requestWSMarketWatchScrip(context: context, isSubscribe: true);
         } else {
-          if (_marketWatchScrip!.emsg ==
+          if (_marketWatchScrip?.emsg ==
                   "Session Expired :  Invalid Session Key" &&
-              _marketWatchScrip!.stat == "Not_Ok") {
+              _marketWatchScrip?.stat == "Not_Ok") {
             ref.read(authProvider).ifSessionExpired(context);
           }
           // _watchListValues = [];
@@ -2007,7 +2042,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       required String numofStrike}) async {
     try {
       toggleLoad(true);
-      
+
       // STEP 1: Immediately clear old option chain data to prevent stale UI
       _optChainCall.clear();
       _optChainPut.clear();
@@ -2015,37 +2050,37 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       _optChainCallUp.clear();
       _optChainPutDown.clear();
       _optChainPutUp.clear();
-      
+
       // STEP 2: Unsubscribe from old WebSocket connections AND clear socket data
       if (_optionChainModel != null) {
         await requestWSOptChain(context: context, isSubscribe: false);
-        
+
         // CRITICAL FIX: Clear old option chain socket data from WebSocket provider
         await _clearOldOptionSocketData();
       }
-      
+
       // STEP 3: Clear the model to ensure fresh data
       _optionChainModel = null;
       notifyListeners(); // Update UI immediately with cleared data
-      
+
       print(
           "op Strike Price $strPrc ------ $tradeSym ------ $exchange ------ $numofStrike");
-      
+
       // Debug: Print current socket data state
       final socketDatas = ref.read(websocketProvider).socketDatas;
       print("=== SOCKET DATA DEBUG ===");
       print("Total socket entries: ${socketDatas.length}");
-      
+
       // Print relevant socket data for current option chain context
       if (socketDatas.isNotEmpty) {
         print("Socket data keys: ${socketDatas.keys.take(10).toList()}...");
-        
+
         // Try to find data for the underlying instrument
         socketDatas.forEach((token, data) {
-          if (data['tsym'] != null && 
-              (data['tsym'].toString().contains('NIFTY') || 
-               data['tsym'].toString().contains('BANKNIFTY') ||
-               data['tsym'].toString().contains('SENSEX'))) {
+          if (data['tsym'] != null &&
+              (data['tsym'].toString().contains('NIFTY') ||
+                  data['tsym'].toString().contains('BANKNIFTY') ||
+                  data['tsym'].toString().contains('SENSEX'))) {
             print("Underlying Token: $token");
             print("  TSYM: ${data['tsym']}");
             print("  LTP: ${data['lp']}");
@@ -2057,7 +2092,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         print("No socket data available");
       }
       print("========================");
-      
+
       // STEP 4: Fetch new option chain data
       _optionChainModel = await api.getOptionChain(
           context: context,
@@ -2065,7 +2100,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           tradeSym: tradeSym,
           exchange: exchange,
           numofStrike: numofStrike);
-          
+
       if (_optionChainModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
 
@@ -2079,7 +2114,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         _optChainCallUp.clear();
         _optChainPutDown.clear();
         _optChainPutUp.clear();
-        
+
         if (_optionChainModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&
             _optionChainModel!.stat == "Not_Ok") {
@@ -2178,12 +2213,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                 element, "${date[0].substring(0, 3)} ${date[2].substring(2)}");
           }
         }
-        if(fundamentalData != null && fundamentalData!.shareholdings != null){
-        sortAndFormatDates(
-          _fundamentalData!.shareholdings!,
-          (element) => element.date!,
-          (element, value) => element.convDate = value,
-        );
+
+        if (fundamentalData != null && fundamentalData!.shareholdings != null) {
+          sortAndFormatDates(
+            _fundamentalData!.shareholdings!,
+            (element) => element.date!,
+            (element, value) => element.convDate = value,
+          );
         }
 
         // Shareholding dates
@@ -2425,15 +2461,17 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
       }
     }
-    
+
     // Debug: Print socket data after option chain processing
     final socketDatas = ref.read(websocketProvider).socketDatas;
     print("=== POST-OPTION CHAIN SOCKET DEBUG ===");
-    print("Option chain processed with ${_optChainCall.length} calls and ${_optChainPut.length} puts");
+    print(
+        "Option chain processed with ${_optChainCall.length} calls and ${_optChainPut.length} puts");
     print("Total socket entries: ${socketDatas.length}");
-    
+
     // Print sample option chain tokens and their socket data
-    if (_optionChainModel?.optValue != null && _optionChainModel!.optValue!.isNotEmpty) {
+    if (_optionChainModel?.optValue != null &&
+        _optionChainModel!.optValue!.isNotEmpty) {
       print("Sample option tokens:");
       for (int i = 0; i < min(5, _optionChainModel!.optValue!.length); i++) {
         final option = _optionChainModel!.optValue![i];
@@ -2441,14 +2479,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         print("  Option $i: ${option.tsym} (Token: $token)");
         if (socketDatas.containsKey(token)) {
           final data = socketDatas[token];
-          print("    Socket Data - LTP: ${data?['lp']}, Change: ${data?['chng']}");
+          print(
+              "    Socket Data - LTP: ${data?['lp']}, Change: ${data?['chng']}");
         } else {
           print("    No socket data for this token");
         }
       }
     }
     print("=====================================");
-    
+
     notifyListeners();
     await requestWSOptChain(context: context, isSubscribe: true);
   }
@@ -2516,46 +2555,64 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   changeWLScrip(String wName, BuildContext context) async {
     try {
-      // Handle empty watchlist name gracefully
-      if (wName.isEmpty) {
-        print("Warning: Empty watchlist name provided to changeWLScrip");
-        _scrips = [];
-        notifyListeners();
-        return;
-      }
-      
-      print("Changing to watchlist: $wName");
-      
+      print("Changing watchlist to: $wName");
+
+      // Special handling for predefined watchlists
+      bool isPredefined =
+          (wName == "Nifty50" || wName == "Niftybank" || wName == "Sensex");
+
       // Check if we have cached data for this watchlist
       bool wlis = _marketWatchScripData.containsKey(wName);
-      
-      // If data isn't cached and this isn't a special case, try to fetch it
-      if (!wlis && !["My Stocks", "Nifty50", "Niftybank", "Sensex"].contains(wName)) {
-        print("No cached data for watchlist: $wName, fetching...");
-        await fetchMWScrip(wName, context);
-        wlis = _marketWatchScripData.containsKey(wName);
-      }
 
-      // Handle special cases or use cached data
-      if (wName == "My Stocks") {
-        _scrips = [];
-        print("Switching to My Stocks watchlist");
-      } else if (wlis) {
-        try {
-          var decodedData = jsonDecode(_marketWatchScripData[wName]);
-          _scrips = decodedData is List ? decodedData : [];
-          print("Loaded ${_scrips.length} symbols for watchlist: $wName");
-        } catch (e) {
-          print("Error decoding watchlist data: $e");
-          _scrips = [];
+      if (isPredefined) {
+        if (wlis) {
+          print("Using cached data for predefined watchlist: $wName");
+          _scrips = jsonDecode(_marketWatchScripData[wName]) ?? [];
+
+          // If the data is empty for some reason, force a refresh
+          if (_scrips.isEmpty) {
+            print("Cached data for $wName is empty, fetching fresh data...");
+            await fetchPreDefMWScrip(context);
+            if (wName == "Nifty50") {
+              _scrips =
+                  jsonDecode(jsonEncode(_preDefinedMWlist?.nIFTY50NSE ?? []));
+            } else if (wName == "Niftybank") {
+              _scrips =
+                  jsonDecode(jsonEncode(_preDefinedMWlist?.nIFTYBANKNSE ?? []));
+            } else if (wName == "Sensex") {
+              _scrips =
+                  jsonDecode(jsonEncode(_preDefinedMWlist?.sENSEXBSE ?? []));
+            }
+          }
+        } else {
+          print("No cached data for $wName, fetching fresh data...");
+          await fetchPreDefMWScrip(context);
+          if (wName == "Nifty50") {
+            _scrips =
+                jsonDecode(jsonEncode(_preDefinedMWlist?.nIFTY50NSE ?? []));
+          } else if (wName == "Niftybank") {
+            _scrips =
+                jsonDecode(jsonEncode(_preDefinedMWlist?.nIFTYBANKNSE ?? []));
+          } else if (wName == "Sensex") {
+            _scrips =
+                jsonDecode(jsonEncode(_preDefinedMWlist?.sENSEXBSE ?? []));
+          }
         }
-      } else {
-        print("No data available for watchlist: $wName");
+      } else if (wName == "My Stocks") {
+        // My Stocks is handled specially through portfolio
         _scrips = [];
+      } else {
+        // Regular watchlists
+        _scrips = wlis ? jsonDecode(_marketWatchScripData[wName]) ?? [] : [];
       }
 
-      // Don't apply any saved sorting - keep the default order from server
-      // This ensures watchlists always show in their natural order when switched
+      // Log the number of symbols for debugging
+      print("Watchlist change: $wName with ${_scrips.length} symbols");
+
+      // Apply sorting if there's a saved sort preference and if there are scrips to sort
+      // if (_scrips.isNotEmpty && _sortByWL.isNotEmpty) {
+      //   _applySavedSorting();
+      // }
 
       // Handle portfolio holdings data if "My Stocks" watchlist
       if (wName == "My Stocks") {
@@ -2566,20 +2623,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       } else {
         // Standard watchlist - subscribe to the scrips
         if (_scrips.isNotEmpty) {
-        await requestMWScrip(context: context, isSubscribe: true);
+          await requestMWScrip(context: context, isSubscribe: true);
         } else {
           // If no symbols in watchlist, still ensure we're unsubscribed from previous
           await requestMWScrip(context: context, isSubscribe: false);
+          print("No symbols in watchlist: $wName");
         }
+      }
+    } catch (e) {
+      print("Watchlist change error: $e");
     }
 
-      // Update UI
-      notifyListeners();
-    } catch (e) {
-      print("Error in changeWLScrip: $e");
-      _scrips = [];
     notifyListeners();
-    }
   }
 
 // Delete market scrips by watchlist name
@@ -2599,10 +2654,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     try {
       toggleLoadingOn(true);
-    _addDeleteScripModel = await api.getAddDeleteSciptoMW(
+      _addDeleteScripModel = await api.getAddDeleteSciptoMW(
           isAdd: false, scripToken: input, wlname: walName);
 
-    if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+      if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
         // Clean up cached data for deleted watchlist
         _marketWatchScripData.remove(walName);
 
@@ -2639,6 +2694,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       await changeWlName(wlName, "No");
       await fetchMWList(context, false);
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 100));
+      notifyListeners();
       toggleLoadingOn(false);
     } else {
       ref.read(authProvider).ifSessionExpired(context);
@@ -2654,22 +2712,22 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       bool isReOrder,
       bool isOptionStike) async {
     try {
-    _addDeleteScripModel = await api.getAddDeleteSciptoMW(
-        isAdd: isAdd, scripToken: scripTok, wlname: wlName);
+      _addDeleteScripModel = await api.getAddDeleteSciptoMW(
+          isAdd: isAdd, scripToken: scripTok, wlname: wlName);
 
-    if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
-      ConstantName.sessCheck = true;
-      if (!isReOrder) {
-        // Reset sorting when adding/deleting scrips (but not for reordering)
-        if (isAdd) {
-          await _resetSortPreference();
-        }
-        await fetchMWScrip(wlName, context);
-        await changeWLScrip(wlName, context);
-      } else {
+      if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+        ConstantName.sessCheck = true;
+        if (!isReOrder) {
+          // Reset sorting when adding/deleting scrips (but not for reordering)
+          if (isAdd) {
+            await _resetSortPreference();
+          }
+          await fetchMWScrip(wlName, context);
+          await changeWLScrip(wlName, context);
+        } else {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(
                 successMessage(context, "Scrip order was changed"));
           } catch (e) {
@@ -2680,16 +2738,16 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               print("Error showing SnackBar: $e");
             }
           }
-      }
-      if (!isEdit) {
+        }
+        if (!isEdit) {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(successMessage(
-            context,
-            isAdd
-                ? "Scrip was added to watchlist $wlName"
-                : "Scrip was removed from watchlist $wlName"));
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                context,
+                isAdd
+                    ? "Scrip was added to watchlist $wlName"
+                    : "Scrip was removed from watchlist $wlName"));
           } catch (e) {
             if (e.toString().contains("widget was disposed") ||
                 e.toString().contains("after the widget was disposed")) {
@@ -2698,22 +2756,22 @@ class MarketWatchProvider extends DefaultChangeNotifier {
               print("Error showing SnackBar: $e");
             }
           }
-      }
-      if (isEdit && isOptionStike) {
+        }
+        if (isEdit && isOptionStike) {
           try {
-        Fluttertoast.showToast(
-            msg: "Scrip was added to watchlist $wlName",
-            timeInSecForIosWeb: 2,
-            backgroundColor: colors.colorBlack,
-            textColor: colors.colorWhite,
-            fontSize: 14.0);
+            Fluttertoast.showToast(
+                msg: "Scrip was added to watchlist $wlName",
+                timeInSecForIosWeb: 2,
+                backgroundColor: colors.colorBlack,
+                textColor: colors.colorWhite,
+                fontSize: 14.0);
           } catch (e) {
             print("Error showing toast: $e");
-      }
+          }
         }
         return true;
-    } else if (_addDeleteScripModel!.emsg ==
-        "Session Expired :  Invalid Session Key") {
+      } else if (_addDeleteScripModel!.emsg ==
+          "Session Expired :  Invalid Session Key") {
         try {
           ref.read(authProvider).ifSessionExpired(context);
         } catch (e) {
@@ -2741,11 +2799,70 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         input = ref.read(indexListProvider).indexToken;
       }
 
+      // Save the current scrips count before processing
+      final int initialScripsCount = _scrips.length;
+      print(
+          "WebSocket: Initial scrips count before subscription: $initialScripsCount");
+
+      // Special handling for predefined watchlists
+      bool isPredefined =
+          _wlName == "Nifty50" || _wlName == "Niftybank" || _wlName == "Sensex";
+
       // Add all scrips from current watchlist to the subscription
       if (_scrips.isNotEmpty) {
         for (var element in _scrips) {
           element['isSelected'] = false;
           input += "${element['exch']}|${element['token']}#";
+        }
+        print(
+            "WebSocket: Added ${_scrips.length} symbols from current watchlist to subscription");
+      } else if (isPredefined && isSubscribe) {
+        // If predefined watchlist has no data but we're subscribing, try to use cached data
+        print(
+            "WebSocket: Predefined watchlist $_wlName has no data, checking cache...");
+        if (_marketWatchScripData.containsKey(_wlName)) {
+          List cachedData = jsonDecode(_marketWatchScripData[_wlName]) ?? [];
+          if (cachedData.isNotEmpty) {
+            print(
+                "WebSocket: Using ${cachedData.length} symbols from cached data for $_wlName");
+            _scrips = cachedData;
+            for (var element in _scrips) {
+              element['isSelected'] = false;
+              input += "${element['exch']}|${element['token']}#";
+            }
+          }
+        }
+
+        // If still no data, force a refresh of predefined watchlists
+        if (_scrips.isEmpty) {
+          print(
+              "WebSocket: No cached data available, forcing refresh of predefined watchlists");
+          await fetchPreDefMWScrip(context);
+
+          // Now try to use the freshly loaded data
+          if (_wlName == "Nifty50" && _preDefinedMWlist?.nIFTY50NSE != null) {
+            _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.nIFTY50NSE!));
+            print(
+                "WebSocket: Loaded ${_scrips.length} Nifty50 symbols from fresh data");
+          } else if (_wlName == "Niftybank" &&
+              _preDefinedMWlist?.nIFTYBANKNSE != null) {
+            _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.nIFTYBANKNSE!));
+            print(
+                "WebSocket: Loaded ${_scrips.length} Niftybank symbols from fresh data");
+          } else if (_wlName == "Sensex" &&
+              _preDefinedMWlist?.sENSEXBSE != null) {
+            _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.sENSEXBSE!));
+            print(
+                "WebSocket: Loaded ${_scrips.length} Sensex symbols from fresh data");
+          }
+
+          // Add the newly loaded symbols to the subscription
+          if (_scrips.isNotEmpty) {
+            for (var element in _scrips) {
+              element['isSelected'] = false;
+              input += "${element['exch']}|${element['token']}#";
+            }
+          }
         }
       }
 
@@ -2757,13 +2874,24 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             channelInput: input,
             task: isSubscribe ? "t" : "u",
             context: context);
+
+        // For predefined watchlists, ensure data wasn't accidentally cleared during subscription
+        if (isPredefined &&
+            isSubscribe &&
+            initialScripsCount > 0 &&
+            _scrips.isEmpty) {
+          print(
+              "WebSocket: Data was lost for predefined watchlist. Restoring data...");
+
+          // Restore data from cache
+          if (_marketWatchScripData.containsKey(_wlName)) {
+            _scrips = jsonDecode(_marketWatchScripData[_wlName]) ?? [];
+            print(
+                "WebSocket: Restored ${_scrips.length} items from cache for $_wlName");
+          }
+        }
       } else {
         print("WebSocket: No symbols to subscribe");
-      }
-      
-      // Re-apply sorting after subscription if needed
-      if (isSubscribe && _sortByWL.isNotEmpty && _scrips.isNotEmpty) {
-        _applySavedSorting();
       }
     } catch (e) {
       print("WebSocket subscription error: $e");
@@ -3003,7 +3131,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         // Second step: Add all scrips back in the new order (only to backend)
         if (deleteResult) {
-      await addDelMarketScrip(
+          await addDelMarketScrip(
               wlName, "$scripTokens#", context, true, true, true, false);
 
           print("Backend watchlist order updated successfully");
@@ -3189,19 +3317,20 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   // Socket data update method to maintain sorting
   void updateSocketData(Map<String, dynamic> socketDatas) {
     if (socketDatas == null || _scrips.isEmpty) return;
-    
+
     // Debug: Log when socket data is being updated during option chain operations
     if (_optionChainModel != null) {
       // print("=== SOCKET UPDATE DURING OPTION CHAIN ===");
       // print("Updating socket data with ${socketDatas.length} entries");
-      
+
       // Check if any option chain tokens are in the update
       int optionTokensUpdated = 0;
       if (_optionChainModel!.optValue != null) {
         for (var option in _optionChainModel!.optValue!) {
           if (socketDatas.containsKey(option.token)) {
             optionTokensUpdated++;
-            if (optionTokensUpdated <= 3) { // Limit debug output
+            if (optionTokensUpdated <= 3) {
+              // Limit debug output
               final data = socketDatas[option.token];
               // print("  Updated Option: ${option.tsym} - LTP: ${data?['lp']}, Change: ${data?['chng']}");
             }
@@ -3347,7 +3476,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     // Notify listeners to update the UI - only if data actually changed
     if (dataUpdated) {
-    notifyListeners();
+      notifyListeners();
     }
   }
 
@@ -3430,7 +3559,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     await addDelMarketScrip(
         wlName, addInput, context, true, true, false, false);
-    
+
     // Reset sorting after reordering to maintain natural order
     await _resetSortPreference();
     notifyListeners();
@@ -3461,8 +3590,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         ref.read(orderProvider).tabSize();
 
         // Display success message
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "Alert created successfully"));
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "Alert created successfully"));
 
         // Close the alert creation screens
         Navigator.pop(context);
@@ -3478,8 +3607,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       return _setAlertModel;
     } catch (e) {
       debugPrint(e.toString());
-    }
-    finally {
+    } finally {
       toggleLoadingOn(false);
     }
   }
@@ -3551,7 +3679,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
 
         // Return success status
-      notifyListeners();
+        notifyListeners();
         return true;
       } else if (_cancelalert!.stat == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
@@ -3601,7 +3729,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _watchlistRenameModel = await api.getWatchListRename(oldName, newName);
       if (_watchlistRenameModel!.stat == "Ok") {
-        fetchMWList(context, false);
+        await fetchMWList(context, false);
         _wlName = newName;
         Navigator.pop(context);
         Navigator.pop(context);
@@ -3641,10 +3769,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       final wsProvider = ref.read(websocketProvider);
       final Map socketDatas = wsProvider.socketDatas;
-      
+
       // Get all current option chain tokens that should be cleared
       final List<String> tokensToRemove = [];
-      
+
       if (_optionChainModel?.optValue != null) {
         for (var option in _optionChainModel!.optValue!) {
           if (option.token != null && socketDatas.containsKey(option.token)) {
@@ -3652,16 +3780,17 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           }
         }
       }
-      
+
       // Remove old option chain tokens from socket data
       for (String token in tokensToRemove) {
         socketDatas.remove(token);
         print("Cleared stale socket data for token: $token");
       }
-      
+
       // Force update the socket data stream to notify UI components
       if (tokensToRemove.isNotEmpty) {
-        print("Cleared ${tokensToRemove.length} stale option tokens from socket data");
+        print(
+            "Cleared ${tokensToRemove.length} stale option tokens from socket data");
       }
     } catch (e) {
       print("Error clearing old option socket data: $e");

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../provider/index_list_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_back_btn.dart';
-import '../../sharedWidget/no_data_found.dart'; 
+import '../../sharedWidget/no_data_found.dart';
 
 class LogMessage extends ConsumerWidget {
   const LogMessage({super.key});
@@ -14,20 +15,20 @@ class LogMessage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final logMessage = ref.watch(indexListProvider).logError;
- final theme =ref.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return Scaffold(
-    
       appBar: AppBar(
-          leadingWidth: 41,
-          titleSpacing: 6,
-          centerTitle: false,
-          leading: const CustomBackBtn(), 
-          elevation: 0.2,
-          
-          
-          title: Text('Log Message',
-              style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w600)),
-          ),
+        leadingWidth: 41,
+        titleSpacing: 6,
+        centerTitle: false,
+        leading: const CustomBackBtn(),
+        elevation: 0.2,
+        title: TextWidget.subText(
+            text: 'Log Message',
+            theme: false,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            fw: 1),
+      ),
       body: logMessage.isEmpty
           ? const Center(child: NoDataFound())
           : ListView.separated(
@@ -37,17 +38,23 @@ class LogMessage extends ConsumerWidget {
               itemBuilder: (BuildContext context, int index) {
                 return ListTile(
                     dense: true,
-                    title: Text("${logMessage[index]["type"]}",style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
-                    subtitle: Text("${logMessage[index]["Error"]}",style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)));
+                    title: TextWidget.subText(
+                        text: "${logMessage[index]["type"]}",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        fw: 0),
+                    subtitle: TextWidget.subText(
+                        text: "${logMessage[index]["Error"]}",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        fw: 0));
               },
               itemCount: logMessage.length,
             ),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../provider/thems.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 
@@ -39,13 +40,13 @@ class IosNOUpiAppsSheet extends StatelessWidget {
           const SizedBox(
             height: 10,
           ),
-          Text(
+          TextWidget.titleText(
+              text:
               "No suitable app available, kindly choose a different mode of payment",
-              textAlign: TextAlign.center,
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
-                  15,
-                  FontWeight.w600)),
+              theme: false,
+              color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
+              fw: 1,
+              align: TextAlign.center),
           const SizedBox(
             height: 10,
           ),
@@ -63,13 +64,13 @@ class IosNOUpiAppsSheet extends StatelessWidget {
                 onPressed: () async {
                   launch("https://apps.apple.com/app");
                 },
-                child: Text("Get UPI Apps",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
-                        12,
-                        FontWeight.w600))),
+              child: TextWidget.paraText(
+                  text: "Get UPI Apps",
+                  theme: false,
+                  color:
+                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  fw: 1),
+            ),
           ),
           const SizedBox(
             height: 15,
@@ -77,11 +78,5 @@ class IosNOUpiAppsSheet extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

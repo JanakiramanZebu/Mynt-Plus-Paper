@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/list_divider.dart'; 
@@ -31,13 +32,11 @@ class PositionGroupBottomSheet extends StatelessWidget {
               children: [
                 const CustomDragHandler(),
                 Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 0),
-                    child: Text("Group by",
-                        style: textStyles.appBarTitleTxt.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack))),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+                  child: TextWidget.titleText(
+                      text: "Group by", theme: theme.isDarkMode, fw: 1),
+                ),
                 Divider(
                   height: 3,
                     color: theme.isDarkMode
@@ -61,12 +60,14 @@ class PositionGroupBottomSheet extends StatelessWidget {
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 0),
                           dense: true,
-                          title: Text(positionBook.posGrpNames[index],
-                              style: textStyles.prdText.copyWith(
+                          title: TextWidget.subText(
+                              text: positionBook.posGrpNames[index],
+                              theme: theme.isDarkMode,
                                   color: positionBook.posGrpNames[index] ==
                                           positionBook.posSelection
                                       ? colors.colorBlack
-                                      : colors.colorGrey)),
+                                  : colors.colorGrey,
+                              fw: 0),
                           trailing: index > 1
                               ? InkWell(
                                   child: const Icon(

@@ -15,6 +15,7 @@ import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
 import '../../../provider/version_provider.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_text_form_field.dart';
@@ -30,12 +31,30 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isProcessing = false;
+  late FocusNode focusNode;
+  late FocusNode focusNode1;
+  bool switchback = false;
 
   @override
   void initState() {
     ref.read(versionProvider).checkVersion(context);
     ref.read(authProvider).setChangetotp(true);
     super.initState();
+    focusNode = FocusNode();
+    focusNode.addListener(() {
+      setState(() {}); // Rebuild when focus changes
+    });
+    focusNode1 = FocusNode();
+    focusNode.addListener(() {
+      setState(() {}); // Rebuild when focus changes
+    });
+  }
+
+  @override
+  void dispose() {
+    focusNode.dispose();
+    focusNode1.dispose();
+    super.dispose();
   }
 
   Future<void> _handleContinue() async {
@@ -60,43 +79,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<void> _handleBackNavigation(BuildContext context, Preferences pref, AuthProvider auth, 
-      UserProfileProvider userProfile, WidgetRef ref) async {
-    // Check if there's navigation history
-    if (!Navigator.canPop(context)) {
-      // No route history - show exit confirmation dialog
-      final shouldExit = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Exit App'),
-          content: const Text('Do you want to exit the app?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false); // Stay in app
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true); // Exit app
-              },
-              child: const Text('Exit'),
-            ),
-          ],
-        ),
-      );
-
-      if (shouldExit == true) {
-        SystemNavigator.pop(); // Exit the app
-      }
-      return; // Don't proceed with normal back navigation
-    }
-
-    // There is route history - proceed with existing logic
+  Future<void> _handleBackNavigation(BuildContext context, Preferences pref,
+      AuthProvider auth, UserProfileProvider userProfile, WidgetRef ref) async {
     final theme = ref.watch(themeProvider);
-    if (pref.islogOut! &&
-        (pref.clientId!.isEmpty || pref.clientId!.isNotEmpty || pref.clientMob!.isEmpty || pref.clientMob!.isNotEmpty)) {
+    if (pref.islogOut! ||
+        switchback == true &&
+            (pref.clientId!.isEmpty ||
+                pref.clientId!.isNotEmpty ||
+                pref.clientMob!.isEmpty ||
+                pref.clientMob!.isNotEmpty)) {
       // This path is for logged out users with saved credentials
       theme.removeUsermatrial(context);
       Navigator.pushNamedAndRemoveUntil(
@@ -105,8 +96,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // This path is for when we need to switch between accounts
       // Note: Previous issue was caused by inconsistent navigation stack between app bar back button
       // and system back button in the OTP screen
-      int activeIndex = auth.loggedMobile.indexWhere(
-          (element) => element.clientId == pref.clientId);
+      int activeIndex = auth.loggedMobile
+          .indexWhere((element) => element.clientId == pref.clientId);
       if (activeIndex == -1) return;
 
       // Show loading indicator
@@ -194,7 +185,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 //                   pref.clientMob!.isNotEmpty) ? false : true,
                 onPopInvokedWithResult: (didPop, result) async {
                   if (didPop) return;
-                  await _handleBackNavigation(context, pref, auth, userProfile, ref);
+                  await _handleBackNavigation(
+                      context, pref, auth, userProfile, ref);
                 },
                 child: Scaffold(
                   appBar: AppBar(
@@ -208,15 +200,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     titleSpacing: 6,
                     leading: InkWell(
                         onTap: () async {
-                          await _handleBackNavigation(context, pref, auth, userProfile, ref);
+                          await _handleBackNavigation(
+                              context, pref, auth, userProfile, ref);
                         },
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 9),
-                          child: Icon(Icons.arrow_back_ios,
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack),
+                          padding: const EdgeInsets.only(left: 16),
+                          child: SvgPicture.asset(
+                            "assets/icon/appbarIcon/arrow-back.svg",
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : const Color(0xFF141414),
+                            height: 24,
+                            width: 24,
+                          ),
                         )),
+                    // title: TextWidget.headText(
+                    //     text: pref.clientName!.isNotEmpty && pref.islogOut!
+                    //         ? "Welcome"
+                    //         : "Login",
+                    //     theme: false,
+                    //     color: theme.isDarkMode
+                    //         ? colors.colorWhite
+                    //         : const Color(0xFF141414),
+                    //     fw: 2),
                     actions: [
                       Padding(
                         padding: const EdgeInsets.only(right: 16, top: 5),
@@ -243,412 +249,400 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                          pref.clientName!.isNotEmpty &&
-                                                  pref.islogOut!
-                                              ? "Welcome"
-                                              : "Login",
-                                          style:
-                                              // TextStyle(
-                                              //   fontFamily: 'InterVariable',
-                                              //   fontSize: 21,
-                                              //   fontWeight: FontWeight.w900,
-                                              // ),
-                                              textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  21,
-                                                  FontWeight.w900)),
+                                      const SizedBox(height: 30),
+                                      TextWidget.custmText(
+                                          text: pref.islogOut! &&
+                                                  (pref.clientId!.isNotEmpty ||
+                                                      pref.clientMob!
+                                                          .isNotEmpty)
+                                              ? pref.clientName!.isNotEmpty &&
+                                                      pref.islogOut!
+                                                  ? "Hi ${pref.clientName!}"
+                                                  : ""
+                                              : "Sign in with MYNT",
+                                          theme: false,
+                                          color: const Color(0xFF141414),
+                                          fw: 0,
+                                          fs: 22),
                                       const SizedBox(
                                         height: 15,
                                       ),
-                                      Text(
-                                          pref.clientName!.isNotEmpty &&
-                                                  pref.islogOut!
-                                              ? pref.clientName!
-                                              : "Every login is a step closer to your goals.",
-                                          overflow: TextOverflow.ellipsis,
-                                          style:
-                                              // TextStyle(
-                                              //   color: Color(0xff666666),
-                                              //   fontFamily: 'InterVariable',
-                                              //   fontSize: 12,
-                                              //  // fontWeight: FontWeight.w500,
-                                              // )
-                                              textStyle(const Color(0xff666666),
-                                                  12, FontWeight.w500)),
+                                      // TextWidget.paraText(
+                                      //     text: pref.clientName!.isNotEmpty &&
+                                      //             pref.islogOut!
+                                      //         ? pref.clientName!
+                                      //         // : "Every login is a step closer to your goals.",
+                                      //         : "",
+                                      //     theme: false,
+                                      //     color: const Color(0xff666666),
+                                      //     fw: 0,
+                                      //     textOverflow: TextOverflow.ellipsis),
                                       const SizedBox(
                                         height: 15,
                                       ),
-                                      Text("Mobile / Client ID",
-                                          style:
-                                              // TextStyle(
-                                              //   fontFamily: 'InterVariable',
-                                              //   fontSize: 17,
-                                              //   fontWeight: FontWeight.w600,
-                                              // )
-                                              textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  17,
-                                                  FontWeight.w600)),
+                                      // Text("Mobile / Client ID",
+                                      //     style:
+                                      //         // TextStyle(
+                                      //         //   fontFamily: 'InterVariable',
+                                      //         //   fontSize: 17,
+                                      //         //   fontWeight: FontWeight.w600,
+                                      //         // )
+                                      //         textStyle(
+                                      // theme.isDarkMode
+                                      //     ? colors.colorWhite
+                                      //     : colors.colorBlack,
+                                      //             17,
+                                      //             FontWeight.w600)),
                                       if (pref.clientName!.isNotEmpty &&
                                           pref.islogOut!)
                                         const SizedBox(height: 8),
                                       TextFormField(
-                                        style: textStyles.textFieldLabelStyle
-                                            .copyWith(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack),
-                                        onTap: pref.isMobileLogin!
-                                            ? auth.getCurrentPhone
-                                            : null,
                                         controller: auth.loginMethCtrl,
+                                        focusNode: focusNode,
                                         readOnly: pref.islogOut! &&
-                                                    (pref.clientId!
-                                                            .isNotEmpty ||
-                                                        pref.clientMob!
-                                                            .isNotEmpty) ||
-                                                (_isProcessing || auth.loading)
-                                            ? true
-                                            : false,
-                                        // keyboardType: TextInputType.text,
+                                                (pref.clientId!.isNotEmpty ||
+                                                    pref.clientMob!
+                                                        .isNotEmpty) ||
+                                            (_isProcessing || auth.loading),
                                         maxLength: 10,
                                         textCapitalization:
                                             TextCapitalization.characters,
-                                        inputFormatters: pref.islogOut!
-                                            ? [
-                                                UpperCaseTextFormatter(),
-                                                FilteringTextInputFormatter
-                                                    .allow(
-                                                        RegExp(r'[a-zA-Z0-9]')),
-                                              ]
-                                            : [
-                                                UpperCaseTextFormatter(),
-                                                FilteringTextInputFormatter
-                                                    .allow(
-                                                        RegExp(r'[a-zA-Z0-9]')),
-                                              ],
+                                        inputFormatters: [
+                                          UpperCaseTextFormatter(),
+                                          FilteringTextInputFormatter.allow(
+                                              RegExp(r'[a-zA-Z0-9]')),
+                                        ],
+                                        style: TextWidget.textStyle(
+                                          fontSize: 16,
+                                          theme: theme.isDarkMode,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          fw: 0,
+                                        ),
                                         decoration: InputDecoration(
-                                          counterText: "",
-                                          fillColor: theme.isDarkMode
-                                              ? colors.darkGrey
-                                              : const Color(0xfff5f5f5),
-                                          filled: pref.islogOut! &&
+                                          filled: true,
+                                          fillColor: pref.islogOut! &&
                                                   (pref.clientId!.isNotEmpty ||
                                                       pref.clientMob!
                                                           .isNotEmpty)
-                                              ? true
-                                              : false,
-                                          contentPadding:
-                                              const EdgeInsets.only(top: 4),
-                                          prefixIconConstraints:
-                                              const BoxConstraints(
-                                                  minHeight: 0, minWidth: 30),
-                                          prefixIcon: Container(
-                                            margin: const EdgeInsets.only(
-                                                left: 0, right: 15),
-                                            child: SvgPicture.asset(
-                                              pref.isMobileLogin!
-                                                  ? "assets/keyboardicons/keybord_mobile.svg"
-                                                  : "assets/keyboardicons/keyboard_profile.svg",
-                                              color: const Color(0xff666666),
-                                              width: 20,
-                                              // fit: BoxFit.scaleDown,
-                                            ),
+                                              ? const Color(0xffEDEDED)
+                                              : colors.colorWhite,
+                                          labelText: pref.islogOut! &&
+                                                  (pref.clientId!.isNotEmpty ||
+                                                      pref.clientMob!
+                                                          .isNotEmpty)
+                                              ? null
+                                              : "Mobile / Client ID",
+                                          floatingLabelBehavior:
+                                              FloatingLabelBehavior.auto,
+                                          labelStyle: TextWidget.textStyle(
+                                            fontSize: 16,
+                                            theme: theme.isDarkMode,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            fw: 3,
                                           ),
-                                          suffix: pref.islogOut! &&
-                                                  (pref.clientId!.isNotEmpty ||
-                                                      pref.clientMob!
-                                                          .isNotEmpty)
-                                              ? InkWell(
-                                                  onTap: () async {
-                                                    {
-                                                      pref.setLogout(false);
-                                                      pref.setHideLoginOptBtn(
-                                                          true);
-                                                      await auth.loginMethod();
-                                                      FocusScope.of(context)
-                                                          .unfocus();
-                                                    }
-                                                  },
-                                                  child: Text("Switch  ",
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors
-                                                                  .colorLightBlue
-                                                              : colors
-                                                                  .colorBlue,
-                                                          12,
-                                                          FontWeight.w500)),
-                                                )
-                                              : null,
-                                          hintStyle: textStyle(
-                                              Colors.grey, 13, FontWeight.w400),
+                                          floatingLabelStyle:
+                                              TextWidget.textStyle(
+                                                  fontSize: 16,
+                                                  theme: theme.isDarkMode,
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  fw: 3),
                                           enabledBorder:
                                               const UnderlineInputBorder(
                                             borderSide: BorderSide(
-                                                color: Color(0xff999999)),
+                                                color: Color(0xffDBDBDB),
+                                                width: 1),
                                           ),
                                           focusedBorder:
                                               const UnderlineInputBorder(
                                             borderSide: BorderSide(
-                                                color: Color(0xff666666)),
+                                                color: Color(0xffDBDBDB),
+                                                width: 1),
                                           ),
+                                          counterText: "",
+                                          contentPadding: pref.islogOut!
+                                              ? const EdgeInsets.symmetric(
+                                                  horizontal: 5, vertical: 20)
+                                              : const EdgeInsets.symmetric(
+                                                  horizontal: 5, vertical: 12),
                                         ),
+                                        onTap: pref.isMobileLogin!
+                                            ? auth.getCurrentPhone
+                                            : null,
                                         onChanged: (v) {
                                           auth.validateLogin();
                                           auth.activeBtnLogin();
                                         },
                                       ),
+
                                       const SizedBox(height: 5),
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           auth.loginMethError != null
-                                              ? Text(
-                                                  "${auth.loginMethError}",
-                                                  style:
-                                                      // TextStyle(
-                                                      //   color: colors.kColorRedText,
-                                                      //   fontFamily: 'InterVariable',
-                                                      //   fontSize: 10,
-                                                      //   fontWeight: FontWeight.w500,
-                                                      // )
-                                                      textStyle(
-                                                          colors.kColorRedText,
-                                                          10,
-                                                          FontWeight.w500),
-                                                )
+                                              ? TextWidget.captionText(
+                                                  text:
+                                                      "${auth.loginMethError}",
+                                                  theme: false,
+                                                  color: colors.kColorRedText,
+                                                  fw: 0)
                                               : const SizedBox(),
-                                          Text(
-                                            "${auth.loginMethCtrl.text.length}/10",
-                                            style: textStyle(Colors.black, 10,
-                                                FontWeight.w500),
-                                          ),
+                                          TextWidget.captionText(
+                                              text:
+                                                  "${auth.loginMethCtrl.text.length}/10",
+                                              theme: theme.isDarkMode,
+                                              fw: 0),
                                         ],
                                       ),
                                       const SizedBox(height: 18),
-                                      Text("Password",
-                                          style:
-                                              // TextStyle(
-                                              //   fontFamily: 'InterVariable',
-                                              //   fontSize: 17,
-                                              //   fontWeight: FontWeight.w600,
-                                              // )
-                                              textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  17,
-                                                  FontWeight.w600)),
+                                      // Text("Password",
+                                      //     style:
+                                      //         // TextStyle(
+                                      //         //   fontFamily: 'InterVariable',
+                                      //         //   fontSize: 17,
+                                      //         //   fontWeight: FontWeight.w600,
+                                      //         // )
+                                      //         textStyle(
+                                      //             theme.isDarkMode
+                                      //                 ? colors.colorWhite
+                                      //                 : colors.colorBlack,
+                                      //             17,
+                                      //             FontWeight.w600)),
+
                                       TextFormField(
-                                        style: textStyles.textFieldLabelStyle
-                                            .copyWith(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack),
-                                        textAlign: TextAlign.start,
                                         controller: auth.passCtrl,
+                                        focusNode: focusNode1,
+                                        obscureText: auth.hidePass,
                                         readOnly:
                                             (_isProcessing || auth.loading)
                                                 ? true
                                                 : false,
-                                        // maxLength: 20,
+                                        textAlign: TextAlign.start,
+                                        style: TextWidget.textStyle(
+                                          fontSize: 16,
+                                          theme: theme.isDarkMode,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          fw: 0,
+                                        ),
                                         decoration: InputDecoration(
+                                          labelText: "Password",
+                                          filled: true,
+                                          fillColor: theme.isDarkMode
+                                              ? colors.colorBlack
+                                              : const Color(0xFFFFFFFF),
+                                          labelStyle: TextWidget.textStyle(
+                                              fontSize: 16,
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              fw: 3),
+                                          floatingLabelStyle:
+                                              TextWidget.textStyle(
+                                                  fontSize: 16,
+                                                  theme: theme.isDarkMode,
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  fw: 3),
+                                          floatingLabelBehavior:
+                                              FloatingLabelBehavior.auto,
                                           counterText: '',
                                           suffixIconConstraints:
                                               const BoxConstraints(
                                                   minHeight: 0, minWidth: 0),
                                           suffixIcon: InkWell(
-                                              onTap: () {
-                                                auth.hiddenPass();
-                                              },
-                                              child: Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      vertical: 8,
+                                            onTap: auth.hiddenPass,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                       horizontal: 8),
-                                                  child: SvgPicture.asset(
-                                                    auth.hidePass
-                                                        ? "assets/icon/eye-off.svg"
-                                                        : "assets/icon/eye.svg",
-                                                    color:
-                                                        const Color(0xff999999),
-                                                    width: 22,
-                                                  ))),
-                                          prefixIconConstraints:
-                                              const BoxConstraints(
-                                                  minHeight: 0, minWidth: 0),
-                                          prefixIcon: Container(
-                                              margin: const EdgeInsets.only(
-                                                  right: 15),
                                               child: SvgPicture.asset(
-                                                "assets/icon/key-01.svg",
+                                                auth.hidePass
+                                                    ? "assets/icon/eye-off.svg"
+                                                    : "assets/icon/eye.svg",
+                                                color: const Color(0xff999999),
                                                 width: 22,
-                                                color: const Color(0xff666666),
-                                                // fit: BoxFit.scaleDown,
-                                              )),
-                                          contentPadding:
-                                              const EdgeInsets.only(top: 10),
-                                          hintStyle: textStyle(
-                                              Colors.grey, 13, FontWeight.w400),
+                                              ),
+                                            ),
+                                          ),
                                           enabledBorder:
                                               const UnderlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      color:
-                                                          Color(0xff999999))),
+                                            borderSide: BorderSide(
+                                                color: Color(0xffDBDBDB),
+                                                width: 1),
+                                          ),
                                           focusedBorder:
                                               const UnderlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      color:
-                                                          Color(0xff666666))),
+                                            borderSide: BorderSide(
+                                                color: Color(0xffDBDBDB),
+                                                width: 1),
+                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 5, vertical: 20),
+                                          hintStyle: TextWidget.textStyle(
+                                              fontSize: 12,
+                                              theme: theme.isDarkMode,
+                                              color: Colors.grey,
+                                              fw: 3),
                                         ),
                                         inputFormatters: [
                                           NoEmojiInputFormatter(),
                                           FilteringTextInputFormatter.deny(
                                               RegExp('[π£•₹€℅™∆√¶/,]')),
                                           FilteringTextInputFormatter.deny(
-                                              RegExp(r'\s'))
+                                              RegExp(r'\s')),
                                         ],
-                                        obscureText: auth.hidePass,
                                         onChanged: (v) {
                                           auth.validateLogin();
                                           auth.activeBtnLogin();
                                         },
                                       ),
+
+                                      // Container(
+                                      //     height: 1,
+                                      //     color: focusNode1.hasFocus
+                                      //         ? Colors.black
+                                      //         : const Color(0xff666666)),
                                       const SizedBox(height: 5),
                                       if (auth.passError != null) ...[
-                                        Text(
-                                          "${auth.passError}",
-                                          style:
-                                              // TextStyle(
-                                              //   color: colors.kColorRedText,
-                                              //   fontFamily: 'InterVariable',
-                                              //   fontSize: 10,
-                                              //   fontWeight: FontWeight.w500,
-                                              // )
-                                              textStyle(colors.kColorRedText,
-                                                  10, FontWeight.w500),
-                                        )
+                                        TextWidget.captionText(
+                                            text: "${auth.passError}",
+                                            theme: false,
+                                            color: colors.kColorRedText,
+                                            fw: 0)
                                       ],
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          // if (pref.hideLoginOptBtn!)
-                                          InkWell(
-                                              onTap: _isProcessing ||
-                                                      auth.loading
-                                                  ? null
-                                                  : () {
-                                                      forpass.clearError();
-                                                      forpass.clearTextField();
-                                                      Navigator.pushNamed(
-                                                          context,
-                                                          Routes.forgotPass);
-                                                    },
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8.0,
-                                                        horizontal: 4),
-                                                child: Text("Forgot password?",
-                                                    style:
-                                                        //  TextStyle(
-                                                        //   color: colors.colorBlue,
-                                                        //   fontFamily: 'InterVariable',
-                                                        //   fontSize: 12,
-                                                        //   fontWeight: FontWeight.w500,
-                                                        // )
-                                                        textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors
-                                                                    .colorLightBlue
-                                                                : colors
-                                                                    .colorBlue,
-                                                            12,
-                                                            FontWeight.w500)),
-                                              )),
-                                        ],
-                                      ),
                                     ]),
+                              ),
+                              Container(
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                width: screenWidth,
+                                height: 46,
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                      elevation: 0,
+                                      backgroundColor: !theme.isDarkMode
+                                          ? auth.isDisableBtn
+                                              ? const Color(0xffFFFFFF)
+                                              : const Color(0xff0037B7)
+                                          : auth.isDisableBtn
+                                              ? colors.darkGrey
+                                              : colors.colorbluegrey,
+                                      side: const BorderSide(
+                                        color: Color(0xff0037B7),
+                                        width: 1,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 13),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      )),
+                                  onPressed:
+                                      ((auth.loginMethCtrl.text.isEmpty ||
+                                              auth.passCtrl.text.isEmpty))
+                                          // ||
+                                          //     internet.connectionStatus ==
+                                          //         ConnectivityResult.none)
+                                          ? null
+                                          : (_isProcessing || auth.loading)
+                                              ? null
+                                              : _handleContinue,
+                                  child: (_isProcessing || auth.loading)
+                                      ? SizedBox(
+                                          width: 18,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: colors.colorWhite),
+                                        )
+                                      : TextWidget.subText(
+                                          text: "Login",
+                                          theme: false,
+                                          color: !theme.isDarkMode
+                                              ? auth.isDisableBtn
+                                                  ? const Color(0xff0037B7)
+                                                  : const Color(0xffFFFFFF)
+                                              : auth.isDisableBtn
+                                                  ? colors.darkGrey
+                                                  : colors.colorBlack,
+                                          fw: 0),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // if (pref.hideLoginOptBtn!)
+                                    pref.islogOut! &&
+                                            (pref.clientId!.isNotEmpty ||
+                                                pref.clientMob!.isNotEmpty)
+                                        ? InkWell(
+                                            onTap: () async {
+                                              {
+                                                pref.setLogout(false);
+                                                pref.setHideLoginOptBtn(true);
+                                                await auth.loginMethod();
+                                                FocusScope.of(context)
+                                                    .unfocus();
+                                                setState(() {
+                                                  switchback = true;
+                                                });
+                                              }
+                                            },
+                                            child: TextWidget.subText(
+                                                text: "Switch account",
+                                                theme: false,
+                                                color: theme.isDarkMode
+                                                    ? colors.colorLightBlue
+                                                    : const Color(0xff737373),
+                                                fw: 3),
+                                          )
+                                        : const SizedBox(),
+                                    InkWell(
+                                        onTap: _isProcessing || auth.loading
+                                            ? null
+                                            : () {
+                                                forpass.clearError();
+                                                forpass.clearTextField();
+                                                Navigator.pushNamed(
+                                                    context, Routes.forgotPass);
+                                              },
+                                        child: TextWidget.subText(
+                                            text: "Forgot password?",
+                                            theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.colorLightBlue
+                                                : const Color(0xff737373),
+                                            fw: 3)),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        width: screenWidth,
-                        height: 46,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: !theme.isDarkMode
-                                  ? auth.isDisableBtn
-                                      ? const Color(0xfff5f5f5)
-                                      : colors.colorBlack
-                                  : auth.isDisableBtn
-                                      ? colors.darkGrey
-                                      : colors.colorbluegrey,
-                              padding: const EdgeInsets.symmetric(vertical: 13),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              )),
-                          onPressed: ((auth.loginMethCtrl.text.isEmpty ||
-                                  auth.passCtrl.text.isEmpty))
-                              // ||
-                              //     internet.connectionStatus ==
-                              //         ConnectivityResult.none)
-                              ? null
-                              : (_isProcessing || auth.loading)
-                                  ? null
-                                  : _handleContinue,
-                          child: (_isProcessing || auth.loading)
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Color(0xff666666)),
-                                )
-                              : Text("Continue",
-                                  style:
-                                      // TextStyle(
-                                      //     color: !theme.isDarkMode
-                                      //         ? auth.isDisableBtn
-                                      //             ? const Color(0xff999999)
-                                      //             : colors.colorWhite
-                                      //         : auth.isDisableBtn
-                                      //             ? colors.darkGrey
-                                      //             : colors.colorBlack,
-                                      //     fontFamily: 'InterVariable',
-                                      //     fontSize: 15,
-                                      //     fontWeight: FontWeight.w500)
-                                      textStyle(
-                                          !theme.isDarkMode
-                                              ? auth.isDisableBtn
-                                                  ? const Color(0xff999999)
-                                                  : colors.colorWhite
-                                              : auth.isDisableBtn
-                                                  ? colors.darkGrey
-                                                  : colors.colorBlack,
-                                          15,
-                                          FontWeight.w500)),
-                        ),
-                      ),
-                      Container(
-                          margin: const EdgeInsets.only(bottom: 23, top: 10),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text("Version 3.0.2",
-                              textAlign: TextAlign.center,
-                              style: textStyle(const Color(0xff666666), 10,
-                                  FontWeight.w300))),
+
+                      // Container(
+                      //     margin: const EdgeInsets.only(bottom: 23, top: 10),
+                      //     padding: const EdgeInsets.symmetric(horizontal: 16),
+                      //     child: Text("Version 3.0.2",
+                      //         textAlign: TextAlign.center,
+                      //         style: textStyle(const Color(0xff666666), 10,
+                      //             FontWeight.w300))),
                       //const SizedBox(height: 10),
                     ],
                   ),
@@ -656,11 +650,5 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
       );
     }));
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

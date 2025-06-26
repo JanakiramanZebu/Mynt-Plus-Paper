@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import '../../../api/core/api_core.dart'; 
+import '../../../api/core/api_core.dart';
 import '../../models/profile_model/qr_response.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import 'invalid_qr.dart';
 import 'qr_scan_detils.dart';
@@ -67,10 +68,12 @@ class _BarcodeScannerWithScanWindowState
           Container(
             margin: const EdgeInsets.only(top: 200),
             width: double.infinity,
-            child: Text(
-              "Scan the QR code to Log into Zebu Webapp",
-              textAlign: TextAlign.center,
-              style: textStyle(colors.colorWhite, 13, FontWeight.w600),
+            child: TextWidget.subText(
+              text: "Scan the QR code to Log into Zebu Webapp",
+              theme: theme.isDarkMode,
+              color: colors.colorWhite,
+              fw: 0,
+              align: TextAlign.center,
             ),
           ),
         ],
@@ -83,7 +86,7 @@ class _BarcodeScannerWithScanWindowState
     String correctedJsonResponse = jsonString.replaceAll("'", '"');
     try {
       Map<String, dynamic> decodedJson = jsonDecode(correctedJsonResponse);
- 
+
       final qrdata = QrResponces.fromJson(decodedJson);
       showModalBottomSheet(
         showDragHandle: false,

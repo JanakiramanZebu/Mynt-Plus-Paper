@@ -9,6 +9,7 @@ import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/list_divider.dart';
@@ -75,21 +76,11 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
   @override
   void initState() {
     super.initState();
-    // Initialize with current values from API data first
+    // Initialize with current values
     _lp = widget.option.lp ?? widget.option.close ?? "0.00";
     _perChange = widget.option.perChange ?? "0.00";
     _oiLack = widget.option.oiLack ?? "0.00";
     _oiPerChng = widget.option.oiPerChng ?? "0.00";
-
-    // Debug: Print initialization values
-    print("=== PUT OPTION INIT DEBUG ===");
-    print("Token: ${widget.option.token}");
-    print("TSYM: ${widget.option.tsym}");
-    print("API LTP: ${widget.option.lp}");
-    print("API Close: ${widget.option.close}");
-    print("Initialized _lp: $_lp");
-    print("Initialized _perChange: $_perChange");
-    print("=============================");
 
     // Don't set up the listener in initState - moved to didChangeDependencies
   }
@@ -100,37 +91,8 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
 
     // Only set up the listener once
     if (!_isListenerSetup) {
-      _initializeWithSocketData();
       _setupSocketListener();
       _isListenerSetup = true;
-    }
-  }
-
-  void _initializeWithSocketData() {
-    // Try to get current socket data for this token
-    final provider = ProviderScope.containerOf(context).read(websocketProvider);
-    final socketDatas = provider.socketDatas;
-    
-    if (socketDatas.containsKey(widget.option.token)) {
-      final data = socketDatas[widget.option.token];
-      if (data != null) {
-        // Override with socket data if available and valid
-        final socketLp = data['lp']?.toString();
-        if (socketLp != null && socketLp != "null" && socketLp.isNotEmpty) {
-          _lp = socketLp;
-        }
-        
-        final socketPc = data['pc']?.toString();
-        if (socketPc != null && socketPc != "null" && socketPc.isNotEmpty) {
-          _perChange = socketPc;
-        }
-        
-        print("=== PUT INIT WITH SOCKET ===");
-        print("Token: ${widget.option.token}");
-        print("Updated _lp: $_lp");
-        print("Updated _perChange: $_perChange");
-        print("===========================");
-      }
     }
   }
 
@@ -169,20 +131,20 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
         if (newLp != null &&
             newLp != _lp &&
             newLp != "null" &&
-            newLp.isNotEmpty) {
+            newLp != "0" &&
+            newLp != "0.0") {
           _lp = newLp;
           needsUpdate = true;
-          print("PUT LTP Updated: $_lp");
         }
 
         final newPc = data['pc']?.toString();
         if (newPc != null &&
             newPc != _perChange &&
             newPc != "null" &&
-            newPc.isNotEmpty) {
+            newPc != "0" &&
+            newPc != "0.0") {
           _perChange = newPc;
           needsUpdate = true;
-          print("PUT PC Updated: $_perChange");
         }
 
         // Calculate OI values only if needed
@@ -379,20 +341,16 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
   static TextStyle _getActionStyle(Color color) {
     return _actionStyleCache.putIfAbsent(
       color,
-      () => const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w700,
-      ).copyWith(color: color),
+      () =>
+          TextWidget.textStyle(fontSize: 18, color: color, theme: false, fw: 1),
     );
   }
 
   static TextStyle _getTextStyle(Color color) {
     return _textStyleCache.putIfAbsent(
       color,
-      () => const TextStyle(
-        fontWeight: FontWeight.w500,
-        fontSize: 13,
-      ).copyWith(color: color),
+      () =>
+          TextWidget.textStyle(fontSize: 12, color: color, theme: false, fw: 0),
     );
   }
 
@@ -405,10 +363,8 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
         if (value != null && value != "0.00") {
           color = value.startsWith("-") ? colors.darkred : colors.ltpgreen;
         }
-        return const TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 11,
-        ).copyWith(color: color);
+        return TextWidget.textStyle(
+            fontSize: 11, color: color, theme: false, fw: 0);
       },
     );
   }
@@ -421,7 +377,7 @@ Future<void> placeOrderInput(
 ) async {
   // Obtain a WidgetRef from the context
   final container = ProviderScope.containerOf(context);
-  
+
   await container.read(marketWatchProvider).fetchScripInfo(
         depthData.token.toString(),
         depthData.exch.toString(),

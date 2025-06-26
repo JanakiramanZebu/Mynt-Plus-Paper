@@ -5,6 +5,7 @@ import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../models/portfolio_model/position_convertion_model.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
@@ -63,11 +64,11 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('Position Convertion',
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w600)),
+          TextWidget.titleText(
+              text: 'Position Convertion',
+              theme: false,
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              fw: 1),
           IconButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -87,20 +88,24 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("${widget.convertPosition.symbol} ",
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    style: textStyles.appBarTitleTxt.copyWith(
+                TextWidget.titleText(
+                    text: "${widget.convertPosition.symbol} ",
+                    theme: false,
                         color: theme.isDarkMode
                             ? colors.colorWhite
-                            : colors.colorBlack)),
-                Text("${widget.convertPosition.option}  ",
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    style: textStyles.appBarTitleTxt.copyWith(
+                        : colors.colorBlack,
+                    fw: 1,
+                    textOverflow: TextOverflow.ellipsis,
+                    align: TextAlign.center),
+                TextWidget.titleText(
+                    text: "${widget.convertPosition.option}  ",
+                    theme: false,
                         color: theme.isDarkMode
                             ? colors.colorWhite
-                            : colors.colorBlack)),
+                        : colors.colorBlack,
+                    fw: 1,
+                    textOverflow: TextOverflow.ellipsis,
+                    align: TextAlign.center),
                 CustomExchBadge(exch: "${widget.convertPosition.exch}")
               ],
             ),
@@ -116,11 +121,14 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
                             ? colors.darkGrey
                             : const Color(0xffF1F3F8),
                         borderRadius: BorderRadius.circular(5)),
-                    child: Text("${widget.convertPosition.sPrdtAli}",
-                        style: textStyles.scripNameTxtStyle.copyWith(
-                            color: ref.read(themeProvider).isDarkMode
+                  child: TextWidget.subText(
+                      text: "${widget.convertPosition.sPrdtAli}",
+                      theme: false,
+                      color: theme.isDarkMode
                                 ? colors.colorWhite
-                                : colors.colorBlack))),
+                          : colors.colorBlack,
+                      fw: 1),
+                ),
                 const Icon(Icons.double_arrow_sharp),
                 Container(
                     padding:
@@ -130,8 +138,8 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
                             ? colors.darkGrey
                             : const Color(0xffF1F3F8),
                         borderRadius: BorderRadius.circular(5)),
-                    child: Text(
-                        widget.convertPosition.sPrdtAli == "MIS" &&
+                    child: TextWidget.subText(
+                        text: widget.convertPosition.sPrdtAli == "MIS" &&
                                 (widget.convertPosition.exch == "NSE" ||
                                     widget.convertPosition.exch == "BSE")
                             ? "CNC"
@@ -140,10 +148,11 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
                                 : widget.convertPosition.sPrdtAli == "CNC"
                                     ? "MIS"
                                     : "MIS",
-                        style: textStyles.scripNameTxtStyle.copyWith(
-                            color: ref.read(themeProvider).isDarkMode
+                        theme: false,
+                        color: theme.isDarkMode
                                 ? colors.colorWhite
-                                : colors.colorBlack))),
+                            : colors.colorBlack,
+                        fw: 1)),
               ],
             ),
             const SizedBox(height: 6),
@@ -153,19 +162,26 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                     const SizedBox(height: 8),
-                    headerTitleText("Max Quantity", theme),
+                    TextWidget.subText(
+                        text: "Max Quantity",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        fw: 0),
                     const SizedBox(height: 8),
                     SizedBox(
                         height: 44,
                         child: CustomTextFormField(
                           fillColor: theme.isDarkMode ? colors.darkGrey : null,
                           isReadable: true,
-                          style: textStyle(
-                              theme.isDarkMode
+                          style: TextWidget.textStyle(
+                              fontSize: 16,
+                              color: theme.isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
-                              16,
-                              FontWeight.w600),
+                              theme: false,
+                              fw: 1),
                           textCtrl: maxQty,
                           textAlign: TextAlign.center,
                         ))
@@ -176,7 +192,13 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                     const SizedBox(height: 8),
-                    headerTitleText("Quantity", theme),
+                    TextWidget.subText(
+                        text: "Quantity",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        fw: 0),
                     const SizedBox(height: 8),
                     SizedBox(
                         height: 44,
@@ -187,14 +209,18 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
                               FilteringTextInputFormatter.digitsOnly
                             ],
                             hintText: maxQty.text,
-                            hintStyle: textStyle(
-                                const Color(0xff666666), 15, FontWeight.w400),
-                            style: textStyle(
-                                theme.isDarkMode
+                            hintStyle: TextWidget.textStyle(
+                                fontSize: 16,
+                                color: const Color(0xff666666),
+                                theme: false,
+                                fw: 00),
+                            style: TextWidget.textStyle(
+                                fontSize: 16,
+                                color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                16,
-                                FontWeight.w600),
+                                theme: false,
+                                fw: 1),
                             textCtrl: qty,
                             textAlign: TextAlign.center,
                             onChanged: (value) {
@@ -277,22 +303,15 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50)),
             ),
-            child: Text("Convert",
-                style: textStyle(
+            child: TextWidget.subText(
+                text: "Convert",
+                theme: false,
+                color:
                     !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
+                fw: 0),
           ),
         ),
       ],
     );
-  }
-
-  Text headerTitleText(String text, ThemesProvider theme) {
-    return Text(text,
-        style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w500));
   }
 }

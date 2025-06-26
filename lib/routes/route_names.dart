@@ -18,6 +18,7 @@ class Routes {
   static const String searchScrip = 'searchScrip';
   static const String editScrip = 'EditScrip';
   static const String marketScripInfo = 'MarketScripInfo';
+  static const String fundamentalDetail = 'FundamentalDetail';
   static const String chartWebView = 'ChartWebView';
 
   static const String sipDetails = 'sipDetails';
@@ -85,6 +86,7 @@ class Routes {
   static const String reports = 'Reports';
 
   static const String futures = 'Futures';
+  static const String futureScreen = 'futureScreen';
 
   static const String positionDetail = 'PositionDetail';
   static const String positionGroupDetail = 'positionGroupDetail';
@@ -95,6 +97,7 @@ class Routes {
   static const String holdingExit = 'HoldingExit';
   static const String edis = 'Edis';
   static const String setAlert = 'setAlert';
+  static const String setAlertScreen = 'setAlertScreen';
 
   static const String placeOrderScreen = 'PlaceOrderScreen';
   // static const String gttOrderScreen = 'GTTOrderScreen';

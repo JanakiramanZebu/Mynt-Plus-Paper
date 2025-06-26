@@ -4,6 +4,7 @@ import '../../../res/res.dart';
 import '../../locator/preference.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
 
@@ -60,11 +61,9 @@ class _OrderbookSipkFilterBottomSheetState
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Sort by",
-                        style: textStyles.appBarTitleTxt.copyWith(
-                            color: !theme.isDarkMode
+                    TextWidget.titleText(text: "Sort by",theme: false,color: !theme.isDarkMode
                                 ? colors.colorBlack
-                                : colors.colorWhite))
+                                : colors.colorWhite,fw: 1),
                   ])),
           Divider(
               color: theme.isDarkMode
@@ -101,10 +100,7 @@ class _OrderbookSipkFilterBottomSheetState
                       const SizedBox(
                         width: 15,
                       ),
-                      Text(
-                        "Scrip Name",
-                        style: textStyles.prdText,
-                      ),
+                      TextWidget.subText(text: "Scrip Name",theme: false,color: colors.colorGrey,fw: 0),
                     ],
                   ),
                 ),
@@ -143,10 +139,7 @@ class _OrderbookSipkFilterBottomSheetState
                       const SizedBox(
                         width: 15,
                       ),
-                      Text(
-                        "LTP",
-                        style: textStyles.prdText,
-                      ),
+                      TextWidget.subText(text: "LTP",theme: false,color: colors.colorGrey,fw: 0),
                     ],
                   ),
                 ),
@@ -228,10 +221,7 @@ class _OrderbookSipkFilterBottomSheetState
                       const SizedBox(
                         width: 15,
                       ),
-                      Text(
-                        "Start Date",
-                        style: textStyles.prdText,
-                      ),
+                      TextWidget.subText(text: "Start Date",theme: false,color: colors.colorGrey,fw: 0),
                     ],
                   ),
                 ),

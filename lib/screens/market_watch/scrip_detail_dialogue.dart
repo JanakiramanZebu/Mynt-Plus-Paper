@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; 
 import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -41,29 +42,32 @@ class ScripDetailDialogue extends ConsumerWidget {
                       children: [
                         Row(
                           children: [
-                            Text('${scripInfo.symbol} ',
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    16,
-                                    FontWeight.w600)),
-                            Text(' ${scripInfo.option}',
-                                style: textStyle(const Color(0xff666666), 16,
-                                    FontWeight.w600)),
+                           
+
+                                     TextWidget.titleText(
+                      text: '${scripInfo.symbol} ',                  
+                      theme: theme.isDarkMode,
+                      fw: 1),                           
+
+                                     TextWidget.titleText(
+                      text:' ${scripInfo.option}',   
+                      color: Color(0xff666666),               
+                      theme: theme.isDarkMode,
+                      fw: 1),
+
                           ],
                         ),
                         const SizedBox(height: 3),
                         Row(
                           children: [
                             CustomExchBadge(exch: "${scripInfo.exch}"),
-                            Text("  ${scripInfo.expDate}",
-                                style: textStyle(
-                                    !theme.isDarkMode
+                                     TextWidget.paraText(
+                      text:"  ${scripInfo.expDate}" ,
+                      color:!theme.isDarkMode
                                         ? colors.colorBlack
-                                        : colors.colorWhite,
-                                    12,
-                                    FontWeight.w600)),
+                                        : colors.colorWhite ,
+                      theme: theme.isDarkMode,
+                      fw: 1),
                           ],
                         ),
                       ]),
@@ -161,13 +165,19 @@ class ScripDetailDialogue extends ConsumerWidget {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                            Text("Exposure Margin",
-                                style: textStyle(const Color(0xff666666), 12,
-                                    FontWeight.w500)),
-                            const SizedBox(height: 3),
-                            Text(scripInfo.expmrg ?? "-",
-                                style: textStyle(const Color(0xff000000), 14,
-                                    FontWeight.w500)),
+                            
+                                    TextWidget.paraText(
+                      text:"Exposure Margin" ,
+                      color:Color(0xff666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                            const SizedBox(height: 3),                        
+
+                                    TextWidget.subText(
+                      text: scripInfo.expmrg ?? "-",
+                      color:Color(0xff000000) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                             const SizedBox(height: 10)
                           ]))
                     ])
@@ -189,17 +199,17 @@ class ScripDetailDialogue extends ConsumerWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text(title1,
-                    style: textStyle(
-                        const Color(0xff666666), 12, FontWeight.w500)),
+                         TextWidget.paraText(
+                      text:title1 ,
+                      color:Color(0xff666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 const SizedBox(height: 3),
-                Text(value1,
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        14,
-                        FontWeight.w500)),
+                        TextWidget.subText(
+                      text: value1,
+                      
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 const SizedBox(height: 3),
                 Divider(
                   color: theme.isDarkMode
@@ -211,16 +221,19 @@ class ScripDetailDialogue extends ConsumerWidget {
           Expanded(
               child:
                   Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text(title2,
-                style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
+            
+
+                TextWidget.paraText(
+                      text: title2,
+                      color:Color(0xff666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
             const SizedBox(height: 3),
-            Text(
-              value2,
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w500),
-            ),
+            TextWidget.subText(
+                      text: value2,
+                      
+                      theme: theme.isDarkMode,
+                      fw: 0),
             const SizedBox(height: 3),
             Divider(
               color: theme.isDarkMode

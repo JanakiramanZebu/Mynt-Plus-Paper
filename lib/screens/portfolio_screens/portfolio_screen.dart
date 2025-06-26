@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../profile_screen/fund_screen/secure_fund.dart';
 import 'allholdings/allholdings_screen.dart';
@@ -101,7 +102,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
       return Column(children: [
         SizedBox(
             width: MediaQuery.of(context).size.width,
-            height: 46,
+            height: 40,
             child: TabBar(
                 // tabAlignment: portfolio.mfHoldingsModel!.isNotEmpty &&
                 //             portfolio.mfHoldingsModel![0].stat != "Not_Ok" ||
@@ -117,16 +118,15 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                 indicatorColor:
                     theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
                 unselectedLabelColor: const Color(0XFF777777),
-                unselectedLabelStyle: GoogleFonts.inter(
-                    textStyle: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: -0.28)),
+                unselectedLabelStyle: TextWidget.textStyle(
+                    fontSize: 12,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    letterSpacing: -0.28),
                 labelColor:
                     theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
-                labelStyle: GoogleFonts.inter(
-                    textStyle: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600)),
+                labelStyle: TextWidget.textStyle(
+                    fontSize: 12, theme: theme.isDarkMode, fw: 1),
                 controller: portfolio.portTab,
                 tabs: portfolio.portTabName)),
         Expanded(

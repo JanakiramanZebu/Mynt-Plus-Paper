@@ -6,6 +6,7 @@ import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/custom_text_btn.dart';
 import '../../../../sharedWidget/functions.dart';
@@ -88,32 +89,30 @@ class PositionGroupSymbol extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
+                                TextWidget.subText(
+                                    text:
                                   "${positionBook.groupPositionSym[index]}(${positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['groupList'].length})",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w600)),
+                                    theme: theme.isDarkMode,
+                                    fw: 1),
                               Column(children: [
                                 Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Row(children: [
-                                        Text(
-                                            positionBook.isNetPnl
+                                          TextWidget.paraText(
+                                              text: positionBook.isNetPnl
                                                 ? "Grouped P&L: "
                                                 : "Grouped MTM: ",
-                                            style: textStyle(
-                                                const Color(0xff5E6B7D),
-                                                13,
-                                                FontWeight.w500)),
-                                        Text(
+                                              theme: theme.isDarkMode,
+                                              color: const Color(0xff5E6B7D),
+                                              fw: 0),
+                                          TextWidget.subText(
+                                              text:
                                             "${positionBook.isNetPnl ? positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['totPnl'] : positionBook.groupedBySymbol[positionBook.groupPositionSym[index]]['totMtm']}",
-                                            style: textStyle(
-                                                positionBook.isNetPnl
-                                                    ? positionBook.groupedBySymbol[
+                                              theme: theme.isDarkMode,
+                                              color: positionBook.isNetPnl
+                                                  ? positionBook
+                                                          .groupedBySymbol[
                                                                 positionBook
                                                                         .groupPositionSym[
                                                                     index]]
@@ -131,8 +130,7 @@ class PositionGroupSymbol extends ConsumerWidget {
                                                             .startsWith('-')
                                                         ? colors.darkred
                                                         : colors.ltpgreen,
-                                                14,
-                                                FontWeight.w600))
+                                              fw: 1)
                                       ])
                                     ])
                               ])
@@ -308,17 +306,28 @@ class PositionGroupSymbol extends ConsumerWidget {
                                                       ? const Color.fromARGB(
                                                           255, 18, 18, 18)
                                                       : colors.colorWhite,
-                                                  titleTextStyle: textStyles
-                                                      .appBarTitleTxt
-                                                      .copyWith(
+                                                      titleTextStyle:
+                                                          TextWidget.textStyle(
+                                                              fontSize: 16,
                                                           color: theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack),
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack,
+                                                              theme: theme
+                                                                  .isDarkMode,
+                                                              fw: 1),
                                                   contentTextStyle:
-                                                      textStyles.menuTxt.copyWith(
+                                                          TextWidget.textStyle(
+                                                              fontSize: 12,
                                                           color: theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack),
+                                                                  ? colors
+                                                                      .colorWhite
+                                                                  : colors
+                                                                      .colorBlack,
+                                                              theme: theme
+                                                                  .isDarkMode,
+                                                              fw: 1),
                                                   titlePadding:
                                                       const EdgeInsets.symmetric(
                                                           horizontal: 14,
@@ -337,7 +346,13 @@ class PositionGroupSymbol extends ConsumerWidget {
                                                   insetPadding:
                                                       const EdgeInsets.symmetric(
                                                           horizontal: 20),
-                                                  title: const Text("Delete Group"),
+                                                      title:
+                                                          TextWidget.titleText(
+                                                              text:
+                                                                  "Delete Group",
+                                                              theme: theme
+                                                                  .isDarkMode,
+                                                              fw: 1),
                                                   content: SizedBox(
                                                     width: MediaQuery.of(context)
                                                         .size
@@ -346,8 +361,12 @@ class PositionGroupSymbol extends ConsumerWidget {
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment.start,
                                                       children: [
-                                                        Text(
-                                                            "Are you sure you want to Delete Group of ${positionBook.groupPositionSym[index]}?")
+                                                            TextWidget.paraText(
+                                                                text:
+                                                                    "Are you sure you want to Delete Group of ${positionBook.groupPositionSym[index]}?",
+                                                                theme: theme
+                                                                    .isDarkMode,
+                                                                fw: 0)
                                                       ],
                                                     ),
                                                   ),
@@ -356,14 +375,16 @@ class PositionGroupSymbol extends ConsumerWidget {
                                                         onPressed: () =>
                                                             Navigator.of(context)
                                                                 .pop(),
-                                                        child: Text("No",
-                                                            style: textStyles.textBtn.copyWith(
-                                                                color: theme
-                                                                        .isDarkMode
+                                                            child: TextWidget.paraText(
+                                                                text: "No",
+                                                                theme: theme
+                                                                    .isDarkMode,
+                                                                color: theme.isDarkMode
                                                                     ? colors
                                                                         .colorLightBlue
                                                                     : colors  
-                                                                        .colorBlue))),
+                                                                        .colorBlue,
+                                                                fw: 0)),
                                                     ElevatedButton(
                                                       onPressed: () async {
                                                         await positionBook
@@ -392,15 +413,17 @@ class PositionGroupSymbol extends ConsumerWidget {
                                                                         .circular(
                                                                             50),
                                                               )),
-                                                      child: Text("Yes",
-                                                          style: textStyle(
-                                                              !theme.isDarkMode
+                                                          child: TextWidget.subText(
+                                                              text: "Yes",
+                                                              theme: theme
+                                                                  .isDarkMode,
+                                                              color: !theme
+                                                                      .isDarkMode
                                                                   ? colors
                                                                       .colorWhite
                                                                   : colors
                                                                       .colorBlack,
-                                                              14,
-                                                              FontWeight.w500)),
+                                                              fw: 0),
                                                     ),
                                                   ],
                                                 );

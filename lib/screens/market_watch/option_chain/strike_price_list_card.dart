@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/list_divider.dart';
 
@@ -51,10 +52,11 @@ class StrikePriceListCard extends ConsumerWidget {
     return _textStyleCache.putIfAbsent(
       color,
       () => GoogleFonts.inter(
-        textStyle: const TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 13,
-        ),
+        textStyle: 
+TextWidget.textStyle(
+                 fontSize: 12 ,  theme: false , fw: 0 ),	
+
+
       ).copyWith(color: color),
     );
   }

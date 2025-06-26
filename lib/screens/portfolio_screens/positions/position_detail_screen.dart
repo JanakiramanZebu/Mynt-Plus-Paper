@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -126,26 +127,30 @@ class PositionDetailScreen extends ConsumerWidget {
                           children: [
                             Row(
                               children: [
-                                Text("${positionList.symbol}",
-                                    style: textStyles.appBarTitleTxt.copyWith(
+                                TextWidget.titleText(
+                                    text: "${positionList.symbol}",
+                                    fw: 1,
                                         color: theme.isDarkMode
                                             ? colors.colorWhite
-                                            : colors.colorBlack)),
-                                Text(" ${positionList.option} ",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textStyles.scripNameTxtStyle.copyWith(
+                                        : colors.colorBlack,
+                                    theme: false),
+                                TextWidget.subText(
+                                    text: " ${positionList.option} ",
+                                    fw: 1,
                                         color: theme.isDarkMode
                                             ? colors.colorWhite
-                                            : colors.colorBlack)),
+                                        : colors.colorBlack,
+                                    theme: false,
+                                    textOverflow: TextOverflow.ellipsis),
                               ],
                             ),
-                            Text("₹${positionList.lp}",
-                                style: textStyle(
-                                    theme.isDarkMode
+                            TextWidget.titleText(
+                                text: "₹${positionList.lp}",
+                                fw: 1,
+                                color: theme.isDarkMode
                                         ? colors.colorWhite
                                         : colors.colorBlack,
-                                    16,
-                                    FontWeight.w600)),
+                                theme: false),
                           ],
                         ),
                         const SizedBox(height: 4),
@@ -155,14 +160,17 @@ class PositionDetailScreen extends ConsumerWidget {
                             children: [
                               Row(children: [
                                 CustomExchBadge(exch: "${positionList.exch}"),
-                                Text("  ${positionList.expDate}",
-                                    style: textStyle(const Color(0xff000000), 12,
-                                        FontWeight.w600))
+                                TextWidget.paraText(
+                                    text: "  ${positionList.expDate}",
+                                    fw: 1,
+                                    color: const Color(0xff000000),
+                                    theme: false),
                               ]),
-                              Text(
+                              TextWidget.paraText(
+                                  text:
                                   "${double.parse("${positionList.chng ?? 0.00} ").toStringAsFixed(2)} (${positionList.perChange ?? 0.00}%)",
-                                  style: textStyle(
-                                      (positionList.chng == "null" ||
+                                  fw: 0,
+                                  color: (positionList.chng == "null" ||
                                                   positionList.chng == null) ||
                                               positionList.chng == "0.00"
                                           ? colors.ltpgrey
@@ -171,8 +179,7 @@ class PositionDetailScreen extends ConsumerWidget {
                                                       .startsWith("-")
                                               ? colors.darkred
                                               : colors.ltpgreen,
-                                      12,
-                                      FontWeight.w500))
+                                  theme: false),
                             ])
                       ]),
                 )),
@@ -198,9 +205,11 @@ class PositionDetailScreen extends ConsumerWidget {
                                 color: theme.isDarkMode
                                     ? const Color(0xff666666).withOpacity(.2)
                                     : const Color(0xff999999).withOpacity(.2)),
-                            child: Text("${positionList.sPrdtAli}",
-                                style: textStyle(
-                                    const Color(0xff666666), 12, FontWeight.w600))),
+                            child: TextWidget.paraText(
+                                text: "${positionList.sPrdtAli}",
+                                fw: 1,
+                                color: const Color(0xff666666),
+                                theme: false)),
                         if ((positionList.netqty != "0") &&
                             (positionList.sPrdtAli == "MIS" ||
                                 positionList.sPrdtAli == "CNC" ||
@@ -225,13 +234,13 @@ class PositionDetailScreen extends ConsumerWidget {
                                         borderRadius: BorderRadius.circular(32)),
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 5),
-                                    child: Text("Convert",
-                                        style: textStyle(
-                                            theme.isDarkMode
+                                    child: TextWidget.paraText(
+                                        text: "Convert",
+                                        fw: 1,
+                                        color: theme.isDarkMode
                                                 ? colors.colorWhite
                                                 : colors.colorBlack,
-                                            13,
-                                            FontWeight.w600))),
+                                        theme: false)),
                               ),
                             ],
                           )
@@ -242,17 +251,20 @@ class PositionDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(positions.isNetPnl ? "P&L" : "MTM",
-                            style: textStyle(
-                                const Color(0xff5E6B7D), 12, FontWeight.w500)),
+                        TextWidget.paraText(
+                            text: positions.isNetPnl ? "P&L" : "MTM",
+                            fw: 0,
+                            color: const Color(0xff5E6B7D),
+                            theme: false),
                         const SizedBox(height: 6),
                         Row(
                           children: [
                             if (positions.isNetPnl) ...[
-                              Text(
+                              TextWidget.titleText(
+                                  text:
                                   "₹${positionList.profitNloss ?? positionList.rpnl}",
-                                  style: textStyle(
-                                      positionList.profitNloss != null
+                                  theme: false,
+                                  color: positionList.profitNloss != null
                                           ? positionList.profitNloss!
                                                   .startsWith("-")
                                               ? colors.darkred
@@ -264,18 +276,17 @@ class PositionDetailScreen extends ConsumerWidget {
                                               : positionList.rpnl == "0.00"
                                                   ? colors.ltpgrey
                                                   : colors.ltpgreen,
-                                      15,
-                                      FontWeight.w600))
+                                  fw: 1),
                             ] else ...[
-                              Text("₹${positionList.mTm}",
-                                  style: textStyle(
-                                      positionList.mTm!.startsWith("-")
+                              TextWidget.titleText(
+                                  text: "₹${positionList.mTm}",
+                                  color: positionList.mTm!.startsWith("-")
                                           ? colors.darkred
                                           : positionList.mTm == "0.00"
                                               ? colors.ltpgrey
                                               : colors.ltpgreen,
-                                      15,
-                                      FontWeight.w600))
+                                  fw: 1,
+                                  theme: false),
                             ]
                           ],
                         ),
@@ -295,13 +306,13 @@ class PositionDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10),
-                        Text("Position details",
-                            style: textStyle(
-                                theme.isDarkMode
+                        TextWidget.titleText(
+                            text: "Position details",
+                            color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                16,
-                                FontWeight.w600)),
+                            fw: 1,
+                            theme: false),
                         const SizedBox(height: 16),
                         Row(
                           children: [
@@ -309,39 +320,40 @@ class PositionDetailScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Price",
-                                      style: textStyle(
-                                          theme.isDarkMode
+                                  TextWidget.subText(
+                                      text: "Price",
+                                      theme: false,
+                                      color: theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
+                                      fw: 1),
                                   const SizedBox(height: 2),
-                                  Text("${positionList.dayavgprc ?? 0.00}",
-                                      style: textStyle(
-                                          theme.isDarkMode
+                                  TextWidget.subText(
+                                      text: "${positionList.dayavgprc ?? 0.00}",
+                                      theme: false,
+                                      color: theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
+                                      fw: 1),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
                                           ? colors.darkColorDivider
                                           : colors.colorDivider),
-                                  Text("Day Buy Avg",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.paraText(
+                                      text: "Day Buy Avg",
+                                      theme: false,
+                                      color: const Color(0xff666666),
+                                      fw: 0),
                                   const SizedBox(height: 2),
-                                  Text(
+                                  TextWidget.subText(
+                                      text:
                                     "${positionList.daybuyavgprc ?? 0.00}",
-                                    style: textStyle(
-                                        theme.isDarkMode
+                                      theme: false,
+                                      color: theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
-                                  ),
+                                      fw: 0),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
@@ -355,40 +367,41 @@ class PositionDetailScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Net Qty",
-                                      style: textStyle(
-                                          theme.isDarkMode
+                                  TextWidget.subText(
+                                      text: "Net Qty",
+                                      theme: false,
+                                      color: theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
+                                      fw: 1),
                                   const SizedBox(height: 2),
-                                  Text(
+                                  TextWidget.subText(
+                                      text:
                                       "${((int.tryParse(positionList.netqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                                      style: textStyle(
-                                          theme.isDarkMode
+                                      theme: false,
+                                      color: theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          14,
-                                          FontWeight.w600)),
+                                      fw: 1),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
                                           ? colors.darkColorDivider
                                           : colors.colorDivider),
-                                  Text("Day Buy Qty",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.paraText(
+                                      text: "Day Buy Qty",
+                                      theme: false,
+                                      color: const Color(0xff666666),
+                                      fw: 0),
                                   const SizedBox(height: 2),
-                                  Text(
+                                  TextWidget.subText(
+                                      text:
                                     "${((int.tryParse(positionList.daybuyqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                                    style: textStyle(
-                                        theme.isDarkMode
+                                      theme: false,
+                                      color: theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
-                                  ),
+                                      fw: 0),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
@@ -406,19 +419,20 @@ class PositionDetailScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Day Sell Avg",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.paraText(
+                                      text: "Day Sell Avg",
+                                      theme: false,
+                                      color: const Color(0xff666666),
+                                      fw: 0),
                                   const SizedBox(height: 2),
-                                  Text(
+                                  TextWidget.subText(
+                                      text:
                                     "${positionList.daysellavgprc ?? 0.00}",
-                                    style: textStyle(
-                                        theme.isDarkMode
+                                      theme: false,
+                                      color: theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
-                                  ),
+                                      fw: 0),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
@@ -432,19 +446,20 @@ class PositionDetailScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Day Sell Qty",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.paraText(
+                                      text: "Day Sell Qty",
+                                      theme: false,
+                                      fw: 0,
+                                      color: const Color(0xff666666)),
                                   const SizedBox(height: 2),
-                                  Text(
+                                  TextWidget.subText(
+                                      text:
                                     "${((int.tryParse(positionList.daysellqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                                    style: textStyle(
-                                        theme.isDarkMode
+                                      theme: false,
+                                      color: theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
-                                  ),
+                                      fw: 0),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
@@ -462,19 +477,20 @@ class PositionDetailScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("CF Buy Avg",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.paraText(
+                                      text: "CF Buy Avg",
+                                      theme: false,
+                                      color: const Color(0xff666666),
+                                      fw: 0),
                                   const SizedBox(height: 2),
-                                  Text(
+                                  TextWidget.subText(
+                                      text:
                                     "${positionList.cfbuyavgprc ?? 0.00}",
-                                    style: textStyle(
-                                        theme.isDarkMode
+                                      theme: false,
+                                      color: theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
-                                  ),
+                                      fw: 0),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
@@ -488,19 +504,20 @@ class PositionDetailScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("CF Buy Qty",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.paraText(
+                                      text: "CF Buy Qty",
+                                      theme: false,
+                                      color: const Color(0xff666666),
+                                      fw: 0),
                                   const SizedBox(height: 2),
-                                  Text(
+                                  TextWidget.subText(
+                                      text:
                                     "${((int.tryParse(positionList.cfbuyqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                                    style: textStyle(
-                                        theme.isDarkMode
+                                      theme: false,
+                                      color: theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
-                                  ),
+                                      fw: 0),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
@@ -518,19 +535,20 @@ class PositionDetailScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("CF Sell Avg",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.paraText(
+                                      text: "CF Sell Avg",
+                                      theme: false,
+                                      color: const Color(0xff666666),
+                                      fw: 0),
                                   const SizedBox(height: 2),
-                                  Text(
+                                  TextWidget.subText(
+                                      text:
                                     "${positionList.cfsellavgprc ?? 0.00}",
-                                    style: textStyle(
-                                        theme.isDarkMode
+                                      theme: false,
+                                      color: theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
-                                  ),
+                                      fw: 0),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
@@ -544,19 +562,20 @@ class PositionDetailScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("CF Sell Qty",
-                                      style: textStyle(const Color(0xff666666), 12,
-                                          FontWeight.w500)),
+                                  TextWidget.paraText(
+                                      text: "CF Sell Qty",
+                                      theme: false,
+                                      color: const Color(0xff666666),
+                                      fw: 0),
                                   const SizedBox(height: 2),
-                                  Text(
+                                  TextWidget.subText(
+                                      text:
                                     "${((int.tryParse(positionList.cfsellqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                                    style: textStyle(
-                                        theme.isDarkMode
+                                      theme: false,
+                                      color: theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500),
-                                  ),
+                                      fw: 0),
                                   const SizedBox(height: 2),
                                   Divider(
                                       color: theme.isDarkMode
@@ -568,96 +587,90 @@ class PositionDetailScreen extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text("Net Buy Value",
-                            style: textStyle(
-                                theme.isDarkMode
+                        TextWidget.subText(
+                            text: "Net Buy Value",
+                            theme: false,
+                            color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
+                            fw: 0),
                         const SizedBox(height: 2),
-                        Text(
-                          "${positionList.totbuyamt ?? 0.00}",
-                          style: textStyle(
-                              theme.isDarkMode
+                        TextWidget.subText(
+                            text: "${positionList.totbuyamt ?? 0.00}",
+                            theme: false,
+                            color: theme.isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
-                              14,
-                              FontWeight.w500),
-                        ),
+                            fw: 0),
                         const SizedBox(height: 2),
                         Divider(
                             color: theme.isDarkMode
                                 ? colors.darkColorDivider
                                 : colors.colorDivider),
                         const SizedBox(height: 4),
-                        Text("Net Sell Value",
-                            style: textStyle(
-                                theme.isDarkMode
+                        TextWidget.subText(
+                            text: "Net Sell Value",
+                            theme: false,
+                            color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
+                            fw: 0),
                         const SizedBox(height: 2),
-                        Text(
-                          "${positionList.totsellamt ?? 0.00}",
-                          style: textStyle(
-                              theme.isDarkMode
+                        TextWidget.subText(
+                            text: "${positionList.totsellamt ?? 0.00}",
+                            theme: false,
+                            color: theme.isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
-                              14,
-                              FontWeight.w500),
-                        ),
+                            fw: 0),
                         const SizedBox(height: 2),
                         Divider(
                             color: theme.isDarkMode
                                 ? colors.darkColorDivider
                                 : colors.colorDivider),
                         const SizedBox(height: 4),
-                        Text("Net Value",
-                            style: textStyle(
-                                theme.isDarkMode
+                        TextWidget.subText(
+                            text: "Net Value",
+                            theme: false,
+                            color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
+                            fw: 0),
                         const SizedBox(height: 2),
-                        Text(
-                          (double.parse("${positionList.totbuyamt ?? 0.00}") +
+                        TextWidget.subText(
+                            text: (double.parse(
+                                        "${positionList.totbuyamt ?? 0.00}") +
                                   double.parse(
                                       "${positionList.totsellamt ?? 0.00}"))
                               .toStringAsFixed(2),
-                          style: textStyle(
-                              theme.isDarkMode
+                            theme: false,
+                            color: theme.isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
-                              14,
-                              FontWeight.w500),
-                        ),
+                            fw: 0),
                         const SizedBox(height: 2),
                         Divider(
                             color: theme.isDarkMode
                                 ? colors.darkColorDivider
                                 : colors.colorDivider),
                         const SizedBox(height: 4),
-                        Text("Act Avg Price",
-                            style: textStyle(
-                                theme.isDarkMode
+                        TextWidget.subText(
+                            text: "Act Avg Price",
+                            theme: false,
+                            color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                14,
-                                FontWeight.w500)),
+                            fw: 0),
                         const SizedBox(height: 2),
-                        Text(
-                          (double.parse("${positionList.upldprc ?? 0.00}"))
+                        TextWidget.subText(
+                            text: (double.parse(
+                                    "${positionList.upldprc ?? 0.00}"))
                               .toStringAsFixed(2),
-                          style: textStyle(
-                              theme.isDarkMode
+                            theme: false,
+                            color: theme.isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
-                              14,
-                              FontWeight.w500),
-                        ),
+                            fw: 0),
                       ])),
               // ScripInfoBtns(exch: '${positionList.exch}', token: '${positionList.token}', insName: '')
             ]),
@@ -719,9 +732,12 @@ class PositionDetailScreen extends ConsumerWidget {
                                       });
                                 },
                                 child: Center(
-                                    child: Text("Add More",
-                                        style: textStyle(const Color(0xffFFFFFF),
-                                            14, FontWeight.w600))),
+                                  child: TextWidget.subText(
+                                      text: "Add More",
+                                      theme: false,
+                                      color: const Color(0xffFFFFFF),
+                                      fw: 1),
+                                ),
                               )),
                         ),
                         if (positionList.qty != "0" && !positions.isDay) ...[
@@ -773,11 +789,12 @@ class PositionDetailScreen extends ConsumerWidget {
                                           });
                                     },
                                     child: Center(
-                                        child: Text("Exit",
-                                            style: textStyle(
-                                                const Color(0xffFFFFFF),
-                                                14,
-                                                FontWeight.w600))),
+                                      child: TextWidget.subText(
+                                          text: "Exit",
+                                          theme: false,
+                                          color: const Color(0xffFFFFFF),
+                                          fw: 1),
+                                    ),
                                   )))
                         ]
                       ]),

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../provider/transcation_provider.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
@@ -65,45 +66,44 @@ class _UPIAppsPaymentSuccessAlertState
                       const SizedBox(
                         height: 10,
                       ),
-                      Text(
-                        "${fund.hdfcUPIStatus!.data!.status}",
-                        style: textStyle(
-                            theme.isDarkMode
+                      TextWidget.titleText(
+                          text: "${fund.hdfcUPIStatus!.data!.status}",
+                          theme: false,
+                          color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            16,
-                            FontWeight.w600),
-                      ),
+                          fw: 1),
                       const SizedBox(
                         height: 5,
                       ),
-                      Text(
-                        fund.hdfcUPIStatus!.data!.status == "SUCCESS"
+                      TextWidget.subText(
+                          text: fund.hdfcUPIStatus!.data!.status == "SUCCESS"
                             ? "Transaction Success"
                             : "Transaction fail",
-                        style: textStyle(colors.colorGrey, 14, FontWeight.w500),
-                      ),
+                          theme: false,
+                          color: colors.colorGrey,
+                          fw: 0),
                       const SizedBox(
                         height: 10,
                       ),
-                      Text(
-                        "₹${fund.hdfcUPIStatus!.data!.amount}",
-                        style: textStyle(
-                            theme.isDarkMode
+                      TextWidget.custmText(
+                          text: "₹${fund.hdfcUPIStatus!.data!.amount}",
+                          theme: false,
+                          fs: 40,
+                          fw: 1,
+                          color: theme.isDarkMode
                                 ? colors.colorWhite
-                                : colors.colorBlack,
-                            40,
-                            FontWeight.w600),
-                      ),
+                              : colors.colorBlack),
                       const SizedBox(
                         height: 10,
                       ),
-                      Text(
-                        formatDateTimepaymet(
+                      TextWidget.subText(
+                          text: formatDateTimepaymet(
                             value:
                                 "${fund.hdfcUPIStatus!.data!.transactionAuthDate}"),
-                        style: textStyle(colors.colorGrey, 13, FontWeight.w500),
-                      ),
+                          theme: false,
+                          color: colors.colorGrey,
+                          fw: 0),
                     ],
                   ),
                 ),
@@ -155,15 +155,14 @@ class _UPIAppsPaymentSuccessAlertState
                         Navigator.pop(context);
                         FocusScope.of(context).unfocus();
                       },
-                      child: Text(
-                        'Close',
-                        style: textStyle(
-                            theme.isDarkMode
+                    child: TextWidget.titleText(
+                        text: 'Close',
+                        theme: false,
+                        color: theme.isDarkMode
                                 ? colors.colorBlack
                                 : colors.colorWhite,
-                            15,
-                            FontWeight.w600),
-                      )),
+                        fw: 1),
+                  ),
                 ),
                 const SizedBox(
                   height: 10,
@@ -176,24 +175,16 @@ class _UPIAppsPaymentSuccessAlertState
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  Widget headerTitleText(String text) {
+    return TextWidget.subText(
+        text: text, theme: false, color: colors.colorGrey, fw: 0);
   }
 
-  Text headerTitleText(String text) {
-    return Text(
-      text,
-      style: textStyle(colors.colorGrey, 14, FontWeight.w500),
-    );
-  }
-
-  Text contantTitleText(String text, ThemesProvider theme) {
-    return Text(
-      text,
-      style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          15, FontWeight.w600),
-    );
+  Widget contantTitleText(String text, ThemesProvider theme) {
+    return TextWidget.titleText(
+        text: text,
+        theme: false,
+        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        fw: 1);
   }
 }

@@ -9,6 +9,7 @@ import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import '../../models/profile_model/qr_response.dart';
 import '../../provider/thems.dart';
 import '../../provider/user_profile_provider.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 
@@ -22,55 +23,57 @@ class QrDetails extends ConsumerWidget {
     final theme = ref.read(themeProvider);
     return details.uniqueId == null
         ? Container(
-           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: theme.isDarkMode ? Colors.black : Colors.white,
-            boxShadow: const [
-              BoxShadow(
-                  color: Color(0xff999999),
-                  blurRadius: 4.0,
-                  offset: Offset(2.0, 0.0))
-            ]),
-          child: Column(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: theme.isDarkMode ? Colors.black : Colors.white,
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color(0xff999999),
+                      blurRadius: 4.0,
+                      offset: Offset(2.0, 0.0))
+                ]),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-               const CustomDragHandler(),
+                const CustomDragHandler(),
                 const SizedBox(height: 15),
                 SvgPicture.asset(
                   "assets/icon/invalid_qr.svg",
-                  color: theme.isDarkMode
-                  ?colors.colorWhite
-                  :colors.colorBlack,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                 ),
                 const SizedBox(height: 15),
-                Text(
-                  "Invalid QR Code",
-                  style: textStyle(
-                    theme.isDarkMode
-                    ?colors.colorWhite
-                    :colors.colorBlack, 16, FontWeight.w600),
+                TextWidget.titleText(
+                  text: "Invalid QR Code",
+                  theme: theme.isDarkMode,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  fw: 1,
                 ),
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: Text(
-                    "Try again with a different QR code; the one you are trying to scan is incorrect.",
-                    style: textStyle(
-                      theme.isDarkMode
-                      ?colors.colorWhite
-                      :colors.colorBlack, 14, FontWeight.w500),
+                  child: TextWidget.subText(
+                    text:
+                        "Try again with a different QR code; the one you are trying to scan is incorrect.",
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack,
+                    fw: 0,
                   ),
                 ),
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
                         backgroundColor: theme.isDarkMode
-                  ?colors.colorbluegrey
-                  :colors.colorBlack,
+                            ? colors.colorbluegrey
+                            : colors.colorBlack,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50),
                         )),
@@ -78,49 +81,54 @@ class QrDetails extends ConsumerWidget {
                       Navigator.pop(context);
                       camera.start();
                     },
-                    child: Text(
-                      "Retry",
-                      style: textStyle( theme.isDarkMode
-                  ?colors.colorBlack
-                  :colors.colorWhite, 13, FontWeight.w600),
+                    child: TextWidget.subText(
+                      text: "Retry",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                      fw: 1,
                     ),
                   ),
                 ),
               ],
             ),
-        )
+          )
         : Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: theme.isDarkMode ? Colors.black : Colors.white,
-            boxShadow: const [
-              BoxShadow(
-                  color: Color(0xff999999),
-                  blurRadius: 4.0,
-                  offset: Offset(2.0, 0.0))
-            ]),
-          child: Column(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: theme.isDarkMode ? Colors.black : Colors.white,
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color(0xff999999),
+                      blurRadius: 4.0,
+                      offset: Offset(2.0, 0.0))
+                ]),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 const CustomDragHandler(),
+                const CustomDragHandler(),
                 const SizedBox(height: 10),
                 Container(
                   alignment: Alignment.center,
-                  child: Text(
-                    "Login Conformation",
-                    style: textStyle(
-                      theme.isDarkMode
-                      ?colors.colorWhite
-                      :colors.colorBlack, 16, FontWeight.w600),
+                  child: TextWidget.titleText(
+                    text: "Login Conformation",
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack,
+                    fw: 1,
                   ),
                 ),
                 const SizedBox(height: 16),
                 rowtable("IP Address", details.ip ?? "", theme),
                 rowtable("City", details.city ?? "", theme),
-                rowtable("State", details.region??"",theme),
+                rowtable("State", details.region ?? "", theme),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16,),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -129,8 +137,8 @@ class QrDetails extends ConsumerWidget {
                         style: ElevatedButton.styleFrom(
                             elevation: 0,
                             backgroundColor: theme.isDarkMode
-                            ?colors.colorbluegrey
-                            :colors.colorBlack,
+                                ? colors.colorbluegrey
+                                : colors.colorBlack,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(50),
                             )),
@@ -138,13 +146,13 @@ class QrDetails extends ConsumerWidget {
                           Navigator.pop(context);
                           camera.start();
                         },
-                        child: Text(
-                          "Cancel",
-                          style:
-                              textStyle(
-                                theme.isDarkMode
-                                ?colors.colorBlack
-                                :colors.colorWhite, 16, FontWeight.w600),
+                        child: TextWidget.titleText(
+                          text: "Cancel",
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                          fw: 1,
                         ),
                       )),
                       const SizedBox(
@@ -155,23 +163,25 @@ class QrDetails extends ConsumerWidget {
                         style: ElevatedButton.styleFrom(
                             elevation: 0,
                             backgroundColor: theme.isDarkMode
-                            ?colors.colorbluegrey
-                            :colors.colorBlack,
+                                ? colors.colorbluegrey
+                                : colors.colorBlack,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(50),
                             )),
-                        onPressed: () async{
-                           await ref
-                              .read(userProfileProvider)
-                              .fetchQR(context, details.uniqueId.toString(),details.loginSource.toString(),camera);
+                        onPressed: () async {
+                          await ref.read(userProfileProvider).fetchQR(
+                              context,
+                              details.uniqueId.toString(),
+                              details.loginSource.toString(),
+                              camera);
                         },
-                        child: Text(
-                          "Confirm",
-                          style:
-                              textStyle(
-                                theme.isDarkMode
-                                ?colors.colorBlack
-                                :colors.colorWhite, 16, FontWeight.w600),
+                        child: TextWidget.titleText(
+                          text: "Confirm",
+                          theme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                          fw: 1,
                         ),
                       )),
                     ],
@@ -179,43 +189,32 @@ class QrDetails extends ConsumerWidget {
                 ),
               ],
             ),
-        );
+          );
   }
 }
 
-Padding rowtable(String header, String description , ThemesProvider themes) {
+Padding rowtable(String header, String description, ThemesProvider themes) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          header,
-          style: textStyle(
-            themes.isDarkMode
-            ?colors.colorGrey
-            :colors.colorBlack, 15, FontWeight.w600),
+        TextWidget.titleText(
+          text: header,
+          theme: themes.isDarkMode,
+          color: themes.isDarkMode ? colors.colorGrey : colors.colorBlack,
+          fw: 1,
         ),
         const SizedBox(
           height: 40,
         ),
-        Text(
-          description,
-          style: textStyle(
-            themes.isDarkMode
-            ?colors.colorWhite
-            :colors.colorGrey, 15, FontWeight.w600),
+        TextWidget.subText(
+          text: description,
+          theme: themes.isDarkMode,
+          color: themes.isDarkMode ? colors.colorWhite : colors.colorGrey,
+          fw: 1,
         ),
       ],
     ),
   );
-}
-
-textStyle(Color color, double fontSize, fWeight) {
-  return GoogleFonts.inter(
-      textStyle: TextStyle(
-    fontWeight: fWeight,
-    color: color,
-    fontSize: fontSize,
-  ));
 }

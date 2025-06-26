@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../res/res.dart';
 import '../provider/thems.dart';
+import '../res/global_state_text.dart';
 
 class ListWidgets extends ConsumerWidget {
   final String text;
@@ -11,15 +12,18 @@ class ListWidgets extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme=ref.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Padding(
-          padding: EdgeInsets.only(top: 2),
-          child: Icon(Icons.circle, size: 9.5)),
+          padding: EdgeInsets.only(top: 2), child: Icon(Icons.circle, size: 7)),
       const SizedBox(width: 8),
       Expanded(
-          child: Text(text,
-              style: textStyle(theme.isDarkMode?colors.colorWhite:colors.colorBlack, 12, FontWeight.w500)))
+        child: TextWidget.paraText(
+            text: text,
+            theme: false,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            fw: 0),
+      )
     ]);
   }
 

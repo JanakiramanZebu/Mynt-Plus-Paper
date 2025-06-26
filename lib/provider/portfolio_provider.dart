@@ -170,11 +170,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   bool _tphloader = false;
   bool get tphloader => _tphloader;
-  
+
   // Navigation locks to prevent duplicate actions
   bool _isFilterNavigating = false;
   bool get isFilterNavigating => _isFilterNavigating;
-  
+
   void setFilterNavigating(bool value) {
     _isFilterNavigating = value;
     notifyListeners();
@@ -226,10 +226,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
     _mfTotalPnl = 0.00;
     _mfTotalPnlPerchng = 0.00;
     _getPositionGroupSymbol = [];
-    
+
     // Reset any timer or ongoing operations
     cancelTimer();
-    
+
     notifyListeners();
   }
 
@@ -244,7 +244,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 //  Assinging and portfolio name length set
 
-  fetchBrokerDetails(BuildContext context, bool isSubscribe, bool consent) async {
+  fetchBrokerDetails(
+      BuildContext context, bool isSubscribe, bool consent) async {
     try {
       _tphloader = true;
       var res = await api.getallHolding();
@@ -261,7 +262,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         _allholds = res.equities;
         _ldate = res.syncDatetime;
       } else {
-         if (consent) {
+        if (consent) {
           Future.delayed(const Duration(seconds: 2), () {
             ScaffoldMessenger.of(context)
                 .showSnackBar(warningMessage(context, "Unable to fetch data"));
@@ -284,7 +285,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
       Navigator.pushNamed(context, Routes.camsWebView,
           arguments: _camsrespons!.redirectionurl);
     } catch (e) {
-      ref.read(indexListProvider).logError.add({"type": "Fetch API", "Error": "$e"});
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "Fetch API", "Error": "$e"});
       notifyListeners();
     } finally {
       toggleLoadingOn(false);
@@ -299,7 +303,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
             Text(
-                "Position${_allPostionList.isNotEmpty ? "s (${_allPostionList.length})" : ""}"),
+              "Position${_allPostionList.isNotEmpty ? "s (${_allPostionList.length})" : ""}",
+            ),
           ])),
       Tab(
         child: Row(
@@ -575,11 +580,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.trdqty ?? 0}");
             element.currentQty = qty;
-            ref.read(websocketProvider)
+            ref
+                .read(websocketProvider)
                 .socketDatas["${element.exchTsym![0].token}"] = {'holdQty': ""};
 
-            ref.read(websocketProvider).socketDatas["${element.exchTsym![0].token}"]
-                ['holdQty'] = "${element.currentQty}";
+            ref
+                    .read(websocketProvider)
+                    .socketDatas["${element.exchTsym![0].token}"]['holdQty'] =
+                "${element.currentQty}";
 
             double avgCost = double.parse(
                 "${element.upldprc == "0.00" ? element.exchTsym![0].close ?? 0.0 : element.upldprc ?? 0.00}");
@@ -588,7 +596,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
             element.invested = (qty * avgCost).toStringAsFixed(2);
 
             invest += double.parse("${element.invested}");
-            if (element.npoadqty.toString() != "null" || element.npoadt1qty.toString() != "null") {
+            if (element.npoadqty.toString() != "null" ||
+                element.npoadt1qty.toString() != "null") {
               _showEdis = true;
             }
 
@@ -597,8 +606,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.usedqty ?? 0}");
             if (element.sellAmt != null && element.sellAmt != "0.000000") {
-              element.rpnl = (double.parse("${element.sellAmt ?? 0.00}") - ((double.parse("${element.trdqty ?? 0.00}")) * (double.parse("${element.avgPrc ?? 0.00}")))).toStringAsFixed(2);
-            // element.rpnl = (double.parse("${element.invested ?? 0.00}") - double.parse("${element.sellAmt ?? 0.00}")).toString();
+              element.rpnl = (double.parse("${element.sellAmt ?? 0.00}") -
+                      ((double.parse("${element.trdqty ?? 0.00}")) *
+                          (double.parse("${element.avgPrc ?? 0.00}"))))
+                  .toStringAsFixed(2);
+              // element.rpnl = (double.parse("${element.invested ?? 0.00}") - double.parse("${element.sellAmt ?? 0.00}")).toString();
             }
 
             if (element.saleableQty != 0) {
@@ -609,12 +621,13 @@ class PortfolioProvider extends DefaultChangeNotifier {
           }
 
           _totInvesHold = invest.toStringAsFixed(2);
-          
+
           // Reapply sorting if previously set
           if (_currentHoldingSortOption.isNotEmpty) {
-            await filterHoldings(sorting: _currentHoldingSortOption, context: context);
+            await filterHoldings(
+                sorting: _currentHoldingSortOption, context: context);
           }
-          
+
           if (initail == "Refresh") {
             await requestWSHoldings(isSubscribe: true, context: context);
             // timerfunc();
@@ -631,7 +644,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       notifyListeners();
     } catch (e) {
       print("qwqwqw hold sw catch ${e}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Holdings", "Error": "$e"});
       notifyListeners();
@@ -690,7 +704,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
           _isDay = isDay;
           await splitPositionBook(isDay);
-          
+
           // Reapply sorting if previously set
           if (_currentPositionSortOption.isNotEmpty) {
             await sortPositions(sorting: _currentPositionSortOption);
@@ -713,7 +727,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       return _postionBookModel;
     } catch (e) {
       print("qwqwqw pos sw catch ${e}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Position Book", "Error": "$e"});
       notifyListeners();
@@ -791,7 +806,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API MF Holdings", "Error": "$e"});
       notifyListeners();
@@ -853,40 +869,44 @@ class PortfolioProvider extends DefaultChangeNotifier {
   pnlHoldCal() {
     // Early return if no holdings
     if (holdingsModel == null || holdingsModel!.isEmpty) return;
-    
+
     // Use local variables for performance and minimize string conversions
     double totalPnl = 0.0;
     double dayChange = 0.0;
     double invest = 0.0;
     double currentVal = 0.0;
-    
+
     // Process holdings in batches to reduce UI blocking
     const int batchSize = 10;
     final int totalHoldings = holdingsModel!.length;
     int processedCount = 0;
-    
+
     void processBatch(int startIndex) {
-      final int endIndex = (startIndex + batchSize) < totalHoldings ? 
-                          startIndex + batchSize : totalHoldings;
-      
+      final int endIndex = (startIndex + batchSize) < totalHoldings
+          ? startIndex + batchSize
+          : totalHoldings;
+
       for (int i = startIndex; i < endIndex; i++) {
         final holding = holdingsModel![i];
-        
+
         // Direct non-null access with fallbacks
-        final profitNloss = double.tryParse(holding.exchTsym![0].profitNloss ?? '0.0') ?? 0.0;
-        final oneDayChg = double.tryParse(holding.exchTsym![0].oneDayChg ?? '0.0') ?? 0.0;
+        final profitNloss =
+            double.tryParse(holding.exchTsym![0].profitNloss ?? '0.0') ?? 0.0;
+        final oneDayChg =
+            double.tryParse(holding.exchTsym![0].oneDayChg ?? '0.0') ?? 0.0;
         final invested = double.tryParse(holding.invested ?? '0.0') ?? 0.0;
-        final currentValue = double.tryParse(holding.currentValue ?? '0.0') ?? 0.0;
-        
+        final currentValue =
+            double.tryParse(holding.currentValue ?? '0.0') ?? 0.0;
+
         // Accumulate totals
         totalPnl += profitNloss;
         dayChange += oneDayChg;
         invest += invested;
         currentVal += currentValue;
       }
-      
+
       processedCount = endIndex;
-      
+
       // If there are more holdings to process, schedule next batch
       if (processedCount < totalHoldings) {
         Future.microtask(() => processBatch(processedCount));
@@ -896,134 +916,139 @@ class PortfolioProvider extends DefaultChangeNotifier {
         _oneDayChng = dayChange;
         _totalCurrentVal = currentVal;
         _totInvesHold = invest.toStringAsFixed(2);
-        
+
         // Calculate percentages
         _oneDayChngPer = currentVal > 0 ? (dayChange / currentVal) * 100 : 0.0;
-        _totPnlPercHolding = invest > 0 ? ((totalPnl / invest) * 100).toStringAsFixed(2) : '0.00';
-        
+        _totPnlPercHolding = invest > 0
+            ? ((totalPnl / invest) * 100).toStringAsFixed(2)
+            : '0.00';
+
         notifyListeners();
       }
     }
-    
+
     // Start processing in batches
     processBatch(0);
   }
 
   // Implement correct MTM and PnL calculations
   positionCal(bool isDay) {
-  double totalMtm = 0.0;
-  double totalPnl = 0.0;
-  double unRealMtm = 0.0;
-  double bookPnl = 0.0;
+    double totalMtm = 0.0;
+    double totalPnl = 0.0;
+    double unRealMtm = 0.0;
+    double bookPnl = 0.0;
 
-  for (var position in _allPostionList) {
-    final lp = double.tryParse(position.lp ?? "0.00") ?? 0.0;
-    final prcFtr = double.tryParse(position.prcftr ?? "1.0") ?? 1.0;
-    final mult = double.tryParse(position.mult ?? "1.0") ?? 1.0;
-    final lotSize = double.tryParse(position.ls ?? "1.0") ?? 1.0;
-    final netQty = int.tryParse(position.netqty ?? "0") ?? 0;
+    for (var position in _allPostionList) {
+      final lp = double.tryParse(position.lp ?? "0.00") ?? 0.0;
+      final prcFtr = double.tryParse(position.prcftr ?? "1.0") ?? 1.0;
+      final mult = double.tryParse(position.mult ?? "1.0") ?? 1.0;
+      final lotSize = double.tryParse(position.ls ?? "1.0") ?? 1.0;
+      final netQty = int.tryParse(position.netqty ?? "0") ?? 0;
 
-    final dayBuyQty = int.tryParse(position.daybuyqty ?? "0") ?? 0;
-    final daySellQty = int.tryParse(position.daysellqty ?? "0") ?? 0;
-    final cfBuyQty = int.tryParse(position.cfbuyqty ?? "0") ?? 0;
-    final cfSellQty = int.tryParse(position.cfsellqty ?? "0") ?? 0;
+      final dayBuyQty = int.tryParse(position.daybuyqty ?? "0") ?? 0;
+      final daySellQty = int.tryParse(position.daysellqty ?? "0") ?? 0;
+      final cfBuyQty = int.tryParse(position.cfbuyqty ?? "0") ?? 0;
+      final cfSellQty = int.tryParse(position.cfsellqty ?? "0") ?? 0;
 
-    final dayBuyAmt = double.tryParse(position.daybuyamt ?? "0.00") ?? 0.0;
-    final daySellAmt = double.tryParse(position.daysellamt ?? "0.00") ?? 0.0;
-    final upldPrc = double.tryParse(position.upldprc ?? "0.00") ?? 0.0;
-    final netAvgPrc = double.tryParse(position.netavgprc ?? "0.00") ?? 0.0;
-    final netUpldPrc = double.tryParse(position.netupldprc ?? "0.00") ?? 0.0;
-    final rpnl = double.tryParse(position.rpnl ?? "0.00") ?? 0.0;
+      final dayBuyAmt = double.tryParse(position.daybuyamt ?? "0.00") ?? 0.0;
+      final daySellAmt = double.tryParse(position.daysellamt ?? "0.00") ?? 0.0;
+      final upldPrc = double.tryParse(position.upldprc ?? "0.00") ?? 0.0;
+      final netAvgPrc = double.tryParse(position.netavgprc ?? "0.00") ?? 0.0;
+      final netUpldPrc = double.tryParse(position.netupldprc ?? "0.00") ?? 0.0;
+      final rpnl = double.tryParse(position.rpnl ?? "0.00") ?? 0.0;
 
-    // Net Buy/Sell Qty
-    final netBuyQty = dayBuyQty + cfBuyQty;
-    final netSellQty = daySellQty + cfSellQty;
+      // Net Buy/Sell Qty
+      final netBuyQty = dayBuyQty + cfBuyQty;
+      final netSellQty = daySellQty + cfSellQty;
 
-    // --- Assign qty and avgPrc as per isDay ---
-    int qty = 0;
-    double avgPrc = 0.0;
+      // --- Assign qty and avgPrc as per isDay ---
+      int qty = 0;
+      double avgPrc = 0.0;
 
-    if (isDay) {
-      // qty logic for day
-      if (position.exch == "MCX") {
-        qty = ((dayBuyQty - daySellQty) / lotSize).toInt();
+      if (isDay) {
+        // qty logic for day
+        if (position.exch == "MCX") {
+          qty = ((dayBuyQty - daySellQty) / lotSize).toInt();
+        } else {
+          qty = dayBuyQty - daySellQty;
+        }
+        position.qty = qty.toString();
+
+        // avgPrc logic for day
+        position.avgPrc = (netQty == 0 ? "0.00" : position.dayavgprc ?? "0.00");
+        avgPrc = double.tryParse(position.avgPrc ?? "0.00") ?? 0.0;
       } else {
-        qty = dayBuyQty - daySellQty;
+        // qty logic for net
+        qty = netQty;
+        position.qty = qty.toString();
+
+        // avgPrc logic for net
+        if (qty == 0) {
+          position.avgPrc = "0.00";
+        } else {
+          // If netupldprc != 0, use that, else netavgprc
+          position.avgPrc = (netUpldPrc != 0.0)
+              ? netUpldPrc.toStringAsFixed(2)
+              : netAvgPrc.toStringAsFixed(2);
+        }
+        avgPrc = double.tryParse(position.avgPrc ?? "0.00") ?? 0.0;
       }
-      position.qty = qty.toString();
 
-      // avgPrc logic for day
-      position.avgPrc = (netQty == 0 ? "0.00" : position.dayavgprc ?? "0.00");
-      avgPrc = double.tryParse(position.avgPrc ?? "0.00") ?? 0.0;
-    } else {
-      // qty logic for net
-      qty = netQty;
-      position.qty = qty.toString();
+      // ActualBuyAvgPrice (for BookedPNL calculation)
+      double actualBuyAvgPrice = 0.0;
+      if (netBuyQty != 0) {
+        actualBuyAvgPrice =
+            ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) / netBuyQty;
+      }
 
-      // avgPrc logic for net
-      if (qty == 0) {
-        position.avgPrc = "0.00";
+      // ActualSellAvgPrice (for BookedPNL calculation)
+      double actualSellAvgPrice = 0.0;
+      if (netSellQty != 0) {
+        actualSellAvgPrice =
+            ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) / netSellQty;
+      }
+
+      // ActualBookedPNL
+      double actualBookedPnl = 0.0;
+      if (netQty > 0) {
+        actualBookedPnl =
+            (actualSellAvgPrice - actualBuyAvgPrice) * netSellQty * mult;
       } else {
-        // If netupldprc != 0, use that, else netavgprc
-        position.avgPrc = (netUpldPrc != 0.0)
-            ? netUpldPrc.toStringAsFixed(2)
-            : netAvgPrc.toStringAsFixed(2);
+        actualBookedPnl =
+            (actualSellAvgPrice - actualBuyAvgPrice) * netBuyQty * mult;
       }
-      avgPrc = double.tryParse(position.avgPrc ?? "0.00") ?? 0.0;
+
+      // For MTM, avgprc = netavgprc
+      double actualUnrealizedMtm = netQty * prcFtr * mult * (lp - netAvgPrc);
+
+      // For PnL, avgprc = netupldprc if not 0 else netavgprc
+      double avgPrcForUnrealized = netUpldPrc != 0.0 ? netUpldPrc : netAvgPrc;
+      double actualUnrealizedPnl =
+          netQty * prcFtr * mult * (lp - avgPrcForUnrealized);
+
+      // MTM = rpnl + ActualUnrealizedMtoM
+      double mtm = rpnl + actualUnrealizedMtm;
+
+      // PnL = ActualBookedPNL + ActualUnrealizedMtoM
+      double pnl = actualBookedPnl + actualUnrealizedPnl;
+
+      // Assign back to position
+      position.mTm = mtm.toStringAsFixed(2);
+      position.profitNloss = pnl.toStringAsFixed(2);
+
+      // Totals
+      totalMtm += mtm;
+      totalPnl += pnl;
+      unRealMtm += actualUnrealizedPnl;
+      bookPnl += actualBookedPnl;
     }
 
-    // ActualBuyAvgPrice (for BookedPNL calculation)
-    double actualBuyAvgPrice = 0.0;
-    if (netBuyQty != 0) {
-      actualBuyAvgPrice = ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) / netBuyQty;
-    }
-
-    // ActualSellAvgPrice (for BookedPNL calculation)
-    double actualSellAvgPrice = 0.0;
-    if (netSellQty != 0) {
-      actualSellAvgPrice = ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) / netSellQty;
-    }
-
-    // ActualBookedPNL
-    double actualBookedPnl = 0.0;
-    if (netQty > 0) {
-      actualBookedPnl = (actualSellAvgPrice - actualBuyAvgPrice) * netSellQty * mult;
-    } else {
-      actualBookedPnl = (actualSellAvgPrice - actualBuyAvgPrice) * netBuyQty * mult;
-    }
-
-    // For MTM, avgprc = netavgprc
-    double actualUnrealizedMtm = netQty * prcFtr * mult * (lp - netAvgPrc);
-
-    // For PnL, avgprc = netupldprc if not 0 else netavgprc
-    double avgPrcForUnrealized = netUpldPrc != 0.0 ? netUpldPrc : netAvgPrc;
-    double actualUnrealizedPnl = netQty * prcFtr * mult * (lp - avgPrcForUnrealized);
-
-    // MTM = rpnl + ActualUnrealizedMtoM
-    double mtm = rpnl + actualUnrealizedMtm;
-
-    // PnL = ActualBookedPNL + ActualUnrealizedMtoM
-    double pnl = actualBookedPnl + actualUnrealizedPnl;
-
-    // Assign back to position
-    position.mTm = mtm.toStringAsFixed(2);
-    position.profitNloss = pnl.toStringAsFixed(2);
-
-    // Totals
-    totalMtm += mtm;
-    totalPnl += pnl;
-    unRealMtm += actualUnrealizedPnl;
-    bookPnl += actualBookedPnl;
+    _totMtm = totalMtm.toStringAsFixed(2);
+    _totPnL = totalPnl.toStringAsFixed(2);
+    _totUnRealMtm = unRealMtm.toStringAsFixed(2);
+    _totBookedPnL = bookPnl.toStringAsFixed(2);
+    notifyListeners();
   }
-
-  _totMtm = totalMtm.toStringAsFixed(2);
-  _totPnL = totalPnl.toStringAsFixed(2);
-  _totUnRealMtm = unRealMtm.toStringAsFixed(2);
-  _totBookedPnL = bookPnl.toStringAsFixed(2);
-  notifyListeners();
-}
-
-
 
   // websocket Connection Request for Position scrip
   requestWSPosition(
@@ -1112,8 +1137,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 channel: defaultTargetPlatform == TargetPlatform.android
                     ? '${ref.read(authProvider).deviceInfo["brand"]}'
                     : "${ref.read(authProvider).deviceInfo["model"]}");
-            _placeOrderModel =
-                await api.getPlaceOrder(placeOrderInput, ref.read(orderProvider).ip);
+            _placeOrderModel = await api.getPlaceOrder(
+                placeOrderInput, ref.read(orderProvider).ip);
 
             if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
               break;
@@ -1130,7 +1155,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       {required String sorting, required BuildContext context}) async {
     // Store the current sort option
     _currentHoldingSortOption = sorting;
-    
+
     if (sorting == "ASC") {
       _holdingsModel!
           .sort((a, b) => a.exchTsym![0].tsym!.compareTo(b.exchTsym![0].tsym!));
@@ -1320,7 +1345,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   sortPositions({required String sorting}) async {
     // Store the current sort option
     _currentPositionSortOption = sorting;
-    
+
     if (sorting == "ASC") {
       _allPostionList.sort((a, b) => a.tsym!.compareTo(b.tsym!));
     } else if (sorting == "DSC") {
@@ -1386,7 +1411,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _isExitingAll = true;
       notifyListeners();
     }
-    
+
     try {
       for (var element in _allPostionList) {
         if (element.qty != "0") {
@@ -1412,43 +1437,42 @@ class PortfolioProvider extends DefaultChangeNotifier {
                   channel: defaultTargetPlatform == TargetPlatform.android
                       ? '${ref.read(authProvider).deviceInfo["brand"]}'
                       : "${ref.read(authProvider).deviceInfo["model"]}");
-              _placeOrderModel =
-                  await api.getPlaceOrder(placeOrderInput, ref.read(orderProvider).ip);
+              _placeOrderModel = await api.getPlaceOrder(
+                  placeOrderInput, ref.read(orderProvider).ip);
 
               if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
                 break;
               }
             }
-              if (!element.isExitSelection!) {
+            if (!element.isExitSelection!) {
             } else {
-                PlaceOrderInput placeOrderInput = PlaceOrderInput(
-                    amo: "",
-                    blprc: '',
-                    bpprc: '',
-                    dscqty: "",
-                    exch: "${element.exch}",
-                    prc: "0",
-                    prctype: "MKT",
-                    prd: "${element.prd}",
-                    qty: element.qty!.replaceAll("-", ""),
-                    ret: "DAY",
-                    trailprc: '',
-                    trantype: int.parse(element.qty!) < 0 ? 'B' : 'S',
-                    trgprc: "",
-                    tsym: "${element.tsym}",
-                    mktProt: '',
-                    channel: defaultTargetPlatform == TargetPlatform.android
-                        ? '${ref.read(authProvider).deviceInfo["brand"]}'
-                        : "${ref.read(authProvider).deviceInfo["model"]}",
-                    frzqty: ((int.parse(element.frzqty.toString()) /
-                                int.parse(element.ls.toString()))
-                            .floor() *
-                        int.parse(element.ls.toString())));
-                await fetchExitPosition(context, placeOrderInput, true,true);
-              }
+              PlaceOrderInput placeOrderInput = PlaceOrderInput(
+                  amo: "",
+                  blprc: '',
+                  bpprc: '',
+                  dscqty: "",
+                  exch: "${element.exch}",
+                  prc: "0",
+                  prctype: "MKT",
+                  prd: "${element.prd}",
+                  qty: element.qty!.replaceAll("-", ""),
+                  ret: "DAY",
+                  trailprc: '',
+                  trantype: int.parse(element.qty!) < 0 ? 'B' : 'S',
+                  trgprc: "",
+                  tsym: "${element.tsym}",
+                  mktProt: '',
+                  channel: defaultTargetPlatform == TargetPlatform.android
+                      ? '${ref.read(authProvider).deviceInfo["brand"]}'
+                      : "${ref.read(authProvider).deviceInfo["model"]}",
+                  frzqty: ((int.parse(element.frzqty.toString()) /
+                              int.parse(element.ls.toString()))
+                          .floor() *
+                      int.parse(element.ls.toString())));
+              await fetchExitPosition(context, placeOrderInput, true, true);
             }
           }
-        
+        }
       }
     } finally {
       // Reset loading state when done (whether successful or not)
@@ -1485,8 +1509,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
             channel: defaultTargetPlatform == TargetPlatform.android
                 ? '${ref.read(authProvider).deviceInfo["brand"]}'
                 : "${ref.read(authProvider).deviceInfo["model"]}",
-                frzqty: 0);
-        await fetchExitPosition(context, placeOrderInput, false,false);
+            frzqty: 0);
+        await fetchExitPosition(context, placeOrderInput, false, false);
       }
     }
   }
@@ -1666,7 +1690,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   void updateHoldingValues(String token, Map<String, dynamic> socketData) {
     // Early return if no token or data
     if (token == null || socketData == null || _holdingsModel == null) return;
-    
+
     // Use indexWhere with efficient stopping
     var index = -1;
     for (int i = 0; i < _holdingsModel!.length; i++) {
@@ -1675,9 +1699,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
         break;
       }
     }
-    
+
     if (index == -1) return; // Not found, nothing to update
-    
+
     var holding = _holdingsModel![index];
     bool hasUpdates = false;
 
@@ -1692,17 +1716,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
       holding.exchTsym![0].lp = newLp;
       hasUpdates = true;
     }
-    
+
     if (_isValidValue(newPc)) {
       holding.exchTsym![0].perChange = newPc;
       hasUpdates = true;
     }
-    
+
     if (_isValidValue(newChng)) {
       holding.exchTsym![0].change = newChng;
       hasUpdates = true;
     }
-    
+
     if (_isValidValue(newClose)) {
       holding.exchTsym![0].close = newClose;
       hasUpdates = true;
@@ -1713,53 +1737,61 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _updateDerivedValues(holding);
     }
   }
-  
+
   // Helper method to check if a value is valid
   bool _isValidValue(String? value) {
-    return value != null && 
-           value != "null" && 
-           value != "0" && 
-           value != "0.0" && 
-           value != "0.00";
+    return value != null &&
+        value != "null" &&
+        value != "0" &&
+        value != "0.0" &&
+        value != "0.00";
   }
-  
+
   // Helper method to update derived values
   void _updateDerivedValues(HoldingsModel holding) {
     final qty = holding.currentQty ?? 0;
     if (qty <= 0) return; // Nothing to calculate for zero quantity
-    
+
     final lpDouble = double.tryParse(holding.exchTsym![0].lp ?? '0.0') ?? 0.0;
     if (lpDouble <= 0) return; // Can't calculate with invalid price
-    
+
     // Update current value
     holding.currentValue = (qty * lpDouble).toStringAsFixed(2);
-    
+
     // Get average cost with fallback to closing price
-    final closeVal = double.tryParse(holding.exchTsym![0].close ?? "0.00") ?? 0.0;
+    final closeVal =
+        double.tryParse(holding.exchTsym![0].close ?? "0.00") ?? 0.0;
     final avgCost = double.tryParse(holding.upldprc == "0.00"
-        ? (closeVal > 0 ? closeVal.toString() : holding.exchTsym![0].close ?? '0.0')
-        : holding.upldprc ?? '0.00') ?? 0.0;
-        
+            ? (closeVal > 0
+                ? closeVal.toString()
+                : holding.exchTsym![0].close ?? '0.0')
+            : holding.upldprc ?? '0.00') ??
+        0.0;
+
     if (avgCost <= 0) return; // Can't calculate with invalid cost
-    
+
     holding.invested = (qty * avgCost).toStringAsFixed(2);
     final investedValue = double.tryParse(holding.invested ?? '0.00') ?? 0.00;
-    
+
     // Calculate profit/loss
     final currentValue = double.tryParse(holding.currentValue ?? "0.00") ?? 0.0;
-    holding.exchTsym![0].profitNloss = (currentValue - investedValue).toStringAsFixed(2);
-    
+    holding.exchTsym![0].profitNloss =
+        (currentValue - investedValue).toStringAsFixed(2);
+
     // Calculate percentage change if invested amount exists
     if (investedValue > 0.0) {
-      final profitValue = double.tryParse(holding.exchTsym![0].profitNloss ?? "0.00") ?? 0.0;
-      holding.exchTsym![0].pNlChng = ((profitValue / investedValue) * 100).toStringAsFixed(2);
+      final profitValue =
+          double.tryParse(holding.exchTsym![0].profitNloss ?? "0.00") ?? 0.0;
+      holding.exchTsym![0].pNlChng =
+          ((profitValue / investedValue) * 100).toStringAsFixed(2);
     }
-    
+
     // Calculate one day change if close value is valid
     if (closeVal > 0) {
-      holding.exchTsym![0].oneDayChg = ((lpDouble - closeVal) * qty).toStringAsFixed(2);
+      holding.exchTsym![0].oneDayChg =
+          ((lpDouble - closeVal) * qty).toStringAsFixed(2);
     }
-    
+
     // Update totals
     updateHoldingStat();
   }
@@ -1776,7 +1808,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       List oplist = await api.getOptionlist();
       _oplists = oplist;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API OPlist", "Error": "$e"});
       notifyListeners();
@@ -1829,7 +1862,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       _totBuyAmt = totBuyAmts.toStringAsFixed(2);
       _totSellAmt = totSellAmts.toStringAsFixed(2);
 
-      _netVal = (double.parse(_totBuyAmt) - double.parse(_totSellAmt)).toStringAsFixed(2);
+      _netVal = (double.parse(_totBuyAmt) - double.parse(_totSellAmt))
+          .toStringAsFixed(2);
 
       _exitAll = false;
       if (isDay) {
@@ -1864,7 +1898,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           _allPostionList.add(element);
         }
       }
-      
+
       await positionCal(isDay);
       getPositionGroupNames();
       tabSize();
@@ -1922,8 +1956,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  Future fetchExitPosition(BuildContext context,
-      PlaceOrderInput placeOrderInput, bool isPosition, bool multipleexit) async {
+  Future fetchExitPosition(
+      BuildContext context,
+      PlaceOrderInput placeOrderInput,
+      bool isPosition,
+      bool multipleexit) async {
     try {
       int qty = int.parse(placeOrderInput.qty);
       int frzqty = int.parse(placeOrderInput.frzqty.toString());
@@ -1934,18 +1971,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
         for (int i = 0; i < fullOrders; i++) {
           placeOrderInput.qty = frzqty.toString();
-          _placeOrderModel =
-              await api.getPlaceOrder(placeOrderInput, ref.read(orderProvider).ip);
+          _placeOrderModel = await api.getPlaceOrder(
+              placeOrderInput, ref.read(orderProvider).ip);
         }
 
         if (remainingQty > 0) {
           placeOrderInput.qty = remainingQty.toString();
-          _placeOrderModel =
-              await api.getPlaceOrder(placeOrderInput, ref.read(orderProvider).ip);
+          _placeOrderModel = await api.getPlaceOrder(
+              placeOrderInput, ref.read(orderProvider).ip);
         }
       } else {
-        _placeOrderModel =
-            await api.getPlaceOrder(placeOrderInput, ref.read(orderProvider).ip);
+        _placeOrderModel = await api.getPlaceOrder(
+            placeOrderInput, ref.read(orderProvider).ip);
       }
 
       if (_placeOrderModel!.stat == "Ok") {
@@ -1955,7 +1992,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         } else {
           await fetchHoldings(context, "Refresh");
         }
-        if(!multipleexit){
+        if (!multipleexit) {
           Navigator.pop(context);
         }
       } else {
@@ -1971,7 +2008,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       return _placeOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Place Order", "Error": "$e"});
       notifyListeners();
@@ -1981,27 +2019,30 @@ class PortfolioProvider extends DefaultChangeNotifier {
   // Methods for exit holdings selection
   void selectExitAllHoldings(bool value) {
     _isExitAllHoldings = value;
-    
+
     // Update selection status for all holdings
     for (var holding in _sealableHoldings) {
       holding.isExitHoldings = value;
     }
-    
+
     // Update exit quantity count
-    _exitHoldingsQty = value ? _sealableHoldings.fold(0, (sum, h) => sum + (h.saleableQty ?? 0)) : 0;
-    
+    _exitHoldingsQty = value
+        ? _sealableHoldings.fold(0, (sum, h) => sum + (h.saleableQty ?? 0))
+        : 0;
+
     notifyListeners();
   }
-  
+
   void selectExitHoldings(int index) {
     if (index < _sealableHoldings.length) {
       // Toggle selection for a specific holding
-      _sealableHoldings[index].isExitHoldings = !_sealableHoldings[index].isExitHoldings!;
-      
+      _sealableHoldings[index].isExitHoldings =
+          !_sealableHoldings[index].isExitHoldings!;
+
       // Recalculate total selected quantity
       _exitHoldingsQty = 0;
       bool allSelected = true;
-      
+
       for (var holding in _sealableHoldings) {
         if (holding.isExitHoldings!) {
           _exitHoldingsQty += holding.saleableQty ?? 0;
@@ -2009,10 +2050,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
           allSelected = false;
         }
       }
-      
+
       // Update "Select All" state based on individual selections
       _isExitAllHoldings = allSelected && _sealableHoldings.isNotEmpty;
-      
+
       notifyListeners();
     }
   }
@@ -2020,54 +2061,56 @@ class PortfolioProvider extends DefaultChangeNotifier {
   // Methods for exit positions selection
   void selectExitAllPosition(bool value) {
     _isExitAllPosition = value;
-    
+
     // Update selection status for all positions
     if (_openPosition != null) {
       for (var position in _openPosition!) {
         position.isExitSelection = value;
       }
-      
+
       // Update exit quantity count
-      _exitPositionQty = value 
-          ? _openPosition!.where((p) => p.qty != "0").length 
-          : 0;
+      _exitPositionQty =
+          value ? _openPosition!.where((p) => p.qty != "0").length : 0;
     }
-    
+
     notifyListeners();
   }
-  
+
   void selectExitPosition(int index) {
     if (_openPosition != null && index < _openPosition!.length) {
       // Toggle selection for specific position
-      _openPosition![index].isExitSelection = !_openPosition![index].isExitSelection!;
-      
+      _openPosition![index].isExitSelection =
+          !_openPosition![index].isExitSelection!;
+
       // Recalculate total selected positions
       _exitPositionQty = 0;
       bool allSelected = true;
-      
+
       for (var position in _openPosition!) {
         if (position.isExitSelection! && position.qty != "0") {
           _exitPositionQty++;
         }
-        
+
         if (!position.isExitSelection! && position.qty != "0") {
           allSelected = false;
         }
       }
-      
+
       // Update "Select All" state based on individual selections
-      _isExitAllPosition = allSelected && _openPosition!.where((p) => p.qty != "0").isNotEmpty;
-      
+      _isExitAllPosition =
+          allSelected && _openPosition!.where((p) => p.qty != "0").isNotEmpty;
+
       notifyListeners();
     }
   }
 
   // Position conversion
-  Future<void> fetchPositionConverstion(PositionConvertionInput input, BuildContext context) async {
+  Future<void> fetchPositionConverstion(
+      PositionConvertionInput input, BuildContext context) async {
     try {
       toggleLoadingOn(true);
       _positionConvertionModel = await api.getPositionConvertion(input);
-      
+
       if (_positionConvertionModel!.stat == "Ok") {
         // Refresh position book after conversion
         await fetchPositionBook(context, _isDay);
@@ -2080,7 +2123,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
             warningMessage(context, "${_positionConvertionModel!.emsg}"));
       }
     } catch (e) {
-      ref.read(indexListProvider).logError.add({"type": "Position Conversion", "Error": "$e"});
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "Position Conversion", "Error": "$e"});
       ScaffoldMessenger.of(context).showSnackBar(
           warningMessage(context, "Failed to convert position: $e"));
     } finally {
@@ -2088,13 +2134,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
-  positionGroupCal(bool isDay, List groupData, String groupName, bool iscusGrop) {
+  positionGroupCal(
+      bool isDay, List groupData, String groupName, bool iscusGrop) {
     if (groupData.isEmpty) return;
-    
+
     double totalProfitNloss = 0.0;
     double totalMtm = 0.0;
     bool hasExitPositions = false;
-    
+
     for (var position in groupData) {
       // Get common values used in calculations
       final lastPrice = double.tryParse(position["lp"] ?? "0.00") ?? 0.0;
@@ -2102,39 +2149,42 @@ class PortfolioProvider extends DefaultChangeNotifier {
       final mult = double.tryParse(position["mult"] ?? "1.0") ?? 1.0;
       final netQty = int.tryParse(position["netqty"] ?? "0") ?? 0;
       final netQtyWeighted = netQty * prcFtr;
-      
+
       // Parse buy/sell quantities
       final dayBuyQty = int.tryParse(position["daybuyqty"] ?? "0") ?? 0;
       final daySellQty = int.tryParse(position["daysellqty"] ?? "0") ?? 0;
       final cfBuyQty = int.tryParse(position["cfbuyqty"] ?? "0") ?? 0;
       final cfSellQty = int.tryParse(position["cfsellqty"] ?? "0") ?? 0;
-      
+
       // Calculate net buy and sell quantities
       final netBuyQty = dayBuyQty + cfBuyQty;
       final netSellQty = daySellQty + cfSellQty;
-      
+
       // Parse prices and amounts
       final netAvgPrc = double.tryParse(position["netavgprc"] ?? "0.00") ?? 0.0;
       final upldPrc = double.tryParse(position["upldprc"] ?? "0.00") ?? 0.0;
       final dayBuyAmt = double.tryParse(position["daybuyamt"] ?? "0.00") ?? 0.0;
-      final daySellAmt = double.tryParse(position["daysellamt"] ?? "0.00") ?? 0.0;
+      final daySellAmt =
+          double.tryParse(position["daysellamt"] ?? "0.00") ?? 0.0;
       final rpnl = double.tryParse(position["rpnl"] ?? "0.00") ?? 0.0;
-      
+
       if (isDay) {
         // DAY POSITION GROUP CALCULATION
         position["avgPrc"] = netQty == 0 ? "0.00" : position["dayavgprc"];
-        
+
         // Calculate quantity
         final qty = dayBuyQty - daySellQty;
         position["qty"] = "$qty";
-        
+
         if (qty != 0) {
           hasExitPositions = true;
-          
+
           // Calculate ActualUnrealizedMtoM
-          final dayAvgPrc = double.tryParse(position["dayavgprc"] ?? "0.00") ?? 0.0;
-          double unrealizedMtm = netQtyWeighted * mult * (lastPrice - dayAvgPrc);
-          
+          final dayAvgPrc =
+              double.tryParse(position["dayavgprc"] ?? "0.00") ?? 0.0;
+          double unrealizedMtm =
+              netQtyWeighted * mult * (lastPrice - dayAvgPrc);
+
           position["profitNloss"] = unrealizedMtm.toStringAsFixed(2);
           totalProfitNloss += unrealizedMtm;
         } else {
@@ -2145,23 +2195,24 @@ class PortfolioProvider extends DefaultChangeNotifier {
       } else {
         // NET POSITION GROUP CALCULATION
         position["qty"] = position["netqty"] ?? "0";
-        
+
         // Determine avgPrc for MTM and PnL according to rules
         double mtmAvgPrc = netAvgPrc;
         double pnlAvgPrc = upldPrc == 0.0 ? netAvgPrc : upldPrc;
-        
+
         if (netQty == 0) {
           position["avgPrc"] = "0.00";
         } else if (_isNetPnl) {
-          position["avgPrc"] = upldPrc == 0.0 ? position["netavgprc"] : position["upldprc"];
+          position["avgPrc"] =
+              upldPrc == 0.0 ? position["netavgprc"] : position["upldprc"];
         } else {
           position["avgPrc"] = position["netavgprc"];
         }
-        
+
         if (netQty != 0) {
           hasExitPositions = true;
         }
-        
+
         if (netQty == 0) {
           // For closed positions
           position["mTm"] = position["rpnl"] ?? "0.00";
@@ -2170,66 +2221,79 @@ class PortfolioProvider extends DefaultChangeNotifier {
           totalProfitNloss += rpnl;
         } else {
           // Calculate ActualUnrealizedMtoM for MTM
-          double unrealizedMtmForMtm = netQtyWeighted * mult * (lastPrice - mtmAvgPrc);
+          double unrealizedMtmForMtm =
+              netQtyWeighted * mult * (lastPrice - mtmAvgPrc);
           position["mTm"] = (rpnl + unrealizedMtmForMtm).toStringAsFixed(2);
           totalMtm += rpnl + unrealizedMtmForMtm;
-          
+
           // Calculate ActualUnrealizedMtoM for PnL
-          double unrealizedMtmForPnl = netQtyWeighted * mult * (lastPrice - pnlAvgPrc);
-          
+          double unrealizedMtmForPnl =
+              netQtyWeighted * mult * (lastPrice - pnlAvgPrc);
+
           // Calculate ActualBookedPNL
           double actualSellAvgPrice = 0.0;
           double actualBuyAvgPrice = 0.0;
-          
+
           if (netSellQty > 0) {
-            actualSellAvgPrice = ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) / netSellQty;
+            actualSellAvgPrice =
+                ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) /
+                    netSellQty;
           }
-          
+
           if (netBuyQty > 0) {
-            actualBuyAvgPrice = ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) / netBuyQty;
+            actualBuyAvgPrice =
+                ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) /
+                    netBuyQty;
           }
-          
+
           double actualBookedPnl = 0.0;
           if (netQty > 0) {
-            actualBookedPnl = (actualSellAvgPrice - actualBuyAvgPrice) * netSellQty * mult;
+            actualBookedPnl =
+                (actualSellAvgPrice - actualBuyAvgPrice) * netSellQty * mult;
           } else if (netQty < 0) {
-            actualBookedPnl = (actualSellAvgPrice - actualBuyAvgPrice) * netBuyQty * mult;
+            actualBookedPnl =
+                (actualSellAvgPrice - actualBuyAvgPrice) * netBuyQty * mult;
           }
-          
+
           // Final PnL = ActualBookedPNL + ActualUnrealizedMtoM
-          position["profitNloss"] = (actualBookedPnl + unrealizedMtmForPnl).toStringAsFixed(2);
+          position["profitNloss"] =
+              (actualBookedPnl + unrealizedMtmForPnl).toStringAsFixed(2);
           totalProfitNloss += actualBookedPnl + unrealizedMtmForPnl;
         }
       }
     }
-    
+
     // Update group summary
     _groupedBySymbol[groupName]['totPnl'] = totalProfitNloss.toStringAsFixed(2);
     _groupedBySymbol[groupName]['totMtm'] = totalMtm.toStringAsFixed(2);
     _groupedBySymbol[groupName]['isexit'] = "$hasExitPositions";
-    
+
     // Update total P&L and MTM
     _updateTotalGroupValues();
   }
-  
+
   // Helper method to update total group values
   void _updateTotalGroupValues() {
     double totalPnl = 0.0;
     double totalMtm = 0.0;
-    
+
     for (var symbol in _groupPositionSym) {
       if (_groupedBySymbol[symbol]["isCustomGrp"] == false) {
-        totalPnl += double.tryParse(_groupedBySymbol[symbol]['totPnl'] ?? "0.00") ?? 0.0;
-        totalMtm += double.tryParse(_groupedBySymbol[symbol]['totMtm'] ?? "0.00") ?? 0.0;
+        totalPnl +=
+            double.tryParse(_groupedBySymbol[symbol]['totPnl'] ?? "0.00") ??
+                0.0;
+        totalMtm +=
+            double.tryParse(_groupedBySymbol[symbol]['totMtm'] ?? "0.00") ??
+                0.0;
       }
     }
-    
+
     _totMtm = totalMtm.toStringAsFixed(2);
     _totPnL = totalPnl.toStringAsFixed(2);
-    
+
     notifyListeners();
   }
-  
+
   // Method for custom group position selection
   Future<void> cusGrpSelectPosition(List groupList) async {
     try {
@@ -2237,9 +2301,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
         // Mark which positions are already in the group
         for (var element in _allPostionList) {
           element.isAlreadyGroup = false;
-          
+
           for (var grpElement in groupList) {
-            if (element.token == grpElement['token'] && 
+            if (element.token == grpElement['token'] &&
                 element.prd == grpElement['prd']) {
               element.isAlreadyGroup = true;
               break;

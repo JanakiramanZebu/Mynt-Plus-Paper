@@ -191,7 +191,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   Future fetchUserDetail(BuildContext context) async {
     try {
-      toggleLoadingOn(true);
+      // toggleLoadingOn(true);
       _userDetailModel = await api.getUserDetail();
 
       if (_userDetailModel!.emsg == "Session Expired :  Invalid Session Key" &&
@@ -208,7 +208,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
           .add({"type": "API User Detail", "Error": "$e"});
       notifyListeners();
     } finally {
-      toggleLoadingOn(false);
+      // toggleLoadingOn(false);
     }
   }
 // Fetching data from the api and stored in a variable
@@ -403,8 +403,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
       },
       {
         "title": "Rate Us",
-        "subTitle":
-            "Share Your Feedback & Experience.",
+        "subTitle": "Share Your Feedback & Experience.",
         "leading": "assets/icon/appbarIcon/star.svg",
         "trailing": "assets/profile/greater_arrow.svg",
         "key": ref.read(showcaseProvide).notificationcase,

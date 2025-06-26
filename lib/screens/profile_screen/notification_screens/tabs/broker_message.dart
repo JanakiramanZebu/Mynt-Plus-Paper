@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../provider/notification_provider.dart';
 import '../../../../provider/thems.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/exch_message_link.dart';
 import '../../../../sharedWidget/no_data_found.dart';
@@ -33,9 +34,12 @@ class BrokerMsg extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              " ${noftification.brokermsg![index].norentm}",
-                              style: textStyles.notificationtimestyle,
+                            TextWidget.paraText(
+                              text:
+                                  " ${noftification.brokermsg![index].norentm}",
+                              theme: false,
+                              color: colors.colorGrey,
+                              fw: 0,
                             ),
                             const SizedBox(
                               height: 5,
@@ -59,6 +63,4 @@ class BrokerMsg extends ConsumerWidget {
                     },
                   ));
   }
-
-  
 }

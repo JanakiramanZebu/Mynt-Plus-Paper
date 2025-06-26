@@ -12,6 +12,7 @@ import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/snack_bar.dart';
+import '../../res/global_state_text.dart';
 
 class SliceOrderSheet extends StatefulWidget {
   final ScripInfoModel scripInfo;
@@ -93,13 +94,10 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
                     const CustomDragHandler(),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        "Slice Order",
-                        style: textStyles.appBarTitleTxt.copyWith(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                        ),
+                      child: TextWidget.subText(
+                        text: "Slice Order",                      
+                        theme: theme.isDarkMode,
+                        fw: 1,
                       ),
                     ),
                     Divider(
@@ -115,21 +113,21 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
                           _buildScripInfo(theme),
                           Row(
                             children: [
-                              Text(
-                                "Qty: ${widget.frezQty} ",
-                                style: textStyles.scripNameTxtStyle.copyWith(
-                                  color: theme.isDarkMode
+                              TextWidget.subText(
+                                text: "Qty: ${widget.frezQty} ",
+                                color: theme.isDarkMode
                                       ? colors.colorWhite
                                       : colors.colorBlack,
-                                ),
+                                theme: theme.isDarkMode,
+                                fw: 1,
                               ),
-                              Text(
-                                " X ${widget.quantity >= 20 ? 20 : widget.quantity}",
-                                style: textStyles.scripExchTxtStyle.copyWith(
-                                  color: theme.isDarkMode
+                              TextWidget.captionText(
+                                text: " X ${widget.quantity >= 20 ? 20 : widget.quantity}",
+                                color: theme.isDarkMode
                                       ? colors.colorWhite
                                       : colors.colorBlack,
-                                ),
+                                theme: theme.isDarkMode,
+                                fw: 0,
                               ),
                             ],
                           )
@@ -151,17 +149,15 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
       children: [
         Row(
           children: [
-            Text(
-              "${widget.scripInfo.symbol} ",
-              style: textStyles.scripNameTxtStyle.copyWith(
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              ),
+            TextWidget.subText(
+              text: "${widget.scripInfo.symbol} ",
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
-            Text(
-              "${widget.scripInfo.option}",
-              style: textStyles.scripNameTxtStyle.copyWith(
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              ),
+            TextWidget.subText(
+              text: "${widget.scripInfo.option}",
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
           ],
         ),
@@ -169,11 +165,10 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
         Row(
           children: [
             CustomExchBadge(exch: "${widget.scripInfo.exch}"),
-            Text(
-              "${widget.scripInfo.expDate}",
-              style: textStyles.scripExchTxtStyle.copyWith(
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              ),
+            TextWidget.captionText(
+              text: "${widget.scripInfo.expDate}",
+              theme: theme.isDarkMode,
+              fw: 0,
             ),
           ],
         ),
@@ -196,21 +191,18 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
               _buildScripInfo(theme),
               Row(
                 children: [
-                  Text(
-                    "Qty: ${widget.reminder} ",
-                    style: textStyles.scripNameTxtStyle.copyWith(
-                      color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                    ),
+                  TextWidget.subText(
+                    text: "Qty: ${widget.reminder} ",                   
+                    theme: theme.isDarkMode,
+                    fw: 1,
                   ),
-                  Text(
-                    " X 1",
-                    style: textStyles.scripExchTxtStyle.copyWith(
-                      color: theme.isDarkMode
+                  TextWidget.captionText(
+                    text: " X 1",
+                    color: theme.isDarkMode
                           ? colors.colorWhite
                           : colors.colorBlack,
-                    ),
+                    theme: theme.isDarkMode,
+                    fw: 0,
                   ),
                 ],
               )
@@ -270,9 +262,11 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
                 child: CircularProgressIndicator(
                     strokeWidth: 2, color: Color(0xffffffff)),
               )
-            : Text(
-                widget.isBuy ? 'Buy Now' : "Sell Now",
-                style: textStyle(const Color(0xffffffff), 14, FontWeight.w600),
+            : TextWidget.subText(
+                text: widget.isBuy ? 'Buy Now' : "Sell Now",
+                color: const Color(0xffffffff),
+                theme: theme.isDarkMode,
+                fw: 1,
               ),
       ),
     );

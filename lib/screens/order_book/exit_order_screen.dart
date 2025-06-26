@@ -9,6 +9,7 @@ import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/order_provider.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
+import '../../res/global_state_text.dart';
 
 class ExitOrderScreen extends ConsumerWidget {
   final List<OrderBookModel> exitOrdersList;
@@ -70,11 +71,11 @@ class ExitOrderScreen extends ConsumerWidget {
                           color: theme.isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack))),
-              title: Text(
-                "Cancel Orders (${Orders.openOrder!.length})",
-                style: textStyles.appBarTitleTxt.copyWith(
-                    color:
-                        theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+              title: TextWidget.titleText(
+                text: "Cancel Orders (${Orders.openOrder!.length})",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                fw: 1,
               ),
               actions: [
                 Row(
@@ -97,14 +98,13 @@ class ExitOrderScreen extends ConsumerWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        Orders.isExitAllOrder ? "Cancel" : "Select All",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorLightBlue
-                                : colors.colorBlue,
-                            14,
-                            FontWeight.w500),
+                      child: TextWidget.subText(
+                        text: Orders.isExitAllOrder ? "Cancel" : "Select All",
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.colorLightBlue
+                            : colors.colorBlue,
+                        fw: 0,
                       ),
                     )
                   ],
@@ -148,38 +148,37 @@ class ExitOrderScreen extends ConsumerWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(children: [
-                                          Text(
-                                              "${displayOrdersList[itemIndex].symbol} ",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles.scripNameTxtStyle
-                                                  .copyWith(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack)),
-                                          Text(
-                                              "${displayOrdersList[itemIndex].option} ",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles.scripNameTxtStyle
-                                                  .copyWith(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack)),
+                                          TextWidget.subText(
+                                              text: "${displayOrdersList[itemIndex].symbol} ",
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              fw: 1,
+                                              textOverflow: TextOverflow.ellipsis),
+                                          TextWidget.subText(
+                                              text: "${displayOrdersList[itemIndex].option} ",
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              fw: 1,
+                                              textOverflow: TextOverflow.ellipsis),
                                         ]),
                                         Row(
                                           children: [
-                                            Text(" LTP: ",
-                                                style: textStyle(
-                                                    const Color(0xff5E6B7D),
-                                                    13,
-                                                    FontWeight.w600)),
-                                            Text(
-                                                "₹${displayOrdersList[itemIndex].ltp ?? displayOrdersList[itemIndex].close ?? 0.00}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    14,
-                                                    FontWeight.w500)),
+                                            TextWidget.subText(
+                                                text: " LTP: ",
+                                                theme: theme.isDarkMode,
+                                                color: const Color(0xff5E6B7D),
+                                                fw: 1),
+                                            TextWidget.subText(
+                                                text: "₹${displayOrdersList[itemIndex].ltp ?? displayOrdersList[itemIndex].close ?? 0.00}",
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                fw: 0),
                                           ],
                                         ),
                                       ]),
@@ -194,14 +193,14 @@ class ExitOrderScreen extends ConsumerWidget {
                                             CustomExchBadge(
                                                 exch:
                                                     "${displayOrdersList[itemIndex].exch}"),
-                                            Text(
-                                                " ${displayOrdersList[itemIndex].expDate} ",
-                                                overflow: TextOverflow.ellipsis,
-                                                style: textStyles.scripExchTxtStyle
-                                                    .copyWith(
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack)),
+                                            TextWidget.paraText(
+                                                text: " ${displayOrdersList[itemIndex].expDate} ",
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                fw: 0,
+                                                textOverflow: TextOverflow.ellipsis),
                                             Container(
                                                 margin:
                                                     const EdgeInsets.only(left: 7),
@@ -215,12 +214,11 @@ class ExitOrderScreen extends ConsumerWidget {
                                                             .withOpacity(.2)
                                                         : const Color(0xff999999)
                                                             .withOpacity(.2)),
-                                                child: Text(
-                                                    "${displayOrdersList[itemIndex].sPrdtAli}",
-                                                    style: textStyle(
-                                                        const Color(0xff666666),
-                                                        11,
-                                                        FontWeight.w600))),
+                                                child: TextWidget.paraText(
+                                                    text: "${displayOrdersList[itemIndex].sPrdtAli}",
+                                                    theme: theme.isDarkMode,
+                                                    color: const Color(0xff666666),
+                                                    fw: 1)),
                                             Container(
                                                 margin:
                                                     const EdgeInsets.only(left: 7),
@@ -234,28 +232,26 @@ class ExitOrderScreen extends ConsumerWidget {
                                                             .withOpacity(.2)
                                                         : const Color(0xff999999)
                                                             .withOpacity(.2)),
-                                                child: Text(
-                                                    "${displayOrdersList[itemIndex].prctyp}",
-                                                    style: textStyle(
-                                                        const Color(0xff666666),
-                                                        11,
-                                                        FontWeight.w600)))
+                                                child: TextWidget.paraText(
+                                                    text: "${displayOrdersList[itemIndex].prctyp}",
+                                                    theme: theme.isDarkMode,
+                                                    color: const Color(0xff666666),
+                                                    fw: 1))
                                           ],
                                         ),
-                                        Text(
-                                            " (${displayOrdersList[itemIndex].perChange ?? 0.00}%)",
-                                            style: textStyle(
-                                                displayOrdersList[itemIndex]
-                                                        .perChange!
-                                                        .startsWith("-")
-                                                    ? colors.darkred
-                                                    : displayOrdersList[itemIndex]
-                                                                .perChange ==
-                                                            "0.00"
-                                                        ? colors.ltpgrey
-                                                        : colors.ltpgreen,
-                                                12,
-                                                FontWeight.w500)),
+                                        TextWidget.paraText(
+                                            text: " (${displayOrdersList[itemIndex].perChange ?? 0.00}%)",
+                                            theme: theme.isDarkMode,
+                                            color: displayOrdersList[itemIndex]
+                                                    .perChange!
+                                                    .startsWith("-")
+                                                ? colors.darkred
+                                                : displayOrdersList[itemIndex]
+                                                            .perChange ==
+                                                        "0.00"
+                                                    ? colors.ltpgrey
+                                                    : colors.ltpgreen,
+                                            fw: 0),
                                       ]),
                                   const SizedBox(height: 4),
                                   Divider(
@@ -286,42 +282,39 @@ class ExitOrderScreen extends ConsumerWidget {
                                                       displayOrdersList[itemIndex].trantype == "S"
                                                           ? 0xffFCF3F3
                                                           : 0xffECF8F1)),
-                                              child: Text(
-                                                  displayOrdersList[itemIndex].trantype == "S"
+                                              child: TextWidget.paraText(
+                                                  text: displayOrdersList[itemIndex].trantype == "S"
                                                       ? "SELL"
                                                       : "BUY",
-                                                  style: textStyle(
-                                                      displayOrdersList[itemIndex].trantype == "S"
-                                                          ? colors.darkred
-                                                          : colors.ltpgreen,
-                                                      12,
-                                                      FontWeight.w600))),
+                                                  theme: theme.isDarkMode,
+                                                  color: displayOrdersList[itemIndex].trantype == "S"
+                                                      ? colors.darkred
+                                                      : colors.ltpgreen,
+                                                  fw: 1)),
                                           const SizedBox(width: 8),
-                                          Text(
-                                              formatDateTime(
+                                          TextWidget.paraText(
+                                              text: formatDateTime(
                                                       value:
                                                           displayOrdersList[itemIndex]
                                                               .norentm!)
                                                   .substring(13, 21),
-                                              style: textStyle(
-                                                  const Color(0xff666666),
-                                                  12,
-                                                  FontWeight.w500))
+                                              theme: theme.isDarkMode,
+                                              color: const Color(0xff666666),
+                                              fw: 0)
                                         ]),
                                         Row(children: [
-                                          Text("Qty: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              "${displayOrdersList[itemIndex].status == "COMPLETE" ? displayOrdersList[itemIndex].rqty ?? 0 : displayOrdersList[itemIndex].dscqty ?? 0}/${displayOrdersList[itemIndex].qty ?? 0}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500))
+                                          TextWidget.subText(
+                                              text: "Qty: ",
+                                              theme: theme.isDarkMode,
+                                              color: const Color(0xff5E6B7D),
+                                              fw: 0),
+                                          TextWidget.subText(
+                                              text: "${displayOrdersList[itemIndex].status == "COMPLETE" ? displayOrdersList[itemIndex].rqty ?? 0 : displayOrdersList[itemIndex].dscqty ?? 0}/${displayOrdersList[itemIndex].qty ?? 0}",
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              fw: 0)
                                         ])
                                       ]),
                                   const SizedBox(height: 10),
@@ -341,47 +334,44 @@ class ExitOrderScreen extends ConsumerWidget {
                                                           "REJECTED"
                                                   ? assets.cancelledIcon
                                                   : assets.warningIcon),
-                                          Text(
-                                              " ${displayOrdersList[itemIndex].status![0].toUpperCase()}${displayOrdersList[itemIndex].status!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  13,
-                                                  FontWeight.w500)),
+                                          TextWidget.paraText(
+                                              text: " ${displayOrdersList[itemIndex].status![0].toUpperCase()}${displayOrdersList[itemIndex].status!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              fw: 0),
                                         ]),
                                         Row(children: [
-                                          Text("Prc: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                          Text(
-                                              "${displayOrdersList[itemIndex].avgprc ?? displayOrdersList[itemIndex].prc ?? 0.00}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500)),
+                                          TextWidget.subText(
+                                              text: "Prc: ",
+                                              theme: theme.isDarkMode,
+                                              color: const Color(0xff5E6B7D),
+                                              fw: 0),
+                                          TextWidget.subText(
+                                              text: "${displayOrdersList[itemIndex].avgprc ?? displayOrdersList[itemIndex].prc ?? 0.00}",
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              fw: 0),
                                           if (displayOrdersList[itemIndex].prctyp ==
                                                   "SL-LMT" ||
                                               displayOrdersList[itemIndex].prctyp ==
                                                   "SL-MKT") ...[
                                             const SizedBox(child: Text(' / ')),
-                                            Text("TP: ",
-                                                style: textStyle(
-                                                    const Color(0xff5E6B7D),
-                                                    14,
-                                                    FontWeight.w500)),
-                                            Text(
-                                                "${displayOrdersList[itemIndex].trgprc ?? 0.00}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    14,
-                                                    FontWeight.w500))
+                                            TextWidget.subText(
+                                                text: "TP: ",
+                                                theme: theme.isDarkMode,
+                                                color: const Color(0xff5E6B7D),
+                                                fw: 0),
+                                            TextWidget.subText(
+                                                text: "${displayOrdersList[itemIndex].trgprc ?? 0.00}",
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                fw: 0)
                                           ]
                                         ])
                                       ])
@@ -411,22 +401,17 @@ class ExitOrderScreen extends ConsumerWidget {
                               await Orders.exitOrders(context);
                             },
                       child: Center(
-                          child: Text(
-                              Orders.exitOrderQty == 0
+                          child: TextWidget.subText(
+                              text: Orders.exitOrderQty == 0
                                   ? "Cancel"
                                   : "Cancel (${Orders.exitOrderQty})",
-                              style: textStyle(
-                                  const Color(0xffFFFFFF), 14, FontWeight.w600))),
+                              theme: false,
+                              color: const Color(0xffFFFFFF),
+                              fw: 1)),
                     ))),
           ),
         );
       },
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

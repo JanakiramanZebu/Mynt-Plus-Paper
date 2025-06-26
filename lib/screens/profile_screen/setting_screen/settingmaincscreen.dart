@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 
@@ -18,23 +19,26 @@ class _SettingMainScreenState extends State<SettingMainScreen> {
     return Scaffold(
       backgroundColor: const Color(0xffFFFFFF),
       appBar: AppBar(
-          backgroundColor: const Color(0xffFFFFFF),
-          elevation: 0.3,
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading: InkWell(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 9),
-              child: SvgPicture.asset(assets.backArrow),
-            ),
+        backgroundColor: const Color(0xffFFFFFF),
+        elevation: 0.3,
+        leadingWidth: 41,
+        titleSpacing: 6,
+        leading: InkWell(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 9),
+            child: SvgPicture.asset(assets.backArrow),
           ),
-          iconTheme: const IconThemeData(color: Color(0xff000000)),
-          title: Text('Setting',
-              style: textStyle(const Color(0xff000000), 14, FontWeight.w600)),
-          ),
+        ),
+        iconTheme: const IconThemeData(color: Color(0xff000000)),
+        title: TextWidget.subText(
+            text: 'Setting',
+            theme: false,
+            color: const Color(0xff000000),
+            fw: 1),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         child: Column(
@@ -44,9 +48,11 @@ class _SettingMainScreenState extends State<SettingMainScreen> {
                 Navigator.pushNamed(context, Routes.windowsetting);
               },
               contentPadding: const EdgeInsets.symmetric(horizontal: 1),
-              title: Text(
-                'Window Setting',
-                style: textStyle(const Color(0xff666666), 14, FontWeight.w600),
+              title: TextWidget.subText(
+                text: 'Window Setting',
+                theme: false,
+                color: const Color(0xff666666),
+                fw: 0,
               ),
               trailing:
                   SvgPicture.asset('assets/profile/profilerightarrow.svg'),
@@ -61,9 +67,11 @@ class _SettingMainScreenState extends State<SettingMainScreen> {
               },
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 1, vertical: 0),
-              title: Text(
-                'Notification Setting',
-                style: textStyle(const Color(0xff666666), 14, FontWeight.w600),
+              title: TextWidget.subText(
+                text: 'Notification Setting',
+                theme: false,
+                color: const Color(0xff666666),
+                fw: 1,
               ),
               trailing:
                   SvgPicture.asset('assets/profile/profilerightarrow.svg'),
@@ -77,9 +85,11 @@ class _SettingMainScreenState extends State<SettingMainScreen> {
                 // Navigator.pushNamed(context, Routes.setautopay);
               },
               contentPadding: const EdgeInsets.symmetric(horizontal: 1),
-              title: Text(
-                'Account Setting',
-                style: textStyle(const Color(0xff666666), 14, FontWeight.w600),
+              title: TextWidget.subText(
+                text: 'Account Setting',
+                theme: false,
+                color: const Color(0xff666666),
+                fw: 1,
               ),
               trailing:
                   SvgPicture.asset('assets/profile/profilerightarrow.svg'),
@@ -92,14 +102,5 @@ class _SettingMainScreenState extends State<SettingMainScreen> {
         ),
       ),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle: TextStyle(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    ));
   }
 }

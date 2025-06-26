@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/transcation_provider.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 
@@ -50,13 +51,14 @@ class _NoUPIAppsAlertState extends ConsumerState<NoUPIAppsAlert> {
               const SizedBox(
                 height: 10,
               ),
-              Text(
+              TextWidget.titleText(
+                  text:
                   "No suitable app available, kindly choose a different mode of payment",
-                  textAlign: TextAlign.center,
-                  style: textStyle(
+                  theme: false,
+                  color:
                       theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
-                      15,
-                      FontWeight.w600)),
+                  fw: 1,
+                  align: TextAlign.center),
               const SizedBox(
                 height: 10,
               ),
@@ -74,13 +76,14 @@ class _NoUPIAppsAlertState extends ConsumerState<NoUPIAppsAlert> {
                     onPressed: () async {
                       launch("https://play.google.com/store/apps");
                     },
-                    child: Text("Get UPI Apps",
-                        style: textStyle(
-                            theme.isDarkMode
+                  child: TextWidget.paraText(
+                      text: "Get UPI Apps",
+                      theme: false,
+                      color: theme.isDarkMode
                                 ? colors.colorBlack
                                 : colors.colorWhite,
-                            12,
-                            FontWeight.w600))),
+                      fw: 1),
+                ),
               ),
               const SizedBox(
                 height: 15,
@@ -88,11 +91,5 @@ class _NoUPIAppsAlertState extends ConsumerState<NoUPIAppsAlert> {
             ],
           ),
         ));
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

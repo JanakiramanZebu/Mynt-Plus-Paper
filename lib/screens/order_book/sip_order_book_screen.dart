@@ -6,6 +6,7 @@ import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import '../../models/order_book_model/sip_order_book.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/functions.dart';
@@ -96,13 +97,12 @@ class SipOrderBook extends ConsumerWidget {
                           textCapitalization: TextCapitalization.characters,
                           inputFormatters: [UpperCaseTextFormatter()],
                           controller: order.orderSipSearchCtrl,
-                          style: textStyle(
-                              const Color(0xff000000), 16, FontWeight.w600),
+                          style: TextWidget.textStyle(color: const Color(0xff000000), fontSize: 16,fw: 1,theme: false),
                           decoration: InputDecoration(
                               fillColor: const Color(0xffF1F3F8),
                               filled: true,
-                              hintStyle: textStyle(
-                                  const Color(0xff69758F), 15, FontWeight.w500),
+                              hintStyle: TextWidget.textStyle(theme: false, color: 
+                                  const Color(0xff69758F),fontSize: 15,fw: 0,),
                               prefixIconColor: const Color(0xff586279),
                               prefixIcon: Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -145,7 +145,7 @@ class SipOrderBook extends ConsumerWidget {
                             order.showSipSearch(false);
                             order.clearSipSearch();
                           },
-                          child: Text("Close", style: textStyles.textBtn))
+                          child: TextWidget.subText(text: "Close",theme: false,color: colors.colorBlue,fw: 0)),
                     ],
                   ),
                 ),
@@ -179,28 +179,15 @@ class SipOrderBook extends ConsumerWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text("${sipbook![index].sipName}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
+                                            TextWidget.titleText(text: "${sipbook![index].sipName}",theme: false,color: theme.isDarkMode
                                                         ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    15,
-                                                    FontWeight.w600)),
+                                                        : colors.colorBlack,fw: 1),
                                             Row(
                                               children: [
-                                                Text("LTP: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    "${sipbook![index].scrips![0].ltp}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
+                                                TextWidget.paraText(text: "LTP: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                TextWidget.subText(text: "${sipbook![index].scrips![0].ltp}",theme: false,color: theme.isDarkMode
                                                             ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                            : colors.colorBlack,fw: 0),
                                               ],
                                             ),
                                           ],
@@ -210,37 +197,10 @@ class SipOrderBook extends ConsumerWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                                sipformatDateTime(
-                                                    value:
-                                                        "${sipbook![index].regDate}"),
-                                                style: textStyle(
-                                                    const Color(0xff666666),
-                                                    13,
-                                                    FontWeight.w600)),
-                                            Text(
-                                                " (${sipbook![index].scrips![0].perChange ?? 0.00}%)",
-                                                style: textStyle(
-                                                    sipbook![index]
-                                                                .scrips![0]
-                                                                .perChange ==
-                                                            null
-                                                        ? colors.ltpgrey
-                                                        : sipbook![index]
-                                                                .scrips![0]
-                                                                .perChange!
-                                                                .startsWith("-")
-                                                            ? colors.darkred
-                                                            : sipbook![index]
-                                                                        .scrips![
-                                                                            0]
-                                                                        .perChange ==
-                                                                    "0.00"
-                                                                ? colors.ltpgrey
-                                                                : colors
-                                                                    .ltpgreen,
-                                                    12,
-                                                    FontWeight.w500))
+                                            TextWidget.subText(text: sipformatDateTime(value: "${sipbook![index].regDate}"),theme: false,color: const Color(0xff666666),fw: 1),
+                                            TextWidget.paraText(text: " (${sipbook![index].scrips![0].perChange ?? 0.00}%)",theme: false, color: sipbook![index]
+                                                                .scrips![0].perChange == null ? colors.ltpgrey : sipbook![index] .scrips![0] .perChange! .startsWith("-") ? colors.darkred : 
+                                                                sipbook![index].scrips![0].perChange == "0.00" ? colors.ltpgrey : colors.ltpgreen,fw: 0),
                                           ],
                                         ),
                                         const SizedBox(height: 5),
@@ -255,40 +215,17 @@ class SipOrderBook extends ConsumerWidget {
                                           children: [
                                             Row(
                                               children: [
-                                                Text("Start Date: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    duedateformate(
-                                                        value:
-                                                            "${sipbook![index].startDate}"),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                TextWidget.paraText(text: "Start Date: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                TextWidget.subText(text: duedateformate(value:"${sipbook![index].startDate}"),theme: false,color: theme.isDarkMode
+                                                            ? colors.colorWhite : colors.colorBlack,fw: 0),
                                               ],
                                             ),
                                             Row(
                                               children: [
-                                                Text("Due Date: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    duedateformate(
-                                                        value:
-                                                            "${sipbook![index].internal?.dueDate}"),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
+                                                TextWidget.paraText(text: "Due Date: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                TextWidget.subText(text: duedateformate(value: "${sipbook![index].internal?.dueDate}"),theme: false,color: theme.isDarkMode
                                                             ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                            : colors.colorBlack,fw: 0),
                                               ],
                                             ),
                                           ],
@@ -300,38 +237,17 @@ class SipOrderBook extends ConsumerWidget {
                                           children: [
                                             Row(
                                               children: [
-                                                Text("Pending Period: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    "${sipbook![index].endPeriod}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
+                                                TextWidget.paraText(text: "Pending Period: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                TextWidget.subText(text: "${sipbook![index].endPeriod}",theme: false,color: theme.isDarkMode
                                                             ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                            : colors.colorBlack,fw: 0),
                                               ],
                                             ),
                                             Row(
                                               children: [
-                                                Text("Execution Date: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    duedateformate(
-                                                        value:
-                                                            "${sipbook![index].internal?.execDate}"),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                TextWidget.paraText(text: "Execution Date: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                TextWidget.subText(text: duedateformate(value: "${sipbook![index].internal?.execDate}"),theme: false,color: theme.isDarkMode
+                                                            ? colors.colorWhite: colors.colorBlack,fw: 0),
                                               ],
                                             ),
                                           ],
@@ -373,29 +289,11 @@ class SipOrderBook extends ConsumerWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                                "${order.siporderBookSearch![index].sipName}",
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    15,
-                                                    FontWeight.w600)),
+                                            TextWidget.titleText(text: "${order.siporderBookSearch![index].sipName}",theme: theme.isDarkMode ,fw: 1),
                                             Row(
                                               children: [
-                                                Text("LTP: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    "${order.siporderBookSearch![index].scrips![0].ltp}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                TextWidget.paraText(text: "LTP: ",theme: false, color:const Color(0xff5E6B7D),fw: 1),
+                                                TextWidget.subText(text: "${order.siporderBookSearch![index].scrips![0].ltp}",theme:theme.isDarkMode,fw: 0),
                                               ],
                                             ),
                                           ],
@@ -405,43 +303,14 @@ class SipOrderBook extends ConsumerWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                                sipformatDateTime(
-                                                    value:
-                                                        "${order.siporderBookSearch![index].regDate}"),
-                                                style: textStyle(
-                                                    const Color(0xff666666),
-                                                    13,
-                                                    FontWeight.w600)),
-                                            Text(
-                                                " (${order.siporderBookSearch![index].scrips![0].perChange ?? 0.00}%)",
-                                                style: textStyle(
-                                                    order
-                                                                .siporderBookSearch![
-                                                                    index]
-                                                                .scrips![0]
-                                                                .perChange ==
-                                                            null
-                                                        ? colors.ltpgrey
-                                                        : order
-                                                                .siporderBookSearch![
-                                                                    index]
-                                                                .scrips![0]
-                                                                .perChange!
-                                                                .startsWith("-")
-                                                            ? colors.darkred
-                                                            : order
-                                                                        .siporderBookSearch![
-                                                                            index]
-                                                                        .scrips![
-                                                                            0]
-                                                                        .perChange ==
+                                            TextWidget.paraText(text:  sipformatDateTime(value:"${order.siporderBookSearch![index].regDate}"),theme: false, color: const Color(0xff666666),fw: 1),
+                                            TextWidget.paraText(text: " (${order.siporderBookSearch![index].scrips![0].perChange ?? 0.00}%)",theme: false, color: order.siporderBookSearch![index].scrips![0].perChange ==null
+                                                        ? colors.ltpgrey : order.siporderBookSearch![index].scrips![0]
+                                                                .perChange!.startsWith("-") ? colors.darkred : 
+                                                                order.siporderBookSearch![index].scrips![0].perChange ==
                                                                     "0.00"
                                                                 ? colors.ltpgrey
-                                                                : colors
-                                                                    .ltpgreen,
-                                                    12,
-                                                    FontWeight.w500))
+                                                                : colors.ltpgreen,fw: 0),
                                           ],
                                         ),
                                         const SizedBox(height: 5),
@@ -456,40 +325,14 @@ class SipOrderBook extends ConsumerWidget {
                                           children: [
                                             Row(
                                               children: [
-                                                Text("Start Date: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    duedateformate(
-                                                        value:
-                                                            "${order.siporderBookSearch![index].startDate}"),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                TextWidget.paraText(text: "Start Date: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                TextWidget.subText(text: duedateformate(value:"${order.siporderBookSearch![index].startDate}"),theme: theme.isDarkMode,fw: 0),
                                               ],
                                             ),
                                             Row(
                                               children: [
-                                                Text("Due Date: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    duedateformate(
-                                                        value:
-                                                            "${order.siporderBookSearch![index].internal?.dueDate}"),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                TextWidget.paraText(text: "Due Date: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                TextWidget.subText(text: duedateformate(value:"${order.siporderBookSearch![index].internal?.dueDate}"),theme: theme.isDarkMode,fw: 0),
                                               ],
                                             ),
                                           ],
@@ -501,38 +344,14 @@ class SipOrderBook extends ConsumerWidget {
                                           children: [
                                             Row(
                                               children: [
-                                                Text("Pending Period: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    "${order.siporderBookSearch![index].endPeriod}",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                TextWidget.paraText(text: "Pending Period: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                TextWidget.subText(text: "${order.siporderBookSearch![index].endPeriod}",theme: theme.isDarkMode,fw: 0),
                                               ],
                                             ),
                                             Row(
                                               children: [
-                                                Text("Execution Date: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w600)),
-                                                Text(
-                                                    duedateformate(
-                                                        value:
-                                                            "${order.siporderBookSearch![index].internal?.execDate}"),
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
-                                                        14,
-                                                        FontWeight.w500)),
+                                                TextWidget.paraText(text: "Execution Date: ",theme: false, color: const Color(0xff5E6B7D),fw: 1),
+                                                TextWidget.subText(text: duedateformate(value:"${order.siporderBookSearch![index].internal?.execDate}"),theme: theme.isDarkMode,fw: 0),
                                               ],
                                             ),
                                           ],
@@ -557,9 +376,4 @@ class SipOrderBook extends ConsumerWidget {
           );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
 }

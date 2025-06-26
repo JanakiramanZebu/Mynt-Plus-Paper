@@ -6,6 +6,7 @@ import '../../provider/market_watch_provider.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/websocket_provider.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_back_btn.dart';
@@ -64,26 +65,13 @@ class GttOrderDetail extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              Text("${displayData.symbol}",
-                                  style: textStyles.appBarTitleTxt.copyWith(
-                                      color: theme.isDarkMode
+                              TextWidget.titleText(text: "${displayData.symbol}",theme:theme.isDarkMode,fw: 1),
+                              TextWidget.subText(text: " ${displayData.option} ",theme: false,color: theme.isDarkMode
                                           ? colors.colorWhite
-                                          : colors.colorBlack)),
-                              Text(" ${displayData.option} ",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: textStyles.scripNameTxtStyle.copyWith(
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack)),
+                                          : colors.colorBlack,fw: 0,textOverflow: TextOverflow.ellipsis),
                             ],
                           ),
-                          Text("₹${displayData.ltp??'0.00'}",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  16,
-                                  FontWeight.w600)),
+                          TextWidget.titleText(text: "₹${displayData.ltp??'0.00'}",theme:theme.isDarkMode,fw: 1),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -93,18 +81,9 @@ class GttOrderDetail extends ConsumerWidget {
                           children: [
                             Row(children: [
                               CustomExchBadge(exch: "${displayData.exch}"),
-                              Text("  ${displayData.expDate}",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w600))
+                              TextWidget.paraText(text: "  ${displayData.expDate}",theme:theme.isDarkMode,fw: 1),
                             ]),
-                            Text(
-                                "${double.parse("${displayData.change ?? 0.00} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
-                                style: textStyle(
-                                    (displayData.change == "null" ||
+                            TextWidget.paraText(text: "${double.parse("${displayData.change ?? 0.00} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",theme: false, color:(displayData.change == "null" ||
                                                 displayData.change == null) ||
                                             displayData.change == "0.00"
                                         ? colors.ltpgrey
@@ -112,9 +91,7 @@ class GttOrderDetail extends ConsumerWidget {
                                                 displayData.perChange!
                                                     .startsWith("-")
                                             ? colors.darkred
-                                            : colors.ltpgreen,
-                                    12,
-                                    FontWeight.w500))
+                                            : colors.ltpgreen ,fw: 0),
                           ])
                     ])),
             body: ListView(
@@ -131,13 +108,7 @@ class GttOrderDetail extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if(displayData.placeOrderParams != null)
-                      Text("${ displayData.placeOrderParams?.trantype == 'B' ? 'Buy' : 'Sell'} Trigger @ ${displayData.oivariable?.first.d}",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              16,
-                              FontWeight.w600)),
+                      TextWidget.titleText(text: "${ displayData.placeOrderParams?.trantype == 'B' ? 'Buy' : 'Sell'} Trigger @ ${displayData.oivariable?.first.d}",theme: theme.isDarkMode,fw: 1),
                       const SizedBox(height: 16),
                       rowOfInfoData(
                           "Product",
@@ -159,13 +130,7 @@ class GttOrderDetail extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("${ displayData.placeOrderParamsLeg2?.trantype == 'B' ? 'Buy' : 'Sell'} Trigger @ ${displayData.oivariable?.last.d}",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              16,
-                              FontWeight.w600)),
+                      TextWidget.titleText(text: "${ displayData.placeOrderParamsLeg2?.trantype == 'B' ? 'Buy' : 'Sell'} Trigger @ ${displayData.oivariable?.last.d}",theme: theme.isDarkMode,fw: 1),
                       const SizedBox(height: 16),
                       rowOfInfoData(
                          "Product",
@@ -185,16 +150,9 @@ class GttOrderDetail extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Remarks",
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              16,
-                              FontWeight.w600)),
+                      TextWidget.titleText(text: "Remarks",theme: theme.isDarkMode,fw: 1),
                       const SizedBox(height: 16),
-                    Text("${displayData.remarks}", style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 14, FontWeight.w500)),
-                    
+                      TextWidget.subText(text: "${displayData.remarks}",theme:theme.isDarkMode ,fw: 0),                    
                     ],
                   ),
                 ),
@@ -233,13 +191,7 @@ class GttOrderDetail extends ConsumerWidget {
                                 ),
                                 borderRadius: BorderRadius.circular(108)),
                             child: Center(
-                              child: Text("Modify Order",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w600)),
+                              child: TextWidget.subText(text: "Modify Order",theme:theme.isDarkMode,fw: 1),
                             ),
                           ),
                         ),
@@ -256,16 +208,9 @@ class GttOrderDetail extends ConsumerWidget {
                                   backgroundColor: theme.isDarkMode
                                       ? const Color.fromARGB(255, 18, 18, 18)
                                       : colors.colorWhite,
-                                  titleTextStyle: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      17,
-                                      FontWeight.w600),
-                                  contentTextStyle: textStyle(
-                                      const Color(0XFF666666),
-                                      14,
-                                      FontWeight.w500),
+                                  titleTextStyle: TextWidget.textStyle(theme: 
+                                      theme.isDarkMode,fontSize: 17,fw: 1),
+                                  contentTextStyle: TextWidget.textStyle(color: const Color(0XFF666666),fontSize: 14,fw: 0,theme: false),
                                   titlePadding: const EdgeInsets.symmetric(
                                       horizontal: 14, vertical: 10),
                                   shape: const RoundedRectangleBorder(
@@ -279,19 +224,18 @@ class GttOrderDetail extends ConsumerWidget {
                                       horizontal: 20),
                                   title: Row(
                                     children: [
-                                      Text("${displayData.tsym}"),
+                                      TextWidget.titleText(text: "${displayData.tsym}",theme:theme.isDarkMode ,fw: 1),
                                       CustomExchBadge(
                                           exch: "${displayData.exch}")
                                     ],
                                   ),
                                   content: SizedBox(
                                     width: MediaQuery.of(dialogContext).size.width,
-                                    child: const Column(
+                                    child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                            "Do you want to Cancel this order?")
+                                        TextWidget.titleText(text: "Do you want to Cancel this order?",theme: theme.isDarkMode,fw: 0),
                                       ],
                                     ),
                                   ),
@@ -300,15 +244,9 @@ class GttOrderDetail extends ConsumerWidget {
                                         onPressed: () {
                                           Navigator.pop(dialogContext);
                                         },
-                                        child: Text(
-                                          "No",
-                                          style: textStyle(
-                                              theme.isDarkMode
+                                        child: TextWidget.subText(text: "No",theme: false,color: theme.isDarkMode
                                                   ? colors.colorLightBlue
-                                                  : colors.colorBlue,
-                                              14,
-                                              FontWeight.w500),
-                                        )),
+                                                  : colors.colorBlue,fw: 0)),
                                     ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                             elevation: 0,
@@ -327,15 +265,7 @@ class GttOrderDetail extends ConsumerWidget {
                                                   "${displayData.alId}",
                                                   context);
                                         },
-                                        child: Text(
-                                          "Yes",
-                                          style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorBlack
-                                                  : colors.colorWhite,
-                                              14,
-                                              FontWeight.w500),
-                                        )),
+                                        child: TextWidget.subText(text: "Yes",theme:theme.isDarkMode,fw: 0)),
                                   ],
                                 );
                               },
@@ -355,16 +285,7 @@ class GttOrderDetail extends ConsumerWidget {
                                           strokeWidth: 2,
                                           color: Color(0xff666666)),
                                     )
-                                  : 
-                              
-                              
-                              Text("Cancel Order",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      14,
-                                      FontWeight.w600)),
+                                  : TextWidget.subText(text: "Cancel Order",theme:theme.isDarkMode,fw: 1),
                             ),
                           ),
                         ),
@@ -380,14 +301,9 @@ class GttOrderDetail extends ConsumerWidget {
       Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title1,
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
+        TextWidget.paraText(text:title1 ,theme: false, color:const Color(0xff666666),fw: 0),
         const SizedBox(height: 2),
-        Text(value1,
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w500)),
+        TextWidget.subText(text:value1 ,theme:theme.isDarkMode,fw: 0),
         const SizedBox(height: 2),
         Divider(
             color: theme.isDarkMode
@@ -398,16 +314,9 @@ class GttOrderDetail extends ConsumerWidget {
       Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title2,
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
+        TextWidget.paraText(text:title2 ,theme: false, color:const Color(0xff666666),fw: 0),
         const SizedBox(height: 2),
-        Text(
-          value2,
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              14,
-              FontWeight.w500),
-        ),
+        TextWidget.subText(text:value2 ,theme: theme.isDarkMode,fw: 0),
         const SizedBox(height: 2),
         Divider(
             color: theme.isDarkMode
@@ -415,11 +324,5 @@ class GttOrderDetail extends ConsumerWidget {
                 : colors.colorDivider)
       ]))
     ]);
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

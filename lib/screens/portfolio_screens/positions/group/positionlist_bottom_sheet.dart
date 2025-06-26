@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/custom_exch_badge.dart';
@@ -45,13 +46,10 @@ class PositionListBottomSheet extends ConsumerWidget {
                 const CustomDragHandler(),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                  child: Text("Group Position Symbol $grpName",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          16,
-                          FontWeight.w600)),
+                  child: TextWidget.titleText(
+                      text: "Group Position Symbol $grpName",
+                      theme: theme.isDarkMode,
+                      fw: 1),
                 ),
                 Divider(
                     height: 3,
@@ -74,36 +72,30 @@ class PositionListBottomSheet extends ConsumerWidget {
                             dense: true,
                             title: Row(
                               children: [
-                                Text(
-                                    positionBook
+                                TextWidget.subText(
+                                    text: positionBook
                                         .postionBookModel![index].symbol!
                                         .toUpperCase(),
-                                    style: textStyles.scripNameTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
-                                Text(
+                                    theme: theme.isDarkMode,
+                                    fw: 1),
+                                TextWidget.subText(
+                                    text:
                                     " ${positionBook.postionBookModel![index].option}",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textStyles.scripNameTxtStyle
-                                        .copyWith(
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)),
+                                    theme: theme.isDarkMode,
+                                    fw: 1,
+                                    textOverflow: TextOverflow.ellipsis),
                               ],
                             ),
                             subtitle: Row(children: [
                               CustomExchBadge(
                                   exch: positionBook
                                       .postionBookModel![index].exch!),
-                              Text(
+                              TextWidget.paraText(
+                                  text:
                                   "  ${positionBook.postionBookModel![index].expDate}",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: textStyles.scripExchTxtStyle.copyWith(
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack))
+                                  theme: theme.isDarkMode,
+                                  fw: 0,
+                                  textOverflow: TextOverflow.ellipsis),
                             ]),
                             trailing: IconButton(
                                 onPressed: () async {

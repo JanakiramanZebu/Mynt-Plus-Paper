@@ -7,6 +7,7 @@ import '../../../models/tv_chart_model/chart_types.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/scroll_behavior.dart'; 
+import '../../../res/global_state_text.dart';
 
 class ChartTypeBottomSheet extends ConsumerWidget {
   const ChartTypeBottomSheet({super.key});
@@ -29,13 +30,13 @@ class ChartTypeBottomSheet extends ConsumerWidget {
               shrinkWrap: true,
               children: [
                 ListTile(
-                    title: Text("Chart Types",
-                        style: textStyle(
-                            !theme.isDarkMode
+                    title: TextWidget.subText(
+                        text: "Chart Types",
+                        color: !theme.isDarkMode
                                 ? colors.colorBlack
                                 : colors.colorWhite,
-                            14,
-                            FontWeight.w500)),
+                        theme: theme.isDarkMode,
+                        fw: 0),
                     trailing: IconButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -96,16 +97,15 @@ class ChartTypeBottomSheet extends ConsumerWidget {
                                 color: !theme.isDarkMode
                                     ? colors.colorBlack
                                     : colors.colorWhite),
-                            title: Text(
-                              ChartTypeModel.categories[index].chartType,
-                              style: textStyle(
-                                  !theme.isDarkMode
+                            title: TextWidget.subText(
+                              text: ChartTypeModel.categories[index].chartType,
+                              color: !theme.isDarkMode
                                       ? colors.colorBlack
                                       : colors.colorWhite,
-                                  14,
-                                  FontWeight.w500),
+                              theme: theme.isDarkMode,
+                              fw: 0,
                               maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              textOverflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
@@ -120,9 +120,5 @@ class ChartTypeBottomSheet extends ConsumerWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

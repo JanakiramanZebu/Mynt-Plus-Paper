@@ -6,6 +6,7 @@ import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/option_strategy.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../tv_chart/webview_chart.dart';
@@ -62,19 +63,18 @@ class _OptionStrategeyState extends State<OptionStrategey> {
                                   borderRadius: const BorderRadius.all(
                                       Radius.circular(32)))),
                           isExpanded: true,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              13,
-                              FontWeight.w500),
-                          hint: Text(optStrgy.selectedOptName,
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorBlack
-                                      : colors.colorBlack,
-                                  13,
-                                  FontWeight.w500)),
+                          style:
+
+                              
+   TextWidget.textStyle(
+                 fontSize: 12 ,  theme: theme.isDarkMode , fw: 0 ),		
+                          hint: 
+
+                                   TextWidget.paraText(
+                      text: optStrgy.selectedOptName,
+                    
+                      theme: theme.isDarkMode,
+                      fw: 0),
                           items: optStrgy.addDividers(),
                           value: optStrgy.selectedOptName,
                           onChanged: (value) {
@@ -139,9 +139,11 @@ class _OptionStrategeyState extends State<OptionStrategey> {
                                       : 0xff000000),
                             ),
                             const SizedBox(width: 8),
-                            Text("${optStrgy.optBtns[index]['btnName']}",
-                                style: textStyle(
-                                    theme.isDarkMode
+                           
+
+                                     TextWidget.paraText(
+                      text: "${optStrgy.optBtns[index]['btnName']}",
+                      color:theme.isDarkMode
                                         ? Color(optStrgy.selectBtn ==
                                                 optStrgy.optBtns[index]
                                                     ['btnName']
@@ -151,9 +153,9 @@ class _OptionStrategeyState extends State<OptionStrategey> {
                                                 optStrgy.optBtns[index]
                                                     ['btnName']
                                             ? 0xffffffff
-                                            : 0xff000000),
-                                    12.5,
-                                    FontWeight.w500))
+                                            : 0xff000000) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                           ]));
                     },
                     separatorBuilder: (BuildContext context, int index) {
@@ -169,58 +171,56 @@ class _OptionStrategeyState extends State<OptionStrategey> {
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Text("OI",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                13,
-                                FontWeight.w500)),
-                        Text("  Call LTP   ",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                13,
-                                FontWeight.w500)),
+                       
+
+                                 TextWidget.paraText(
+                      text:"OI" ,
+                  
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                                 TextWidget.paraText(
+                      text: "  Call LTP   ",                   
+                      theme: theme.isDarkMode,
+                      fw: 0),
                         Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             child: Row(children: [
-                              Text("${marketWatch.numStrike} ",
-                                  style: textStyle(
-                                      theme.isDarkMode
+                              
+
+                                       TextWidget.paraText(
+                      text:"${marketWatch.numStrike} " ,
+                      color:  theme.isDarkMode
                                           ? colors.colorLightBlue
                                           : colors.colorBlue,
-                                      13,
-                                      FontWeight.w500)),
-                              Text("Strike",
-                                  style: textStyle(
-                                      theme.isDarkMode
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                              
+
+                                       TextWidget.paraText(
+                      text: "Strike",
+                      color:  theme.isDarkMode
                                           ? colors.colorLightBlue
                                           : colors.colorBlue,
-                                      13,
-                                      FontWeight.w500)),
+                      theme: theme.isDarkMode,
+                      fw: 0),
                               Icon(Icons.arrow_drop_down,
                                   color: theme.isDarkMode
                                       ? colors.colorLightBlue
                                       : colors.colorBlue,
                                   size: 20)
                             ])),
-                        Text("  Put LTP   ",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                13,
-                                FontWeight.w500)),
-                        Text("OI",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                13,
-                                FontWeight.w500))
+                        TextWidget.paraText(
+                      text:"  Put LTP   " ,
+                     
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                       
+
+                                 TextWidget.paraText(
+                      text:"OI" ,
+                                         theme: theme.isDarkMode,
+                      fw: 0),
                       ])),
               Expanded(
                 child: ListView(shrinkWrap: true, children: [
@@ -315,44 +315,51 @@ class _OptionStrategeyState extends State<OptionStrategey> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(children: [
-                                  Text(
-                                      "${optStrgy.optStrgyStrike[index].symbol} ",
-                                      overflow: TextOverflow.ellipsis,
-                                      style: textStyles.scripNameTxtStyle
-                                          .copyWith(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack)),
-                                  Text(
-                                      "${optStrgy.optStrgyStrike[index].option} ",
-                                      overflow: TextOverflow.ellipsis,
-                                      style: textStyles.scripNameTxtStyle
-                                          .copyWith(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack)),
-                                  Text("  Lot: ",
-                                      style: textStyle(const Color(0xff5E6B7D),
-                                          13, FontWeight.w600)),
-                                  Text("${optStrgy.optStrgyStrike[index].ls}",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          12,
-                                          FontWeight.w500))
+                                 
+
+                                                   TextWidget.subText(
+                      text:  "${optStrgy.optStrgyStrike[index].symbol} ",
+                      textOverflow: TextOverflow.ellipsis,
+                
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                                  
+
+
+                                                   TextWidget.subText(
+                      text:"${optStrgy.optStrgyStrike[index].option} " ,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                                 
+
+                                           TextWidget.paraText(
+                      text:"  Lot: " ,
+                      color: const Color(0xff5E6B7D),
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                                 
+                                           TextWidget.paraText(
+                      text: "${optStrgy.optStrgyStrike[index].ls}",
+                 
+                      theme: theme.isDarkMode,
+                      fw: 0),
                                 ]),
                                 Row(children: [
-                                  Text(" LTP: ",
-                                      style: textStyle(const Color(0xff5E6B7D),
-                                          13, FontWeight.w600)),
-                                  Text("₹${optStrgy.optStrgyStrike[index].lp}",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w500))
+                                 
+
+                                           TextWidget.paraText(
+                      text:" LTP: " ,
+                      color:const Color(0xff5E6B7D) ,
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                                 
+
+                                           TextWidget.subText(
+                      text: "₹${optStrgy.optStrgyStrike[index].lp}",
+                  
+                      theme: theme.isDarkMode,
+                      fw: 0),
                                 ])
                               ]),
                           const SizedBox(height: 4),
@@ -370,23 +377,25 @@ class _OptionStrategeyState extends State<OptionStrategey> {
                                               ? const Color(0xff666666)
                                                   .withOpacity(.2)
                                               : const Color(0xffECEDEE)),
-                                      child: Text(
-                                          "${optStrgy.optStrgyStrike[index].exch}",
-                                          overflow: TextOverflow.ellipsis,
-                                          style: textStyle(
-                                              theme.isDarkMode
+                                      child: 
+                                               TextWidget.captionText(
+                      text: "${optStrgy.optStrgyStrike[index].exch}" ,
+                      textOverflow: TextOverflow.ellipsis,
+                      color:  theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : const Color(0xff666666),
-                                              10,
-                                              FontWeight.w500))),
-                                  Text(
-                                      "  ${optStrgy.optStrgyStrike[index].expDate}   ",
-                                      overflow: TextOverflow.ellipsis,
-                                      style: textStyles.scripExchTxtStyle
-                                          .copyWith(
-                                              color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack)),
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                                              
+                                              ),
+                                 
+
+                                                   TextWidget.subText(
+                      text: "  ${optStrgy.optStrgyStrike[index].expDate}   ",
+                      textOverflow: TextOverflow.ellipsis,
+                 
+                      theme: theme.isDarkMode,
+                      fw: 0),
                                   InkWell(
                                     onTap: () {
                                       setState(() {
@@ -419,25 +428,33 @@ class _OptionStrategeyState extends State<OptionStrategey> {
                                                     optStrgy.optStrgyStrike[index].transType == "S"
                                                         ? 0xffFCF3F3
                                                         : 0xffECF8F1)),
-                                        child: Text(
-                                            "${optStrgy.optStrgyStrike[index].transType}",
-                                            style: textStyle(
-                                                optStrgy.optStrgyStrike[index]
+                                        child:
+                                                
+                                                
+                                                 TextWidget.paraText(
+                      text: "${optStrgy.optStrgyStrike[index].transType}",
+                      color: optStrgy.optStrgyStrike[index]
                                                             .transType ==
                                                         "S"
                                                     ? colors.darkred
                                                     : colors.ltpgreen,
-                                                12,
-                                                FontWeight.w600))),
+                      theme: theme.isDarkMode,
+                      fw: 1),                                                
+                                                ),
                                   ),
-                                  Text("  MKT ",
-                                      style: textStyle(const Color(0xff5E6B7D),
-                                          13, FontWeight.w600)),
+                                 
+
+                                            TextWidget.paraText(
+                      text: "  MKT ",
+                      color: Color(0xff5E6B7D),
+                      theme: theme.isDarkMode,
+                      fw: 1),
                                 ]),
-                                Text(
-                                    " (${optStrgy.optStrgyStrike[index].perChange ?? 0.00}%)",
-                                    style: textStyle(
-                                        optStrgy.optStrgyStrike[index].perChange
+                                
+
+                                          TextWidget.paraText(
+                      text:" (${optStrgy.optStrgyStrike[index].perChange ?? 0.00}%)" ,
+                      color:optStrgy.optStrgyStrike[index].perChange
                                                 .toString()
                                                 .startsWith("-")
                                             ? colors.darkred
@@ -445,9 +462,9 @@ class _OptionStrategeyState extends State<OptionStrategey> {
                                                         .perChange ==
                                                     "0.00"
                                                 ? colors.ltpgrey
-                                                : colors.ltpgreen,
-                                        12,
-                                        FontWeight.w500))
+                                                : colors.ltpgreen ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                               ]),
                           Divider(
                               color: theme.isDarkMode
@@ -480,9 +497,15 @@ class _OptionStrategeyState extends State<OptionStrategey> {
 
               await     optStrgy .   optionStrategyOrderPlace(context);
                     },
-                    child: Text("Place Order",
-                        style: textStyle(
-                            colors.colorWhite, 14, FontWeight.w600)))),
+                    child: 
+                            
+                              TextWidget.subText(
+                      text:"Place Order" ,
+                      color: colors.colorWhite ,
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                            
+                            )),
       );
     });
   }

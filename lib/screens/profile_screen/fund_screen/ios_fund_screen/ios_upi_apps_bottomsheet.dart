@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/transcation_provider.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 
@@ -67,10 +68,11 @@ class _UpiAppsBottomSheetState extends ConsumerState<UpiAppsBottomSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const CustomDragHandler(),
-              Text(
-                "Open with",
-                style: textStyle(colors.colorGrey, 14, FontWeight.w500),
-              ),
+              TextWidget.subText(
+                  text: "Open with",
+                  theme: false,
+                  color: colors.colorGrey,
+                  fw: 0),
               const SizedBox(
                 height: 15,
               ),
@@ -128,16 +130,14 @@ class _UpiAppsBottomSheetState extends ConsumerState<UpiAppsBottomSheet> {
                             const SizedBox(
                               width: 15,
                             ),
-                            Text(
-                              widget.upiapps[index]['name'],
-                              textAlign: TextAlign.center,
-                              style: textStyle(
-                                  widget.theme.isDarkMode
+                            TextWidget.subText(
+                                text: widget.upiapps[index]['name'],
+                                theme: false,
+                                color: widget.theme.isDarkMode
                                       ? colors.colorWhite
                                       : colors.colorBlack,
-                                  14,
-                                  FontWeight.w500),
-                            ),
+                                fw: 0,
+                                align: TextAlign.center),
                           ],
                         ),
                       ),
@@ -153,11 +153,5 @@ class _UpiAppsBottomSheetState extends ConsumerState<UpiAppsBottomSheet> {
         );
       },
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

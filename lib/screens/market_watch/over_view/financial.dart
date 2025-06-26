@@ -7,6 +7,7 @@ import '../../../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/stocks_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import 'chart.dart';
@@ -21,18 +22,19 @@ class FinancialWidget extends ConsumerWidget {
     final provideData = ref.watch(marketWatchProvider);
     final theme = ref.read(themeProvider);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text("Financial",
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              20,
-              FontWeight.w600)),
+     
+           TextWidget.heroText(
+                      text:"Financial" ,                     
+                      theme: theme.isDarkMode,
+                      fw: 1),
+
       const SizedBox(height: 5),
-      Text(
-          "Fundamental breakdown of ${ref.watch(marketWatchProvider).getQuotes!.tsym!.replaceAll("-EQ", "")} information",
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              12,
-              FontWeight.w500)),
+     
+
+               TextWidget.paraText(
+                      text:"Fundamental breakdown of ${ref.watch(marketWatchProvider).getQuotes!.tsym!.replaceAll("-EQ", "")} information" ,                  
+                      theme: theme.isDarkMode,
+                      fw: 0),
       const SizedBox(height: 16),
       SizedBox(
           height: 36,
@@ -59,9 +61,12 @@ class FinancialWidget extends ConsumerWidget {
                           finData
                               .chngfinancilaType(finData.finacialType[index]);
                         },
-                        child: Text(finData.finacialType[index],
-                            style: textStyle(
-                                theme.isDarkMode
+                        child:
+                                    
+                                    
+                                     TextWidget.subText(
+                      text: finData.finacialType[index],
+                      color:  theme.isDarkMode
                                     ? finData.selctedFinType ==
                                             finData.finacialType[index]
                                         ? colors.colorBlack
@@ -70,11 +75,13 @@ class FinancialWidget extends ConsumerWidget {
                                             finData.finacialType[index]
                                         ? colors.colorWhite
                                         : colors.colorBlack,
-                                14,
-                                finData.selctedFinType ==
+                      theme: theme.isDarkMode,
+                      fw: finData.selctedFinType ==
                                         finData.finacialType[index]
-                                    ? FontWeight.w500
-                                    : FontWeight.w400))));
+                                    ? 0
+                                    : 00),
+                                    
+                                    ));
               },
               separatorBuilder: (BuildContext context, int index) {
                 return const SizedBox(width: 10);
@@ -100,16 +107,17 @@ class FinancialWidget extends ConsumerWidget {
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("${finData.selctedFinType} statement",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      16,
-                      FontWeight.w600)),
-              const SizedBox(height: 3),
-              Text("All figures in Cr",
-                  style:
-                      textStyle(const Color(0xff666666), 13, FontWeight.w500)),
+            children: [             
+                       TextWidget.titleText(
+                      text:"${finData.selctedFinType} statement" ,                     
+                      theme: theme.isDarkMode,
+                      fw: 1),
+              const SizedBox(height: 3),            
+                       TextWidget.paraText(
+                      text: "All figures in Cr",
+                      color: const Color(0xff666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
             ],
           ),
           DropdownButtonHideUnderline(
@@ -138,15 +146,16 @@ class FinancialWidget extends ConsumerWidget {
             //     borderRadius: BorderRadius.all(Radius.circular(32))),
             // buttonSplashColor: Colors.transparent,
             isExpanded: true,
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                13,
-                FontWeight.w500),
-            hint: Text(provideData.selcteFinType,
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorBlack : colors.colorBlack,
-                    13,
-                    FontWeight.w500)),
+            style:
+
+                 TextWidget.textStyle(
+                 fontSize: 12 , theme: theme.isDarkMode , fw: 0 ),	
+            hint: 
+                     TextWidget.paraText(
+                      text:provideData.selcteFinType ,
+                      color:   theme.isDarkMode ? colors.colorBlack : colors.colorBlack,
+                      theme: theme.isDarkMode,
+                      fw: 0),
             items: provideData.addDividersAfterStock(provideData.finType),
             // customItemsHeights: provideData
             //     .getStochCustomItemsHeight(provideData.finType),
@@ -168,8 +177,11 @@ class FinancialWidget extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Financial Years",
-                style: textStyle(const Color(0xff666666), 14, FontWeight.w500)),
+                 TextWidget.subText(
+                      text: "Financial Years",
+                      color: const Color(0xff666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
             DropdownButtonHideUnderline(
                 child: DropdownButton2(
               dropdownStyleData: DropdownStyleData(
@@ -197,15 +209,15 @@ class FinancialWidget extends ConsumerWidget {
               //     borderRadius: BorderRadius.all(Radius.circular(32))),
               // buttonSplashColor: Colors.transparent,
               isExpanded: true,
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  13,
-                  FontWeight.w500),
-              hint: Text(provideData.selcteFinYear,
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorBlack : colors.colorBlack,
-                      13,
-                      FontWeight.w500)),
+              style: 
+                  TextWidget.textStyle(
+                 fontSize: 12 , theme: theme.isDarkMode , fw: 0 ),	
+              hint: 
+                       TextWidget.paraText(
+                      text: provideData.selcteFinYear,
+                      color:  theme.isDarkMode ? colors.colorBlack : colors.colorBlack,
+                      theme: theme.isDarkMode,
+                      fw: 0),
 
               items: provideData.addDividersAfterStock(provideData.finnceYears),
               // customItemsHeights: provideData
@@ -253,11 +265,7 @@ class FinancialWidget extends ConsumerWidget {
     ]);
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }
 
 class BalanceSheetData extends StatelessWidget {

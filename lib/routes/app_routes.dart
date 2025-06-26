@@ -44,10 +44,13 @@ import '../screens/ipo/ipo_orderbook_screen/ipo_orderbook_details/open_order_det
 import '../screens/ipo/mainstream_order_screen/order_screen.dart';
 import '../screens/ipo/sme_order_screen/sme_order.dart';
 import '../screens/market_watch/edit_scrip.dart';
+import '../screens/market_watch/fundamental_detail_screen.dart';
 import '../screens/market_watch/futures/future_screen.dart';
 import '../screens/market_watch/option_chain/option_chain_ss.dart';
 import '../screens/market_watch/option_chain/strategy/option_strategey.dart';
 import '../screens/market_watch/search_screen.dart';
+import '../screens/market_watch/set_alert_screen_new.dart';
+import '../screens/market_watch/future_screen_new.dart';
 import '../screens/mutual_fund/mf_nfo_screen.dart';
 import '../screens/mutual_fund/mf_top_category_list.dart';
 import '../screens/mutual_fund/mf_all_best_funds.dart';
@@ -225,6 +228,33 @@ class AppRoutes {
         return _createRoute(
           pageBuilder: (_, __, ___) => EditScrip(wlName: args),
           beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.fundamentalDetail:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => FundamentalDetailScreen(
+            wlValue: args['wlValue'],
+            depthData: args['depthData'],
+          ),
+          beginOffset: const Offset(1.0, 0.0),
+        );
+
+      case Routes.setAlertScreen:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => SetAlertScreen(
+            wlvalue: args['wlvalue'],
+            depthdata: args['depthdata'],
+          ),
+          beginOffset: const Offset(0.0, 1.0),
+        );
+
+      case Routes.futureScreen:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => FutureScreenNew(
+            wlvalue: args['wlvalue'],
+            depthdata: args['depthdata'],
+          ),
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.upiautopay:

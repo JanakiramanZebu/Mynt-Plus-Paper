@@ -56,163 +56,165 @@ class MFNFOScreen extends ConsumerWidget {
 
   Widget _buildContent(
       BuildContext context, MFProvider mf, ThemesProvider theme) {
-    if(mf.mfNFOList!.nfoList!.isEmpty){
+    if (mf.mfNFOList!.nfoList!.isEmpty) {
       return const Center(child: NoDataFound());
-    }
-else{    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: ListView.builder(
-            shrinkWrap: true,
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            itemCount: mf.mfNFOList!.nfoList!.length,
-            itemBuilder: (BuildContext context, int index) {
-              final nfoItem = mf.mfNFOList!.nfoList![index];
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              itemCount: mf.mfNFOList!.nfoList!.length,
+              itemBuilder: (BuildContext context, int index) {
+                final nfoItem = mf.mfNFOList!.nfoList![index];
 
-              return Column(
-                children: [
-                  InkWell(
-                    onTap: () async {
-                      try {
-                        mf.chngMandate("Lumpsum");
-                        await mf.fetchUpiDetail();
-                        await mf.fetchBankDetail();
+                return Column(
+                  children: [
+                    InkWell(
+                      onTap: () async {
+                        try {
+                          mf.chngMandate("Lumpsum");
+                          await mf.fetchUpiDetail();
+                          await mf.fetchBankDetail();
 
-                        if (nfoItem.sIPFLAG == "Y") {
-                          await mf.fetchMFSipData(
-                            nfoItem.iSIN!,
-                            nfoItem.schemeCode!,
-                          );
-                          await mf.fetchMFMandateDetail();
+                          if (nfoItem.sIPFLAG == "Y") {
+                            await mf.fetchMFSipData(
+                              nfoItem.iSIN!,
+                              nfoItem.schemeCode!,
+                            );
+                            await mf.fetchMFMandateDetail();
+                          }
+                          mf.orderpagetite("NFO");
+
+                          if (context.mounted) {
+                            Navigator.pushNamed(
+                              context,
+                              Routes.mforderScreen,
+                              arguments: nfoItem,
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Error: ${e.toString()}"),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                         }
-                        mf.orderpagetite("NFO");
-
-                        if (context.mounted) {
-                          Navigator.pushNamed(
-                            context,
-                            Routes.mforderScreen,
-                            arguments: nfoItem,
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Error: ${e.toString()}"),
-                              backgroundColor: Colors.red,
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.symmetric(
+                            vertical: BorderSide(
+                              color: theme.isDarkMode
+                                  ? colors.darkGrey
+                                  : const Color(0xffEEF0F2),
+                              width: 0,
                             ),
-                          );
-                        }
-                      }
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.symmetric(
-                          vertical: BorderSide(
-                            color: theme.isDarkMode
-                                ? colors.darkGrey
-                                : const Color(0xffEEF0F2),
-                            width: 0,
                           ),
                         ),
-                      ),
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              CircleAvatar(
-                                backgroundImage: NetworkImage(
-                                  "https://v3.mynt.in/mf/static/images/mf/${nfoItem.aMCCode ?? 'default'}.png",
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage: NetworkImage(
+                                    "https://v3.mynt.in/mf/static/images/mf/${nfoItem.aMCCode ?? 'default'}.png",
+                                  ),
+                                  onBackgroundImageError: (_, __) {},
                                 ),
-                                onBackgroundImageError: (_, __) {},
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        SizedBox(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.65,
-                                          child: Text(
-                                            nfoItem.fSchemeName ??
-                                                "Unknown Fund",
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: textStyles.scripNameTxtStyle
-                                                .copyWith(
-                                              color: theme.isDarkMode
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.65,
+                                            child: Text(
+                                              nfoItem.fSchemeName ??
+                                                  "Unknown Fund",
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: textStyles
+                                                  .scripNameTxtStyle
+                                                  .copyWith(
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            "Open ${_formatDate(nfoItem.startDate)}",
+                                            style: textStyle(
+                                              theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,
+                                              12,
+                                              FontWeight.w400,
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          "Open ${_formatDate(nfoItem.startDate)}",
-                                          style: textStyle(
-                                            theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            12,
-                                            FontWeight.w400,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 8.0),
-                                          child: Text(
-                                            "Closing ${_formatDate(nfoItem.endDate)}",
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w400,
-                                              color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : Colors.black,
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 8.0),
+                                            child: Text(
+                                              "Closing ${_formatDate(nfoItem.endDate)}",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w400,
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : Colors.black,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
-                            thickness: 1.0,
-                          ),
-                        ],
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Divider(
+                              color: theme.isDarkMode
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
+                              thickness: 1.0,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
-        ),
-      ],
-    );
-}
+        ],
+      );
+    }
   }
 
   // Helper method to format date strings

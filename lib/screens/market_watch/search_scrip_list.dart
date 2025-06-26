@@ -6,6 +6,7 @@ import '../../../res/res.dart';
 import '../../locator/preference.dart';
 import '../../models/marketwatch_model/search_scrip_new_model.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../routes/app_routes.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/list_divider.dart';
@@ -62,173 +63,185 @@ class _searchScripList extends State<SearchScripList> {
             final scrip = widget.searchValue[index];
 
             return ListTile(
-              onTap: () async {
-                if (widget.isBasket == "Chart||Is") {
-                  await searchScrip.fetchScripQuoteIndex(
-                    scrip.token.toString(),
-                    scrip.exch.toString(),
-                    context,
-                  );
-                  searchScrip.setChartScript(
-                    scrip.exch.toString(),
-                    scrip.token.toString(),
-                    scrip.tsym.toString(),
-                  );
-                  currentRouteName = 'Chart';
-                  await searchScrip.searchClear();
-                  Navigator.of(context).pop();
-                } else if (widget.isBasket == "Option||Is") {
-                  currentRouteName = 'Optionchain';
-                  searchScrip.setOptionScript(
-                    context,
-                    scrip.exch.toString(),
-                    scrip.token.toString(),
-                    scrip.tsym.toString(),
-                  );
-                  await searchScrip.searchClear();
-                  Navigator.of(context).pop();
-                } else {
-                  await searchScrip.calldepthApis(
-                    context,
-                    scrip,
-                    widget.isBasket,
-                  );
-                }
-              },
-              dense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 0,
-              ),
-              title: Row(
-                children: [
-                  Text(
-                    "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym} ",
-                    style: textStyles.scripNameTxtStyle.copyWith(
-                      color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                    ),
-                  ),
-                  if (scrip.option != null)
+                onTap: () async {
+                  if (widget.isBasket == "Chart||Is") {
+                    await searchScrip.fetchScripQuoteIndex(
+                      scrip.token.toString(),
+                      scrip.exch.toString(),
+                      context,
+                    );
+                    searchScrip.setChartScript(
+                      scrip.exch.toString(),
+                      scrip.token.toString(),
+                      scrip.tsym.toString(),
+                    );
+                    currentRouteName = 'Chart';
+                    await searchScrip.searchClear();
+                    Navigator.of(context).pop();
+                  } else if (widget.isBasket == "Option||Is") {
+                    currentRouteName = 'Optionchain';
+                    searchScrip.setOptionScript(
+                      context,
+                      scrip.exch.toString(),
+                      scrip.token.toString(),
+                      scrip.tsym.toString(),
+                    );
+                    await searchScrip.searchClear();
+                    Navigator.of(context).pop();
+                  } else {
+                    await searchScrip.calldepthApis(
+                      context,
+                      scrip,
+                      widget.isBasket,
+                    );
+                  }
+                },
+                dense: true,
+                contentPadding:
+                    EdgeInsets.only(left: 16, right: 0, top: 0, bottom: 0),
+                title: Row(
+                  children: [
+                    //  TextWidget.subText(
+                    //     text:  "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym} ",
+
+                    //     theme: theme.isDarkMode,
+                    //     fw: 1),
+
                     Text(
-                      "${scrip.option}",
-                      style: textStyles.scripNameTxtStyle.copyWith(
-                        color: const Color(0xff666666),
-                      ),
+                      "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym} ",
+                      style: TextWidget.textStyle(
+                          fontSize: 13, theme: theme.isDarkMode, fw: 0),
                     ),
-                ],
-              ),
-              subtitle: Row(
-                children: [
-                  CustomExchBadge(exch: "${scrip.exch}"),
-                  if (scrip.expDate != null)
-                    Text(
-                      "${scrip.expDate} ",
-                      style: textStyles.scripExchTxtStyle.copyWith(
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
+
+                    if (scrip.option != null)
+
+                      // TextWidget.subText(
+                      //   text:  "${scrip.option}",
+                      // color: Color(0xff666666),
+                      //   theme: theme.isDarkMode,
+                      //   fw: 1),
+
+                      Text(
+                        "${scrip.option}",
+                        style: TextWidget.textStyle(
+                            fontSize: 13,
+                            color: Color(0xff666666),
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                      )
+                  ],
+                ),
+                subtitle: Row(
+                  children: [
+                    CustomExchBadge(exch: "${scrip.exch}"),
+                    SizedBox(width: 4,),
+                    if (scrip.expDate != null)
+                      TextWidget.paraText(
+                          text: "${scrip.expDate} ",
+                          theme: theme.isDarkMode,
+                          fw: 00),
+                    if (scrip.expDate == "" && scrip.cname != null)
+                      Expanded(
+                        child: TextWidget.paraText(
+                            text: "${scrip.cname}",
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 00),
                       ),
-                    ),
-                  if (scrip.expDate == "" && scrip.cname != null)
-                    Expanded(
-                      child: Text(
-                        "${scrip.cname}",
-                        overflow: TextOverflow.ellipsis,
-                        style: textStyles.scripExchTxtStyle.copyWith(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
+                  ],
+                ),
+                trailing: widget.isBasket == "Chart||Is" ||
+                        widget.isBasket == "Option||Is" ||
+                        widget.isBasket == "Basket" ||
+                        searchScrip.isPreDefWLs == "Yes" ||
+                        searchScrip.scrips.length >= 50
+                    ? const SizedBox(width: 0.2)
+                    : Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Material(
+                          color: Colors.transparent,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            splashColor: Colors.grey.withOpacity(0.3),
+                            highlightColor: Colors.grey.withOpacity(0.2),
+                            onTap: () async {
+                              final currentIndex =
+                                  searchScrip.currentWatchlistPageIndex;
+
+                              if (searchScrip.isAdded![index]) {
+                                await searchScrip.isActiveAddBtn(false, index);
+                                await searchScrip.addDelMarketScrip(
+                                  widget.wlName,
+                                  "${scrip.exch}|${scrip.token}",
+                                  context,
+                                  false,
+                                  false,
+                                  false,
+                                  false,
+                                );
+                              } else {
+                                await searchScrip.isActiveAddBtn(true, index);
+                                await searchScrip.addDelMarketScrip(
+                                  widget.wlName,
+                                  "${scrip.exch}|${scrip.token}",
+                                  context,
+                                  true,
+                                  false,
+                                  false,
+                                  false,
+                                );
+
+                                try {
+                                  final currentSort =
+                                      ref.read(marketWatchProvider).sortByWL;
+
+                                  if (currentSort.isNotEmpty) {
+                                    await ref
+                                        .read(marketWatchProvider)
+                                        .filterMWScrip(
+                                          sorting: currentSort,
+                                          wlName: widget.wlName,
+                                          context: context,
+                                        );
+                                  }
+
+                                  scripisAscending = !scripisAscending;
+                                  pref.setMWScrip(scripisAscending);
+
+                                  pricepisAscending = !pricepisAscending;
+                                  pref.setMWPrice(pricepisAscending);
+
+                                  perchangisAscending = !perchangisAscending;
+                                  pref.setMWPerchnage(perchangisAscending);
+                                } catch (e) {
+                                  print("Error applying sort: $e");
+                                }
+                              }
+
+                              if (currentIndex >= 0) {
+                                searchScrip
+                                    .setCurrentWatchlistPageIndex(currentIndex);
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(
+                                  8), // ensure adequate tap target
+                              child: SvgPicture.asset(
+                                searchScrip.isAdded![index]
+                                    ? assets.bookmarkIcon
+                                    : assets.bookmarkedIcon,
+                                color: theme.isDarkMode &&
+                                        searchScrip.isAdded![index]
+                                    ? colors.colorLightBlue
+                                    : searchScrip.isAdded![index]
+                                        ? colors.colorBlue
+                                        : colors.colorGrey,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                ],
-              ),
-              trailing: widget.isBasket == "Chart||Is" ||
-                      widget.isBasket == "Option||Is" ||
-                      widget.isBasket == "Basket" ||
-                      searchScrip.isPreDefWLs == "Yes" ||
-                      searchScrip.scrips.length >= 50
-                  ? const SizedBox(width: 0.2)
-                  : IconButton(
-                      splashRadius: 20,
-                      onPressed: () async {
-                        // Store the current page index before any operations
-                        final currentIndex =
-                            searchScrip.currentWatchlistPageIndex;
-
-                        if (searchScrip.isAdded![index]) {
-                          await searchScrip.isActiveAddBtn(false, index);
-                          await searchScrip.addDelMarketScrip(
-                            widget.wlName,
-                            "${scrip.exch}|${scrip.token}",
-                            context,
-                            false,
-                            false,
-                            false,
-                            false,
-                          );
-                        } else {
-                          await searchScrip.isActiveAddBtn(true, index);
-                          await searchScrip.addDelMarketScrip(
-                            widget.wlName,
-                            "${scrip.exch}|${scrip.token}",
-                            context,
-                            true,
-                            false,
-                            false,
-                            false,
-                          );
-
-                          // Apply only the current sort preference instead of all three
-                          try {
-                            // Get the current sort preference
-                            final currentSort =
-                                ref.read(marketWatchProvider).sortByWL;
-
-                            // Only apply sorting if there's an active preference
-                            if (currentSort.isNotEmpty) {
-                              await ref.read(marketWatchProvider).filterMWScrip(
-                                    sorting: currentSort,
-                                    wlName: widget.wlName,
-                                    context: context,
-                                  );
-                            }
-
-                            // Update the preference flags but don't trigger additional sorts
-                            scripisAscending = !scripisAscending;
-                            pref.setMWScrip(scripisAscending);
-
-                            pricepisAscending = !pricepisAscending;
-                            pref.setMWPrice(pricepisAscending);
-
-                            perchangisAscending = !perchangisAscending;
-                            pref.setMWPerchnage(perchangisAscending);
-                          } catch (e) {
-                            print("Error applying sort: $e");
-                          }
-                        }
-
-                        // Restore the page index to maintain the user's position
-                        // This ensures the watchlist stays on the same page after adding/removing a scrip
-                        if (currentIndex >= 0) {
-                          searchScrip
-                              .setCurrentWatchlistPageIndex(currentIndex);
-                        }
-                      },
-                      icon: SvgPicture.asset(
-                        searchScrip.isAdded![index]
-                            ? assets.bookmarkIcon
-                            : assets.bookmarkedIcon,
-                        color: theme.isDarkMode && searchScrip.isAdded![index]
-                            ? colors.colorLightBlue
-                            : searchScrip.isAdded![index]
-                                ? colors.colorBlue
-                                : colors.colorGrey,
-                      ),
-                    ),
-            );
+                      ));
           },
         );
       },

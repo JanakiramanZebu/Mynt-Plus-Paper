@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../../../provider/option_strategy.dart';
 import '../../../../provider/thems.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 
@@ -31,11 +32,17 @@ class StrategyListBottomSheet extends ConsumerWidget {
             const CustomDragHandler(),
             Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text("Strategies",
-                    style: textStyles.appBarTitleTxt.copyWith(
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack))),
+                child: 
+                            
+                             TextWidget.subText(
+                      text:"Strategies" ,
+                      
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                            
+                            
+                            
+                            ),
             const SizedBox(height: 10),
             Divider(
                 color: theme.isDarkMode
@@ -47,11 +54,14 @@ class StrategyListBottomSheet extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     shrinkWrap: true,
                     children: [
-                  Text("Bullish",
-                      style: textStyles.appBarTitleTxt.copyWith(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack)),
+                
+
+
+                               TextWidget.subText(
+                      text:"Bullish" ,
+                
+                      theme: theme.isDarkMode,
+                      fw: 1),
                   GridView.builder(
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
@@ -80,11 +90,13 @@ class StrategyListBottomSheet extends ConsumerWidget {
                           ]),
                         );
                       }),
-                  Text("Bearish",
-                      style: textStyles.appBarTitleTxt.copyWith(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack)),
+                 
+
+
+                               TextWidget.subText(
+                      text: "Bearish",                    
+                      theme: theme.isDarkMode,
+                      fw: 1),
                   GridView.builder(
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
@@ -113,11 +125,12 @@ class StrategyListBottomSheet extends ConsumerWidget {
                           ]),
                         );
                       }),
-                  Text("Neutral",
-                      style: textStyles.appBarTitleTxt.copyWith(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack)),
+                  
+                               TextWidget.subText(
+                      text: "Neutral",
+                   
+                      theme: theme.isDarkMode,
+                      fw: 1),
                   GridView.builder(
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,

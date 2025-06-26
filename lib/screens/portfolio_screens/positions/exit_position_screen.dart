@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 
 class ExitPositionScreen extends ConsumerWidget {
@@ -58,12 +59,12 @@ class ExitPositionScreen extends ConsumerWidget {
                       color: theme.isDarkMode
                           ? colors.colorWhite
                           : colors.colorBlack))),
-          title: Text(
+          title: TextWidget.titleText(
+              text:
             "Exit Position (${positions.openPosition?.where((p) => p.qty != "0").length ?? 0})",
-            style: textStyles.appBarTitleTxt.copyWith(
-                color:
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-          ),
+              theme: false,
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              fw: 1),
           actions: [
             Row(
               children: [
@@ -85,15 +86,14 @@ class ExitPositionScreen extends ConsumerWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
+                  child: TextWidget.subText(
+                      text:
                     positions.isExitAllPosition ? "Cancel" : "Select All",
-                    style: textStyle(
-                        theme.isDarkMode
+                      theme: false,
+                      color: theme.isDarkMode
                             ? colors.colorLightBlue
                             : colors.colorBlue,
-                        14,
-                        FontWeight.w500),
-                  ),
+                      fw: 0),
                 )
               ],
             ),
@@ -144,14 +144,13 @@ class ExitPositionScreen extends ConsumerWidget {
             
             if (positions.openPosition == null || positions.openPosition!.isEmpty) {
               return Center(
-                child: Text(
-                  "No positions available to exit",
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w500
-                  ),
-                ),
+                  child: TextWidget.titleText(
+                      text: "No positions available to exit",
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      fw: 0),
               );
             }
             
@@ -160,14 +159,13 @@ class ExitPositionScreen extends ConsumerWidget {
             
             if (exitablePositions.isEmpty) {
               return Center(
-                child: Text(
-                  "No open positions available to exit",
-                  style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    16,
-                    FontWeight.w500
-                  ),
-                ),
+                  child: TextWidget.titleText(
+                      text: "No open positions available to exit",
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      fw: 0),
               );
             }
             
@@ -200,36 +198,38 @@ class ExitPositionScreen extends ConsumerWidget {
                                     children: [
                                       Row(
                                         children: [
-                                Text("${position.symbol} ",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles.scripNameTxtStyle
-                                                  .copyWith(
+                                    TextWidget.subText(
+                                        text: "${position.symbol} ",
+                                        theme: false,
                                                       color: theme.isDarkMode
                                                           ? colors.colorWhite
-                                                          : colors.colorBlack)),
-                                Text("${position.option} ",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles.scripNameTxtStyle
-                                                  .copyWith(
+                                            : colors.colorBlack,
+                                        fw: 1,
+                                        textOverflow: TextOverflow.ellipsis),
+                                    TextWidget.subText(
+                                        text: "${position.option} ",
+                                        theme: false,
                                                       color: theme.isDarkMode
                                                           ? colors.colorWhite
-                                                          : colors.colorBlack)),
+                                            : colors.colorBlack,
+                                        fw: 1,
+                                        textOverflow: TextOverflow.ellipsis),
                                         ],
                                       ),
                                       Row(
                                         children: [
-                                          Text(" LTP: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  13,
-                                                  FontWeight.w600)),
-                                Text("₹${position.lp}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
+                                    TextWidget.paraText(
+                                        text: " LTP: ",
+                                        theme: false,
+                                        color: const Color(0xff5E6B7D),
+                                        fw: 1),
+                                    TextWidget.subText(
+                                        text: "₹${position.lp}",
+                                        theme: false,
+                                        color: theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500)),
+                                        fw: 0),
                                         ],
                                       )
                                     ],
@@ -256,43 +256,39 @@ class ExitPositionScreen extends ConsumerWidget {
                                                             "0"
                                                         ? colors.colorWhite
                                                         : const Color(0xffECEDEE)),
-                                            child: Text(
-                                      "${position.exch}",
-                                                overflow: TextOverflow.ellipsis,
-                                                style: textStyle(
-                                                    const Color(0xff666666),
-                                                    10,
-                                                    FontWeight.w500)),
+                                      child: TextWidget.captionText(
+                                          text: "${position.exch}",
+                                          theme: false,
+                                          color: const Color(0xff666666),
+                                          fw: 0,
+                                          textOverflow: TextOverflow.ellipsis),
                                           ),
-                                          Text(
-                                    "  ${position.expDate} ",
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles.scripExchTxtStyle
-                                                  .copyWith(
+                                    TextWidget.paraText(
+                                        text: "  ${position.expDate} ",
+                                        theme: false,
                                                       color: theme.isDarkMode
                                                           ? colors.colorWhite
-                                                          : colors.colorBlack)),
+                                            : colors.colorBlack,
+                                        fw: 0,
+                                        textOverflow: TextOverflow.ellipsis),
                                         ],
                                       ),
-                                      Text(
-                                " (${position.perChange ?? 0.00}%)",
-                                          style: textStyle(
-                                    position.perChange ==
-                                                "0.00" || position.perChange ==
-                                                          null
-                                            ? colors.ltpgrey : position.perChange!
-                                                      .startsWith("-")
+                                TextWidget.paraText(
+                                    text: " (${position.perChange ?? 0.00}%)",
+                                    theme: false,
+                                    color: position.perChange == "0.00" ||
+                                            position.perChange == null
+                                        ? colors.ltpgrey
+                                        : position.perChange!.startsWith("-")
                                                   ? colors.darkred
-                                                  :  colors.ltpgreen,
-                                              12,
-                                              FontWeight.w500)),
+                                            : colors.ltpgreen,
+                                    fw: 0),
                                     ],
                                   ),
                                   Divider(
                                       color: theme.isDarkMode
                                           ? colors.darkGrey
-                                          : Color(
-                                    position.netqty == "0"
+                                    : Color(position.netqty == "0"
                                                   ? 0xffffffff
                                                   : 0xffECEDEE),
                                       thickness: 1.2),
@@ -303,28 +299,28 @@ class ExitPositionScreen extends ConsumerWidget {
                                     children: [
                                       Row(
                                         children: [
-                                          Text(
-                                    "${position.sPrdtAli}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
+                                    TextWidget.subText(
+                                        text: "${position.sPrdtAli}",
+                                        theme: false,
+                                        color: theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
-                                                  13,
-                                                  FontWeight.w600)),
+                                        fw: 1),
                                         ],
                                       ),
                                       positions.isNetPnl
                                           ? Row(
                                               children: [
-                                                Text("P&L: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w500)),
-                                                Text(
+                                          TextWidget.subText(
+                                              text: "P&L: ",
+                                              theme: false,
+                                              color: const Color(0xff5E6B7D),
+                                              fw: 0),
+                                          TextWidget.titleText(
+                                              text:
                                           "₹${position.profitNloss ?? position.rpnl}",
-                                                    style: textStyle(
-                                              position.profitNloss !=
+                                              theme: false,
+                                              color: position.profitNloss !=
                                                                 null
                                                   ? position.profitNloss!
                                                                     .startsWith("-")
@@ -332,39 +328,33 @@ class ExitPositionScreen extends ConsumerWidget {
                                                       : position.profitNloss ==
                                                                         "0.00"
                                                                     ? colors.ltpgrey
-                                                                    : colors
-                                                                        .ltpgreen
+                                                          : colors.ltpgreen
                                                   : position.rpnl!
                                                                     .startsWith("-")
                                                                 ? colors.darkred
-                                                      : position.rpnl ==
-                                                                        "0.00"
+                                                      : position.rpnl == "0.00"
                                                                     ? colors.ltpgrey
-                                                                    : colors
-                                                                        .ltpgreen,
-                                                        15,
-                                                        FontWeight.w600)),
+                                                          : colors.ltpgreen,
+                                              fw: 1),
                                               ],
                                             )
                                           : Row(
                                               children: [
-                                                Text("MTM: ",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        13,
-                                                        FontWeight.w500)),
-                                                Text(
-                                          "₹${position.mTm}",
-                                                    style: textStyle(
-                                              position.mTm!
-                                                                .startsWith("-")
+                                          TextWidget.subText(
+                                              text: "MTM: ",
+                                              theme: false,
+                                              color: const Color(0xff5E6B7D),
+                                              fw: 0),
+                                          TextWidget.titleText(
+                                              text: "₹${position.mTm}",
+                                              theme: false,
+                                              color:
+                                                  position.mTm!.startsWith("-")
                                                             ? colors.darkred
-                                                  : position.mTm ==
-                                                                    "0.00"
+                                                      : position.mTm == "0.00"
                                                                 ? colors.ltpgrey
                                                                 : colors.ltpgreen,
-                                                        15,
-                                                        FontWeight.w600)),
+                                              fw: 1),
                                               ],
                                             ),
                                     ],
@@ -376,34 +366,34 @@ class ExitPositionScreen extends ConsumerWidget {
                                     children: [
                                       Row(
                                         children: [
-                                          Text("Qty: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                Text("${position.netqty }",
-                                              style: textStyle(
-                                                  theme.isDarkMode
+                                    TextWidget.subText(
+                                        text: "Qty: ",
+                                        theme: false,
+                                        color: const Color(0xff5E6B7D),
+                                        fw: 0),
+                                    TextWidget.subText(
+                                        text: "${position.netqty}",
+                                        theme: false,
+                                        color: theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500)),
+                                        fw: 0),
                                         ],
                                       ),
                                       Row(
                                         children: [
-                                          Text("Avg: ",
-                                              style: textStyle(
-                                                  const Color(0xff5E6B7D),
-                                                  14,
-                                                  FontWeight.w500)),
-                                Text("${position.avgPrc}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
+                                    TextWidget.subText(
+                                        text: "Avg: ",
+                                        theme: false,
+                                        color: const Color(0xff5E6B7D),
+                                        fw: 0),
+                                    TextWidget.subText(
+                                        text: "${position.avgPrc}",
+                                        theme: false,
+                                        color: theme.isDarkMode
                                                       ? colors.colorWhite
                                                       : colors.colorBlack,
-                                                  14,
-                                                  FontWeight.w500)),
+                                        fw: 0),
                                         ],
                                       ),
                                     ],
@@ -464,20 +454,16 @@ class ExitPositionScreen extends ConsumerWidget {
                           }
                         },
                   child: Center(
-                      child: Text(
-                          positions.exitPositionQty == 0
+                    child: TextWidget.subText(
+                        text: positions.exitPositionQty == 0
                               ? "Exit"
                               : "Exit (${positions.exitPositionQty})",
-                          style: textStyle(
-                              const Color(0xffFFFFFF), 14, FontWeight.w600))),
+                        theme: false,
+                        color: const Color(0xffFFFFFF),
+                        fw: 1),
+                  ),
                 ))),
       ),
     );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

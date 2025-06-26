@@ -7,6 +7,7 @@ import 'package:readmore/readmore.dart';
 import '../../../provider/market_watch_provider.dart';
 
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import 'chart.dart';
 import 'mf_holding.dart';
@@ -22,19 +23,23 @@ class StocksHoldingsWidget extends ConsumerWidget {
         ref.watch(marketWatchProvider).fundamentalData!.shareholdings!;
     final shareHoldings = ref.watch(marketWatchProvider);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text("Holdings",
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              20,
-              FontWeight.w600)),
+     
+
+               TextWidget.heroText(
+                      text: "Holdings",
+                   
+                      theme: theme.isDarkMode,
+                      fw: 1),	
       const SizedBox(height: 16),
       SizedBox(
           height: 36,
           child: shareHoldings.fundamentalData!.shareholdings!.isEmpty
               ? Center(
-                  child: Text(
-                    "No Holdings",
-                  ),
+                  child: 
+                   TextWidget.subText(
+                      text: "No Holdings",
+                      theme: theme.isDarkMode,
+                      fw: 0),	
                 )
               : ListView.separated(
                   scrollDirection: Axis.horizontal,
@@ -59,9 +64,11 @@ class StocksHoldingsWidget extends ConsumerWidget {
                               shareHoldings.chngMfHoldDate(
                                   shareHoldings.mfHoldingDate[index], index);
                             },
-                            child: Text(shareHoldings.mfHoldingDate[index],
-                                style: textStyle(
-                                    theme.isDarkMode
+                            child:                                        
+                                        
+                                         TextWidget.subText(
+                      text: shareHoldings.mfHoldingDate[index],
+                      color:  theme.isDarkMode
                                         ? shareHoldings.selectedMfHolddate ==
                                                 shareHoldings
                                                     .mfHoldingDate[index]
@@ -72,21 +79,31 @@ class StocksHoldingsWidget extends ConsumerWidget {
                                                     .mfHoldingDate[index]
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                    14,
-                                    shareHoldings.selectedMfHolddate ==
+                      theme: theme.isDarkMode,
+                      fw:  shareHoldings.selectedMfHolddate ==
                                             shareHoldings.mfHoldingDate[index]
-                                        ? FontWeight.w500
-                                        : FontWeight.w400))));
+                                        ? 0
+                                        : 00),	
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        ));
                   },
                   separatorBuilder: (BuildContext context, int index) {
                     return const SizedBox(width: 10);
                   })),
       const SizedBox(height: 16),
-      Text("Shareholding Breakdown",
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              16,
-              FontWeight.w600)),
+     
+
+               TextWidget.titleText(
+                      text:"Shareholding Breakdown" ,                
+                      theme: theme.isDarkMode,
+                      fw: 1),	
       const SizedBox(height: 8),
       stockHold.isEmpty
           ? Container(
@@ -115,10 +132,18 @@ class StocksHoldingsWidget extends ConsumerWidget {
                   bottom: BorderSide(color: Color(0xff999999), width: .5))),
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text("Investors",
-                style: textStyle(const Color(0xff666666), 14, FontWeight.w500)),
-            Text("Holding %",
-                style: textStyle(const Color(0xff666666), 14, FontWeight.w500))
+            
+                 TextWidget.subText(
+                      text: "Investors",
+                      color: Color(0xff666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),	
+         
+                 TextWidget.subText(
+                      text: "Holding %",
+                      color: Color(0xff666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
           ])),
       stockHold.isEmpty
           ? Container(
@@ -199,18 +224,18 @@ class StocksHoldingsWidget extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Shareholding History",
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          16,
-                          FontWeight.w600)),
+                           TextWidget.titleText(
+                      text:"Shareholding History" ,
+                   
+                      theme: theme.isDarkMode,
+                      fw: 1),	
                   const SizedBox(height: 3),
-                  Text(
-                      "Select a segment from the breakdowns to see its pattern here",
-                      style: textStyle(
-                          const Color(0xff666666), 12, FontWeight.w500)),
+                 
+                           TextWidget.paraText(
+                      text:"Select a segment from the breakdowns to see its pattern here" ,
+                      color: Color(0xff666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),	
                   const SizedBox(height: 8),
                   DropdownButtonHideUnderline(
                     child: DropdownButton2(
@@ -240,19 +265,17 @@ class StocksHoldingsWidget extends ConsumerWidget {
                       // buttonSplashColor: Colors.transparent,
                       isExpanded: true,
 
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          13,
-                          FontWeight.w500),
-                      hint: Text(shareHoldings.selctedShareHold,
-                          style: textStyle(
-                              theme.isDarkMode
+                      style: 
+                           TextWidget.textStyle(
+                 fontSize: 12 , theme: theme.isDarkMode , fw: 0 ),		
+                      hint: 
+                               TextWidget.paraText(
+                      text: shareHoldings.selctedShareHold,
+                      color:theme.isDarkMode
                                   ? colors.colorBlack
-                                  : colors.colorBlack,
-                              13,
-                              FontWeight.w500)),
+                                  : colors.colorBlack ,
+                      theme: theme.isDarkMode,
+                      fw: 0),	
 
                       items: shareHoldings.addDividersAfterExpDates(
                           shareHoldings.shareHoldType),
@@ -284,22 +307,29 @@ class StocksHoldingsWidget extends ConsumerWidget {
       const SizedBox(height: 8),
       shareHoldings.fundamentalData!.stockDescription!.isEmpty
           ? Container()
-          : Text("Stock overview",
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  20,
-                  FontWeight.w600)),
+          : 
+
+                   TextWidget.heroText(
+                      text: "Stock overview",
+                      theme: theme.isDarkMode,
+                      fw: 1),	
       const SizedBox(height: 8),
       ReadMoreText("${shareHoldings.fundamentalData!.stockDescription}",
-          style: textStyle(const Color(0xff666666), 13, FontWeight.w500),
+          style:
+           TextWidget.textStyle(
+                 fontSize: 12 , color: Color(0xff666666), theme: theme.isDarkMode , fw: 0 ),		
           textAlign: TextAlign.left,
           trimLines: 4,
           moreStyle: theme.isDarkMode
-              ? textStyles.darkmorestyle
-              : textStyles.morestyle,
+              ?  TextWidget.textStyle(
+                 fontSize: 12 , color: colors.colorLightBlue, theme: theme.isDarkMode , fw: 0 )		
+              : TextWidget.textStyle(
+                 fontSize: 12 , color: colors.colorBlue, theme: theme.isDarkMode , fw: 0 )	,
           lessStyle: theme.isDarkMode
-              ? textStyles.darkmorestyle
-              : textStyles.morestyle,
+              ?  TextWidget.textStyle(
+                 fontSize: 12 , color: colors.colorLightBlue, theme: theme.isDarkMode , fw: 0 )		
+              : TextWidget.textStyle(
+                 fontSize: 12 , color: colors.colorBlue, theme: theme.isDarkMode , fw: 0 ),
           colorClickableText: const Color(0xff0037B7),
           trimMode: TrimMode.Line,
           trimCollapsedText: 'Read more',
@@ -324,19 +354,23 @@ class StocksHoldingsWidget extends ConsumerWidget {
                 color: color, borderRadius: BorderRadius.circular(3))),
         contentPadding: const EdgeInsets.symmetric(horizontal: 0),
         dense: true,
-        title: Text(name,
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w500)),
-        trailing: Text(
-            "${double.parse(value == "null" ? "0.00" : value).toStringAsFixed(2)}%",
-            style: textStyle(const Color(0xff666666), 14, FontWeight.w500)));
+        title: 
+
+                 TextWidget.subText(
+                      text: name,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+        trailing: 
+            
+             TextWidget.subText(
+                      text: "${double.parse(value == "null" ? "0.00" : value).toStringAsFixed(2)}%",
+                      color: Color(0xff666666),
+                      theme: theme.isDarkMode,
+                      fw: 0),
+            
+            
+            );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }

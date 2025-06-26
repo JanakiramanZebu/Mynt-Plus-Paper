@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import 'financial.dart';
@@ -52,10 +53,7 @@ class FundamentalDataWidget extends ConsumerWidget {
   }
 
   // Extracted static method to avoid recreating text style
-  static TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
-    return GoogleFonts.inter(
-        textStyle: TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+ 
 }
 
 // Extracted header section to avoid rebuilding when data doesn't change
@@ -69,24 +67,18 @@ class _FundamentalHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Fundamental Ratios",
-          style: FundamentalDataWidget.textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        20,
-              FontWeight.w600
-          )
-        ),
-                const SizedBox(height: 5),
-                Text(
-          "Fundamental breakdown of $symbolName information",
-          style: FundamentalDataWidget.textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        12,
-              FontWeight.w500
-          )
-        ),
+      children: [    
+         TextWidget.heroText(
+                      text:  "Fundamental Ratios",
+                    
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                const SizedBox(height: 5),   
+         TextWidget.paraText(
+                      text:  "Fundamental breakdown of $symbolName information" ,
+                   
+                      theme: theme.isDarkMode,
+                      fw: 0),
       ],
     );
   }
@@ -153,18 +145,39 @@ class _FundamentalRatiosSection extends StatelessWidget {
           Expanded(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text(title1,
-                    style: FundamentalDataWidget.textStyle(
-                        const Color(0xff666666), 10, FontWeight.w400)),
+                  children: [  
+                         TextWidget.captionText(
+                      text:title1 ,
+                      color:Color(0xff666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 00),
                 const SizedBox(height: 4),
-                Text(value1,
-                    style: FundamentalDataWidget.textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        14,
-                        FontWeight.w600)),
+                         TextWidget.subText(
+                      text:value1 ,
+                   
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                const SizedBox(height: 2),
+                Divider(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider)
+              ])),
+          const SizedBox(width: 18),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [  
+                         TextWidget.captionText(
+                      text: title2,
+                      color: Color(0xff666666),
+                      theme: theme.isDarkMode,
+                      fw: 00),
+                const SizedBox(height: 4),               
+                 TextWidget.subText(
+                      text: value2,                
+                      theme: theme.isDarkMode,
+                      fw: 1),
                 const SizedBox(height: 2),
                 Divider(
                     color: theme.isDarkMode
@@ -176,39 +189,18 @@ class _FundamentalRatiosSection extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                Text(title2,
-                    style: FundamentalDataWidget.textStyle(
-                        const Color(0xff666666), 10, FontWeight.w400)),
+                        TextWidget.captionText(
+                      text:title3 ,
+                      color:Color(0xff666666) ,
+                      theme: theme.isDarkMode,
+                      fw: 00),
                 const SizedBox(height: 4),
-                Text(
-                  value2,
-                  style: FundamentalDataWidget.textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w600),
-                ),
-                const SizedBox(height: 2),
-                Divider(
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider)
-              ])),
-          const SizedBox(width: 18),
-          Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text(title3,
-                    style: FundamentalDataWidget.textStyle(
-                        const Color(0xff666666), 10, FontWeight.w400)),
-                const SizedBox(height: 4),
-                Text(value3,
-                    style: FundamentalDataWidget.textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        14,
-                        FontWeight.w600)),
+               
+                        TextWidget.subText(
+                      text:value3 ,
+                     
+                      theme: theme.isDarkMode,
+                      fw: 1),
                 const SizedBox(height: 2),
                 Divider(
                     color: theme.isDarkMode

@@ -4,6 +4,7 @@ import 'package:mynt_plus/sharedWidget/functions.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 
@@ -39,9 +40,10 @@ class _Allholdings extends State<Allholdings> {
               value['keysinv'] = 0;
 
               for (var l in value['summary']) {
-                if (socketDatas.isNotEmpty && socketDatas.containsKey(l['token'])) {
-                  double val =
-                      (double.tryParse(socketDatas[l['token']]['lp'].toString()) ??
+                  if (socketDatas.isNotEmpty &&
+                      socketDatas.containsKey(l['token'])) {
+                    double val = (double.tryParse(
+                                socketDatas[l['token']]['lp'].toString()) ??
                               0.0) *
                           (double.tryParse("${l['units']}") ?? 0.0);
                   socketDatas[l['token']]['keysval'] = val.toString();
@@ -66,10 +68,12 @@ class _Allholdings extends State<Allholdings> {
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                   color: theme.isDarkMode
-                                      ? const Color(0xffB5C0CF).withOpacity(.15)
+                                        ? const Color(0xffB5C0CF)
+                                            .withOpacity(.15)
                                       : const Color(0xffF1F3F8)),
                               child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                         mainAxisAlignment:
@@ -79,55 +83,54 @@ class _Allholdings extends State<Allholdings> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text("Current Value",
-                                                  style: textStyle(
+                                                TextWidget.paraText(
+                                                    text: "Current Value",
+                                                    theme: false,
+                                                    color:
                                                       const Color(0xff5E6B7D),
-                                                      12,
-                                                      FontWeight.w500)),
+                                                    fw: 0),
                                               const SizedBox(height: 6),
-                                              Text(
+                                                TextWidget.subText(
+                                                    text:
                                                   "₹${getFormatter(value: totvalcurr, v4d: false, noDecimal: false)}",
-                                                  style: textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      14,
-                                                      FontWeight.w500)),
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
                                             ],
                                           ),
                                           Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.end,
                                               children: [
-                                                Text("1D Change",
-                                                    style: textStyle(
-                                                        const Color(0xff5E6B7D),
-                                                        12,
-                                                        FontWeight.w500)),
+                                                  TextWidget.paraText(
+                                                      text: "1D Change",
+                                                      theme: false,
+                                                      color: const Color(
+                                                          0xff5E6B7D),
+                                                      fw: 0),
                                                 const SizedBox(height: 6),
                                                 Row(children: [
-                                                  Text(
+                                                    TextWidget.titleText(
+                                                        text:
                                                       "₹${getFormatter(value: allch, v4d: false, noDecimal: false)}",
-                                                      style: textStyle(
-                                                          allchp
+                                                        theme: false,
+                                                        color: allchp
                                                                   .toStringAsFixed(
                                                                       2)
                                                                   .startsWith("-")
                                                               ? colors.darkred
                                                               : colors.ltpgreen,
-                                                          16,
-                                                          FontWeight.w500)),
-                                                  Text(
+                                                        fw: 0),
+                                                    TextWidget.subText(
+                                                        text:
                                                       " (${allchp.isNaN ? "0.00" : allchp.toStringAsFixed(2)}%)",
-                                                      style: textStyle(
-                                                          allchp
+                                                        theme: false,
+                                                        color: allchp
                                                                   .toStringAsFixed(
                                                                       2)
                                                                   .startsWith("-")
                                                               ? colors.darkred
                                                               : colors.ltpgreen,
-                                                          14,
-                                                          FontWeight.w500))
+                                                        fw: 0),
                                                 ])
                                               ])
                                         ])
@@ -150,20 +153,15 @@ class _Allholdings extends State<Allholdings> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    Text(
-                                      'Last sync: ',
-                                      style: textStyle(
-                                          colors.colorGrey, 13, FontWeight.w500),
-                                    ),
-                                    Text(
-                                      ldate,
-                                      style: textStyle(
-                                          !theme.isDarkMode
-                                              ? colors.colorBlack
-                                              : colors.colorWhite,
-                                          13,
-                                          FontWeight.w500),
-                                    ),
+                                      TextWidget.subText(
+                                          text: 'Last sync: ',
+                                          theme: false,
+                                          color: colors.colorGrey,
+                                          fw: 0),
+                                      TextWidget.subText(
+                                          text: ldate,
+                                          theme: theme.isDarkMode,
+                                          fw: 0),
                                   ],
                                 ),
                               )),
@@ -186,9 +184,11 @@ class _Allholdings extends State<Allholdings> {
                               double panelsum = 0;
                               double panelinv = 0;
                               if (asa.allholds[key]['keysval'] != 'Null') {
-                                panelsum = (asa.allholds[key]['keysval'] ?? 0.0)
+                                  panelsum =
+                                      (asa.allholds[key]['keysval'] ?? 0.0)
                                     .toDouble();
-                                panelinv = (asa.allholds[key]['keysinv'] ?? 0.0)
+                                  panelinv =
+                                      (asa.allholds[key]['keysinv'] ?? 0.0)
                                     .toDouble();
                               }
                               String keych =
@@ -203,7 +203,8 @@ class _Allholdings extends State<Allholdings> {
                                     : colors.colorBlack,
                                 expansionCallback: (panelIndex, isExpanded) {
                                   setState(() {
-                                    _expandedPanels[key] = !_expandedPanels[key]!;
+                                      _expandedPanels[key] =
+                                          !_expandedPanels[key]!;
                                   });
                                 },
                                 children: [
@@ -217,16 +218,18 @@ class _Allholdings extends State<Allholdings> {
                                             vertical: isExpanded ? 0 : 6),
                                         child: ListTile(
                                           leading: CircleAvatar(
-                                            backgroundColor: Colors.transparent,
+                                              backgroundColor:
+                                                  Colors.transparent,
                                             child: ClipOval(
                                               child: Image.network(
                                                 imageUrl +
-                                                    asa.allholds[key]['profile']
+                                                      asa.allholds[key]
+                                                              ['profile']
                                                             ['logopath']
                                                         .toString(),
                                                 fit: BoxFit.cover,
-                                                errorBuilder:
-                                                    (context, error, stackTrace) =>
+                                                  errorBuilder: (context, error,
+                                                          stackTrace) =>
                                                         const Icon(Icons.error),
                                               ),
                                             ),
@@ -239,24 +242,22 @@ class _Allholdings extends State<Allholdings> {
                                                 children: [
                                                   SizedBox(
                                                     width: 200,
-                                                    child: Text(key,
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors.colorWhite
-                                                                : colors.colorBlack,
-                                                            12,
-                                                            FontWeight.w500),
-                                                        overflow:
-                                                            TextOverflow.ellipsis,
+                                                      child:
+                                                          TextWidget.paraText(
+                                                              text: key,
+                                                              theme: theme
+                                                                  .isDarkMode,
+                                                              fw: 0,
+                                                              textOverflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
                                                         maxLines: 1),
                                                   ),
-                                                  Text('(${phaseo.length})',
-                                                      style: textStyle(
-                                                          theme.isDarkMode
-                                                              ? colors.colorWhite
-                                                              : colors.colorBlack,
-                                                          12,
-                                                          FontWeight.w500))
+                                                    TextWidget.paraText(
+                                                        text:
+                                                            '(${phaseo.length})',
+                                                        theme: theme.isDarkMode,
+                                                        fw: 0),
                                                 ],
                                               ),
                                               const SizedBox(
@@ -266,27 +267,29 @@ class _Allholdings extends State<Allholdings> {
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.start,
                                                   children: [
-                                                    Text(
-                                                        (panelsum != 0)
+                                                      TextWidget.subText(
+                                                          text: (panelsum != 0)
                                                             ? (panelsum
-                                                                .toStringAsFixed(2))
+                                                                  .toStringAsFixed(
+                                                                      2))
                                                             : '0.0',
-                                                        style: textStyle(
-                                                            theme.isDarkMode
-                                                                ? colors.colorWhite
-                                                                : colors.colorBlack,
-                                                            14,
-                                                            FontWeight.w500)),
-                                                    Text("  $keych ($keychp%)",
-                                                        style: textStyle(
-                                                            keych.startsWith("-")
+                                                          theme:
+                                                              theme.isDarkMode,
+                                                          fw: 0),
+                                                      TextWidget.subText(
+                                                          text:
+                                                              "  $keych ($keychp%)",
+                                                          theme: false,
+                                                          color: keych
+                                                                  .startsWith(
+                                                                      "-")
                                                                 ? colors.darkred
                                                                 : keych == "0.00"
-                                                                    ? colors.ltpgrey
+                                                                  ? colors
+                                                                      .ltpgrey
                                                                     : colors
                                                                         .ltpgreen,
-                                                            14,
-                                                            FontWeight.w500))
+                                                          fw: 0),
                                                   ]),
                                             ],
                                           ),
@@ -299,78 +302,79 @@ class _Allholdings extends State<Allholdings> {
                                             shrinkWrap: true,
                                             physics:
                                                 const NeverScrollableScrollPhysics(),
-                                            padding: const EdgeInsets.symmetric(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                 horizontal: 8),
                                             itemCount: phaseo.length,
                                             itemBuilder:
-                                                (BuildContext context, int index) {
+                                                  (BuildContext context,
+                                                      int index) {
                                               final raw = phaseo[index];
                                               String ltp = '0';
                                               String ch = '0.00';
                                               String chp = '0.00';
                                               String val = '0.00';
-                                              if (socketDatas
-                                                  .containsKey(raw['token'])) {
-                                                ltp = socketDatas[raw['token']]
+                                                if (socketDatas.containsKey(
+                                                    raw['token'])) {
+                                                  ltp =
+                                                      socketDatas[raw['token']]
                                                         ['lp']
                                                     .toString();
                                                 ch = socketDatas[raw['token']]
                                                         ['chng']
                                                     .toString();
-                                                chp = socketDatas[raw['token']]
+                                                  chp =
+                                                      socketDatas[raw['token']]
                                                         ['pc']
                                                     .toString();
 
                                                 val = double.parse(
-                                                        socketDatas[raw['token']]
+                                                          socketDatas[
+                                                                  raw['token']]
                                                             ['keysval'])
                                                     .toStringAsFixed(2);
                                               }
                                               return Container(
-                                                  padding: const EdgeInsets.all(8),
+                                                    padding:
+                                                        const EdgeInsets.all(8),
                                                   child: Column(
                                                       crossAxisAlignment:
-                                                          CrossAxisAlignment.start,
+                                                            CrossAxisAlignment
+                                                                .start,
                                                       children: [
                                                         Row(
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment
                                                                     .spaceBetween,
                                                             children: [
-                                                              Text(
+                                                                TextWidget.subText(
+                                                                    text:
                                                                   "${raw['symbol']} ",
-                                                                  overflow:
+                                                                    theme: theme
+                                                                        .isDarkMode,
+                                                                    fw: 0,
+                                                                    textOverflow:
                                                                       TextOverflow
-                                                                          .ellipsis,
-                                                                  style: textStyles
-                                                                      .scripNameTxtStyle
-                                                                      .copyWith(
-                                                                          color: theme.isDarkMode
-                                                                              ? colors
-                                                                                  .colorWhite
-                                                                              : colors
-                                                                                  .colorBlack)),
+                                                                            .ellipsis),
                                                               Row(children: [
-                                                                Text(" LTP: ",
-                                                                    style: textStyle(
-                                                                        const Color(
+                                                                  TextWidget.paraText(
+                                                                      text:
+                                                                          " LTP: ",
+                                                                      theme:
+                                                                          false,
+                                                                      color: const Color(
                                                                             0xff5E6B7D),
-                                                                        13,
-                                                                        FontWeight
-                                                                            .w600)),
-                                                                Text("₹$ltp",
-                                                                    style: textStyle(
-                                                                        theme.isDarkMode
-                                                                            ? colors
-                                                                                .colorWhite
-                                                                            : colors
-                                                                                .colorBlack,
-                                                                        14,
-                                                                        FontWeight
-                                                                            .w500))
+                                                                      fw: 1),
+                                                                  TextWidget.subText(
+                                                                      text:
+                                                                          "₹$ltp",
+                                                                      theme: theme
+                                                                          .isDarkMode,
+                                                                      fw: 0),
                                                               ])
                                                             ]),
-                                                        const SizedBox(height: 4),
+                                                          const SizedBox(
+                                                              height: 4),
                                                         Row(
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment
@@ -379,21 +383,15 @@ class _Allholdings extends State<Allholdings> {
                                                               CustomExchBadge(
                                                                   exch:
                                                                       "${raw['exch']}"),
-                                                              Text(" $ch ($chp%)",
-                                                                  style: textStyle(
-                                                                      ch.startsWith(
-                                                                              "-")
-                                                                          ? colors
-                                                                              .darkred
-                                                                          : ch ==
-                                                                                  "0.00"
-                                                                              ? colors
-                                                                                  .ltpgrey
-                                                                              : colors
-                                                                                  .ltpgreen,
-                                                                      12,
-                                                                      FontWeight
-                                                                          .w500))
+                                                                TextWidget.paraText(
+                                                                    text: " $ch ($chp%)",
+                                                                    theme: false,
+                                                                    color: ch.startsWith("-")
+                                                                        ? colors.darkred
+                                                                        : ch == "0.00"
+                                                                            ? colors.ltpgrey
+                                                                            : colors.ltpgreen,
+                                                                    fw: 0),
                                                             ]),
                                                         Divider(
                                                             height: 12,
@@ -413,43 +411,36 @@ class _Allholdings extends State<Allholdings> {
                                                                       CrossAxisAlignment
                                                                           .end,
                                                                   children: [
-                                                                    Text("Qty: ",
-                                                                        style: textStyle(
-                                                                            const Color(
-                                                                                0xff5E6B7D),
-                                                                            14,
-                                                                            FontWeight
-                                                                                .w500)),
-                                                                    Text(
+                                                                      TextWidget.subText(
+                                                                          text:
+                                                                              "Qty: ",
+                                                                          theme:
+                                                                              false,
+                                                                          color:
+                                                                              const Color(0xff5E6B7D),
+                                                                          fw: 0),
+                                                                      TextWidget.subText(
+                                                                          text:
                                                                         "${raw['units'] ?? 0}",
-                                                                        style: textStyle(
-                                                                            theme.isDarkMode
-                                                                                ? colors
-                                                                                    .colorWhite
-                                                                                : colors
-                                                                                    .colorBlack,
-                                                                            14,
-                                                                            FontWeight
-                                                                                .w500)),
+                                                                          theme:
+                                                                              theme.isDarkMode,
+                                                                          fw: 0),
                                                                   ]),
                                                               Row(children: [
-                                                                Text("Cur: ",
-                                                                    style: textStyle(
-                                                                        const Color(
+                                                                  TextWidget.subText(
+                                                                      text:
+                                                                          "Cur: ",
+                                                                      theme:
+                                                                          false,
+                                                                      color: const Color(
                                                                             0xff5E6B7D),
-                                                                        14,
-                                                                        FontWeight
-                                                                            .w500)),
-                                                                Text("₹$val",
-                                                                    style: textStyle(
-                                                                        theme.isDarkMode
-                                                                            ? colors
-                                                                                .colorWhite
-                                                                            : colors
-                                                                                .colorBlack,
-                                                                        14,
-                                                                        FontWeight
-                                                                            .w500))
+                                                                      fw: 0),
+                                                                  TextWidget.subText(
+                                                                      text:
+                                                                          "₹$val",
+                                                                      theme: theme
+                                                                          .isDarkMode,
+                                                                      fw: 0),
                                                               ])
                                                             ]),
                                                         const SizedBox(
@@ -481,22 +472,18 @@ class _Allholdings extends State<Allholdings> {
                       child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          'Total Portfolio',
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              20,
-                              FontWeight.w700),
-                        ),
+                          TextWidget.heroText(
+                              text: 'Total Portfolio',
+                              theme: theme.isDarkMode,
+                              fw: 2),
                         const SizedBox(
                           height: 10,
                         ),
-                        Text(
-                          'Click sync to fetch your holdings...',
-                          style: textStyle(colors.colorGrey, 14, FontWeight.w500),
-                        ),
+                          TextWidget.subText(
+                              text: 'Click sync to fetch your holdings...',
+                              theme: false,
+                              color: colors.colorGrey,
+                              fw: 0),
                         const SizedBox(
                           height: 16,
                         ),
@@ -527,19 +514,14 @@ class _Allholdings extends State<Allholdings> {
                                               ? colors.colorWhite
                                               : colors.colorBlack),
                                     )
-                                  : Text("Sync",
-                                      textAlign: TextAlign.center,
-                                      style: textStyle(
-                                          !theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          16,
-                                          FontWeight.w600)),
+                                    : TextWidget.titleText(
+                                        text: "Sync",
+                                        theme: theme.isDarkMode,
+                                        fw: 1),
                             )),
                       ],
                     ));
-        }
-      );
+          });
     });
   }
 }

@@ -9,6 +9,7 @@ import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/scrip_info_btns.dart';
+import '../../../res/global_state_text.dart';
 
 class TradeBookDetail extends ConsumerWidget {
   final TradeBookModel tradeData;
@@ -90,26 +91,18 @@ class TradeBookDetail extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Text("${displayData.symbol ?? ''}",
-                            style: textStyles.appBarTitleTxt.copyWith(
-                                color: theme.isDarkMode
+                        TextWidget.titleText(text: "${displayData.symbol ?? ''}",theme: false,color: theme.isDarkMode
                                     ? colors.colorWhite
-                                    : colors.colorBlack)),
-                        Text(" ${displayData.option ?? ''} ",
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyles.scripNameTxtStyle.copyWith(
-                                color: theme.isDarkMode
+                                    : colors.colorBlack,fw: 1),
+
+                       TextWidget.subText(text: " ${displayData.option ?? ''} ",theme: false,color: theme.isDarkMode
                                     ? colors.colorWhite
-                                    : colors.colorBlack)),
+                                    : colors.colorBlack,fw: 1,textOverflow: TextOverflow.ellipsis),
                       ],
                     ),
-                    Text("₹$formattedLTP",
-                        style: textStyle(
-                            theme.isDarkMode
+                    TextWidget.titleText(text: "₹$formattedLTP",theme: false,color: theme.isDarkMode
                                 ? colors.colorWhite
-                                : colors.colorBlack,
-                            16,
-                            FontWeight.w600)),
+                                : colors.colorBlack,fw: 1),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -119,13 +112,9 @@ class TradeBookDetail extends ConsumerWidget {
                     children: [
                       Row(children: [
                         CustomExchBadge(exch: displayData.exch ?? ""),
-                        Text("  ${displayData.expDate ?? ''}",
-                            style: textStyle(
-                                theme.isDarkMode
+                        TextWidget.paraText(text: "  ${displayData.expDate ?? ''}",theme: false, color: theme.isDarkMode
                                     ? colors.colorWhite
-                                    : colors.colorBlack,
-                                12,
-                                FontWeight.w600))
+                                    : colors.colorBlack,fw: 1),
                       ]),
                       _buildChangeIndicator(displayData, theme)
                     ])
@@ -143,13 +132,9 @@ class TradeBookDetail extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 12),
-                        Text("Order details",
-                            style: textStyle(
-                                theme.isDarkMode
+                        TextWidget.titleText(text: "Order details",theme: false,color: theme.isDarkMode
                                     ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w600)),
+                                    : colors.colorBlack,fw: 1),
                         const SizedBox(height: 16),
                         rowOfInfoData(
                             "Transaction Type",
@@ -213,10 +198,8 @@ class TradeBookDetail extends ConsumerWidget {
             ? colors.darkred 
             : colors.ltpgreen;
     
-    return Text(
-        "$formattedChange ($formattedPercentage%)",
-        style: textStyle(textColor, 12, FontWeight.w500)
-    );
+    return TextWidget.paraText(text: "$formattedChange ($formattedPercentage%)",theme: false, color: textColor,fw: 0);
+
   }
 
   Row rowOfInfoData(
@@ -230,14 +213,19 @@ class TradeBookDetail extends ConsumerWidget {
       Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title1,
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
+        TextWidget.paraText(
+          text: title1,
+          theme: theme.isDarkMode,
+          color: const Color(0xff666666),
+          fw: 0,
+        ),
         const SizedBox(height: 2),
-        Text(value1,
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w500)),
+        TextWidget.paraText(
+          text: value1,
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          fw: 1,
+        ),
         const SizedBox(height: 2),
         Divider(
             color: theme.isDarkMode
@@ -248,15 +236,18 @@ class TradeBookDetail extends ConsumerWidget {
       Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title2,
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
+        TextWidget.paraText(
+          text: title2,
+          theme: theme.isDarkMode,
+          color: const Color(0xff666666),
+          fw: 0,
+        ),
         const SizedBox(height: 2),
-        Text(
-          value2,
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              14,
-              FontWeight.w500),
+        TextWidget.subText(
+          text: value2,
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          fw: 1,
         ),
         const SizedBox(height: 2),
         Divider(
@@ -267,9 +258,5 @@ class TradeBookDetail extends ConsumerWidget {
     ]);
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
+
 }

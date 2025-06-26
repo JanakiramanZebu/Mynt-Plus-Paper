@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../locator/preference.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/list_divider.dart';
@@ -134,11 +135,11 @@ class _WatchlistsBottomSheetState
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "Sort by",
-                  style: textStyles.appBarTitleTxt.copyWith(
-                      color: theme.isDarkMode ? Colors.white : Colors.black),
-                ),
+               
+                 TextWidget.titleText(
+                      text:  "Sort by",
+                      theme: theme.isDarkMode,
+                      fw: 1),
               ],
             ),
           ),
@@ -166,15 +167,26 @@ class _WatchlistsBottomSheetState
                       const SizedBox(
                         width: 15,
                       ),
-                      Text(
-                        "Scrip Name",
-                        style: textStyles.prdText.copyWith(
-                          color: colors.colorGrey,
-                          fontWeight: currentSortType == "scrip"
-                              ? FontWeight.w600
-                              : null,
-                        ),
-                      ),
+                     
+
+                      // TextWidget.subText(
+                      // text:"Scrip Name" ,
+                      // color: colors.colorGrey, 
+                      // theme: theme.isDarkMode,
+                      // fw:  currentSortType == "scrip"
+                      //         ? 1
+                      //         : null),
+
+                              Text(
+  "Scrip Name",
+  style: TextWidget.textStyle(
+                 fontSize: 13 , color: colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "scrip"
+                              ? 1
+                              : 0 ),
+)
+
+
+
                     ],
                   ),
                 ),
@@ -202,15 +214,24 @@ class _WatchlistsBottomSheetState
                       const SizedBox(
                         width: 15,
                       ),
-                      Text(
-                        "LTP",
-                        style: textStyles.prdText.copyWith(
-                          color: colors.colorGrey,
-                          fontWeight: currentSortType == "price"
-                              ? FontWeight.w600
-                              : null,
-                        ),
-                      ),
+                     
+                      //  TextWidget.subText(
+                      // text:"LTP",
+                      // color: colors.colorGrey, 
+                      // theme: theme.isDarkMode,
+                      // fw:  currentSortType == "price"
+                      //         ? 1
+                      //         : null),
+
+Text(
+  "LTP",
+  style: TextWidget.textStyle(
+                 fontSize: 13 , color: colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "price"
+                              ? 1
+                              : 0 ),
+)
+
+
                     ],
                   ),
                 ),
@@ -238,15 +259,23 @@ class _WatchlistsBottomSheetState
                       const SizedBox(
                         width: 15,
                       ),
-                      Text(
-                        "Perc.Change",
-                        style: textStyles.prdText.copyWith(
-                          color: colors.colorGrey,
-                          fontWeight: currentSortType == "perchng"
-                              ? FontWeight.w600
-                              : null,
-                        ),
-                      ),
+                      
+                      //  TextWidget.subText(
+                      // text:"Perc.Change" ,
+                      // color: colors.colorGrey, 
+                      // theme: theme.isDarkMode,
+                      // fw:  currentSortType == "perchng"
+                      //         ? 1
+                      //         : null),
+
+                              Text(
+  "Perc.Change",
+  style:TextWidget.textStyle(
+                 fontSize: 13 , color: colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "perchng"
+                              ? 1
+                              : 0 ),
+)
+
                     ],
                   ),
                 ),

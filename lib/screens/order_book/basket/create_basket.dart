@@ -8,6 +8,7 @@ import 'package:mynt_plus/provider/order_provider.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
@@ -42,11 +43,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
         titlePadding: const EdgeInsets.only(left: 16),
         title:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text('Create Basket',
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w600)),
+              TextWidget.titleText(text: 'Create Basket',theme: theme.isDarkMode,fw: 1),
           IconButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -75,12 +72,12 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                           : const Color(0xffF1F3F8),
                       filled: true,
                       hintText: "Enter basket name",
-                      hintStyle: textStyle(Colors.grey, 13, FontWeight.w400),
+                      hintStyle: TextWidget.textStyle(color: Colors.grey,fontSize: 12,fw: 00,theme: false),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 16),
                       errorText: errorText,
                       errorStyle:
-                          textStyle(colors.darkred, 10, FontWeight.w600),
+                         TextWidget.textStyle(color: colors.darkred,fontSize: 10,fw: 1,theme: false),
                       enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide.none,
                           borderRadius: BorderRadius.circular(50)),
@@ -143,14 +140,9 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                       borderRadius: BorderRadius.circular(50),
                     ),
                   ),
-                  child: Text("Create",
-                      style: GoogleFonts.inter(
-                          textStyle: textStyle(
-                              !theme.isDarkMode
+                  child: TextWidget.subText(text: "Create",theme: false,color: !theme.isDarkMode
                                   ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w500)))))
+                                  : colors.colorBlack,fw: 0)))
         ]);
   }
 }

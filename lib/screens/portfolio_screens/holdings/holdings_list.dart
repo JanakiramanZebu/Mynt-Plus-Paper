@@ -5,6 +5,7 @@ import 'package:mynt_plus/models/portfolio_model/holdings_model.dart';
 
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
@@ -13,13 +14,10 @@ import '../../../sharedWidget/functions.dart';
 class HoldingsList extends ConsumerStatefulWidget {
   final HoldingsModel holdingData;
   final ExchTsym exchTsym;
-  
-  const HoldingsList({
-    super.key, 
-    required this.holdingData, 
-    required this.exchTsym
-  });
-  
+
+  const HoldingsList(
+      {super.key, required this.holdingData, required this.exchTsym});
+
   @override
   ConsumerState<HoldingsList> createState() => _HoldingsListState();
 }
@@ -27,18 +25,24 @@ class HoldingsList extends ConsumerStatefulWidget {
 class _HoldingsListState extends ConsumerState<HoldingsList> {
   // Use a cache to prevent unnecessary rebuilds
   static final Map<String, Widget> _staticComponentsCache = {};
-  
+
   // Clear cache when theme changes to force rebuild of components
-  static void clearCache() {
+  static void clearAllCaches() {
     _staticComponentsCache.clear();
+    _StaticQuantityInfo._styles.clear();
+    _StaticInvestmentInfo._styles.clear();
+    _DynamicLtpInfoState._styles.clear();
+    _DynamicPercentChangeState._styles.clear();
+    _DynamicPnlInfoState._styles.clear();
+    _DynamicCurrentValueInfoState._styles.clear();
   }
-  
+
   @override
   void initState() {
     super.initState();
     // Setup a listener for theme changes
   }
-  
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -51,19 +55,19 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
       }
     });
   }
-  
+
   // Get or create a cached static component
   Widget _getCachedStaticComponent(String key, Widget Function() builder) {
     if (!_staticComponentsCache.containsKey(key)) {
       _staticComponentsCache[key] = builder();
-      
+
       // Limit cache size
       if (_staticComponentsCache.length > 200) {
         final firstKey = _staticComponentsCache.keys.first;
         _staticComponentsCache.remove(firstKey);
       }
     }
-    
+
     return _staticComponentsCache[key]!;
   }
 
@@ -71,111 +75,112 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
   Widget build(BuildContext context) {
     // Watch theme to rebuild when theme changes
     final theme = ref.watch(themeProvider);
-    final contentColor = theme.isDarkMode ? colors.colorWhite : colors.colorBlack;
+    ref.listen(themeProvider, (previous, next) {
+      if (previous?.isDarkMode != next.isDarkMode) {
+        clearAllCaches();
+      }
+    });
+    final contentColor =
+        theme.isDarkMode ? colors.colorWhite : colors.colorBlack;
     final labelColor = const Color(0xff5E6B7D);
-    final dividerColor = theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider;
-    
+    final dividerColor =
+        theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider;
+
     // Add theme to keys to ensure components rebuild when theme changes
     final themeKey = theme.isDarkMode ? 'dark' : 'light';
     final symbolKey = 'symbol-${widget.exchTsym.tsym}-$themeKey';
     final exchangeKey = 'exch-${widget.exchTsym.exch}-$themeKey';
-    final qtyKey = 'qty-${widget.holdingData.currentQty}-${widget.holdingData.upldprc}-${widget.holdingData.npoadqty}-${widget.holdingData.btstqty}-$themeKey';
-    final investKey = 'invest-${widget.holdingData.invested}-${widget.exchTsym.close}-$themeKey';
-        
+    final qtyKey =
+        'qty-${widget.holdingData.currentQty}-${widget.holdingData.upldprc}-${widget.holdingData.npoadqty}-${widget.holdingData.btstqty}-$themeKey';
+    final investKey =
+        'invest-${widget.holdingData.invested}-${widget.exchTsym.close}-$themeKey';
+
     return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // Static header information (symbol name)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Symbol name - static
-              _getCachedStaticComponent(
-                symbolKey,
-                () => Text(
-                  "${widget.exchTsym.tsym} ",
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            // Symbol name - static
+            _getCachedStaticComponent(
+              symbolKey,
+              () => Text("${widget.exchTsym.tsym}",
                   overflow: TextOverflow.ellipsis,
-                  style: textStyles.scripNameTxtStyle.copyWith(
-                    color: contentColor
-                  )
-                )
-              ),
-              // LTP - dynamic, will update from socket
-              _DynamicLtpInfo(
-                ltp: widget.exchTsym.lp ?? '0.00',
-                labelColor: labelColor,
-                contentColor: contentColor,
-              )
-            ]
-          ),
+                  style: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: theme.isDarkMode,
+                    color: contentColor,
+                  )),
+            ),
+            _StaticInvestmentInfo(
+              holdingData: widget.holdingData,
+              exchTsym: widget.exchTsym,
+              labelColor: labelColor,
+              contentColor: contentColor,
+            ),
+            // LTP - dynamic, will update from socket
+          ]),
           const SizedBox(height: 4),
           // Exchange badge (static) and price change (dynamic)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Static exchange badge - won't rebuild
-              _getCachedStaticComponent(
-                exchangeKey,
-                () => CustomExchBadge(exch: "${widget.exchTsym.exch}")
-              ),
-              // Dynamic percentage change
-              _DynamicPercentChange(
-                perChange: widget.exchTsym.perChange ?? '0.00',
-              )
-            ]
-          ),
+          // Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          //   // Static exchange badge - won't rebuild
+          //   // _getCachedStaticComponent(exchangeKey,
+          //   //     () => CustomExchBadge(exch: "${widget.exchTsym.exch}")),
+          //   // Dynamic percentage change
+          // ]),
           const SizedBox(height: 4),
           RepaintBoundary(child: Divider(color: dividerColor)),
           const SizedBox(height: 3),
           // Quantity info (static) and P&L (dynamic)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Static quantity information - use cached version
-              _getCachedStaticComponent(
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            // Static quantity information - use cached version
+            _getCachedStaticComponent(
                 qtyKey,
                 () => _StaticQuantityInfo(
-                  holdingData: widget.holdingData,
-                  exchTsym: widget.exchTsym,
-                  labelColor: labelColor,
-                  contentColor: contentColor,
-                )
-              ),
-              // Dynamic P&L information
-              _DynamicPnlInfo(
-                profitLoss: widget.exchTsym.profitNloss ?? '0.00',
-                pnlChange: widget.exchTsym.pNlChng ?? '0.00',
-              )
-            ]
-          ),
+                      holdingData: widget.holdingData,
+                      exchTsym: widget.exchTsym,
+                      labelColor: labelColor,
+                      contentColor: contentColor,
+                    )),
+            // Dynamic P&L information
+            _DynamicPnlInfo(
+              profitLoss: widget.exchTsym.profitNloss ?? '0.00',
+              pnlChange: widget.exchTsym.pNlChng ?? '0.00',
+            )
+          ]),
           const SizedBox(height: 10),
           // Investment (static) and current value (dynamic)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Static investment information - use cached version
-              _getCachedStaticComponent(
-                investKey,
-                () => _StaticInvestmentInfo(
-                  holdingData: widget.holdingData,
-                  exchTsym: widget.exchTsym,
-                  labelColor: labelColor,
-                  contentColor: contentColor,
-                )
-              ),
-              // Dynamic current value information
-              _DynamicCurrentValueInfo(
-                currentValue: widget.holdingData.currentValue ?? '0.00',
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            // Static investment information - use cached version
+            _getCachedStaticComponent(
+              investKey,
+              () => _StaticPriceInfo(
+                holdingData: widget.holdingData,
+                exchTsym: widget.exchTsym,
                 labelColor: labelColor,
                 contentColor: contentColor,
-              )
-            ]
-          )
-        ]
-      )
-    );
+              ),
+            ),
+            Row(
+              children: [
+                _DynamicLtpInfo(
+                  ltp: widget.exchTsym.lp ?? '0.00',
+                  labelColor: labelColor,
+                  contentColor: contentColor,
+                ),
+                _DynamicPercentChange(
+                  perChange: widget.exchTsym.perChange ?? '0.00',
+                ),
+              ],
+            )
+
+            // Dynamic current value information
+            // _DynamicCurrentValueInfo(
+            //   currentValue: widget.holdingData.currentValue ?? '0.00',
+            //   labelColor: labelColor,
+            //   contentColor: contentColor,
+            // )
+          ])
+        ]));
   }
 }
 
@@ -185,53 +190,93 @@ class _StaticQuantityInfo extends StatelessWidget {
   final ExchTsym exchTsym;
   final Color labelColor;
   final Color contentColor;
-  
+
   // Cached text styles
   static final Map<String, TextStyle> _styles = {};
-  
+
   const _StaticQuantityInfo({
-    Key? key, 
-    required this.holdingData, 
+    Key? key,
+    required this.holdingData,
     required this.exchTsym,
     required this.labelColor,
     required this.contentColor,
   }) : super(key: key);
-  
+
   // Get or create a text style
-  static TextStyle _getStyle(Color color, double size, FontWeight weight, String key) {
-    final styleKey = "${key}-${color.value}";
+  static TextStyle _getStyle(
+      Color color, double size, int? fw, String key, bool isDarkMode) {
+    final styleKey = '${color.value}|$size|$fw|$isDarkMode';
     if (!_styles.containsKey(styleKey)) {
-      _styles[styleKey] = TextStyle(fontWeight: weight, color: color, fontSize: size);
+      _styles[styleKey] =
+          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode);
     }
     return _styles[styleKey]!;
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          "Qty: ",
-          style: _getStyle(labelColor, 14, FontWeight.w500, 'qty-label')
-        ),
-        Text(
-          "${holdingData.currentQty ?? 0} @ ₹${holdingData.upldprc ?? exchTsym.close ?? 0.00}",
-          style: _getStyle(contentColor, 14, FontWeight.w500, 'qty-value')
-        ),
+    return Consumer(builder: (context, ref, _) {
+      final theme = ref.watch(themeProvider);
+      return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        Text("Qty  ",
+            style: _getStyle(labelColor, 12, 0, 'qty-label', theme.isDarkMode)),
+        Text("${holdingData.currentQty ?? 0}",
+            style:
+                _getStyle(contentColor, 14, 0, 'qty-value', theme.isDarkMode)),
         if (holdingData.npoadqty.toString() != "null") ...[
-          Text(
-            " NPQ",
-            style: _getStyle(const Color(0xff666666), 12, FontWeight.w500, 'npq')
-          )
+          Text(" NPQ",
+              style: _getStyle(
+                  const Color(0xff666666), 12, 0, 'npq', theme.isDarkMode))
         ],
-        if (holdingData.btstqty != "0") 
-          Text(
-            " T1: ${holdingData.btstqty}",
-            style: _getStyle(const Color(0xff666666), 12, FontWeight.w500, 't1-qty')
-          )
-      ]
-    );
+        if (holdingData.btstqty != "0")
+          Text(" T1: {holdingData.btstqty}",
+              style: _getStyle(
+                  const Color(0xff666666), 12, 0, 't1-qty', theme.isDarkMode))
+      ]);
+    });
+  }
+}
+
+class _StaticPriceInfo extends StatelessWidget {
+  final HoldingsModel holdingData;
+  final ExchTsym exchTsym;
+  final Color labelColor;
+  final Color contentColor;
+
+  // Cached text styles
+  static final Map<String, TextStyle> _styles = {};
+
+  const _StaticPriceInfo({
+    Key? key,
+    required this.holdingData,
+    required this.exchTsym,
+    required this.labelColor,
+    required this.contentColor,
+  }) : super(key: key);
+
+  // Get or create a text style
+  static TextStyle _getStyle(
+      Color color, double size, int? fw, String key, bool isDarkMode) {
+    final styleKey = '${color.value}|$size|$fw|$isDarkMode';
+    if (!_styles.containsKey(styleKey)) {
+      _styles[styleKey] = TextWidget.textStyle(
+          color: color, fontSize: size, theme: isDarkMode, fw: fw);
+    }
+    return _styles[styleKey]!;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(builder: (context, ref, _) {
+      final theme = ref.watch(themeProvider);
+      return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        Text("Avg  ",
+            style: _getStyle(labelColor, 12, 3, 'qty-label', theme.isDarkMode)),
+        Text("${holdingData.upldprc ?? exchTsym.close ?? 0.00}",
+            style:
+                _getStyle(contentColor, 14, 3, 'qty-value', theme.isDarkMode)),
+      ]);
+    });
   }
 }
 
@@ -241,46 +286,53 @@ class _StaticInvestmentInfo extends StatelessWidget {
   final ExchTsym exchTsym;
   final Color labelColor;
   final Color contentColor;
-  
+
   // Cached text styles
   static final Map<String, TextStyle> _styles = {};
-  
+
   const _StaticInvestmentInfo({
-    Key? key, 
-    required this.holdingData, 
+    Key? key,
+    required this.holdingData,
     required this.exchTsym,
     required this.labelColor,
     required this.contentColor,
   }) : super(key: key);
-  
+
   // Get or create a text style
-  static TextStyle _getStyle(Color color, double size, FontWeight weight, String key) {
-    final styleKey = "${key}-${color.value}";
+  static TextStyle _getStyle(
+      Color color, double size, int? fw, String key, bool isDarkMode) {
+    final styleKey = '${color.value}|$size|$fw|$isDarkMode';
     if (!_styles.containsKey(styleKey)) {
-      _styles[styleKey] = TextStyle(fontWeight: weight, color: color, fontSize: size);
+      _styles[styleKey] =
+          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode);
     }
     return _styles[styleKey]!;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final investedValue = double.parse(
-      "${holdingData.invested == "0.00" 
-        ? exchTsym.close ?? 0.00 
-        : holdingData.invested ?? 0.00}"
-    );
-    
-    return Row(
-      children: [
-        Text(
-          "Inv: ",
-          style: _getStyle(labelColor, 14, FontWeight.w500, 'inv-label')
-        ),
-        Text(
-          "₹${getFormatter(value: investedValue, v4d: false, noDecimal: false)}",
-          style: _getStyle(contentColor, 14, FontWeight.w500, 'inv-value')
-        )
-      ]
+        "${holdingData.invested == "0.00" ? exchTsym.close ?? 0.00 : holdingData.invested ?? 0.00}");
+
+    return Consumer(
+      builder: (context, ref, _) {
+        final theme = ref.watch(themeProvider);
+
+        return Row(
+          children: [
+            Text(
+              "Inv  ",
+              style:
+                  _getStyle(labelColor, 13, 0, 'inv-label', theme.isDarkMode),
+            ),
+            Text(
+              "${getFormatter(value: investedValue, v4d: false, noDecimal: false)}",
+              style:
+                  _getStyle(contentColor, 14, 0, 'inv-value', theme.isDarkMode),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -290,14 +342,14 @@ class _DynamicLtpInfo extends ConsumerStatefulWidget {
   final String ltp;
   final Color labelColor;
   final Color contentColor;
-  
+
   const _DynamicLtpInfo({
     Key? key,
     required this.ltp,
     required this.labelColor,
     required this.contentColor,
   }) : super(key: key);
-  
+
   @override
   ConsumerState<_DynamicLtpInfo> createState() => _DynamicLtpInfoState();
 }
@@ -306,10 +358,10 @@ class _DynamicLtpInfoState extends ConsumerState<_DynamicLtpInfo> {
   late String _ltp;
   // FIX: Add StreamSubscription for direct socket updates
   StreamSubscription? _subscription;
-  
+
   // Cached text styles
   static final Map<String, TextStyle> _styles = {};
-  
+
   @override
   void initState() {
     super.initState();
@@ -317,16 +369,16 @@ class _DynamicLtpInfoState extends ConsumerState<_DynamicLtpInfo> {
     // FIX: Setup direct socket listener for this token
     _setupSocketListener();
   }
-  
+
   // FIX: Add method to listen directly to socket updates
   void _setupSocketListener() {
     // Get token from parent chain (if available)
     final String? token = widget.key?.toString().split(':').firstOrNull;
     if (token == null || token.isEmpty) return;
-    
+
     // Get socket provider using the ref from ConsumerStatefulWidget
     final websocket = ref.read(websocketProvider);
-    
+
     _subscription = websocket.socketDataStream.listen((data) {
       if (data.containsKey(token)) {
         final socketData = data[token];
@@ -343,22 +395,20 @@ class _DynamicLtpInfoState extends ConsumerState<_DynamicLtpInfo> {
       }
     });
   }
-  
+
   @override
   void didUpdateWidget(_DynamicLtpInfo oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.ltp != widget.ltp) {
       _ltp = widget.ltp;
     }
-    
-    // Update colors if the theme changed
-    if (oldWidget.contentColor != widget.contentColor || 
-        oldWidget.labelColor != widget.labelColor) {
-      // Colors changed, so we need to rebuild
-      setState(() {});
+    // Clear style cache when theme changes
+    if (oldWidget.labelColor != widget.labelColor ||
+        oldWidget.contentColor != widget.contentColor) {
+      _styles.clear();
     }
   }
-  
+
   @override
   void dispose() {
     // FIX: Clean up subscription
@@ -366,31 +416,30 @@ class _DynamicLtpInfoState extends ConsumerState<_DynamicLtpInfo> {
     // Avoid accessing anything from context in dispose
     super.dispose();
   }
-  
+
   // Get or create a text style
-  static TextStyle _getStyle(Color color, double size, FontWeight weight, String key) {
-    final styleKey = "${key}-${color.value}";
-    if (!_styles.containsKey(styleKey)) {
-      _styles[styleKey] = TextStyle(fontWeight: weight, color: color, fontSize: size);
+  static TextStyle _getStyle(
+      Color color, double size, int? fw, String key, bool isDarkMode) {
+    final key = '${color.value}|$size|$fw|$isDarkMode';
+    if (!_styles.containsKey(key)) {
+      _styles[key] =
+          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode);
     }
-    return _styles[styleKey]!;
+    return _styles[key]!;
   }
-  
+
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeProvider);
     return RepaintBoundary(
-      child: Row(
-        children: [
-          Text(
-            " LTP: ",
-            style: _getStyle(widget.labelColor, 13, FontWeight.w600, 'ltp-label')
-          ),
-          Text(
-            "₹${_ltp}",
-            style: _getStyle(widget.contentColor, 14, FontWeight.w500, 'ltp-value')
-          )
-        ]
-      ),
+      child: Row(children: [
+        Text("LTP  ",
+            style: _getStyle(
+                widget.labelColor, 12, 0, 'ltp-label', theme.isDarkMode)),
+        Text("${_ltp}",
+            style: _getStyle(
+                widget.contentColor, 14, 0, 'ltp-value', theme.isDarkMode))
+      ]),
     );
   }
 }
@@ -398,28 +447,29 @@ class _DynamicLtpInfoState extends ConsumerState<_DynamicLtpInfo> {
 // A widget that only displays and updates the price change percentage
 class _DynamicPercentChange extends ConsumerStatefulWidget {
   final String perChange;
-  
+
   const _DynamicPercentChange({
     Key? key,
     required this.perChange,
   }) : super(key: key);
-  
+
   @override
-  ConsumerState<_DynamicPercentChange> createState() => _DynamicPercentChangeState();
+  ConsumerState<_DynamicPercentChange> createState() =>
+      _DynamicPercentChangeState();
 }
 
 class _DynamicPercentChangeState extends ConsumerState<_DynamicPercentChange> {
   late String _perChange;
-  
+
   // Cached text styles
   static final Map<String, TextStyle> _styles = {};
-  
+
   @override
   void initState() {
     super.initState();
     _perChange = widget.perChange;
   }
-  
+
   @override
   void didUpdateWidget(_DynamicPercentChange oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -427,38 +477,39 @@ class _DynamicPercentChangeState extends ConsumerState<_DynamicPercentChange> {
       _perChange = widget.perChange;
     }
   }
-  
+
   @override
   void dispose() {
     // Avoid accessing anything from context in dispose
     super.dispose();
   }
-  
+
   // Get or create a text style
-  static TextStyle _getStyle(Color color, double size, FontWeight weight) {
-    final key = '${color.value}|$size|${weight.index}';
+  static TextStyle _getStyle(
+      Color color, double size, int? fw, bool isDarkMode) {
+    final key = '${color.value}|$size|$fw|$isDarkMode';
+
     if (!_styles.containsKey(key)) {
-      _styles[key] = TextStyle(fontWeight: weight, color: color, fontSize: size);
+      _styles[key] =
+          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode);
     }
     return _styles[key]!;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     // Use theme from ConsumerState
     final theme = ref.watch(themeProvider);
-    
+
     final textColor = _perChange.startsWith("-")
-      ? colors.darkred
-      : _perChange == "0.00"
-        ? colors.ltpgrey
-        : colors.ltpgreen;
-        
+        ? colors.darkred
+        : _perChange == "0.00"
+            ? colors.ltpgrey
+            : colors.ltpgreen;
+
     return RepaintBoundary(
-      child: Text(
-        " (${_perChange}%)",
-        style: _getStyle(textColor, 12, FontWeight.w500)
-      ),
+      child: Text(" (${_perChange}%)",
+          style: _getStyle(textColor, 12, 0, theme.isDarkMode)),
     );
   }
 }
@@ -467,13 +518,13 @@ class _DynamicPercentChangeState extends ConsumerState<_DynamicPercentChange> {
 class _DynamicPnlInfo extends ConsumerStatefulWidget {
   final String profitLoss;
   final String pnlChange;
-  
+
   const _DynamicPnlInfo({
     Key? key,
     required this.profitLoss,
     required this.pnlChange,
   }) : super(key: key);
-  
+
   @override
   ConsumerState<_DynamicPnlInfo> createState() => _DynamicPnlInfoState();
 }
@@ -481,17 +532,17 @@ class _DynamicPnlInfo extends ConsumerStatefulWidget {
 class _DynamicPnlInfoState extends ConsumerState<_DynamicPnlInfo> {
   late String _profitLoss;
   late String _pnlChange;
-  
+
   // Cached text styles
   static final Map<String, TextStyle> _styles = {};
-  
+
   @override
   void initState() {
     super.initState();
     _profitLoss = widget.profitLoss;
     _pnlChange = widget.pnlChange;
   }
-  
+
   @override
   void didUpdateWidget(_DynamicPnlInfo oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -502,49 +553,48 @@ class _DynamicPnlInfoState extends ConsumerState<_DynamicPnlInfo> {
       _pnlChange = widget.pnlChange;
     }
   }
-  
+
   @override
   void dispose() {
     // Avoid accessing anything from context in dispose
     super.dispose();
   }
-  
+
   // Get or create a text style
-  static TextStyle _getStyle(Color color, double size, FontWeight weight) {
-    final key = '${color.value}|$size|${weight.index}';
+  static TextStyle _getStyle(
+      Color color, double size, int? fw, bool isDarkMode) {
+    final key = '${color.value}|$size|$fw|$isDarkMode';
     if (!_styles.containsKey(key)) {
-      _styles[key] = TextStyle(fontWeight: weight, color: color, fontSize: size);
+      _styles[key] = TextWidget.textStyle(
+          color: color, fontSize: size, theme: isDarkMode, fw: fw);
     }
     return _styles[key]!;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     // Use theme from ConsumerState for any theme-specific styling
     final theme = ref.watch(themeProvider);
-    
-    final pnlColor = _profitLoss.startsWith("-") 
-      ? colors.darkred 
-      : _profitLoss == "0.00" ? colors.ltpgrey : colors.ltpgreen;
-      
-    final pnlChangeColor = _pnlChange.startsWith("-") 
-      ? colors.darkred 
-      : _pnlChange == "NaN" ? colors.darkred : colors.ltpgreen;
-    
+
+    final pnlColor = _profitLoss.startsWith("-")
+        ? colors.darkred
+        : _profitLoss == "0.00"
+            ? colors.ltpgrey
+            : colors.ltpgreen;
+
+    final pnlChangeColor = _pnlChange.startsWith("-")
+        ? colors.darkred
+        : _pnlChange == "NaN"
+            ? colors.darkred
+            : colors.ltpgreen;
+
     return RepaintBoundary(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            "₹${_profitLoss}",
-            style: _getStyle(pnlColor, 14, FontWeight.w500)
-          ),
-          Text(
-            " (${_pnlChange == "NaN" ? 0.0 : _pnlChange}%)",
-            style: _getStyle(pnlChangeColor, 12, FontWeight.w500)
-          )
-        ]
-      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        Text("${_profitLoss}",
+            style: _getStyle(pnlColor, 15, 1, theme.isDarkMode)),
+        Text(" (${_pnlChange == "NaN" ? 0.0 : _pnlChange}%)",
+            style: _getStyle(pnlChangeColor, 12, 0, theme.isDarkMode))
+      ]),
     );
   }
 }
@@ -554,79 +604,78 @@ class _DynamicCurrentValueInfo extends ConsumerStatefulWidget {
   final String currentValue;
   final Color labelColor;
   final Color contentColor;
-  
+
   const _DynamicCurrentValueInfo({
     Key? key,
     required this.currentValue,
     required this.labelColor,
     required this.contentColor,
   }) : super(key: key);
-  
+
   @override
-  ConsumerState<_DynamicCurrentValueInfo> createState() => _DynamicCurrentValueInfoState();
+  ConsumerState<_DynamicCurrentValueInfo> createState() =>
+      _DynamicCurrentValueInfoState();
 }
 
-class _DynamicCurrentValueInfoState extends ConsumerState<_DynamicCurrentValueInfo> {
+class _DynamicCurrentValueInfoState
+    extends ConsumerState<_DynamicCurrentValueInfo> {
   late String _currentValue;
-  
+
   // Cached text styles
   static final Map<String, TextStyle> _styles = {};
-  
+
   @override
   void initState() {
     super.initState();
     _currentValue = widget.currentValue;
   }
-  
+
   @override
   void didUpdateWidget(_DynamicCurrentValueInfo oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.currentValue != widget.currentValue) {
       _currentValue = widget.currentValue;
     }
-    
+
     // Update colors if the theme changed
-    if (oldWidget.contentColor != widget.contentColor || 
+    if (oldWidget.contentColor != widget.contentColor ||
         oldWidget.labelColor != widget.labelColor) {
       // Colors changed, so we need to rebuild
       setState(() {});
     }
   }
-  
+
   @override
   void dispose() {
     // Avoid accessing anything from context in dispose
     super.dispose();
   }
-  
+
   // Get or create a text style
-  static TextStyle _getStyle(Color color, double size, FontWeight weight, String key) {
-    final styleKey = "${key}-${color.value}";
-    if (!_styles.containsKey(styleKey)) {
-      _styles[styleKey] = TextStyle(fontWeight: weight, color: color, fontSize: size);
+  static TextStyle _getStyle(
+      Color color, double size, int? fw, String key, bool isDarkMode) {
+    final key = '${color.value}|$size|$fw|$isDarkMode';
+
+    if (!_styles.containsKey(key)) {
+      _styles[key] =
+          TextWidget.textStyle(color: color, fontSize: size, theme: isDarkMode);
     }
-    return _styles[styleKey]!;
+    return _styles[key]!;
   }
-  
+
   @override
   Widget build(BuildContext context) {
+    final theme = ref.read(themeProvider);
     return RepaintBoundary(
-      child: Row(
-        children: [
-          Text(
-            "Cur: ",
-            style: _getStyle(widget.labelColor, 14, FontWeight.w500, 'cur-label')
-          ),
-          Text(
-            "₹${getFormatter(
-              value: double.parse(_currentValue), 
-              v4d: false, 
-              noDecimal: false
-            )}",
-            style: _getStyle(widget.contentColor, 14, FontWeight.w500, 'cur-value')
-          )
-        ]
-      ),
+      child: Row(children: [
+        Text("Cur  ",
+            style: _getStyle(
+                widget.labelColor, 14, 0, 'cur-label', theme.isDarkMode)),
+        Text(
+            "${getFormatter(value: double.parse(_currentValue), v4d: false, noDecimal: false)}",
+            style: _getStyle(
+                widget.contentColor, 14, 0, 'cur-value', theme.isDarkMode))
+      ]),
     );
   }
 }

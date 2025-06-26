@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 
@@ -125,23 +126,23 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 16),
-                    Text(
-                      'Your TOTP',
-                      style: GoogleFonts.inter(
+                    TextWidget.titleText(
+                        text: 'Your TOTP',
+                        theme: false,
                         color: theme.isDarkMode
                             ? colors.colorWhite
                             : colors.colorBlack,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                        fw: 1),
                     const SizedBox(height: 12),
                     InkWell(
                       onTap: () {
                         Clipboard.setData(ClipboardData(text: otp));
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('TOTP copied to clipboard'),
+                          SnackBar(
+                            content: TextWidget.titleText(
+                                text: 'TOTP copied to clipboard',
+                                theme: theme.isDarkMode,
+                                fw: 1),
                           ),
                         );
                         Navigator.pop(context);
@@ -170,17 +171,16 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    "${otp.substring(0, 3)} ${otp.substring(3, 6)}",
-                                    style: GoogleFonts.inter(
+                                  TextWidget.custmText(
+                                      text:
+                                          "${otp.substring(0, 3)} ${otp.substring(3, 6)}",
                                       color: theme.isDarkMode
                                           ? colors.colorWhite
                                           : colors.colorBlack,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 2,
-                                    ),
-                                  ),
+                                      fs: 28,
+                                      fw: 2,
+                                      theme: false,
+                                      letterSpacing: 2),
                                   const SizedBox(
                                     width: 8,
                                   ),
@@ -192,35 +192,35 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                               const SizedBox(height: 10),
                               LinearProgressIndicator(
                                 value: progressValue,
-                                backgroundColor: theme.isDarkMode ? colors.colorLightBlue.withOpacity(0.2) : colors.colorBlue.withOpacity(0.2),
-                                color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                                backgroundColor: theme.isDarkMode
+                                    ? colors.colorLightBlue.withOpacity(0.2)
+                                    : colors.colorBlue.withOpacity(0.2),
+                                color: theme.isDarkMode
+                                    ? colors.colorLightBlue
+                                    : colors.colorBlue,
                                 minHeight: 6,
                               ),
                               const SizedBox(height: 6),
-                              Text(
-                                '$remainingSeconds seconds remaining',
-                                style: TextStyle(
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    fontSize: 12),
-                              )
+                              TextWidget.paraText(
+                                  text: '$remainingSeconds seconds remaining',
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  fw: 0),
                             ],
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Text(
-                      'Authenticator Key',
-                      style: GoogleFonts.inter(
+                    TextWidget.titleText(
+                        text: 'Authenticator Key',
+                        theme: false,
                         color: theme.isDarkMode
                             ? colors.colorWhite
                             : colors.colorBlack,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                        fw: 1),
                     const SizedBox(height: 12),
                     Container(
                       decoration: BoxDecoration(
@@ -233,17 +233,16 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: Text(
-                                isObscure
-                                    ? "••••••••••••••••••••"
-                                    : widget.secretKey,
-                                style: GoogleFonts.inter(
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    fontSize: 14),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                              child: TextWidget.subText(
+                                  text: isObscure
+                                      ? "••••••••••••••••••••"
+                                      : widget.secretKey,
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  fw: 0,
+                                  textOverflow: TextOverflow.ellipsis),
                             ),
                             InkWell(
                               onTap: () {
@@ -264,9 +263,11 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                                 Clipboard.setData(
                                     ClipboardData(text: widget.secretKey));
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('Auth key copied to clipboard'),
+                                  SnackBar(
+                                    content: TextWidget.titleText(
+                                        text: 'Auth key copied to clipboard',
+                                        theme: theme.isDarkMode,
+                                        fw: 1),
                                   ),
                                 );
                                 Navigator.pop(context);

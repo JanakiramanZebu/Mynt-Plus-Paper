@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../../../../provider/transcation_provider.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/snack_bar.dart';
@@ -59,10 +60,13 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
               FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
             ],
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: textStyle(
-                widget.theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                35,
-                FontWeight.w600),
+            style: TextWidget.textStyle(
+                theme: false,
+                color: widget.theme.isDarkMode
+                    ? colors.colorWhite
+                    : colors.colorBlack,
+                fontSize: 35,
+                fw: 1),
             controller: widget.withdarw.withdrawamount,
             onChanged: (value) {
               widget.withdarw.withdrawamount.text = value;
@@ -95,20 +99,22 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
               fillColor: Colors.transparent,
               filled: true,
               hintText: "0",
-              hintStyle: textStyle(
-                  widget.theme.isDarkMode
+              hintStyle: TextWidget.textStyle(
+                  color: widget.theme.isDarkMode
                       ? colors.colorGrey
                       : widget.withdarw.payoutdetails!.withdrawAmount == '0.00'
                           ? colors.colorGrey
                           : colors.colorBlack,
-                  40,
-                  FontWeight.w600),
-              labelStyle: textStyle(
-                  widget.theme.isDarkMode
+                  fontSize: 40,
+                  fw: 1,
+                  theme: false),
+              labelStyle: TextWidget.textStyle(
+                  color: widget.theme.isDarkMode
                       ? colors.colorWhite
                       : colors.colorBlack,
-                  40,
-                  FontWeight.w600),
+                  fontSize: 40,
+                  fw: 1,
+                  theme: false),
               prefixIcon: Container(
                   margin: const EdgeInsets.all(6),
                   child: SvgPicture.asset(
@@ -129,11 +135,11 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
               children: [
                 withdarwerror == ""
                     ? Container()
-                    : Text(
-                        withdarwerror,
-                        style: textStyle(
-                            colors.kColorRedText, 14, FontWeight.w500),
-                      ),
+                    : TextWidget.subText(
+                        text: withdarwerror,
+                        theme: false,
+                        color: colors.kColorRedText,
+                        fw: 0),
                 SizedBox(
                   height: withdarwerror == "" ? 0 : 6,
                 ),
@@ -161,11 +167,11 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                                     withdraw: widget.withdarw);
                               });
                         },
-                        child: Text(
-                          "break up",
-                          style:
-                              textStyle(colors.colorBlue, 12, FontWeight.w600),
-                        ),
+                        child: TextWidget.paraText(
+                            text: "break up",
+                            theme: false,
+                            color: colors.colorBlue,
+                            fw: 1),
                       ),
                     ),
                   ],
@@ -262,17 +268,16 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Color(0xff666666)),
                       )
-                    : Text(
-                        'Withdraw',
-                        style: textStyle(
-                            disable
+                  : TextWidget.titleText(
+                      text: 'Withdraw',
+                      theme: false,
+                      color: disable
                                 ? colors.colorGrey
                                 : widget.theme.isDarkMode
                                     ? colors.colorBlack
                                     : colors.colorWhite,
-                            16,
-                            FontWeight.w400),
-                      )),
+                      fw: 00),
+            ),
           ),
           const SizedBox(
             height: 15,
@@ -287,15 +292,13 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Open Request",
-                    style: textStyle(
-                        widget.theme.isDarkMode
+                  TextWidget.titleText(
+                      text: "Open Request",
+                      theme: false,
+                      color: widget.theme.isDarkMode
                             ? colors.colorWhite
                             : colors.colorBlack,
-                        15,
-                        FontWeight.w600),
-                  ),
+                      fw: 1),
                   const SizedBox(
                     height: 12,
                   ),
@@ -311,23 +314,25 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                       ),
                       title: Row(
                         children: [
-                          Text(
-                            "Request on : ",
-                            style: textStyle(
-                                colors.colorBlack, 12, FontWeight.w500),
-                          ),
-                          Text(
+                          TextWidget.paraText(
+                              text: "Request on : ",
+                              theme: false,
+                              color: colors.colorBlack,
+                              fw: 0),
+                          TextWidget.paraText(
+                              text:
                             "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
-                            style: textStyle(
-                                colors.colorBlue, 12, FontWeight.w500),
-                          )
+                              theme: false,
+                              color: colors.colorBlue,
+                              fw: 0),
                         ],
                       ),
-                      trailing: Text(
+                      trailing: TextWidget.subText(
+                          text:
                         "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
-                        style:
-                            textStyle(colors.colorBlack, 13, FontWeight.w600),
-                      ),
+                          theme: false,
+                          color: colors.colorBlack,
+                          fw: 1),
                     ),
                   ),
                 ],
@@ -347,24 +352,16 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
     });
   }
 
-  Text headerTitleText(String text) {
-    return Text(
-      text,
-      style: textStyle(colors.colorGrey, 13, FontWeight.w500),
-    );
+  Widget headerTitleText(String text) {
+    return TextWidget.subText(
+        text: text, theme: false, color: colors.colorGrey, fw: 0);
   }
 
-  Text contantTitleText(String text, ThemesProvider theme) {
-    return Text(
-      text,
-      style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          15, FontWeight.w600),
-    );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+  Widget contantTitleText(String text, ThemesProvider theme) {
+    return TextWidget.titleText(
+        text: text,
+        theme: false,
+        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        fw: 1);
   }
 }

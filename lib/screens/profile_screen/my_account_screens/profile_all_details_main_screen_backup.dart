@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 // import 'package:mynt_plus/screens/profile_screen/my_account_screens/bottomsheet_screen.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 
 class ProfileDetails extends ConsumerStatefulWidget {
@@ -22,17 +23,17 @@ class _ProfileDetailsState extends ConsumerState<ProfileDetails> {
     ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
     super.initState();
   }
-var _formKey = GlobalKey<FormState>();
-var isLoading = false;
 
-void _submit() {
+  var _formKey = GlobalKey<FormState>();
+  var isLoading = false;
+
+  void _submit() {
     final isValid = _formKey.currentState?.validate();
     if (!isValid!) {
-    return;
+      return;
     }
     _formKey.currentState?.save();
-}
-
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,11 +74,12 @@ void _submit() {
                 child: SvgPicture.asset(assets.backArrow),
               ),
             ),
-            title: Text('Profile Details',
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600)),
+            title: TextWidget.subText(
+              text: 'Profile Details',
+              theme: false,
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              fw: 1,
+            ),
           ),
           body: Container(
             child: ListView(
@@ -103,28 +105,28 @@ void _submit() {
                           return Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: ChoiceChip(
-                              label: Text(
-                                label,
-                                style: TextStyle(
-                                    color: theme.isDarkMode
-                                        ? Color(profileprovider
-                                                    .allDetailsSelectedSection ==
-                                                eachSection.value
-                                            ? 0xff000000
-                                            : 0xffffffff)
-                                        : Color(profileprovider
-                                                    .allDetailsSelectedSection ==
-                                                eachSection.value
-                                            ? 0xffffffff
-                                            : 0xff000000)
+                              label: TextWidget.subText(
+                                  text: label,
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? Color(profileprovider
+                                                  .allDetailsSelectedSection ==
+                                              eachSection.value
+                                          ? 0xff000000
+                                          : 0xffffffff)
+                                      : Color(profileprovider
+                                                  .allDetailsSelectedSection ==
+                                              eachSection.value
+                                          ? 0xffffffff
+                                          : 0xff000000)
 
-                                    // theme.isDarkMode?
-                                    // profileprovider.allDetailsSelectedSection == eachSection.value
-                                    //     ? colors.colorbluegrey : colors.colorBlack
-                                    //     :  profileprovider.allDetailsSelectedSection == eachSection.value
-                                    //     ?  colors.colorbluegrey : colors.colorBlack
-                                    ),
-                              ),
+                                  // theme.isDarkMode?
+                                  // profileprovider.allDetailsSelectedSection == eachSection.value
+                                  //     ? colors.colorbluegrey : colors.colorBlack
+                                  //     :  profileprovider.allDetailsSelectedSection == eachSection.value
+                                  //     ?  colors.colorbluegrey : colors.colorBlack
+
+                                  ),
                               selected:
                                   profileprovider.allDetailsSelectedSection ==
                                       eachSection.value,
@@ -172,26 +174,24 @@ void _submit() {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Personal Details",
-                          style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            16,
-                            FontWeight.w600,
-                          ),
+                        TextWidget.titleText(
+                          text: "Personal Details",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          fw: 1,
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            "We use these details for all communication related to your account.",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                14,
-                                FontWeight.w400),
+                          child: TextWidget.subText(
+                            text:
+                                "We use these details for all communication related to your account.",
+                            theme: false,
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            fw: 00,
                           ),
                         ),
                         const Divider(color: Color(0xffDDDDDD)),
@@ -204,9 +204,9 @@ void _submit() {
                               "",
                           readOnly: true, // Makes the field non-editable
                           decoration: const InputDecoration(
-                              enabled:false,
-                              // border: UnderlineInputBorder(),
-                              ),
+                            enabled: false,
+                            // border: UnderlineInputBorder(),
+                          ),
                           style: TextStyle(
                             color: theme.isDarkMode
                                 ? colors.colorWhite
@@ -242,9 +242,9 @@ void _submit() {
                               "",
                           readOnly: true, // Makes the field non-editable
                           decoration: const InputDecoration(
-                              enabled:false,
-                              // border: UnderlineInputBorder(),
-                              ),
+                            enabled: false,
+                            // border: UnderlineInputBorder(),
+                          ),
                           style: TextStyle(
                             color: theme.isDarkMode
                                 ? colors.colorWhite
@@ -275,9 +275,9 @@ void _submit() {
                               "",
                           readOnly: true, // Makes the field non-editable
                           decoration: const InputDecoration(
-                              enabled:false,
-                              // border: UnderlineInputBorder(),
-                              ),
+                            enabled: false,
+                            // border: UnderlineInputBorder(),
+                          ),
                           style: TextStyle(
                             color: theme.isDarkMode
                                 ? colors.colorWhite
@@ -308,9 +308,9 @@ void _submit() {
                               "*******${profileprovider.clientAllDetails.clientData?.pANNO?.substring(7) ?? ''}",
                           readOnly: true, // Makes the field non-editable
                           decoration: const InputDecoration(
-                              enabled:false,
-                              // border: UnderlineInputBorder(),
-                              ),
+                            enabled: false,
+                            // border: UnderlineInputBorder(),
+                          ),
                           style: TextStyle(
                             color: theme.isDarkMode
                                 ? colors.colorWhite
@@ -330,9 +330,13 @@ void _submit() {
                           readOnly: true,
                           decoration: InputDecoration(
                             // enabled:false,
-                            focusedBorder:const UnderlineInputBorder(
-                                    borderSide:  BorderSide(width:1.5,color: Color.fromARGB(255, 0, 0, 0),),),
-                            isDense:true,
+                            focusedBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 1.5,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                              ),
+                            ),
+                            isDense: true,
                             // border: UnderlineInputBorder(),
                             suffix: ElevatedButton(
                               onPressed: () async {
@@ -370,13 +374,14 @@ void _submit() {
                                 ),
                                 minimumSize: const Size(55, 25),
                               ),
-                              child: Text("EDIT",
-                                  style: textStyle(
-                                      !theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)),
+                              child: TextWidget.paraText(
+                                text: "EDIT",
+                                theme: false,
+                                color: !theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                fw: 0,
+                              ),
                             ),
                           ),
                           style: TextStyle(
@@ -398,9 +403,13 @@ void _submit() {
                               "",
                           readOnly: true,
                           decoration: InputDecoration(
-                            focusedBorder:const UnderlineInputBorder(
-                                    borderSide:  BorderSide(width:1.5,color: Color.fromARGB(255, 0, 0, 0),),),
-                             isDense:true,
+                            focusedBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 1.5,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                              ),
+                            ),
+                            isDense: true,
                             // border: UnderlineInputBorder(),
                             suffix: ElevatedButton(
                               onPressed: () async {
@@ -438,13 +447,14 @@ void _submit() {
                                 ),
                                 minimumSize: const Size(55, 25),
                               ),
-                              child: Text("EDIT",
-                                  style: textStyle(
-                                      !theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)),
+                              child: TextWidget.paraText(
+                                text: "EDIT",
+                                theme: false,
+                                color: !theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                fw: 0,
+                              ),
                             ),
                           ),
                           style: TextStyle(
@@ -529,10 +539,14 @@ void _submit() {
                                   "",
                           readOnly: true,
                           decoration: InputDecoration(
-                            focusedBorder:const UnderlineInputBorder(
-                                    borderSide:  BorderSide(width:1.5,color: Color.fromARGB(255, 0, 0, 0),),),
-                             isDense:true,
-                           
+                            focusedBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 1.5,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                              ),
+                            ),
+                            isDense: true,
+
                             // border: UnderlineInputBorder(),
                             suffix: ElevatedButton(
                               onPressed: () async {
@@ -570,13 +584,14 @@ void _submit() {
                                 ),
                                 minimumSize: const Size(55, 25),
                               ),
-                              child: Text("EDIT",
-                                  style: textStyle(
-                                      !theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)),
+                              child: TextWidget.paraText(
+                                text: "EDIT",
+                                theme: false,
+                                color: !theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                                fw: 0,
+                              ),
                             ),
                           ),
                           style: TextStyle(
@@ -611,22 +626,21 @@ void _submit() {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Bank Accounts Linked",
-                              style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w600,
-                              ),
+                            TextWidget.titleText(
+                              text: "Bank Accounts Linked",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              fw: 1,
                             ),
                             Padding(
                               padding: const EdgeInsets.only(top: 8, bottom: 3),
-                              child: Text(
-                                "View bank details and add new banks.",
-                                style: textStyle(const Color(0xff666666), 14,
-                                    FontWeight.w500),
+                              child: TextWidget.subText(
+                                text: "View bank details and add new banks.",
+                                theme: false,
+                                color: const Color(0xff666666),
+                                fw: 0,
                               ),
                             ),
                             const Padding(
@@ -687,13 +701,12 @@ void _submit() {
 
                                             // SizedBox(width: 10),
                                             Expanded(
-                                              child: Text(
-                                                "${profileprovider.clientAllDetails!.bankData![index].bankName}",
-                                                style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.black,
-                                                ),
+                                              child: TextWidget.titleText(
+                                                text:
+                                                    "${profileprovider.clientAllDetails!.bankData![index].bankName}",
+                                                theme: false,
+                                                color: Colors.black,
+                                                fw: 1,
                                               ),
                                             ),
 
@@ -709,13 +722,11 @@ void _submit() {
                                                   borderRadius:
                                                       BorderRadius.circular(8),
                                                 ),
-                                                child: const Text(
-                                                  'PRIMARY',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black,
-                                                  ),
+                                                child: TextWidget.paraText(
+                                                  text: 'PRIMARY',
+                                                  theme: false,
+                                                  color: Colors.black,
+                                                  fw: 0,
                                                 ),
                                               ),
                                             SizedBox(
@@ -724,26 +735,22 @@ void _submit() {
 
                                             InkWell(
                                               onTap: () {},
-                                              child: const Row(
+                                              child: Row(
                                                 mainAxisSize: MainAxisSize
                                                     .min, // Ensures that the Row doesn't take up full width
                                                 children: [
-                                                  Icon(
+                                                  const Icon(
                                                     Icons.edit,
                                                     color: Color(0xFF0037B7),
                                                     size: 17,
                                                     // Blue color for the icon
                                                   ),
-                                                  Text(
-                                                    'EDIT',
-                                                    style: TextStyle(
-                                                      color: Color(
-                                                          0xFF0037B7), // Blue color for the text
-                                                      fontSize:
-                                                          15, // You can adjust the size as needed
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
+                                                  TextWidget.titleText(
+                                                    text: 'EDIT',
+                                                    theme: false,
+                                                    color: const Color(
+                                                        0xFF0037B7), // Blue color for the text
+                                                    fw: 0,
                                                   ),
                                                 ],
                                               ),
@@ -773,12 +780,17 @@ void _submit() {
                                         SizedBox(height: 8),
 
                                         // Account Number with Masking
-                                        Text(
-                                          'A/C No: ${profileprovider.clientAllDetails!.bankData![index].bankAcNo}',
-                                          style: const TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black87),
+                                        TextWidget.subText(
+                                          text:
+                                              'A/C No: ${profileprovider.clientAllDetails!.bankData![index].bankAcNo}',
+                                          theme: false,
+                                          color: Colors.black87,
+                                          fw: 0,
                                         ),
+                                        //       style: const TextStyle(
+                                        //       fontSize: 14,
+                                        //       color: Colors.black87),
+                                        // ),
 
                                         SizedBox(height: 12),
 
@@ -791,20 +803,19 @@ void _submit() {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                const Text(
-                                                  'IFSC CODE',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black54,
-                                                  ),
+                                                TextWidget.paraText(
+                                                  text: 'IFSC CODE',
+                                                  theme: false,
+                                                  color: Colors.black54,
+                                                  fw: 0,
                                                 ),
                                                 SizedBox(height: 2),
-                                                Text(
-                                                  "${profileprovider.clientAllDetails!.bankData![index].iFSCCode}",
-                                                  style: TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.black),
+                                                TextWidget.subText(
+                                                  text:
+                                                      "${profileprovider.clientAllDetails!.bankData![index].iFSCCode}",
+                                                  theme: false,
+                                                  color: Colors.black,
+                                                  fw: 0,
                                                 ),
                                               ],
                                             ),
@@ -812,20 +823,19 @@ void _submit() {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  'A/C Type',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black54,
-                                                  ),
+                                                TextWidget.paraText(
+                                                  text: 'A/C Type',
+                                                  theme: false,
+                                                  color: Colors.black54,
+                                                  fw: 0,
                                                 ),
                                                 SizedBox(height: 2),
-                                                Text(
-                                                  '${profileprovider.clientAllDetails!.bankData![index].bANKACCTYPE}', // Static for now, replace dynamically if needed
-                                                  style: TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.black),
+                                                TextWidget.subText(
+                                                  text:
+                                                      '${profileprovider.clientAllDetails!.bankData![index].bANKACCTYPE}', // Static for now, replace dynamically if needed
+                                                  theme: false,
+                                                  color: Colors.black,
+                                                  fw: 0,
                                                 ),
                                               ],
                                             ),
@@ -872,14 +882,13 @@ void _submit() {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   SizedBox(height: 40),
+                                                  TextWidget.heroText(
+                                                      text:
+                                                          '  Bank change request  ',
+                                                      theme: false,
+                                                      color: colors.colorBlack,
+                                                      fw: 2),
 
-                                                  const Text(
-                                                    '  Bank change request  ',
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
                                                   SizedBox(height: 20),
                                                   Row(
                                                     children: [
@@ -892,9 +901,20 @@ void _submit() {
                                                             bankchip.length,
                                                             (index) {
                                                           return ChoiceChip(
-                                                            label: Text(
-                                                                bankchip[
-                                                                    index]),
+                                                            label: TextWidget
+                                                                .titleText(
+                                                                    text: bankchip[
+                                                                        index],
+                                                                    theme:
+                                                                        false,
+                                                                    color: true
+                                                                        // selectedbankchin ==
+                                                                        //         index
+                                                                        ? Colors
+                                                                            .white
+                                                                        : Colors
+                                                                            .black,
+                                                                    fw: 0),
                                                             selected: true,
                                                             // selectedbankchin ==
                                                             //     index,
@@ -914,27 +934,19 @@ void _submit() {
                                                             backgroundColor: Colors
                                                                     .grey[
                                                                 300], // Unselected background color
-                                                            labelStyle:
-                                                                TextStyle(
-                                                              color: true
-                                                                  // selectedbankchin ==
-                                                                  //         index
-                                                                  ? Colors.white
-                                                                  : Colors
-                                                                      .black,
-                                                            ),
                                                           );
                                                         }),
                                                       ),
                                                     ],
                                                   ),
                                                   SizedBox(height: 15),
-                                                  Text(" Bank A/C No *",
-                                                      style: textStyle(
+                                                  TextWidget.titleText(
+                                                      text: " Bank A/C No *",
+                                                      theme: false,
+                                                      color:
                                                           const Color.fromARGB(
                                                               255, 0, 0, 0),
-                                                          15,
-                                                          FontWeight.w600)),
+                                                      fw: 1),
                                                   TextFormField(
                                                     controller: profileprovider
                                                         .newBankAccController,
@@ -954,12 +966,13 @@ void _submit() {
                                                   ),
 
                                                   SizedBox(height: 20),
-                                                  Text("IFSC Code *",
-                                                      style: textStyle(
+                                                  TextWidget.titleText(
+                                                      text: "IFSC Code *",
+                                                      theme: false,
+                                                      color:
                                                           const Color.fromARGB(
                                                               255, 0, 0, 0),
-                                                          15,
-                                                          FontWeight.w600)),
+                                                      fw: 1),
                                                   TextFormField(
                                                     controller: profileprovider
                                                         .newBankIFSCController,
@@ -986,16 +999,21 @@ void _submit() {
                                                   ),
 
                                                   SizedBox(height: 5),
-                                                  Text(
-                                                      "${profileprovider.ifsccoderess}"),
+                                                  TextWidget.titleText(
+                                                      text:
+                                                          "${profileprovider.ifsccoderess}",
+                                                      theme: false,
+                                                      color: colors.colorBlack,
+                                                      fw: 0),
 
                                                   SizedBox(height: 0),
-                                                  Text("Proof Type *",
-                                                      style: textStyle(
+                                                  TextWidget.titleText(
+                                                      text: "Proof Type *",
+                                                      theme: false,
+                                                      color:
                                                           const Color.fromARGB(
                                                               255, 0, 0, 0),
-                                                          15,
-                                                          FontWeight.w600)),
+                                                      fw: 1),
                                                   Padding(
                                                     padding: const EdgeInsets
                                                         .symmetric(
@@ -1005,8 +1023,13 @@ void _submit() {
                                                             String>(
                                                       value: profileprovider
                                                           .selectedBankProofTypeValue,
-                                                      hint: const Text(
-                                                          "Select Bank Proof"),
+                                                      hint: TextWidget.subText(
+                                                          text:
+                                                              "Select Bank Proof",
+                                                          theme: false,
+                                                          color:
+                                                              colors.colorBlack,
+                                                          fw: 0),
                                                       items: [
                                                         "Passbook",
                                                         "Latest Statement",
@@ -1015,7 +1038,13 @@ void _submit() {
                                                         return DropdownMenuItem<
                                                             String>(
                                                           value: value,
-                                                          child: Text(value),
+                                                          child: TextWidget
+                                                              .subText(
+                                                                  text: value,
+                                                                  theme: false,
+                                                                  color: colors
+                                                                      .colorBlack,
+                                                                  fw: 0),
                                                         );
                                                       }).toList(),
                                                       onChanged: (newValue) {
@@ -1040,7 +1069,6 @@ void _submit() {
                                                   ),
 
                                                   ElevatedButton(
-                                                    child: Text('UPLOAD FILE'),
                                                     onPressed: () async {
                                                       var picked =
                                                           await FilePicker
@@ -1067,7 +1095,7 @@ void _submit() {
                                                         //     .state = filePath;
                                                       }
 
-                                                      Text("elseee");
+                                                      // Text("elseee");
                                                     },
                                                     style: ElevatedButton
                                                         .styleFrom(
@@ -1085,6 +1113,12 @@ void _submit() {
                                                                 .circular(25),
                                                       ),
                                                     ),
+                                                    child: TextWidget.subText(
+                                                        text: 'UPLOAD FILE',
+                                                        theme: false,
+                                                        color:
+                                                            colors.colorWhite,
+                                                        fw: 0),
                                                   ),
                                                   Row(
                                                     children: [
@@ -1104,8 +1138,13 @@ void _submit() {
                                                         activeColor:
                                                             Colors.black,
                                                       ),
-                                                      const Text(
-                                                          "Set As Primary"),
+                                                      TextWidget.subText(
+                                                          text:
+                                                              "Set As Primary",
+                                                          theme: false,
+                                                          color:
+                                                              colors.colorBlack,
+                                                          fw: 0),
                                                     ],
                                                   ),
                                                   const SizedBox(height: 20),
@@ -1159,11 +1198,13 @@ void _submit() {
                                                                           25),
                                                             ),
                                                           ),
-                                                          child: Text(
-                                                            'Close',
-                                                            style: TextStyle(
-                                                                color: colors
-                                                                    .colorBlack), // Text color
+                                                          child: TextWidget
+                                                              .subText(
+                                                            text: 'Close',
+                                                            theme: false,
+                                                            color: colors
+                                                                .colorBlack,
+                                                            fw: 0,
                                                           ),
                                                         ),
                                                       ),
@@ -1247,7 +1288,14 @@ void _submit() {
                                                                           25),
                                                             ),
                                                           ),
-                                                          child: Text('Submit'),
+                                                          child: TextWidget
+                                                              .subText(
+                                                                  text:
+                                                                      'Submit',
+                                                                  theme: false,
+                                                                  color: colors
+                                                                      .colorWhite,
+                                                                  fw: 0),
                                                         ),
                                                       ),
                                                     ],
@@ -1269,16 +1317,21 @@ void _submit() {
                                       borderRadius: BorderRadius.circular(30),
                                     ),
                                   ),
-                                  child: Text("Add Bank Account",
-                                      style: textStyles.btnText),
+                                  child: TextWidget.subText(
+                                      text: "Add Bank Account",
+                                      theme: false,
+                                      color: colors.colorWhite,
+                                      fw: 0),
                                 ),
                               ),
                             ),
                             SizedBox(height: 17),
-                            Text(
-                              "*As per the regulation, you can have upto 3 bank a/c linked to trading a/c",
-                              style: textStyle(
-                                  const Color(0xff666666), 12, FontWeight.w400),
+                            TextWidget.paraText(
+                              text:
+                                  "*As per the regulation, you can have upto 3 bank a/c linked to trading a/c",
+                              theme: false,
+                              color: const Color(0xff666666),
+                              fw: 00,
                             ),
                           ],
                         ),
@@ -1304,22 +1357,22 @@ void _submit() {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Demat Details",
-                              style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w600,
-                              ),
+                            TextWidget.titleText(
+                              text: "Demat Details",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              fw: 1,
                             ),
                             Padding(
                               padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                "Allows you to sell your holdings with one-time authorisation.",
-                                style: textStyle(const Color(0xff666666), 14,
-                                    FontWeight.w400),
+                              child: TextWidget.subText(
+                                text:
+                                    "Allows you to sell your holdings with one-time authorisation.",
+                                theme: false,
+                                color: const Color(0xff666666),
+                                fw: 00,
                               ),
                             ),
                             const Divider(color: Color(0xffDDDDDD)),
@@ -1330,10 +1383,11 @@ void _submit() {
                                 Padding(
                                   padding:
                                       const EdgeInsets.only(top: 9, right: 10),
-                                  child: Text(
-                                    "Demat Account",
-                                    style: textStyle(const Color(0xff666666),
-                                        16, FontWeight.w600),
+                                  child: TextWidget.titleText(
+                                    text: "Demat Account",
+                                    theme: false,
+                                    color: const Color(0xff666666),
+                                    fw: 1,
                                   ),
                                 ),
                                 Wrap(
@@ -1349,10 +1403,11 @@ void _submit() {
                                               255, 201, 67, 62)
                                           : const Color.fromARGB(
                                               255, 105, 231, 115),
-                                      label: Text(
-                                        'DDPI',
-                                        style:
-                                            TextStyle(color: Color(0xffffffff)),
+                                      label: TextWidget.subText(
+                                        text: 'DDPI',
+                                        theme: false,
+                                        color: const Color(0xffffffff),
+                                        fw: 0,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(7),
@@ -1368,10 +1423,11 @@ void _submit() {
                                               255, 201, 67, 62)
                                           : const Color.fromARGB(
                                               255, 105, 231, 115),
-                                      label: Text(
-                                        'POI',
-                                        style:
-                                            TextStyle(color: Color(0xffffffff)),
+                                      label: TextWidget.subText(
+                                        text: 'POI',
+                                        theme: false,
+                                        color: const Color(0xffffffff),
+                                        fw: 0,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(7),
@@ -1384,52 +1440,58 @@ void _submit() {
                             const SizedBox(height: 16),
                             headerText("DP ID", theme),
                             const SizedBox(height: 5),
-                            Text(
-                              profileprovider
+                            TextWidget.titleText(
+                              text: profileprovider
                                       .clientAllDetails.clientData?.dPID ??
                                   "",
-                              style: TextStyle(
-                                color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              fw: 0,
                             ),
                             const Divider(color: Color(0xffDDDDDD)),
                             const SizedBox(height: 16),
                             headerText("DP Name", theme),
                             const SizedBox(height: 5),
-                            Text(
-                              profileprovider
+                            TextWidget.titleText(
+                              text: profileprovider
                                       .clientAllDetails.clientData?.dPNAME ??
                                   "",
-                              style: TextStyle(
-                                color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : colors.colorBlack,
+                              fw: 0,
                             ),
                             const Divider(color: Color(0xffDDDDDD)),
                             const SizedBox(height: 24),
-                            Text(' Demat Debit and Pledge Instruction (DDPI)',
-                                style: textStyle(const Color(0xff000000), 16,
-                                    FontWeight.w600)),
+                            TextWidget.titleText(
+                              text:
+                                  ' Demat Debit and Pledge Instruction (DDPI)',
+                              theme: false,
+                              color: const Color(0xff000000),
+                              fw: 1,
+                            ),
                             Padding(
                               padding: const EdgeInsets.only(top: 5),
-                              child: Text(
-                                  "DDPI is a document that allows a broker to debit the securities from the client's demat account and deliver them to the exchange. ",
-                                  style: textStyle(const Color(0xff666666), 14,
-                                      FontWeight.w500)),
+                              child: TextWidget.subText(
+                                text:
+                                    "DDPI is a document that allows a broker to debit the securities from the client's demat account and deliver them to the exchange. ",
+                                theme: false,
+                                color: const Color(0xff666666),
+                                fw: 0,
+                              ),
                             ),
                             const Divider(color: Color(0xffDDDDDD)),
                             const SizedBox(height: 14),
-                            Text(
-                                'Do you want to sell your stocks without CDSL T-PIN',
-                                style: textStyle(const Color(0xff000000), 15,
-                                    FontWeight.w600)),
+                            TextWidget.titleText(
+                              text:
+                                  'Do you want to sell your stocks without CDSL T-PIN',
+                              theme: false,
+                              color: const Color(0xff000000),
+                              fw: 1,
+                            ),
                             if (profileprovider
                                     .clientAllDetails!.clientData!.dDPI ==
                                 'N')
@@ -1463,24 +1525,24 @@ void _submit() {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   SizedBox(height: 40),
-                                                  Text(
-                                                    'Debit Alert ',
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold),
+                                                  TextWidget.heroText(
+                                                    text: 'Debit Alert ',
+                                                    theme: false,
+                                                    color:
+                                                        const Color(0xff000000),
+                                                    fw: 1,
                                                   ),
                                                   SizedBox(height: 20),
                                                   // SizedBox(height: 15),
                                                   Center(
-                                                    child: Text(
-                                                      "DDPI One Time Charges",
-                                                      style: textStyle(
-                                                        const Color.fromARGB(
-                                                            255, 0, 0, 0),
-                                                        15,
-                                                        FontWeight.w800,
-                                                      ),
+                                                    child: TextWidget.titleText(
+                                                      text:
+                                                          "DDPI One Time Charges",
+                                                      theme: false,
+                                                      color:
+                                                          const Color.fromARGB(
+                                                              255, 0, 0, 0),
+                                                      fw: 2,
                                                     ),
                                                   ),
                                                   SizedBox(height: 10),
@@ -1496,33 +1558,30 @@ void _submit() {
                                                             BorderRadius.circular(
                                                                 8), // Optional: Rounded corners for the card
                                                       ),
-                                                      child: const Padding(
+                                                      child: Padding(
                                                         padding: EdgeInsets.all(
                                                             16.0), // Padding inside the card
-                                                        child: Text(
-                                                          "₹ 250", // Text you want to display
-                                                          style: TextStyle(
-                                                            color: Colors
-                                                                .black, // Text color
-                                                            fontSize:
-                                                                20, // Font size
-                                                            fontWeight: FontWeight
-                                                                .bold, // Bold text
-                                                          ),
+                                                        child:
+                                                            TextWidget.heroText(
+                                                          text:
+                                                              "₹ 250", // Text you want to display
+                                                          theme: false,
+                                                          color: Colors.black,
+                                                          fw: 2,
                                                         ),
                                                       ),
                                                     ),
                                                   ),
                                                   SizedBox(height: 20),
                                                   Center(
-                                                    child: Text(
-                                                      " Available ledger ",
-                                                      style: textStyle(
-                                                        const Color.fromARGB(
-                                                            255, 0, 0, 0),
-                                                        17,
-                                                        FontWeight.w800,
-                                                      ),
+                                                    child: TextWidget.headText(
+                                                      text:
+                                                          " Available ledger ",
+                                                      theme: false,
+                                                      color:
+                                                          const Color.fromARGB(
+                                                              255, 0, 0, 0),
+                                                      fw: 2,
                                                     ),
                                                   ),
                                                   SizedBox(height: 5),
@@ -2604,8 +2663,7 @@ void _submit() {
                                       ),
                                       builder: (context) {
                                         return Consumer(
-                                          builder:
-                                              (context, WidgetRef ref, _) {
+                                          builder: (context, WidgetRef ref, _) {
                                             // final closeselectedval =
                                             //     ref.watch(closedroup).state;
                                             // final popproprv = ref.watch(profileProvider);
@@ -3523,7 +3581,6 @@ void _submit() {
                         "",
                 readOnly: true, // Makes the field non-editable
                 decoration: const InputDecoration(
-                 
                   border: UnderlineInputBorder(),
                 ),
               ),
@@ -3536,10 +3593,14 @@ void _submit() {
                 //  autovalidate: true,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
 
-                    validator: (input) {
-                      print("INPUT :: $input");
-                      return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(input??"") ? null : "Enter a valid email";
-                    },
+                validator: (input) {
+                  print("INPUT :: $input");
+                  return RegExp(
+                              r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                          .hasMatch(input ?? "")
+                      ? null
+                      : "Enter a valid email";
+                },
                 // onChanged: (value) {
                 //       print("value :: $value");
                 //        RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value) ? null : "Check your email";
@@ -3583,8 +3644,8 @@ void _submit() {
                         profileprovider.newEmailOTPController.clear();
                       },
                       style: OutlinedButton.styleFrom(
-                        side:
-                            BorderSide(color: colors.colorBlack), // Border color
+                        side: BorderSide(
+                            color: colors.colorBlack), // Border color
                         backgroundColor: Colors.white, // Background color
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
@@ -3599,7 +3660,7 @@ void _submit() {
                       ),
                     ),
                   ),
-          
+
                   SizedBox(width: 10), // Adds spacing between buttons
                   if (profileprovider.responseval != "success send mail")
                     Expanded(
@@ -3610,7 +3671,7 @@ void _submit() {
                           // context
                           //   .read(textFieldProvider)
                           //   .state;
-          
+
                           profileprovider.emaileotpfun(
                             enteredText,
                             (profileprovider
@@ -3636,7 +3697,7 @@ void _submit() {
                         child: Text('Submit'),
                       ),
                     ),
-          
+
                   if (profileprovider.responseval == "success send mail")
                     Expanded(
                       flex: 1, // Takes 50% width
@@ -3648,7 +3709,7 @@ void _submit() {
                           // String newmailtext = context
                           //     .read(textFieldProvider)
                           //     .state;
-          
+
                           // profileprovider.emailotpres(
                           //   emilotetext,
                           //   newmailtext,

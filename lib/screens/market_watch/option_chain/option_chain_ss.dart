@@ -8,10 +8,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
-import '../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_drag_handler.dart';
@@ -58,35 +58,8 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
       setState(() {});
     });
     super.initState();
-    Future.microtask(() async {
-      // Load default tabs first
+    Future.microtask(() {
       ref.read(marketWatchProvider).loadDefaultTabs();
-      
-      try {
-        // Fetch option chain data immediately with proper error handling
-        final marketWatch = ref.read(marketWatchProvider);
-        
-        // Clear any stale data first
-        marketWatch.clearOptionChainData();
-        
-        await marketWatch.fetchOPtionChain(
-          context: context,
-          exchange: marketWatch.optionExch ?? widget.wlValue.exch,
-          numofStrike: marketWatch.numStrike,
-          strPrc: marketWatch.optionStrPrc,
-          tradeSym: marketWatch.selectedTradeSym ?? widget.wlValue.tsym
-        );
-        
-        // Ensure WebSocket subscription for option chain data after initial load
-        await marketWatch.requestWSOptChain(context: context, isSubscribe: true);
-        
-      } catch (e) {
-        debugPrint("Error in option chain initState: $e");
-        // Handle initialization error gracefully
-        if (mounted) {
-          ref.read(marketWatchProvider).setOptionChainError("Failed to load initial data");
-        }
-      }
     });
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -247,61 +220,37 @@ class _OptionTopBar extends ConsumerWidget {
                     // Show loading indicator immediately
                     tvChart.singlePageloader(true);
                     
+                    // Set the script with a catch for error handling
                     try {
-                      // STEP 1: Clear old option chain data immediately to prevent stale UI
-                      tvChart.clearOptionChainData();
-                      
-                      // STEP 1.5: CRITICAL FIX - Clear stale socket data immediately
-                      // This prevents old RELIANCE prices from showing when switching to NIFTY
-                      final wsProvider = ref.read(websocketProvider);
-                      final Map socketDatas = wsProvider.socketDatas;
-                      
-                      // Clear all option chain tokens from socket data to prevent stale LTP
-                      if (tvChart.optionChainModel?.optValue != null) {
-                        for (var option in tvChart.optionChainModel!.optValue!) {
-                          if (option.token != null && socketDatas.containsKey(option.token)) {
-                            socketDatas.remove(option.token);
-                            print("UI: Cleared stale socket data for token: ${option.token}");
-                          }
+                    tvChart.setOptionScript(context, tab.exch.toString(),
+                        tab.token.toString(), tab.tsym.toString());
+
+                      // Force reload if data doesn't appear within 1 second
+                      Future.delayed(const Duration(milliseconds: 1000), () {
+                        if (tvChart.optChainCallUP.isEmpty || 
+                            tvChart.optChainPutUp.isEmpty) {
+                          // Trigger a reload if data isn't loaded yet
+                          tvChart.fetchOPtionChain(
+                            context: context,
+                            exchange: tvChart.optionExch ?? tab.exch.toString(),
+                            numofStrike: tvChart.numStrike,
+                            strPrc: tvChart.optionStrPrc,
+                            tradeSym: tvChart.selectedTradeSym ?? tab.tsym.toString()
+                          );
                         }
-                      }
-                      
-                      // STEP 2: Set the script and wait for ALL setup to complete
-                      await tvChart.setOptionScript(context, tab.exch.toString(),
-                          tab.token.toString(), tab.tsym.toString());
-                      
-                      // STEP 3: Verify that option parameters are properly set
-                      if (tvChart.optionExch == null || tvChart.selectedTradeSym == null) {
-                        throw Exception("Option parameters not properly initialized");
-                      }
-                      
-                      // STEP 4: Fetch option chain with verified parameters
-                      await tvChart.fetchOPtionChain(
-                        context: context,
-                        exchange: tvChart.optionExch!,
-                        numofStrike: tvChart.numStrike,
-                        strPrc: tvChart.optionStrPrc,
-                        tradeSym: tvChart.selectedTradeSym!
-                      );
-                      
-                      // STEP 5: Ensure WebSocket subscription for option chain data
-                      await tvChart.requestWSOptChain(context: context, isSubscribe: true);
-                      
+                      });
                     } catch (e) {
                       // Handle any errors during script setting
                       debugPrint("Error loading option chain: $e");
                       
-                      // Ensure UI shows error state and is not stuck in loading
-                      tvChart.setOptionChainError("Failed to load option chain data");
-                    } finally {
-                      // Ensure loading indicator is always turned off
+                      // Ensure loading indicator is turned off in case of error
                       tvChart.singlePageloader(false);
                     }
 
                     // Scroll to the current strike price after a delay
-                    Future.delayed(const Duration(milliseconds: 500), () {
-                      scrollToStrikePrice();
-                    });
+                         Future.delayed(const Duration(milliseconds: 500), () {
+                        scrollToStrikePrice();
+                                                                          });
                   },
                   borderRadius: BorderRadius.circular(16),
                   child: Chip(
@@ -311,16 +260,16 @@ class _OptionTopBar extends ConsumerWidget {
                     padding: index > 1
                         ? const EdgeInsets.only(left: 16)
                         : const EdgeInsets.symmetric(horizontal: 8),
-                    label: Text(
-                      tab.tsym,
-                      style: textStyle(
-                        theme.isDarkMode
+                    label: 
+
+
+                     TextWidget.paraText(
+                      text: tab.tsym ,
+                      color: theme.isDarkMode
                             ? Color(isSelected ? 0xff000000 : 0xffffffff)
-                            : Color(isSelected ? 0xffffffff : 0xff000000),
-                        12,
-                        FontWeight.w500,
-                      ),
-                    ),
+                            : Color(isSelected ? 0xffffffff : 0xff000000) ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                     backgroundColor: theme.isDarkMode
                         ? (isSelected
                             ? const Color(0xffffffff)
@@ -443,7 +392,6 @@ class _DateSelectorTabs extends ConsumerWidget {
                       );
                     }
 
-                    // Update expiry date selection
                     for (var i = 0; i < scripInfo.optExp!.length; i++) {
                       if (scripInfo.sortDate[index] == scripInfo.optExp![i].exd) {
                         scripInfo.selecTradSym("${scripInfo.optExp![i].tsym}");
@@ -452,44 +400,29 @@ class _DateSelectorTabs extends ConsumerWidget {
                     }
                     scripInfo.selecexpDate(scripInfo.sortDate[index]);
 
-                    try {
-                      // Clear old data before fetching new expiry
-                      scripInfo.clearOptionChainData();
-                      
-                      debugPrint("Fetching option chain for expiry: ${scripInfo.sortDate[index]}");
-                      debugPrint("Exchange: ${scripInfo.optionExch}, TradeSym: ${scripInfo.selectedTradeSym}");
-                      
-                      await ref.read(marketWatchProvider).fetchOPtionChain(
-                        context: context,
-                        exchange: scripInfo.optionExch!,
-                        numofStrike: scripInfo.numStrike,
-                        strPrc: scripInfo.optionStrPrc,
-                        tradeSym: scripInfo.selectedTradeSym!
-                      );
-                      
-                      // Ensure WebSocket subscription for option chain data
-                      await scripInfo.requestWSOptChain(context: context, isSubscribe: true);
-                    } catch (e) {
-                      // Handle any errors with better user feedback
-                      debugPrint("Error loading option chain for expiry: $e");
-                      scripInfo.setOptionChainError("Failed to load data for selected expiry");
-                    }
+                    await ref.read(marketWatchProvider).fetchOPtionChain(
+                      context: context,
+                      exchange: scripInfo.optionExch!,
+                      numofStrike: scripInfo.numStrike,
+                      strPrc: scripInfo.optionStrPrc,
+                      tradeSym: scripInfo.selectedTradeSym!
+                    );
                                 
                     // Add a delay to ensure the UI is updated before scrolling
                     Future.delayed(const Duration(milliseconds: 300), () {
                       scrollToStrikePrice();
                     });
                   },
-                  child: Text(
-                    scripInfo.sortDate[index].replaceAll("-", " "),
-                    style: textStyle(
-                      theme.isDarkMode
+                  child: 
+
+
+                   TextWidget.paraText(
+                      text:  scripInfo.sortDate[index].replaceAll("-", " "),
+                      color: theme.isDarkMode
                           ? Color(isSelected ? 0xff000000 : 0xffffffff)
                           : Color(isSelected ? 0xffffffff : 0xff000000),
-                      12.5,
-                      FontWeight.w500
-                    )
-                  )
+                      theme: theme.isDarkMode,
+                      fw: 0),
                 ),
               );
             },
@@ -532,12 +465,14 @@ void _showStrikeCountSelector(BuildContext context, WidgetRef ref, MarketWatchPr
         mainAxisSize: MainAxisSize.min,
         children: [
           const CustomDragHandler(),
-          Text(
-            "Select Number of Strike",
-            style: textStyles.appBarTitleTxt.copyWith(
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack
-            )
-          ),
+         
+
+
+           TextWidget.subText(
+                      text:"Select Number of Strike" ,
+                 
+                      theme: theme.isDarkMode,
+                      fw: 1),
           const SizedBox(height: 6),
           Flexible(
             child: ListView.separated(
@@ -550,24 +485,16 @@ void _showStrikeCountSelector(BuildContext context, WidgetRef ref, MarketWatchPr
                     // First close the modal
                     Navigator.pop(context);
                     
-                    try {
-                      // Then fetch data with the new strike count
-                      await ref.read(marketWatchProvider).fetchOPtionChain(
-                        context: context,
-                        exchange: scripInfo.optionExch!,
-                        numofStrike: scripInfo.numStrikes[index],
-                        strPrc: scripInfo.optionStrPrc,
-                        tradeSym: scripInfo.selectedTradeSym!
-                      );
-                      
-                      // Ensure WebSocket subscription for option chain data
-                      await scripInfo.requestWSOptChain(context: context, isSubscribe: true);
-                    } catch (e) {
-                      // Handle any errors
-                      debugPrint("Error loading option chain for strike count: $e");
-                    }
+                    // Then fetch data with the new strike count
+                    await ref.read(marketWatchProvider).fetchOPtionChain(
+                      context: context,
+                      exchange: scripInfo.optionExch!,
+                      numofStrike: scripInfo.numStrikes[index],
+                      strPrc: scripInfo.optionStrPrc,
+                      tradeSym: scripInfo.selectedTradeSym!
+                    );
                     
-                    // Use a longer delay to ensure data is loaded and widgets are built (only delay kept)
+                    // Use a longer delay to ensure data is loaded and widgets are built
                     Future.delayed(const Duration(milliseconds: 500), () {
                       if (context.mounted) {
                         // Use the callback to main screen's scroll method
@@ -577,18 +504,18 @@ void _showStrikeCountSelector(BuildContext context, WidgetRef ref, MarketWatchPr
                   },
                   contentPadding: const EdgeInsets.symmetric(horizontal: 0),
                   dense: true,
-                  title: Text(
-                    scripInfo.numStrikes[index],
-                    style: textStyle(
-                      scripInfo.numStrike == scripInfo.numStrikes[index] && theme.isDarkMode
+                  title: 
+
+
+                   TextWidget.subText(
+                      text: scripInfo.numStrikes[index],
+                      color: scripInfo.numStrike == scripInfo.numStrikes[index] && theme.isDarkMode
                           ? colors.colorLightBlue
                           : scripInfo.numStrike == scripInfo.numStrikes[index]
                               ? colors.colorBlue
-                              : colors.colorGrey,
-                      14,
-                      scripInfo.numStrike == scripInfo.numStrikes[index] ? FontWeight.w600 : FontWeight.w500
-                    )
-                  ),
+                              : colors.colorGrey ,
+                      theme: theme.isDarkMode,
+                      fw:  scripInfo.numStrike == scripInfo.numStrikes[index] ? 1 : 0),
                   trailing: SvgPicture.asset(
                     theme.isDarkMode
                         ? scripInfo.numStrike == scripInfo.numStrikes[index]
@@ -637,22 +564,22 @@ class _ColumnHeaders extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Text(
-              "OI",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                13,
-                FontWeight.w500
-              )
-            ),
-            Text(
-              "  Call LTP   ",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                13,
-                FontWeight.w500
-              )
-            ),
+           
+
+             TextWidget.paraText(
+                      text:"OI" ,
+                   
+                      theme: theme.isDarkMode,
+                      fw: 0),
+          
+
+
+
+             TextWidget.paraText(
+                      text:"  Call LTP   " ,
+                    
+                      theme: theme.isDarkMode,
+                      fw: 0),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: InkWell(
@@ -661,22 +588,21 @@ class _ColumnHeaders extends ConsumerWidget {
                 },
                 child: Row(
                   children: [
-                    Text(
-                      "${scripInfo.numStrike} ",
-                      style: textStyle(
-                        theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
-                        13,
-                        FontWeight.w500
-                      )
-                    ),
-                    Text(
-                      "Strike",
-                      style: textStyle(
-                        theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
-                        13,
-                        FontWeight.w500
-                      )
-                    ),
+                                         TextWidget.paraText(
+                      text:"${scripInfo.numStrike} " ,
+                      color:theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                   
+
+
+                     TextWidget.paraText(
+                      text: "Strike",
+                      color:theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue ,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+
+
                     Icon(
                       Icons.arrow_drop_down,
                       color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
@@ -686,22 +612,22 @@ class _ColumnHeaders extends ConsumerWidget {
                 )
               )
             ),
-            Text(
-              "  Put LTP   ",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                13,
-                FontWeight.w500
-              )
-            ),
-            Text(
-              "OI",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                13,
-                FontWeight.w500
-              )
-            )
+          
+
+               TextWidget.paraText(
+                      text:"  Put LTP   " ,
+                    
+                      theme: theme.isDarkMode,
+                      fw: 0),
+
+
+         
+
+             TextWidget.paraText(
+                      text: "OI",
+                 
+                      theme: theme.isDarkMode,
+                      fw: 0),
           ]
         )
       ),
@@ -732,10 +658,14 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
-            Text(
-              " Long press to add Watchlist / Swipe to Trade",
-              style: textStyle(colors.colorBlue, 12, FontWeight.w500)
-            )
+           
+
+
+             TextWidget.paraText(
+                      text:" Long press to add Watchlist / Swipe to Trade" ,
+                      color:colors.colorBlue ,
+                      theme: false,
+                      fw: 0),
           ]
         )
       ),
@@ -761,21 +691,76 @@ class _OptionChainContent extends ConsumerWidget {
     final scripInfo = ref.watch(marketWatchProvider);
     final depthData = scripInfo.getQuotes!;
     
-    // Only show loading when there's no option chain structure at all
-    // This allows the UI to render immediately with empty/initial data
-    final bool isInitialLoading = scripInfo.isLoad && 
-                                scripInfo.optionChainModel == null;
-                                
-    if (isInitialLoading) {
+    // Determine if data is fully loaded
+    final bool isLoading = scripInfo.isLoad || 
+                        scripInfo.scripDepthloader || 
+                        scripInfo.optChainCallUP.isEmpty || 
+                        scripInfo.optChainPutUp.isEmpty ||
+                        scripInfo.optChainCallDown.isEmpty || 
+                        scripInfo.optChainPutDown.isEmpty;
+                        
+    if (isLoading) {
+      // Create a timeout to handle cases where loading gets stuck
+      return FutureBuilder(
+        future: Future.delayed(const Duration(seconds: 5)),
+        builder: (context, snapshot) {
+          // If the timeout completes and we're still loading, show a retry option
+          if (snapshot.connectionState == ConnectionState.done) {
+            return Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+
+                     TextWidget.subText(
+                      text: "Data loading is taking longer than expected",
+                      color: Color(0xff666666),
+                      theme: false,
+                      ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () async {
+                        // Reset loading state
+                        ref.read(marketWatchProvider).singlePageloader(true);
+                        
+                        // Retry fetching data
+                        if (scripInfo.oactiveTab != null) {
+                          ref.read(marketWatchProvider).setOptionScript(
+                            context,
+                            scripInfo.oactiveTab!.exch.toString(),
+                            scripInfo.oactiveTab!.token.toString(),
+                            scripInfo.oactiveTab!.tsym.toString(),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xff0037B7),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                      child: 
+
+                       TextWidget.paraText(
+                      text:  "Retry",
+                      color: Colors.white,
+                      theme: false,
+                      fw: 0),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          
+          // Show loading indicator while waiting
       return const Expanded(
         child: Center(
           child: CircularProgressIndicator(color: Color(0xff0037B7))
         )
+          );
+        }
       );
     }
     
-    // Always render the structure - even with empty data
-    // Socket updates will fill in the data as it arrives
     return Expanded(
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -901,14 +886,14 @@ class _ActionButtons extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(108)
                   ),
                   child: Center(
-                    child: Text(
-                      "BUY",
-                      style: textStyle(
-                        const Color(0XFFFFFFFF),
-                        16,
-                        FontWeight.w600
-                      )
-                    )
+                    child: 
+
+
+                     TextWidget.titleText(
+                      text:"BUY" ,
+                      color: Color(0XFFFFFFFF),
+                      theme: theme.isDarkMode,
+                      fw: 1),
                   )
                 ),
               )
@@ -926,14 +911,14 @@ class _ActionButtons extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(108)
                   ),
                   child: Center(
-                    child: Text(
-                      "SELL",
-                      style: textStyle(
-                        const Color(0XFFFFFFFF),
-                        16,
-                        FontWeight.w600
-                      )
-                    )
+                    child: 
+
+
+                     TextWidget.titleText(
+                      text: "SELL" ,
+                      color:Color(0XFFFFFFFF) ,
+                      theme: theme.isDarkMode,
+                      fw: 1),
                   )
                 )
               )
