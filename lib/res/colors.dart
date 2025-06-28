@@ -16,6 +16,9 @@ class AppColors {
   final ltpgrey = const Color(0xff999999);
   final ltpgreen = const Color(0xff43A833);
 
+  final fundbuttonBg = const Color(0xffF1F3F8);
+
+
   final darkColorDivider = const Color(0xffECEDEE).withOpacity(.1);
   final colorDivider = const Color(0xffDDE2E7);
 

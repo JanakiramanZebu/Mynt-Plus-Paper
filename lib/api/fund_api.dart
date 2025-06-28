@@ -1,3 +1,4 @@
+import '../models/desk_reports_model/pledge_unpledge_model.dart';
 import '../models/mf_model/mf_bank_detail_model.dart';
 import '../models/profile_model/fund_detial_model.dart';
 import '../models/profile_model/hs_token_model.dart';
@@ -81,7 +82,7 @@ mixin FundApi on ApiCore {
 
   Future<BankDetailsModel> getBankDetail() async {
     try {
-      final uri = Uri.parse(apiLinks.bankDetail);
+      final uri = Uri.parse("${apiLinks.reportspledge}+reportspledge");
 
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
@@ -92,6 +93,22 @@ mixin FundApi on ApiCore {
       //  print("Bank Details => $json");
 
       return BankDetailsModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<PledgeAndUnpledgeModel> getPledgeDetails() async {
+    try {
+      final uri = Uri.parse("${apiLinks.reportspledge}PledgeHoldings");
+
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({"clientid": "${prefs.clientId}"}));
+
+      final json = jsonDecode((res.body));
+
+      return PledgeAndUnpledgeModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

@@ -53,6 +53,13 @@ class Assets {
   final String bookmarkLineIcon = "assets/icon/bookmarkLineIcon.svg";
   final String bookmarkedIcon = "assets/icon/watchlistIcon/bookmark_plus.svg";
   final String bookmarkIcon = "assets/icon/watchlistIcon/bookmark.svg";
+  final String watchlistIcon = "assets/icon/watchlistIcon/Vector - 0.svg";
+  final String portfolioIcon = "assets/icon/watchlistIcon/Vector - 1.svg";
+
+  final String ordersIcon = "assets/icon/watchlistIcon/Vector - 2.svg";
+  final String profileIcon = "assets/icon/watchlistIcon/Vector - 3.svg";
+
+
   final String rightarrow = "assets/icon/arrow_right.svg";
   final String depthIcon = "assets/icon/depthIcon.svg";
   final String lock = "assets/icon/lock 2.svg";

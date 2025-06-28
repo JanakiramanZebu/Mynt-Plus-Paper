@@ -876,7 +876,7 @@ class _OrderItemState extends State<_OrderItem> {
         TextWidget.subText(
             text: "Prc: ", theme: false, color: const Color(0xff5E6B7D), fw: 0),
         TextWidget.subText(
-            text: "${widget.orderItem.avgprc ?? widget.orderItem.prc ?? 0.00}",
+            text: "${widget.orderItem.status == "COMPLETE" ? widget.orderItem.avgprc : widget.orderItem.prc ?? 0.00}",
             theme: false,
             color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
             fw: 0),

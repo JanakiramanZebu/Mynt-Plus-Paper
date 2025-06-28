@@ -9,6 +9,7 @@ import '../locator/constant.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 // import '../models/fund_model/show_upi_model.dart';
+import '../models/desk_reports_model/pledge_unpledge_model.dart';
 import '../models/mf_model/mf_bank_detail_model.dart';
 import '../models/profile_model/fund_detial_model.dart';
 import '../models/profile_model/hs_token_model.dart';
@@ -30,6 +31,8 @@ class FundProvider extends DefaultChangeNotifier {
   FundDetailModel? get fundDetailModel => _fundDetailModel;
 
   final TextEditingController viewupiid = TextEditingController();
+  PledgeAndUnpledgeModel? _pledgeAndUnpledgeModel;
+  PledgeAndUnpledgeModel? get pledgeAndUnpledgeModel => _pledgeAndUnpledgeModel;
 
   // ViewUpiIdModel? _viewUpiIdModel;
   // ViewUpiIdModel? get viewUpiIdModel => _viewUpiIdModel;
@@ -93,6 +96,9 @@ class FundProvider extends DefaultChangeNotifier {
   UPIDetailsModel? _upiDetailsModel;
   UPIDetailsModel? get upiDetailsModel => _upiDetailsModel;
   BankDetailsModel? get bankDetailsModel => _bankDetailsModel;
+
+  bool _isLoadingPledgeDetails = false;
+  bool get isLoadingPledgeDetails => _isLoadingPledgeDetails;
 
   clearTxtError() {
     invAmtError = null;
@@ -367,6 +373,23 @@ class FundProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future fetchPledgeDetails() async {
+    try {
+      _isLoadingPledgeDetails = true;
+      notifyListeners();
+      
+      _pledgeAndUnpledgeModel = await api.getPledgeDetails();
+      print("Pledge Details => ${_pledgeAndUnpledgeModel!.bOID}");
+      
+      _isLoadingPledgeDetails = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoadingPledgeDetails = false;
+      notifyListeners();
       debugPrint("$e");
     }
   }

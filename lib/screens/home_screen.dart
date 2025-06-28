@@ -333,6 +333,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         // Use select to listen only to the selected bottom index
         final selectedBtmIndx = ref.watch(indexListProvider
             .select((indexProvide) => indexProvide.selectedBtmIndx));
+          
         final theme = ref.watch(
             themeProvider); // Theme is used throughout, so watching the whole provider is acceptable here
 
@@ -639,8 +640,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   // Bottom navigation
   Widget _buildBottomNav(int selectedTab, ThemesProvider theme) {
+    final uid = ref.watch(userProfileProvider.select(
+        (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
     return BottomAppBar(
-      height: 58,
+      height: 64,
       shadowColor:
           theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
       padding: EdgeInsets.zero,
@@ -648,12 +651,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           _buildBottomNavItem(
-              1, assets.bookmarkedIcon, "Watchlist", selectedTab, theme),
+              1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
           _buildBottomNavItem(
-              2, assets.barChart, "Portfolio", selectedTab, theme),
-          _buildBottomNavItem(3, assets.bag, "Orders", selectedTab, theme),
+              2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
+          _buildBottomNavItem(3, assets.ordersIcon, "Orders", selectedTab, theme),
           _buildBottomNavItem(
-              4, "assets/profile/userlogo.svg", "Profile", selectedTab, theme,
+              4, assets.profileIcon, uid, selectedTab, theme,
               useHeight: true, height: 18),
         ],
       ),
@@ -715,11 +718,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         iconAsset,
                         color: _getBottomNavColor(theme, isSelected),
                       ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Text(
                   label,
                   style: TextWidget.textStyle(
-                      fontSize: 10,
+                      fontSize: 12,
                       color: _getBottomNavColor(theme, isSelected),
                       theme: theme.isDarkMode,
                       fw: isSelected ? 1 : 00),
