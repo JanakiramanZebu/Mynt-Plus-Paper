@@ -187,11 +187,12 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                             },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
+                         minimumSize: const Size(0, 40), // width, height
                         backgroundColor: theme.isDarkMode
                             ? colors.colorbluegrey
-                            : colors.colorBlack,
+                            : Color(0xFF0037B7),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
+                          borderRadius: BorderRadius.circular(5),
                         ),
                       ),
                       child: (_isProcessing || ref.read(marketWatchProvider).loading)

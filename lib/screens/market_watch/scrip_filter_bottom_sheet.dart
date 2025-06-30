@@ -131,11 +131,10 @@ class _WatchlistsBottomSheetState
         children: [
           const CustomDragHandler(),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-               
+              children: [               
                  TextWidget.titleText(
                       text:  "Sort by",
                       theme: theme.isDarkMode,
@@ -162,7 +161,9 @@ class _WatchlistsBottomSheetState
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
-                        color: colors.colorGrey,
+                        color:  currentSortType == "scrip"
+                            ? const Color(0xFF0037B7) 
+                            : colors.colorGrey,
                       ),
                       const SizedBox(
                         width: 15,
@@ -180,9 +181,9 @@ class _WatchlistsBottomSheetState
                               Text(
   "Scrip Name",
   style: TextWidget.textStyle(
-                 fontSize: 13 , color: colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "scrip"
-                              ? 1
-                              : 0 ),
+                 fontSize: 14 , color: currentSortType == "scrip" ? Color(0xFF0037B7) : colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "scrip"
+                              ? 0
+                              : null ),
 )
 
 
@@ -209,7 +210,7 @@ class _WatchlistsBottomSheetState
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
-                        color: colors.colorGrey,
+                        color:    currentSortType == "price" ? Color(0xFF0037B7) : colors.colorGrey,
                       ),
                       const SizedBox(
                         width: 15,
@@ -226,9 +227,9 @@ class _WatchlistsBottomSheetState
 Text(
   "LTP",
   style: TextWidget.textStyle(
-                 fontSize: 13 , color: colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "price"
-                              ? 1
-                              : 0 ),
+                 fontSize: 13 , color: currentSortType == "price" ? Color(0xFF0037B7) : colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "price"
+                              ? 0
+                              : null ),
 )
 
 
@@ -254,7 +255,7 @@ Text(
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
-                        color: colors.colorGrey,
+                        color: currentSortType == "perchng" ? Color(0xFF0037B7) : colors.colorGrey,
                       ),
                       const SizedBox(
                         width: 15,
@@ -271,9 +272,9 @@ Text(
                               Text(
   "Perc.Change",
   style:TextWidget.textStyle(
-                 fontSize: 13 , color: colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "perchng"
-                              ? 1
-                              : 0 ),
+                 fontSize: 13 , color: currentSortType == "perchng" ? Color(0xFF0037B7) : colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "perchng"
+                              ? 0
+                              : null ),
 )
 
                     ],

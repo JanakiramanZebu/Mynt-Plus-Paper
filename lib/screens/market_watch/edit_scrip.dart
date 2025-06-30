@@ -206,52 +206,50 @@ class _EditScripState extends ConsumerState<EditScrip> {
                                     ),
                                   )),
                               title: Padding(
-                                padding: const EdgeInsets.only(bottom: 2),
+                                padding: const EdgeInsets.only(bottom: 4),
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Text(
-                                      "${marketwatch.scrips[i]['symbol']} ",
+                                      "${marketwatch.scrips[i]['symbol']}",
                                       style: TextWidget.textStyle(
-                                          fontSize: 13,
+                                          fontSize: 14,
                                           theme: theme.isDarkMode,
-                                          fw: 0),
+                                          ),
                                     ),
-
                                     if (marketwatch.scrips[i]['option']
                                         .toString()
                                         .isNotEmpty)
                                       Text(
-                                        "${marketwatch.scrips[i]['option']}",
+                                        " ${marketwatch.scrips[i]['option']}",
                                         style: TextWidget.textStyle(
-                                            fontSize: 13,
+                                            fontSize: 14,
                                             color: Color(0xff666666),
                                             theme: theme.isDarkMode,
-                                            fw: 0),
+                                            ),
                                       )
                                   ],
                                 ),
                               ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 0),
-                                child: Row(
-                                  children: [
+                              subtitle: Row(
+                                children: [
+                                // const SizedBox(height: 8),
+
+                                  TextWidget.paraText(
+                                      text: "${marketwatch.scrips[i]['exch']}",
+                                      color: colors.colorGrey,
+                                      theme: theme.isDarkMode,
+                                      ),
+                                  const SizedBox(width: 4),
+                                  if (marketwatch.scrips[i]['expDate']
+                                      .toString()
+                                      .isNotEmpty)
                                     TextWidget.paraText(
-                                        text: "${marketwatch.scrips[i]['exch']}",
-                                        color: colors.colorGrey,
+                                        text: "${marketwatch.scrips[i]['expDate']}",
+                                        color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
                                         theme: theme.isDarkMode,
-                                        fw: 00),
-                                    const SizedBox(width: 8),
-                                    if (marketwatch.scrips[i]['expDate']
-                                        .toString()
-                                        .isNotEmpty)
-                                      TextWidget.paraText(
-                                          text: "${marketwatch.scrips[i]['expDate']}",
-                                          color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
-                                          theme: theme.isDarkMode,
-                                          fw: 00),
-                                  ],
-                                ),
+                                        ),
+                                ],
                               ),
                             ),
                           ),

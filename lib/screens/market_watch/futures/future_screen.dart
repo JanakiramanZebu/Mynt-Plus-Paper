@@ -54,32 +54,40 @@ class FutureScreen extends ConsumerWidget {
               }
             }
             
-            return InkWell(
-              onLongPress: () async {
-                await future.addDelMarketScrip(
-                  future.wlName,
-                  "${displayData.exch}|${displayData.token}",
-                  context,
-                  true,
-                  true,
-                  false,
-                  true);
-              },
-              onTap: () async {
-                Navigator.pop(context);
-                await ref.watch(marketWatchProvider)
-                    .calldepthApis(context, displayData, "");
-              },
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                dense: true,
-                title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                // borderRadius: BorderRadius.circular(6),
+                splashColor: theme.isDarkMode 
+                    ? Colors.white.withOpacity(0.15)
+                    : Colors.black.withOpacity(0.15),
+                highlightColor: theme.isDarkMode 
+                    ? Colors.white.withOpacity(0.08)
+                    : Colors.black.withOpacity(0.08),
+                onLongPress: () async {
+                  await future.addDelMarketScrip(
+                    future.wlName,
+                    "${displayData.exch}|${displayData.token}",
+                    context,
+                    true,
+                    true,
+                    false,
+                    true);
+                },
+                onTap: () async {
+                  // Add delay for visual feedback
+                  await Future.delayed(const Duration(milliseconds: 150));
                   
-
-                               
-
+                  Navigator.pop(context);
+                  await ref.watch(marketWatchProvider)
+                      .calldepthApis(context, displayData, "");
+                },
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                  dense: true,
+                  title: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [  
                        Text(
            "${displayData.symbol}",
             style: TextWidget.textStyle(
@@ -90,9 +98,7 @@ class FutureScreen extends ConsumerWidget {
           ),
 SizedBox(width: 2,),
                       
-                    if (displayData.option!.isNotEmpty)                     
-                               
-
+                    if (displayData.option!.isNotEmpty)     
                        Text(
               "${displayData.option}",
               style: TextWidget.textStyle(
@@ -101,65 +107,57 @@ SizedBox(width: 2,),
                   theme: theme.isDarkMode,
                   fw: 0),
             )
-                  ],
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        
+                    ],
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
                              TextWidget.paraText(
-                      text: "${displayData.exch}  ",
-                      color: colors.colorGrey,
-                      theme: theme.isDarkMode,
-                      fw: 00),
-                        if (displayData.expDate!.isNotEmpty)
-                          
-
+                        text: "${displayData.exch}  ",
+                        color: colors.colorGrey,
+                        theme: theme.isDarkMode,
+                        fw: 3),
+                          if (displayData.expDate!.isNotEmpty)
                                    TextWidget.paraText(
-                      text: "${displayData.expDate}  ",
-                     
-                      theme: theme.isDarkMode,
-                      fw: 00),
-                      ],
-                    ),
-                  ],
-                ),
-                trailing: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                   
-
+                        text: "${displayData.expDate}  ",                       
+                        theme: theme.isDarkMode,
+                        fw: 3),
+                        ],
+                      ),
+                    ],
+                  ),
+                  trailing: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [    
                              TextWidget.subText(
-                      text: "₹${displayData.ltp ?? displayData.close ?? 0.00}",
-                    
-                      theme: theme.isDarkMode,
-                      fw: 0),
-                    const SizedBox(height: 4),
-                   
-
-                     TextWidget.paraText(
-                      text:  "${displayData.change == "null" ? "0.00 " : double.parse("${displayData.change}").toStringAsFixed(2)} "
-                      "${displayData.perChange == "null" ? "(0.00%)" : "(${displayData.perChange ?? 0.00}%)"}",
-                      color:  displayData.change!.startsWith("-") ||
-                                  displayData.perChange!.startsWith('-')
-                              ? colors.darkred
-                              : (displayData.change == "null" ||
-                                          displayData.perChange ==
-                                              "null") ||
-                                      (displayData.change == "0.00" ||
-                                          displayData.perChange == "0.00")
-                                  ? colors.ltpgrey
-                                  : colors.ltpgreen ,
-                      theme: theme.isDarkMode,
-                      fw: 2),
-                  ],
-                ),
-              )
+                        text: "₹${displayData.ltp ?? displayData.close ?? 0.00}",                      
+                        theme: theme.isDarkMode,
+                        fw: 0),
+                      const SizedBox(height: 4),    
+                       TextWidget.paraText(
+                        text:  "${displayData.change == "null" ? "0.00 " : double.parse("${displayData.change}").toStringAsFixed(2)} "
+                        "${displayData.perChange == "null" ? "(0.00%)" : "(${displayData.perChange ?? 0.00}%)"}",
+                        color:  displayData.change!.startsWith("-") ||
+                                    displayData.perChange!.startsWith('-')
+                                ? colors.darkred
+                                : (displayData.change == "null" ||
+                                            displayData.perChange ==
+                                                "null") ||
+                                        (displayData.change == "0.00" ||
+                                            displayData.perChange == "0.00")
+                                    ? colors.ltpgrey
+                                    : colors.ltpgreen ,
+                        theme: theme.isDarkMode,
+                        fw: 2),
+                    ],
+                  ),
+                )
+              ),
             );
           },
         );

@@ -41,7 +41,9 @@ class CustomExchBadge extends ConsumerWidget {
                   ? const Color(0xffFFFFFF)
                   : const Color(0xff666666), 
                       theme: theme.isDarkMode,
-                      fw: 00
+                      
+                      
+                      
                       ),
     );
     

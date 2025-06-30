@@ -4,6 +4,7 @@ class Assets {
   final String appLogoIconOld = "assets/icon/zebulogo.svg";
   final String bellIcon = "assets/icon/appbarIcon/bell.svg";
   final String searchIcon = "assets/icon/appbarIcon/search.svg";
+  final String search = "assets/icon/search.svg";
   final String walletIcon = "assets/icon/appbarIcon/wallet.svg";
   final String editIcon = "assets/icon/appbarIcon/edit.svg";
   final String addCircleIcon = "assets/icon/appbarIcon/plus_circle.svg";
@@ -43,6 +44,8 @@ class Assets {
 
   final String iosuparrow = "assets/icon/iosuparrow.svg";
   final String removeIcon = "assets/icon/watchlistIcon/remove_text.svg";
+  final String charts = "assets/icon/watchlistIcon/charts.svg";
+  final String options = "assets/icon/watchlistIcon/options.svg";
   final String switchIcon = "assets/icon/switchIcon.svg";
   final String minusIcon = "assets/icon/minus_btn.svg";
   final String addIcon = "assets/icon/add_btn.svg";
@@ -60,7 +63,6 @@ class Assets {
 
   final String ordersIcon = "assets/icon/watchlistIcon/Vector - 2.svg";
   final String profileIcon = "assets/icon/watchlistIcon/Vector - 3.svg";
-
 
   final String rightarrow = "assets/icon/arrow_right.svg";
   final String depthIcon = "assets/icon/depthIcon.svg";
@@ -187,8 +189,6 @@ class Assets {
   final String growthnew = "assets/icon/growthnew.svg";
   final String sipca = "assets/explore/sipca.svg";
   final String cagrcal = "assets/explore/cagrcal.svg";
-
-
 
   // payment icons
   final String upiIcon = "assets/icon/icons8-bhim.svg";

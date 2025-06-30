@@ -113,7 +113,8 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                               final exchange = entry.value;
                               final isSelected = _currentPageIndex == index;
 
-                              return Expanded(
+                              return Container(
+                                width: 95.0, // Fixed width to match watchlist tabs
                                 child: Material(
                                   color: Colors.transparent,
                                   child: InkWell(
@@ -134,8 +135,8 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                           width: double.infinity,
                                           alignment: Alignment.center,
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 8),
-                                          child: TextWidget.paraText(
+                                              horizontal: 10, vertical: 6),
+                                          child: TextWidget.subText(
                                             text: exchange,
                                             color: isSelected
                                                 ? theme.isDarkMode
@@ -156,13 +157,7 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                               const Duration(milliseconds: 250),
                                           curve: Curves.easeInOut,
                                           height: 2,
-                                          width: isSelected
-                                              ? MediaQuery.of(context)
-                                                          .size
-                                                          .width /
-                                                      3 -
-                                                  20
-                                              : 0,
+                                          width: isSelected ? 77 : 0, // Width = tab width - 18 (like watchlist)
                                           margin: const EdgeInsets.only(top: 1),
                                           decoration: BoxDecoration(
                                             color: colors.colorBlue,
@@ -479,7 +474,7 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
     return InkWell(
       onTap: () => _handleTap(context),
       child: Container(
-        padding: const EdgeInsets.only(left: 16, right: 8, top: 8, bottom: 8),
+        padding: const EdgeInsets.only(left: 16, right: 8, top: 16, bottom: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -598,14 +593,14 @@ class _StaticIndexContent extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextWidget.textStyle(
-            fontSize: 13,
+            fontSize: 14,
             color: isDarkMode ? Colors.white : Colors.black,
             theme: false,
-            fw: 0,
+            // fw: 0,
           ),
         ),
 
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         CustomExchBadge(exch: exch ?? ""),
       ],
     );
@@ -669,28 +664,28 @@ class _DynamicPriceContent extends StatelessWidget {
   Widget build(BuildContext context) {
     // Pre-calculate all styles at once to avoid repeated calculations
     final priceStyle = _getCachedStyle(
-        isDarkMode ? colors.colorWhite : colors.colorBlack, 14, 0);
+        isDarkMode ? colors.colorWhite : colors.colorBlack, 12, 3);
 
     final changeColor = _getCachedChangeColor(ch, chp);
-    final changeStyle = _getCachedStyle(changeColor, 12, 2);
+    final changeStyle = _getCachedStyle(changeColor, 16, 0);
 
     // Create the price text once with proper formatting
     final String formattedChange =
-        "${ch == "null" ? 0.00 : ch}   ${chp == "null" ? 0.00 : chp}%";
+        "${ch == "null" ? 0.00 : ch} ${chp == "null" ? 0.00 : chp}%";
 
     // Avoid unnecessary nested widgets when possible
     return RepaintBoundary(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text("$ltp", style: priceStyle),
+          Text("$ltp", style:changeStyle ),
           //  TextWidget.subText(
           //             text: "₹$ltp",
           //             color: ,
           //             theme: theme.isDarkMode,
           //             fw: 0),
-          const SizedBox(height: 4),
-          Text(formattedChange, style: changeStyle),
+          const SizedBox(height: 8),
+          Text(formattedChange, style: priceStyle),
         ],
       ),
     );

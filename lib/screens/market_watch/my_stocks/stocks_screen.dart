@@ -61,8 +61,6 @@ class _StocksScreenState extends State<StocksScreen> {
                 )
               : ListView.builder(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  primary: false,
-                  shrinkWrap: true,
                   itemCount: holdingProvide.length * 2 - 1,
                   itemBuilder: (BuildContext context, int idx) {
                     int index = idx ~/ 2;

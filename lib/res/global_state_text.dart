@@ -127,7 +127,8 @@ class TextWidget {
               : fw == 1
                   ? FontWeight.w600
                   : fw == 0
-                      ? FontWeight.w500
+                      ? FontWeight.w500 : fw == 3
+                      ? FontWeight.w400
                       : FontWeight.normal,
           letterSpacing: letterSpacing,
         ),
@@ -142,7 +143,9 @@ class TextWidget {
       int? fw,
       int? maxLines,
       TextAlign? align,
-      TextOverflow? textOverflow}) {
+      TextOverflow? textOverflow,
+       double? letterSpacing,
+      }) {
     return Text(
       text,
       maxLines: maxLines,
@@ -162,9 +165,10 @@ class TextWidget {
                 ? FontWeight.w600
                 : fw == 0
                     ? FontWeight.w500
-                    : fw == 00
+                    : fw == 3
                         ? FontWeight.w400
                         : FontWeight.normal,
+                        letterSpacing: letterSpacing,
       )),
     );
   }

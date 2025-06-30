@@ -49,7 +49,7 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
     }
 
     // Width calculation moved here to avoid context in initState
-    final itemWidth = MediaQuery.of(context).size.width * 0.47;
+    final itemWidth = MediaQuery.of(context).size.width * 0.50;
 
     // Create a unique key based on the indices to force rebuild when they change
     final indexKey =
@@ -60,7 +60,7 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
       margin: const EdgeInsets.only(top: 10),
       padding: EdgeInsets.only(
           left: widget.src ? 0 : 12, right: widget.src ? 0 : 12),
-      height: widget.src ? 54 : 50,
+      height: widget.src ? 56 : 55,
       child: RepaintBoundary(
         child: ListView.separated(
           controller: _scrollController,
@@ -141,6 +141,7 @@ class OptimizedIndexItem extends ConsumerWidget {
               color: theme.isDarkMode ? Colors.black : Colors.white,
             ),
             width: itemWidth,
+            
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -435,12 +436,12 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
               ],
             )
           : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  "$_ltp",
-                  style: _getTextStyle(changeColor, 14, 1),
+                  "$_ltp  ",
+                  style: _getTextStyle(changeColor, 16, 0),
                 ),
                 Row(
                   children: [
@@ -450,7 +451,7 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
                                 ? const Color(0xffE5E5E5)
                                 : const Color(0xff000000),
                             12,
-                            3)),
+                            )),
                     SizedBox(
                       width: 4,
                     ),
@@ -460,7 +461,7 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
                                 ? const Color(0xffE5E5E5)
                                 : const Color(0xff000000),
                             12,
-                            3)),
+                            )),
                   ],
                 )
               ],
@@ -519,7 +520,7 @@ class _StaticIndexName extends StatelessWidget {
     final key = 'name|${isDarkMode ? 1 : 0}';
     if (!_styleCache.containsKey(key)) {
       _styleCache[key] = TextWidget.textStyle(
-          fontSize: 12,
+          fontSize: 14,
           color: isDarkMode ? const Color(0xffB5C0CF) : const Color(0xff000000),
           theme: false);
     }

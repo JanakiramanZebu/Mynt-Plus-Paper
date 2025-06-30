@@ -604,10 +604,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   bool _scripDepthloader = false;
   bool get scripDepthloader => _scripDepthloader;
 
+  bool _isFuturesExpanded = false;
+  bool get isFuturesExpanded => _isFuturesExpanded;
+
   Map<String, Map<String, dynamic>> storeQuotes = {};
 
   singlePageloader(bool value) {
     _scripDepthloader = value;
+    notifyListeners();
+  }
+
+  toggleFuturesExpansion() {
+    _isFuturesExpanded = !_isFuturesExpanded;
     notifyListeners();
   }
 
