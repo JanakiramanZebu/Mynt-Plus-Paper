@@ -76,10 +76,17 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                   color: Colors.transparent,
                   shape: const CircleBorder(),
                   child: InkWell(
-                    onTap: () {
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 150));
                       Navigator.pop(context);
                     },
                     borderRadius: BorderRadius.circular(20),
+                    splashColor: theme.isDarkMode 
+                        ? Colors.white.withOpacity(0.15)
+                        : Colors.black.withOpacity(0.15),
+                    highlightColor: theme.isDarkMode 
+                        ? Colors.white.withOpacity(0.08)
+                        : Colors.black.withOpacity(0.08),
                     child: Padding(
                       padding: const EdgeInsets.all(6.0),
                       child: Icon(
@@ -121,7 +128,7 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                       style: TextWidget.textStyle(
                         fontSize: 14,
                         theme: theme.isDarkMode,
-                        fw: 0,
+                        
                       ),
                       decoration: InputDecoration(
                         hintText: "Enter watchlist name",
@@ -166,6 +173,7 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
+                    
                     onPressed: _isProcessing
                         ? null
                         : () async {
@@ -191,11 +199,13 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                           },
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
+                       minimumSize: const Size(0, 40),// width, height
+                    
                       backgroundColor: theme.isDarkMode
                           ? colors.colorbluegrey
-                          : colors.colorBlack,
+                          : Color(0xFF0037B7),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+                        borderRadius: BorderRadius.circular(5),
                       ),
                     ),
                     child: (_isProcessing || ref.read(marketWatchProvider).loading)

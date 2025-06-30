@@ -349,8 +349,12 @@ class _AddScripState extends ConsumerState<SearchScreen>
               ),
               child: InkWell(
                 // borderRadius: BorderRadius.circular(16),
-                splashColor: theme.isDarkMode ? Colors.white38 : Colors.black26,
-                highlightColor: theme.isDarkMode ? Colors.white24 : Colors.black.withOpacity(0.1),
+                splashColor: theme.isDarkMode 
+                    ? Colors.white.withOpacity(0.15)  // Increased opacity to match watchlist card
+                    : Colors.black.withOpacity(0.15), // Increased opacity to match watchlist card
+                highlightColor: theme.isDarkMode 
+                    ? Colors.white.withOpacity(0.1)   // Increased opacity to match watchlist card
+                    : Colors.black.withOpacity(0.1),  // Increased opacity to match watchlist card
                 onTap: () {
                   if (tabCtrl.index != index) {
                     tabCtrl.animateTo(index);

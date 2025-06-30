@@ -25,12 +25,12 @@ class _SetAlertState extends State<SetAlert> {
   TextEditingController valueCtrl = TextEditingController();
   TextEditingController remark = TextEditingController();
   final List<String> alterItems = ['Above', 'Below'];
-  // final List<String> alertType = ["LTP", "Perc.Change"];
   final List<String> alertType = ["LTP"];
   String alertValue = "";
   String alertTypeVal = "";
   String validityTypeVal = "";
   String errorText = "";
+  
   @override
   void initState() {
     alertValue = alterItems[0];
@@ -78,13 +78,15 @@ class _SetAlertState extends State<SetAlert> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final scripInfo = ref.watch(marketWatchProvider);
-
       final theme = ref.read(themeProvider);
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      
+      return SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(context).viewInsets.bottom),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
             const SizedBox(height: 16),            
                     TextWidget.subText(
                       text: 'Type',                    
@@ -105,16 +107,18 @@ class _SetAlertState extends State<SetAlert> {
                               ? colors.colorWhite
                               : const Color.fromARGB(255, 16, 16, 16))),
                   buttonStyleData: ButtonStyleData(
-                      height: 40,
-                      width: 124,
+                      height: 44,
+                      padding: const EdgeInsets.only(left: 0, right: 16,),
                       decoration: BoxDecoration(
                           color: theme.isDarkMode
                               ? const Color(0xffB5C0CF).withOpacity(.15)
                               : const Color(0xffF1F3F8),
-                          // border: Border.all(color: Colors.grey),
                           borderRadius:
                               const BorderRadius.all(Radius.circular(32)))),
-
+                  iconStyleData: const IconStyleData(
+                    icon: Icon(Icons.keyboard_arrow_down),
+                    iconSize: 20,
+                  ),
                   isExpanded: true,
                   style:
                        TextWidget.textStyle(
@@ -129,8 +133,7 @@ class _SetAlertState extends State<SetAlert> {
                       .map((String item) => DropdownMenuItem<String>(
                             value: item,
                             child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10.0),
+                               padding: const EdgeInsets.only(left: 8,),
                               child: 
 
                               TextWidget.subText(
@@ -149,9 +152,6 @@ class _SetAlertState extends State<SetAlert> {
                     });
                     validatesetalret(value);
                   },
-                  // buttonDecoration: const BoxDecoration(
-                  //     color: Color(0xffF1F3F8),
-                  //     borderRadius: BorderRadius.all(Radius.circular(32))),
                 ),
               ),
             ),
@@ -180,14 +180,18 @@ class _SetAlertState extends State<SetAlert> {
                               ? colors.colorWhite
                               : const Color.fromARGB(255, 16, 16, 16))),
                   buttonStyleData: ButtonStyleData(
+                      height: 44,
+                      padding: const EdgeInsets.only(left: 0, right: 16,),
                       decoration: BoxDecoration(
                           color: theme.isDarkMode
                               ? const Color(0xffB5C0CF).withOpacity(.15)
                               : const Color(0xffF1F3F8),
-                          // border: Border.all(color: Colors.grey),
                           borderRadius:
                               const BorderRadius.all(Radius.circular(32)))),
-
+                  iconStyleData: const IconStyleData(
+                    icon: Icon(Icons.keyboard_arrow_down),
+                    iconSize: 20,
+                  ),
                   isExpanded: true,
                   style:
                        TextWidget.textStyle(
@@ -202,12 +206,15 @@ class _SetAlertState extends State<SetAlert> {
                   items: alterItems
                       .map((String item) => DropdownMenuItem<String>(
                             value: item,
-                            child: 
+                            child: Padding(
+                            padding: const EdgeInsets.only(left: 8,),
+                              child: 
                             TextWidget.subText(
                       text: item,
                       textOverflow: TextOverflow.ellipsis,                  
                       theme: theme.isDarkMode,
                       fw: 0),
+                            ),
                           ))
                       .toList(),
                   value: alertValue,
@@ -217,9 +224,6 @@ class _SetAlertState extends State<SetAlert> {
                     });
                     validatesetalret(value);
                   },
-                  // buttonDecoration: const BoxDecoration(
-                  //     color: Color(0xffF1F3F8),
-                  //     borderRadius: BorderRadius.all(Radius.circular(32))),
                 ),
               ),
             ),
@@ -539,10 +543,12 @@ class _SetAlertState extends State<SetAlert> {
                       fw: 1),
                   
                   ),
-            )
+                        )
           ],
         ),
-      );
-    });
+      ),
+    );
+    }
+    );
   }
 }

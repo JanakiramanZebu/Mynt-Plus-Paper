@@ -115,7 +115,7 @@ class _WatchListScreen extends State<WatchListScreen> with AutomaticKeepAliveCli
   DateTime _lastUserScrollTime = DateTime.now(); // Track when user last scrolled
 
   // Simple fixed width for each tab for reliable calculations
-  final double tabWidth = 75.0; // Adjusted width to fit abbreviated names
+  final double tabWidth = 95.0; // Adjusted width to fit abbreviated names
 
   @override
   bool get wantKeepAlive => true;
@@ -488,57 +488,16 @@ final theme = ref.watch(themeProvider);
               // Search bar that scrolls away normally
               SliverToBoxAdapter(
                 child: Container(
-                  color: theme.isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFF1F3F8),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Container(
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: theme.isDarkMode ? Colors.black : Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFEEEEEE),
-                        width: 1,
+                                      child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color:  Color(0x80F1F3F8),
+
+                        borderRadius: BorderRadius.circular(22),
                       ),
-                    ),
                     child: Row(
                       children: [
-                        // Prefix: Menu icon
-                        Padding(
-                          padding: const EdgeInsets.only(left: 6, right: 8),
-                          child: Material(
-                            color: Colors.transparent,
-                            shape: const CircleBorder(),
-                            clipBehavior: Clip.hardEdge,
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              splashColor: Colors.black.withOpacity(0.15),
-                              highlightColor: Colors.black.withOpacity(0.08),
-                              onTap: () {
-                                showModalBottomSheet(
-                                  useSafeArea: true,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                                  ),
-                                  context: context,
-                                  builder: (context) => WatchlistsBottomSheet(currentWLName: wlName),
-                                );
-                              },
-                              child: Container(
-                                height: 32,
-                                width: 32,
-                                child: Center(
-                                  child: Icon(
-                                    Icons.menu,
-                                    size: 20,
-                                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        
                         // Search tappable area
                         Expanded(
                           child: GestureDetector(
@@ -548,14 +507,31 @@ final theme = ref.watch(themeProvider);
                               marketWatch.requestMWScrip(context: context, isSubscribe: false);
                               Navigator.pushNamed(context, Routes.searchScrip, arguments: wlName);
                             },
-                            child: Container(
-                              alignment: Alignment.centerLeft,
-                              child: TextWidget.subText(
-                                text: 'Search',
-                                color: Color(0xff666666),
-                                theme: theme.isDarkMode,
-                                fw: 0),
-                            ),
+                                                          child: Row(
+                                children: [
+                                  // Search icon
+                                   Padding(
+                                    padding: EdgeInsets.only(left: 16, right: 10),
+                                    child: 
+SvgPicture.asset(
+  assets.search,
+  width: 16,
+  height: 16,
+  
+)
+
+                                  ),
+                                  
+                                  // Search text
+                                  Expanded(
+                                    child: TextWidget.subText(
+                                      text: 'Search & Add stocks',
+                                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                      theme: theme.isDarkMode,
+                                      ),
+                                  ),
+                                ],
+                              ),
                           ),
                         ),
                         
@@ -568,7 +544,16 @@ final theme = ref.watch(themeProvider);
                               shape: const CircleBorder(),
                               child: InkWell(
                                 customBorder: const CircleBorder(),
-                                onTap: () {
+                                splashColor: theme.isDarkMode 
+                                    ? Colors.white.withOpacity(0.15)
+                                    : Colors.black.withOpacity(0.15),
+                                highlightColor: theme.isDarkMode 
+                                    ? Colors.white.withOpacity(0.08)
+                                    : Colors.black.withOpacity(0.08),
+                                onTap: () async {
+                                  // Add delay for visual feedback
+                                  await Future.delayed(const Duration(milliseconds: 150));
+                                  
                                   FocusScope.of(context).unfocus();
                                   showModalBottomSheet(
                                     useSafeArea: true,
@@ -606,17 +591,64 @@ final theme = ref.watch(themeProvider);
                   selectedTabIndex: _selectedTabIndex, // Pass the selected index to force rebuilds
                   watchlistNames: marketWatchlist?.values?.cast<String>(), // Pass watchlist names to detect changes
                   child: Container(
-                    padding: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.only(top: 6),
                     decoration: BoxDecoration(
-                      color: theme.isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFFF1F3F8),
-                     
+                      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                      // tab bottom border
+                      border: Border(
+                        bottom: BorderSide(
+                          color: theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFE0E0E0),
+                          width: 1.0,
+                        ),
+                      ),
                     ),
                     child: Container(
                       height: 40,
                       child: Row(
                         children: [
-                          // Extra space for proper alignment
-                          const SizedBox(width: 8),
+                          // Menu icon at the start of tabs
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8, right: 4),
+                            child: Material(
+                              color: Colors.transparent,
+                              shape: const CircleBorder(),
+                              clipBehavior: Clip.hardEdge,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                splashColor: theme.isDarkMode 
+                                    ? Colors.white.withOpacity(0.15)
+                                    : Colors.black.withOpacity(0.15),
+                                highlightColor: theme.isDarkMode 
+                                    ? Colors.white.withOpacity(0.08)
+                                    : Colors.black.withOpacity(0.08),
+                                onTap: () async {
+                                  // Add delay for visual feedback
+                                  await Future.delayed(const Duration(milliseconds: 150));
+                                  
+                                  showModalBottomSheet(
+                                    useSafeArea: true,
+                                    isScrollControlled: true,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                    ),
+                                    context: context,
+                                    builder: (context) => WatchlistsBottomSheet(currentWLName: wlName),
+                                  );
+                                },
+                                child: Container(
+                                  height: 32,
+                                  width: 32,
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.menu,
+                                      size: 24,
+                                      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                           
                           // Watchlist tabs
                           Expanded(
@@ -742,13 +774,20 @@ final theme = ref.watch(themeProvider);
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              splashColor: theme.isDarkMode ? Colors.white38 : Colors.black26,
-              highlightColor: theme.isDarkMode ? Colors.white24 : Colors.black.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+              splashColor: theme.isDarkMode 
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.05),
+              highlightColor: theme.isDarkMode 
+                  ? Colors.white.withOpacity(0.01)
+                  : Colors.black.withOpacity(0.01),
               onTapDown: (_) {
                 // Provide haptic feedback for tab tap
                 HapticFeedback.lightImpact();
               },
               onTap: () async {
+                // Add delay for visual feedback
+                await Future.delayed(const Duration(milliseconds: 150));
                 // Only handle tap if it's actually a different tab
                 if (index == _selectedTabIndex) {
                   return; // Don't do anything if tapping the already selected tab
@@ -789,13 +828,14 @@ final theme = ref.watch(themeProvider);
                     width: double.infinity,
                     alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    child: TextWidget.paraText(
+                    child: TextWidget.subText(
                     text:  _formatTabName(name),
                     color: isSelected
                           ? theme.isDarkMode
                             ? colors.colorLightBlue
                             : colors.colorBlue
-                          : theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          : Color(0xFF666666)
+,
                     textOverflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     theme: theme.isDarkMode,
@@ -915,4 +955,6 @@ final theme = ref.watch(themeProvider);
       cacheExtent: 500,
     );
   }
+  
+
 }

@@ -4,6 +4,7 @@ class Assets {
   final String appLogoIconOld = "assets/icon/zebulogo.svg";
   final String bellIcon = "assets/icon/appbarIcon/bell.svg";
   final String searchIcon = "assets/icon/appbarIcon/search.svg";
+  final String search = "assets/icon/search.svg";
   final String walletIcon = "assets/icon/appbarIcon/wallet.svg";
   final String editIcon = "assets/icon/appbarIcon/edit.svg";
   final String addCircleIcon = "assets/icon/appbarIcon/plus_circle.svg";
@@ -42,6 +43,8 @@ class Assets {
   final String reloadIcon = "assets/icon/reload.svg";
 
   final String removeIcon = "assets/icon/watchlistIcon/remove_text.svg";
+  final String charts = "assets/icon/watchlistIcon/charts.svg";
+  final String options = "assets/icon/watchlistIcon/options.svg";
   final String minusIcon = "assets/icon/minus_btn.svg";
   final String addIcon = "assets/icon/add_btn.svg";
   final String documentIcon = "assets/icon/document.svg";
