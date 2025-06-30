@@ -104,10 +104,10 @@ class OrderInputProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  chngOrderType(String val) {
-    if (val == "Cover") {
+  chngOrderType(String val, bool isCoverOrderEnabled, bool isBracketOrderEnabled) {
+    if (val == "CO / BO" && isCoverOrderEnabled) {
       _ordType = "H";
-    } else if (val == "Bracket") {
+    } else if (val == "CO / BO" && isBracketOrderEnabled) {
       _ordType = "B";
     } else {
       _ordType = "F";

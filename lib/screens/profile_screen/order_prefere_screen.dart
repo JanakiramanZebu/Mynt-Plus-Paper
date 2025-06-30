@@ -54,7 +54,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
   void initState() {
     super.initState();
     gobackOP = widget.isRollback == "yes" ? true : false;
-    localdata = ref.read(authProvider).ordgrefis;
+    localdata = ref.read(authProvider).savedOrderPreference;
 
     if (localdata.isNotEmpty) {
       priceType = localdata['prc'];

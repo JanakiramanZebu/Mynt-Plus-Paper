@@ -197,7 +197,7 @@ class _RepeatOrderState extends ConsumerState<RepeatOrder> {
                                             if (orderInput.orderName !=
                                                 "Regular") {
                                               orderInput.chngOrderType(
-                                                  orderInput.orderNames[index]);
+                                                  orderInput.orderNames[index], false, false);
                                             } else {
                                               orderInput.chngInvesType(
                                                   scripInfo.scripInfoModel!.seg

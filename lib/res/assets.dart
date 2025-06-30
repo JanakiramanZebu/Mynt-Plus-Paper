@@ -41,7 +41,9 @@ class Assets {
 
   final String reloadIcon = "assets/icon/reload.svg";
 
+  final String iosuparrow = "assets/icon/iosuparrow.svg";
   final String removeIcon = "assets/icon/watchlistIcon/remove_text.svg";
+  final String switchIcon = "assets/icon/switchIcon.svg";
   final String minusIcon = "assets/icon/minus_btn.svg";
   final String addIcon = "assets/icon/add_btn.svg";
   final String documentIcon = "assets/icon/document.svg";

@@ -74,7 +74,7 @@ class AuthProvider extends DefaultChangeNotifier {
   int get selectedTab => _selectedTab;
 
   Map _ordgrefis = {};
-  Map get ordgrefis => _ordgrefis;
+  Map get savedOrderPreference => _ordgrefis;
 
   setChangetotp(bool value) async {
     if (_totp == value) return; // Prevent unnecessary updates
