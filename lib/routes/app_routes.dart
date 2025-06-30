@@ -93,6 +93,8 @@ import '../screens/profile_screen/my_ac_screens/bank_detail.dart';
 import '../screens/profile_screen/my_ac_screens/set_auto_pay.dart';
 import '../screens/profile_screen/my_ac_screens/setautopayscreen.dart';
 import '../screens/profile_screen/my_account_screens/profile_all_details_main_screen.dart';
+import '../screens/profile_screen/my_account_screens/profile_details_bank_screen.dart';
+import '../screens/profile_screen/my_account_screens/profile_details_screen.dart';
 import '../screens/profile_screen/notification_screens/notification_screen.dart';
 import '../screens/profile_screen/order_prefere_screen.dart';
 import '../screens/profile_screen/qr_scan_widget.dart';
@@ -830,6 +832,18 @@ class AppRoutes {
         return _createRoute(
           pageBuilder: (_, __, ___) => SaveTaxesScreen(title: args),
           beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.profile:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const ProfileInfoDetails(),
+          beginOffset: const Offset(0.0, 1.0),
+        );
+
+      case Routes.bank:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const ProfileDetailsBank(),
+          beginOffset: const Offset(0.0, 1.0),
         );
 
       default:

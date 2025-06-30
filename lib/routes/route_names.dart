@@ -202,6 +202,10 @@ class Routes {
   static const String eqtaxpnleq = 'EqTaxpnlEq';
   static const String cdslWebView = 'CDSLWebView';
 
+  static const String profile = 'Profile';
+  static const String bank = 'Bank';
+
   // rough
   static const String heatmapcalendarscreen = 'HeatmapCalendarScreen ';
+
 }

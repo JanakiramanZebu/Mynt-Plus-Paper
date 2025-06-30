@@ -1,6 +1,15 @@
 class Assets {
   // Icon
   final String appLogoIcon = "assets/icon/Mynt New logo.svg";
+  final String mfIcon = "assets/icon/mf_icon.svg";
+
+  final String bondIcon = "assets/icon/bond_icon.svg";
+  final String qrIcon = "assets/icon/qr_new.svg";
+  final String notifyIcon = "assets/icon/notify_new.svg";
+  final String ipoIcon = "assets/icon/ipo_icon.svg";
+
+  final String optionZIcon = "assets/icon/optionz_icon.svg";
+
   final String appLogoIconOld = "assets/icon/zebulogo.svg";
   final String bellIcon = "assets/icon/appbarIcon/bell.svg";
   final String searchIcon = "assets/icon/appbarIcon/search.svg";

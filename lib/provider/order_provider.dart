@@ -456,7 +456,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
   tabSize() {
     _orderTabName = [
-      Tab(text: _allOrder!.isNotEmpty ? "All (${_allOrder!.length})" : "All"),
+      // Tab(text: _allOrder!.isNotEmpty ? "All (${_allOrder!.length})" : "All"),
       Tab(
           text:
               _openOrder!.isNotEmpty ? "Open (${_openOrder!.length})" : "Open"),
@@ -466,32 +466,33 @@ class OrderProvider extends DefaultChangeNotifier {
               : "Executed"),
       Tab(
         text: (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty)
-            ? "GTT Order (${_gttOrderBookModel!.length})"
-            : "GTT Order",
+            ? "GTT (${_gttOrderBookModel!.length})"
+            : "GTT",
       ),
       Tab(
         text: _bsktList.isNotEmpty
-            ? "Basket Order (${_bsktList.length})"
-            : "Basket Order",
+            ? "Basket (${_bsktList.length})"
+            : "Basket",
       ),
+      // Tab(
+      //   text: (_tradeBook != null && _tradeBook!.isNotEmpty)
+      //       ? "Trade Book (${_tradeBook!.length})"
+      //       : "Trade Book",
+      // ),
+      
+
       Tab(
-        text: (_tradeBook != null && _tradeBook!.isNotEmpty)
-            ? "Trade Book (${_tradeBook!.length})"
-            : "Trade Book",
+        text: (_siporderBookModel?.sipDetails?.isNotEmpty ?? false)
+            ? "SIP (${_siporderBookModel!.sipDetails!.length})"
+            : "SIP",
       ),
       const Tab(
-        text: ("Alert"),
+        text: ("Alerts"),
       // ref.read(marketWatchProvider).alertPendingModel != null &&
       //           ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty)
       //       ? "Alert (${ref.read(marketWatchProvider).alertPendingModel!.length})"
       //       :
-      ),
-
-      Tab(
-        text: (_siporderBookModel?.sipDetails?.isNotEmpty ?? false)
-            ? "SIP Order (${_siporderBookModel!.sipDetails!.length})"
-            : "SIP Order",
-      ),
+      )
     ];
     notifyListeners();
   }
@@ -1248,136 +1249,90 @@ class OrderProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  filterOrders({required String sorting}) async {
-    // Store the current sort method for future use
+  void filterOrders({required String sorting}) {
+    // Save the last sort method
     _lastOrderSortMethod = sorting;
-    
-    if (_selectedTab == 0) {
-      if (sorting == "ASC") {
-        _allOrder!.sort((a, b) => a.tsym!.compareTo(b.tsym!));
-      } else if (sorting == "DSC") {
-        _allOrder!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
-      } else if (sorting == "LTPDSC") {
-        _allOrder!.sort((a, b) {
-          // Use the best available price field
-          double priceA = _getBestPrice(a);
-          double priceB = _getBestPrice(b);
-          return priceB.compareTo(priceA);
-        });
-      } else if (sorting == "LTPASC") {
-        _allOrder!.sort((a, b) {
-          // Use the best available price field
-          double priceA = _getBestPrice(a);
-          double priceB = _getBestPrice(b);
-          return priceA.compareTo(priceB);
-        });
-      } else if (sorting == "QTYDSC") {
-        _allOrder!.sort((a, b) {
-          return int.parse(b.qty ?? "0").compareTo(int.parse(a.qty ?? "0"));
-        });
-      } else if (sorting == "QTYASC") {
-        _allOrder!.sort((a, b) {
-          return int.parse(a.qty ?? "0").compareTo(int.parse(b.qty ?? "0"));
-        });
-      } else if (sorting == "PRODUCTASC") {
-        _allOrder!.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
-      } else if (sorting == "PRODUCTDSC") {
-        _allOrder!.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
-      } else if (sorting == "TIMEDSC") {
-        _allOrder!.sort((a, b) => b.norentm!.compareTo(a.norentm!));
-      } else if (sorting == "TIMEASC") {
-        _allOrder!.sort((a, b) => a.norentm!.compareTo(b.norentm!));
-      }
-    } else if (_selectedTab == 1) {
-      if (sorting == "ASC") {
-        _openOrder!.sort((a, b) => a.tsym!.compareTo(b.tsym!));
-      } else if (sorting == "DSC") {
-        _openOrder!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
-      } else if (sorting == "LTPDSC") {
-        _openOrder!.sort((a, b) {
-          // Use the best available price field
-          double priceA = _getBestPrice(a);
-          double priceB = _getBestPrice(b);
-          return priceB.compareTo(priceA);
-        });
-      } else if (sorting == "LTPASC") {
-        _openOrder!.sort((a, b) {
-          // Use the best available price field
-          double priceA = _getBestPrice(a);
-          double priceB = _getBestPrice(b);
-          return priceA.compareTo(priceB);
-        });
-      } else if (sorting == "QTYDSC") {
-        _openOrder!.sort((a, b) {
-          return int.parse(b.qty ?? "0").compareTo(int.parse(a.qty ?? "0"));
-        });
-      } else if (sorting == "QTYASC") {
-        _openOrder!.sort((a, b) {
-          return int.parse(a.qty ?? "0").compareTo(int.parse(b.qty ?? "0"));
-        });
-      } else if (sorting == "PRODUCTASC") {
-        _openOrder!.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
-      } else if (sorting == "PRODUCTDSC") {
-        _openOrder!.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
-      } else if (sorting == "TIMEDSC") {
-        _openOrder!.sort((a, b) => b.norentm!.compareTo(a.norentm!));
-      } else if (sorting == "TIMEASC") {
-        _openOrder!.sort((a, b) => a.norentm!.compareTo(b.norentm!));
-      }
-    } else if (_selectedTab == 2) {
-      if (sorting == "ASC") {
-        _executedOrder!.sort((a, b) => a.tsym!.compareTo(b.tsym!));
-      } else if (sorting == "DSC") {
-        _executedOrder!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
-      } else if (sorting == "LTPDSC") {
-        _executedOrder!.sort((a, b) {
-          // Use the best available price field
-          double priceA = _getBestPrice(a);
-          double priceB = _getBestPrice(b);
-          return priceB.compareTo(priceA);
-        });
-      } else if (sorting == "LTPASC") {
-        _executedOrder!.sort((a, b) {
-          // Use the best available price field
-          double priceA = _getBestPrice(a);
-          double priceB = _getBestPrice(b);
-          return priceA.compareTo(priceB);
-        });
-      } else if (sorting == "QTYDSC") {
-        _executedOrder!.sort((a, b) {
-          return int.parse(b.qty ?? "0").compareTo(int.parse(a.qty ?? "0"));
-        });
-      } else if (sorting == "QTYASC") {
-        _executedOrder!.sort((a, b) {
-          return int.parse(a.qty ?? "0").compareTo(int.parse(b.qty ?? "0"));
-        });
-      } else if (sorting == "PRODUCTASC") {
-        _executedOrder!.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
-      } else if (sorting == "PRODUCTDSC") {
-        _executedOrder!.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
-      } else if (sorting == "TIMEDSC") {
-        _executedOrder!.sort((a, b) => b.norentm!.compareTo(a.norentm!));
-      } else if (sorting == "TIMEASC") {
-        _executedOrder!.sort((a, b) => a.norentm!.compareTo(b.norentm!));
-      }
-    }
-    {}
 
-    notifyListeners();
-  }
-  
-  // Helper method to get the best available price
-  double _getBestPrice(OrderBookModel order) {
-    // Try ltp first, then avgprc, then prc, then default to 0.0
-    if (order.ltp != null && order.ltp != "null" && order.ltp != "0" && order.ltp != "0.00") {
-      return double.tryParse(order.ltp!) ?? 0.0;
-    } else if (order.avgprc != null && order.avgprc != "null" && order.avgprc != "0" && order.avgprc != "0.00") {
-      return double.tryParse(order.avgprc!) ?? 0.0;
-    } else if (order.prc != null && order.prc != "null" && order.prc != "0" && order.prc != "0.00") {
-      return double.tryParse(order.prc!) ?? 0.0;
+    // Determine which list to sort
+    List<OrderBookModel>? listToSort;
+    if (_selectedTab == 0) {
+      listToSort = _openOrder;
+    } else if (_selectedTab == 1) {
+      listToSort = _executedOrder;
+    } else if (_selectedTab == 2) {
+      // Assuming GTT orders might need sorting too, though they have a separate filter method
+      // If not, this can be removed.
+      return; 
     } else {
-      return 0.0;
+      listToSort = _allOrder;
     }
+    
+    if (listToSort == null || listToSort.isEmpty) {
+      return;
+    }
+
+    // Sorting logic based on the 'sorting' parameter
+    switch (sorting) {
+      case "ASC":
+        listToSort.sort((a, b) => a.tsym!.compareTo(b.tsym!));
+        break;
+      case "DSC":
+        listToSort.sort((a, b) => b.tsym!.compareTo(a.tsym!));
+        break;
+      case "LTPASC":
+        listToSort.sort((a, b) {
+          final aLtp = double.tryParse(a.ltp ?? '0.0') ?? 0.0;
+          final bLtp = double.tryParse(b.ltp ?? '0.0') ?? 0.0;
+          return aLtp.compareTo(bLtp);
+        });
+        break;
+      case "LTPDSC":
+        listToSort.sort((a, b) {
+          final aLtp = double.tryParse(a.ltp ?? '0.0') ?? 0.0;
+          final bLtp = double.tryParse(b.ltp ?? '0.0') ?? 0.0;
+          return bLtp.compareTo(aLtp);
+        });
+        break;
+      case "PRODUCTASC":
+        listToSort.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
+        break;
+      case "PRODUCTDSC":
+        listToSort.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
+        break;
+      case "QTYASC":
+        listToSort.sort((a, b) {
+          final aQty = int.tryParse(a.qty ?? '0') ?? 0;
+          final bQty = int.tryParse(b.qty ?? '0') ?? 0;
+          return aQty.compareTo(bQty);
+        });
+        break;
+      case "QTYDSC":
+        listToSort.sort((a, b) {
+          final aQty = int.tryParse(a.qty ?? '0') ?? 0;
+          final bQty = int.tryParse(b.qty ?? '0') ?? 0;
+          return bQty.compareTo(aQty);
+        });
+        break;
+      case "TIMEASC":
+        listToSort.sort((a, b) {
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
+          return aDate.compareTo(bDate);
+        });
+        break;
+      case "TIMEDSC":
+        listToSort.sort((a, b) {
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
+          return bDate.compareTo(aDate);
+        });
+        break;
+      default:
+        // No sorting
+        break;
+    }
+    
+    notifyListeners();
   }
 
   placeGTTOrder(PlaceGTTOrderInput input, BuildContext context) async {
@@ -1887,5 +1842,35 @@ class OrderProvider extends DefaultChangeNotifier {
           .add({"type": "API Place Slice  Order", "Error": "$e"});
       notifyListeners();
     }
+  }
+
+  Future fetchPlaceGTTOrder(
+      PlaceGTTOrderInput placeGttOrderInput, BuildContext context) async {
+    try {
+      _placeGttOrderModel = await api.placeGTTOrderAPI(placeGttOrderInput);
+
+      if (_placeGttOrderModel!.stat == "OI created") {
+        ConstantName.sessCheck = true;
+        ref.read(ordInputProvider).clearTextField();
+        await fetchGTTOrderBook(context, "");
+
+        Navigator.pop(context);
+        ref.read(indexListProvider).bottomMenu(3, context);
+        HapticFeedback.heavyImpact();
+        SystemSound.play(SystemSoundType.click);
+      } else {
+        if (_placeGttOrderModel!.emsg ==
+                "Session Expired :  Invalid Session Key" &&
+            _placeGttOrderModel!.stat == "Not_Ok") {
+          ref.read(authProvider).ifSessionExpired(context);
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      ref.read(indexListProvider)
+          .logError
+          .add({"type": "API GTT Order ", "Error": "$e"});
+      notifyListeners();
+    } finally {}
   }
 }

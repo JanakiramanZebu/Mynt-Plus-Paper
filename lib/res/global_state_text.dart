@@ -128,6 +128,8 @@ class TextWidget {
                   ? FontWeight.w600
                   : fw == 0
                       ? FontWeight.w500
+                      : fw == 00
+                        ? FontWeight.w400
                       : FontWeight.normal,
           letterSpacing: letterSpacing,
         ),

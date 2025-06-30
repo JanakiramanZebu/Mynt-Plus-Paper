@@ -67,41 +67,51 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                                       ? colors.darkColorDivider
                                       : colors.colorDivider,
                                   width: 0))),
-                      height: 46,
-                      child: TabBar(
-                          tabAlignment: TabAlignment.start,
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          isScrollable: true,
-                          indicatorColor: theme.isDarkMode
-                              ? colors.colorLightBlue
-                              : colors.colorBlue,
-                          unselectedLabelColor: const Color(0XFF777777),
-                          unselectedLabelStyle: TextWidget.textStyle(
-                              fontSize: 12,
-                              theme: false,
-                              fw: 0,
-                              letterSpacing: -0.28),
-                          labelColor: theme.isDarkMode
-                              ? colors.colorLightBlue
-                              : colors.colorBlue,
-                          labelStyle: TextWidget.textStyle(
-                              fontSize: 14, theme: false, fw: 1),
-                          controller: orderBook.tabCtrl,
-                          tabs: orderBook.orderTabName)),
+                      height: 50,
+                      child: Column(
+                        children: [
+                          TabBar(
+                              tabAlignment: TabAlignment.start,
+                              indicatorSize: TabBarIndicatorSize.tab,
+                              isScrollable: true,
+                              indicatorColor: theme.isDarkMode
+                                  ? colors.colorLightBlue
+                                  : colors.colorBlue,
+                              unselectedLabelColor: const Color(0XFF777777),
+                              unselectedLabelStyle: TextWidget.textStyle(
+                                  fontSize: 12,
+                                  theme: false,
+                                  fw: 0,
+                                  letterSpacing: -0.28),
+                              labelColor: theme.isDarkMode
+                                  ? colors.colorLightBlue
+                                  : colors.colorBlue,
+                              labelStyle: TextWidget.textStyle(
+                                  fontSize: 14, theme: false, fw: 1),
+                              controller: orderBook.tabCtrl,
+                              tabs: orderBook.orderTabName),
+                              // Divider line
+    Container(
+      height: 2,
+      color:const Color(0xffF1F3F8), // light grey line
+    ),
+                        ],
+                      )),
                   Expanded(
                       child:
                           TabBarView(controller: orderBook.tabCtrl, children: [
-                    OrderBook(orderBook: orderBook.allOrder!),
+                    // OrderBook(orderBook: orderBook.allOrder!),
                     OrderBook(orderBook: orderBook.openOrder!),
                     OrderBook(orderBook: orderBook.executedOrder!),
                     GttOrderBook(
                         gttOrderBook: orderBook.gttOrderBookModel ?? []),
                     const BasketList(),
-                    TradeBook(tradeBook: orderBook.tradeBook ?? []),
-                    const PendingAlert(),
+                    // TradeBook(tradeBook: orderBook.tradeBook ?? []),
+                    
                     SipOrderBook(
                       sipbook: sipBook.siporderBookModel?.sipDetails,
-                    )
+                    ),
+                    const PendingAlert(),
                   ]))
                 ]);
     });

@@ -317,9 +317,8 @@ class _OrderBookState extends ConsumerState<OrderBook> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Column(children: [
-        if (widget.orderBook.length > 1)
+        if (widget.orderBook.isNotEmpty)
           _buildFilterSearchHeader(order, theme),
-        if (order.showSearchHold) _buildSearchBar(order, theme),
         Expanded(
           child: RefreshIndicator(
               onRefresh: () async {
@@ -339,154 +338,123 @@ class _OrderBookState extends ConsumerState<OrderBook> {
   }
 
   // Filter and search header
-  Widget _buildFilterSearchHeader(OrderProvider order, ThemesProvider theme) {
-    return Container(
-              decoration: BoxDecoration(
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  border: Border(
-                      bottom: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                          width: 6))),
-              child: Padding(
-            padding:
-                const EdgeInsets.only(left: 16, right: 2, top: 8, bottom: 8),
-            child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                    Row(children: [
-                      InkWell(
-                          onTap: () async {
-                            FocusScope.of(context).unfocus();
-                            showModalBottomSheet(
-                                useSafeArea: true,
-                                isScrollControlled: true,
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(16))),
-                                context: context,
-                                builder: (context) {
-                                  return const OrderbookFilterBottomSheet();
-                                });
-                          },
-                          child: Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: SvgPicture.asset(assets.filterLines,
-                                  color: theme.isDarkMode
-                                      ? colors.darkiconcolor
-                                      : const Color(0xff333333)))),
-                      InkWell(
-                          onTap: () {
-                            order.showOrderSearch(true);
-                          },
-                          child: Padding(
-                        padding: const EdgeInsets.only(right: 12, left: 10),
-                              child: SvgPicture.asset(assets.searchIcon,
-                                  width: 19, color: const Color(0xff333333))))
-                    ])
-            ])));
-  }
-
-  // Search bar
-  Widget _buildSearchBar(OrderProvider order, ThemesProvider theme) {
-    return Container(
-            height: 62,
-            padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+ Widget _buildFilterSearchHeader(OrderProvider order, ThemesProvider theme) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    decoration: BoxDecoration(
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      border: Border(
+        bottom: BorderSide(
+          color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+          width: 1,
+        ),
+      ),
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 40,
             decoration: BoxDecoration(
-                border: Border(
-                    bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                        width: 6))),
+              color: const Color(0xffF1F3F8).withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20),
+            ),
             child: Row(
               children: [
-                Expanded(
-                  child: TextFormField(
-                    textCapitalization: TextCapitalization.characters,
-                    inputFormatters: [UpperCaseTextFormatter()],
-                    controller: order.orderSearchCtrl,
-              style: TextWidget.textStyle(
-                  color: const Color(0xff000000),
-                  theme: theme.isDarkMode,
-                  fontSize: 16,
-                  fw: 1),
-                    decoration: InputDecoration(
-                        fillColor: const Color(0xffF1F3F8),
-                        filled: true,
-                  hintStyle: TextWidget.textStyle(
-                      theme: theme.isDarkMode,
-                      color: const Color(0xff69758F),
-                      fontSize: 14,
-                      fw: 0),
-                        prefixIconColor: const Color(0xff586279),
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: SvgPicture.asset(assets.searchIcon,
-                              color: const Color(0xff586279),
-                              fit: BoxFit.contain,
-                              width: 20),
+                const SizedBox(width: 12),
+                SvgPicture.asset(
+                  assets.searchIcon,
+                  width: 18,
+                  height: 18,
+                  color: const Color(0xff586279),
+                ),
+                const SizedBox(width: 8),
+                                  Expanded(
+                    child: TextFormField(
+                      controller: order.orderSearchCtrl,
+                      autofocus: false,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [UpperCaseTextFormatter()],
+                      style: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: theme.isDarkMode,
+                        color: const Color(0xff000000),
+                        fw: 00,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: "Search",
+                        hintStyle: TextWidget.textStyle(
+                          fontSize: 14,
+                          theme: false,
+                          color: const Color(0xff69758F),
+                          fw: 00,
                         ),
-                        suffixIcon: InkWell(
-                          onTap: () async {
-                            order.clearOrderSearch();
-                          },
-                          child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                            child: SvgPicture.asset(assets.removeIcon,
-                                fit: BoxFit.scaleDown, width: 20),
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.circular(20)),
-                        disabledBorder: InputBorder.none,
-                        focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.circular(20)),
-                        hintText: "Search Scrip Name",
-                        contentPadding: const EdgeInsets.only(top: 20),
-                        border: OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                            borderRadius: BorderRadius.circular(20))),
-                    onChanged: (value) async {
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onChanged: (value) {
                       order.orderSearch(value, context);
                     },
                   ),
                 ),
-                TextButton(
-                    onPressed: () {
-                      order.showOrderSearch(false);
+                if (order.orderSearchCtrl.text.isNotEmpty)
+                  InkWell(
+                    onTap: () {
                       order.clearOrderSearch();
                     },
-              child: TextWidget.subText(
-                  text: "Close",
-                  theme: false,
-                  color: colors.colorLightBlue,
-                  fw: 0))
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: SvgPicture.asset(
+                        assets.removeIcon,
+                        width: 18,
+                        height: 18,
+                        color: const Color(0xff586279),
+                      ),
+                    ),
+                  ),
               ],
             ),
-    );
-  }
-
+          ),
+        ),
+        const SizedBox(width: 12),
+        InkWell(
+          onTap: () async {
+            FocusScope.of(context).unfocus();
+            showModalBottomSheet(
+              useSafeArea: true,
+              isScrollControlled: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              context: context,
+              builder: (context) {
+                return const OrderbookFilterBottomSheet();
+              },
+            );
+          },
+          child: SvgPicture.asset(
+            assets.filterLines,
+            width: 20,
+            height: 20,
+            color: theme.isDarkMode ? colors.darkiconcolor : const Color(0xff333333),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+ 
   // Order list view
   Widget _buildOrderList(List<OrderBookModel> items, OrderProvider order,
       ThemesProvider theme) {
-                            return ListView.builder(
+                            return ListView.separated(
                               physics: const AlwaysScrollableScrollPhysics(),
                               shrinkWrap: false,
                               itemBuilder: (context, index) {
-                                final itemIndex = index ~/ 2;
+                                final itemIndex = index;
                                 
-                                if (index.isOdd) {
-                                  return Container(
-              color:
-                  theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                      height: 6);
-                                }
                                 
-        if (items[itemIndex].status == null) {
-          return Container();
-        }
 
         // Use Builder to get fresh context for each item
         return Builder(builder: (itemContext) {
@@ -508,7 +476,13 @@ class _OrderBookState extends ConsumerState<OrderBook> {
           );
         });
       },
-      itemCount: items.length * 2 - 1,
+      itemCount: items.length, 
+      separatorBuilder: (BuildContext context, int index) {  
+        return Container(
+              color:
+                  theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                      height: 1);
+      },
     );
   }
 
@@ -652,7 +626,7 @@ class _OrderItemState extends State<_OrderItem> {
   Widget build(BuildContext context) {
     return InkWell(
       onLongPress: widget.onLongPress,
-                                    onTap: () async {
+      onTap: () async {
         // Prevent multiple navigation events on rapid taps
         if (_isNavigating) return;
 
@@ -679,126 +653,189 @@ class _OrderItemState extends State<_OrderItem> {
         }
       },
       child: Container(
-                                            padding: const EdgeInsets.all(16),
-                                            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-                                                children: [
-                _buildHeaderRow(widget.theme),
-                const SizedBox(height: 4),
-                _buildExchangeRow(widget.theme),
-                const SizedBox(height: 4),
-                Divider(
-                    color: widget.theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider),
-                const SizedBox(height: 2),
-                _buildQuantityRow(widget.theme),
-                const SizedBox(height: 10),
-                _buildStatusRow(widget.theme),
-              ])),
-    );
-  }
-
-  // Header with symbol and LTP
-  Widget _buildHeaderRow(ThemesProvider theme) {
-    // Get the best available price to display
-    final displayPrice = _getValidPrice();
-
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                                        Row(children: [
-        TextWidget.subText(
-            text: "${widget.orderItem.symbol} ",
-            theme: false,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            fw: 1,
-            textOverflow: TextOverflow.ellipsis),
-        TextWidget.subText(
-            text: "${widget.orderItem.option} ",
-            theme: false,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            fw: 1,
-            textOverflow: TextOverflow.ellipsis),
-      ]),
-      // Wrap in RepaintBoundary since LTP updates frequently
-      RepaintBoundary(
-        child: Row(
-                                                          children: [
-            TextWidget.paraText(
-                text: " LTP: ",
-                theme: false,
-                color: const Color(0xff5E6B7D),
-                fw: 1),
-            TextWidget.subText(
-                text: "₹$displayPrice",
-                theme: false,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                fw: 0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // First Row: Symbol + Expiry + Exchange Badge | Status Badge
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Row(
+                          children: [
+                                                        TextWidget.subText(
+                              text: "${widget.orderItem.symbol} ",
+                              theme: widget.theme.isDarkMode,
+                              fw: 1,
+                            ),
+                            Flexible(
+                              child: TextWidget.subText(
+                                text: "${widget.orderItem.expDate} ${widget.orderItem.option ?? ''} ",
+                                color: const Color(0xff666666),
+                                theme: widget.theme.isDarkMode,
+                                fw: 00,
+                                textOverflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            TextWidget.captionText(
+                              text: "${widget.orderItem.exch}",
+                              color: const Color(0xff666666),
+                              theme: widget.theme.isDarkMode,
+                              fw: 00,
+                        ),
+                          ],
+                        ),
+                      ),
+                     
+                    ],
+                  ),
+                ),
+                // Status Badge
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(
+                      widget.orderItem.status == "COMPLETE"
+                          ? assets.completedIcon
+                          : widget.orderItem.status == "CANCELED" ||
+                                  widget.orderItem.status == "REJECTED"
+                              ? assets.cancelledIcon
+                              : assets.warningIcon,
+                      width: 16,
+                      height: 12,
+                    ),
+                    const SizedBox(width: 6),
+                    TextWidget.paraText(
+                      text: _getStatusText(),
+                      theme: false,
+                      color: const Color(0xff666666),
+                      fw: 0,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Second Row: Product + Order Type + Time | LTP
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      TextWidget.paraText(
+                        text: "${widget.orderItem.sPrdtAli}  ",
+                        theme: false,
+                        color: const Color(0xff666666),
+                        fw: 00,
+                      ),
+                      TextWidget.paraText(
+                        text: "${widget.orderItem.prctyp}  ",
+                        theme: false,
+                        color: const Color(0xff666666),
+                        fw: 00,
+                      ),
+                      TextWidget.paraText(
+                        text: formatDateTime(value: widget.orderItem.norentm!).substring(12, 21),
+                        theme: false,
+                        color: const Color(0xff666666),
+                        fw: 00,
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [
+                    TextWidget.paraText(
+                      text: "LTP ",
+                      color: const Color(0xff666666),
+                      theme: widget.theme.isDarkMode,
+                      fw: 0,
+                    ),
+                    TextWidget.subText(
+                      text: _getValidPrice(),
+                      color: const Color(0xff666666),
+                      theme: widget.theme.isDarkMode,
+                      fw: 0,
+                    )
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Third Row: BUY/SELL + Quantity | Total Value
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    TextWidget.paraText(
+                      text: widget.orderItem.trantype == "S" ? "SELL " : "BUY ",
+                      theme: false,
+                      color: widget.orderItem.trantype == "S" ? colors.darkred : colors.ltpgreen,
+                      fw: 1,
+                    ),
+                    const SizedBox(width: 4),
+                    TextWidget.subText(
+                      color: const Color(0xff666666),
+                      text: _getQuantityDisplay(),
+                      theme: widget.theme.isDarkMode,
+                      fw: 00,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    TextWidget.subText(
+                      text: _getAvgPrice(),
+                      color: const Color(0xff666666),
+                      theme: widget.theme.isDarkMode,
+                      fw: 0,
+                    ),
+                    if (widget.orderItem.prctyp == "SL-LMT" ||
+            widget.orderItem.prctyp == "SL-MKT") ...[
+          const SizedBox(child: Text(' / ')),
+          TextWidget.subText(
+              text: "${widget.orderItem.trgprc ?? 0.00}",
+              theme: widget.theme.isDarkMode,
+              color: const Color(0xff666666),
+              fw: 0),
+        ]
+                  ],
+                ),
+                
+                
+              ],
+            ),
           ],
         ),
       ),
-    ]);
+    );
   }
 
-  // Exchange information row
-  Widget _buildExchangeRow(ThemesProvider theme) {
-    return Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: [
-                                                        Row(
-                                                          children: [
-              CustomExchBadge(exch: "${widget.orderItem.exch}"),
-              TextWidget.paraText(
-                  text: " ${widget.orderItem.expDate} ",
-                  theme: false,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  fw: 0),
-                                                            Container(
-                  margin: const EdgeInsets.only(left: 7),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                                                decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                                                                    color: theme.isDarkMode
-                          ? const Color(0xff666666).withOpacity(.2)
-                          : const Color(0xff999999).withOpacity(.2)),
-                  child: TextWidget.captionText(
-                      text: "${widget.orderItem.sPrdtAli}",
-                      theme: false,
-                      color: const Color(0xff666666),
-                      fw: 1)),
-                                                            Container(
-                  margin: const EdgeInsets.only(left: 7),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                                                decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                                                                    color: theme.isDarkMode
-                          ? const Color(0xff666666).withOpacity(.2)
-                          : const Color(0xff999999).withOpacity(.2)),
-                child: TextWidget.captionText(
-                    text: "${widget.orderItem.prctyp}",
-                    theme: false,
-                    color: const Color(0xff666666),
-                    fw: 1),
-              )
-            ],
-          ),
-          // Wrap percent change in RepaintBoundary as it updates frequently
-          RepaintBoundary(
-              child: TextWidget.paraText(
-                  text: " (${widget.orderItem.perChange ?? 0.00}%)",
-                  theme: false,
-                  color: _getPercentChangeColor(),
-                  fw: 0)),
-        ]);
+  // Get status color based on order status (matching existing logic)
+  Color _getStatusColor() {
+    if (widget.orderItem.status == "COMPLETE") {
+      return colors.ltpgreen;
+    } else if (widget.orderItem.status == "CANCELED" || widget.orderItem.status == "REJECTED") {
+      return colors.darkred;
+    } else {
+      // For OPEN, PENDING, TRIGGER_PENDING, etc.
+      return colors.colorLightBlue;
+    }
   }
 
-  // Quantity information row
-  Widget _buildQuantityRow(ThemesProvider theme) {
-    // Calculate quantity display with lot size adjustment
+  // Get status text for display (using exact status values)
+  String _getStatusText() {
+    return widget.orderItem.status ?? 'Unknown';
+  }
+
+  // Get quantity display like "56 / 423"
+  String _getQuantityDisplay() {
     final filledQty = widget.orderItem.status != "COMPLETE" &&
             (widget.orderItem.fillshares?.isNotEmpty ?? false)
         ? (int.tryParse(widget.orderItem.fillshares.toString()) ?? 0)
@@ -815,95 +852,32 @@ class _OrderItemState extends State<_OrderItem> {
         ((int.tryParse(widget.orderItem.qty.toString()) ?? 0) / lotSize)
             .toInt();
 
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                                        Row(children: [
-                                                          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: theme.isDarkMode
-                    ? widget.orderItem.trantype == "S"
-                        ? colors.darkred.withOpacity(.2)
-                        : colors.ltpgreen.withOpacity(.2)
-                    : Color(widget.orderItem.trantype == "S"
-                                                                              ? 0xffFCF3F3
-                                                                              : 0xffECF8F1)),
-            child: TextWidget.paraText(
-                text: widget.orderItem.trantype == "S" ? "SELL" : "BUY",
-                theme: false,
-                color: widget.orderItem.trantype == "S"
-                                                                          ? colors.darkred
-                                                                          : colors.ltpgreen,
-                fw: 1)),
-                                                          const SizedBox(width: 8),
-        TextWidget.paraText(
-            text: formatDateTime(value: widget.orderItem.norentm!)
-                .substring(13, 21),
-            theme: false,
-            color: const Color(0xff666666),
-            fw: 0)
-                                                        ]),
-                                                        Row(children: [
-        TextWidget.subText(
-            text: "Qty: ", theme: false, color: const Color(0xff5E6B7D), fw: 0),
-        TextWidget.subText(
-            text: "$displayFilledQty/$displayTotalQty",
-            theme: false,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            fw: 0)
-                                                        ])
-    ]);
+    return "$displayFilledQty / $displayTotalQty";
   }
 
-  // Status and price row
-  Widget _buildStatusRow(ThemesProvider theme) {
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                                        Row(children: [
-        SvgPicture.asset(widget.orderItem.status == "COMPLETE"
-                                                              ? assets.completedIcon
-            : widget.orderItem.status == "CANCELED" ||
-                    widget.orderItem.status == "REJECTED"
-                ? assets.cancelledIcon
-                : assets.warningIcon),
-        TextWidget.subText(
-            text:
-            " ${widget.orderItem.stIntrn![0].toUpperCase()}${widget.orderItem.stIntrn!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
-            theme: false,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            fw: 0),
-                                                        ]),
-                                                        Row(children: [
-        TextWidget.subText(
-            text: "Prc: ", theme: false, color: const Color(0xff5E6B7D), fw: 0),
-        TextWidget.subText(
-            text: "${widget.orderItem.status == "COMPLETE" ? widget.orderItem.avgprc : widget.orderItem.prc ?? 0.00}",
-            theme: false,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            fw: 0),
-        if (widget.orderItem.prctyp == "SL-LMT" ||
-            widget.orderItem.prctyp == "SL-MKT") ...[
-          const SizedBox(child: Text(' / ')),
-          TextWidget.subText(
-              text: "TP: ",
-              theme: false,
-              color: const Color(0xff5E6B7D),
-              fw: 0),
-          TextWidget.subText(
-              text: "${widget.orderItem.trgprc ?? 0.00}",
-              theme: false,
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              fw: 0),
-        ]
-      ])
-    ]);
+  // Get total value
+  String _getAvgPrice() {
+    try {
+      final price = double.tryParse(widget.orderItem.status == "COMPLETE" 
+          ? widget.orderItem.avgprc ?? "0" 
+          : widget.orderItem.prc ?? "0") ?? 0.0;
+      
+      final qty = int.tryParse(widget.orderItem.qty.toString()) ?? 0;
+      final lotSize = widget.orderItem.exch == 'MCX'
+          ? (int.tryParse(widget.orderItem.ls.toString()) ?? 1)
+          : 1;
+      
+      final totalValue = price;
+      return totalValue.toStringAsFixed(2);
+      
+    } catch (e) {
+      return "0.00";
+    }
   }
 
-  // Get the color for percent change
-  Color _getPercentChangeColor() {
-    if (widget.orderItem.perChange == null) return colors.ltpgrey;
-    if (widget.orderItem.perChange!.startsWith("-")) return colors.darkred;
-    if (widget.orderItem.perChange == "0.00") return colors.ltpgrey;
-    return colors.ltpgreen;
+    // Get total value
+  String _getTrgPrice() {
+      return widget.orderItem.trgprc ?? "0.00";
   }
 
   // Get valid price for display (fixing null/0 LTP issue)

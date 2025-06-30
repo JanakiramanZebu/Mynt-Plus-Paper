@@ -444,7 +444,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // }
 
     // For other tabs
-
+  else if(selectedTab == 3 || selectedTab == 2){
     return AppBar(
       shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
       leadingWidth: 205,
@@ -453,6 +453,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       actions: _buildAppBarActions(selectedTab),
       bottom: _buildAppBarBottom(selectedTab),
     );
+  }
+    return null;
   }
 
   // App bar leading widget based on selected tab
@@ -526,7 +528,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       width: 14)
                 ])));
       });
-    } else {
+    } else if(selectedTab == 3 || selectedTab == 2){
       return Consumer(builder: (context, ref, _) {
         final theme = ref.watch(themeProvider); // Theme is needed here
 
@@ -537,7 +539,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             children: [
               Text(
                   selectedTab == 3
-                      ? "Orderbook"
+                      ? "Orders"
                       : selectedTab == 2
                           ? "Portfolio"
                           : "Dashboard",
@@ -549,6 +551,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
         );
       });
+    }
+    else{
+      return const SizedBox.shrink();
     }
   }
 
@@ -597,12 +602,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               child: const DefaultIndexList(src: false),
             );
           }));
-    } else if (selectedTab == 4) {
-      return PreferredSize(
-        preferredSize: const Size(20, 8), // Adjust height as needed
-        child: _buildUserProfileSection(), // Use the extracted widget
-      );
-    }
+    } 
+    // else if (selectedTab == 4) {
+    //   return PreferredSize(
+    //     preferredSize: const Size(20, 8), // Adjust height as needed
+    //     child: _buildUserProfileSection(), // Use the extracted widget
+    //   );
+    // }
     return null;
   }
 

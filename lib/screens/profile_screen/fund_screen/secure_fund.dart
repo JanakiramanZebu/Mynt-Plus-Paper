@@ -88,7 +88,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(color: colors.colorBlue, width: 1.5),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(32),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                               backgroundColor: colors.fundbuttonBg,
                             ),
@@ -129,7 +129,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(color: colors.colorBlue, width: 1.5),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(32),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                                 backgroundColor: colors.fundbuttonBg,
 
@@ -378,7 +378,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
 
   Widget _buildMarginUsedContent(funds) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 18),
       child: Column(
         children: [
           // Span, Exposure, Option Premium from listOfUsedMrgn

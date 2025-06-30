@@ -3,23 +3,23 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-// import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/provider/mf_provider.dart';
-import 'package:mynt_plus/provider/portfolio_provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/screens/profile_screen/topt_screen.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
-//import 'package:url_launcher/url_launcher.dart';
+
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/api_key_provider.dart';
 import '../../provider/auth_provider.dart';
 import '../../provider/bonds_provider.dart';
+import '../../provider/change_password_provider.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/index_list_provider.dart';
 import '../../provider/ledger_provider.dart';
+import '../../provider/mf_provider.dart';
 import '../../provider/notification_provider.dart';
+import '../../provider/profile_all_details_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/transcation_provider.dart';
 import '../../provider/user_profile_provider.dart';
@@ -27,63 +27,175 @@ import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
+import '../../sharedWidget/loader_ui.dart';
 import 'need_help_screen.dart';
-
-// enum Availability { loading, available, unavailable }
 
 class UserAccountScreen extends ConsumerWidget {
   const UserAccountScreen({super.key});
 
+  String _truncateProfileName(String text, {int maxLength = 18}) {
+    return (text.length > maxLength) ? '${text.substring(0, maxLength)}...' : text;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userProfile = ref.watch(userProfileProvider);
     final theme = ref.watch(themeProvider);
+    final userProfile = ref.watch(userProfileProvider);
     final trancation = ref.watch(transcationProvider);
     final mf = ref.watch(mfProvider);
-    final portfolio = ref.watch(portfolioProvider);
     final reportsprovider = ref.watch(ledgerProvider);
-    final auth = ref.watch(authProvider);
-    final indexProvide = ref.watch(indexListProvider);
-
-    //  int currentYear = DateTime.now().year;
     final funds = ref.watch(fundProvider);
+    final auth = ref.watch(authProvider);
     final Preferences pref = locator<Preferences>();
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
+
+    final filteredMenu = [
+      {'title': 'Reports'},
+      {'title': 'My Accounts'},
+      {'title': 'Settings'},
+      {'title': 'Refer'},
+      {'title': 'Rate us'},
+      {'title': 'Contact'},
+    ];
+
     return TransparentLoaderScreen(
-        isLoading: mf.bestmfloader!,
-        child: Column(children: [
+      isLoading: mf.bestmfloader!,
+      child: Column(
+        children: [
+          const SizedBox(height: 50),
+
+          /// 🔹 Top: Notification & QR Code
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: SvgPicture.asset(
+    assets.qrIcon, // This is your asset path
+    height: 20,
+    width: 20,
+    color: colors.colorGrey, // Optional: set color if your SVG supports it
+  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, Routes.qrscanner);
+                  },
+                ),
+                IconButton(
+                  icon: SvgPicture.asset(
+    assets.notifyIcon, // This is your asset path
+    height: 20,
+    width: 20,
+    color: colors.colorGrey, // Optional: set color if your SVG supports it
+  ),
+                  onPressed: () async {
+                    await ref.read(notificationprovider).fetchexchagemsg(context);
+                    await ref.read(notificationprovider).fetchbrokermsg(context);
+                    Navigator.pushNamed(context, Routes.notificationpage);
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          /// 🔹 Profile Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: colors.fundbuttonBg,
+                      child: Text(
+                        userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+
+                      TextWidget.subText(
+                                      text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
+                                      theme: false,
+                                      color: !theme.isDarkMode
+                                          ? colors.colorBlack
+                                          : colors.colorGrey,
+                                      fw: 0),
+                      
+                      const SizedBox(height: 4),
+                      TextWidget.paraText(
+                                      text: userProfile.userDetailModel?.uid ?? "",
+                                      theme: false,
+                                      color: !theme.isDarkMode
+                                          ? colors.colorGrey
+                                          : colors.colorGrey,
+                                      fw: 00)
+                    ],
+                  ),
+                ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
+                  ],
+                )
+              ],
+            ),
+          ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0,16,0,0),
+                    child: Divider(
+                     height: 2,
+                     color: colors.fundbuttonBg,
+                                     ),
+                  ),
+          const SizedBox(height: 16),
+          /// 🔹 Horizontal Buttons (inline style)
+          _buildHorizontalButtons(context, ref, theme, funds, mf),
+
+          /// 🔹 Account Balance (inline, outlined Add Fund)
+          _buildAccountBalanceSection(context, ref, theme, funds, trancation),
+
+          /// 🔹 Menu List
           Expanded(
             child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: userProfile.profileMenu.length,
-                itemBuilder: (context, int index) {
-                  final acttitle = userProfile.profileMenu[index]['title'];
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    onTap: () async {
-                      if ([
-                        "Verified P&L",
-                        "Corporate Action",
-                        "CA Events",
-                        "Pledge & Unpledge",
-                        "OptionZ"
-                      ].contains(acttitle)) {
-                        await funds.fetchHstoken(context);
-                      }
-                      if (acttitle == "Fund") {
-                        await funds.fetchFunds(context);
-                        indexProvide.bottomMenu(2, context);
-                        portfolio.changeTabIndex(2);
-                        // Navigator.pushNamed(context, Routes.fund);
-                      } else if (acttitle == "My Account") {
-                        Navigator.pushNamed(context, Routes.myAcc);
-                      } else if (acttitle == "Reports") {
+              padding: EdgeInsets.zero,
+              itemCount: filteredMenu.length,
+              itemBuilder: (context, index) {
+                final title = filteredMenu[index]['title']!;
+                return ListTile(
+                  onTap: () async {
+                    if ([
+                      "Verified P&L",
+                      "Corporate Action",
+                      "CA Events",
+                      "Pledge & Unpledge",
+                      "OptionZ"
+                    ].contains(title)) {
+                      await funds.fetchHstoken(context);
+                    }
+                    switch (title) {
+                      case "My Accounts":
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MyAccountScreen(),
+                          ),
+                        );
+                        break;
+                      case "Reports":
                         if (reportsprovider.ledgerAllData == null) {
                           await reportsprovider.getCurrentDate('else');
-                          reportsprovider.fetchLegerData(
-                              context,
-                              reportsprovider.startDate,
-                              reportsprovider.endDate);
+                          reportsprovider.fetchLegerData(context,
+                              reportsprovider.startDate, reportsprovider.endDate);
                         }
                         if (reportsprovider.holdingsAllData == null) {
                           await reportsprovider.getCurrentDate('else');
@@ -113,7 +225,6 @@ class UserAccountScreen extends ConsumerWidget {
                           await reportsprovider.getCurrentDate('');
                           reportsprovider.fetchtaxpnleqdata(
                               context, reportsprovider.yearforTaxpnl);
-
                           reportsprovider.taxpnlExTabchange(0);
                           reportsprovider.chargesforeqtaxpnl(
                               context, reportsprovider.yearforTaxpnl);
@@ -128,322 +239,511 @@ class UserAccountScreen extends ConsumerWidget {
                           reportsprovider.fetchpdfdownload(context,
                               reportsprovider.startDate, reportsprovider.today);
                         }
-                        // if (reportsprovider.positiondata == null) {
-                        //   reportsprovider.fetchposition(context);
-                        // }
-                        Navigator.pushNamed(context, Routes.reports);
-                      } else if (acttitle == "Verified P&L") {
-                        Navigator.pushNamed(context, Routes.reportWebViewApp,
-                            arguments: "tradeverify");
-                      } else if (acttitle == "Corporate Action") {
-                        Navigator.pushNamed(context, Routes.reportWebViewApp,
-                            arguments: "corporateaction");
-                      } else if (acttitle == "CA Events") {
-                        // await reportsprovider.getCurrentDate('caevent');
-                        // // reportsprovider.fetchcaeventsdata(context,
-                        // //       reportsprovider.startDate,
-                        // //       reportsprovider.endDate);
-                        // if (reportsprovider.caeventalldata == null) {
-                        //   await reportsprovider.getCurrentDate('caevent');
-                        //   reportsprovider.fetchcaeventsdata(
-                        //       context,
-                        //       reportsprovider.startDate,
-                        //       reportsprovider.endDate);
-                        // }
-                        // reportsprovider.taxpnlExTabchange(0);
-                        // Navigator.pushNamed(context, Routes.caeventmainpage,
-                        //     arguments: "DDDDD");
-                        Navigator.pushNamed(context, Routes.reportWebViewApp,
-                            arguments: "event");
-                      } else if (acttitle == "Pledge & Unpledge") {
-                        // reportsprovider.fetchpledgeandunpledge(context);
-                        // reportsprovider.getCurrentDate("pandu");
-                        // // if (reportsprovider.pledgeandunpledge == null) {
-                        // //   reportsprovider.getCurrentDate("pandu");
-                        // //   reportsprovider.fetchpledgeandunpledge(context);
-                        // // }
-                        // Navigator.pushNamed(context, Routes.pledgeandun,
-                        //     arguments: "DDDDD");
-                        Navigator.pushNamed(context, Routes.reportWebViewApp,
-                            arguments: "pledge");
-                      } else if (acttitle == "IPO") {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReportsScreen(),
+                          ),
+                        );
+                        break;
+                      case "IPO":
                         Navigator.pushNamed(context, Routes.ipo);
-                        // launch(
-                        //     "https://mynt.zebuetrade.com/ipo?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
-                      } else if (acttitle == "Mutual Fund") {
+                        break;
+                      case "Mutual Fund":
                         mf.mfApicallinit(context, 0);
-                      } else if (acttitle == "OptionZ") {
+                        break;
+                      case "Bonds":
+                        await ref.read(bondsProvider).fetchAllBonds();
+                        Navigator.pushNamed(context, Routes.bonds);
+                        break;
+                      case "OptionZ":
                         funds.optionZ(context);
-                      } else if (acttitle == "Refer") {
+                        break;
+                      case "Refer":
                         await Share.share(
                           "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
                         );
-                      } else if (acttitle == "Settings") {
+                        break;
+                      case "Settings":
                         await ref.read(userProfileProvider).fetchsetting();
                         await ref.read(apikeyprovider).fetchapikey(context);
-                        Navigator.pushNamed(
-                            context, Routes.profilesettingscreen);
-                      } else if (acttitle == "Notification") {
-                        await ref
-                            .read(notificationprovider)
-                            .fetchexchagemsg(context);
-
-                        await ref
-                            .read(notificationprovider)
-                            .fetchbrokermsg(context);
-                        Navigator.pushNamed(context, Routes.notificationpage);
-                      } else if (acttitle == "Need Help?") {
-                        showModalBottomSheet(
-                            useSafeArea: true,
-                            isScrollControlled: true,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(16))),
-                            context: context,
-                            builder: (context) {
-                              return const NeedHelpScreen();
-                            });
-                      } else if (acttitle == "Bonds") {
-                        await ref.read(bondsProvider).fetchAllBonds();
-                        Navigator.pushNamed(context, Routes.bonds);
-                      } else if (acttitle == "Rate Us") {
-                        String devicesurl = TargetPlatform.iOS ==
-                                defaultTargetPlatform
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SettingsScreen(),
+                          ),
+                        );
+                        break;
+                      case "Rate Us":
+                        String url = TargetPlatform.iOS == defaultTargetPlatform
                             ? "https://apps.apple.com/app/id6478270319?action=write-review"
                             : "https://play.google.com/store/apps/details?id=com.mynt.trading_app_zebu&reviewId=0";
-                        launch(devicesurl);
-
-                        //  await userProfile.setAppreview(context);
-                        //  _inAppReview.requestReview();
-                        // _inAppReview.openStoreListing(
-                        //   appStoreId: "id6478270319",
-                        //   microsoftStoreId: "com.mynt.trading_app_zebu",
-                        // );
-                      } else {
-                        // await context
-                        //     .read(mfProvider)
-                        //     .fetchMFWatchlist(null, "", context, false);
-                        // await ref.read(mfProvider).fetchMasterMF();
-                        // Navigator.pushNamed(context, Routes.mf);
-                      }
-                    },
-                    dense: true,
-                    minLeadingWidth: 20,
-                    leading: SvgPicture.asset(
-                        userProfile.profileMenu[index]['leading'],
-                        width: 19,
-                        color: const Color(0xff666666)),
-                    title: TextWidget.titleText(
-                        text:
-                            "${acttitle == "Fund" ? "₹${getFormatter(value: double.parse(funds.fundDetailModel!.avlMrg ?? "0.00"), v4d: false, noDecimal: false)}" : userProfile.profileMenu[index]['title']}",
-                        theme: false,
-                        color:
-                            Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-                        fw: 0),
-                    subtitle: TextWidget.paraText(
-                        text: userProfile.profileMenu[index]['subTitle'],
-                        theme: false,
-                        color: const Color(0xff666666),
-                        fw: 0,
-                        textOverflow: TextOverflow.ellipsis),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (acttitle == "Fund") ...[
-                          Container(
-                              height: 32,
-                              width: 125,
-                              margin: const EdgeInsets.only(right: 12),
-                              child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      shadowColor: Colors.transparent,
-                                      backgroundColor: theme.isDarkMode
-                                          ? colors.colorbluegrey
-                                          : colors.colorBlack,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(50))),
-                                  onPressed: () async {
-                                    ref
-                                        .read(transcationProvider)
-                                        .fetchValidateToken(context);
-                                    Future.delayed(
-                                        const Duration(milliseconds: 100),
-                                        () async {
-                                      await trancation.ip();
-                                      await trancation.fetchupiIdView(
-                                          trancation.bankdetails!
-                                              .dATA![trancation.indexss][1],
-                                          trancation.bankdetails!
-                                              .dATA![trancation.indexss][2]);
-                                      await trancation.fetchcwithdraw(context);
-                                    });
-
-                                    trancation.changebool(true);
-                                    Navigator.pushNamed(
-                                        context, Routes.fundscreen,
-                                        arguments: trancation);
-                                  },
-                                  child: TextWidget.paraText(
-                                      text: "Deposit Money",
+                        launch(url);
+                        break;
+                      case "Contact":
+                        showModalBottomSheet(
+                          useSafeArea: true,
+                          isScrollControlled: true,
+                          shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                          context: context,
+                          builder: (context) {
+                            return const NeedHelpScreen();
+                          },
+                        );
+                        break;
+                    }
+                  },
+                  title: TextWidget.subText(
+                                      text: title,
                                       theme: false,
                                       color: !theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      fw: 0,
-                                      align: TextAlign.center)))
-                        ],
-                        if (acttitle == "Refer") ...[
-                          TextButton(
-                              onPressed: () async {
-                                await Share.share(
-                                  "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
-                                );
-                              },
-                              child: TextWidget.subText(
-                                  text: "Share",
-                                  theme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? colors.colorLightBlue
-                                      : colors.colorBlue,
-                                  fw: 0))
-                        ]
-                        // else if (acttitle == "Settings") ...[
-                        //   TextButton(
-                        //       onPressed: () async {
-                        //         showDialog(
-                        //           context: context,
-                        //           builder: (BuildContext context) {
-                        //             return AlertDialog(
-                        //               backgroundColor: context
-                        //                       .read(themeProvider)
-                        //                       .isDarkMode
-                        //                   ? const Color.fromARGB(
-                        //                       255, 18, 18, 18)
-                        //                   : colors.colorWhite,
-                        //               titleTextStyle: textStyles
-                        //                   .appBarTitleTxt
-                        //                   .copyWith(
-                        //                       color: context
-                        //                               .read(themeProvider)
-                        //                               .isDarkMode
-                        //                           ? colors.colorWhite
-                        //                           : colors.colorBlack),
-                        //               titlePadding:
-                        //                   const EdgeInsets.symmetric(
-                        //                       horizontal: 14, vertical: 12),
-                        //               shape: const RoundedRectangleBorder(
-                        //                   borderRadius: BorderRadius.all(
-                        //                       Radius.circular(14))),
-                        //               scrollable: true,
-                        //               contentPadding:
-                        //                   const EdgeInsets.symmetric(
-                        //                       horizontal: 14),
-                        //               insetPadding:
-                        //                   const EdgeInsets.symmetric(
-                        //                       horizontal: 20),
-                        //               title: const Text("Freeze Account!"),
-                        //               content: SizedBox(
-                        //                   width: MediaQuery.of(context)
-                        //                       .size
-                        //                       .width,
-                        //                   child: Column(
-                        //                       crossAxisAlignment:
-                        //                           CrossAxisAlignment.start,
-                        //                       children: [
-                        //                         Text(
-                        //                           "Are you sure you want to Freeze yor Account?",
-                        //                           style: textStyle(
-                        //                               theme.isDarkMode
-                        //                                   ? colors
-                        //                                       .colorWhite
-                        //                                   : colors
-                        //                                       .colorBlack,
-                        //                               16,
-                        //                               FontWeight.w600),
-                        //                         ),
-                        //                         const SizedBox(height: 10),
-                        //                         Text(
-                        //                           "* Note: Open order(s) will be cancelled, but position(s) will not be closed",
-                        //                           style: textStyle(
-                        //                               colors.colorGrey,
-                        //                               12,
-                        //                               FontWeight.w600),
-                        //                         )
-                        //                       ])),
-                        //               actions: [
-                        //                 TextButton(
-                        //                     onPressed: () =>
-                        //                         Navigator.of(context).pop(),
-                        //                     child: Text("Cancel",
-                        //                         style: textStyles.textBtn.copyWith(
-                        //                             color: context
-                        //                                     .read(
-                        //                                         themeProvider)
-                        //                                     .isDarkMode
-                        //                                 ? colors
-                        //                                     .colorLightBlue
-                        //                                 : colors
-                        //                                     .colorBlue))),
-                        //                 ElevatedButton(
-                        //                     onPressed: () async {
-                        //                       userProfile
-                        //                           .fetchFreezeAc(context);
-                        //                     },
-                        //                     style: ElevatedButton.styleFrom(
-                        //                         elevation: 0,
-                        //                         backgroundColor: theme
-                        //                                 .isDarkMode
-                        //                             ? colors.colorbluegrey
-                        //                             : colors.colorBlack,
-                        //                         shape:
-                        //                             RoundedRectangleBorder(
-                        //                                 borderRadius:
-                        //                                     BorderRadius
-                        //                                         .circular(
-                        //                                             50))),
-                        //                     child: Text("Continue",
-                        //                         style: textStyle(
-                        //                             !context
-                        //                                     .read(
-                        //                                         themeProvider)
-                        //                                     .isDarkMode
-                        //                                 ? colors.colorWhite
-                        //                                 : colors.colorBlack,
-                        //                             14,
-                        //                             FontWeight.w500))),
-                        //               ],
-                        //             );
-                        //           },
-                        //         );
-                        //       },
-                        //       child: Text("Freeze Account",
-                        //           style: theme.isDarkMode
-                        //               ? textStyles.darktextBtn
-                        //               : textStyles.textBtn))
-                        // ]
-                        else ...[
-                          SvgPicture.asset(
-                              userProfile.profileMenu[index]['trailing'])
-                        ]
-                      ],
-                    ),
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return Divider(
-                      color: theme.isDarkMode
-                          ? colors.darkColorDivider
-                          : colors.colorDivider,
-                      height: 0);
-                }),
+                                          ? colors.colorGrey
+                                          : colors.colorGrey,
+                                      fw: 0),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                );
+              },
+              separatorBuilder: (context, index) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                child: Divider(
+                  height: 1,
+                  color: colors.fundbuttonBg,
+                ),
+              ),
+            ),
           ),
+
+          /// 🔹 Version
           Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: OutlinedButton(
-                  onPressed: () {
-                    showDialog(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: TextWidget.paraText(
+                text: auth.versiontext,
+                theme: false,
+                color: const Color(0xff666666),
+                fw: 0),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountBalanceSection(BuildContext context, WidgetRef ref, theme, funds, trancation) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 0),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.paraText(
+                    text:"ACCOUNT BALANCE",
+                    theme: false,
+                                          color: colors.colorGrey,
+                                          fw: 00),
+                                          const SizedBox(height: 4),
+                  TextWidget.subText(
+                    text:funds.fundDetailModel?.avlMrg ?? "0.00",
+                    theme: false,
+                                          color: !theme.isDarkMode
+                                              ? colors.colorBlack
+                                              : colors.colorWhite,
+                                          fw: 0),
+          
+                ]
+                  ),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: colors.fundbuttonBg,
+                  side: BorderSide(
+                    color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () async {
+                  ref.read(transcationProvider).fetchValidateToken(context);
+                  Future.delayed(const Duration(milliseconds: 100), () async {
+                    await trancation.ip();
+                    await trancation.fetchupiIdView(
+                        trancation.bankdetails!.dATA![trancation.indexss][1],
+                        trancation.bankdetails!.dATA![trancation.indexss][2]);
+                    await trancation.fetchcwithdraw(context);
+                  });
+                  trancation.changebool(true);
+                  Navigator.pushNamed(context, Routes.fundscreen, arguments: trancation);
+                },
+                child: TextWidget.paraText(
+                                          text: "Add Fund",
+                                          theme: false,
+                                          color: !theme.isDarkMode
+                                              ? colors.colorLightBlue
+                                              : colors.colorBlue,
+                                          fw: 0,
+                                          align: TextAlign.center),
+              ),
+            ],
+          ),
+          // Add space between the content and the line
+        const SizedBox(height: 8), 
+
+        // Step 2: Add the Divider widget
+        Divider(
+          color: colors.fundbuttonBg, // Optional: customize the color
+          thickness: 1,       // Optional: customize the thickness
+        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHorizontalButtons(BuildContext context, WidgetRef ref, theme, funds, mf) {
+    final buttons = [
+      {'title': 'Mutual Fund', 'icon': assets.mfIcon, 'onTap': () => mf.mfApicallinit(context, 0)},
+      {'title': 'IPO', 'icon': assets.ipoIcon, 'onTap': () => Navigator.pushNamed(context, Routes.ipo)},
+      {'title': 'Bond', 'icon':assets.bondIcon, 'onTap': () async {
+        await ref.read(bondsProvider).fetchAllBonds();
+        Navigator.pushNamed(context, Routes.bonds);
+      }},
+      {'title': 'OptionZ', 'icon': assets.optionZIcon, 'onTap': () async{ 
+        await funds.fetchHstoken(context);
+        funds.optionZ(context);}},
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: buttons.map((button) {
+          return InkWell(
+            onTap: button['onTap'] as VoidCallback,
+            child: Row(
+              children: [
+                SvgPicture.asset(button['icon'] as String,
+                      color: theme.isDarkMode
+                          ? colors.colorLightBlue
+                          : colors.colorBlue,
+                      width: 14),
+                const SizedBox(width: 8),
+                TextWidget.subText(
+                                      text: button['title'] as String,
+                                      theme: false,
+                                      color: !theme.isDarkMode
+                                          ? colors.colorBlue
+                                          : colors.colorBlue,
+                                      fw: 0,
+                                      align: TextAlign.center),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+// Settings Screen
+class SettingsScreen extends ConsumerWidget {
+  String _truncateProfileName(String text, {int maxLength = 18}) {
+    return (text.length > maxLength) ? '${text.substring(0, maxLength)}...' : text;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final userProfile = ref.watch(userProfileProvider);
+    final Preferences pref = locator<Preferences>();
+    final apikeys = ref.read(apikeyprovider);
+
+    final settingsItems = [
+      {'title': 'Theme', 'section': 'Settings'},
+      {'title': 'Order Preference', 'section': 'Settings'},
+    ];
+
+    final securityItems = [
+      {'title': 'Freeze Account', 'section': 'Security'},
+      {'title': 'Change Password', 'section': 'Security'},
+      {'title': 'Generate TOTP', 'section': 'Security'},
+      {'title': 'Generate API Key', 'section': 'Security'},
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: theme.isDarkMode ? Colors.white : Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: SvgPicture.asset(
+    assets.qrIcon, // This is your asset path
+    height: 20,
+    width: 20,
+    color: colors.colorGrey, // Optional: set color if your SVG supports it
+  ),
+            onPressed: () {
+              Navigator.pushNamed(context, Routes.qrscanner);
+            },
+          ),
+          IconButton(
+            icon: SvgPicture.asset(
+    assets.notifyIcon, // This is your asset path
+    height: 20,
+    width: 20,
+    color: colors.colorGrey, // Optional: set color if your SVG supports it
+  ),
+            onPressed: () async {
+              await ref.read(notificationprovider).fetchexchagemsg(context);
+              await ref.read(notificationprovider).fetchbrokermsg(context);
+              Navigator.pushNamed(context, Routes.notificationpage);
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          /// Profile Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: colors.fundbuttonBg,
+                  child: Text(
+                    userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
+                      theme: false,
+                      color: !theme.isDarkMode ? colors.colorBlack : colors.colorGrey,
+                      fw: 0,
+                    ),
+                    const SizedBox(height: 4),
+                    TextWidget.paraText(
+                      text: userProfile.userDetailModel?.uid ?? "",
+                      theme: false,
+                      color: colors.colorGrey,
+                      fw: 00,
+                    )
+                  ],
+                ),
+                const Spacer(),
+                Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(height: 2, color: colors.fundbuttonBg),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Settings Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextWidget.titleText(
+                text: "Settings",
+                theme: false,
+                color: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                fw: 1,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: settingsItems.length,
+            itemBuilder: (context, index) {
+              final item = settingsItems[index];
+              return ListTile(
+                title: TextWidget.subText(
+                  text: item['title']!,
+                  theme: false,
+                  color: colors.colorGrey,
+                  fw: 0,
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  // Handle settings navigation
+                  switch (item['title']) {
+                    case 'Theme':
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            backgroundColor: theme.isDarkMode
+                                ? const Color.fromARGB(255, 18, 18, 18)
+                                : colors.colorWhite,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(16))),
+                            scrollable: true,
+                            actionsPadding: const EdgeInsets.only(
+                                left: 16, right: 16, bottom: 14, top: 3),
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 16),
+                            insetPadding:
+                                const EdgeInsets.symmetric(horizontal: 40),
+                            titlePadding: const EdgeInsets.only(left: 16),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                TextWidget.titleText(
+                                    text: "Choose theme",
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                    fw: 1),
+                                IconButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  icon: const Icon(
+                                    Icons.close_rounded,
+                                  ),
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffBDBDBD)
+                                      : colors.colorGrey,
+                                )
+                              ],
+                            ),
+                            content: SizedBox(
+                                height: 115,
+                                width: MediaQuery.of(context).size.width,
+                                child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Divider(
+                                          color: theme.isDarkMode
+                                              ? colors.darkColorDivider
+                                              : colors.colorDivider,
+                                          height: 0),
+                                      const SizedBox(height: 10),
+                                      ListView.builder(
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        shrinkWrap: true,
+                                        itemCount: theme.themeTypes.length,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          return ListTile(
+                                            onTap: () async {
+                                              theme.toggleTheme(
+                                                  themeMod:
+                                                      theme.themeTypes[index]);
+                                              Navigator.pop(context);
+                                            },
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 0, vertical: 0),
+                                            dense: true,
+                                            minLeadingWidth: 22,
+                                            leading: SvgPicture.asset(theme
+                                                    .isDarkMode
+                                                ? theme.themeTypes[index] ==
+                                                        theme.deviceTheme
+                                                    ? assets.darkActProductIcon
+                                                    : assets.darkProductIcon
+                                                : theme.themeTypes[index] ==
+                                                        theme.deviceTheme
+                                                    ? assets.actProductIcon
+                                                    : assets.productIcon),
+                                            title: TextWidget.subText(
+                                                text: theme.themeTypes[index],
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? Color(theme.themeTypes[
+                                                                index] ==
+                                                            theme.deviceTheme
+                                                        ? 0xffffffff
+                                                        : 0xff666666)
+                                                    : Color(
+                                                        theme.themeTypes[
+                                                                    index] ==
+                                                                theme
+                                                                    .deviceTheme
+                                                            ? 0xff000000
+                                                            : 0xff666666,
+                                                      ),
+                                                fw: 0),
+                                          );
+                                        },
+                                      )
+                                    ])),
+                          );
+                        });
+                      break;
+                    case 'Order Preference':
+                      Navigator.pushNamed(context, Routes.orderPrefer);
+                      break;
+                  }
+                },
+              );
+            },
+            separatorBuilder: (context, index) => Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(height: 1, color: colors.fundbuttonBg),
+            ),
+          ),
+
+          const SizedBox(height: 32),
+
+          // Security Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextWidget.titleText(
+                text: "Security",
+                theme: false,
+                color: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                fw: 1,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: securityItems.length,
+            itemBuilder: (context, index) {
+              final item = securityItems[index];
+              return ListTile(
+                title: TextWidget.subText(
+                  text: item['title']!,
+                  theme: false,
+                  color: colors.colorGrey,
+                  fw: 0,
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () async{
+                  // Handle security navigation
+                  switch (item['title']) {
+                    case 'Freeze Account':
+                      showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
@@ -454,7 +754,6 @@ class UserAccountScreen extends ConsumerWidget {
                               color: ref.read(themeProvider).isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack),
-                          contentTextStyle: textStyles.menuTxt,
                           titlePadding: const EdgeInsets.symmetric(
                               horizontal: 14, vertical: 12),
                           shape: const RoundedRectangleBorder(
@@ -464,9 +763,9 @@ class UserAccountScreen extends ConsumerWidget {
                           contentPadding:
                               const EdgeInsets.symmetric(horizontal: 14),
                           insetPadding:
-                              const EdgeInsets.symmetric(horizontal: 40),
+                              const EdgeInsets.symmetric(horizontal: 20),
                           title: TextWidget.titleText(
-                              text: "Confirmation",
+                              text: "Freeze Account!",
                               theme: theme.isDarkMode,
                               fw: 0),
                           content: SizedBox(
@@ -476,79 +775,1039 @@ class UserAccountScreen extends ConsumerWidget {
                                   children: [
                                     TextWidget.titleText(
                                         text:
-                                            "Are you sure you want to logout?",
-                                        theme: theme.isDarkMode,
-                                        fw: 0),
+                                            "Are you sure you want to Freeze yor Account?",
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        fw: 1),
+                                    const SizedBox(height: 10),
+                                    TextWidget.paraText(
+                                        text:
+                                            "* Note: Open order(s) will be cancelled, but position(s) will not be closed",
+                                        theme: false,
+                                        color: colors.colorGrey,
+                                        fw: 1),
                                   ])),
                           actions: [
                             TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: TextWidget.subText(
-                                    text: "No",
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.colorLightBlue
-                                        : colors.colorBlue,
-                                    fw: 0)),
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: TextWidget.subText(
+                                  text: "Cancel",
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.colorLightBlue
+                                      : colors.colorBlue,
+                                  fw: 0),
+                            ),
                             ElevatedButton(
-                                onPressed: () async {
-                                  ref.read(authProvider).fetchLogout(context);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    elevation: 0,
-                                    backgroundColor: theme.isDarkMode
-                                        ? colors.colorbluegrey
-                                        : colors.colorBlack,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(50),
-                                    )),
-                                child: TextWidget.subText(
-                                    text: "Yes",
-                                    theme: false,
-                                    color: !theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    fw: 0)),
+                              onPressed: () async {
+                                userProfile.fetchFreezeAc(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                  backgroundColor: theme.isDarkMode
+                                      ? colors.colorbluegrey
+                                      : colors.colorBlack,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(50))),
+                              child: TextWidget.subText(
+                                  text: "Continue",
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                  fw: 0),
+                            ),
                           ],
                         );
                       },
                     );
-                  },
-                  style: OutlinedButton.styleFrom(
-                      backgroundColor: userProfile.userloader
-                          ? colors.colorGrey
-                          : theme.isDarkMode
-                              ? colors.colorbluegrey
-                              : colors.colorBlack,
-                      padding: const EdgeInsets.symmetric(vertical: 10.5),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(30)))),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(
-                          'assets/profile/logout.svg',
-                          color: !theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
+                      break;
+                    case 'Change Password':
+                      ref.read(changePasswordProvider).userIdController.text =
+                        "${pref.clientId}";
+                    Navigator.pushNamed(context, Routes.changePass,
+                        arguments: "Yes");
+                      break;
+                      case 'Generate API Key':
+                        break;
+                        case 'Generate TOTP':
+                        await apikeys.fetchTotp();
+                    showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        isDismissible: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10),
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        TextWidget.subText(
-                            text: "Log Out",
-                            theme: false,
-                            color: !theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            fw: 1)
-                      ]))),
-          Container(
-              margin: const EdgeInsets.only(bottom: 10),
+                        builder: (_) => TotpScreen(
+                            secretKey: ref.read(apikeyprovider).totpkey!.pwd));
+                        break;
+                      
+                  }
+                },
+              );
+            },
+            separatorBuilder: (context, index) => Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(height: 1, color: colors.fundbuttonBg),
+            ),
+          ),
+
+          const Spacer(),
+
+          // Version
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: TextWidget.paraText(
+              text: ref.watch(authProvider).versiontext,
+              theme: false,
+              color: const Color(0xff666666),
+              fw: 0,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+// My Account Screen
+class MyAccountScreen extends ConsumerStatefulWidget {
+  const MyAccountScreen({super.key});
+
+  @override
+  ConsumerState<MyAccountScreen> createState() => _MyAccountScreenState();
+}
+
+class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
+  String _truncateProfileName(String text, {int maxLength = 18}) {
+    return (text.length > maxLength) ? '${text.substring(0, maxLength)}...' : text;
+  }
+
+  // List of items for the account screen
+  final accountItems = [
+    {'title': 'Profile'},
+    {'title': 'Bank'},
+    {'title': 'Margin Trading Facility (MTF)'},
+    {'title': 'Trading Preferences'},
+    {'title': 'Nominee'},
+    {'title': 'Form Download'},
+    {'title': 'Closure'},
+  ];
+
+  // This method fetches data lazily when an expansion tile is opened
+  void _onExpansionChanged(bool isExpanding, String title) {
+    if (isExpanding) {
+      // Fetch data for Profile and Bank when their sections are expanded
+      // This mimics the initState behavior of the original pages
+      if (title == 'Profile' || title == 'Bank') {
+        ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
+      }
+      // Add other data fetching logic for other sections if needed in the future
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final userProfile = ref.watch(userProfileProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        // title: TextWidget.subText(text: "My Accounts", theme: theme.isDarkMode, fw: 1),
+        backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: theme.isDarkMode ? Colors.white : Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: SvgPicture.asset(
+    assets.qrIcon, // This is your asset path
+    height: 20,
+    width: 20,
+    color: colors.colorGrey, // Optional: set color if your SVG supports it
+  ),
+            onPressed: () => Navigator.pushNamed(context, Routes.qrscanner),
+          ),
+          IconButton(
+            icon: SvgPicture.asset(
+    assets.notifyIcon, // This is your asset path
+    height: 20,
+    width: 20,
+    color: colors.colorGrey, // Optional: set color if your SVG supports it
+  ),
+            onPressed: () async {
+              await ref.read(notificationprovider).fetchexchagemsg(context);
+              await ref.read(notificationprovider).fetchbrokermsg(context);
+              Navigator.pushNamed(context, Routes.notificationpage);
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          /// Profile Header (retained from your original design)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: colors.fundbuttonBg,
+                  child: Text(
+                    userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
+                      theme: false,
+                      color: !theme.isDarkMode ? colors.colorBlack : colors.colorGrey,
+                    ),
+                    const SizedBox(height: 4),
+                    TextWidget.paraText(
+                      text: userProfile.userDetailModel?.uid ?? "",
+                      theme: false,
+                      color: colors.colorGrey,
+                    )
+                  ],
+                ),
+                const Spacer(),
+                Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(height: 2, color: colors.fundbuttonBg),
+          ),
+          const SizedBox(height: 16),
+
+          /// Expandable List View
+          Expanded(
+            child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextWidget.paraText(
-                  text: auth.versiontext,
+              itemCount: accountItems.length,
+              itemBuilder: (context, index) {
+                final item = accountItems[index];
+                final title = item['title']!;
+                
+                return ExpansionTile(
+                  // The first item ("Profile") is expanded by default
+                  initiallyExpanded: index == 0,
+                  onExpansionChanged: (isExpanding) => _onExpansionChanged(isExpanding, title),
+                  title: TextWidget.subText(
+                    text: title,
+                    theme: false,
+                    color: colors.colorGrey,
+                  ),
+                  children: [
+                    // Dynamically build the content based on the title
+                    _buildExpansionContent(title, ref, theme),
+                  ],
+                );
+              },
+              separatorBuilder: (context, index) => const SizedBox(height: 0),
+            ),
+          ),
+
+          /// Version Text
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8, top: 16),
+            child: TextWidget.paraText(
+              text: ref.watch(authProvider).versiontext,
+              theme: false,
+              color: const Color(0xff666666),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  /// Helper to build the content inside each ExpansionTile
+  Widget _buildExpansionContent(String title, WidgetRef ref, ThemesProvider theme) {
+    switch (title) {
+      case 'Profile':
+        return _buildProfileDetailsContent(ref, theme);
+      case 'Bank':
+        return _buildBankDetailsContent(ref, theme);
+      case 'Margin Trading Facility (MTF)':
+        return _buildMTFContent(ref, theme);
+      case 'Trading Preferences':
+        return _buildTradingPreferencesContent(ref, theme);
+      case 'Nominee':
+        return _buildNomineeContent(ref, theme);
+      case 'Form Download':
+        return _buildFormDownloadContent(ref, theme);
+      case 'Closure':
+        return _buildClosureContent(ref, theme);
+      default:
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextWidget.paraText(
+            text: 'Details for $title will be shown here.',
+            color: colors.colorGrey,
+            theme: theme.isDarkMode,
+          ),
+        );
+    }
+  }
+
+  /// Builds the UI for the "Profile" section, replicating ProfileInfoDetails
+  Widget _buildProfileDetailsContent(WidgetRef ref, ThemesProvider theme) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+    final clientData = profileDetails.clientAllDetails.clientData;
+
+    // if (profileDetails.isLoading) {
+    //   return const Center(child: CircularProgressIndicator());
+    // }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Column(
+        children: [
+          _buildDetailRow("Name", clientData?.panName ?? "N/A", theme),
+          _buildDetailRow("Email", clientData?.cLIENTIDMAIL ?? "N/A", theme),
+          _buildDetailRow("Mobile", clientData?.mOBILENO ?? "N/A", theme),
+          _buildDetailRow("PAN", clientData?.pANNO ?? "N/A", theme),
+          _buildDetailRow("DP ID", clientData?.cLIENTDPCODE ?? "N/A", theme),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the UI for the "Bank" section, replicating ProfileDetailsBank with proper functionality
+  Widget _buildBankDetailsContent(WidgetRef ref, ThemesProvider theme) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+    final bankData = profileDetails.clientAllDetails.bankData;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with Add Bank button
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.subText(
+                    text: "Bank Accounts Linked",
+                    theme: theme.isDarkMode,
+                    fw: 1,
+                  ),
+                  TextWidget.paraText(
+                    text: "View bank details and add new banks.",
+                    theme: theme.isDarkMode,
+                  ),
+                ],
+              ),
+              IconButton(
+                onPressed: () {
+                  profileDetails.openInWebURL(context, "manbank");
+                },
+                icon: Icon(
+                  Icons.add_circle_outline,
+                  color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Bank Cards
+        if (bankData == null || bankData.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextWidget.paraText(
+              text: "No bank accounts found.",
+              theme: theme.isDarkMode,
+            ),
+          )
+        else
+          ...bankData.map((bank) {
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5.0),
+                side: const BorderSide(color: Color.fromARGB(255, 214, 214, 214)),
+              ),
+              elevation: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        // Bank Logo
+                        CircleAvatar(
+                          backgroundColor: colors.colorGrey,
+                          radius: 20.5,
+                          child: CircleAvatar(
+                            backgroundColor: colors.colorWhite,
+                            radius: 20,
+                            child: SvgPicture.network(
+                              "https://rekycbe.mynt.in/autho/banklogo?bank=${(bank.iFSCCode ?? "").substring(0, 4).toLowerCase()}&type=svg&t=${DateTime.now().millisecondsSinceEpoch}",
+                              fit: BoxFit.contain,
+                              height: 25,
+                              placeholderBuilder: (context) => Icon(
+                                Icons.account_balance,
+                                color: colors.colorGrey,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextWidget.subText(
+                                      text: bank.bankName ?? "Unknown Bank",
+                                      textOverflow: TextOverflow.ellipsis,
+                                      theme: theme.isDarkMode,
+                                      fw: 1,
+                                    ),
+                                  ),
+                                  if (bank.defaultAc == "Yes")
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: theme.isDarkMode ? colors.colorGrey : colors.darkGrey,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: TextWidget.captionText(
+                                        text: 'PRIMARY',
+                                        theme: theme.isDarkMode,
+                                        fw: 1,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              TextWidget.paraText(
+                                text: 'A/C No: ${profileDetails.formateDataToDisplay(bank.bankAcNo ?? "", 2, 4)}',
+                                theme: theme.isDarkMode,
+                              ),
+                              TextWidget.paraText(
+                                text: 'IFSC: ${bank.iFSCCode ?? "N/A"}',
+                                theme: theme.isDarkMode,
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            profileDetails.openInWebURL(context, "manbank");
+                          },
+                          icon: Icon(
+                            Icons.edit,
+                            color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                            size: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+      ],
+    );
+  }
+
+  /// Builds the MTF content section
+  Widget _buildMTFContent(WidgetRef ref, ThemesProvider theme) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+    final clientData = profileDetails.clientAllDetails.clientData;
+    
+    bool DDPIActive = clientData?.dDPI == 'Y';
+    bool POAActive = clientData?.pOA == 'Y';
+    bool mtfCl = clientData?.mTFCl == 'Y';
+    bool mtfClAuto = clientData?.mTFClAuto == "Y";
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Status badges
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _buildStatusChip("DDPI", DDPIActive, theme),
+              const SizedBox(width: 8),
+              _buildStatusChip("POA", POAActive, theme),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          if (!DDPIActive && !POAActive)
+            TextWidget.subText(
+              text: "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
+              theme: theme.isDarkMode,
+              fw: 1,
+              color: colors.kColorRedText,
+            )
+          else if (mtfCl && mtfClAuto) ...[
+            TextWidget.subText(
+              text: "You have activated the Margin Trading Facility (MTF) on your account",
+              theme: theme.isDarkMode,
+            ),
+            const SizedBox(height: 16),
+            Chip(
+              label: TextWidget.subText(
+                text: 'MTF Enabled',
+                theme: theme.isDarkMode,
+                fw: 1,
+              ),
+              backgroundColor: theme.isDarkMode
+                  ? const Color.fromARGB(255, 9, 163, 17)
+                  : const Color.fromARGB(255, 9, 255, 0).withOpacity(.1),
+            ),
+          ] else if (DDPIActive || POAActive) ...[
+            TextWidget.subText(
+              text: "Would you like to activate Margin Trading Facility (MTF) on your account",
+              theme: theme.isDarkMode,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                profileDetails.openInWebURL(context, "mtf");
+              },
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                side: BorderSide(
+                  width: 1,
+                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                ),
+              ),
+              child: TextWidget.subText(
+                text: "Enable MTF",
+                theme: theme.isDarkMode,
+                fw: 1,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Builds the Trading Preferences content section
+  Widget _buildTradingPreferencesContent(WidgetRef ref, ThemesProvider theme) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+    final segmentsData = profileDetails.clientAllDetails.clientData?.segmentsData;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextWidget.subText(
+                text: "Segments",
+                theme: theme.isDarkMode,
+                fw: 1,
+              ),
+              IconButton(
+                onPressed: () {
+                  profileDetails.openInWebURL(context, "segment");
+                },
+                icon: Icon(
+                  Icons.edit,
+                  color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                  size: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (segmentsData != null) ...[
+            _buildSegmentRow("Equities", segmentsData.where((s) => ['BSE_CASH', 'NSE_CASH'].contains(s.cOMPANYCODE)), theme),
+            _buildSegmentRow("F&O", segmentsData.where((s) => ['NSE_FNO', 'BSE_FNO'].contains(s.cOMPANYCODE)), theme),
+            _buildSegmentRow("Currency", segmentsData.where((s) => ['CD_NSE', 'CD_BSE'].contains(s.cOMPANYCODE)), theme),
+            _buildSegmentRow("Commodities", segmentsData.where((s) => ['MCX', 'NSE_COM', 'BSE_COM'].contains(s.cOMPANYCODE)), theme),
+          ] else
+            TextWidget.paraText(
+              text: "No segment data available",
+              theme: theme.isDarkMode,
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the Nominee content section
+  Widget _buildNomineeContent(WidgetRef ref, ThemesProvider theme) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+    final clientData = profileDetails.clientAllDetails.clientData;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (clientData?.nomineeName == null || clientData?.nomineeName == "") ...[
+            TextWidget.paraText(
+              text: "No nominee details found",
+              theme: theme.isDarkMode,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                profileDetails.openInWebURL(context, "nominee");
+              },
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                minimumSize: const Size(double.infinity, 40),
+                backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                side: BorderSide(
+                  width: 1,
+                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                ),
+              ),
+              child: TextWidget.subText(
+                text: "Add Nominee",
+                theme: theme.isDarkMode,
+                fw: 1,
+              ),
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextWidget.subText(
+                  text: "Nominee Details",
+                  theme: theme.isDarkMode,
+                  fw: 1,
+                ),
+                IconButton(
+                  onPressed: () {
+                    profileDetails.openInWebURL(context, "nominee");
+                  },
+                  icon: Icon(
+                    Icons.edit,
+                    color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                    size: 16,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildDetailRow("Nominee Name", clientData?.nomineeName ?? "N/A", theme),
+            _buildDetailRow("Nominee Relation", clientData?.nomineeRelation ?? "N/A", theme),
+            if (clientData?.nomineeDOB != null)
+              _buildDetailRow("Nominee DOB", _formatDate(clientData!.nomineeDOB!), theme),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Builds the Form Download content section
+  Widget _buildFormDownloadContent(WidgetRef ref, ThemesProvider theme) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextWidget.paraText(
+            text: "Download various forms and documents",
+            theme: theme.isDarkMode,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              profileDetails.openInWebURL(context, "formdownload");
+            },
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              minimumSize: const Size(double.infinity, 40),
+              backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(32),
+              ),
+              side: BorderSide(
+                width: 1,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              ),
+            ),
+            child: TextWidget.subText(
+              text: "Download Forms",
+              theme: theme.isDarkMode,
+              fw: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the Closure content section
+  Widget _buildClosureContent(WidgetRef ref, ThemesProvider theme) {
+    final profileDetails = ref.watch(profileAllDetailsProvider);
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextWidget.subText(
+            text: "* Closing your account is a permanent and irreversible action",
+            theme: theme.isDarkMode,
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              profileDetails.openInWebURL(context, "closure");
+            },
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+            ),
+            child: TextWidget.subText(
+              text: 'Close Account',
+              theme: !theme.isDarkMode,
+              fw: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Helper method to build status chips
+  Widget _buildStatusChip(String label, bool isActive, ThemesProvider theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        color: theme.isDarkMode
+            ? isActive
+                ? const Color.fromARGB(255, 9, 163, 17)
+                : colors.colorGrey
+            : isActive
+                ? const Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                : const Color(0xff666666).withOpacity(.1),
+      ),
+      child: TextWidget.captionText(
+        text: label,
+        theme: theme.isDarkMode,
+        fw: 1,
+      ),
+    );
+  }
+
+  /// Helper method to build segment rows
+  Widget _buildSegmentRow(String label, Iterable segments, ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextWidget.paraText(
+            text: label,
+            theme: theme.isDarkMode,
+          ),
+          Row(
+            children: segments.map<Widget>((segment) {
+              bool isActive = segment.aCTIVEINACTIVE == "A";
+              String displayName = ['CD_BSE', 'CD_NSE'].contains(segment.cOMPANYCODE)
+                  ? segment.cOMPANYCODE.split("_")[1]
+                  : segment.cOMPANYCODE.split("_")[0];
+              
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: theme.isDarkMode
+                      ? isActive
+                          ? const Color.fromARGB(255, 9, 163, 17)
+                          : colors.colorGrey
+                      : isActive
+                          ? const Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                          : const Color(0xff666666).withOpacity(.1),
+                ),
+                child: TextWidget.captionText(
+                  text: displayName,
+                  theme: theme.isDarkMode,
+                  fw: 1,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Helper method to format date
+  String _formatDate(String dateString) {
+    List<String> formatPart = dateString.split(" ")[0].split("-");
+    return formatPart.length == 3
+        ? '${formatPart[2]}-${formatPart[1]}-${formatPart[0]}'
+        : dateString;
+  }
+
+  /// Helper for consistent styling of profile detail rows
+  Widget _buildDetailRow(String label, String value, ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextWidget.paraText(
+            text: label,
+            color: colors.colorGrey,
+            theme: theme.isDarkMode,
+          ),
+          TextWidget.paraText(
+            text: value,
+            color: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            theme: theme.isDarkMode,
+          ),
+        ],
+      ),
+    );
+  }
+}
+// Reports Screen
+class ReportsScreen extends ConsumerWidget {
+  String _truncateProfileName(String text, {int maxLength = 18}) {
+    return (text.length > maxLength) ? '${text.substring(0, maxLength)}...' : text;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeProvider);
+    final userProfile = ref.watch(userProfileProvider);
+    final ledgerdate = ref.watch(ledgerProvider);
+
+    final reportsItems = [
+      {'title': 'P&L Insights'},
+      {'title': 'Ledger'},
+      {'title': 'Holdings'},
+      {'title': 'Positions'},
+      {'title': 'Tax P&L'},
+      {'title': 'Tradebook / Contract'},
+      {'title': 'Pledge & Unpledge'},
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: theme.isDarkMode ? Colors.white : Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: SvgPicture.asset(
+    assets.qrIcon, // This is your asset path
+    height: 20,
+    width: 20,
+    color: colors.colorGrey, // Optional: set color if your SVG supports it
+  ),
+            onPressed: () {
+              Navigator.pushNamed(context, Routes.qrscanner);
+            },
+          ),
+          IconButton(
+            icon: SvgPicture.asset(
+    assets.notifyIcon, // This is your asset path
+    height: 20,
+    width: 20,
+    color: colors.colorGrey, // Optional: set color if your SVG supports it
+  ),
+            onPressed: () async {
+              await ref.read(notificationprovider).fetchexchagemsg(context);
+              await ref.read(notificationprovider).fetchbrokermsg(context);
+              Navigator.pushNamed(context, Routes.notificationpage);
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          /// Profile Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: colors.fundbuttonBg,
+                  child: Text(
+                    userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
+                      theme: false,
+                      color: !theme.isDarkMode ? colors.colorBlack : colors.colorGrey,
+                      fw: 0,
+                    ),
+                    const SizedBox(height: 4),
+                    TextWidget.paraText(
+                      text: userProfile.userDetailModel?.uid ?? "",
+                      theme: false,
+                      color: colors.colorGrey,
+                      fw: 00,
+                    )
+                  ],
+                ),
+                const Spacer(),
+                Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(height: 2, color: colors.fundbuttonBg),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Reports Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextWidget.titleText(
+                text: "Reports",
+                theme: false,
+                color: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                fw: 1,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: reportsItems.length,
+            itemBuilder: (context, index) {
+              final item = reportsItems[index];
+              return ListTile(
+                title: TextWidget.subText(
+                  text: item['title']!,
                   theme: false,
-                  color: const Color(0xff666666),
-                  fw: 0))
-        ]));
+                  color: colors.colorGrey,
+                  fw: 0,
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () async {
+                  // Handle reports navigation - you can add the existing navigation logic here
+                  switch (item['title']) {
+                    case 'P&L Insights':
+                    await ledgerdate.getCurrentDate('else');
+                Navigator.pushNamed(context, Routes.calenderpnlScreen,
+                    arguments: "DDDDD");
+                    case 'Ledger':
+                      await ledgerdate.getCurrentDate('else');
+
+
+                Navigator.pushNamed(context, Routes.ledgerscreen,
+                    arguments: "DDDDD");
+                      break;
+                    case 'Holdings':
+                      await ledgerdate.getCurrentDate('else');
+
+                Navigator.pushNamed(context, Routes.holdingscreen,
+                    arguments: "DDDDD");
+                      break;
+                    case 'Positions':
+                      ledgerdate.fetchposition(context);
+
+                Navigator.pushNamed(context, Routes.positionscreen,
+                    arguments: "DDDDD");
+                      break;
+                    case 'Tax P&L':
+                      await ledgerdate.getYearlistTaxpnl();
+
+                Navigator.pushNamed(context, Routes.eqtaxpnleq,
+                    arguments: "DDDDD");
+                      break;
+                    case 'Tradebook / Contract':
+                      await ledgerdate.getCurrentDate('tradebook');
+                Navigator.pushNamed(context, Routes.tradebook,
+                    arguments: "DDDDD");
+                    break;
+                    case 'Pledge & Unpledge':
+                      Navigator.pushNamed(context, Routes.pledgeandun,
+                    arguments: "DDDDD");
+                      break;
+                    // Add other cases as needed
+                  }
+                },
+              );
+            },
+            separatorBuilder: (context, index) => Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(height: 1, color: colors.fundbuttonBg),
+            ),
+          ),
+
+          const Spacer(),
+
+          // Version
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: TextWidget.paraText(
+              text: ref.watch(authProvider).versiontext,
+              theme: false,
+              color: const Color(0xff666666),
+              fw: 0,
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
