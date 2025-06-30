@@ -75,6 +75,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
     // Use a longer delay to ensure we batch multiple initialization steps
     Future.delayed(const Duration(milliseconds: 50), () {
       if (mounted) {
+        FocusScope.of(context).unfocus();
         _calculateInitialValues();
         _setupSocketSubscription();
       }
@@ -452,17 +453,22 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
     final holdingProvider = ref.read(portfolioProvider);
 
     // Use a focused Consumer only for the loading status
-    return Consumer(builder: (context, watch, _) {
-      final isLoading = ref.watch(portfolioProvider).holdloader;
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior
+          .opaque, // Ensures the gesture detector catches taps on empty areas
+      child: Consumer(builder: (context, watch, _) {
+        final isLoading = ref.watch(portfolioProvider).holdloader;
 
-      if (isLoading) {
-        return const Center(child: CircularProgressIndicator());
-      }
+        if (isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-      return GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: RefreshIndicator(
+        return RefreshIndicator(
           onRefresh: () async {
+            // Unfocus keyboard when refreshing
+            FocusScope.of(context).unfocus();
+
             // Clear all cached widgets when manually refreshing
             setState(() {
               _cachedSummarySection = null;
@@ -490,24 +496,22 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
               _getActionButtons(),
 
               // Search bar (conditional)
-              _buildSearchBar(),
 
               // Holdings list with selective rebuilding
               _buildHoldingsList()
             ]),
           ),
-        ),
-      );
-    });
+        );
+      }),
+    );
   }
 
   // Method to calculate summary values from holdings data
   void _calculateSummaryValues() {
     final holdingProvider = ref.read(portfolioProvider);
-    final holdings = holdingProvider.holdingsModel!;
-    // holdingProvider.showSearchHold
-    //     ? holdingProvider.holdingSearchItem!
-    //     : holdingProvider.holdingsModel!;
+    final holdings = holdingProvider.showSearchHold
+        ? holdingProvider.holdingSearchItem!
+        : holdingProvider.holdingsModel!;
 
     if (holdings.isEmpty) {
       _totalPnlHolding = 0.0;
@@ -578,157 +582,149 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
       // Wrap in RepaintBoundary to isolate painting
       _cachedSummaryKey = memoKey;
       _cachedSummarySection = RepaintBoundary(
-          child: Container(
-        color: const Color(0xFFF1F3F8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-          child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              decoration: BoxDecoration(
-                color: colors.colorWhite,
-                // color: theme.isDarkMode
-                //     ? const Color(0xffB5C0CF).withOpacity(.6)
-                //     : const Color(0xffF1F3F8),
-                border: Border.all(
-                    color: theme.isDarkMode
-                        ? colors.darkColorDivider
-                        : colors.colorDivider,
-                    width: 1),
-                borderRadius: const BorderRadius.all(Radius.circular(4)),
-              ),
+          child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 10, left: 16, right: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10.0, horizontal: 8),
-                    child: Row(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextWidget.paraText(
+                                text: "1D Change",
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : const Color(0xff5E6B7D),
+                                fw: 3),
+                            const SizedBox(height: 4),
+                            Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  TextWidget.titleText(
+                                      text:
+                                          "${getFormatter(value: _oneDayChng, v4d: false, noDecimal: false)}",
+                                      theme: false,
+                                      color: _oneDayChng
+                                              .toStringAsFixed(2)
+                                              .startsWith("-")
+                                          ? colors.ltpred
+                                          : colors.ltpgreen,
+                                      fw: 0),
+                                  const SizedBox(width: 4),
+                                  TextWidget.paraText(
+                                      text:
+                                          " (${_oneDayChngPer.isNaN ? "0.00" : _oneDayChngPer.toStringAsFixed(2)}%)",
+                                      theme: false,
+                                      color: _oneDayChngPer
+                                              .toStringAsFixed(2)
+                                              .startsWith("-")
+                                          ? colors.ltpred
+                                          : colors.ltpgreen,
+                                      fw: 3),
+                                ])
+                          ]),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          TextWidget.paraText(
+                              text: "Total P&L",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : const Color(0xff5E6B7D),
+                              fw: 3),
+                          const SizedBox(height: 4),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              TextWidget.titleText(
+                                  text:
+                                      "${getFormatter(value: _totalPnlHolding, v4d: false, noDecimal: false)}",
+                                  theme: false,
+                                  color: _totalPnlHolding
+                                          .toString()
+                                          .startsWith("-")
+                                      ? colors.ltpred
+                                      : colors.ltpgreen,
+                                  fw: 0),
+                              const SizedBox(width: 4),
+                              TextWidget.paraText(
+                                  text:
+                                      "(${_totPnlPercHolding == "NaN" ? 0.00 : _totPnlPercHolding}%)",
+                                  theme: false,
+                                  color: _totPnlPercHolding.startsWith("-")
+                                      ? colors.ltpred
+                                      : colors.ltpgreen,
+                                  fw: 3),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Total P&L",
-                            style: TextWidget.textStyle(
-                                fontSize: 13,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextWidget.paraText(
+                                text: "Invested",
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : const Color(0xff5E6B7D),
+                                fw: 3),
+                            const SizedBox(height: 4),
+                            TextWidget.titleText(
+                                text:
+                                    "${getFormatter(value: _invest, v4d: false, noDecimal: false)}",
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? colors.colorWhite
-                                    : colors.colorGrey,
-                                fw: 0)),
-                        const SizedBox(height: 4),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            TextWidget.titleText(
-                                text:
-                                    "${getFormatter(value: _totalPnlHolding, v4d: false, noDecimal: false)}",
-                                theme: false,
-                                color:
-                                    _totalPnlHolding.toString().startsWith("-")
-                                        ? colors.darkred
-                                        : colors.ltpgreen,
-                                fw: 1),
-                            const SizedBox(
-                              height: 4,
-                            ),
-                            TextWidget.paraText(
-                                text:
-                                    "${_totPnlPercHolding == "NaN" ? 0.00 : _totPnlPercHolding}%",
-                                theme: false,
-                                color: _totPnlPercHolding.startsWith("-")
-                                    ? colors.darkred
-                                    : colors.ltpgreen,
+                                    : const Color(0xff000000),
                                 fw: 0),
                           ],
                         ),
-
-                        // Investment column - static except for the value
-
-                        // P&L column - dynamic based on profit/loss
-                      ],
-                    ),
-                  ),
-                  Divider(color: colors.colorDivider, height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10.0, horizontal: 8),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Current value column
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Invested",
-                                  style: TextWidget.textStyle(
-                                      fontSize: 13,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorGrey,
-                                      fw: 0)),
-                              const SizedBox(height: 4),
-                              TextWidget.subText(
-                                  text:
-                                      "${getFormatter(value: _invest, v4d: false, noDecimal: false)}",
-                                  theme: theme.isDarkMode,
-                                  fw: 0),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text("Current Value",
-                                  style: TextWidget.textStyle(
-                                      fontSize: 13,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorGrey,
-                                      fw: 0)),
-                              const SizedBox(height: 4),
-                              TextWidget.subText(
-                                  text:
-                                      "${getFormatter(value: _totalCurrentVal, v4d: false, noDecimal: false)}",
-                                  theme: theme.isDarkMode,
-                                  fw: 0),
-                            ],
-                          ),
-                          // Day change column
-                          // Column(
-                          //     crossAxisAlignment: CrossAxisAlignment.end,
-                          //     children: [
-                          //       TextWidget.paraText(
-                          //           text: "1D Change",
-                          //           theme: false,
-                          //           color: const Color(0xff5E6B7D),
-                          //           fw: 0),
-                          //       const SizedBox(height: 6),
-                          //       Row(children: [
-                          //         TextWidget.titleText(
-                          //             text:
-                          //                 "₹${getFormatter(value: _oneDayChng, v4d: false, noDecimal: false)}",
-                          //             theme: false,
-                          //             color: _oneDayChng
-                          //                     .toStringAsFixed(2)
-                          //                     .startsWith("-")
-                          //                 ? colors.darkred
-                          //                 : colors.ltpgreen,
-                          //             fw: 1),
-                          //         TextWidget.subText(
-                          //             text:
-                          //                 " (${_oneDayChngPer.isNaN ? "0.00" : _oneDayChngPer.toStringAsFixed(2)}%)",
-                          //             theme: false,
-                          //             color: _oneDayChngPer
-                          //                     .toStringAsFixed(2)
-                          //                     .startsWith("-")
-                          //                 ? colors.darkred
-                          //                 : colors.ltpgreen,
-                          //             fw: 0),
-                          //       ])
-                          //     ])
-                        ]),
-                  )
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            TextWidget.paraText(
+                                text: "Current",
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : const Color(0xff5E6B7D),
+                                fw: 3),
+                            const SizedBox(height: 4),
+                            TextWidget.titleText(
+                                text:
+                                    "${getFormatter(value: _totalCurrentVal, v4d: false, noDecimal: false)}",
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : const Color(0xff000000),
+                                fw: 0),
+                          ],
+                        ),
+                      ]),
                 ],
-              )),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Divider(
+              color: colors.colorDivider,
+            ),
+          ],
         ),
       ));
 
@@ -775,219 +771,172 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
     final theme = ref.read(themeProvider);
 
     return RepaintBoundary(
-        child: Container(
-            decoration: BoxDecoration(
-                color: const Color(0xFFF1F3F8),
-                border: Border(
-                    bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? const Color(0xffB5C0CF).withOpacity(.15)
-                            : const Color(0xffF1F3F8),
-                        width: 6))),
-            child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 16, right: 2, top: 8, bottom: 8),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          if (hasHoldings && showEdis) ...[
-                            SizedBox(
-                                height: 27,
-                                child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                      side: BorderSide.none,
-                                      // BorderSide(color: colors.colorGrey),
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(32)))),
-                                  onPressed: () async {
-                                    await ref
-                                        .read(fundProvider)
-                                        .fetchHstoken(context);
-                                    await ref.read(fundProvider).eDis(context);
-                                  },
-                                  child: TextWidget.paraText(
-                                      text: "E-DIS",
-                                      theme: theme.isDarkMode,
-                                      fw: 1),
-                                )),
-                            const SizedBox(width: 8)
-                          ],
-                          SizedBox(
-                              height: 27,
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                    side: BorderSide.none,
-                                    // BorderSide(color: colors.colorGrey),
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(32)))),
-                                onPressed: () async {
-                                  await mf.mfApicallinit(context, 2);
-                                },
-                                child: TextWidget.paraText(
-                                    text: "My MF",
-                                    theme: theme.isDarkMode,
-                                    fw: 1),
-                              ))
-                        ],
-                      ),
-                      if (hasHoldings &&
-                          holdingProvider.holdingsModel!.length > 1)
-                        Row(children: [
-                          if (!showSearch)
-                            InkWell(
-                                onTap: () async {
-                                  FocusScope.of(context).unfocus();
-                                  showModalBottomSheet(
-                                      useSafeArea: true,
-                                      isScrollControlled: true,
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(16))),
-                                      context: context,
-                                      builder: (context) {
-                                        return const HoldingsScripFilterBottomSheet();
+        child: Padding(
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, top: 5, bottom: 8),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 40,
+                  child: TextFormField(
+                      controller: holdingProvider.holdingSearchCtrl,
+                      style: TextWidget.textStyle(
+                          fontSize: 14, theme: theme.isDarkMode, fw: 1),
+                      keyboardType: TextInputType.text,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        UpperCaseTextFormatter(),
+                        NoEmojiInputFormatter(),
+                        FilteringTextInputFormatter.deny(
+                            RegExp('[π£•₹€℅™∆√¶/.,]'))
+                      ],
+                      decoration: InputDecoration(
+                          fillColor: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8).withOpacity(0.5),
+                          filled: true,
+                          hintStyle: TextWidget.textStyle(
+                              fontSize: 14,
+                              theme: theme.isDarkMode,
+                              color: const Color(0xff000000),
+                              fw: 3),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SvgPicture.asset(assets.searchIcon,
+                                color: const Color(0xff586279),
+                                fit: BoxFit.scaleDown,
+                                width: 20),
+                          ),
+                          suffixIcon: holdingProvider
+                                  .holdingSearchCtrl.text.isNotEmpty
+                              ? Material(
+                                  color: Colors.transparent,
+                                  shape: const CircleBorder(),
+                                  clipBehavior: Clip.hardEdge,
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+                                    splashColor: Colors.black.withOpacity(0.15),
+                                    highlightColor:
+                                        Colors.black.withOpacity(0.08),
+                                    onTap: () async {
+                                      holdingProvider.clearHoldSearch();
+                                      if (holdingProvider
+                                          .holdingSearchCtrl.text.isEmpty) {
+                                        holdingProvider.showHoldSearch(false);
+                                      }
+                                      // Clear cached widgets when search is cleared
+                                      setState(() {
+                                        _cachedSummarySection = null;
+                                        _cachedActionButtons = null;
+                                        _cachedEmptyState = null;
+                                        _cachedActionButtonsKey = null;
+                                        _cachedSummaryKey = null;
                                       });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 12),
-                                  child: SvgPicture.asset(assets.filterLines,
-                                      color: theme.isDarkMode
-                                          ? const Color(0xffBDBDBD)
-                                          : colors.colorGrey),
-                                )),
-                          InkWell(
-                              onTap: () {
-                                ref
-                                    .read(portfolioProvider)
-                                    .showHoldSearch(true);
-                                // Reset cached widgets because UI structure changed
-                                setState(() {
-                                  _cachedActionButtons = null;
-                                  _cachedActionButtonsKey = null;
-                                });
-                              },
-                              child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      right: 16, left: 10),
-                                  child: SvgPicture.asset(assets.searchIcon,
-                                      width: 19,
-                                      color: theme.isDarkMode
-                                          ? const Color(0xffBDBDBD)
-                                          : colors.colorGrey)))
-                        ])
-                    ]))));
+                                    },
+                                    child: SvgPicture.asset(assets.removeIcon,
+                                        fit: BoxFit.scaleDown, width: 20),
+                                  ),
+                                )
+                              : hasHoldings &&
+                                      holdingProvider.holdingsModel!.length > 1
+                                  ? Material(
+                                      color: Colors.transparent,
+                                      shape: const CircleBorder(),
+                                      clipBehavior: Clip.hardEdge,
+                                      child: InkWell(
+                                          customBorder: const CircleBorder(),
+                                          splashColor:
+                                              Colors.black.withOpacity(0.15),
+                                          highlightColor:
+                                              Colors.black.withOpacity(0.08),
+                                          onTap: () async {
+                                            FocusScope.of(context).unfocus();
+                                            showModalBottomSheet(
+                                                useSafeArea: true,
+                                                isScrollControlled: true,
+                                                shape:
+                                                    const RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.vertical(
+                                                                top: Radius
+                                                                    .circular(
+                                                                        16))),
+                                                context: context,
+                                                builder: (context) {
+                                                  return const HoldingsScripFilterBottomSheet();
+                                                });
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: SvgPicture.asset(
+                                                width: 20,
+                                                fit: BoxFit.scaleDown,
+                                                assets.filterLines,
+                                                color: theme.isDarkMode
+                                                    ? const Color(0xffBDBDBD)
+                                                    : colors.colorGrey),
+                                          )),
+                                    )
+                                  : null,
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(20)),
+                          disabledBorder: InputBorder.none,
+                          focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(20)),
+                          hintText: "Search",
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 5),
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(20))),
+                      onChanged: (value) async {
+                        // Enable search mode when user starts typing
+                        if (value.isNotEmpty) {
+                          holdingProvider.showHoldSearch(true);
+                        } else {
+                          // Disable search mode when field is empty
+                          holdingProvider.showHoldSearch(false);
+                        }
+
+                        // Perform the search
+                        holdingProvider.holdingSearch(value, context);
+
+                        // Clear cached widgets to force rebuild with new data
+                        setState(() {
+                          _cachedSummarySection = null;
+                          _cachedActionButtons = null;
+                          _cachedEmptyState = null;
+                          _cachedActionButtonsKey = null;
+                          _cachedSummaryKey = null;
+                        });
+                      }),
+                ),
+              ],
+            )));
   }
 
   // Search bar section (shown conditionally)
-  Widget _buildSearchBar() {
-    final holdingProvider = ref.read(portfolioProvider);
+  // Widget _buildSearchBar() {
+  //   final holdingProvider = ref.read(portfolioProvider);
 
-    // Only watch the search visibility state with a focused Consumer
-    return Consumer(builder: (context, watch, _) {
-      final showSearch = ref.watch(portfolioProvider).showSearchHold;
+  //   // Only watch the search visibility state with a focused Consumer
+  //   return Consumer(builder: (context, watch, _) {
+  //     // final showSearch = ref.watch(portfolioProvider).showSearchHold;
 
-      if (!showSearch) {
-        return const SizedBox.shrink();
-      }
+  //     // if (!showSearch) {
+  //     //   return const SizedBox.shrink();
+  //     // }
 
-      // Save theme reference to prevent repeated lookups
-      final theme = ref.read(themeProvider);
+  //     // Save theme reference to prevent repeated lookups
+  //     final theme = ref.read(themeProvider);
 
-      return RepaintBoundary(
-          child: Container(
-              height: 62,
-              padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-              decoration: BoxDecoration(
-                  border: Border(
-                      bottom: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                          width: 6))),
-              child: Row(children: [
-                Expanded(
-                    child: TextFormField(
-                        controller: holdingProvider.holdingSearchCtrl,
-                        style: TextWidget.textStyle(
-                            fontSize: 16, theme: theme.isDarkMode, fw: 1),
-                        keyboardType: TextInputType.text,
-                        textCapitalization: TextCapitalization.characters,
-                        inputFormatters: [
-                          UpperCaseTextFormatter(),
-                          NoEmojiInputFormatter(),
-                          FilteringTextInputFormatter.deny(
-                              RegExp('[π£•₹€℅™∆√¶/.,]'))
-                        ],
-                        decoration: InputDecoration(
-                            fillColor: theme.isDarkMode
-                                ? colors.darkGrey
-                                : const Color(0xffF1F3F8),
-                            filled: true,
-                            hintStyle: TextWidget.textStyle(
-                                fontSize: 16,
-                                theme: theme.isDarkMode,
-                                color: const Color(0xff69758F),
-                                fw: 0),
-                            prefixIconColor: const Color(0xff586279),
-                            prefixIcon: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: SvgPicture.asset(assets.searchIcon,
-                                  color: const Color(0xff586279),
-                                  fit: BoxFit.contain,
-                                  width: 20),
-                            ),
-                            suffixIcon: InkWell(
-                              onTap: () async {
-                                holdingProvider.clearHoldSearch();
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0),
-                                child: SvgPicture.asset(assets.removeIcon,
-                                    fit: BoxFit.scaleDown, width: 20),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                borderRadius: BorderRadius.circular(20)),
-                            disabledBorder: InputBorder.none,
-                            focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                borderRadius: BorderRadius.circular(20)),
-                            hintText: "Search Scrip Name",
-                            contentPadding: const EdgeInsets.only(top: 20),
-                            border: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                                borderRadius: BorderRadius.circular(20))),
-                        onChanged: (value) async {
-                          holdingProvider.holdingSearch(value, context);
-                        })),
-                TextButton(
-                  onPressed: () {
-                    holdingProvider.clearHoldSearch();
-                    holdingProvider.showHoldSearch(false);
-                    // Reset cached widgets because UI structure changed
-                    setState(() {
-                      _cachedActionButtons = null;
-                      _cachedActionButtonsKey = null;
-                    });
-                  },
-                  child: TextWidget.paraText(
-                      text: "Close",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.colorLightBlue
-                          : colors.colorBlue,
-                      fw: 0),
-                )
-              ])));
-    });
-  }
+  //     return RepaintBoundary(
+  //       child:
+  //     );
+  //   });
+  // }
 
   // Holdings list section
   Widget _buildHoldingsList() {
@@ -998,11 +947,11 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   Widget _getDividerContainer(bool isDarkMode) {
     if (isDarkMode) {
       _cachedDarkDivider ??=
-          Container(color: const Color(0xffB5C0CF).withOpacity(.15), height: 6);
+          Container(color: const Color(0xffECEDEE), height: 1);
       return _cachedDarkDivider!;
     } else {
       _cachedLightDivider ??=
-          Container(color: const Color(0xffF1F3F8), height: 6);
+          Container(color: const Color(0xffECEDEE), height: 1);
       return _cachedLightDivider!;
     }
   }
@@ -1021,8 +970,8 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
 
       // Get the appropriate list based on search state - this will now update when holdings API updates
       final items = showSearch
-          ? portfolioData.holdingSearchItem!
-          : portfolioData.holdingsModel!;
+          ? (portfolioData.holdingSearchItem ?? [])
+          : (portfolioData.holdingsModel ?? []);
 
       // This will rebuild if the entire holdings list is refreshed from API
       if (items.isEmpty) {
@@ -1041,39 +990,48 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
       // Use a more efficient ListView with selective rebuilding
       // Wrap in RepaintBoundary to isolate the whole list
       return RepaintBoundary(
-        child: ListView.builder(
-          // Use a key that only changes when the list fundamentally changes
-          key: ValueKey('holdings-list-${items.length}'),
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemBuilder: (BuildContext context, int idx) {
-            final index = idx ~/ 2;
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior
+              .opaque, // Ensures taps on list area unfocus keyboard
+          child: ListView.builder(
+            // Use a key that only changes when the list fundamentally changes
+            key: ValueKey('holdings-list-${items.length}'),
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemBuilder: (BuildContext context, int idx) {
+              final index = idx ~/ 2;
 
-            // Return cached divider for odd indices
-            if (idx.isOdd) {
-              return divider;
-            }
+              // Return cached divider for odd indices with tap handler to unfocus keyboard
+              if (idx.isOdd) {
+                return GestureDetector(
+                  onTap: () => FocusScope.of(context).unfocus(),
+                  behavior: HitTestBehavior.opaque,
+                  child: divider,
+                );
+              }
 
-            final holding = items[index];
-            if (holding.exchTsym == null || holding.exchTsym!.isEmpty) {
-              return const SizedBox.shrink();
-            }
+              final holding = items[index];
+              if (holding.exchTsym == null || holding.exchTsym!.isEmpty) {
+                return const SizedBox.shrink();
+              }
 
-            final token = holding.exchTsym![0].token;
-            final isUpdated = _updatedTokens.containsKey(token);
+              final token = holding.exchTsym![0].token;
+              final isUpdated = _updatedTokens.containsKey(token);
 
-            // Use a consistent key that only changes when the data changes
-            return _HoldingItemWrapper(
-              key: ValueKey('holding-$token-$isUpdated'),
-              holding: holding,
-              theme: theme,
-              onTap:
-                  () {}, // Empty function as navigation is now handled inside the wrapper
-              onLongPress:
-                  () {}, // Empty function as it's handled inside the wrapper
-            );
-          },
-          itemCount: items.length * 2 - 1,
+              // Use a consistent key that only changes when the data changes
+              return _HoldingItemWrapper(
+                key: ValueKey('holding-$token-$isUpdated'),
+                holding: holding,
+                theme: theme,
+                onTap:
+                    () {}, // Empty function as navigation is now handled inside the wrapper
+                onLongPress:
+                    () {}, // Empty function as it's handled inside the wrapper
+              );
+            },
+            itemCount: items.length * 2 - 1,
+          ),
         ),
       );
     });
@@ -1112,7 +1070,10 @@ class _HoldingItemWrapperState extends ConsumerState<_HoldingItemWrapper> {
       return RepaintBoundary(
         child: InkWell(
           onTap: () async {
-            // Prevent multiple navigation events on rapid taps
+            // Unfocus keyboard when tapping on holding item
+            FocusScope.of(newContext).unfocus();
+
+            // Prevent multiple navigation events on rapid taps.
             if (_isNavigating) return;
 
             try {
@@ -1136,6 +1097,8 @@ class _HoldingItemWrapperState extends ConsumerState<_HoldingItemWrapper> {
             }
           },
           onLongPress: () {
+            // Unfocus keyboard when long pressing on holding item
+            FocusScope.of(newContext).unfocus();
             // Use the newer context from Builder to avoid deactivated widget issues
             // Navigator.pushNamed(newContext, Routes.holdingExit);
           },

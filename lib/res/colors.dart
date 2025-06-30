@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   final colorWhite = const Color(0xffFFFFFF);
   final colorBlack = const Color(0xff000000);
- final logoColor = const Color(0xff0037B7);
-
-
+  final logoColor = const Color(0xff0037B7);
 
   final colorGrey = const Color(0xff666666);
   final colorBlue = const Color(0xff0037B7);
@@ -15,6 +13,7 @@ class AppColors {
   final darkiconcolor = const Color(0xffBDBDBD);
   final ltpgrey = const Color(0xff999999);
   final ltpgreen = const Color(0xff43A833);
+  final ltpred = const Color(0xffFF1717);
 
   final fundbuttonBg = const Color(0xffF1F3F8);
 

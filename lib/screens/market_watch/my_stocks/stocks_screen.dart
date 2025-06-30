@@ -156,9 +156,9 @@ class _StocksScreenState extends State<StocksScreen> {
                                     Text(
                                       "${holdingProvide[index].exchTsym![0].symbol} ",
                                       style: TextWidget.textStyle(
-                                          fontSize: 13,
-                                          theme: theme.isDarkMode,
-                                          fw: 0),
+                                        fontSize: 14,
+                                        theme: theme.isDarkMode,
+                                      ),
                                     ),
 
                                     SizedBox(
@@ -172,10 +172,10 @@ class _StocksScreenState extends State<StocksScreen> {
                                       Text(
                                         "${holdingProvide[index].exchTsym![0].option}",
                                         style: TextWidget.textStyle(
-                                            fontSize: 13,
-                                            color: Color(0xff666666),
-                                            theme: theme.isDarkMode,
-                                            fw: 0),
+                                          fontSize: 14,
+                                          color: Color(0xff666666),
+                                          theme: theme.isDarkMode,
+                                        ),
                                       ),
                                   ],
                                 ),
@@ -217,16 +217,9 @@ class _StocksScreenState extends State<StocksScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    TextWidget.subText(
+                                    TextWidget.titleText(
                                         text:
                                             "${holdingProvide[index].exchTsym![0].lp}",
-                                        theme: theme.isDarkMode,
-                                        fw: 0),
-                                    const SizedBox(height: 4),
-                                    TextWidget.paraText(
-                                        text:
-                                            "${holdingProvide[index].exchTsym![0].change == "null" ? "0.00 " : holdingProvide[index].exchTsym![0].change} "
-                                            "${holdingProvide[index].exchTsym![0].perChange == "null" ? "(0.00%)" : "   ${holdingProvide[index].exchTsym![0].perChange ?? 0.00}%"}",
                                         color: holdingProvide[index]
                                                     .exchTsym![0]
                                                     .change!
@@ -254,9 +247,16 @@ class _StocksScreenState extends State<StocksScreen> {
                                                             "0.00")
                                                 ? colors.ltpgrey
                                                 : colors.ltpgreen,
+                                        theme: theme.isDarkMode,
+                                        fw: 0),
+                                    const SizedBox(height: 4),
+                                    TextWidget.paraText(
+                                        text:
+                                            "${holdingProvide[index].exchTsym![0].change == "null" ? "0.00 " : holdingProvide[index].exchTsym![0].change} "
+                                            "${holdingProvide[index].exchTsym![0].perChange == "null" ? "(0.00%)" : "   ${holdingProvide[index].exchTsym![0].perChange ?? 0.00}%"}",
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
-                                        fw: 2),
+                                        fw: 3),
                                   ],
                                 ),
                               ));
