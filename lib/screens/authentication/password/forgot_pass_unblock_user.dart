@@ -41,7 +41,9 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
 
   Future<void> _handleContinue(
       ChangePasswordProvider authForgetpassword) async {
-    if (_isProcessing) return;
+    if (_isProcessing ||
+        authForgetpassword.forGetloginMethCtrl.text.isEmpty ||
+        authForgetpassword.loading) return;
 
     setState(() => _isProcessing = true);
 
@@ -64,12 +66,12 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
         final theme = ref.watch(themeProvider);
         double screenWidth = MediaQuery.of(context).size.width;
         return PopScope(
-          canPop: true, // Allows back navigation
+          canPop: false, // Allows back navigation
           onPopInvokedWithResult: (didPop, result) {
             if (didPop) return; // If system handled back, do nothing
             FocusScope.of(context).unfocus();
             auth.clearError();
-            authForgetpassword.clearTextField();
+            auth.clearTextField();
             Navigator.of(context).pop(); // Proceed with back navigation
           },
 
@@ -81,25 +83,33 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                     theme.isDarkMode ? Color(0xff000000) : Color(0xffFFFFFF),
                 elevation: 0,
                 centerTitle: false,
-                leadingWidth: 41,
-                titleSpacing: 6,
-                leading: InkWell(
-                    onTap: () {
-                      auth.clearError();
-                      authForgetpassword.clearTextField();
-                      Navigator.pop(context);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: SvgPicture.asset(
-                        "assets/icon/appbarIcon/arrow-back.svg",
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : const Color(0xFF141414),
-                        height: 24,
-                        width: 24,
-                      ),
-                    )),
+                leadingWidth: 48,
+                titleSpacing: 0,
+                leading: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                      splashColor: Colors.black.withOpacity(0.15),
+                      highlightColor: Colors.black.withOpacity(0.08),
+                      customBorder: const CircleBorder(),
+                      onTap: () {
+                        auth.clearError();
+                        auth.clearTextField();
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: SvgPicture.asset(
+                          "assets/icon/appbarIcon/arrow-back.svg",
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : const Color(0xFF141414),
+                          height: 24,
+                          width: 24,
+                        ),
+                      )),
+                ),
                 actions: [
                   Padding(
                     padding: const EdgeInsets.only(right: 16, top: 5),
@@ -126,7 +136,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                 color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                fw: 2),
+                                fw: 1),
                             const SizedBox(height: 30),
                             // Row(
                             //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -147,12 +157,13 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                             TextFormField(
                               focusNode: focusNode,
                               style: TextWidget.textStyle(
-                                fontSize: 16,
+                                fontSize: 14,
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                fw: 0,
+                                fw: 3,
+                                height: 1.3,
                               ),
                               controller:
                                   authForgetpassword.forGetloginMethCtrl,
@@ -175,7 +186,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                 floatingLabelBehavior:
                                     FloatingLabelBehavior.auto,
                                 labelStyle: TextWidget.textStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   theme: theme.isDarkMode,
                                   color: theme.isDarkMode
                                       ? colors.colorWhite
@@ -199,7 +210,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                 ),
                                 counterText: "",
                                 contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 5, vertical: 20),
+                                    horizontal: 5, vertical: 12),
 
                                 // prefixIconConstraints: const BoxConstraints(
                                 //     minHeight: 0, minWidth: 30),
@@ -266,25 +277,20 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                               elevation: 0,
                               backgroundColor: !theme.isDarkMode
                                   ? authForgetpassword.isDisableforgetbtn
-                                      ? const Color(0xffFFFFFF)
+                                      ? const Color(0xff0037B7).withOpacity(0.3)
                                       : const Color(0xff0037B7)
                                   : authForgetpassword.isDisableforgetbtn
                                       ? colors.darkGrey
                                       : colors.colorbluegrey,
-                              side: const BorderSide(
-                                color: Color(0xff0037B7),
-                                width: 1,
-                              ),
+                              side: BorderSide.none,
                               padding: const EdgeInsets.symmetric(vertical: 13),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               )),
-                          onPressed: authForgetpassword
-                                  .forGetloginMethCtrl.text.isEmpty
-                              ? null
-                              : (_isProcessing || authForgetpassword.loading)
-                                  ? null
-                                  : () => _handleContinue(authForgetpassword),
+                          onPressed: () {
+                            authForgetpassword.validateForgetpassWord();
+                            _handleContinue(authForgetpassword);
+                          },
                           child: (_isProcessing || authForgetpassword.loading)
                               ? SizedBox(
                                   width: 18,
@@ -297,12 +303,12 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                   theme: false,
                                   color: !theme.isDarkMode
                                       ? authForgetpassword.isDisableforgetbtn
-                                          ? const Color(0xff0037B7)
+                                          ? const Color(0xffFFFFFF)
                                           : const Color(0xffFFFFFF)
                                       : authForgetpassword.isDisableforgetbtn
                                           ? colors.darkGrey
                                           : colors.colorBlack,
-                                  fw: 0),
+                                  fw: 2),
                         )),
                   ],
                 ),

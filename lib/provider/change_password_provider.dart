@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/core/api_export.dart';
@@ -120,7 +122,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
 // If Change pass validation is successful, activate the button.
 
   activateChangePass() {
-    if (validateChangePassword()) {
+    if (newPasswordError == "" && oldPasswordError == "") {
       _isDisableChangepassbtn = false;
     } else {
       _isDisableChangepassbtn = true;
@@ -143,26 +145,82 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
   }
 
 // Validating Change Pass
-  bool validateChangePassword() {
-    clearError();
-    if (userIdController.text.trim().isEmpty) {
-      userIdChangepassError = "Please enter username";
-    }
+  // bool validateChangePassword() {
+  //   // clearError();
+  //   // if (userIdController.text.trim().isEmpty) {
+  //   //   userIdChangepassError = "Please enter username";
+  //   // }
 
-    if (oldPassword.text.trim().isEmpty) {
-      oldPasswordError = "Please enter the Old Password";
-    }
-    if (newPassword.text.trim().isEmpty) {
-      newPasswordError = "Please enter the New Password";
-    } else if (!RegExp(r'^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[#$-*@]).{7,}$')
-        .hasMatch(newPassword.text)) {
-      newPasswordError = "Please Enter the Valid Password";
+  //   if (oldPassword.text.trim().isEmpty) {
+  //     oldPasswordError = "Please enter the Old Password";
+  //   }
+  //   if (newPassword.text.trim().isEmpty) {
+  //     newPasswordError = "Please enter the New Password";
+  //   } else if (!RegExp(r'^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[#$-*@]).{7,}$')
+  //       .hasMatch(newPassword.text)) {
+  //     newPasswordError = "Please Enter the Valid Password";
+  //   }
+
+  //   notifyListeners();
+  //   return userIdChangepassError == null &&
+  //       oldPasswordError == null &&
+  //       newPasswordError == null;
+  // }
+
+  // validateNewPassword() {
+  //   if (newPassword.text.trim().isEmpty) {
+  //     newPasswordError = "Please enter the New Password";
+  //   } else if (!RegExp(r'^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[#$-*@]).{7,}$')
+  //       .hasMatch(newPassword.text)) {
+  //     newPasswordError = "Password must be at least 8 characters";
+  //   } else {
+  //     newPasswordError = "";
+  //   }
+  //   notifyListeners();
+  // }
+
+  void validateNewPassword() {
+    String value = newPassword.text.trim();
+    newPasswordError = "";
+
+    if (value.isEmpty) {
+      newPasswordError = "Please enter the new password";
+    } else {
+      List<String> missing = [];
+
+      if (!RegExp(r'[A-Z]').hasMatch(value)) {
+        missing.add("an uppercase letter");
+      }
+      if (!RegExp(r'[a-z]').hasMatch(value)) {
+        missing.add("a lowercase letter");
+      }
+      if (!RegExp(r'[0-9]').hasMatch(value)) {
+        missing.add("a number");
+      }
+      if (!RegExp(r'[#$\-*@]').hasMatch(value)) {
+        missing.add("a special character (#, \$, -, *, @)");
+      }
+      if (value.length < 7) {
+        missing.add("at least 7 characters");
+      }
+
+      if (missing.isNotEmpty) {
+        newPasswordError = "Please enter ${missing.join(', ')}";
+      } else {
+        newPasswordError = "";
+      }
     }
 
     notifyListeners();
-    return userIdChangepassError == null &&
-        oldPasswordError == null &&
-        newPasswordError == null;
+  }
+
+  validateOldPassword() {
+    if (oldPassword.text.trim().isEmpty) {
+      oldPasswordError = "Please enter the Old Password";
+    } else {
+      oldPasswordError = "";
+    }
+    notifyListeners();
   }
 
 // Fetching data from the api and stored in a variable
@@ -201,7 +259,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
 // Call this method while clicking if the Change pass validation process is successful.
 
   submitChangePass(BuildContext context) {
-    if (validateChangePassword()) {
+    if (oldPasswordError == "" && newPasswordError == "") {
       fetchChangePassword(userIdController.text.toUpperCase(), oldPassword.text,
           newPassword.text, context);
     }

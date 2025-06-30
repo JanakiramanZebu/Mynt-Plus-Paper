@@ -604,10 +604,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   bool _scripDepthloader = false;
   bool get scripDepthloader => _scripDepthloader;
 
+  bool _isFuturesExpanded = false;
+  bool get isFuturesExpanded => _isFuturesExpanded;
+
   Map<String, Map<String, dynamic>> storeQuotes = {};
 
   singlePageloader(bool value) {
     _scripDepthloader = value;
+    notifyListeners();
+  }
+
+  toggleFuturesExpansion() {
+    _isFuturesExpanded = !_isFuturesExpanded;
     notifyListeners();
   }
 
@@ -2658,24 +2666,34 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           isAdd: false, scripToken: input, wlname: walName);
 
       if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
+        // Store if deleted watchlist was the active one
+        bool wasActiveWatchlist = (walName == _wlName);
+
         // Clean up cached data for deleted watchlist
         _marketWatchScripData.remove(walName);
 
-        // If the deleted watchlist is the active one, clear current scrips immediately
-        if (walName == _wlName) {
+        // If the deleted watchlist is the active one, unsubscribe first
+        if (wasActiveWatchlist) {
           // Clear scrips immediately to prevent showing deleted watchlist data
           _scrips = [];
-
           // Unsubscribe from websocket for deleted watchlist scrips
           await requestMWScrip(context: context, isSubscribe: false);
-
-          // Clear current watchlist name temporarily to avoid confusion
-          _wlName = "";
-          _isPreDefWLs = "No";
         }
 
         // Refresh the watchlist data
         await fetchMWList(context, false, true);
+
+        // If we deleted the active watchlist, switch to the first available one
+        if (wasActiveWatchlist &&
+            _marketWatchlist != null &&
+            _marketWatchlist!.values!.isNotEmpty) {
+          String newActiveWatchlist = _marketWatchlist!.values!.first;
+          _wlName = newActiveWatchlist;
+          _isPreDefWLs = _preDefWL.contains(newActiveWatchlist) ? "Yes" : "No";
+
+          // Load data for the new active watchlist
+          await changeWLScrip(newActiveWatchlist, context);
+        }
 
         // Update UI to reflect changes
         notifyListeners();
@@ -3729,8 +3747,26 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _watchlistRenameModel = await api.getWatchListRename(oldName, newName);
       if (_watchlistRenameModel!.stat == "Ok") {
+        // Update cached data key from old name to new name
+        if (_marketWatchScripData.containsKey(oldName)) {
+          String cachedData = _marketWatchScripData[oldName];
+          _marketWatchScripData.remove(oldName);
+          _marketWatchScripData[newName] = cachedData;
+        }
+
+        // Update current watchlist name if it was the renamed one
+        if (_wlName == oldName) {
+          _wlName = newName;
+        }
+
+        // Refresh the watchlist data to get updated list from server
         await fetchMWList(context, false);
-        _wlName = newName;
+
+        // If the renamed watchlist is currently active, reload its data
+        if (_wlName == newName) {
+          await changeWLScrip(newName, context);
+        }
+
         Navigator.pop(context);
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(successMessage(context,

@@ -596,9 +596,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           child: Consumer(builder: (context, WidgetRef ref, _) {
             final theme = ref.watch(themeProvider);
             return Container(
-              color: theme.isDarkMode
-                  ? const Color(0xFF1A1A1A)
-                  : const Color(0xFFF1F3F8),
+              // color: theme.isDarkMode
+              //     ? const Color(0xFF1A1A1A)
+              //     : const Color(0xFFF1F3F8),
               child: const DefaultIndexList(src: false),
             );
           }));

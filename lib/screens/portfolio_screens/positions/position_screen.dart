@@ -89,13 +89,15 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
   }
 
   // Cache SVG icons for better performance
-  Widget _getCachedIcon(String iconPath, {Color? color, double? width}) {
-    final key = "$iconPath${color?.value ?? ''}${width ?? ''}";
+  Widget _getCachedIcon(String iconPath,
+      {Color? color, double? width, String? fit}) {
+    final key = "$iconPath${color?.value ?? ''}${width ?? ''}${fit ?? ''}";
     if (!_cachedIcons.containsKey(key)) {
       _cachedIcons[key] = SvgPicture.asset(
         iconPath,
         width: width ?? 19,
         color: color ?? const Color(0xff666666),
+        fit: BoxFit.scaleDown,
       );
     }
     return _cachedIcons[key]!;
@@ -134,13 +136,13 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                     ),
 
                     // Filter options section
-                    if (positionBook.postionBookModel!.isNotEmpty &&
-                        widget.listofPosition.length > 1)
-                      _buildFilterSection(context, theme, positionBook),
+                    // if (positionBook.postionBookModel!.isNotEmpty &&
+                    //     widget.listofPosition.length > 1)
+                    //   _buildFilterSection(context, theme, positionBook),
 
                     // Search section if enabled
-                    if (positionBook.showSearchPosition)
-                      _buildSearchSection(context, theme, positionBook),
+                    // if (positionBook.showSearchPosition)
+                    _buildSearchSection(context, theme, positionBook),
                     _buildPositionList(context, theme, positionBook),
 
                     // Position list section
@@ -152,127 +154,75 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
     );
   }
 
-  Widget _buildFilterSection(BuildContext context, ThemesProvider theme,
-      PortfolioProvider positionBook) {
-    return Container(
-      padding: const EdgeInsets.only(left: 16, right: 4, top: 8, bottom: 8),
-      decoration: BoxDecoration(
-          color: const Color(0xFFF1F3F8),
-          border: Border(
-              bottom: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.darkGrey
-                      : const Color(0xffF1F3F8),
-                  width: 6))),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          if (widget.listofPosition.length > 1 &&
-              positionBook.posSelection == "All position") ...[
-            PositionGroupActions(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                InkWell(
-                    onTap: () async {
-                      // Add navigation lock to prevent multiple filter sheets
-                      if (positionBook.isFilterNavigating) return;
+  // Widget _buildFilterSection(BuildContext context, ThemesProvider theme,
+  //     PortfolioProvider positionBook) {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //     children: [
+  //       if (widget.listofPosition.length > 1 && positionBook.posSelection == "All position") ...[
+  //         PositionGroupActions(),
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.end,
+  //           children: [
 
-                      try {
-                        positionBook.setFilterNavigating(true);
+  //             InkWell(
+  //                 onTap: () {
+  //                   // Prevent multiple taps on search button
+  //                   if (positionBook.isFilterNavigating) return;
 
-                        showModalBottomSheet(
-                          useSafeArea: true,
-                          isScrollControlled: true,
-                          shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(16))),
-                          context: context,
-                          builder: (context) =>
-                              const PositionScripFilterBottomSheet(),
-                        ).then((_) {
-                          // Reset navigation lock after bottom sheet is closed
-                          positionBook.setFilterNavigating(false);
-                        });
-                      } catch (e) {
-                        positionBook.setFilterNavigating(false);
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: _getCachedIcon(
-                        assets.filterLines,
-                        color: theme.isDarkMode
-                            ? const Color(0xffBDBDBD)
-                            : colors.colorGrey,
-                      ),
-                    )),
-                InkWell(
-                    onTap: () {
-                      // Prevent multiple taps on search button
-                      if (positionBook.isFilterNavigating) return;
+  //                   positionBook.showPositionSearch(true);
+  //                 },
+  //                 child: Padding(
+  //                   padding: const EdgeInsets.only(right: 16, left: 10),
+  //                   child: _getCachedIcon(
+  //                     assets.searchIcon,
+  //                     width: 19,
+  //                     color: theme.isDarkMode
+  //                         ? const Color(0xffBDBDBD)
+  //                         : colors.colorGrey,
+  //                   ),
+  //                 )),
+  //           ],
+  //         )
+  //       ] else if (positionBook.posSelection != "All position") ...[
+  //         // CustomTextBtn(
+  //         //     label: 'Create Group',
+  //         //     onPress: () {
+  //         //       // Prevent multiple dialog opens
+  //         //       if (positionBook.isFilterNavigating) return;
 
-                      positionBook.showPositionSearch(true);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 16, left: 10),
-                      child: _getCachedIcon(
-                        assets.searchIcon,
-                        width: 19,
-                        color: theme.isDarkMode
-                            ? const Color(0xffBDBDBD)
-                            : colors.colorGrey,
-                      ),
-                    )),
-              ],
-            )
-          ] else if (positionBook.posSelection != "All position") ...[
-            // CustomTextBtn(
-            //     label: 'Create Group',
-            //     onPress: () {
-            //       // Prevent multiple dialog opens
-            //       if (positionBook.isFilterNavigating) return;
+  //         //       try {
+  //         //         positionBook.setFilterNavigating(true);
 
-            //       try {
-            //         positionBook.setFilterNavigating(true);
-
-            //       showDialog(
-            //           context: context,
-            //           builder: (BuildContext context) => const CreateGroupPos(),
-            //         ).then((_) {
-            //           // Reset navigation lock after dialog is closed
-            //           positionBook.setFilterNavigating(false);
-            //         });
-            //       } catch (e) {
-            //         positionBook.setFilterNavigating(false);
-            //       }
-            //     },
-            //     icon: assets.addCircleIcon)
-          ]
-        ],
-      ),
-    );
-  }
+  //         //       showDialog(
+  //         //           context: context,
+  //         //           builder: (BuildContext context) => const CreateGroupPos(),
+  //         //         ).then((_) {
+  //         //           // Reset navigation lock after dialog is closed
+  //         //           positionBook.setFilterNavigating(false);
+  //         //         });
+  //         //       } catch (e) {
+  //         //         positionBook.setFilterNavigating(false);
+  //         //       }
+  //         //     },
+  //         //     icon: assets.addCircleIcon)
+  //       ]
+  //     ],
+  //   );
+  // }
 
   Widget _buildSearchSection(BuildContext context, ThemesProvider theme,
       PortfolioProvider positionBook) {
-    return Container(
-      height: 62,
-      padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-      decoration: BoxDecoration(
-          border: Border(
-              bottom: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.darkGrey
-                      : const Color(0xffF1F3F8),
-                  width: 6))),
-      child: Row(
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 8),
+      child: Column(
         children: [
-          Expanded(
+          SizedBox(
+            height: 40,
             child: TextFormField(
               controller: positionBook.positionSearchCtrl,
               style: TextWidget.textStyle(
-                fontSize: 16,
+                fontSize: 14,
                 theme: theme.isDarkMode,
                 fw: 1,
               ),
@@ -285,35 +235,76 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
               decoration: InputDecoration(
                   fillColor: theme.isDarkMode
                       ? colors.darkGrey
-                      : const Color(0xffF1F3F8),
+                      : const Color(0xffF1F3F8).withOpacity(0.5),
                   filled: true,
                   hintStyle: TextWidget.textStyle(
-                    fontSize: 14,
-                    color: const Color(0xff69758F),
-                    theme: false,
-                    fw: 0,
-                  ),
-                  prefixIconColor: const Color(0xff586279),
+                      fontSize: 14,
+                      theme: theme.isDarkMode,
+                      color: const Color(0xff000000),
+                      fw: 3),
                   prefixIcon: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: _getCachedIcon(
                       assets.searchIcon,
                       color: const Color(0xff586279),
                       width: 20,
                     ),
                   ),
-                  suffixIcon: InkWell(
-                    onTap: () {
-                      positionBook.clearPositionSearch();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: _getCachedIcon(
-                        assets.removeIcon,
-                        width: 20,
-                      ),
-                    ),
-                  ),
+                  suffixIcon: positionBook.positionSearchCtrl.text.isNotEmpty
+                      ? Material(
+                          color: Colors.transparent,
+                          shape: const CircleBorder(),
+                          clipBehavior: Clip.hardEdge,
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            splashColor: Colors.black.withOpacity(0.15),
+                            highlightColor: Colors.black.withOpacity(0.08),
+                            onTap: () {
+                              positionBook.clearPositionSearch();
+                            },
+                            child: _getCachedIcon(
+                              assets.removeIcon,
+                              width: 20,
+                            ),
+                          ),
+                        )
+                      : widget.listofPosition.length > 1 &&
+                              positionBook.posSelection == "All position"
+                          ? InkWell(
+                              onTap: () async {
+                                // Add navigation lock to prevent multiple filter sheets
+                                if (positionBook.isFilterNavigating) return;
+
+                                try {
+                                  positionBook.setFilterNavigating(true);
+
+                                  showModalBottomSheet(
+                                    useSafeArea: true,
+                                    isScrollControlled: true,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(16))),
+                                    context: context,
+                                    builder: (context) =>
+                                        const PositionScripFilterBottomSheet(),
+                                  ).then((_) {
+                                    // Reset navigation lock after bottom sheet is closed
+                                    positionBook.setFilterNavigating(false);
+                                  });
+                                } catch (e) {
+                                  positionBook.setFilterNavigating(false);
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: _getCachedIcon(
+                                  assets.filterLines,
+                                  color: theme.isDarkMode
+                                      ? const Color(0xffBDBDBD)
+                                      : colors.colorGrey,
+                                ),
+                              ))
+                          : null,
                   enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide.none,
                       borderRadius: BorderRadius.circular(20)),
@@ -321,8 +312,9 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                   focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide.none,
                       borderRadius: BorderRadius.circular(20)),
-                  hintText: "Search Scrip Name",
-                  contentPadding: const EdgeInsets.only(top: 20),
+                  hintText: "Search",
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                   border: OutlineInputBorder(
                       borderSide: BorderSide.none,
                       borderRadius: BorderRadius.circular(20))),
@@ -331,17 +323,17 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
               },
             ),
           ),
-          TextButton(
-              onPressed: () {
-                positionBook.showPositionSearch(false);
-              },
-              child: TextWidget.paraText(
-                  text: "Close",
-                  theme: false,
-                  color: theme.isDarkMode
-                      ? colors.colorLightBlue
-                      : colors.colorBlue,
-                  fw: 0))
+          // TextButton(
+          //     onPressed: () {
+          //       positionBook.showPositionSearch(false);
+          //     },
+          //     child: TextWidget.paraText(
+          //         text: "Close",
+          //         theme: false,
+          //         color: theme.isDarkMode
+          //             ? colors.colorLightBlue
+          //             : colors.colorBlue,
+          //         fw: 0))
         ],
       ),
     );
@@ -385,13 +377,9 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         if (idx.isOdd) {
           return Container(
               color: theme.isDarkMode
-                  ? itemsToDisplay[index].netqty == "0"
-                      ? colors.colorBlack
-                      : colors.darkGrey
-                  : itemsToDisplay[index].netqty == "0"
-                      ? colors.colorWhite
-                      : const Color(0xffF1F3F8),
-              height: 6);
+                  ? colors.colorBlack
+                  : const Color(0xffECEDEE),
+              height: 1);
         }
 
         // Wrap each position item with RepaintBoundary to isolate updates
@@ -423,76 +411,54 @@ class _PositionHeaderSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      color: const Color(0xFFF1F3F8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-        child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            decoration: BoxDecoration(
-              color: colors.colorWhite,
-              // color: theme.isDarkMode
-              //     ? const Color(0xffB5C0CF).withOpacity(.6)
-              //     : const Color(0xffF1F3F8),
-              border: Border.all(
-                  color: theme.isDarkMode
-                      ? colors.darkColorDivider
-                      : colors.colorDivider,
-                  width: 1),
-              borderRadius: const BorderRadius.all(Radius.circular(4)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _PnLDisplay(
-                  isNetPnl: positionBook.isNetPnl,
-                  isDay: positionBook.isDay,
-                  totUnRealMtm: positionBook.totUnRealMtm,
-                  totMtM: positionBook.totMtM,
-                  totBookedPnL: positionBook.totBookedPnL,
-                  totPnL: positionBook.totPnL,
-                  theme: theme,
-                ),
-                // const SizedBox(height: 6),
-                Divider(color: colors.colorDivider, height: 8),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8),
-                  child: Row(
-                    children: [
-                      Text("P&L",
-                          style: TextWidget.textStyle(
-                              fontSize: 13,
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorGrey,
-                              fw: 0)),
-                      const SizedBox(width: 6),
-                      CustomSwitch(
-                          onChanged: (bool value) {
-                            positionBook
-                                .chngPositionPnl(!positionBook.isNetPnl);
-                          },
-                          color: !theme.isDarkMode
-                              ? colors.colorGrey.withOpacity(0.2)
-                              : colors.colorBlack,
-                          value: positionBook.isNetPnl),
-                      const SizedBox(width: 6),
-                      Text("MTM",
-                          style: TextWidget.textStyle(
-                              fontSize: 13,
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorGrey,
-                              fw: 0)),
-                    ],
-                  ),
-                ),
-              ],
-            )),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _PnLDisplay(
+          isNetPnl: positionBook.isNetPnl,
+          isDay: positionBook.isDay,
+          totUnRealMtm: positionBook.totUnRealMtm,
+          totMtM: positionBook.totMtM,
+          totBookedPnL: positionBook.totBookedPnL,
+          totPnL: positionBook.totPnL,
+          theme: theme,
+        ),
+        // const SizedBox(height: 6),
+        const Divider(color: Color(0xffECEDEE), height: 1),
+        // Padding(
+        //   padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8),
+        //   child: Row(
+        //     children: [
+        //       Text("P&L",
+        //           style: TextWidget.textStyle(
+        //               fontSize: 13,
+        //               theme: theme.isDarkMode,
+        //               color: theme.isDarkMode
+        //                   ? colors.colorWhite
+        //                   : colors.colorGrey,
+        //               fw: 0)),
+        //       const SizedBox(width: 6),
+        //       CustomSwitch(
+        //           onChanged: (bool value) {
+        //             positionBook.chngPositionPnl(!positionBook.isNetPnl);
+        //           },
+        //           color: !theme.isDarkMode
+        //               ? colors.colorGrey.withOpacity(0.2)
+        //               : colors.colorBlack,
+        //           value: positionBook.isNetPnl),
+        //       const SizedBox(width: 6),
+        //       Text("MTM",
+        //           style: TextWidget.textStyle(
+        //               fontSize: 13,
+        //               theme: theme.isDarkMode,
+        //               color: theme.isDarkMode
+        //                   ? colors.colorWhite
+        //                   : colors.colorGrey,
+        //               fw: 0)),
+        //     ],
+        //   ),
+        // ),
+      ],
     );
   }
 }
@@ -520,17 +486,17 @@ class _PnLDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding:
+          const EdgeInsets.only(top: 20.0, left: 8.0, right: 8.0, bottom: 15),
+      child: Column(
         children: [
-          Text(!isNetPnl ? "Net MTM" : "Net P&L",
-              style: TextWidget.textStyle(
-                  fontSize: 13,
-                  theme: theme.isDarkMode,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorGrey,
-                  fw: 0)),
+          TextWidget.paraText(
+              text: !isNetPnl ? "Total MTM" : "Total P&L",
+              theme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? colors.colorWhite
+                  : const Color(0xff0037B7),
+              fw: 3),
           const SizedBox(height: 4),
           !isNetPnl
               ? _buildValueText(isDay ? totUnRealMtm : totMtM,
@@ -543,13 +509,13 @@ class _PnLDisplay extends StatelessWidget {
   }
 
   Widget _buildValueText(String value, Color color) {
-    return TextWidget.titleText(
-        text: "$value", fw: 1, theme: false, color: color);
+    return TextWidget.headText(
+        text: "$value", fw: 0, theme: false, color: color);
   }
 
   Color _getValueColor(String value) {
     if (value.startsWith("-")) {
-      return colors.darkred;
+      return colors.ltpred;
     } else if (value == "0.00") {
       return colors.ltpgrey;
     } else {
@@ -709,11 +675,8 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
               ? colors.colorWhite
               : const Color(0xffECEDEE);
 
-      final dividerColor = theme.isDarkMode
-          ? colors.darkGrey
-          : Color(netQtyZero ? 0xffffffff : 0xffECEDEE);
-
-      final txtColor = theme.isDarkMode ? colors.colorWhite : colors.colorBlack;
+      final txtColor =
+          theme.isDarkMode ? colors.colorWhite : const Color(0xff141414);
 
       // Get formatted quantity value
       final qty =
@@ -736,20 +699,20 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
               : "${widget.position.netavgprc}";
 
       return Container(
-        color: bgColor,
+        color: netQtyZero
+            ? const Color(0xffECEDEE).withOpacity(0.2)
+            : const Color(0xffFFFFFF),
         padding: const EdgeInsets.all(16),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               _buildHeaderRow(theme, txtColor, containerColor),
-              const SizedBox(height: 4),
-              Divider(color: dividerColor, thickness: 1.2),
-              const SizedBox(height: 2),
-              _buildQuantityRow(
-                  txtColor, qty, pnlValue, pnlColor, positions.isNetPnl),
               const SizedBox(height: 10),
-              _buildAveragePriceRow(txtColor, avgPrice),
+              _buildQuantityRow(txtColor, qty, pnlValue, pnlColor,
+                  positions.isNetPnl, avgPrice),
+              const SizedBox(height: 8),
+              _buildAveragePriceRow(txtColor, theme),
             ]),
       );
     });
@@ -768,20 +731,20 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(children: [
-          Text("${widget.position.symbol} ${widget.position.expDate} ",
-              overflow: TextOverflow.ellipsis,
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: theme.isDarkMode,
-                color: txtColor,
-              )),
-          Text("${widget.position.option} ",
-              overflow: TextOverflow.ellipsis,
-              style: TextWidget.textStyle(
-                fontSize: 14,
-                theme: theme.isDarkMode,
-                color: txtColor,
-              )),
+          TextWidget.subText(
+              text: "${widget.position.symbol} ${widget.position.expDate} ",
+              theme: theme.isDarkMode,
+              color: txtColor,
+              textOverflow: TextOverflow.ellipsis,
+              fw: 0),
+          TextWidget.titleText(
+              text: "${widget.position.option} ",
+              theme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? colors.colorWhite
+                  : const Color(0xff666666),
+              textOverflow: TextOverflow.ellipsis,
+              fw: 0),
         ]),
         Row(children: [
           Text(
@@ -790,17 +753,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
             style: _getStyle(
               theme.isDarkMode ? colors.colorWhite : const Color(0xff666666),
               12,
-              0,
-            ),
-          ),
-          const SizedBox(width: 9),
-          Text(
-            "${widget.position.sPrdtAli}",
-            overflow: TextOverflow.ellipsis,
-            style: _getStyle(
-              theme.isDarkMode ? colors.colorWhite : const Color(0xff666666),
-              12,
-              0,
+              3,
             ),
           ),
         ])
@@ -808,44 +761,46 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
     );
   }
 
-  Widget _buildQuantityRow(
-      Color txtColor, String qty, String pnlValue, Color pnlColor, isNetPnl) {
+  Widget _buildQuantityRow(Color txtColor, String qty, String pnlValue,
+      Color pnlColor, isNetPnl, avgPrice) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Left 50%: Qty label and value
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              "Qty  ",
+              "Qty ",
               style:
                   _getStyle(const Color(0xff5E6B7D), 12, 3, key: 'qty-label'),
             ),
             Text(
               qty,
-              style: _getStyle(txtColor, 14, 3, key: 'qty-value'),
+              style: _getStyle(txtColor, 12, 3, key: 'qty-value'),
+            ),
+
+            const SizedBox(
+              width: 5,
+            ),
+            // Right 50%: P&L value
+
+            Text(
+              "Avg  ",
+              style:
+                  _getStyle(const Color(0xff5E6B7D), 12, 3, key: 'avg-label'),
+            ),
+            Text(
+              avgPrice,
+              style: _getStyle(txtColor, 12, 3, key: 'avg-value'),
             ),
           ],
         ),
-        const SizedBox(
-          width: 10,
-        ),
-        // Right 50%: P&L value
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Text(
-            //   !isNetPnl ? "MTM" : "P&L",
-            //   style:
-            //       _getStyle(const Color(0xff5E6B7D), 12, 0, key: 'qty-label'),
-            // ),
-            RepaintBoundary(
-              child: Text(
-                pnlValue,
-                style: _getStyle(pnlColor, 15, 1),
-              ),
-            ),
-          ],
+        RepaintBoundary(
+          child: Text(
+            pnlValue,
+            style: _getStyle(pnlColor, 16, 0),
+          ),
         ),
       ],
     );
@@ -875,38 +830,40 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
     // );
   }
 
-  Widget _buildAveragePriceRow(Color txtColor, String avgPrice) {
+  Widget _buildAveragePriceRow(Color txtColor, theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text(
-            "Avg  ",
-            style: _getStyle(const Color(0xff5E6B7D), 12, 3, key: 'avg-label'),
+        Text(
+          "${widget.position.sPrdtAli}",
+          overflow: TextOverflow.ellipsis,
+          style: _getStyle(
+            theme.isDarkMode ? colors.colorWhite : const Color(0xff666666),
+            12,
+            3,
           ),
-          Text(
-            avgPrice,
-            style: _getStyle(txtColor, 14, 3, key: 'avg-value'),
-          )
-        ]),
+        ),
 
         // Wrap LTP in RepaintBoundary as it changes frequently
         RepaintBoundary(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 "LTP  ",
                 style: TextWidget.textStyle(
                   fontSize: 12,
-                  color: Color(0xff5E6B7D),
+                  color: const Color(0xff666666),
                   theme: ref.read(themeProvider).isDarkMode,
                   fw: 3,
                 ),
               ),
               Text(
                 "${widget.position.lp}",
-                style: _getStyle(txtColor, 14, 3, key: 'ltp-value'),
+                style:
+                    _getStyle(const Color(0xff666666), 14, 3, key: 'ltp-value'),
               )
             ],
           ),

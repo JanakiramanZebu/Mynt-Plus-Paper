@@ -99,54 +99,59 @@ class _searchScripList extends State<SearchScripList> {
                 dense: true,
                 contentPadding:
                     EdgeInsets.only(left: 16, right: 0, top: 0, bottom: 0),
-                title: Row(
-                  children: [
-                    //  TextWidget.subText(
-                    //     text:  "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym} ",
+                title: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      //  TextWidget.subText(
+                      //     text:  "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym} ",
 
-                    //     theme: theme.isDarkMode,
-                    //     fw: 1),
-
-                    Text(
-                      "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym} ",
-                      style: TextWidget.textStyle(
-                          fontSize: 13, theme: theme.isDarkMode, fw: 0),
-                    ),
-
-                    if (scrip.option != null)
-
-                      // TextWidget.subText(
-                      //   text:  "${scrip.option}",
-                      // color: Color(0xff666666),
-                      //   theme: theme.isDarkMode,
-                      //   fw: 1),
+                      //     theme: theme.isDarkMode,
+                      //     fw: 1),
 
                       Text(
-                        "${scrip.option}",
+                        "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym} ",
                         style: TextWidget.textStyle(
-                            fontSize: 13,
-                            color: Color(0xff666666),
-                            theme: theme.isDarkMode,
-                            fw: 0),
-                      )
-                  ],
+                            fontSize: 14, theme: theme.isDarkMode),
+                      ),
+
+                      if (scrip.option != null)
+
+                        // TextWidget.subText(
+                        //   text:  "${scrip.option}",
+                        // color: Color(0xff666666),
+                        //   theme: theme.isDarkMode,
+                        //   fw: 1),
+
+                        Text(
+                          "${scrip.option}",
+                          style: TextWidget.textStyle(
+                              fontSize: 13,
+                              color: Color(0xff666666),
+                              theme: theme.isDarkMode,
+                              fw: 0),
+                        )
+                    ],
+                  ),
                 ),
                 subtitle: Row(
                   children: [
                     CustomExchBadge(exch: "${scrip.exch}"),
-                    SizedBox(width: 4,),
+                    SizedBox(
+                      width: 4,
+                    ),
                     if (scrip.expDate != null)
                       TextWidget.paraText(
-                          text: "${scrip.expDate} ",
-                          theme: theme.isDarkMode,
-                          fw: 00),
+                        text: "${scrip.expDate} ",
+                        theme: theme.isDarkMode,
+                      ),
                     if (scrip.expDate == "" && scrip.cname != null)
                       Expanded(
                         child: TextWidget.paraText(
-                            text: "${scrip.cname}",
-                            textOverflow: TextOverflow.ellipsis,
-                            theme: theme.isDarkMode,
-                            fw: 00),
+                          text: "${scrip.cname}",
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                        ),
                       ),
                   ],
                 ),

@@ -51,16 +51,22 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          TextWidget.titleText(
-                              text: "Manage Watchlist",
-                              // (${watchlist.length >= 10 ? 10 : watchlist.length})
-                              theme: theme.isDarkMode,
-                              fw: 1),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: TextWidget.titleText(
+                                text: "Manage Watchlist",
+                                // (${watchlist.length >= 10 ? 10 : watchlist.length})
+                                theme: theme.isDarkMode,
+                                fw: 1),
+                          ),
                           if (watchlist.length - 4 < 10)
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
                                   onTap: () async {
+                                    // Add delay for visual feedback
+                                    await Future.delayed(const Duration(milliseconds: 150));
+                                    
                                     if (context.mounted) {
                                       Navigator.pop(context);
                                     }
@@ -79,11 +85,11 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                   },
                                   borderRadius: BorderRadius.circular(8),
                                   splashColor: theme.isDarkMode
-                                      ? Colors.white24
-                                      : Colors.black12,
+                                      ? Colors.white.withOpacity(0.15)
+                                      : Colors.black.withOpacity(0.15),
                                   highlightColor: theme.isDarkMode
-                                      ? Colors.white12
-                                      : Colors.black.withOpacity(0.06),
+                                      ? Colors.white.withOpacity(0.08)
+                                      : Colors.black.withOpacity(0.08),
                                   child: Padding(
                                       padding: const EdgeInsets.all(5),
                                       child: Row(children: [
@@ -92,7 +98,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 ? colors.colorLightBlue
                                                 : colors.colorBlue),
                                         const SizedBox(width: 3),
-                                        TextWidget.paraText(
+                                        TextWidget.subText(
                                             text: "Add Watchlist",
                                             color: theme.isDarkMode
                                                 ? colors.colorLightBlue
@@ -137,7 +143,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                             return Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                onTap: () async {
+                                onTap: () {
                                   // click to switch watch list
                                   ref
                                       .read(marketWatchProvider)
@@ -147,17 +153,17 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                       .read(marketWatchProvider)
                                       .changeWlName(watchlist[index], "No");
 
-                                  await marketWatch.changeWLScrip(
+                                   marketWatch.changeWLScrip(
                                       watchlist[index], context);
 
                                   Navigator.pop(context);
                                 },
                                 splashColor: theme.isDarkMode
-                                    ? Colors.white24
-                                    : Colors.black12,
+                                    ? Colors.white.withOpacity(0.15)
+                                    : Colors.black.withOpacity(0.15),
                                 highlightColor: theme.isDarkMode
-                                    ? Colors.white12
-                                    : Colors.black.withOpacity(0.06),
+                                    ? Colors.white.withOpacity(0.08)
+                                    : Colors.black.withOpacity(0.08),
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 0),
@@ -169,7 +175,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                           : assets.darkProductIcon
                                       : widget.currentWLName == watchlist[index]
                                           ? assets.actProductIcon
-                                          : assets.productIcon),
+                                          : assets.productIcon
+                                          
+                                          ),
                                   title:
                                       //  TextWidget.subText(
                                       //     text:  watchlist[index].isEmpty
@@ -191,15 +199,13 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                     ? "Nifty Bank"
                                                     : "${watchlist[index][0].toUpperCase()}${watchlist[index].substring(1)}",
                                     style: TextWidget.textStyle(
-                                        fontSize: 13,
+                                        fontSize: 14,
                                         color: widget.currentWLName !=
                                                 watchlist[index]
                                             ? colors.colorGrey
-                                            : theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
+                                            : const Color(0xFF0037B7),
                                         theme: theme.isDarkMode,
-                                        fw: 0),
+                                        ),
                                   ),
                                   trailing: watchlist.length > 1
                                       ? Row(
@@ -210,6 +216,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                               color: Colors.transparent,
                                               child: InkWell(
                                                 onTap: () async {
+                                                  // Add delay for visual feedback
+                                                  await Future.delayed(const Duration(milliseconds: 150));
+                                                  
                                                   showModalBottomSheet(
                                                     context: context,
                                                     useSafeArea: true,
@@ -232,13 +241,19 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 },
                                                 borderRadius:
                                                     BorderRadius.circular(20),
+                                                splashColor: theme.isDarkMode
+                                                    ? Colors.white.withOpacity(0.15)
+                                                    : Colors.black.withOpacity(0.15),
+                                                highlightColor: theme.isDarkMode
+                                                    ? Colors.white.withOpacity(0.08)
+                                                    : Colors.black.withOpacity(0.08),
                                                 child: const Padding(
                                                   padding:
-                                                      const EdgeInsets.all(8),
+                                                      EdgeInsets.all(8),
                                                   child: Icon(
                                                     Icons.edit_outlined,
                                                     color:
-                                                        const Color(0xff666666),
+                                                        Color(0xff666666),
                                                     size: 20,
                                                   ),
                                                 ),
@@ -250,6 +265,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                               color: Colors.transparent,
                                               child: InkWell(
                                                 onTap: () async {
+                                                  // Add delay for visual feedback
+                                                  await Future.delayed(const Duration(milliseconds: 150));
+                                                  
                                                   // Click to Delete watchlist name
                                                   await showDialog(
                                                     context: context,
@@ -368,7 +386,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                                 16),
                                                                         child: TextWidget.subText(
                                                                             text:
-                                                                                'Do you really want to delete "${watchlist[index]}" watchlist?',
+                                                                                'Are you sure you want to delete "${watchlist[index]}" ?',
                                                                             theme:
                                                                                 theme.isDarkMode,
                                                                             fw: 0),
@@ -401,13 +419,14 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                             },
                                                                       style: OutlinedButton
                                                                           .styleFrom(
+                                                                             minimumSize: const Size(0, 40), // width, height
                                                                         side: BorderSide(
                                                                             color:
                                                                                 colors.darkred), // Outline border color
                                                                         shape:
                                                                             RoundedRectangleBorder(
                                                                           borderRadius:
-                                                                              BorderRadius.circular(50),
+                                                                              BorderRadius.circular(5),
                                                                         ),
                                                                         backgroundColor:
                                                                             Colors.transparent, // Transparent background
@@ -444,7 +463,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                   child: Icon(
                                                     Icons.delete_outlined,
                                                     color:
-                                                        const Color(0xff666666),
+                                                        colors.kColorRedText,
                                                     size: 20,
                                                   ),
                                                 ),
@@ -470,7 +489,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                             return Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                onTap: () async {
+                                onTap: () {
                                   ref
                                       .read(marketWatchProvider)
                                       .setCurrentWatchlistPageIndex(
@@ -485,7 +504,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                             context: context,
                                             isSubscribe: true);
                                   } else {
-                                    await marketWatch.changeWLScrip(
+                                     marketWatch.changeWLScrip(
                                         preDefWl[preDefIndex], context);
                                   }
 
@@ -494,11 +513,11 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                   }
                                 },
                                 splashColor: theme.isDarkMode
-                                    ? Colors.white24
-                                    : Colors.black12,
+                                    ? Colors.white.withOpacity(0.15)
+                                    : Colors.black.withOpacity(0.15),
                                 highlightColor: theme.isDarkMode
-                                    ? Colors.white12
-                                    : Colors.black.withOpacity(0.06),
+                                    ? Colors.white.withOpacity(0.08)
+                                    : Colors.black.withOpacity(0.08),
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 0),
@@ -534,14 +553,14 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 ? "Nifty Bank"
                                                 : "${preDefWl[preDefIndex][0].toUpperCase()}${preDefWl[preDefIndex].substring(1)}",
                                     style: TextWidget.textStyle(
-                                        fontSize: 13,
+                                        fontSize: 14,
                                         color: isSelected
                                             ? (theme.isDarkMode
                                                 ? colors.colorWhite
                                                 : colors.colorBlack)
                                             : colors.colorGrey,
                                         theme: theme.isDarkMode,
-                                        fw: 0),
+                                        ),
                                   ),
                                 ),
                               ),

@@ -29,61 +29,74 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
     final theme = ref.read(themeProvider);
     final marketWatch = ref.read(marketWatchProvider);
 
-    return ListTile(
-      onLongPress: () {
-        if (marketWatch.isPreDefWLs == "Yes") {
-          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
-              "This is a pre-defined watchlist that cannot be edited!"));
-        } else {
-          ref
-              .read(marketWatchProvider)
-              .requestMWScrip(context: context, isSubscribe: false);
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => EditScrip(wlName: marketWatch.wlName)));
-        }
-      },
-      onTap: () async {
-        // Prevent multiple navigation events on rapid clicks
-        if (_isNavigating) return;
-
-       
-
-        try {
-          setState(() {
-            _isNavigating = true;
-          });
-
-          // Add a small delay for the UI to reflect loading state if needed
-          await marketWatch.calldepthApis(context, widget.watchListData, "");
-        } catch (e) {
-          // Handle any errors
-        } finally {
-          // Reset navigation lock after some delay to prevent immediate re-clicks
-          if (mounted) {
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (mounted) {
-                setState(() {
-                  _isNavigating = false;
-                });
-              }
-            });
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(6),
+        splashColor: theme.isDarkMode 
+            ? Colors.white.withOpacity(0.15)
+            : Colors.black.withOpacity(0.15),
+        highlightColor: theme.isDarkMode 
+            ? Colors.white.withOpacity(0.08)
+            : Colors.black.withOpacity(0.08),
+        onLongPress: () {
+          if (marketWatch.isPreDefWLs == "Yes") {
+            ScaffoldMessenger.of(context).showSnackBar(warningMessage(context,
+                "This is a pre-defined watchlist that cannot be edited!"));
+          } else {
+            ref
+                .read(marketWatchProvider)
+                .requestMWScrip(context: context, isSubscribe: false);
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => EditScrip(wlName: marketWatch.wlName)));
           }
-        }
-      },
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      dense: false,
+        },
+        onTap: () async {
+          // Prevent multiple navigation events on rapid clicks
+          if (_isNavigating) return;
+
+          // Add delay for visual feedback
+          // await Future.delayed(const Duration(milliseconds: 150));
+
+          try {
+            setState(() {
+              _isNavigating = true;
+            });
+
+            // Add a small delay for the UI to reflect loading state if needed
+            await marketWatch.calldepthApis(context, widget.watchListData, "");
+          } catch (e) {
+            // Handle any errors
+          } finally {
+            // Reset navigation lock after some delay to prevent immediate re-clicks
+            if (mounted) {
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (mounted) {
+                  setState(() {
+                    _isNavigating = false;
+                  });
+                }
+              });
+            }
+          }
+        },
+        child: Container(
+         
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            dense: false,
       title: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
             widget.watchListData["symbol"].toString().toUpperCase(),
             style: TextWidget.textStyle(
-                fontSize: 13,
+                fontSize: 14,
                 color: theme.isDarkMode ? Colors.white : Colors.black,
-                theme: theme.isDarkMode,
-                fw: 0),
+                theme: theme.isDarkMode,   
+                ),
           ),
           const SizedBox(
             width: 4,
@@ -92,10 +105,12 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
             Text(
               "${widget.watchListData["option"]}",
               style: TextWidget.textStyle(
-                  fontSize: 13,
+                  fontSize: 14,
                   color: Color(0xff666666),
                   theme: theme.isDarkMode,
-                  fw: 0),
+                  
+                  
+                  ),
             )
         ],
       ),
@@ -103,7 +118,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const SizedBox(height: 3),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -116,9 +131,14 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                 //             : colors.colorBlack)),
 
                 TextWidget.paraText(
-                  text: " ${widget.watchListData['expDate']}  ",
-                  theme: theme.isDarkMode, fw: 00
+                  text: " ${widget.watchListData['expDate']}  ", color: theme.isDarkMode
+                  ? const Color(0xffFFFFFF)
+                  : const Color(0xff666666),
+                  theme: theme.isDarkMode, 
+                 
                 ),
+
+                
               if (widget.watchListData['holdingQty'] != null &&
                   widget.watchListData['holdingQty'].toString().isNotEmpty &&
                   widget.watchListData['holdingQty'] != "null") ...[
@@ -140,10 +160,13 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
           ),
         ],
       ),
-      trailing: RepaintBoundary(
-        child: _PriceDataWidget(
-            token: widget.watchListData['token'],
-            initialData: widget.watchListData),
+            trailing: RepaintBoundary(
+              child: _PriceDataWidget(
+                  token: widget.watchListData['token'],
+                  initialData: widget.watchListData),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -265,10 +288,10 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
                 : colors.ltpgreen;
 
     final changeTextStyle = TextWidget.textStyle(
-      fontSize: 12, // or keep 12 if you prefer
+      fontSize: 16, // or keep 12 if you prefer
       color: changeColor,
       theme: theme.isDarkMode,
-      fw: 2, // fw = 0 → FontWeight.w500 as per your logic
+      fw: 0, // fw = 0 → FontWeight.w500 as per your logic
     );
 
     // Build the UI with minimal widget creation
@@ -276,13 +299,14 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TextWidget.subText(
-              text: "$displayLtp", fw: 0, theme: theme.isDarkMode),
-          const SizedBox(height: 4),
-          Text(
-            "$displayChange   $displayPerChange%",
+          Text("$displayLtp"
+           ,
             style: changeTextStyle,
-          )
+          ),
+          const SizedBox(height: 8),
+         
+           TextWidget.paraText(
+              text:  "$displayChange $displayPerChange%", fw: 3, theme: theme.isDarkMode),
         ]);
   }
 }

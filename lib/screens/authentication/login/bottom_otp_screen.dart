@@ -162,23 +162,33 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                     : const Color(0xffFFFFFF),
                 elevation: 0,
                 centerTitle: false,
-                leadingWidth: 41,
+                leadingWidth: 48,
                 titleSpacing: 6,
-                leading: InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: SvgPicture.asset(
-                        "assets/icon/appbarIcon/arrow-back.svg",
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : const Color(0xFF141414),
-                        height: 24,
-                        width: 24,
-                      ),
-                    )),
+                leading: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    splashColor: Colors.black.withOpacity(0.15),
+                    highlightColor: Colors.black.withOpacity(0.08),
+                    child: InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          alignment: Alignment.center,
+                          child: SvgPicture.asset(
+                            "assets/icon/appbarIcon/arrow-back.svg",
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : const Color(0xFF141414),
+                            height: 24,
+                            width: 24,
+                          ),
+                        )),
+                  ),
+                ),
                 actions: [
                   Padding(
                     padding: const EdgeInsets.only(right: 16, top: 5),
@@ -217,8 +227,8 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                     color: theme.isDarkMode
                                         ? colors.colorWhite
                                         : const Color(0xFF141414),
-                                    fw: 0,
-                                    fs: 22),
+                                    fw: 1,
+                                    fs: 20),
                                 const SizedBox(height: 10),
                                 // if (!auth.loading || auth.totp) ...[
                                 //   // Text("",
@@ -399,16 +409,13 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                             backgroundColor: !theme.isDarkMode
                                 ? otpController.length <= (auth.totp ? 5 : 3) ||
                                         otpController.text.isEmpty
-                                    ? const Color(0xffFFFFFF)
+                                    ? const Color(0xff0037B7).withOpacity(0.3)
                                     : const Color(0xff0037B7)
                                 : otpController.length <= (auth.totp ? 5 : 3) ||
                                         otpController.text.isEmpty
                                     ? colors.darkGrey
                                     : colors.colorbluegrey,
-                            side: const BorderSide(
-                              color: Color(0xff0037B7),
-                              width: 1,
-                            ),
+                            side: BorderSide.none,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             )),
@@ -429,21 +436,21 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2, color: colors.colorWhite),
                               )
-                            : TextWidget.subText(
+                            : TextWidget.titleText(
                                 text: "Verify",
                                 theme: false,
                                 color: !theme.isDarkMode
                                     ? otpController.length <=
                                                 (auth.totp ? 5 : 3) ||
                                             otpController.text.isEmpty
-                                        ? const Color(0xff0037B7)
+                                        ? const Color(0xffFFFFFF)
                                         : const Color(0xffFFFFFF)
                                     : otpController.length <=
                                                 (auth.totp ? 5 : 3) ||
                                             otpController.text.isEmpty
                                         ? colors.darkGrey
                                         : colors.colorBlack,
-                                fw: 0),
+                                fw: 2),
                       ),
                     ),
                     Padding(
@@ -454,32 +461,47 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                         children: [
                           (!auth.totp && !auth.loading)
                               ? (!auth.totp && _start == 0 && !auth.loading)
-                                  ? InkWell(
-                                      onTap:
-                                          //  internet
-                                          //             .connectionStatus ==
-                                          //         ConnectivityResult.none
-                                          //     ? null
-                                          //     :
-                                          () {
-                                        SmsAutoFill().unregisterListener();
-                                        otpController.text = '';
-                                        _startListeningForOtp();
-                                        auth.submitResendOtp(context);
-                                        _start = 89;
+                                  ? Material(
+                                      color: Colors.transparent,
+                                      shape: const BeveledRectangleBorder(),
+                                      // clipBehavior: Clip.hardEdge,
+                                      child: InkWell(
+                                          customBorder:
+                                              const BeveledRectangleBorder(),
+                                          splashColor:
+                                              Colors.black.withOpacity(0.15),
+                                          highlightColor:
+                                              Colors.black.withOpacity(0.08),
+                                          onTap:
+                                              //  internet
+                                              //             .connectionStatus ==
+                                              //         ConnectivityResult.none
+                                              //     ? null
+                                              //     :
+                                              () {
+                                            SmsAutoFill().unregisterListener();
+                                            otpController.text = '';
+                                            _startListeningForOtp();
+                                            auth.submitResendOtp(context);
+                                            _start = 89;
 
-                                        // auth.loginotpResend(
-                                        //     widget.field, widget.value, widget.password, context);
+                                            // auth.loginotpResend(
+                                            //     widget.field, widget.value, widget.password, context);
 
-                                        startTimer();
-                                      },
-                                      child: TextWidget.subText(
-                                          text: "Resend OTP",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.colorLightBlue
-                                              : const Color(0xff737373),
-                                          fw: 3))
+                                            startTimer();
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 4, vertical: 4),
+                                            child: TextWidget.subText(
+                                                text: "Resend OTP",
+                                                theme: false,
+                                                color: theme.isDarkMode
+                                                    ? colors.colorLightBlue
+                                                    : const Color(0xff737373),
+                                                fw: 3),
+                                          )),
+                                    )
                                   : TextWidget.subText(
                                       text: " $resendTime",
                                       theme: false,
@@ -490,31 +512,44 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                               : const Color(0xff737373),
                                       fw: 3)
                               : const SizedBox(),
-                          InkWell(
-                              onTap: () async {
-                                if (!auth.loading) {
-                                  // Clear the OTP field first
-                                  setState(() {
-                                    otpController.text = "";
-                                  });
+                          Material(
+                            color: Colors.transparent,
+                            shape: const BeveledRectangleBorder(),
+                            // clipBehavior: Clip.hardEdge,
+                            child: InkWell(
+                                customBorder: const BeveledRectangleBorder(),
+                                splashColor: Colors.black.withOpacity(0.15),
+                                highlightColor: Colors.black.withOpacity(0.08),
+                                onTap: () async {
+                                  if (!auth.loading) {
+                                    // Clear the OTP field first
+                                    setState(() {
+                                      otpController.text = "";
+                                    });
 
-                                  // Update TOTP state
-                                  await auth.setChangetotp(!auth.totp);
+                                    // Update TOTP state
+                                    await auth.setChangetotp(!auth.totp);
 
-                                  // Trigger login with new state
-                                  if (mounted) {
-                                    auth.submitLogin(context, true);
+                                    // Trigger login with new state
+                                    if (mounted) {
+                                      auth.submitLogin(context, true);
+                                    }
                                   }
-                                }
-                              },
-                              child: TextWidget.subText(
-                                  text:
-                                      auth.totp ? 'Switch OTP' : 'Switch TOTP',
-                                  theme: false,
-                                  color: theme.isDarkMode
-                                      ? colors.colorLightBlue
-                                      : const Color(0xff737373),
-                                  fw: 3)),
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4, vertical: 4),
+                                  child: TextWidget.subText(
+                                      text: auth.totp
+                                          ? 'Switch OTP'
+                                          : 'Switch TOTP',
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.colorLightBlue
+                                          : const Color(0xff737373),
+                                      fw: 3),
+                                )),
+                          ),
                         ],
                       ),
                     )

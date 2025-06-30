@@ -33,7 +33,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isProcessing = false;
   late FocusNode focusNode;
   late FocusNode focusNode1;
-  bool switchback = false;
 
   @override
   void initState() {
@@ -58,16 +57,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleContinue() async {
-    if (_isProcessing) return;
+    final auth = ref.read(authProvider);
+    final ledgerprovider = ref.read(ledgerProvider);
+    auth.validateLogin();
+    auth.validatePass();
+
+    if (_isProcessing ||
+        auth.loginMethCtrl.text.isEmpty ||
+        auth.passCtrl.text.isEmpty) return;
+    if (auth.loginMethError != "" || auth.passError != "") return;
 
     setState(() => _isProcessing = true);
 
     try {
       HapticFeedback.heavyImpact();
       SystemSound.play(SystemSoundType.click);
-
-      final auth = ref.read(authProvider);
-      final ledgerprovider = ref.read(ledgerProvider);
 
       auth.optError = "";
       await auth.submitLogin(context, false);
@@ -83,7 +87,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       AuthProvider auth, UserProfileProvider userProfile, WidgetRef ref) async {
     final theme = ref.watch(themeProvider);
     if (pref.islogOut! ||
-        switchback == true &&
+        auth.switchback == true &&
             (pref.clientId!.isEmpty ||
                 pref.clientId!.isNotEmpty ||
                 pref.clientMob!.isEmpty ||
@@ -177,7 +181,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ? colors.colorBlack
                           : colors.colorWhite,
                     ),
-                    child: CircularLoaderImage()))
+                    child: const CircularLoaderImage()))
             : PopScope(
                 canPop: false,
                 // pref.islogOut! &&
@@ -196,24 +200,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         : const Color(0xffFFFFFF),
                     elevation: 0,
                     centerTitle: false,
-                    leadingWidth: 41,
+                    leadingWidth: 48,
                     titleSpacing: 6,
-                    leading: InkWell(
-                        onTap: () async {
-                          await _handleBackNavigation(
-                              context, pref, auth, userProfile, ref);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 16),
-                          child: SvgPicture.asset(
-                            "assets/icon/appbarIcon/arrow-back.svg",
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : const Color(0xFF141414),
-                            height: 24,
-                            width: 24,
-                          ),
-                        )),
+                    leading: Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.hardEdge,
+                      child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: Colors.black.withOpacity(0.15),
+                          highlightColor: Colors.black.withOpacity(0.08),
+                          onTap: () async {
+                            await _handleBackNavigation(
+                                context, pref, auth, userProfile, ref);
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            child: SvgPicture.asset(
+                              "assets/icon/appbarIcon/arrow-back.svg",
+                              color: theme.isDarkMode
+                                  ? colors.colorWhite
+                                  : const Color(0xFF141414),
+                              height: 24,
+                              width: 24,
+                            ),
+                          )),
+                    ),
                     // title: TextWidget.headText(
                     //     text: pref.clientName!.isNotEmpty && pref.islogOut!
                     //         ? "Welcome"
@@ -262,8 +274,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               : "Sign in with MYNT",
                                           theme: false,
                                           color: const Color(0xFF141414),
-                                          fw: 0,
-                                          fs: 22),
+                                          fw: 1,
+                                          fs: 20),
                                       const SizedBox(
                                         height: 15,
                                       ),
@@ -313,12 +325,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               RegExp(r'[a-zA-Z0-9]')),
                                         ],
                                         style: TextWidget.textStyle(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           theme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          fw: 0,
+                                          fw: 3,
+                                          height: 1.3,
                                         ),
                                         decoration: InputDecoration(
                                           filled: true,
@@ -337,7 +350,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           floatingLabelBehavior:
                                               FloatingLabelBehavior.auto,
                                           labelStyle: TextWidget.textStyle(
-                                            fontSize: 16,
+                                            fontSize: 14,
                                             theme: theme.isDarkMode,
                                             color: theme.isDarkMode
                                                 ? colors.colorWhite
@@ -365,9 +378,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 width: 1),
                                           ),
                                           counterText: "",
-                                          contentPadding: pref.islogOut!
+                                          contentPadding: pref.islogOut! &&
+                                                  (pref.clientId!.isNotEmpty ||
+                                                      pref.clientMob!
+                                                          .isNotEmpty)
                                               ? const EdgeInsets.symmetric(
-                                                  horizontal: 5, vertical: 20)
+                                                  horizontal: 5, vertical: 18)
                                               : const EdgeInsets.symmetric(
                                                   horizontal: 5, vertical: 12),
                                         ),
@@ -425,12 +441,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 : false,
                                         textAlign: TextAlign.start,
                                         style: TextWidget.textStyle(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           theme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          fw: 0,
+                                          fw: 3,
+                                          height: 1.3,
                                         ),
                                         decoration: InputDecoration(
                                           labelText: "Password",
@@ -439,7 +456,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               ? colors.colorBlack
                                               : const Color(0xFFFFFFFF),
                                           labelStyle: TextWidget.textStyle(
-                                              fontSize: 16,
+                                              fontSize: 14,
                                               theme: theme.isDarkMode,
                                               color: theme.isDarkMode
                                                   ? colors.colorWhite
@@ -459,18 +476,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           suffixIconConstraints:
                                               const BoxConstraints(
                                                   minHeight: 0, minWidth: 0),
-                                          suffixIcon: InkWell(
-                                            onTap: auth.hiddenPass,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 8),
-                                              child: SvgPicture.asset(
-                                                auth.hidePass
-                                                    ? "assets/icon/eye-off.svg"
-                                                    : "assets/icon/eye.svg",
-                                                color: const Color(0xff999999),
-                                                width: 22,
+                                          suffixIcon: Material(
+                                            color: Colors.transparent,
+                                            shape: const CircleBorder(),
+                                            clipBehavior: Clip.hardEdge,
+                                            child: InkWell(
+                                              customBorder:
+                                                  const CircleBorder(),
+                                              splashColor: Colors.black
+                                                  .withOpacity(0.15),
+                                              highlightColor: Colors.black
+                                                  .withOpacity(0.08),
+                                              onTap: auth.hiddenPass,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 8),
+                                                child: SvgPicture.asset(
+                                                  auth.hidePass
+                                                      ? "assets/icon/eye-off.svg"
+                                                      : "assets/icon/eye.svg",
+                                                  color:
+                                                      const Color(0xff999999),
+                                                  width: 22,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -488,7 +518,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           ),
                                           contentPadding:
                                               const EdgeInsets.symmetric(
-                                                  horizontal: 5, vertical: 20),
+                                                  horizontal: 5, vertical: 12),
                                           hintStyle: TextWidget.textStyle(
                                               fontSize: 12,
                                               theme: theme.isDarkMode,
@@ -503,7 +533,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               RegExp(r'\s')),
                                         ],
                                         onChanged: (v) {
-                                          auth.validateLogin();
+                                          auth.validatePass();
                                           auth.activeBtnLogin();
                                         },
                                       ),
@@ -533,30 +563,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       elevation: 0,
                                       backgroundColor: !theme.isDarkMode
                                           ? auth.isDisableBtn
-                                              ? const Color(0xffFFFFFF)
+                                              ? const Color(0xff0037B7)
+                                                  .withOpacity(0.3)
                                               : const Color(0xff0037B7)
                                           : auth.isDisableBtn
                                               ? colors.darkGrey
                                               : colors.colorbluegrey,
-                                      side: const BorderSide(
-                                        color: Color(0xff0037B7),
-                                        width: 1,
-                                      ),
+                                      side: BorderSide.none,
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 13),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(30),
                                       )),
-                                  onPressed:
-                                      ((auth.loginMethCtrl.text.isEmpty ||
-                                              auth.passCtrl.text.isEmpty))
-                                          // ||
-                                          //     internet.connectionStatus ==
-                                          //         ConnectivityResult.none)
-                                          ? null
-                                          : (_isProcessing || auth.loading)
-                                              ? null
-                                              : _handleContinue,
+                                  onPressed: () {
+                                    _handleContinue();
+                                  },
                                   child: (_isProcessing || auth.loading)
                                       ? SizedBox(
                                           width: 18,
@@ -565,17 +586,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               strokeWidth: 2,
                                               color: colors.colorWhite),
                                         )
-                                      : TextWidget.subText(
+                                      : TextWidget.titleText(
                                           text: "Login",
                                           theme: false,
                                           color: !theme.isDarkMode
                                               ? auth.isDisableBtn
-                                                  ? const Color(0xff0037B7)
+                                                  ? const Color(0xffFFFFFF)
                                                   : const Color(0xffFFFFFF)
                                               : auth.isDisableBtn
                                                   ? colors.darkGrey
                                                   : colors.colorBlack,
-                                          fw: 0),
+                                          fw: 2),
                                 ),
                               ),
                               const SizedBox(height: 20),
@@ -590,44 +611,69 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     pref.islogOut! &&
                                             (pref.clientId!.isNotEmpty ||
                                                 pref.clientMob!.isNotEmpty)
-                                        ? InkWell(
-                                            onTap: () async {
-                                              {
-                                                pref.setLogout(false);
-                                                pref.setHideLoginOptBtn(true);
-                                                await auth.loginMethod();
-                                                FocusScope.of(context)
-                                                    .unfocus();
-                                                setState(() {
-                                                  switchback = true;
-                                                });
-                                              }
-                                            },
+                                        ? Material(
+                                            color: Colors.transparent,
+                                            shape:
+                                                const BeveledRectangleBorder(),
+                                            // clipBehavior: Clip.hardEdge,
+                                            child: InkWell(
+                                              customBorder:
+                                                  const BeveledRectangleBorder(),
+                                              splashColor: Colors.black
+                                                  .withOpacity(0.15),
+                                              highlightColor: Colors.black
+                                                  .withOpacity(0.08),
+                                              onTap: () async {
+                                                {
+                                                  pref.setLogout(false);
+                                                  pref.setHideLoginOptBtn(true);
+                                                  await auth.loginMethod();
+                                                  FocusScope.of(context)
+                                                      .unfocus();
+                                                  auth.switchbackbutton(true);
+                                                }
+                                              },
+                                              child: TextWidget.subText(
+                                                  text: "Switch account",
+                                                  theme: false,
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorLightBlue
+                                                      : const Color(0xff737373),
+                                                  fw: 3),
+                                            ),
+                                          )
+                                        : const SizedBox(),
+                                    Material(
+                                      color: Colors.transparent,
+                                      shape: const BeveledRectangleBorder(),
+                                      // clipBehavior: Clip.hardEdge,
+                                      child: InkWell(
+                                          customBorder:
+                                              const BeveledRectangleBorder(),
+                                          splashColor:
+                                              Colors.black.withOpacity(0.15),
+                                          highlightColor:
+                                              Colors.black.withOpacity(0.08),
+                                          onTap: _isProcessing || auth.loading
+                                              ? null
+                                              : () {
+                                                  forpass.clearError();
+                                                  forpass.clearTextField();
+                                                  Navigator.pushNamed(context,
+                                                      Routes.forgotPass);
+                                                },
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 4, vertical: 4),
                                             child: TextWidget.subText(
-                                                text: "Switch account",
+                                                text: "Forgot password?",
                                                 theme: false,
                                                 color: theme.isDarkMode
                                                     ? colors.colorLightBlue
                                                     : const Color(0xff737373),
                                                 fw: 3),
-                                          )
-                                        : const SizedBox(),
-                                    InkWell(
-                                        onTap: _isProcessing || auth.loading
-                                            ? null
-                                            : () {
-                                                forpass.clearError();
-                                                forpass.clearTextField();
-                                                Navigator.pushNamed(
-                                                    context, Routes.forgotPass);
-                                              },
-                                        child: TextWidget.subText(
-                                            text: "Forgot password?",
-                                            theme: false,
-                                            color: theme.isDarkMode
-                                                ? colors.colorLightBlue
-                                                : const Color(0xff737373),
-                                            fw: 3)),
+                                          )),
+                                    ),
                                   ],
                                 ),
                               ),

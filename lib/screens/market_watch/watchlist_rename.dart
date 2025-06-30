@@ -71,7 +71,7 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
           children: [
             const CustomDragHandler(),
             Container(
-             padding: const EdgeInsets.only(left: 16.0, right: 8),
+              padding: const EdgeInsets.only(left: 16.0, right: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -94,7 +94,9 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
+                          color: theme.isDarkMode
+                              ? const Color(0xffBDBDBD)
+                              : colors.colorGrey,
                         ),
                       ),
                     ),
@@ -103,7 +105,9 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
               ),
             ),
             Divider(
-              color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
               height: 0,
             ),
             Padding(
@@ -116,7 +120,9 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                       color: Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFEEEEEE),
+                        color: theme.isDarkMode
+                            ? const Color(0xFF2A2A2A)
+                            : const Color(0xFFEEEEEE),
                         width: 1,
                       ),
                     ),
@@ -124,7 +130,8 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                       controller: textCtrl,
                       autofocus: true,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9 ]')),
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'[a-zA-Z0-9 ]')),
                       ],
                       style: TextWidget.textStyle(
                         fontSize: 14,
@@ -139,7 +146,8 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                           theme: theme.isDarkMode,
                           fw: 0,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -187,14 +195,16 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                             },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
+                         minimumSize: const Size(0, 40), // width, height
                         backgroundColor: theme.isDarkMode
                             ? colors.colorbluegrey
-                            : colors.colorBlack,
+                            : Color(0xFF0037B7),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
+                          borderRadius: BorderRadius.circular(5),
                         ),
                       ),
-                      child: (_isProcessing || ref.read(marketWatchProvider).loading)
+                      child: (_isProcessing ||
+                              ref.read(marketWatchProvider).loading)
                           ? const SizedBox(
                               width: 18,
                               height: 20,

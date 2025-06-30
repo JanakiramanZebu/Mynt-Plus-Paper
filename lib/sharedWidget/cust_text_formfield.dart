@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mynt_plus/res/res.dart';
 
 class CustomTextFormField extends StatelessWidget {
   final String? hintText;
@@ -60,17 +61,17 @@ class CustomTextFormField extends StatelessWidget {
             suffixIcon: suffixIcon,
             prefixIcon: prefixIcon,
             contentPadding:
-                const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
             enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(30)),
+                borderSide: BorderSide(color: colors.colorBlue),
+                borderRadius: BorderRadius.circular(5)),
             disabledBorder: InputBorder.none,
             focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(30)),
+                borderRadius: BorderRadius.circular(5)),
             border: OutlineInputBorder(
                 borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(30))),
+                borderRadius: BorderRadius.circular(5))),
         onChanged: onChanged);
   }
 }

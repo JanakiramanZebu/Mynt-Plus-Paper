@@ -5,6 +5,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/version_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
@@ -81,6 +82,7 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
     setState(() {
       _isAnyProcessing = true;
       _activeButton = 'loginMynt';
+      ref.read(authProvider).switchbackbutton(true);
     });
     await Future.delayed(Duration(milliseconds: 10));
     if (_conflictTap) {
@@ -156,180 +158,164 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
           final auth = ref.watch(authProvider);
           return Scaffold(
             extendBodyBehindAppBar: true,
-            backgroundColor: Colors.transparent,
+            backgroundColor: const Color(0xffFFFFFF),
             appBar: AppBar(
-              backgroundColor: Colors.transparent, // Transparent AppBar
-              elevation: 0, // No shadow
+              backgroundColor: const Color(0xffFFFFFF),
+              elevation: 0,
               centerTitle: true,
             ),
-            body: SingleChildScrollView(
-              primary: false,
-              physics: const NeverScrollableScrollPhysics(),
-              child: Container(
-                height: MediaQuery.of(context).size.height,
-                decoration: const BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment(
-                        0.7, -0.7), // Moves gradient toward the top-right
-                    radius: 1.5, // Extends the gradient radius
-                    colors: [
-                      Color(0xFF005FEC),
-                      Color(0xFF0057D8),
-                      Color(0xFF004FC4),
-                      Color(0xFF0047B1),
-                      Color(0xFF003F9E),
-                      // End color
-                    ],
-                    stops: [0.0, 0.3, 0.6, 0.8, 1.0], // Smooth transitions
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    height: 80,
                   ),
-                ),
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 80,
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 20, bottom: 35, top: 25),
-                                child: SvgPicture.asset(
-                                  "assets/icon/Mynt New logo.svg",
-                                  color: colors.colorWhite,
-                                  width: 130,
-                                ),
-                              ),
-                              SvgPicture.asset(
-                                "assets/icon/banner_ruppee.svg",
-                              ),
-                            ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 20),
-                            child:
-                                SvgPicture.asset("assets/icon/dream_big.svg"),
-                          ),
-                          const SizedBox(
-                            height: 25,
-                          ),
-                          SvgPicture.asset(
-                            "assets/icon/investwell.svg",
-                          ),
-                        ],
-                      ),
-                    ),
-                    ListView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
+                  Expanded(
+                    child: Column(
                       children: [
-                        Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: _isAnyProcessing
-                                      ? null
-                                      : () => _handleLoginToMynt(ref),
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 46,
-                                    decoration: BoxDecoration(
-                                      color: colors.colorBlack,
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: _isAnyProcessing &&
-                                            _activeButton == 'loginMynt'
-                                        ? const SizedBox(
-                                            width: 16,
-                                            height: 16,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        : Text(
-                                            "Login to MYNT",
-                                            style: textStylebanner(
-                                                colors.colorWhite,
-                                                17,
-                                                FontWeight.w500),
-                                          ),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-
-                                // Open a free account Button
-                                GestureDetector(
-                                  onTap: _isAnyProcessing ? null : _handleLogin,
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 46,
-                                    decoration: BoxDecoration(
-                                      color: colors.colorBlack,
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: _isAnyProcessing &&
-                                            _activeButton == 'openAccount'
-                                        ? const SizedBox(
-                                            width: 16,
-                                            height: 16,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        : Text(
-                                            "Open a free account",
-                                            style: textStylebanner(
-                                                colors.colorWhite,
-                                                17,
-                                                FontWeight.w500),
-                                          ),
-                                  ),
-                                ),
-                                const SizedBox(height: 40),
-                                SvgPicture.asset(
-                                  'assets/icon/zebu.svg',
-                                  width: 45,
-                                  height: 45,
-                                  color: colors.colorWhite,
-                                ),
-                                // Text(
-                                //     "Zebu Share and Wealth Managements Pvt. Ltd.",
-                                //     style: textStylebanner(colors.colorWhite,
-                                //         12, FontWeight.w700)),
-                                const SizedBox(
-                                  height: 8,
-                                ),
-                                Text(
-                                  "SEBI Registration No: INZ000174634 | Research Analyst : INH200006044 | NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL : 12080400 | AMFI ARN : 113118",
-                                  style: textStylebanner(
-                                      colors.colorWhite, 10, FontWeight.w500),
-                                  textAlign: TextAlign.center,
-                                )
-                              ],
-                            )),
+                        SvgPicture.asset(
+                          "assets/icon/Mynt New logo.svg",
+                          color: const Color(0xff0037B7),
+                          width: 110,
+                        ),
+                        // SvgPicture.asset(
+                        //   "assets/icon/banner_ruppee.svg",
+                        // ),
+                        // Padding(
+                        //   padding: const EdgeInsets.only(left: 20),
+                        //   child: SvgPicture.asset("assets/icon/dream_big.svg"),
+                        // ),
+                        // const SizedBox(
+                        //   height: 25,
+                        // ),
+                        // SvgPicture.asset(
+                        //   "assets/icon/investwell.svg",
+                        // ),
                       ],
                     ),
-                    Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text("Version 3.0.2",
-                            textAlign: TextAlign.center,
-                            style: textStyle(
-                                colors.colorWhite, 10, FontWeight.w300))),
-                    const SizedBox(
-                      height: 20,
-                    )
-                  ],
-                ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      OutlinedButton(
+                        onPressed: _isAnyProcessing ? null : _handleLogin,
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: const Color(0xff0037B7),
+                          minimumSize: const Size.fromHeight(46),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          side: BorderSide.none,
+                          padding: EdgeInsets.zero,
+                        ),
+                        child:
+                            _isAnyProcessing && _activeButton == 'openAccount'
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : TextWidget.titleText(
+                                    text: "Open your FREE demat account",
+                                    theme: false,
+                                    color: !theme.isDarkMode
+                                        ? const Color(0xffFFFFFF)
+                                        : const Color(0xff0037B7),
+                                    fw: 2),
+                      ),
+                      const SizedBox(height: 10),
+                      OutlinedButton(
+                        onPressed: _isAnyProcessing
+                            ? null
+                            : () => _handleLoginToMynt(ref),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: colors.colorWhite,
+                          minimumSize: const Size.fromHeight(46),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          side: const BorderSide(
+                            color: Color(0xff0037B7),
+                            width: 1,
+                          ),
+                          padding: EdgeInsets.zero,
+                        ),
+                        child: _isAnyProcessing && _activeButton == 'loginMynt'
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : TextWidget.titleText(
+                                text: "Login with MYNT",
+                                theme: false,
+                                color: !theme.isDarkMode
+                                    ? const Color(0xff0037B7)
+                                    : const Color(0xffFFFFFF),
+                                fw: 2),
+                      ),
+
+                      // Open a free account Button
+
+                      // const SizedBox(height: 40),
+                      // SvgPicture.asset(
+                      //   'assets/icon/zebu.svg',
+                      //   width: 45,
+                      //   height: 45,
+                      //   color: const Color(0xff0037B7),
+                      // ),
+                      // Text(
+                      //     "Zebu Share and Wealth Managements Pvt. Ltd.",
+                      //     style: textStylebanner(colors.colorWhite,
+                      //         12, FontWeight.w700)),
+                      const SizedBox(
+                        height: 40,
+                      ),
+                      // TextWidget.paraText(
+                      //   text: ,
+                      //   theme: false,
+                      //   color: const Color(0xff737373),
+                      //   // fw: 3,
+                      //   align: TextAlign.left,
+                      // ),
+                      const SizedBox(height: 3),
+                      TextWidget.paraText(
+                        text:
+                            "Zebu, SEBI Registration No: INZ000174634 | Research Analyst : INH200006044 | NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL : 12080400 | AMFI ARN : 113118",
+                        theme: false,
+                        color: const Color(0xff737373),
+                        // fw: 3,
+                        align: TextAlign.left,
+                      ),
+                      const SizedBox(height: 5),
+                      TextWidget.paraText(
+                        text: "Version 3.0.2",
+                        theme: false,
+                        color: const Color(0xff737373),
+                        // fw: 3,
+                        align: TextAlign.left,
+                      ),
+                    ],
+                  ),
+                  // Container(
+                  //     margin: const EdgeInsets.only(bottom: 10),
+                  //     padding: const EdgeInsets.symmetric(horizontal: 16),
+                  //     child: Text("",
+                  //         textAlign: TextAlign.center,
+                  //         style: textStyle(
+                  //             colors.colorWhite, 10, FontWeight.w300))),
+                  const SizedBox(
+                    height: 20,
+                  )
+                ],
               ),
             ),
           );

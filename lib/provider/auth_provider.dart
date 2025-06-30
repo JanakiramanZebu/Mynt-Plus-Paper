@@ -74,7 +74,7 @@ class AuthProvider extends DefaultChangeNotifier {
   int get selectedTab => _selectedTab;
 
   Map _ordgrefis = {};
-  Map get ordgrefis => _ordgrefis;
+  Map get savedOrderPreference => _ordgrefis;
 
   setChangetotp(bool value) async {
     if (_totp == value) return; // Prevent unnecessary updates
@@ -351,7 +351,10 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   activeBtnLogin() {
-    if (validateLogin()) {
+    if (loginMethError == "" &&
+        passError == "" &&
+        loginMethCtrl.text.isNotEmpty &&
+        passCtrl.text.isNotEmpty) {
       _isDisableBtn = false;
     } else {
       _isDisableBtn = true;
@@ -383,8 +386,8 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Clear login validation error
   void clearError() {
-    loginMethError = null;
-    passError = null;
+    loginMethError = "";
+    passError = "";
     notifyListeners();
   }
 
@@ -443,18 +446,32 @@ class AuthProvider extends DefaultChangeNotifier {
     };
   }
 
+  bool? _switchback = false;
+  bool? get switchback => _switchback;
+
+  switchbackbutton(bool value) {
+    _switchback = value;
+    notifyListeners();
+  }
+
 // Validate login
-  bool validateLogin() {
-    clearError();
+  validateLogin() {
+    // clearError();
     if (loginMethCtrl.text.trim().isEmpty) {
       loginMethError = "Your mobile / client id is required";
-    }
-
-    if (passCtrl.text.trim().isEmpty) {
-      passError = "Please enter the password";
+    } else {
+      loginMethError = "";
     }
     notifyListeners();
-    return loginMethError == null && passError == null;
+  }
+
+  validatePass() {
+    if (passCtrl.text.trim().isEmpty) {
+      passError = "Please enter the password";
+    } else {
+      passError = "";
+    }
+    notifyListeners();
   }
 
 // Validate OTP
@@ -480,7 +497,7 @@ class AuthProvider extends DefaultChangeNotifier {
     //   _isMobileLogin = true;
     // }
 
-    if (validateLogin()) {
+    if (loginMethError == "" && passError == "") {
       fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase(),
           navi ? "pop" : "", imieJson(loginMethCtrl.text.toUpperCase()), _totp);
     }

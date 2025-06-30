@@ -53,16 +53,15 @@ class OrderScreenHeader extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              "₹${ltp} ",
-               style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                          16, FontWeight.w600)
+              "${ltp} ",
+               style: textStyle(percentageColor, 16, FontWeight.w500)
             ),
             Text(
               " (${perChange}%)",
               style: textStyle(
-                percentageColor,
-                13,
-                FontWeight.w600),
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                12,
+                FontWeight.w400),
             ),
           ],
         );
