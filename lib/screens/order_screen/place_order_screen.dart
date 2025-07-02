@@ -1602,7 +1602,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                               14,
                                               FontWeight.w500)),
                                       IconButton(
-                                          onPressed: isBuy! ? (){
+                                          onPressed: (isBuy! &&  widget.scripInfo.seg == "EQT") ? (){
                                              ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
@@ -1638,10 +1638,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                 .replaceAll("-", ""));
                                                   },
                                                   icon: SvgPicture.asset(theme.isDarkMode
-                                                      ? isBuy! ? assets.squareminus : isOco
+                                                      ? isBuy! && widget.scripInfo.seg == "EQT" ? assets.squareminus : isOco
                                                           ? assets.darkCheckedboxIcon
                                                           : assets.darkCheckboxIcon
-                                                      : isBuy! ? assets.squareminus : isOco
+                                                      : isBuy! && widget.scripInfo.seg == "EQT" ? assets.squareminus : isOco
                                                           ? assets.checkedbox
                                                           : assets.checkbox))
                                     ],
@@ -2699,12 +2699,12 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                               //         .scaleDown,
                                               //     ),
                                               // ),
-                                              suffixIcon: InkWell(
-                                                onTap: () {},
-                                                child: SvgPicture.asset(
-                                                    assets.switchIcon,
-                                                    fit: BoxFit.scaleDown),
-                                              ),
+                                              // suffixIcon: InkWell(
+                                              //   onTap: () {},
+                                              //   child: SvgPicture.asset(
+                                              //       assets.switchIcon,
+                                              //       fit: BoxFit.scaleDown),
+                                              // ),
 
                                               // suffixIcon:
                                               //     InkWell(
@@ -4981,11 +4981,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                               fit: BoxFit.scaleDown)),
                       textCtrl: triggerPriceCtrl,
                       textAlign: TextAlign.start)),
-              const SizedBox(height: 8),
-              Text(
-                  "Your order will be executed after a stock crosses this trigger price set for you",
-                  style:
-                      textStyle(const Color(0xff666666), 12, FontWeight.w500))
+              // const SizedBox(height: 8),
+              // Text(
+              //     "Your order will be executed after a stock crosses this trigger price set for you",
+              //     style:
+              //         textStyle(const Color(0xff666666), 12, FontWeight.w500))
             ]));
   }
 
@@ -5127,12 +5127,13 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
         children: [
                   Row(
                     children: [
-                      Text("Market Protected by ", 
+                      Text("Market Protected by", 
                       style: textStyle(
                       theme.isDarkMode ? colors.colorLightBlue:colors.colorBlue, 
                       14, 
                       FontWeight.w600),),
                       InkWell(
+                        // borderRadius: BorderRadius.circular(8),
                         onTap: () {
                           showDialog(
                             context: context,
@@ -5216,28 +5217,31 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                             },
                           );
                         },
-                        child: Text(
-                          "$marketProtection%",
-                          style: textStyle(
-                            theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
-                            14,
-                            FontWeight.w600,
-                          ).copyWith(
-                            decoration: TextDecoration.underline,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            " $marketProtection %",
+                            style: textStyle(
+                              theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                              14,
+                              FontWeight.w600,
+                            ).copyWith(
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                const SizedBox(height: 4),
-                Text(
-                    "I agreed the trigger executions are not guaranteed. ",
-                  style: textStyle(
-                    theme.isDarkMode ? Colors.grey[400]! : Colors.grey[600]!, 
-                    13, 
-                    FontWeight.w400
-                  ),
-                ),
+                // const SizedBox(height: 4),
+                // Text(
+                //     "I agreed the trigger executions are not guaranteed. ",
+                //   style: textStyle(
+                //     theme.isDarkMode ? Colors.grey[400]! : Colors.grey[600]!, 
+                //     13, 
+                //     FontWeight.w400
+                //   ),
+                // ),
           
         ],
       ),

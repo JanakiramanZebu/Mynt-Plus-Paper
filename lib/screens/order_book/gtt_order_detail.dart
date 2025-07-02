@@ -112,7 +112,7 @@ class GttOrderDetail extends ConsumerWidget {
                       const SizedBox(height: 16),
                       rowOfInfoData(
                           "Product",
-                          displayData.placeOrderParams?.prd == "C" ? "CNC" : "MIS",
+                          displayData.placeOrderParams?.prd == "C" ? "CNC" :displayData.placeOrderParams?.prd == "I"? "MIS":displayData.placeOrderParams?.prd == "M"?"NRML":"-",
                           "Order Type",
                           "${displayData.placeOrderParams?.prctyp}",
                           theme),
@@ -134,7 +134,7 @@ class GttOrderDetail extends ConsumerWidget {
                       const SizedBox(height: 16),
                       rowOfInfoData(
                          "Product",
-                          displayData.placeOrderParamsLeg2?.prd == "C" ? "CNC" : "MIS",
+                          displayData.placeOrderParamsLeg2?.prd == "C" ? "CNC" :displayData.placeOrderParamsLeg2?.prd == "I"? "MIS":displayData.placeOrderParamsLeg2?.prd == "M"?"NRML":"-",
                           "Order Type",
                           "${displayData.placeOrderParamsLeg2?.prctyp}",
                           theme), 
