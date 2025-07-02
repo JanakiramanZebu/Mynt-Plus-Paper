@@ -37,8 +37,11 @@ class ScripDepthInfo extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
   final String isBasket;
 
-  const ScripDepthInfo(
-      {super.key, required this.wlValue, required this.isBasket});
+  const ScripDepthInfo({
+    super.key, 
+    required this.wlValue, 
+    required this.isBasket,
+  });
 
   @override
   ConsumerState<ScripDepthInfo> createState() => _ScripDepthInfoState();
@@ -125,10 +128,11 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
 
   void _initializeSize() {
     setState(() {
-      // Ensure initialChildSize is always >= minChildSize (0.05)
-      initSize = (ref.read(marketWatchProvider).actDeptBtn != "Overview")
+        initSize = (ref.read(marketWatchProvider).actDeptBtn != "Overview") ||
+              ref.read(marketWatchProvider).scripsize == true
           ? 0.88
-          : 0.28; // Default to 28% for overview, well above 5% minimum
+          : 0.28;
+      
 
       chartArgs = ChartArgs(
         exch: widget.wlValue.exch,
@@ -408,7 +412,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                     },
                     child: DraggableScrollableSheet(
                         initialChildSize: initSize,
-                        minChildSize: 0.05, // Set to 5% for very minimal view
+                        minChildSize: 0.05, // Use custom minSize if provided
                         maxChildSize: 0.99,
                         expand: false,
                         builder: (BuildContext ctx,
@@ -627,16 +631,15 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                       decoration:
                                                                           BoxDecoration(
                                                                         shape: BoxShape
-                                                                            .circle,
-                                                                       
+                                                                            .circle,                                                                       
                                                                       ),
                                                                       child:
                                                                           SvgPicture
                                                                               .asset(
                                                                         assets
-                                                                            .bellIcon,
-                                                                        width: 18,
-                                                                        height: 18,
+                                                                            .alert,
+                                                                        width: 20,
+                                                                        height: 20,
                                                                         color:Color(0xFF0037B7)
  ,
                                                                       ),
@@ -718,7 +721,6 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                             true);
                                                                   
                                                                     setState(() {
-                                                                      // Use helper method to ensure safe initial size
                                                                       initSize =
                                                                           _getSafeInitialSize(
                                                                               0.28);
@@ -726,13 +728,16 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           .chngDephBtn(
                                                                               "Chart");
                                                                     });
-                                                                  
-                                                                    Navigator.pop(
-                                                                        context);
+                                                                                                                            
+                                                                    if (scripInfo.scripsize) {
+                                                                      Navigator.pop(context); 
+                                                                      Navigator.pop(context);
+                                                                    } else {
+                                                                      Navigator.pop(context);
+                                                                    }
                                                                   
                                                                     if (currentRouteName ==
-                                                                        Routes
-                                                                            .searchScrip) {
+                                                                        Routes.searchScrip) {
                                                                       scripInfo.requestMWScrip(
                                                                           context:
                                                                               context,

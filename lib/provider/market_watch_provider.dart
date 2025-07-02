@@ -640,7 +640,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         symbol: '${flow ? raw['symbol'] : raw.symbol}',
         expDate: '${flow ? raw['expDate'] : raw.expDate}',
         option: '${flow ? raw['option'] : raw.option}');
-
+    scripdepthsize(false);
     showModalBottomSheet(
         isScrollControlled: true,
         useSafeArea: true,
@@ -709,6 +709,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _actDeptBtn = val;
     notifyListeners();
   }
+
+  bool _scripsize = false;
+  bool get scripsize => _scripsize;
+
+  scripdepthsize(value) {
+    _scripsize = value;
+    notifyListeners();
+  }
+
 
   List<String> shareHoldType = [
     "Promoter Holding",
@@ -1094,6 +1103,23 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     ConstantName.pageName = name;
     notifyListeners();
   }
+
+  // Store holding detail context for returning from chart
+  dynamic _holdingDetailExchTsym;
+  dynamic _holdingDetailData;
+  
+  void setHoldingDetailContext(dynamic exchTsym, dynamic holdingData) {
+    _holdingDetailExchTsym = exchTsym;
+    _holdingDetailData = holdingData;
+  }
+  
+  bool hasHoldingDetailContext() {
+    return _holdingDetailExchTsym != null && _holdingDetailData != null;
+  }
+  
+  dynamic getHoldingDetailExchTsym() => _holdingDetailExchTsym;
+  dynamic getHoldingDetailData() => _holdingDetailData;
+  
 
   orderAletrPendingSearch(String value, BuildContext context) {
     if (value.length > 1) {
