@@ -883,7 +883,7 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_gttOrderBookModel![0].stat == "Ok") {
           ConstantName.sessCheck = true;
           if (initLoad != "initLoad") {
-            _selectedTab = 3;
+            _selectedTab = 2;
             requestWSOrderBook(isSubscribe: true, context: context);
           }
 

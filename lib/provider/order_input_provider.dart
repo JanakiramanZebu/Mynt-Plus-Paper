@@ -86,7 +86,11 @@ class OrderInputProvider extends DefaultChangeNotifier {
         _ordType = "I";
       } else if (val == InvestType.delivery) {
         _ordType = "C";
-      } else {
+      }
+      else if (val == InvestType.mtf) {
+        _ordType = "F";
+      }
+       else {
         _ordType = "M";
       }
     } else {
@@ -127,7 +131,8 @@ class OrderInputProvider extends DefaultChangeNotifier {
     trailingTickCtrl.text = data.trailprc ?? "";
     if (data.sPrdtAli == "MIS" ||
         data.sPrdtAli == "CNC" ||
-        data.sPrdtAli == "NRML") {
+        data.sPrdtAli == "NRML"||
+        data.sPrdtAli == "MTF") {
       _orderName = "Regular";
       if (data.prd == "C") {
         _ordType = "C";
@@ -135,7 +140,12 @@ class OrderInputProvider extends DefaultChangeNotifier {
       } else if (data.prd == "I") {
         _ordType = "I";
         _investType = InvestType.intraday;
-      } else {
+      }
+      else if (data.prd == "F") {
+        _ordType = "F";
+        _investType = InvestType.mtf;
+      }
+       else {
         _ordType = "M";
         _investType = InvestType.carryForward;
       }
@@ -263,7 +273,7 @@ class OrderInputProvider extends DefaultChangeNotifier {
 
   final List<String> _alertTypes = [
     "LTP",
-    "Perc. Change",
+    // "Perc. Change",
     // "ATP",
     // "OI",
     // "TOI",

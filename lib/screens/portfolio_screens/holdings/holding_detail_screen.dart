@@ -1,19 +1,48 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/portfolio_model/holdings_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/user_profile_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/alert_dialogue.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
+import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/scrip_info_btns.dart';
+import '../../authentication/password/forgot_pass_unblock_user.dart';
+import '../../market_watch/futures/future_screen.dart';
+import '../../market_watch/scrip_depth_info.dart';
+
+// Create a wrapper for ScripDepthInfo with custom configuration
+class ScripDepthInfoWithHoldingConfig extends StatelessWidget {
+  final DepthInputArgs wlValue;
+  final String isBasket;
+  final bool isFromHolding;
+
+  const ScripDepthInfoWithHoldingConfig({
+    Key? key,
+    required this.wlValue,
+    required this.isBasket,
+    this.isFromHolding = false,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ScripDepthInfo(
+      wlValue: wlValue, 
+      isBasket: isBasket,
+    );
+  }
+}
 
 // Create a wrapper for ScripInfoBtns with navigation lock
 class ScripInfoButtonsWithLock extends StatefulWidget {
@@ -86,6 +115,8 @@ class HoldingDetailScreen extends ConsumerStatefulWidget {
 
 class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
     with SingleTickerProviderStateMixin {
+  // Track if user has scrolled
+  bool _hasScrolled = false;
   StreamSubscription? _socketSubscription;
   late ExchTsym _exchTsym;
   late HoldingsModel _holdingData;
@@ -97,6 +128,10 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
   // Added for optimization
   bool _isInitialized = false;
   bool _isLoading = true;
+
+  // State variables for expandable sections
+  bool _isMarketDepthExpanded = false;
+  bool _isFuturesExpanded = false;
 
   // Add animation controller for smooth transitions
   late AnimationController _animationController;
@@ -413,431 +448,897 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
   @override
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
+    final scripInfo = ref.watch(marketWatchProvider);
+    final depthData = ref.watch(marketWatchProvider).getQuotes!;
+    final userProfile = ref.watch(userProfileProvider);
+
+    DepthInputArgs depthArgs = DepthInputArgs(
+        exch: _exchTsym.exch ?? "",
+        token: _exchTsym.token ?? "",
+        tsym: scripInfo.getQuotes!.tsym ?? '',
+        instname: scripInfo.getQuotes!.instname ?? "",
+        symbol: scripInfo.getQuotes!.symbol ?? '',
+        expDate: scripInfo.getQuotes!.expDate ?? '',
+        option: scripInfo.getQuotes!.option ?? '');
 
     // Show loading state during initial load
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          elevation: .2,
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading: const CustomBackBtn(),
-          shadowColor:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          title: TextWidget.titleText(
-              text: "${_exchTsym.tsym}", theme: theme.isDarkMode, fw: 1),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
+    // if (_isLoading) {
+    //   return Scaffold(
+    //     appBar: AppBar(
+    //       elevation: .2,
+    //       leadingWidth: 41,
+    //       titleSpacing: 6,
+    //       leading: const CustomBackBtn(),
+    //       shadowColor:
+    //           theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+    //       title: TextWidget.titleText(
+    //           text: "${_exchTsym.tsym}", theme: theme.isDarkMode, fw: 1),
+    //     ),
+    //     body: const Center(
+    //       child: CircularProgressIndicator(),
+    //     ),
+    //   );
+    // }
 
-    return Scaffold(
-      appBar: AppBar(
-          elevation: .2,
-          leadingWidth: 41,
-          titleSpacing: 6,
-          leading: const CustomBackBtn(),
-          shadowColor:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          title: Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.88,
+        maxChildSize: 0.99,
+        builder: (context, scrollController) {
+          return Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: theme.isDarkMode
+                    ? colors.colorBlack
+                    : colors.colorWhite,
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color(0xff999999),
+                      blurRadius: 4.0,
+                      offset: Offset(2.0, 0.0))
+                ]),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Column(
                 children: [
-                  TextWidget.titleText(
-                      text: "${_exchTsym.tsym}",
-                      theme: theme.isDarkMode,
-                      fw: 1),
+                  // Scrollable section that includes the header
+                  Expanded(
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (scrollNotification) {
+                        if (scrollNotification is ScrollUpdateNotification) {
+                          setState(() {
+                            _hasScrolled = scrollNotification.metrics.pixels > 0;
+                          });
+                        }
+                        return true;
+                      },
+                      child: ListView(
+                        controller: scrollController,
+                        children: [
+                          // Header section (previously fixed, now part of scrollable content)
+                          Container(
+                            decoration: BoxDecoration(
+                              color: theme.isDarkMode
+                                  ? colors.colorBlack
+                                  : colors.colorWhite,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
+                              ),
+                              boxShadow: _hasScrolled
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      )
+                                    ]
+                                  : [],
+                            ),
+                            child: Column(
+                              children: [
+                                const CustomDragHandler(),
+                                // clickable part of the header
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    // borderRadius: BorderRadius.circular(6),
+                                    onTap: () async {
+                                      // Add delay for visual feedback
+                                      await Future.delayed(const Duration(milliseconds: 150));
+                                      
+                                      await scripInfo.chngDephBtn("Overview");
+                                      scripInfo.scripdepthsize(true);
+                                      showModalBottomSheet(
+                                          barrierColor: Colors.black.withOpacity(0.3),
+                                          isScrollControlled: true,
+                                          useSafeArea: true,
+                                          isDismissible: true,
+                                          shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.vertical(
+                                                  top: Radius.circular(16))),
+                                          backgroundColor: Colors.transparent,
+                                          context: context,
+                                          builder: (context) => ScripDepthInfoWithHoldingConfig(
+                                              wlValue: depthArgs, 
+                                              isBasket: '',
+                                              isFromHolding: true));
+                                    },
+                                    splashColor: theme.isDarkMode
+                                        ? Colors.white.withOpacity(0.15)
+                                        : Colors.black.withOpacity(0.15),
+                                    highlightColor: theme.isDarkMode
+                                        ? Colors.white.withOpacity(0.08)
+                                        : Colors.black.withOpacity(0.08),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.start,
+                                                    children: [
+                                                      TextWidget.titleText(
+                                                          text:
+                                                              "${_exchTsym.tsym?.toUpperCase() ?? ''} ",
+                                                          color: !theme.isDarkMode
+                                                              ? colors.colorBlack
+                                                              : colors.colorWhite,
+                                                          theme: theme.isDarkMode,
+                                                          fw: 1),
+                                                    ]),
+                                                Row(
+                                                  children: [
+                                                    Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment.end,
+                                                        children: [
+                                                          FadeTransition(
+                                                            opacity: _animationController,
+                                                            child: TextWidget.titleText(
+                                                                text:
+                                                                    "₹${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
+                                                                color: (_exchTsym.change ==
+                                                                                "null" ||
+                                                                            _exchTsym
+                                                                                    .change ==
+                                                                                null) ||
+                                                                        _exchTsym
+                                                                                .change ==
+                                                                            "0.00"
+                                                                    ? colors.ltpgrey
+                                                                    : _exchTsym.change!
+                                                                                .startsWith(
+                                                                                    "-") ||
+                                                                            _exchTsym
+                                                                                .perChange!
+                                                                                .startsWith(
+                                                                                    "-")
+                                                                        ? colors.darkred
+                                                                        : colors.ltpgreen,
+                                                                theme: theme.isDarkMode,
+                                                                fw: 0),
+                                                          ),
+                                                          const SizedBox(height: 4),
+                                                          TextWidget.paraText(
+                                                              text:
+                                                                  "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                                                              color: !theme.isDarkMode
+                                                                  ? colors.colorBlack
+                                                                  : colors.colorWhite,
+                                                              theme: theme.isDarkMode,
+                                                              fw: 3)
+                                                        ]),
+                                                    const SizedBox(width: 16),
+                                                    SvgPicture.asset(
+                                                      assets.leftArrow,
+                                                      width: 18,
+                                                      height: 18,
+                                                      semanticsLabel: 'Sample Icon',
+                                                    ),
+                                                  ],
+                                                )
+                                              ],
+                                            ),
+                                          ]),
+                                    ),
+                                  ),
+                                ),
 
-                  // Animate price changes
-                  FadeTransition(
-                    opacity: _animationController,
-                    child: TextWidget.titleText(
-                        text: "₹${_exchTsym.lp}",
-                        theme: theme.isDarkMode,
-                        fw: 1),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    CustomExchBadge(exch: _exchTsym.exch!),
-                    // Animate percentage changes
-                    FadeTransition(
-                      opacity: _animationController,
-                      child: TextWidget.paraText(
-                          text:
-                              "${double.parse("${_exchTsym.change.toString() == "null" ? "0.00" : _exchTsym.change} ").toStringAsFixed(2)} (${_exchTsym.perChange.toString() == "null" ? "0.00" : _exchTsym.perChange}%)",
-                          theme: false,
-                          color: (_exchTsym.change == "null" ||
-                                      _exchTsym.change == null) ||
-                                  _exchTsym.change == "0.00"
-                              ? colors.ltpgrey
-                              : _exchTsym.change!.startsWith("-") ||
-                                      _exchTsym.perChange!.startsWith("-")
-                                  ? colors.darkred
-                                  : colors.ltpgreen,
-                          fw: 0),
-                    )
-                  ])
-            ]),
-          )),
-      body: ListView(children: [
-        Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-            child: Row(
-                mainAxisAlignment: _holdingData.sPrdtAli != "null"
-                    ? MainAxisAlignment.spaceBetween
-                    : MainAxisAlignment.end,
-                children: [
-                  if (_holdingData.sPrdtAli != "null")
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: theme.isDarkMode
-                              ? const Color(0xffB5C0CF).withOpacity(.15)
-                              : const Color(0xffF1F3F8)),
-                      child: TextWidget.subText(
-                          text: "${_holdingData.sPrdtAli}",
-                          theme: theme.isDarkMode,
-                          fw: 0,
-                          textOverflow: TextOverflow.ellipsis),
+                                // Add More and Exit buttons
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 16),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                  color: _isProcessingSell ||
+                                                          _holdingData.saleableQty == 0
+                                                      ? Color(0xff0037B7).withOpacity(.8)
+                                                      : Color(0xff0037B7),
+                                                  width: 1,
+                                                ),
+                                                color: const Color(0xffF1F3F8),
+                                                borderRadius: BorderRadius.circular(5)),
+                                            child: InkWell(
+                                              onTap: _isProcessingBuy ? null : _handleBuy,
+                                              child: Center(
+                                                child: _isProcessingBuy
+                                                    ? const SizedBox(
+                                                        width: 18,
+                                                        height: 18,
+                                                        child: CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                          valueColor:
+                                                              AlwaysStoppedAnimation<
+                                                                  Color>(Colors.white),
+                                                        ),
+                                                      )
+                                                    : TextWidget.subText(
+                                                        text: "Add",
+                                                        theme: false,
+                                                        color: Color(0xff0037B7),
+                                                        fw: 1),
+                                              ),
+                                            )),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                          child: Container(
+                                              height: 40,
+                                              decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                    color: _isProcessingSell ||
+                                                            _holdingData.saleableQty == 0
+                                                        ? Color(0xff0037B7)
+                                                            .withOpacity(.8)
+                                                        : Color(0xff0037B7),
+                                                    width: 1,
+                                                  ),
+                                                  color: const Color(0xffF1F3F8),
+                                                  borderRadius: BorderRadius.circular(5)),
+                                              child: InkWell(
+                                                onTap: _isProcessingSell
+                                                    ? null
+                                                    : _handleSell,
+                                                child: Center(
+                                                  child: _isProcessingSell
+                                                      ? SizedBox(
+                                                          width: 18,
+                                                          height: 18,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            valueColor: AlwaysStoppedAnimation<
+                                                                Color>(_isProcessingSell ||
+                                                                    _holdingData
+                                                                            .saleableQty ==
+                                                                        0
+                                                                ? colors.darkred
+                                                                    .withOpacity(.8)
+                                                                : colors.darkred),
+                                                          ),
+                                                        )
+                                                      : TextWidget.subText(
+                                                          text: "Exit",
+                                                          theme: false,
+                                                          color: _isProcessingSell ||
+                                                                  _holdingData
+                                                                          .saleableQty ==
+                                                                      0
+                                                              ? const Color(0xff0037B7)
+                                                                  .withOpacity(.8)
+                                                              : const Color(0xff0037B7),
+                                                          fw: 1),
+                                                ),
+                                              )))
+                                    ],
+                                  ),
+                                ),
+
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      TextWidget.subText(
+                                          text: 'Details',
+                                          color: Color(0xFF666666),
+                                          theme: theme.isDarkMode,
+                                          fw: 1),
+                                    ],
+                                  ),
+                                ),
+
+                                Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0, vertical: 8),
+                                    child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          TextWidget.subText(
+                                              text: "P&L",
+                                              theme: false,
+                                              color: const Color(0xff5E6B7D),
+                                              fw: 0),
+
+                                          // Animate P&L changes
+                                          FadeTransition(
+                                            opacity: _animationController,
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.end,
+                                              children: [
+                                                TextWidget.titleText(
+                                                    text: "${_exchTsym.profitNloss}",
+                                                    theme: false,
+                                                    color: _exchTsym.profitNloss!
+                                                            .startsWith("-")
+                                                        ? colors.darkred
+                                                        : colors.ltpgreen,
+                                                    fw: 1),
+                                                SizedBox(height: 4),
+                                                TextWidget.paraText(
+                                                    text: " (${_exchTsym.pNlChng})%",
+                                                    theme: false,
+                                                    color: Color(0xFF666666),
+                                                    fw: 0),
+                                              ],
+                                            ),
+                                          ),
+                                        ])),
+                              ],
+                            ),
+                          ),
+                          
+                          Divider(
+                              color: theme.isDarkMode
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider),
+                          
+                          // Details section
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                data(
+                                    "Non POA / Sell",
+                                    "${_holdingData.saleableQty ?? 0}/${_holdingData.npoadqty ?? 0}",
+                                    theme),
+
+                                data("Avg Price", "${_holdingData.upldprc ?? 0}",
+                                    theme),
+
+                                data(
+                                    "Product",
+                                    _holdingData.sPrdtAli != "null"
+                                        ? "${_holdingData.sPrdtAli}"
+                                        : "CNC",
+                                    theme),
+
+                                data(
+                                    "Invested",
+                                    "${_holdingData.invested == "0.00" ? _exchTsym.close ?? 0.00 : _holdingData.invested ?? 0.00}",
+                                    theme),
+
+                                data(
+                                    "Current",
+                                    (int.parse("${_holdingData.currentQty ?? 0}") *
+                                            double.parse(
+                                                _exchTsym.lp?.toString() ??
+                                                    "0.0"))
+                                        .toStringAsFixed(2),
+                                    theme),
+
+                                pledgeSection(theme),
+
+                                if (_holdingData.btstqty != "0") ...[
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            TextWidget.paraText(
+                                                text: "T1 Qty",
+                                                theme: false,
+                                                color: const Color(0xff666666),
+                                                fw: 0),
+                                            const SizedBox(height: 2),
+                                            TextWidget.subText(
+                                                text:
+                                                    "${_holdingData.btstqty ?? 0}",
+                                                theme: false,
+                                                color: const Color(0xff000000),
+                                                fw: 0),
+                                            const SizedBox(height: 2),
+                                            Divider(color: colors.colorDivider),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                if (_holdingData.rpnl != null &&
+                                    _holdingData.rpnl != "0") ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            TextWidget.paraText(
+                                                text: "Realised P&L",
+                                                theme: false,
+                                                color: const Color(0xff666666),
+                                                fw: 0),
+                                            const SizedBox(height: 2),
+                                            TextWidget.subText(
+                                                text: "${_holdingData.rpnl ?? 0}",
+                                                theme: false,
+                                                color: const Color(0xff000000),
+                                                fw: 0),
+                                            const SizedBox(height: 2),
+                                            Divider(color: colors.colorDivider),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ]),
+                        ], // Close ListView children
+                      ),
                     ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  ),
+                ], // Close Column children
+              ),
+            ),
+          );
+        });
+  }
+
+  // Helper methods to determine when to show sections
+  bool _shouldShowConditionalSection() {
+    // Add logic similar to scrip_depth_info.dart
+    // For now, show for equity instruments
+    return _exchTsym.exch == 'NSE' || _exchTsym.exch == 'BSE';
+  }
+
+  // Market Depth expandable section
+  Widget _buildMarketDepthSection(ThemesProvider theme) {
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              splashColor: theme.isDarkMode
+                  ? Colors.white.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.15),
+              highlightColor: theme.isDarkMode
+                  ? Colors.white.withOpacity(0.08)
+                  : Colors.black.withOpacity(0.08),
+              onTap: () async {
+                // Add delay for visual feedback
+                await Future.delayed(const Duration(milliseconds: 150));
+
+                // Toggle market depth expansion
+                setState(() {
+                  _isMarketDepthExpanded = !_isMarketDepthExpanded;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 35,
+                      height: 35,
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? const Color(0xffB5C0CF).withOpacity(.15)
+                            : const Color(0xffF1F3F8),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.show_chart,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextWidget.subText(
+                              text: "Market Depth",
+                              theme: theme.isDarkMode,
+                              fw: 1),
+                          const SizedBox(height: 2),
+                          TextWidget.paraText(
+                              text: "View bid/ask orders and market depth",
+                              color: const Color(0xff666666),
+                              theme: theme.isDarkMode,
+                              fw: 0),
+                        ],
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: _isMarketDepthExpanded ? 0.25 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: const Icon(
+                        Icons.chevron_right,
+                        color: Color(0xff666666),
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Expandable Market Depth Content
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: _isMarketDepthExpanded
+              ? Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider,
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Column(
                     children: [
                       TextWidget.paraText(
-                          text: "P&L",
-                          theme: false,
-                          color: const Color(0xff5E6B7D),
+                          text: "Market depth data would be displayed here",
+                          color: const Color(0xff666666),
+                          theme: theme.isDarkMode,
                           fw: 0),
-
-                      const SizedBox(height: 4),
-                      // Animate P&L changes
-                      FadeTransition(
-                        opacity: _animationController,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            TextWidget.titleText(
-                                text: "${_exchTsym.profitNloss}",
-                                theme: false,
-                                color: _exchTsym.profitNloss!.startsWith("-")
-                                    ? colors.darkred
-                                    : colors.ltpgreen,
-                                fw: 1),
-                            TextWidget.subText(
-                                text: " (${_exchTsym.pNlChng})%",
-                                theme: false,
-                                color: _exchTsym.pNlChng!.startsWith("-")
-                                    ? colors.darkred
-                                    : colors.ltpgreen,
-                                fw: 0),
-                          ],
-                        ),
-                      )
+                      const SizedBox(height: 8),
+                      TextWidget.paraText(
+                          text: "Bid/Ask orders, quantities, and prices",
+                          color: const Color(0xff666666),
+                          theme: theme.isDarkMode,
+                          fw: 0),
                     ],
                   ),
-                ])),
-        // Replace ScripInfoBtns with our wrapper that includes navigation lock
-        ScripInfoButtonsWithLock(
-            exch: '${_exchTsym.exch}',
-            token: '${_exchTsym.token}',
-            insName: '',
-            tsym: '${_exchTsym.tsym}'),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+
+  // Futures expandable section
+  Widget _buildFuturesSection(ThemesProvider theme, scripInfo) {
+    return Column(
+      children: [
         Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const SizedBox(height: 10),
-              TextWidget.titleText(
-                  text: "Holding details", theme: theme.isDarkMode, fw: 1),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextWidget.paraText(
-                            text: "Sellable Qty",
-                            theme: false,
-                            color: const Color(0xff666666),
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        TextWidget.subText(
-                            text: "${_holdingData.saleableQty ?? 0}",
-                            theme: theme.isDarkMode,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider)
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextWidget.paraText(
-                            text: "Avg.Price",
-                            theme: false,
-                            color: const Color(0xff666666),
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        TextWidget.subText(
-                            text: "${_holdingData.upldprc ?? 0}",
-                            theme: theme.isDarkMode,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider)
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextWidget.paraText(
-                            text: "Non POA Qty",
-                            theme: false,
-                            color: const Color(0xff666666),
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        TextWidget.subText(
-                            text: "${_holdingData.npoadqty ?? 0}",
-                            theme: theme.isDarkMode,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider)
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextWidget.paraText(
-                            text: "Invested",
-                            theme: false,
-                            color: const Color(0xff666666),
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        TextWidget.subText(
-                            text:
-                                "${_holdingData.invested == "0.00" ? _exchTsym.close ?? 0.00 : _holdingData.invested ?? 0.00}",
-                            theme: theme.isDarkMode,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider)
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextWidget.paraText(
-                            text: "Pledge Qty",
-                            theme: false,
-                            color: const Color(0xff666666),
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        TextWidget.subText(
-                            text: "${_holdingData.brkcolqty ?? 0}",
-                            theme: theme.isDarkMode,
-                            fw: 0),
-                        const SizedBox(height: 4),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextWidget.paraText(
-                            text: "Current Value",
-                            theme: false,
-                            color: const Color(0xff666666),
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        TextWidget.subText(
-                            text:
-                                (int.parse("${_holdingData.currentQty ?? 0}") *
-                                        double.parse(
-                                            _exchTsym.lp?.toString() ?? "0.0"))
-                                    .toStringAsFixed(2),
-                            theme: theme.isDarkMode,
-                            fw: 0),
-                        const SizedBox(height: 4),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              if (_holdingData.btstqty != "0") ...[
-                Row(
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              splashColor: theme.isDarkMode
+                  ? Colors.white.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.15),
+              highlightColor: theme.isDarkMode
+                  ? Colors.white.withOpacity(0.08)
+                  : Colors.black.withOpacity(0.08),
+              onTap: () async {
+                // Add delay for visual feedback
+                await Future.delayed(const Duration(milliseconds: 150));
+                await scripInfo.requestWSFut(
+                    context: context, isSubscribe: true);
+                // Toggle futures expansion
+                setState(() {
+                  _isFuturesExpanded = !_isFuturesExpanded;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextWidget.paraText(
-                              text: "T1 Qty",
-                              theme: false,
-                              color: const Color(0xff666666),
-                              fw: 0),
-                          const SizedBox(height: 2),
-                          TextWidget.subText(
-                              text: "${_holdingData.btstqty ?? 0}",
-                              theme: false,
-                              color: const Color(0xff000000),
-                              fw: 0),
-                          const SizedBox(height: 2),
-                          Divider(color: colors.colorDivider),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              if (_holdingData.rpnl != null && _holdingData.rpnl != "0") ...[
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextWidget.paraText(
-                              text: "Realised P&L",
-                              theme: false,
-                              color: const Color(0xff666666),
-                              fw: 0),
-                          const SizedBox(height: 2),
-                          TextWidget.subText(
-                              text: "${_holdingData.rpnl ?? 0}",
-                              theme: false,
-                              color: const Color(0xff000000),
-                              fw: 0),
-                          const SizedBox(height: 2),
-                          Divider(color: colors.colorDivider),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ])),
-      ]),
-      bottomNavigationBar: BottomAppBar(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          shape: const CircularNotchedRectangle(),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: Row(children: [
-              Expanded(
-                child: Container(
-                    height: 38,
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    decoration: BoxDecoration(
-                        color: _isProcessingBuy
-                            ? const Color(0xff43A833).withOpacity(0.7)
-                            : const Color(0xff43A833),
-                        borderRadius: BorderRadius.circular(32)),
-                    width: MediaQuery.of(context).size.width,
-                    child: InkWell(
-                      onTap: _isProcessingBuy ? null : _handleBuy,
-                      child: Center(
-                        child: _isProcessingBuy
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
-                                ),
-                              )
-                            : TextWidget.subText(
-                                text: "Add More",
-                                theme: false,
-                                color: const Color(0xffFFFFFF),
-                                fw: 1),
-                      ),
-                    )),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: Container(
-                      height: 38,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 5,
-                      ),
+                    Container(
+                      width: 35,
+                      height: 35,
                       decoration: BoxDecoration(
-                          color:
-                              _isProcessingSell || _holdingData.saleableQty == 0
-                                  ? colors.darkred.withOpacity(.8)
-                                  : colors.darkred,
-                          borderRadius: BorderRadius.circular(32)),
-                      width: MediaQuery.of(context).size.width,
-                      child: InkWell(
-                        onTap: _isProcessingSell ? null : _handleSell,
-                        child: Center(
-                          child: _isProcessingSell
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
-                                  ),
-                                )
-                              : TextWidget.subText(
-                                  text: "Exit",
-                                  theme: false,
-                                  color: const Color(0xffFFFFFF),
-                                  fw: 1),
+                        color: theme.isDarkMode
+                            ? const Color(0xffB5C0CF).withOpacity(.15)
+                            : const Color(0xffF1F3F8),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.trending_up,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          size: 16,
                         ),
-                      )))
-            ]),
-          )),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextWidget.subText(
+                              text: "Futures", theme: theme.isDarkMode, fw: 1),
+                          const SizedBox(height: 2),
+                          TextWidget.paraText(
+                              text: "View futures contracts and data",
+                              color: const Color(0xff666666),
+                              theme: theme.isDarkMode,
+                              fw: 0),
+                        ],
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: _isFuturesExpanded ? 0.25 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: const Icon(
+                        Icons.chevron_right,
+                        color: Color(0xff666666),
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Expandable Futures Content
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: _isFuturesExpanded
+              ? const FutureScreen()
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+
+  // Fundamentals navigation section
+  Widget _buildFundamentalsSection(ThemesProvider theme, scripInfo, depthData) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          splashColor: theme.isDarkMode
+              ? Colors.white.withOpacity(0.15)
+              : Colors.black.withOpacity(0.15),
+          highlightColor: theme.isDarkMode
+              ? Colors.white.withOpacity(0.08)
+              : Colors.black.withOpacity(0.08),
+          onTap: () async {
+            DepthInputArgs depthArgs = DepthInputArgs(
+                exch: _exchTsym.exch ?? "",
+                token: _exchTsym.token ?? "",
+                tsym: scripInfo.getQuotes!.tsym ?? '',
+                instname: scripInfo.getQuotes!.instname ?? "",
+                symbol: scripInfo.getQuotes!.symbol ?? '',
+                expDate: scripInfo.getQuotes!.expDate ?? '',
+                option: scripInfo.getQuotes!.option ?? '');
+            // Add delay for visual feedback
+            await Future.delayed(const Duration(milliseconds: 150));
+
+            if (scripInfo.fundamentalData == null ||
+                scripInfo.fundamentalData?.msg == "no data found") {
+              await scripInfo.fetchFundamentalData(
+                  tradeSym: "${_exchTsym.exch}:${_exchTsym.tsym}");
+            }
+
+            if (!mounted) return;
+
+            if (scripInfo.fundamentalData != null &&
+                scripInfo.fundamentalData?.msg != "no data found") {
+              // Reset state before navigation
+              await scripInfo.chngDephBtn("Overview");
+
+              await Navigator.pushNamed(
+                context,
+                Routes.fundamentalDetail,
+                arguments: {
+                  "wlValue": depthArgs,
+                  "depthData": depthData,
+                },
+              );
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Row(
+              children: [
+                Container(
+                  width: 35,
+                  height: 35,
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode
+                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                        : const Color(0xffF1F3F8),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.analytics_outlined,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      size: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextWidget.subText(
+                          text: "Fundamentals", theme: theme.isDarkMode, fw: 1),
+                      const SizedBox(height: 2),
+                      TextWidget.paraText(
+                          text: "View fundamental analysis and ratios",
+                          color: const Color(0xff666666),
+                          theme: theme.isDarkMode,
+                          fw: 0),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Color(0xff666666),
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Padding data(String name, String value, ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextWidget.paraText(
+                  text: name,
+                  theme: false,
+                  color: const Color(0xff666666),
+                  fw: 0),
+              TextWidget.subText(
+                  text: value,
+                  theme: false,
+                  color: const Color(0xff000000),
+                  fw: 0),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            color: theme.isDarkMode
+                ? colors.darkColorDivider.withOpacity(0.3)
+                : colors.colorDivider.withOpacity(0.3),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget pledgeSection(ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.paraText(
+                      text: "Pledge Qty",
+                      theme: false,
+                      color: const Color(0xff666666),
+                      fw: 0),
+                  const SizedBox(height: 4),
+                  TextWidget.subText(
+                      text: "${_holdingData.brkcolqty ?? 0}",
+                      theme: false,
+                      color: const Color(0xff000000),
+                      fw: 0),
+                ],
+              ),
+              Container(
+                  height: 30,
+                  width: 100,
+                  decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Color(0xff0037B7),
+                        width: 1,
+                      ),
+                      color: const Color(0xffF1F3F8),
+                      borderRadius: BorderRadius.circular(5)),
+                  child: InkWell(
+                    onTap: () {},
+                    child: Center(
+                      child: TextWidget.subText(
+                          text: "Unpledge",
+                          theme: false,
+                          color: const Color(0xff0037B7),
+                          fw: 1),
+                    ),
+                  ))
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

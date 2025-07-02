@@ -993,13 +993,21 @@ class SettingsScreen extends ConsumerWidget {
 
 // My Account Screen
 class MyAccountScreen extends ConsumerStatefulWidget {
-  const MyAccountScreen({super.key});
-
+  const MyAccountScreen({super.key,this.initialIndex = 0});
+  final int initialIndex;
   @override
   ConsumerState<MyAccountScreen> createState() => _MyAccountScreenState();
 }
 
 class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
+  late int _expandedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandedIndex = widget.initialIndex;        // ← store the target tile
+  }
+
   String _truncateProfileName(String text, {int maxLength = 18}) {
     return (text.length > maxLength)
         ? '${text.substring(0, maxLength)}...'
@@ -1010,6 +1018,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   final accountItems = [
     {'title': 'Profile'},
     {'title': 'Bank'},
+    {'title': 'Depository'},
     {'title': 'Margin Trading Facility (MTF)'},
     {'title': 'Trading Preferences'},
     {'title': 'Nominee'},
@@ -1151,9 +1160,10 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
 
                 return ExpansionTile(
                   // The first item ("Profile") is expanded by default
-                  initiallyExpanded: index == 0,
-                  onExpansionChanged: (isExpanding) =>
-                      _onExpansionChanged(isExpanding, title),
+                  initiallyExpanded: index == _expandedIndex,
+                  onExpansionChanged: (open) {
+        if (open) setState(() => _expandedIndex = index); // keep only one open
+      },
                   title: TextWidget.subText(
                     text: title,
                     theme: false,
@@ -1191,6 +1201,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         return _buildProfileDetailsContent(ref, theme);
       case 'Bank':
         return _buildBankDetailsContent(ref, theme);
+      case 'Depository':
+        return _buildDepositoryContent(ref, theme);
       case 'Margin Trading Facility (MTF)':
         return _buildMTFContent(ref, theme);
       case 'Trading Preferences':
@@ -1394,92 +1406,379 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     );
   }
 
+  Widget _buildDepositoryContent(WidgetRef ref, ThemesProvider theme) {
+    final profileprovider = ref.watch(profileAllDetailsProvider);
+        final theme = ref.watch(themeProvider);
+        bool DDPIActive =
+            profileprovider.clientAllDetails.clientData!.dDPI == 'Y';
+        bool POAActive =
+            profileprovider.clientAllDetails.clientData!.pOA == 'Y';
+    return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Card(
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextWidget.subText(
+                    text: "Demat (CDSL)", theme: theme.isDarkMode, fw: 0),
+                Row(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        color: theme.isDarkMode
+                            ? DDPIActive
+                                ? const Color.fromARGB(255, 9, 163, 17)
+                                : colors.colorGrey
+                            : DDPIActive
+                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                : const Color(0xff666666).withOpacity(.1),
+                      ),
+                      child: Text("DDPI",
+                          overflow: TextOverflow.ellipsis,
+                          // maxLines: 1,
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? const Color(0xffFFFFFF)
+                                  : const Color(0xff666666),
+                              12,
+                              FontWeight.w600)),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        color: theme.isDarkMode
+                            ? POAActive
+                                ? const Color.fromARGB(255, 9, 163, 17)
+                                : colors.colorGrey
+                            : POAActive
+                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                : const Color(0xff666666).withOpacity(.1),
+                      ),
+                      child: Text("POA",
+                          overflow: TextOverflow.ellipsis,
+                          // maxLines: 1,
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? const Color(0xffFFFFFF)
+                                  : const Color(0xff666666),
+                              12,
+                              FontWeight.w600)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Row(
+            children: [
+              Flexible(
+                child: UserInfoColumn(
+                    label: "DP ID",
+                    value: profileprovider
+                            .clientAllDetails.clientData?.cLIENTDPCODE!
+                            .substring(0, 8) ??
+                        "",
+                    theme: theme),
+              ),
+              Flexible(
+                child: UserInfoColumn(
+                    label: "BO ID",
+                    value: profileprovider
+                            .clientAllDetails.clientData?.cLIENTDPCODE!
+                            .substring(8) ??
+                        "",
+                    theme: theme),
+              ),
+            ],
+          ),
+          UserInfoColumn(
+              label: "DP Name",
+              value: profileprovider.clientAllDetails.clientData?.dPNAME ?? "",
+              theme: theme,
+              expandable: true,
+              ),
+        ],
+      ),
+    ),
+                      if (!DDPIActive && !POAActive)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextWidget.paraText(
+                                text:
+                                    "Do you want to sell your stocks without CDSL T-Pin",
+                                theme: theme.isDarkMode,
+                                fw: 1),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () async{
+                                    profileprovider.openInWebURL(context,"deposltory");
+                              },
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                // minimumSize: Size(double.infinity, 30),
+                                backgroundColor:
+                                    ref.read(themeProvider).isDarkMode
+                                        ? colors.colorBlack
+                                        : colors.colorWhite,
+                                shape:
+                                    // MaterialStateProperty.all(RoundedRectangleBorder( borderRadius: BorderRadius.circular(40) ))
+                                    RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(32),
+                                ),
+                                side: BorderSide(
+                                  width: 1,
+                                  color: ref.read(themeProvider).isDarkMode
+                                      ? colors.colorWhite
+                                      : colors.colorBlack,
+                                ),
+                              ),
+                              child: TextWidget.subText(
+                                  text: "Activate DDPI",
+                                  theme: theme.isDarkMode,
+                                  fw: 1),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                );
+    
+    
+  }
+
   /// Builds the MTF content section
   Widget _buildMTFContent(WidgetRef ref, ThemesProvider theme) {
     final profileDetails = ref.watch(profileAllDetailsProvider);
     final clientData = profileDetails.clientAllDetails.clientData;
-
+    
+    
     bool DDPIActive = clientData?.dDPI == 'Y';
     bool POAActive = clientData?.pOA == 'Y';
     bool mtfCl = clientData?.mTFCl == 'Y';
     bool mtfClAuto = clientData?.mTFClAuto == "Y";
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Status badges
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              _buildStatusChip("DDPI", DDPIActive, theme),
-              const SizedBox(width: 8),
-              _buildStatusChip("POA", POAActive, theme),
-            ],
-          ),
-          const SizedBox(height: 16),
+    return Card(
+      elevation: 0,
+      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        color: theme.isDarkMode
+                            ? DDPIActive
+                                ? const Color.fromARGB(255, 9, 163, 17)
+                                : colors.colorGrey
+                            : DDPIActive
+                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                : const Color(0xff666666).withOpacity(.1),
+                      ),
+                      child: Text("DDPI",
+                          overflow: TextOverflow.ellipsis,
+                          // maxLines: 1,
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? const Color(0xffFFFFFF)
+                                  : const Color(0xff666666),
+                              12,
+                              FontWeight.w600)),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        color: theme.isDarkMode
+                            ? POAActive
+                                ? const Color.fromARGB(255, 9, 163, 17)
+                                : colors.colorGrey
+                            : POAActive
+                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                : const Color(0xff666666).withOpacity(.1),
+                      ),
+                      child: Text("POA",
+                          overflow: TextOverflow.ellipsis,
+                          // maxLines: 1,
+                          style: textStyle(
+                              theme.isDarkMode
+                                  ? const Color(0xffFFFFFF)
+                                  : const Color(0xff666666),
+                              12,
+                              FontWeight.w600)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            if (!DDPIActive && !POAActive)
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: TextWidget.subText(
+                    text:"You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    color: colors.kColorRedText),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: TextWidget.subText(
+                    text:"Enable DDPI under Depository tab.",
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                    color: colors.kColorRedText),
+              ),
 
-          if (!DDPIActive && !POAActive)
-            TextWidget.subText(
-              text:
-                  "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
-              theme: theme.isDarkMode,
-              fw: 1,
-              color: colors.kColorRedText,
-            )
-          else if (mtfCl && mtfClAuto) ...[
-            TextWidget.subText(
-              text:
-                  "You have activated the Margin Trading Facility (MTF) on your account",
-              theme: theme.isDarkMode,
-            ),
-            const SizedBox(height: 16),
-            Chip(
-              label: TextWidget.subText(
-                text: 'MTF Enabled',
-                theme: theme.isDarkMode,
-                fw: 1,
+            if ((mtfCl && mtfClAuto)) ...[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // const SizedBox(height: 16,),
+                  Padding(
+                   padding: const EdgeInsets.only(top: 16.0),
+                    child: TextWidget.subText(
+                        text:
+                            "You have activated the Margin Trading Facility (MTF) on your account ",
+                        theme: theme.isDarkMode,
+                        ),
+                  ),
+                  Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: Chip(
+                          label: TextWidget.subText(
+                              text: 'MTF Enabled',
+                              theme: theme.isDarkMode,
+                              fw: 1),
+                              // labelPadding:EdgeInsets.symmetric(horizontal: 8,vertical: 5),
+                          backgroundColor: theme.isDarkMode
+                              ? mtfCl && mtfClAuto
+                                  ? const Color.fromARGB(255, 9, 163, 17)
+                                  : colors.colorGrey
+                              : mtfCl && mtfClAuto
+                                  ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
+                                  : const Color(0xff666666)
+                                      .withOpacity(.1), // Color(0xffecf8f1),
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              color: theme.isDarkMode
+                                  ? colors.colorBlack
+                                  : colors.colorWhite, // Color(0xffc1e7ba),
+                            ),
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              backgroundColor: theme.isDarkMode
-                  ? const Color.fromARGB(255, 9, 163, 17)
-                  : const Color.fromARGB(255, 9, 255, 0).withOpacity(.1),
-            ),
-          ] else if (DDPIActive || POAActive) ...[
-            TextWidget.subText(
-              text:
-                  "Would you like to activate Margin Trading Facility (MTF) on your account",
-              theme: theme.isDarkMode,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                profileDetails.openInWebURL(context, "mtf");
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor:
-                    theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(32),
+            ],
+
+            if ((profileDetails.clientAllDetails.clientData!.mTFCl == 'N' &&
+                    profileDetails.clientAllDetails.clientData!.mTFClAuto ==
+                        'N') &&
+                (profileDetails.clientAllDetails.clientData!.dDPI == 'Y' ||
+                    profileDetails.clientAllDetails.clientData!.pOA == "Y"))
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                        text:
+                            "Would you like to activate Margin Trading Facility (MTF) on your account ",
+                        theme: theme.isDarkMode,
+                        ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+
+                          //  if (Platform.isAndroid) {
+                          //           await ref.read(fundProvider).fetchHstoken(context);
+                          //             Navigator.pushNamed(
+                          //                 context, Routes.profileWebViewApp,
+                          //                 arguments: "mtf");
+
+                          //         } else {
+                                    profileDetails.openInWebURL(context,"mtf");
+                                  // }
+                                
+
+                          // await ref.read(fundProvider).fetchHstoken(context);
+                          // Navigator.pushNamed(context, Routes.profileWebViewApp,
+                          //     arguments: "mtf");
+                          //  profileDetails.openInWebURL(context,"mtf");
+                        },
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          
+                          backgroundColor: theme.isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                          shape:
+                             
+                              RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          side: BorderSide(
+                            width: 1,
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                          ),
+                        ),
+                        child: TextWidget.subText(
+                            text: "Enable MTF",
+                            theme: theme.isDarkMode,
+                            fw: 1),
+                      
+                      ),
+                    ),
+                  ],
                 ),
-                side: BorderSide(
-                  width: 1,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                ),
+
+             
               ),
-              child: TextWidget.subText(
-                text: "Enable MTF",
-                theme: theme.isDarkMode,
-                fw: 1,
-              ),
-            ),
           ],
-        ],
+        ),
       ),
     );
-  }
+                }
 
   /// Builds the Trading Preferences content section
   Widget _buildTradingPreferencesContent(WidgetRef ref, ThemesProvider theme) {
@@ -2142,3 +2441,54 @@ class ReportsScreen extends ConsumerWidget {
     );
   }
 }
+
+class UserInfoColumn extends StatelessWidget {
+  final ThemesProvider theme;
+  final String section;
+  final String label;
+  final String value;
+  final bool editable;
+  final bool expandable;
+  const UserInfoColumn(
+      {super.key,
+      required this.theme,
+      required this.label,
+      required this.value,
+      this.section = "profile",
+      this.editable = false,
+      this.expandable = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextWidget.paraText(
+            text: label.toUpperCase(),
+            theme: theme.isDarkMode,
+          ),
+          TextFormField(
+            initialValue: value,
+            readOnly: true,
+            maxLines: expandable ? 4 : 1,
+            minLines: 1,
+            decoration: InputDecoration(
+              enabled: editable ? true : false,
+            ),
+            style: TextStyle(
+              overflow: TextOverflow.ellipsis,
+              color: theme.isDarkMode
+                  ? colors.colorWhite
+                  : colors.colorBlack,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

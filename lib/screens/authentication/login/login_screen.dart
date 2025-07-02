@@ -260,38 +260,79 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 30),
-                                      TextWidget.custmText(
-                                          text: pref.islogOut! &&
+                                    children: [    
+                                       pref.islogOut! &&
                                                   (pref.clientId!.isNotEmpty ||
                                                       pref.clientMob!
-                                                          .isNotEmpty)
-                                              ? pref.clientName!.isNotEmpty &&
-                                                      pref.islogOut!
-                                                  ? "Hi ${pref.clientName!}"
-                                                  : ""
-                                              : "Sign in with MYNT",
+                                                          .isNotEmpty) ?  SizedBox.shrink() :
+                                                          Column(
+                                                            children: [
+                                                              const SizedBox(height: 30),
+                                      TextWidget.custmText(
+                                          text:  "Sign in with MYNT",
                                           theme: false,
                                           color: const Color(0xFF141414),
                                           fw: 1,
                                           fs: 20),
-                                      const SizedBox(
-                                        height: 15,
-                                      ),
-                                      // TextWidget.paraText(
-                                      //     text: pref.clientName!.isNotEmpty &&
-                                      //             pref.islogOut!
-                                      //         ? pref.clientName!
-                                      //         // : "Every login is a step closer to your goals.",
-                                      //         : "",
-                                      //     theme: false,
-                                      //     color: const Color(0xff666666),
-                                      //     fw: 0,
-                                      //     textOverflow: TextOverflow.ellipsis),
-                                      const SizedBox(
-                                        height: 15,
-                                      ),
+
+                                                            ],
+                                                          ),
+                                                          
+                                      if (pref.islogOut! &&
+                                          (pref.clientId!.isNotEmpty ||
+                                              pref.clientMob!.isNotEmpty)) ...[
+                                        // const SizedBox(height: 24),
+                                        Center(
+                                          child: Column(
+                                            children: [
+                                              Container(
+  width: 100,
+  height: 100,
+  decoration: BoxDecoration(
+    shape: BoxShape.circle,
+    color: const Color(0xFFF1F3F8)
+, // light gray background
+    border: Border.all(
+      color: Color(0xFF0037B7), // blue border
+      width: 1.5,          // adjust thickness to match the image
+    ),
+  ),
+  child: Center(
+    child: Text(
+      pref.clientName!.isNotEmpty
+          ? pref.clientName!.split(' ').map((e) => e[0]).take(2).join('')
+          : '',
+      style:
+       TextWidget.textStyle(
+                 fontSize: 24 , color: colors.colorBlue , theme: theme.isDarkMode , fw: 2 ),		
+    ),
+  ),
+),
+
+                                              const SizedBox(height: 16),
+                                               TextWidget.custmText(
+                                                text: pref.clientName ?? '',
+                                                theme: theme.isDarkMode,
+                                                fw: 2,
+                                                fs: 20,
+                                              ),
+                                              const SizedBox(height: 6),
+
+                                              TextWidget.custmText(
+                                                text: pref.clientId ?? '', 
+                                                theme: theme.isDarkMode,
+                                                fw: 1,
+                                                fs: 16,
+                                              ),
+                                             
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 32),
+                                      ],
+                                      // const SizedBox(
+                                      //   height: 15,
+                                      // ),
                                       // Text("Mobile / Client ID",
                                       //     style:
                                       //         // TextStyle(
@@ -305,7 +346,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       //     : colors.colorBlack,
                                       //             17,
                                       //             FontWeight.w600)),
-                                      if (pref.clientName!.isNotEmpty &&
+
+                                       pref.islogOut! &&
+                                                  (pref.clientId!.isNotEmpty ||
+                                                      pref.clientMob!
+                                                          .isNotEmpty) ?   SizedBox.shrink() :
+
+                                      Column(
+                                        children: [
+                                      const SizedBox(height: 18),
+
+                                            if (pref.clientName!.isNotEmpty &&
                                           pref.islogOut!)
                                         const SizedBox(height: 8),
                                       TextFormField(
@@ -325,13 +376,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               RegExp(r'[a-zA-Z0-9]')),
                                         ],
                                         style: TextWidget.textStyle(
-                                          fontSize: 14,
+                                          fontSize: 16,
                                           theme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? colors.colorWhite
                                               : colors.colorBlack,
-                                          fw: 3,
-                                          height: 1.3,
+                                          
+                                          // height: 1.5,
                                         ),
                                         decoration: InputDecoration(
                                           filled: true,
@@ -416,7 +467,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               fw: 0),
                                         ],
                                       ),
-                                      const SizedBox(height: 18),
+
+                                        ],
+                                      ),
+                                    
                                       // Text("Password",
                                       //     style:
                                       //         // TextStyle(
@@ -441,13 +495,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 : false,
                                         textAlign: TextAlign.start,
                                         style: TextWidget.textStyle(
-                                          fontSize: 14,
+                                          fontSize: 16,
                                           theme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          fw: 3,
-                                          height: 1.3,
+                                              : colors.colorBlack,                                        
+                                         
                                         ),
                                         decoration: InputDecoration(
                                           labelText: "Password",
@@ -555,7 +608,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               Container(
                                 margin:
-                                    const EdgeInsets.symmetric(horizontal: 16),
+                                    const EdgeInsets.symmetric(horizontal: 24),
                                 width: screenWidth,
                                 height: 46,
                                 child: OutlinedButton(
@@ -573,7 +626,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 13),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
+                                        borderRadius: BorderRadius.circular(5),
                                       )),
                                   onPressed: () {
                                     _handleContinue();
@@ -613,50 +666,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 pref.clientMob!.isNotEmpty)
                                         ? Material(
                                             color: Colors.transparent,
-                                            shape:
-                                                const BeveledRectangleBorder(),
-                                            // clipBehavior: Clip.hardEdge,
                                             child: InkWell(
-                                              customBorder:
-                                                  const BeveledRectangleBorder(),
-                                              splashColor: Colors.black
-                                                  .withOpacity(0.15),
-                                              highlightColor: Colors.black
-                                                  .withOpacity(0.08),
+                                              // borderRadius: BorderRadius.circular(8),
+                                              splashColor: theme.isDarkMode
+                                                  ? Colors.white.withOpacity(0.15)
+                                                  : Colors.black.withOpacity(0.15),
+                                              highlightColor: theme.isDarkMode
+                                                  ? Colors.white.withOpacity(0.08)
+                                                  : Colors.black.withOpacity(0.08),
                                               onTap: () async {
-                                                {
-                                                  pref.setLogout(false);
-                                                  pref.setHideLoginOptBtn(true);
-                                                  await auth.loginMethod();
-                                                  FocusScope.of(context)
-                                                      .unfocus();
-                                                  auth.switchbackbutton(true);
-                                                }
+                                                await Future.delayed(const Duration(milliseconds: 150));
+                                                pref.setLogout(false);
+                                                pref.setHideLoginOptBtn(true);
+                                                await auth.loginMethod();
+                                                FocusScope.of(context).unfocus();
+                                                auth.switchbackbutton(true);
                                               },
-                                              child: TextWidget.subText(
-                                                  text: "Switch account",
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorLightBlue
-                                                      : const Color(0xff737373),
-                                                  fw: 3),
+                                              child: Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                                child: TextWidget.subText(
+                                                    text: "Switch account",
+                                                    theme: false,
+                                                    color: theme.isDarkMode
+                                                        ? colors.colorLightBlue
+                                                        : const Color(0xff737373),
+                                                    fw: 3),
+                                              ),
                                             ),
                                           )
                                         : const SizedBox(),
                                     Material(
                                       color: Colors.transparent,
-                                      shape: const BeveledRectangleBorder(),
-                                      // clipBehavior: Clip.hardEdge,
                                       child: InkWell(
-                                          customBorder:
-                                              const BeveledRectangleBorder(),
-                                          splashColor:
-                                              Colors.black.withOpacity(0.15),
-                                          highlightColor:
-                                              Colors.black.withOpacity(0.08),
+                                          // borderRadius: BorderRadius.circular(8),
+                                          splashColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(0.15)
+                                              : Colors.black.withOpacity(0.15),
+                                          highlightColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(0.08)
+                                              : Colors.black.withOpacity(0.08),
                                           onTap: _isProcessing || auth.loading
                                               ? null
-                                              : () {
+                                              : () async {
+                                                  await Future.delayed(const Duration(milliseconds: 150));
                                                   forpass.clearError();
                                                   forpass.clearTextField();
                                                   Navigator.pushNamed(context,
@@ -664,7 +716,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 },
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 4, vertical: 4),
+                                                horizontal: 10, vertical: 6),
                                             child: TextWidget.subText(
                                                 text: "Forgot password?",
                                                 theme: false,
