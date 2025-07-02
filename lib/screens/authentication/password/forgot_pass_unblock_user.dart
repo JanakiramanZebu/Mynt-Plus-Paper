@@ -157,12 +157,12 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                             TextFormField(
                               focusNode: focusNode,
                               style: TextWidget.textStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,
-                                fw: 3,
+                               
                                 height: 1.3,
                               ),
                               controller:
@@ -269,7 +269,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                     ),
                     Container(
                         margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 20),
+                            horizontal: 24, vertical: 20),
                         width: screenWidth,
                         height: 46,
                         child: OutlinedButton(
@@ -285,7 +285,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                               side: BorderSide.none,
                               padding: const EdgeInsets.symmetric(vertical: 13),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(5),
                               )),
                           onPressed: () {
                             authForgetpassword.validateForgetpassWord();

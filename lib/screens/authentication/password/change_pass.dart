@@ -264,12 +264,12 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                           focusNode: focusNode1,
                           readOnly: changepassword.loading ? true : false,
                           style: TextWidget.textStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             theme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            fw: 3,
+                            
                             height: 1.3,
                           ),
                           obscureText: changepassword.hideoldpassword,
@@ -385,12 +385,12 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                         TextFormField(
                           focusNode: focusNode2,
                           style: TextWidget.textStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             theme: theme.isDarkMode,
                             color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            fw: 3,
+                            // fw: 3,
                             height: 1.3,
                           ),
                           readOnly: changepassword.loading ? true : false,
@@ -402,12 +402,12 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                             labelText: "New Password",
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
                             labelStyle: TextWidget.textStyle(
-                              fontSize: 14,
+                              fontSize: 16,
                               theme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? colors.colorWhite
                                   : colors.colorBlack,
-                              fw: 3,
+                              // fw: 3,
                               height: 1.3,
                             ),
                             floatingLabelStyle: TextWidget.textStyle(
@@ -498,59 +498,62 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                         SizedBox(
                             width: screenWidth,
                             height: 44,
-                            child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                    elevation: 0,
-                                    backgroundColor: !theme.isDarkMode
-                                        ? changepassword.isDisableChangepassbtn
-                                            ? const Color(0xff0037B7)
-                                                .withOpacity(0.3)
-                                            : const Color(0xff0037B7)
-                                        : changepassword.isDisableChangepassbtn
-                                            ? colors.darkGrey
-                                            : colors.colorbluegrey,
-                                    side: BorderSide.none,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 13),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    )),
-                                onPressed: changepassword
-                                            .userIdController.text.isEmpty ||
-                                        changepassword
-                                            .oldPassword.text.isEmpty ||
-                                        changepassword
-                                            .newPassword.text.isEmpty ||
-                                        changepassword.loading
-                                    ? () {
-                                        changepassword.validateOldPassword();
-                                        changepassword.validateNewPassword();
-                                      }
-                                    : () {
-                                        changepassword
-                                            .submitChangePass(context);
-                                      },
-                                child: changepassword.loading
-                                    ? SizedBox(
-                                        width: 18,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: colors.colorWhite),
-                                      )
-                                    : TextWidget.subText(
-                                        text: "Set New Password",
-                                        theme: false,
-                                        color: !theme.isDarkMode
-                                            ? changepassword
-                                                    .isDisableChangepassbtn
-                                                ? const Color(0xffFFFFFF)
-                                                : const Color(0xffFFFFFF)
-                                            : changepassword
-                                                    .isDisableChangepassbtn
-                                                ? colors.darkGrey
-                                                : colors.colorBlack,
-                                        fw: 2))),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                      elevation: 0,
+                                      backgroundColor: !theme.isDarkMode
+                                          ? changepassword.isDisableChangepassbtn
+                                              ? const Color(0xff0037B7)
+                                                  .withOpacity(0.3)
+                                              : const Color(0xff0037B7)
+                                          : changepassword.isDisableChangepassbtn
+                                              ? colors.darkGrey
+                                              : colors.colorbluegrey,
+                                      side: BorderSide.none,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 13),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                      )),
+                                  onPressed: changepassword
+                                              .userIdController.text.isEmpty ||
+                                          changepassword
+                                              .oldPassword.text.isEmpty ||
+                                          changepassword
+                                              .newPassword.text.isEmpty ||
+                                          changepassword.loading
+                                      ? () {
+                                          changepassword.validateOldPassword();
+                                          changepassword.validateNewPassword();
+                                        }
+                                      : () {
+                                          changepassword
+                                              .submitChangePass(context);
+                                        },
+                                  child: changepassword.loading
+                                      ? SizedBox(
+                                          width: 18,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: colors.colorWhite),
+                                        )
+                                      : TextWidget.subText(
+                                          text: "Set New Password",
+                                          theme: false,
+                                          color: !theme.isDarkMode
+                                              ? changepassword
+                                                      .isDisableChangepassbtn
+                                                  ? const Color(0xffFFFFFF)
+                                                  : const Color(0xffFFFFFF)
+                                              : changepassword
+                                                      .isDisableChangepassbtn
+                                                  ? colors.darkGrey
+                                                  : colors.colorBlack,
+                                          fw: 2)),
+                            )),
                         // const SizedBox(height: 50),
                         // const Padding(
                         //   padding: EdgeInsets.all(12.0),

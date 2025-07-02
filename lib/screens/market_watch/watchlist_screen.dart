@@ -552,7 +552,7 @@ SvgPicture.asset(
                                     : Colors.black.withOpacity(0.08),
                                 onTap: () async {
                                   // Add delay for visual feedback
-                                  await Future.delayed(const Duration(milliseconds: 150));
+                                  await Future.delayed(const Duration(milliseconds: 150));                                  
                                   
                                   FocusScope.of(context).unfocus();
                                   showModalBottomSheet(

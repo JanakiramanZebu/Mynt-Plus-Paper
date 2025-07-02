@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:mynt_plus/screens/profile_screen/topt_screen.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,6 +29,7 @@ import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/loader_ui.dart';
+import 'logged_user_bottom_sheet.dart';
 import 'need_help_screen.dart';
 
 class UserAccountScreen extends ConsumerWidget {
@@ -36,6 +38,15 @@ class UserAccountScreen extends ConsumerWidget {
   String _truncateProfileName(String text, {int maxLength = 18}) {
     return (text.length > maxLength) ? '${text.substring(0, maxLength)}...' : text;
   }
+
+  String formatIndianCurrency(String amount) {
+  final formatter = NumberFormat.currency(
+    locale: "en_IN",
+    symbol: '', // Or '₹'
+    decimalDigits: 2, // Always show 2 decimals
+  );
+  return formatter.format(double.tryParse(amount) ?? 0.0);
+}
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -101,63 +112,83 @@ class UserAccountScreen extends ConsumerWidget {
           /// 🔹 Profile Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: colors.fundbuttonBg,
-                      child: Text(
-                        userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
-                        style: const TextStyle(color: Colors.black),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            child: InkWell(
+              onTap: () {
+                showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              isDismissible: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
+                ),
+              ),
+              builder: (_) =>
+                  const LoggedUserBottomSheet(initRoute: 'switchAcc'));
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
                     children: [
-
-                      TextWidget.subText(
-                                      text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
-                                      theme: false,
-                                      color: !theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.colorGrey,
-                                      fw: 0),
-                      
-                      const SizedBox(height: 4),
-                      TextWidget.paraText(
-                                      text: userProfile.userDetailModel?.uid ?? "",
-                                      theme: false,
-                                      color: !theme.isDarkMode
-                                          ? colors.colorGrey
-                                          : colors.colorGrey,
-                                      fw: 00)
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: colors.fundbuttonBg,
+                        child: Text(
+                          userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
+                          style: const TextStyle(color: Colors.black),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+              
+                        TextWidget.subText(
+                                        text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
+                                        theme: false,
+                                        color: !theme.isDarkMode
+                                            ? colors.colorBlack
+                                            : colors.colorGrey,
+                                        fw: 0),
+                        
+                        const SizedBox(height: 4),
+                        TextWidget.paraText(
+                                        text: userProfile.userDetailModel?.uid ?? "",
+                                        theme: false,
+                                        color: !theme.isDarkMode
+                                            ? colors.colorGrey
+                                            : colors.colorGrey,
+                                        fw: 00)
+                      ],
+                    ),
+                  ),
                     ],
                   ),
-                ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
-                  ],
-                )
-              ],
+                  Row(
+                    children: [
+                      Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0,16,0,0),
-                    child: Divider(
-                     height: 2,
-                     color: colors.fundbuttonBg,
-                                     ),
-                  ),
-          const SizedBox(height: 16),
+                  // Padding(
+                  //   padding: const EdgeInsets.fromLTRB(16,16,16,0),
+                  //   child: Divider(
+                  //    height: 2,
+                  //    color: colors.fundbuttonBg,
+                  //                    ),
+                  // ),
+          const SizedBox(height: 4),
+          Divider(
+          color: colors.fundbuttonBg, // Optional: customize the color
+          thickness: 1,       // Optional: customize the thickness
+        ),
           /// 🔹 Horizontal Buttons (inline style)
           _buildHorizontalButtons(context, ref, theme, funds, mf),
 
@@ -307,9 +338,9 @@ class UserAccountScreen extends ConsumerWidget {
               separatorBuilder: (context, index) => Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 child: Divider(
-                  height: 1,
-                  color: colors.fundbuttonBg,
-                ),
+          color: colors.fundbuttonBg, // Optional: customize the color
+          thickness: 1,       // Optional: customize the thickness
+        ),
               ),
             ),
           ),
@@ -330,9 +361,13 @@ class UserAccountScreen extends ConsumerWidget {
 
   Widget _buildAccountBalanceSection(BuildContext context, WidgetRef ref, theme, funds, trancation) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 0),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 0),
       child: Column(
         children: [
+          Divider(
+          color: colors.fundbuttonBg, // Optional: customize the color
+          thickness: 1,       // Optional: customize the thickness
+        ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -346,7 +381,7 @@ class UserAccountScreen extends ConsumerWidget {
                                           fw: 00),
                                           const SizedBox(height: 4),
                   TextWidget.subText(
-                    text:funds.fundDetailModel?.avlMrg ?? "0.00",
+                    text:formatIndianCurrency(funds.fundDetailModel?.avlMrg ?? "0.00"),
                     theme: false,
                                           color: !theme.isDarkMode
                                               ? colors.colorBlack
@@ -381,8 +416,8 @@ class UserAccountScreen extends ConsumerWidget {
                                           text: "Add Fund",
                                           theme: false,
                                           color: !theme.isDarkMode
-                                              ? colors.colorLightBlue
-                                              : colors.colorBlue,
+                                              ? colors.colorBlue
+                                              : colors.colorLightBlue,
                                           fw: 0,
                                           align: TextAlign.center),
               ),
@@ -437,11 +472,14 @@ class UserAccountScreen extends ConsumerWidget {
                                           : colors.colorBlue,
                                       fw: 0,
                                       align: TextAlign.center),
+
               ],
             ),
           );
-        }).toList(),
+        },
+        ).toList(),
       ),
+      
     );
   }
 }
@@ -511,44 +549,63 @@ class SettingsScreen extends ConsumerWidget {
           /// Profile Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: colors.fundbuttonBg,
-                  child: Text(
-                    userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
-                    style: const TextStyle(color: Colors.black),
-                  ),
+            child: InkWell(
+              onTap: () {
+                showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              isDismissible: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
                 ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidget.subText(
-                      text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
-                      theme: false,
-                      color: !theme.isDarkMode ? colors.colorBlack : colors.colorGrey,
-                      fw: 0,
+              ),
+              builder: (_) =>
+                  const LoggedUserBottomSheet(initRoute: 'switchAcc'));
+              },
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: colors.fundbuttonBg,
+                    child: Text(
+                      userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
+                      style: const TextStyle(color: Colors.black),
                     ),
-                    const SizedBox(height: 4),
-                    TextWidget.paraText(
-                      text: userProfile.userDetailModel?.uid ?? "",
-                      theme: false,
-                      color: colors.colorGrey,
-                      fw: 00,
-                    )
-                  ],
-                ),
-                const Spacer(),
-                Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
-              ],
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextWidget.subText(
+                        text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
+                        theme: false,
+                        color: !theme.isDarkMode ? colors.colorBlack : colors.colorGrey,
+                        fw: 0,
+                      ),
+                      const SizedBox(height: 4),
+                      TextWidget.paraText(
+                        text: userProfile.userDetailModel?.uid ?? "",
+                        theme: false,
+                        color: colors.colorGrey,
+                        fw: 00,
+                      )
+                    ],
+                  ),
+                  const Spacer(),
+                  Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
+                ],
+              ),
             ),
           ),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(height: 2, color: colors.fundbuttonBg),
+            child: Divider(
+          color: colors.fundbuttonBg, // Optional: customize the color
+          thickness: 1,       // Optional: customize the thickness
+        ),
           ),
 
           const SizedBox(height: 24),
@@ -703,7 +760,10 @@ class SettingsScreen extends ConsumerWidget {
             },
             separatorBuilder: (context, index) => Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(height: 1, color: colors.fundbuttonBg),
+              child: Divider(
+          color: colors.fundbuttonBg, // Optional: customize the color
+          thickness: 1,       // Optional: customize the thickness
+        ),
             ),
           ),
 
@@ -854,7 +914,10 @@ class SettingsScreen extends ConsumerWidget {
             },
             separatorBuilder: (context, index) => Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(height: 1, color: colors.fundbuttonBg),
+              child: Divider(
+          color: colors.fundbuttonBg, // Optional: customize the color
+          thickness: 1,       // Optional: customize the thickness
+        ),
             ),
           ),
 
@@ -956,41 +1019,60 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           /// Profile Header (retained from your original design)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: colors.fundbuttonBg,
-                  child: Text(
-                    userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
-                    style: const TextStyle(color: Colors.black),
-                  ),
+            child: InkWell(
+              onTap: () {
+                showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              isDismissible: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
                 ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidget.subText(
-                      text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
-                      theme: false,
-                      color: !theme.isDarkMode ? colors.colorBlack : colors.colorGrey,
+              ),
+              builder: (_) =>
+                  const LoggedUserBottomSheet(initRoute: 'switchAcc'));
+              },
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: colors.fundbuttonBg,
+                    child: Text(
+                      userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
+                      style: const TextStyle(color: Colors.black),
                     ),
-                    const SizedBox(height: 4),
-                    TextWidget.paraText(
-                      text: userProfile.userDetailModel?.uid ?? "",
-                      theme: false,
-                      color: colors.colorGrey,
-                    )
-                  ],
-                ),
-                const Spacer(),
-                Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
-              ],
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextWidget.subText(
+                        text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
+                        theme: false,
+                        color: !theme.isDarkMode ? colors.colorBlack : colors.colorGrey,
+                      ),
+                      const SizedBox(height: 4),
+                      TextWidget.paraText(
+                        text: userProfile.userDetailModel?.uid ?? "",
+                        theme: false,
+                        color: colors.colorGrey,
+                      )
+                    ],
+                  ),
+                  const Spacer(),
+                  Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
+                ],
+              ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(height: 2, color: colors.fundbuttonBg),
+            child: Divider(
+          color: colors.fundbuttonBg, // Optional: customize the color
+          thickness: 1,       // Optional: customize the thickness
+        ),
           ),
           const SizedBox(height: 16),
 
@@ -1670,44 +1752,63 @@ class ReportsScreen extends ConsumerWidget {
           /// Profile Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: colors.fundbuttonBg,
-                  child: Text(
-                    userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
-                    style: const TextStyle(color: Colors.black),
-                  ),
+            child: InkWell(
+              onTap: () {
+                showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              isDismissible: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
                 ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidget.subText(
-                      text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
-                      theme: false,
-                      color: !theme.isDarkMode ? colors.colorBlack : colors.colorGrey,
-                      fw: 0,
+              ),
+              builder: (_) =>
+                  const LoggedUserBottomSheet(initRoute: 'switchAcc'));
+              },
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: colors.fundbuttonBg,
+                    child: Text(
+                      userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
+                      style: const TextStyle(color: Colors.black),
                     ),
-                    const SizedBox(height: 4),
-                    TextWidget.paraText(
-                      text: userProfile.userDetailModel?.uid ?? "",
-                      theme: false,
-                      color: colors.colorGrey,
-                      fw: 00,
-                    )
-                  ],
-                ),
-                const Spacer(),
-                Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
-              ],
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextWidget.subText(
+                        text: _truncateProfileName(userProfile.userDetailModel?.uname ?? ""),
+                        theme: false,
+                        color: !theme.isDarkMode ? colors.colorBlack : colors.colorGrey,
+                        fw: 0,
+                      ),
+                      const SizedBox(height: 4),
+                      TextWidget.paraText(
+                        text: userProfile.userDetailModel?.uid ?? "",
+                        theme: false,
+                        color: colors.colorGrey,
+                        fw: 00,
+                      )
+                    ],
+                  ),
+                  const Spacer(),
+                  Icon(Icons.arrow_forward_ios, size: 16, color: colors.colorGrey)
+                ],
+              ),
             ),
           ),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(height: 2, color: colors.fundbuttonBg),
+            child: Divider(
+          color: colors.fundbuttonBg, // Optional: customize the color
+          thickness: 1,       // Optional: customize the thickness
+        ),
           ),
 
           const SizedBox(height: 24),
@@ -1790,7 +1891,10 @@ class ReportsScreen extends ConsumerWidget {
             },
             separatorBuilder: (context, index) => Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(height: 1, color: colors.fundbuttonBg),
+              child: Divider(
+          color: colors.fundbuttonBg, // Optional: customize the color
+          thickness: 1,       // Optional: customize the thickness
+        ),
             ),
           ),
 
@@ -1803,7 +1907,8 @@ class ReportsScreen extends ConsumerWidget {
               text: ref.watch(authProvider).versiontext,
               theme: false,
               color: const Color(0xff666666),
-              fw: 0,
+              fw: 3,
+              letterSpacing: -2,
             ),
           )
         ],

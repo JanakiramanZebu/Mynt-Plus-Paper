@@ -19,6 +19,7 @@ import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../res/global_state_text.dart';
+import '../portfolio_screens/holdings/holding_detail_screen.dart';
 // import '../scrip_depth_info.dart';
 
 class ChartScreenWebView extends ConsumerStatefulWidget {
@@ -196,34 +197,26 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                 icon: const Icon(Icons.chevron_left, size: 38,),
                 onPressed: () async {
                   userProfile.setChartdialog(false);
-                  tvChart.chngDephBtn("Overview");
-                  tvChart.singlePageloader(true);
-                  await tvChart.calldepthApis(context, tvChart.getQuotes, "");
-              
-                  // DepthInputArgs depthArgs = DepthInputArgs(
-                  //     exch: '${tvChart.getQuotes?.exch}',
-                  //     token: '${tvChart.getQuotes?.token}',
-                  //     tsym: '${tvChart.getQuotes?.tsym}',
-                  //     instname: tvChart.getQuotes?.instname ?? "",
-                  //     symbol: '${tvChart.getQuotes?.symbol}',
-                  //     expDate: '${tvChart.getQuotes?.expDate}',
-                  //     option: '${tvChart.getQuotes?.option}');
-              
-                  // showModalBottomSheet(
-                  //     isScrollControlled: true,
-                  //     useSafeArea: true,
-                  //     isDismissible: true,
-                  //     shape: const RoundedRectangleBorder(
-                  //         borderRadius:
-                  //             BorderRadius.vertical(top: Radius.circular(16))),
-                  //     context: context,
-                  //     builder: (context) => Container(
-                  //         padding: EdgeInsets.only(
-                  //           bottom: MediaQuery.of(context).viewInsets.bottom,
-                  //         ),
-                  //         child:
-                  //             ScripDepthInfo(wlValue: depthArgs, isBasket: '')));
-                  tvChart.singlePageloader(false);
+                  
+                  // Check if we came from holding detail screen
+                   if (tvChart.scripsize) {
+                    tvChart.chngDephBtn("Overview");
+
+                    // tvChart.singlePageloader(true);
+
+                    //  await tvChart.calldepthApis(context, tvChart.getQuotes, "");
+                    // tvChart.singlePageloader(false);
+
+                    // Clear the context and just close chart - don't show any bottom sheet
+                    // Don't show any bottom sheet, just return to main screen
+                  } else {
+                    // Default behavior - show scrip depth info
+                    tvChart.chngDephBtn("Overview");
+                    tvChart.singlePageloader(true);
+                    await tvChart.calldepthApis(context, tvChart.getQuotes, "");
+                    tvChart.singlePageloader(false);
+                  }
+                  
                   tvChart.setChartScript('ABC', '0123', 'ABCD');
                   chartUpdate.changeOrientation('portrait');
                 },
