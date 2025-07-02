@@ -197,26 +197,14 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                 icon: const Icon(Icons.chevron_left, size: 38,),
                 onPressed: () async {
                   userProfile.setChartdialog(false);
-                  
-                  // Check if we came from holding detail screen
                    if (tvChart.scripsize) {
-                    tvChart.chngDephBtn("Overview");
-
-                    // tvChart.singlePageloader(true);
-
-                    //  await tvChart.calldepthApis(context, tvChart.getQuotes, "");
-                    // tvChart.singlePageloader(false);
-
-                    // Clear the context and just close chart - don't show any bottom sheet
-                    // Don't show any bottom sheet, just return to main screen
+                    tvChart.chngDephBtn("Overview");                   
                   } else {
-                    // Default behavior - show scrip depth info
                     tvChart.chngDephBtn("Overview");
                     tvChart.singlePageloader(true);
                     await tvChart.calldepthApis(context, tvChart.getQuotes, "");
                     tvChart.singlePageloader(false);
-                  }
-                  
+                  }                  
                   tvChart.setChartScript('ABC', '0123', 'ABCD');
                   chartUpdate.changeOrientation('portrait');
                 },

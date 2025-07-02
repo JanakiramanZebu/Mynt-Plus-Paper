@@ -206,7 +206,8 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                                       fontSize: 16 ,  theme: theme.isDarkMode , fw: 0 ),	
                                       textAlign: TextAlign.center,	
                                     ),
-                             )
+                             ),
+                             SizedBox(height: 24,),
 
                         // SvgPicture.asset(
                         //   "assets/icon/banner_ruppee.svg",
@@ -221,13 +222,8 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                         // SvgPicture.asset(
                         //   "assets/icon/investwell.svg",
                         // ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
+
+                         Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: OutlinedButton(
                           onPressed: _isAnyProcessing ? null : _handleLogin,
@@ -296,6 +292,13 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                                   fw: 2),
                         ),
                       ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                     
 
                       // Open a free account Button
 
