@@ -936,9 +936,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               reportsprovider.today, context);
         }
         // cop action
-        // if (reportsprovider.cpactiondata == null) {
-        //   reportsprovider.fetchcpactiondata(context);
-        // }
+        if (reportsprovider.cpactiondata == null) {
+          reportsprovider.fetchcpactiondata(context);
+        }
       }
     });
   }

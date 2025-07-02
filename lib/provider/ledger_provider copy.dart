@@ -787,8 +787,8 @@ class LDProvider extends DefaultChangeNotifier {
               String dateString = element.tRADEDATE!;
 
               try {
-                DateFormat inputFormat =
-                    DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+                DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
                 DateTime parsedDate = inputFormat.parse(dateString);
                 print("${element.realisedpnl}");
                 _heatmapData[DateTime(
@@ -802,8 +802,8 @@ class LDProvider extends DefaultChangeNotifier {
         }
         if (_calenderpnlAllData!.data != null) {
           for (var trade in _calenderpnlAllData!.data!) {
-            DateFormat inputFormat =
-                DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
             DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
             final dateKey =
                 DateTime(parsedDate.year, parsedDate.month, parsedDate.day);

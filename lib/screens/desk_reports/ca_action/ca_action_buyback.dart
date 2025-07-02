@@ -10,11 +10,13 @@ import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
+import '../../../provider/fund_provider.dart';
 import '../../../provider/profile_all_details_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../bottom_sheets/cp_action_orderscreen.dart';
+import '../bottom_sheets/cp_cancelorder_screen.dart';
 import '../bottom_sheets/ledger_filter.dart';
 
 class CABuyback extends StatelessWidget {
@@ -46,6 +48,7 @@ class CABuyback extends StatelessWidget {
       final ledgerprovider = ref.watch(ledgerProvider);
       final datalist = ledgerprovider.filteredCPActionData;
       final profiledetails = ref.watch(profileAllDetailsProvider);
+      final fundState = ref.watch(fundProvider);
 
       String opbalance = ledgerprovider.ledgerAllData?.openingBalance ?? '0.0';
       // String tdebit = ledgerprovider.ledgerAllData?.drAmt ?? '0.0';
@@ -60,7 +63,7 @@ class CABuyback extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.heroText(
-                  text: "Cp Events",
+                  text: "Corporate Action",
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
                   fw: 1),
@@ -282,12 +285,12 @@ class CABuyback extends StatelessWidget {
                         theme,
                       ),
                       const SizedBox(width: 10),
-                      _buildStatusChip(
-                        ledgerprovider,
-                        "RIGHTS",
-                        ledgerprovider.selectvalueofcpaction == 'RIGHTS',
-                        theme,
-                      ),
+                      // _buildStatusChip(
+                      //   ledgerprovider,
+                      //   "RIGHTS",
+                      //   ledgerprovider.selectvalueofcpaction == 'RIGHTS',
+                      //   theme,
+                      // ),
                     ],
                   ),
                 ),
@@ -384,7 +387,7 @@ class CABuyback extends StatelessWidget {
                                                 borderRadius:
                                                     BorderRadius.circular(10),
                                                 color: const Color(0xff2069BB)),
-                                            child: Text('Non Cash',
+                                            child: Text('${dataval.exchange}',
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 1,
                                                 style: textStyle(
@@ -397,47 +400,95 @@ class CABuyback extends StatelessWidget {
                                       ),
                                       InkWell(
                                         onTap: () {
-                                          if (dataval.eligibleornot == 'yes') {
+                                          if (ledgerprovider
+                                                  .selectvalueofcpaction ==
+                                              'OFS') {
+                                            ledgerprovider.setordervalueforofs(
+                                                '1', dataval.baseprice,fundState.fundDetailModel?.cash ?? '0');
+                                          } else {
+                                            ledgerprovider.setCPActionQty(
+                                                '', '', '', '');
+                                            ledgerprovider.setCPActionPrice(
+                                                '', 0, 0, '', '');
+                                          }
+                                          if (dataval.orderstatus ==
+                                              'pending') {
                                             showModalBottomSheet(
                                                 context: context,
                                                 builder: (context) =>
-                                                    CPActionOrderScreen(
+                                                    cancelOrderScreenCopAction(
                                                         data: dataval));
                                           } else {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(error(
-                                                    context, "Not Eligible"));
-                                            return null;
+                                            if ((dataval.eligibleornot ==
+                                                    'yes') ||
+                                                (dataval.approvedqty != '0' &&
+                                                    dataval.eligibleornot ==
+                                                        'yes') ||
+                                                (ledgerprovider
+                                                        .selectvalueofcpaction ==
+                                                    'OFS')) {
+                                              showModalBottomSheet(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      CPActionOrderScreen(
+                                                          data: dataval));
+                                            } else {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(error(
+                                                      context, "Not Eligible"));
+                                              return null;
+                                            }
                                           }
+
                                           // _showBottomSheet(
                                           //     context, const LedgerBillBottom());
                                         },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color:
-                                                dataval.eligibleornot == 'yes'
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: dataval.eligibleornot ==
+                                                        'yes'
                                                     ? colors.colorWhite
                                                     : colors.colorWhite,
-                                            border: Border.all(
-                                              color: colors.colorBlack,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(15),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 12.0,
-                                                vertical: 8.0),
-                                            child: TextWidget.paraText(
-                                              text: "Order",
-                                              theme: theme.isDarkMode,
-                                              fw: 1,
-                                              color:
-                                                  dataval.eligibleornot == 'yes'
-                                                      ? colors.colorBlack
+                                                border: Border.all(
+                                                  color: dataval.orderstatus ==
+                                                          'pending'
+                                                      ? colors.kColorRedButton
                                                       : colors.colorBlack,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 12.0,
+                                                        vertical: 8.0),
+                                                child: TextWidget.paraText(
+                                                  text:
+                                                      "${dataval.orderstatus == 'pending' ? 'Cancel' : "Order"}",
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1,
+                                                  color: dataval.orderstatus ==
+                                                          'pending'
+                                                      ? colors.kColorRedButton
+                                                      : colors.colorBlack,
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                            if (dataval.bidqty != 'null')
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 4.0),
+                                                child: TextWidget.captionText(
+                                                    text:
+                                                        "${dataval.bidqty} qty bided",
+                                                    theme: theme.isDarkMode,
+                                                    fw: 1,
+                                                    color: colors.colorBlack),
+                                              ),
+                                          ],
                                         ),
                                       ),
                                     ],
@@ -453,162 +504,283 @@ class CABuyback extends StatelessWidget {
                                     thickness: 0.5,
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 16.0,
-                                      right: 16.0,
-                                      top: 2.0,
-                                      bottom: 4.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              TextWidget.subText(
+                                if (ledgerprovider.selectvalueofcpaction !=
+                                    'OFS') ...[
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0,
+                                        right: 16.0,
+                                        top: 2.0,
+                                        bottom: 4.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: "Start Date : ",
+                                                    color: Color(0xFF696969),
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+                                                TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text:
+                                                        " ${dataval?.biddingStartDate}",
+                                                    color: theme.isDarkMode
+                                                        ? Colors.white
+                                                        : Colors.black,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+                                              ],
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 4.0, left: 4.0),
+                                              child: TextWidget.paraText(
                                                   align: TextAlign.right,
-                                                  text: "Start Date : ",
+                                                  text:
+                                                      "${dataval?.dailyStartTime}",
                                                   color: Color(0xFF696969),
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
                                                   fw: 0),
-                                              TextWidget.subText(
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: "End Date : ",
+                                                    color: Color(0xFF696969),
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+                                                TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text:
+                                                        " ${dataval?.biddingEndDate}",
+                                                    color: theme.isDarkMode
+                                                        ? Colors.white
+                                                        : Colors.black,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+                                              ],
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 4.0, left: 4.0),
+                                              child: TextWidget.paraText(
                                                   align: TextAlign.right,
                                                   text:
-                                                      " ${dataval?.biddingStartDate}",
-                                                  color: theme.isDarkMode
-                                                      ? Colors.white
-                                                      : Colors.black,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0),
-                                            ],
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 4.0, left: 4.0),
-                                            child: TextWidget.paraText(
-                                                align: TextAlign.right,
-                                                text:
-                                                    "${dataval?.dailyStartTime}",
-                                                color: Color(0xFF696969),
-                                                textOverflow:
-                                                    TextOverflow.ellipsis,
-                                                theme: theme.isDarkMode,
-                                                fw: 0),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              TextWidget.subText(
-                                                  align: TextAlign.right,
-                                                  text: "End Date : ",
+                                                      "${dataval?.dailyEndTime}",
                                                   color: Color(0xFF696969),
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
                                                   fw: 0),
-                                              TextWidget.subText(
-                                                  align: TextAlign.right,
-                                                  text:
-                                                      " ${dataval?.biddingEndDate}",
-                                                  color: theme.isDarkMode
-                                                      ? Colors.white
-                                                      : Colors.black,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0),
-                                            ],
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 4.0, left: 4.0),
-                                            child: TextWidget.paraText(
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0,
+                                        right: 16.0,
+                                        top: 2.0,
+                                        bottom: .0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            TextWidget.subText(
                                                 align: TextAlign.right,
-                                                text:
-                                                    "${dataval?.dailyEndTime}",
+                                                text: "Price offered : ",
                                                 color: Color(0xFF696969),
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
                                                 fw: 0),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text:
+                                                    " ${dataval?.cutOffPrice}",
+                                                color: theme.isDarkMode
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text: "Status : ",
+                                                color: Color(0xFF696969),
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text:
+                                                    " ${dataval?.orderstatus == 'null' ? '-' : dataval?.orderstatus}",
+                                                color: theme.isDarkMode
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 16.0,
-                                      right: 16.0,
-                                      top: 2.0,
-                                      bottom: .0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          TextWidget.subText(
-                                              align: TextAlign.right,
-                                              text: "Price offered : ",
-                                              color: Color(0xFF696969),
-                                              textOverflow:
-                                                  TextOverflow.ellipsis,
-                                              theme: theme.isDarkMode,
-                                              fw: 0),
-                                          TextWidget.subText(
-                                              align: TextAlign.right,
-                                              text: " ${dataval?.cutOffPrice}",
-                                              color: theme.isDarkMode
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                              textOverflow:
-                                                  TextOverflow.ellipsis,
-                                              theme: theme.isDarkMode,
-                                              fw: 0),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          TextWidget.subText(
-                                              align: TextAlign.right,
-                                              text: "Status : ",
-                                              color: Color(0xFF696969),
-                                              textOverflow:
-                                                  TextOverflow.ellipsis,
-                                              theme: theme.isDarkMode,
-                                              fw: 0),
-                                          TextWidget.subText(
-                                              align: TextAlign.right,
-                                              text:
-                                                  " ${dataval?.orderstatus ?? '-'}",
-                                              color: theme.isDarkMode
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                              textOverflow:
-                                                  TextOverflow.ellipsis,
-                                              theme: theme.isDarkMode,
-                                              fw: 0),
-                                        ],
-                                      ),
-                                    ],
+                                ],
+                                if (ledgerprovider.selectvalueofcpaction ==
+                                    'OFS') ...[
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0,
+                                        right: 16.0,
+                                        top: 2.0,
+                                        bottom: 4.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text: "Size : ",
+                                                color: Color(0xFF696969),
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text: " ${dataval?.issueSize}",
+                                                color: theme.isDarkMode
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text: "Base Price : ",
+                                                color: Color(0xFF696969),
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text: " ${dataval?.baseprice}",
+                                                color: theme.isDarkMode
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0,
+                                        right: 16.0,
+                                        top: 8.0,
+                                        bottom: .0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text: "Open Date : ",
+                                                color: Color(0xFF696969),
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text: " ${dataval?.openondate}",
+                                                color: theme.isDarkMode
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text: "Status : ",
+                                                color: Color(0xFF696969),
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                            TextWidget.subText(
+                                                align: TextAlign.right,
+                                                text:
+                                                    " ${dataval?.orderstatus == 'null' ? '-' : dataval?.orderstatus}",
+                                                color: theme.isDarkMode
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ]
                               ],
                             );
                           },

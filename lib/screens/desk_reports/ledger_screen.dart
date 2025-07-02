@@ -132,7 +132,7 @@ class LedgerScreen extends StatelessWidget {
                                             const EdgeInsets.only(top: 8.0),
                                         child: TextWidget.titleText(
                                             text:
-                                                "₹ ${ledgerprovider.ledgerAllData?.openingBalance == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData!.openingBalance ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+                                                "₹ ${ledgerprovider.ledgerAllData?.openingBalance == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.openingBalance ?? '')?.toStringAsFixed(2) ?? '0.00')}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             fw: 1),
@@ -153,7 +153,7 @@ class LedgerScreen extends StatelessWidget {
                                             const EdgeInsets.only(top: 8.0),
                                         child: TextWidget.titleText(
                                             text:
-                                                "₹ ${ledgerprovider.ledgerAllData?.drAmt == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData!.drAmt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+                                                "₹ ${ledgerprovider.ledgerAllData?.drAmt == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.drAmt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
                                             color: Colors.red,
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
@@ -186,7 +186,7 @@ class LedgerScreen extends StatelessWidget {
                                             const EdgeInsets.only(top: 8.0),
                                         child: TextWidget.titleText(
                                             text:
-                                                "₹ ${ledgerprovider.ledgerAllData?.closingBalance == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData!.closingBalance ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+                                                "₹ ${ledgerprovider.ledgerAllData?.closingBalance == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.closingBalance ?? '')?.toStringAsFixed(2) ?? '0.00')}",
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             fw: 1),
@@ -207,7 +207,7 @@ class LedgerScreen extends StatelessWidget {
                                             const EdgeInsets.only(top: 8.0),
                                         child: TextWidget.titleText(
                                             text:
-                                                "₹ ${ledgerprovider.ledgerAllData?.crAmt == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData!.crAmt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+                                                "₹ ${ledgerprovider.ledgerAllData?.crAmt == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.crAmt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
                                             color: Colors.green,
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
