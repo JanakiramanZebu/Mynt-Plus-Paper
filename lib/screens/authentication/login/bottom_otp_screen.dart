@@ -126,11 +126,13 @@ class _BottomSheetContentState extends State<BottomSheetContent>
           color: const Color(0xffFFFFFF),
           border: Border.all(color: const Color(0xFFDBDBDB), width: 1),
         ),
-        textStyle: textStyles.textFieldLabelStyle.copyWith(
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+        textStyle: 
+             TextWidget.textStyle(
+                 fontSize: 16 ,  theme: theme.isDarkMode  ),		
+
       );
       final focusedPinTheme = defaultPinThemes.copyBorderWith(
-        border: Border.all(color: const Color(0xFFDBDBDB), width: 1),
+        border: Border.all(color: const Color(0xff0037B7), width: 1),
       );
       final errorPinTheme = defaultPinThemes.copyBorderWith(
         border: Border.all(color: colors.darkred, width: 1),
@@ -138,7 +140,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
       );
 
       final submittedPinTheme = defaultPinThemes.copyBorderWith(
-        border: Border.all(color: colors.ltpgreen, width: 2),
+        border: Border.all(color: Color(0xff0037B7), width: 2),
       );
       return auth.initLoad
           ? PopScope(
@@ -400,7 +402,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
                       width: screenWidth,
                       height: 46,
                       child: OutlinedButton(
@@ -417,7 +419,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                     : colors.colorbluegrey,
                             side: BorderSide.none,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                              borderRadius: BorderRadius.circular(5),
                             )),
                         onPressed:
                             otpController.length <= (auth.totp ? 5 : 3) ||
@@ -463,36 +465,26 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                               ? (!auth.totp && _start == 0 && !auth.loading)
                                   ? Material(
                                       color: Colors.transparent,
-                                      shape: const BeveledRectangleBorder(),
-                                      // clipBehavior: Clip.hardEdge,
                                       child: InkWell(
-                                          customBorder:
-                                              const BeveledRectangleBorder(),
-                                          splashColor:
-                                              Colors.black.withOpacity(0.15),
-                                          highlightColor:
-                                              Colors.black.withOpacity(0.08),
+                                          splashColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(0.15)
+                                              : Colors.black.withOpacity(0.15),
+                                          highlightColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(0.08)
+                                              : Colors.black.withOpacity(0.08),
                                           onTap:
-                                              //  internet
-                                              //             .connectionStatus ==
-                                              //         ConnectivityResult.none
-                                              //     ? null
-                                              //     :
-                                              () {
+                                              () async {
+                                                 await Future.delayed(Duration(milliseconds: 100));
                                             SmsAutoFill().unregisterListener();
                                             otpController.text = '';
                                             _startListeningForOtp();
                                             auth.submitResendOtp(context);
                                             _start = 89;
-
-                                            // auth.loginotpResend(
-                                            //     widget.field, widget.value, widget.password, context);
-
                                             startTimer();
                                           },
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 4, vertical: 4),
+                                                horizontal: 10, vertical: 6),
                                             child: TextWidget.subText(
                                                 text: "Resend OTP",
                                                 theme: false,
@@ -514,12 +506,13 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                               : const SizedBox(),
                           Material(
                             color: Colors.transparent,
-                            shape: const BeveledRectangleBorder(),
-                            // clipBehavior: Clip.hardEdge,
                             child: InkWell(
-                                customBorder: const BeveledRectangleBorder(),
-                                splashColor: Colors.black.withOpacity(0.15),
-                                highlightColor: Colors.black.withOpacity(0.08),
+                                splashColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.15)
+                                    : Colors.black.withOpacity(0.15),
+                                highlightColor: theme.isDarkMode
+                                    ? Colors.white.withOpacity(0.08)
+                                    : Colors.black.withOpacity(0.08),
                                 onTap: () async {
                                   if (!auth.loading) {
                                     // Clear the OTP field first
@@ -538,7 +531,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 4, vertical: 4),
+                                      horizontal: 10, vertical: 6),
                                   child: TextWidget.subText(
                                       text: auth.totp
                                           ? 'Switch OTP'

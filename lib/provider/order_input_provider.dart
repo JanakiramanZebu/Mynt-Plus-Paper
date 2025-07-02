@@ -273,7 +273,7 @@ class OrderInputProvider extends DefaultChangeNotifier {
 
   final List<String> _alertTypes = [
     "LTP",
-    "Perc. Change",
+    // "Perc. Change",
     // "ATP",
     // "OI",
     // "TOI",

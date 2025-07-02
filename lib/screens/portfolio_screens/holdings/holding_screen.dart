@@ -22,6 +22,7 @@ import '../../../sharedWidget/functions.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
 import 'filter_scrip_bottom_sheet.dart';
 
+import 'holding_detail_screen.dart';
 import 'holdings_list.dart';
 
 class HoldingScreen extends ConsumerStatefulWidget {
@@ -1153,9 +1154,34 @@ class _HoldingItemWrapperState extends ConsumerState<_HoldingItemWrapper> {
     if (!mounted) return;
 
     // Navigate to detail screen
-    Navigator.pushNamed(context, Routes.holdingDetail, arguments: {
-      "holdingData": widget.holding,
-      "exchTsym": widget.holding.exchTsym![0]
-    });
+
+    showModalBottomSheet(
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+        ),
+        isDismissible: true,
+        enableDrag: false,
+        useSafeArea: true,
+        context: context,
+        builder: (context) => Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+             child: HoldingDetailScreen(
+      holdingData: widget.holding,
+      exchTsym: widget.holding.exchTsym![0],
+    ),
+      ),
+    );
+      
+
+    // Navigator.pushNamed(context, Routes.holdingDetail, arguments: {
+    //   "holdingData": widget.holding,
+    //   "exchTsym": widget.holding.exchTsym![0]
+    // });
   }
 }
