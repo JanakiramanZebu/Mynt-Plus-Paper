@@ -181,33 +181,37 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                           "assets/icon/Mynt New logo.svg",
                           color: const Color(0xff0037B7),
                           width: 110,
-                           fit: BoxFit.contain,
+                          fit: BoxFit.contain,
                         ),
-                        SizedBox(height: 16,),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                                  "Invest in your future",
-                                   style:  TextWidget.textStyle(
-                                  fontSize: 32 ,  theme: theme.isDarkMode , fw: 2 ),		
-                                  textAlign: TextAlign.center,
-                               ),
-                               
+                        SizedBox(
+                          height: 16,
+                        ),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "Invest in your future",
+                            style: TextWidget.textStyle(
+                                fontSize: 32, theme: theme.isDarkMode, fw: 2),
+                            textAlign: TextAlign.center,
                           ),
+                        ),
 
-                      SizedBox(height: 8,),
-                      
+                        SizedBox(
+                          height: 8,
+                        ),
 
-                             FittedBox(
-                              fit: BoxFit.scaleDown,
-                               child: Text(
-                                     "Stock, F&O, Mutual Fund, IPO, Bond",
-                                      style:  TextWidget.textStyle(
-                                      fontSize: 16 ,  theme: theme.isDarkMode , fw: 0 ),	
-                                      textAlign: TextAlign.center,	
-                                    ),
-                             ),
-                             SizedBox(height: 24,),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "Stock, F&O, Mutual Fund, IPO, Bond",
+                            style: TextWidget.textStyle(
+                                fontSize: 16, theme: theme.isDarkMode, fw: 0),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 24,
+                        ),
 
                         // SvgPicture.asset(
                         //   "assets/icon/banner_ruppee.svg",
@@ -223,83 +227,82 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                         //   "assets/icon/investwell.svg",
                         // ),
 
-                         Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: OutlinedButton(
-                          onPressed: _isAnyProcessing ? null : _handleLogin,
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: const Color(0xff0037B7),
-                            minimumSize: const Size.fromHeight(46),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: OutlinedButton(
+                            onPressed: _isAnyProcessing ? null : _handleLogin,
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: const Color(0xff0037B7),
+                              minimumSize: const Size.fromHeight(46),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              side: BorderSide.none,
+                              padding: EdgeInsets.zero,
                             ),
-                            side: BorderSide.none,
-                            padding: EdgeInsets.zero,
+                            child: _isAnyProcessing &&
+                                    _activeButton == 'openAccount'
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : TextWidget.titleText(
+                                    text: "Open your FREE demat account",
+                                    theme: false,
+                                    color: !theme.isDarkMode
+                                        ? const Color(0xffFFFFFF)
+                                        : const Color(0xff0037B7),
+                                    fw: 2),
                           ),
-                          child:
-                              _isAnyProcessing && _activeButton == 'openAccount'
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : TextWidget.titleText(
-                                      text: "Open your FREE demat account",
-                                      theme: false,
-                                      color: !theme.isDarkMode
-                                          ? const Color(0xffFFFFFF)
-                                          : const Color(0xff0037B7),
-                                      fw: 2),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: OutlinedButton(
-                          onPressed: _isAnyProcessing
-                              ? null
-                              : () => _handleLoginToMynt(ref),
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: colors.colorWhite,
-                            minimumSize: const Size.fromHeight(46),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: OutlinedButton(
+                            onPressed: _isAnyProcessing
+                                ? null
+                                : () => _handleLoginToMynt(ref),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: colors.colorWhite,
+                              minimumSize: const Size.fromHeight(46),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              side: const BorderSide(
+                                color: Color(0xff0037B7),
+                                width: 1,
+                              ),
+                              padding: EdgeInsets.zero,
                             ),
-                            side: const BorderSide(
-                              color: Color(0xff0037B7),
-                              width: 1,
-                            ),
-                            padding: EdgeInsets.zero,
+                            child:
+                                _isAnyProcessing && _activeButton == 'loginMynt'
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Color(0xff0037B7),
+                                        ),
+                                      )
+                                    : TextWidget.titleText(
+                                        text: "Login with MYNT",
+                                        theme: false,
+                                        color: !theme.isDarkMode
+                                            ? const Color(0xff0037B7)
+                                            : const Color(0xffFFFFFF),
+                                        fw: 2),
                           ),
-                          child: _isAnyProcessing && _activeButton == 'loginMynt'
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Color(0xff0037B7),
-                                  ),
-                                )
-                              : TextWidget.titleText(
-                                  text: "Login with MYNT",
-                                  theme: false,
-                                  color: !theme.isDarkMode
-                                      ? const Color(0xff0037B7)
-                                      : const Color(0xffFFFFFF),
-                                  fw: 2),
                         ),
-                      ),
                       ],
                     ),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                     
-
                       // Open a free account Button
 
                       // const SizedBox(height: 40),

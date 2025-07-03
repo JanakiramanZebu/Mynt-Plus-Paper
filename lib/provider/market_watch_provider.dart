@@ -715,9 +715,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   scripdepthsize(value) {
     _scripsize = value;
+    print("scripsize: $_scripsize");
     notifyListeners();
   }
-
 
   List<String> shareHoldType = [
     "Promoter Holding",
@@ -1107,19 +1107,18 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   // Store holding detail context for returning from chart
   dynamic _holdingDetailExchTsym;
   dynamic _holdingDetailData;
-  
+
   void setHoldingDetailContext(dynamic exchTsym, dynamic holdingData) {
     _holdingDetailExchTsym = exchTsym;
     _holdingDetailData = holdingData;
   }
-  
+
   bool hasHoldingDetailContext() {
     return _holdingDetailExchTsym != null && _holdingDetailData != null;
   }
-  
+
   dynamic getHoldingDetailExchTsym() => _holdingDetailExchTsym;
   dynamic getHoldingDetailData() => _holdingDetailData;
-  
 
   orderAletrPendingSearch(String value, BuildContext context) {
     if (value.length > 1) {

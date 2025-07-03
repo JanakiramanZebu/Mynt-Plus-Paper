@@ -603,40 +603,52 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                           theme:
                                                               theme.isDarkMode,
                                                           fw: 1),
-                                                          const SizedBox(height: 8),
-                                                           FadeTransition(
-                                                            opacity:
-                                                                _animationController,
-                                                            child: TextWidget.titleText(
-                                                                text: "₹${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
-                                                                color: (_exchTsym.change == "null" || _exchTsym.change == null) || _exchTsym.change == "0.00"
-                                                                    ? colors.ltpgrey
-                                                                    : _exchTsym.change!.startsWith("-") || _exchTsym.perChange!.startsWith("-")
-                                                                        ? colors.darkred
-                                                                        : colors.ltpgreen,
-                                                                theme: theme.isDarkMode,
+                                                      const SizedBox(height: 8),
+                                                      FadeTransition(
+                                                        opacity:
+                                                            _animationController,
+                                                        child: TextWidget
+                                                            .titleText(
+                                                                text:
+                                                                    "₹${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
+                                                                color: (_exchTsym.change ==
+                                                                                "null" ||
+                                                                            _exchTsym.change ==
+                                                                                null) ||
+                                                                        _exchTsym.change ==
+                                                                            "0.00"
+                                                                    ? colors
+                                                                        .ltpgrey
+                                                                    : _exchTsym.change!.startsWith("-") ||
+                                                                            _exchTsym.perChange!.startsWith(
+                                                                                "-")
+                                                                        ? colors
+                                                                            .darkred
+                                                                        : colors
+                                                                            .ltpgreen,
+                                                                theme: theme
+                                                                    .isDarkMode,
                                                                 fw: 0),
-                                                          ),
-                                                          const SizedBox(
-                                                              height: 4),
-                                                          TextWidget.paraText(
-                                                              text:
-                                                                  "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                                                              color: !theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .colorBlack
-                                                                  : colors
-                                                                      .colorWhite,
-                                                              theme: theme
-                                                                  .isDarkMode,
-                                                              fw: 3)
-                                                          
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      TextWidget.paraText(
+                                                          text:
+                                                              "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                                                          color: !theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .colorBlack
+                                                              : colors
+                                                                  .colorWhite,
+                                                          theme:
+                                                              theme.isDarkMode,
+                                                          fw: 3)
                                                     ]),
                                                 Container(
                                                   height: 35,
                                                   width: 25,
-                                                  decoration: const BoxDecoration(
+                                                  decoration:
+                                                      const BoxDecoration(
                                                     color: Color(0xffF1F3F8),
                                                     // borderRadius: BorderRadius.circular(8),
                                                   ),
@@ -644,7 +656,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                     child: SvgPicture.asset(
                                                       assets.leftArrow,
                                                       width: 20,
-                                                      height: 20,                    
+                                                      height: 20,
                                                     ),
                                                   ),
                                                 )
@@ -782,20 +794,16 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                           onTap: () {},
                                           splashColor: theme.isDarkMode
                                               ? Colors.white.withOpacity(0.15)
-                                              : Colors.black
-                                                  .withOpacity(0.15),
+                                              : Colors.black.withOpacity(0.15),
                                           highlightColor: theme.isDarkMode
                                               ? Colors.white.withOpacity(0.08)
-                                              : Colors.black
-                                                  .withOpacity(0.08),
+                                              : Colors.black.withOpacity(0.08),
                                           child: Container(
-                                            padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 8),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 8),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
-                                              children: [             
+                                              children: [
                                                 TextWidget.subText(
                                                     text: "Pledge/Unpledge",
                                                     color: Color(0xFF0037B7),

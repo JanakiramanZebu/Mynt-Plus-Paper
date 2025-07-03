@@ -64,10 +64,10 @@ class UserAccountScreen extends ConsumerWidget {
 
     final filteredMenu = [
       {'title': 'Reports'},
-      {'title': 'My Accounts'},
+      {'title': 'Account'},
       {'title': 'Settings'},
       {'title': 'Refer'},
-      {'title': 'Rate us'},
+      {'title': 'Rate Us'},
       {'title': 'Contact'},
     ];
 
@@ -135,55 +135,66 @@ class UserAccountScreen extends ConsumerWidget {
                     builder: (_) =>
                         const LoggedUserBottomSheet(initRoute: 'switchAcc'));
               },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: colors.fundbuttonBg,
-                        child: Text(
-                          userProfile.userDetailModel?.uname
-                                  ?.substring(0, 1)
-                                  .toUpperCase() ??
-                              "U",
-                          style: const TextStyle(color: Colors.black),
-                        ),
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFF1F3F8),
+                      border: Border.all(
+                        color: const Color(0xFF0037B7),
+                        width: 1.5,
                       ),
-                      const SizedBox(width: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TextWidget.subText(
-                                text: _truncateProfileName(
-                                    userProfile.userDetailModel?.uname ?? ""),
-                                theme: false,
-                                color: !theme.isDarkMode
-                                    ? colors.colorBlack
-                                    : colors.colorGrey,
-                                fw: 0),
-                            const SizedBox(height: 4),
-                            TextWidget.paraText(
-                                text: userProfile.userDetailModel?.uid ?? "",
-                                theme: false,
-                                color: !theme.isDarkMode
-                                    ? colors.colorGrey
-                                    : colors.colorGrey,
-                                fw: 00)
-                          ],
-                        ),
+                    ),
+                    child: Center(
+                      child: TextWidget.custmText(
+                        text: userProfile.userDetailModel?.uname
+                                ?.substring(0, 1)
+                                .toUpperCase() ??
+                            "U",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : const Color(0xff0037B7),
+                        fs: 40,
+                        fw: 3,
                       ),
-                    ],
+                    ),
                   ),
-                  Row(
-                    children: [
-                      Icon(Icons.arrow_forward_ios,
-                          size: 16, color: colors.colorGrey)
-                    ],
-                  )
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextWidget.heroText(
+                            text: _truncateProfileName(
+                                userProfile.userDetailModel?.uname ?? ""),
+                            theme: false,
+                            color: !theme.isDarkMode
+                                ? const Color(0xff141414)
+                                : colors.colorGrey,
+                            fw: 1),
+                        // const SizedBox(height: 4),
+                        // TextWidget.paraText(
+                        //     text: userProfile.userDetailModel?.uid ?? "",
+                        //     theme: false,
+                        //     color: !theme.isDarkMode
+                        //         ? colors.colorGrey
+                        //         : colors.colorGrey,
+                        //     fw: 00)
+                      ],
+                    ),
+                  ),
+                  // Row(
+                  //   children: [
+                  //     Icon(Icons.arrow_forward_ios,
+                  //         size: 16, color: colors.colorGrey)
+                  //   ],
+                  // )
                 ],
               ),
             ),
@@ -202,7 +213,7 @@ class UserAccountScreen extends ConsumerWidget {
           ),
 
           /// 🔹 Horizontal Buttons (inline style)
-          _buildHorizontalButtons(context, ref, theme, funds, mf),
+          // _buildHorizontalButtons(context, ref, theme, funds, mf),
 
           /// 🔹 Account Balance (inline, outlined Add Fund)
           _buildAccountBalanceSection(context, ref, theme, funds, trancation),
@@ -226,13 +237,8 @@ class UserAccountScreen extends ConsumerWidget {
                       await funds.fetchHstoken(context);
                     }
                     switch (title) {
-                      case "My Accounts":
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MyAccountScreen(),
-                          ),
-                        );
+                      case "Account":
+                        Navigator.pushNamed(context, Routes.myaccountScreen);
                         break;
                       case "Reports":
                         if (reportsprovider.ledgerAllData == null) {
@@ -284,10 +290,29 @@ class UserAccountScreen extends ConsumerWidget {
                           reportsprovider.fetchpdfdownload(context,
                               reportsprovider.startDate, reportsprovider.today);
                         }
-                        Navigator.push(
+                        await Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => ReportsScreen(),
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    ReportsScreen(),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              final slideTween = Tween(
+                                begin: const Offset(
+                                    -1.0, 0.0), // Slide in from right
+                                end: Offset.zero,
+                              ).chain(CurveTween(
+                                  curve:
+                                      Curves.easeOutQuart)); // Optional curve
+
+                              return SlideTransition(
+                                position: animation.drive(slideTween),
+                                child: child,
+                              );
+                            },
+                            transitionDuration:
+                                const Duration(milliseconds: 180),
                           ),
                         );
                         break;
@@ -312,18 +337,55 @@ class UserAccountScreen extends ConsumerWidget {
                       case "Settings":
                         await ref.read(userProfileProvider).fetchsetting();
                         await ref.read(apikeyprovider).fetchapikey(context);
-                        Navigator.push(
+                        await Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => SettingsScreen(),
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    SettingsScreen(),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              final slideTween = Tween(
+                                begin: const Offset(
+                                    -1.0, 0.0), // Slide in from right
+                                end: Offset.zero,
+                              ).chain(CurveTween(
+                                  curve:
+                                      Curves.easeOutQuart)); // Optional curve
+
+                              return SlideTransition(
+                                position: animation.drive(slideTween),
+                                child: child,
+                              );
+                            },
+                            transitionDuration:
+                                const Duration(milliseconds: 180),
                           ),
                         );
+
                         break;
                       case "Rate Us":
-                        String url = TargetPlatform.iOS == defaultTargetPlatform
-                            ? "https://apps.apple.com/app/id6478270319?action=write-review"
-                            : "https://play.google.com/store/apps/details?id=com.mynt.trading_app_zebu&reviewId=0";
-                        launch(url);
+                        if (TargetPlatform.iOS == defaultTargetPlatform) {
+                          String iosUrl =
+                              "https://apps.apple.com/app/id6478270319?action=write-review";
+                          await launch(iosUrl);
+                        } else {
+                          String marketUrl =
+                              "market://details?id=com.mynt.trading_app_zebu";
+                          String webUrl =
+                              "https://play.google.com/store/apps/details?id=com.mynt.trading_app_zebu";
+
+                          try {
+                            bool canLaunchMarket = await canLaunch(marketUrl);
+                            if (canLaunchMarket) {
+                              await launch(marketUrl);
+                            } else {
+                              await launch(webUrl);
+                            }
+                          } catch (e) {
+                            await launch(webUrl);
+                          }
+                        }
                         break;
                       case "Contact":
                         showModalBottomSheet(
@@ -368,7 +430,8 @@ class UserAccountScreen extends ConsumerWidget {
                 theme: false,
                 color: const Color(0xff666666),
                 fw: 0),
-          )
+          ),
+          const SizedBox(height: 4),
         ],
       ),
     );
@@ -380,10 +443,10 @@ class UserAccountScreen extends ConsumerWidget {
       padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 0),
       child: Column(
         children: [
-          Divider(
-            color: colors.fundbuttonBg, // Optional: customize the color
-            thickness: 1, // Optional: customize the thickness
-          ),
+          // Divider(
+          //   color: colors.fundbuttonBg, // Optional: customize the color
+          //   thickness: 1, // Optional: customize the thickness
+          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -392,7 +455,7 @@ class UserAccountScreen extends ConsumerWidget {
                     text: "ACCOUNT BALANCE",
                     theme: false,
                     color: colors.colorGrey,
-                    fw: 00),
+                    fw: 3),
                 const SizedBox(height: 4),
                 TextWidget.subText(
                     text: formatIndianCurrency(
@@ -660,7 +723,7 @@ class SettingsScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: TextWidget.titleText(
+              child: TextWidget.heroText(
                 text: "Settings",
                 theme: false,
                 color:
@@ -823,7 +886,7 @@ class SettingsScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: TextWidget.titleText(
+              child: TextWidget.heroText(
                 text: "Security",
                 theme: false,
                 color:
@@ -982,18 +1045,132 @@ class SettingsScreen extends ConsumerWidget {
               text: ref.watch(authProvider).versiontext,
               theme: false,
               color: const Color(0xff666666),
-              fw: 0,
+              fw: 3,
             ),
           )
         ],
       ),
+      bottomNavigationBar: buildBottomNav(4, theme, context, ref),
     );
+  }
+
+  Widget buildBottomNav(int selectedTab, ThemesProvider theme,
+      BuildContext context, WidgetRef ref) {
+    final uid = ref.watch(userProfileProvider.select(
+        (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
+    return BottomAppBar(
+      height: 64,
+      shadowColor:
+          theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+      padding: EdgeInsets.zero,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          _buildBottomNavItem(
+              1, assets.watchlistIcon, "Watchlists", selectedTab, theme,
+              context: context, ref: ref),
+          _buildBottomNavItem(
+              2, assets.portfolioIcon, "Portfolio", selectedTab, theme,
+              context: context, ref: ref),
+          _buildBottomNavItem(
+              3, assets.ordersIcon, "Orders", selectedTab, theme,
+              context: context, ref: ref),
+          _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
+              useHeight: true, height: 18, context: context, ref: ref),
+        ],
+      ),
+    );
+  }
+
+  // Add this function
+  Widget _buildBottomNavItem(int index, String iconAsset, String label,
+      int selectedIndex, ThemesProvider theme,
+      {bool useHeight = false,
+      double height = 24,
+      required BuildContext context,
+      required WidgetRef ref}) {
+    final isSelected = selectedIndex == index;
+
+    return Expanded(
+      child: RepaintBoundary(
+        child: InkWell(
+          onTap: () {
+            // Navigate to the corresponding screen
+            switch (index) {
+              case 1:
+                Navigator.pushReplacementNamed(context, Routes.homeScreen);
+                ref.read(indexListProvider).bottomMenu(1, context);
+                break;
+              case 2:
+                Navigator.pushReplacementNamed(context, Routes.homeScreen);
+                ref.read(indexListProvider).bottomMenu(2, context);
+                break;
+              case 3:
+                Navigator.pushReplacementNamed(context, Routes.homeScreen);
+                ref.read(indexListProvider).bottomMenu(3, context);
+                break;
+              case 4:
+                // Already on profile screen
+                break;
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 7),
+            decoration: BoxDecoration(
+                border: isSelected
+                    ? Border(
+                        top: BorderSide(
+                            color: theme.isDarkMode
+                                ? colors.colorLightBlue
+                                : colors.colorBlue,
+                            width: 2))
+                    : null),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                useHeight
+                    ? SvgPicture.asset(
+                        iconAsset,
+                        height: height,
+                        color: _getBottomNavColor(theme, isSelected),
+                      )
+                    : SvgPicture.asset(
+                        iconAsset,
+                        color: _getBottomNavColor(theme, isSelected),
+                      ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: TextWidget.textStyle(
+                      fontSize: 12,
+                      color: _getBottomNavColor(theme, isSelected),
+                      theme: theme.isDarkMode,
+                      fw: isSelected ? 1 : 00),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Add this function
+  Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
+    if (theme.isDarkMode && isSelected) {
+      return colors.colorLightBlue;
+    } else if (isSelected) {
+      return colors.colorBlue;
+    } else {
+      return colors.colorGrey;
+    }
   }
 }
 
 // My Account Screen
 class MyAccountScreen extends ConsumerStatefulWidget {
-  const MyAccountScreen({super.key,this.initialIndex = 0});
+  const MyAccountScreen({super.key, this.initialIndex = 0});
   final int initialIndex;
   @override
   ConsumerState<MyAccountScreen> createState() => _MyAccountScreenState();
@@ -1005,13 +1182,123 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   @override
   void initState() {
     super.initState();
-    _expandedIndex = widget.initialIndex;        // ← store the target tile
+    _expandedIndex = widget.initialIndex; // ← store the target tile
   }
 
   String _truncateProfileName(String text, {int maxLength = 18}) {
     return (text.length > maxLength)
         ? '${text.substring(0, maxLength)}...'
         : text;
+  }
+
+  // Add this variable
+  final selectedBtmIndx = 4;
+
+  // Add this function
+  Widget buildBottomNav(int selectedTab, ThemesProvider theme) {
+    final uid = ref.watch(userProfileProvider.select(
+        (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
+    return BottomAppBar(
+      height: 64,
+      shadowColor:
+          theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+      padding: EdgeInsets.zero,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          _buildBottomNavItem(
+              1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
+          _buildBottomNavItem(
+              2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
+          _buildBottomNavItem(
+              3, assets.ordersIcon, "Orders", selectedTab, theme),
+          _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
+              useHeight: true, height: 18),
+        ],
+      ),
+    );
+  }
+
+  // Add this function
+  Widget _buildBottomNavItem(int index, String iconAsset, String label,
+      int selectedIndex, ThemesProvider theme,
+      {bool useHeight = false, double height = 24}) {
+    final isSelected = selectedIndex == index;
+
+    return Expanded(
+      child: RepaintBoundary(
+        child: InkWell(
+          onTap: () {
+            // Navigate to the corresponding screen
+            switch (index) {
+              case 1:
+                Navigator.pushReplacementNamed(context, Routes.homeScreen);
+                ref.read(indexListProvider).bottomMenu(1, context);
+                break;
+              case 2:
+                Navigator.pushReplacementNamed(context, Routes.homeScreen);
+                ref.read(indexListProvider).bottomMenu(2, context);
+                break;
+              case 3:
+                Navigator.pushReplacementNamed(context, Routes.homeScreen);
+                ref.read(indexListProvider).bottomMenu(3, context);
+                break;
+              case 4:
+                // Already on profile screen
+                break;
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 7),
+            decoration: BoxDecoration(
+                border: isSelected
+                    ? Border(
+                        top: BorderSide(
+                            color: theme.isDarkMode
+                                ? colors.colorLightBlue
+                                : colors.colorBlue,
+                            width: 2))
+                    : null),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                useHeight
+                    ? SvgPicture.asset(
+                        iconAsset,
+                        height: height,
+                        color: _getBottomNavColor(theme, isSelected),
+                      )
+                    : SvgPicture.asset(
+                        iconAsset,
+                        color: _getBottomNavColor(theme, isSelected),
+                      ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: TextWidget.textStyle(
+                      fontSize: 12,
+                      color: _getBottomNavColor(theme, isSelected),
+                      theme: theme.isDarkMode,
+                      fw: isSelected ? 1 : 00),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Add this function
+  Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
+    if (theme.isDarkMode && isSelected) {
+      return colors.colorLightBlue;
+    } else if (isSelected) {
+      return colors.colorBlue;
+    } else {
+      return colors.colorGrey;
+    }
   }
 
   // List of items for the account screen
@@ -1080,12 +1367,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          /// Profile Header (retained from your original design)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: InkWell(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// Profile Header (retained from your original design)
+            const SizedBox(height: 10),
+            InkWell(
               onTap: () {
                 showModalBottomSheet(
                     context: context,
@@ -1139,57 +1428,68 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 ],
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(
+            const SizedBox(height: 8),
+            Divider(
               color: colors.fundbuttonBg, // Optional: customize the color
               thickness: 1, // Optional: customize the thickness
             ),
-          ),
-          const SizedBox(height: 16),
-
-          /// Expandable List View
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: accountItems.length,
-              itemBuilder: (context, index) {
-                final item = accountItems[index];
-                final title = item['title']!;
-
-                return ExpansionTile(
-                  // The first item ("Profile") is expanded by default
-                  initiallyExpanded: index == _expandedIndex,
-                  onExpansionChanged: (open) {
-        if (open) setState(() => _expandedIndex = index); // keep only one open
-      },
-                  title: TextWidget.subText(
-                    text: title,
-                    theme: false,
-                    color: colors.colorGrey,
-                  ),
-                  children: [
-                    // Dynamically build the content based on the title
-                    _buildExpansionContent(title, ref, theme),
-                  ],
-                );
-              },
-              separatorBuilder: (context, index) => const SizedBox(height: 0),
-            ),
-          ),
-
-          /// Version Text
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8, top: 16),
-            child: TextWidget.paraText(
-              text: ref.watch(authProvider).versiontext,
+            const SizedBox(height: 8),
+            TextWidget.heroText(
+              text: "Account",
               theme: false,
-              color: const Color(0xff666666),
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              fw: 1,
             ),
-          )
-        ],
+            const SizedBox(height: 8),
+            Divider(
+              color: colors.fundbuttonBg, // Optional: customize the color
+              thickness: 1, // Optional: customize the thickness
+            ),
+
+            /// Expandable List View
+            Expanded(
+              child: ListView.separated(
+                itemCount: accountItems.length,
+                itemBuilder: (context, index) {
+                  final item = accountItems[index];
+                  final title = item['title']!;
+
+                  return ExpansionTile(
+                    // The first item ("Profile") is expanded by default
+                    initiallyExpanded: index == 0,
+                    onExpansionChanged: (isExpanding) =>
+                        _onExpansionChanged(isExpanding, title),
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 0),
+                    title: TextWidget.subText(
+                      text: title,
+                      theme: false,
+                      color: colors.colorGrey,
+                    ),
+                    children: [
+                      // Dynamically build the content based on the title
+                      _buildExpansionContent(title, ref, theme),
+                    ],
+                  );
+                },
+                separatorBuilder: (context, index) => const SizedBox(height: 0),
+              ),
+            ),
+
+            /// Version Text
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 8, top: 16),
+                child: TextWidget.paraText(
+                  text: ref.watch(authProvider).versiontext,
+                  theme: false,
+                  color: const Color(0xff666666),
+                ),
+              ),
+            )
+          ],
+        ),
       ),
+      bottomNavigationBar: buildBottomNav(selectedBtmIndx, theme),
     );
   }
 
@@ -1235,7 +1535,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     // }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
       child: Column(
         children: [
           _buildDetailRow("Name", clientData?.panName ?? "N/A", theme),
@@ -1257,38 +1557,34 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header with Add Bank button
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextWidget.subText(
-                    text: "Bank Accounts Linked",
-                    theme: theme.isDarkMode,
-                    fw: 1,
-                  ),
-                  TextWidget.paraText(
-                    text: "View bank details and add new banks.",
-                    theme: theme.isDarkMode,
-                  ),
-                ],
-              ),
-              IconButton(
-                onPressed: () {
-                  profileDetails.openInWebURL(context, "manbank");
-                },
-                icon: Icon(
-                  Icons.add_circle_outline,
-                  color: theme.isDarkMode
-                      ? colors.colorLightBlue
-                      : colors.colorBlue,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextWidget.subText(
+                  text: "Bank Accounts Linked",
+                  theme: theme.isDarkMode,
+                  fw: 1,
                 ),
+                TextWidget.paraText(
+                  text: "View bank details and add new banks.",
+                  theme: theme.isDarkMode,
+                ),
+              ],
+            ),
+            IconButton(
+              onPressed: () {
+                profileDetails.openInWebURL(context, "manbank");
+              },
+              icon: Icon(
+                Icons.add_circle_outline,
+                color:
+                    theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
 
         // Bank Cards
@@ -1408,377 +1704,438 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
 
   Widget _buildDepositoryContent(WidgetRef ref, ThemesProvider theme) {
     final profileprovider = ref.watch(profileAllDetailsProvider);
-        final theme = ref.watch(themeProvider);
-        bool DDPIActive =
-            profileprovider.clientAllDetails.clientData!.dDPI == 'Y';
-        bool POAActive =
-            profileprovider.clientAllDetails.clientData!.pOA == 'Y';
+    final theme = ref.watch(themeProvider);
+    bool DDPIActive = profileprovider.clientAllDetails.clientData!.dDPI == 'Y';
+    bool POAActive = profileprovider.clientAllDetails.clientData!.pOA == 'Y';
     return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Card(
-      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      elevation: 0,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Card(
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            elevation: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextWidget.subText(
-                    text: "Demat (CDSL)", theme: theme.isDarkMode, fw: 0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextWidget.subText(
+                          text: "Demat (CDSL)", theme: theme.isDarkMode, fw: 0),
+                      Row(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(2),
+                              color: theme.isDarkMode
+                                  ? DDPIActive
+                                      ? const Color.fromARGB(255, 9, 163, 17)
+                                      : colors.colorGrey
+                                  : DDPIActive
+                                      ? Color.fromARGB(255, 9, 255, 0)
+                                          .withOpacity(.1)
+                                      : const Color(0xff666666).withOpacity(.1),
+                            ),
+                            child: Text("DDPI",
+                                overflow: TextOverflow.ellipsis,
+                                // maxLines: 1,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? const Color(0xffFFFFFF)
+                                        : const Color(0xff666666),
+                                    12,
+                                    FontWeight.w600)),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(2),
+                              color: theme.isDarkMode
+                                  ? POAActive
+                                      ? const Color.fromARGB(255, 9, 163, 17)
+                                      : colors.colorGrey
+                                  : POAActive
+                                      ? Color.fromARGB(255, 9, 255, 0)
+                                          .withOpacity(.1)
+                                      : const Color(0xff666666).withOpacity(.1),
+                            ),
+                            child: Text("POA",
+                                overflow: TextOverflow.ellipsis,
+                                // maxLines: 1,
+                                style: textStyle(
+                                    theme.isDarkMode
+                                        ? const Color(0xffFFFFFF)
+                                        : const Color(0xff666666),
+                                    12,
+                                    FontWeight.w600)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
                 Row(
                   children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(2),
-                        color: theme.isDarkMode
-                            ? DDPIActive
-                                ? const Color.fromARGB(255, 9, 163, 17)
-                                : colors.colorGrey
-                            : DDPIActive
-                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
-                                : const Color(0xff666666).withOpacity(.1),
-                      ),
-                      child: Text("DDPI",
-                          overflow: TextOverflow.ellipsis,
-                          // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                    Flexible(
+                      child: UserInfoColumn(
+                          label: "DP ID",
+                          value: profileprovider
+                                  .clientAllDetails.clientData?.cLIENTDPCODE!
+                                  .substring(0, 8) ??
+                              "",
+                          theme: theme),
                     ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(2),
-                        color: theme.isDarkMode
-                            ? POAActive
-                                ? const Color.fromARGB(255, 9, 163, 17)
-                                : colors.colorGrey
-                            : POAActive
-                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
-                                : const Color(0xff666666).withOpacity(.1),
-                      ),
-                      child: Text("POA",
-                          overflow: TextOverflow.ellipsis,
-                          // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                    Flexible(
+                      child: UserInfoColumn(
+                          label: "BO ID",
+                          value: profileprovider
+                                  .clientAllDetails.clientData?.cLIENTDPCODE!
+                                  .substring(8) ??
+                              "",
+                          theme: theme),
                     ),
                   ],
+                ),
+                UserInfoColumn(
+                  label: "DP Name",
+                  value:
+                      profileprovider.clientAllDetails.clientData?.dPNAME ?? "",
+                  theme: theme,
+                  expandable: true,
                 ),
               ],
             ),
           ),
-          Row(
-            children: [
-              Flexible(
-                child: UserInfoColumn(
-                    label: "DP ID",
-                    value: profileprovider
-                            .clientAllDetails.clientData?.cLIENTDPCODE!
-                            .substring(0, 8) ??
-                        "",
-                    theme: theme),
-              ),
-              Flexible(
-                child: UserInfoColumn(
-                    label: "BO ID",
-                    value: profileprovider
-                            .clientAllDetails.clientData?.cLIENTDPCODE!
-                            .substring(8) ??
-                        "",
-                    theme: theme),
-              ),
-            ],
-          ),
-          UserInfoColumn(
-              label: "DP Name",
-              value: profileprovider.clientAllDetails.clientData?.dPNAME ?? "",
-              theme: theme,
-              expandable: true,
-              ),
+          if (!DDPIActive && !POAActive)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextWidget.paraText(
+                    text: "Do you want to sell your stocks without CDSL T-Pin",
+                    theme: theme.isDarkMode,
+                    fw: 1),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () async {
+                    profileprovider.openInWebURL(context, "deposltory");
+                  },
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    // minimumSize: Size(double.infinity, 30),
+                    backgroundColor: ref.read(themeProvider).isDarkMode
+                        ? colors.colorBlack
+                        : colors.colorWhite,
+                    shape:
+                        // MaterialStateProperty.all(RoundedRectangleBorder( borderRadius: BorderRadius.circular(40) ))
+                        RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    side: BorderSide(
+                      width: 1,
+                      color: ref.read(themeProvider).isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                    ),
+                  ),
+                  child: TextWidget.subText(
+                      text: "Activate DDPI", theme: theme.isDarkMode, fw: 1),
+                ),
+              ],
+            ),
         ],
       ),
-    ),
-                      if (!DDPIActive && !POAActive)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TextWidget.paraText(
-                                text:
-                                    "Do you want to sell your stocks without CDSL T-Pin",
-                                theme: theme.isDarkMode,
-                                fw: 1),
-                            const SizedBox(height: 12),
-                            ElevatedButton(
-                              onPressed: () async{
-                                    profileprovider.openInWebURL(context,"deposltory");
-                              },
-                              style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                // minimumSize: Size(double.infinity, 30),
-                                backgroundColor:
-                                    ref.read(themeProvider).isDarkMode
-                                        ? colors.colorBlack
-                                        : colors.colorWhite,
-                                shape:
-                                    // MaterialStateProperty.all(RoundedRectangleBorder( borderRadius: BorderRadius.circular(40) ))
-                                    RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(32),
-                                ),
-                                side: BorderSide(
-                                  width: 1,
-                                  color: ref.read(themeProvider).isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                ),
-                              ),
-                              child: TextWidget.subText(
-                                  text: "Activate DDPI",
-                                  theme: theme.isDarkMode,
-                                  fw: 1),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                );
-    
-    
+    );
   }
 
   /// Builds the MTF content section
   Widget _buildMTFContent(WidgetRef ref, ThemesProvider theme) {
     final profileDetails = ref.watch(profileAllDetailsProvider);
     final clientData = profileDetails.clientAllDetails.clientData;
-    
-    
+
     bool DDPIActive = clientData?.dDPI == 'Y';
     bool POAActive = clientData?.pOA == 'Y';
     bool mtfCl = clientData?.mTFCl == 'Y';
     bool mtfClAuto = clientData?.mTFClAuto == "Y";
 
-    return Card(
-      elevation: 0,
-      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Status badges
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            _buildStatusChip("DDPI", DDPIActive, theme),
+            const SizedBox(width: 8),
+            _buildStatusChip("POA", POAActive, theme),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        if (!DDPIActive && !POAActive)
+          TextWidget.subText(
+            text:
+                "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
+            theme: theme.isDarkMode,
+            fw: 1,
+            color: colors.kColorRedText,
+          )
+        else if (mtfCl && mtfClAuto) ...[
+          TextWidget.subText(
+            text:
+                "You have activated the Margin Trading Facility (MTF) on your account",
+            theme: theme.isDarkMode,
+          ),
+          const SizedBox(height: 16),
+          Chip(
+            label: TextWidget.subText(
+              text: 'MTF Enabled',
+              theme: theme.isDarkMode,
+              fw: 1,
+            ),
+            backgroundColor: theme.isDarkMode
+                ? const Color.fromARGB(255, 9, 163, 17)
+                : const Color.fromARGB(255, 9, 255, 0).withOpacity(.1),
+          ),
+        ] else if (DDPIActive || POAActive) ...[
+          TextWidget.subText(
+            text:
+                "Would you like to activate Margin Trading Facility (MTF) on your account",
+            theme: theme.isDarkMode,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              profileDetails.openInWebURL(context, "mtf");
+            },
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor:
+                  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(32),
+              ),
+              side: BorderSide(
+                width: 1,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              ),
+            ),
+            child: TextWidget.subText(
+              text: "Enable MTF",
+              theme: theme.isDarkMode,
+              fw: 1,
+            ),
+          ),
+        ],
+
+        Card(
+          elevation: 0,
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(2),
-                        color: theme.isDarkMode
-                            ? DDPIActive
-                                ? const Color.fromARGB(255, 9, 163, 17)
-                                : colors.colorGrey
-                            : DDPIActive
-                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
-                                : const Color(0xff666666).withOpacity(.1),
-                      ),
-                      child: Text("DDPI",
-                          overflow: TextOverflow.ellipsis,
-                          // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(2),
-                        color: theme.isDarkMode
-                            ? POAActive
-                                ? const Color.fromARGB(255, 9, 163, 17)
-                                : colors.colorGrey
-                            : POAActive
-                                ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
-                                : const Color(0xff666666).withOpacity(.1),
-                      ),
-                      child: Text("POA",
-                          overflow: TextOverflow.ellipsis,
-                          // maxLines: 1,
-                          style: textStyle(
-                              theme.isDarkMode
-                                  ? const Color(0xffFFFFFF)
-                                  : const Color(0xff666666),
-                              12,
-                              FontWeight.w600)),
+                    Row(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: theme.isDarkMode
+                                ? DDPIActive
+                                    ? const Color.fromARGB(255, 9, 163, 17)
+                                    : colors.colorGrey
+                                : DDPIActive
+                                    ? Color.fromARGB(255, 9, 255, 0)
+                                        .withOpacity(.1)
+                                    : const Color(0xff666666).withOpacity(.1),
+                          ),
+                          child: Text("DDPI",
+                              overflow: TextOverflow.ellipsis,
+                              // maxLines: 1,
+                              style: textStyle(
+                                  theme.isDarkMode
+                                      ? const Color(0xffFFFFFF)
+                                      : const Color(0xff666666),
+                                  12,
+                                  FontWeight.w600)),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: theme.isDarkMode
+                                ? POAActive
+                                    ? const Color.fromARGB(255, 9, 163, 17)
+                                    : colors.colorGrey
+                                : POAActive
+                                    ? Color.fromARGB(255, 9, 255, 0)
+                                        .withOpacity(.1)
+                                    : const Color(0xff666666).withOpacity(.1),
+                          ),
+                          child: Text("POA",
+                              overflow: TextOverflow.ellipsis,
+                              // maxLines: 1,
+                              style: textStyle(
+                                  theme.isDarkMode
+                                      ? const Color(0xffFFFFFF)
+                                      : const Color(0xff666666),
+                                  12,
+                                  FontWeight.w600)),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-            if (!DDPIActive && !POAActive)
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: TextWidget.subText(
-                    text:"You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                    color: colors.kColorRedText),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: TextWidget.subText(
-                    text:"Enable DDPI under Depository tab.",
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                    color: colors.kColorRedText),
-              ),
-
-            if ((mtfCl && mtfClAuto)) ...[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // const SizedBox(height: 16,),
+                if (!DDPIActive && !POAActive)
                   Padding(
-                   padding: const EdgeInsets.only(top: 16.0),
+                    padding: const EdgeInsets.only(top: 16.0),
                     child: TextWidget.subText(
                         text:
-                            "You have activated the Margin Trading Facility (MTF) on your account ",
+                            "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
                         theme: theme.isDarkMode,
-                        ),
+                        fw: 0,
+                        color: colors.kColorRedText),
                   ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: TextWidget.subText(
+                      text: "Enable DDPI under Depository tab.",
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                      color: colors.kColorRedText),
+                ),
+                if ((mtfCl && mtfClAuto)) ...[
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // const SizedBox(height: 16,),
                       Padding(
                         padding: const EdgeInsets.only(top: 16.0),
-                        child: Chip(
-                          label: TextWidget.subText(
-                              text: 'MTF Enabled',
-                              theme: theme.isDarkMode,
-                              fw: 1),
-                              // labelPadding:EdgeInsets.symmetric(horizontal: 8,vertical: 5),
-                          backgroundColor: theme.isDarkMode
-                              ? mtfCl && mtfClAuto
-                                  ? const Color.fromARGB(255, 9, 163, 17)
-                                  : colors.colorGrey
-                              : mtfCl && mtfClAuto
-                                  ? Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
-                                  : const Color(0xff666666)
-                                      .withOpacity(.1), // Color(0xffecf8f1),
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(
-                              color: theme.isDarkMode
-                                  ? colors.colorBlack
-                                  : colors.colorWhite, // Color(0xffc1e7ba),
-                            ),
-                            borderRadius: BorderRadius.circular(32),
-                          ),
+                        child: TextWidget.subText(
+                          text:
+                              "You have activated the Margin Trading Facility (MTF) on your account ",
+                          theme: theme.isDarkMode,
                         ),
+                      ),
+                      Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16.0),
+                            child: Chip(
+                              label: TextWidget.subText(
+                                  text: 'MTF Enabled',
+                                  theme: theme.isDarkMode,
+                                  fw: 1),
+                              // labelPadding:EdgeInsets.symmetric(horizontal: 8,vertical: 5),
+                              backgroundColor: theme.isDarkMode
+                                  ? mtfCl && mtfClAuto
+                                      ? const Color.fromARGB(255, 9, 163, 17)
+                                      : colors.colorGrey
+                                  : mtfCl && mtfClAuto
+                                      ? Color.fromARGB(255, 9, 255, 0)
+                                          .withOpacity(.1)
+                                      : const Color(0xff666666).withOpacity(
+                                          .1), // Color(0xffecf8f1),
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(
+                                  color: theme.isDarkMode
+                                      ? colors.colorBlack
+                                      : colors.colorWhite, // Color(0xffc1e7ba),
+                                ),
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ],
-              ),
-            ],
-
-            if ((profileDetails.clientAllDetails.clientData!.mTFCl == 'N' &&
-                    profileDetails.clientAllDetails.clientData!.mTFClAuto ==
-                        'N') &&
-                (profileDetails.clientAllDetails.clientData!.dDPI == 'Y' ||
-                    profileDetails.clientAllDetails.clientData!.pOA == "Y"))
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidget.subText(
-                        text:
-                            "Would you like to activate Margin Trading Facility (MTF) on your account ",
-                        theme: theme.isDarkMode,
+                if ((profileDetails.clientAllDetails.clientData!.mTFCl == 'N' &&
+                        profileDetails.clientAllDetails.clientData!.mTFClAuto ==
+                            'N') &&
+                    (profileDetails.clientAllDetails.clientData!.dDPI == 'Y' ||
+                        profileDetails.clientAllDetails.clientData!.pOA == "Y"))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextWidget.subText(
+                          text:
+                              "Would you like to activate Margin Trading Facility (MTF) on your account ",
+                          theme: theme.isDarkMode,
                         ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16.0),
-                      child: ElevatedButton(
-                        onPressed: () async {
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              //  if (Platform.isAndroid) {
+                              //           await ref.read(fundProvider).fetchHstoken(context);
+                              //             Navigator.pushNamed(
+                              //                 context, Routes.profileWebViewApp,
+                              //                 arguments: "mtf");
 
-                          //  if (Platform.isAndroid) {
-                          //           await ref.read(fundProvider).fetchHstoken(context);
-                          //             Navigator.pushNamed(
-                          //                 context, Routes.profileWebViewApp,
-                          //                 arguments: "mtf");
+                              //         } else {
+                              profileDetails.openInWebURL(context, "mtf");
+                              // }
 
-                          //         } else {
-                                    profileDetails.openInWebURL(context,"mtf");
-                                  // }
-                                
-
-                          // await ref.read(fundProvider).fetchHstoken(context);
-                          // Navigator.pushNamed(context, Routes.profileWebViewApp,
-                          //     arguments: "mtf");
-                          //  profileDetails.openInWebURL(context,"mtf");
-                        },
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          
-                          backgroundColor: theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          shape:
-                             
-                              RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32),
-                          ),
-                          side: BorderSide(
-                            width: 1,
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
+                              // await ref.read(fundProvider).fetchHstoken(context);
+                              // Navigator.pushNamed(context, Routes.profileWebViewApp,
+                              //     arguments: "mtf");
+                              //  profileDetails.openInWebURL(context,"mtf");
+                            },
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: theme.isDarkMode
+                                  ? colors.colorBlack
+                                  : colors.colorWhite,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(32),
+                              ),
+                              side: BorderSide(
+                                width: 1,
+                                color: theme.isDarkMode
+                                    ? colors.colorWhite
+                                    : colors.colorBlack,
+                              ),
+                            ),
+                            child: TextWidget.subText(
+                                text: "Enable MTF",
+                                theme: theme.isDarkMode,
+                                fw: 1),
                           ),
                         ),
-                        child: TextWidget.subText(
-                            text: "Enable MTF",
-                            theme: theme.isDarkMode,
-                            fw: 1),
-                      
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-
-             
-              ),
-          ],
+                  ),
+              ],
+            ),
+          ),
         ),
-      ),
+      ]),
     );
-                }
+  }
 
   /// Builds the Trading Preferences content section
   Widget _buildTradingPreferencesContent(WidgetRef ref, ThemesProvider theme) {
@@ -1787,7 +2144,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         profileDetails.clientAllDetails.clientData?.segmentsData;
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1813,7 +2170,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 5),
           if (segmentsData != null) ...[
             _buildSegmentRow(
                 "Equities",
@@ -1851,7 +2208,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     final clientData = profileDetails.clientAllDetails.clientData;
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1861,7 +2218,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               text: "No nominee details found",
               theme: theme.isDarkMode,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
                 profileDetails.openInWebURL(context, "nominee");
@@ -1909,7 +2266,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             _buildDetailRow(
                 "Nominee Name", clientData?.nomineeName ?? "N/A", theme),
             _buildDetailRow("Nominee Relation",
@@ -1928,7 +2285,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     final profileDetails = ref.watch(profileAllDetailsProvider);
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1970,7 +2327,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     final profileDetails = ref.watch(profileAllDetailsProvider);
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2169,100 +2526,101 @@ class ReportsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          /// Profile Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: InkWell(
-              onTap: () {
-                showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    isDismissible: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                      ),
-                    ),
-                    builder: (_) =>
-                        const LoggedUserBottomSheet(initRoute: 'switchAcc'));
-              },
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: colors.fundbuttonBg,
-                    child: Text(
-                      userProfile.userDetailModel?.uname
-                              ?.substring(0, 1)
-                              .toUpperCase() ??
-                          "U",
-                      style: const TextStyle(color: Colors.black),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      body: SingleChildScrollView(
+        child: Expanded(
+          child: Column(
+            children: [
+              /// Profile Header
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: InkWell(
+                  onTap: () {
+                    showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        isDismissible: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10),
+                          ),
+                        ),
+                        builder: (_) => const LoggedUserBottomSheet(
+                            initRoute: 'switchAcc'));
+                  },
+                  child: Row(
                     children: [
-                      TextWidget.subText(
-                        text: _truncateProfileName(
-                            userProfile.userDetailModel?.uname ?? ""),
-                        theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorGrey,
-                        fw: 0,
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: colors.fundbuttonBg,
+                        child: Text(
+                          userProfile.userDetailModel?.uname
+                                  ?.substring(0, 1)
+                                  .toUpperCase() ??
+                              "U",
+                          style: const TextStyle(color: Colors.black),
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      TextWidget.paraText(
-                        text: userProfile.userDetailModel?.uid ?? "",
-                        theme: false,
-                        color: colors.colorGrey,
-                        fw: 00,
-                      )
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextWidget.subText(
+                            text: _truncateProfileName(
+                                userProfile.userDetailModel?.uname ?? ""),
+                            theme: false,
+                            color: !theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorGrey,
+                            fw: 0,
+                          ),
+                          const SizedBox(height: 4),
+                          TextWidget.paraText(
+                            text: userProfile.userDetailModel?.uid ?? "",
+                            theme: false,
+                            color: colors.colorGrey,
+                            fw: 00,
+                          )
+                        ],
+                      ),
+                      const Spacer(),
+                      Icon(Icons.arrow_forward_ios,
+                          size: 16, color: colors.colorGrey)
                     ],
                   ),
-                  const Spacer(),
-                  Icon(Icons.arrow_forward_ios,
-                      size: 16, color: colors.colorGrey)
-                ],
+                ),
               ),
-            ),
-          ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(
-              color: colors.fundbuttonBg, // Optional: customize the color
-              thickness: 1, // Optional: customize the thickness
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Reports Section
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TextWidget.titleText(
-                text: "Reports",
-                theme: false,
-                color:
-                    !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                fw: 1,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Divider(
+                  color: colors.fundbuttonBg, // Optional: customize the color
+                  thickness: 1, // Optional: customize the thickness
+                ),
               ),
-            ),
-          ),
 
-          const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: ListView.separated(
+              // Reports Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextWidget.heroText(
+                    text: "Reports",
+                    theme: false,
+                    color: !theme.isDarkMode
+                        ? colors.colorBlack
+                        : colors.colorWhite,
+                    fw: 1,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: reportsItems.length,
@@ -2280,44 +2638,22 @@ class ReportsScreen extends ConsumerWidget {
                       // Handle reports navigation - you can add the existing navigation logic here
                       switch (item['title']) {
                         case 'P&L Insights':
-                          if (ledgerdate.calenderpnlAllData == null) {
-                            await ledgerdate.getCurrentDate('else');
-                            ledgerdate.calendarProvider();
-                            ledgerdate.fetchsharingdata(ledgerdate.startDate,
-                                ledgerdate.today, 'Equity', context);
-                            ledgerdate.fetchcalenderpnldata(
-                                context,
-                                ledgerdate.startDate,
-                                ledgerdate.today,
-                                'Equity');
-                          }
-
+                          await ledgerdate.getCurrentDate('else');
                           Navigator.pushNamed(context, Routes.calenderpnlScreen,
                               arguments: "DDDDD");
                         case 'Ledger':
-                          if (ledgerdate.ledgerAllData == null) {
-                            await ledgerdate.getCurrentDate('else');
-                            ledgerdate.fetchLegerData(context,
-                                ledgerdate.startDate, ledgerdate.endDate);
-                          }
+                          await ledgerdate.getCurrentDate('else');
 
                           Navigator.pushNamed(context, Routes.ledgerscreen,
                               arguments: "DDDDD");
                           break;
                         case 'Holdings':
-
-                          // await ledgerdate.getCurrentDate('else');
-                          if (ledgerdate.holdingsAllData == null) {
-                            await ledgerdate.getCurrentDate('else');
-                            ledgerdate.fetchholdingsData(
-                                ledgerdate.today, context);
-                          }
+                          await ledgerdate.getCurrentDate('else');
 
                           Navigator.pushNamed(context, Routes.holdingscreen,
                               arguments: "DDDDD");
                           break;
                         case 'Positions':
-                          // ledgerdate.fetchposition(context);
                           ledgerdate.fetchposition(context);
 
                           Navigator.pushNamed(context, Routes.positionscreen,
@@ -2376,8 +2712,8 @@ class ReportsScreen extends ConsumerWidget {
                           // ledgerdate.fetchposition(context);
                           if (ledgerdate.holdingsAllData == null) {
                             await ledgerdate.getCurrentDate('else');
-                             Navigator.pushNamed(context, Routes.cabuyback,
-                              arguments: "DDDDD");
+                            Navigator.pushNamed(context, Routes.cabuyback,
+                                arguments: "DDDDD");
                             await ledgerdate.fetchholdingsData(
                                 ledgerdate.today, context);
                           }
@@ -2385,7 +2721,7 @@ class ReportsScreen extends ConsumerWidget {
                           if (ledgerdate.cpactiondata == null) {
                             ledgerdate.fetchcpactiondata(context);
                           }
-                         
+
                           break;
                         case 'CA Events':
                           // ledgerdate.fetchposition(context);
@@ -2420,25 +2756,141 @@ class ReportsScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-            ),
+
+              const SizedBox(height: 16.0),
+
+              // Version
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: TextWidget.paraText(
+                  text: ref.watch(authProvider).versiontext,
+                  theme: false,
+                  color: const Color(0xff666666),
+                  fw: 3,
+                ),
+              )
+            ],
           ),
+        ),
+      ),
+      bottomNavigationBar: buildBottomNav(4, theme, context, ref),
+    );
+  }
 
-          const SizedBox( height : 16.0),
+  final selectedBtmIndx = 4;
 
-          // Version
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: TextWidget.paraText(
-              text: ref.watch(authProvider).versiontext,
-              theme: false,
-              color: const Color(0xff666666),
-              fw: 3,
-              letterSpacing: -2,
-            ),
-          )
+  // Add this function
+  Widget buildBottomNav(int selectedTab, ThemesProvider theme,
+      BuildContext context, WidgetRef ref) {
+    final uid = ref.watch(userProfileProvider.select(
+        (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
+    return BottomAppBar(
+      height: 64,
+      shadowColor:
+          theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+      padding: EdgeInsets.zero,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          _buildBottomNavItem(
+              1, assets.watchlistIcon, "Watchlists", selectedTab, theme,
+              context: context, ref: ref),
+          _buildBottomNavItem(
+              2, assets.portfolioIcon, "Portfolio", selectedTab, theme,
+              context: context, ref: ref),
+          _buildBottomNavItem(
+              3, assets.ordersIcon, "Orders", selectedTab, theme,
+              context: context, ref: ref),
+          _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
+              useHeight: true, height: 18, context: context, ref: ref),
         ],
       ),
     );
+  }
+
+  // Add this function
+  Widget _buildBottomNavItem(int index, String iconAsset, String label,
+      int selectedIndex, ThemesProvider theme,
+      {bool useHeight = false,
+      double height = 24,
+      required BuildContext context,
+      required WidgetRef ref}) {
+    final isSelected = selectedIndex == index;
+
+    return Expanded(
+      child: RepaintBoundary(
+        child: InkWell(
+          onTap: () {
+            // Navigate to the corresponding screen
+            switch (index) {
+              case 1:
+                Navigator.pushReplacementNamed(context, Routes.homeScreen);
+                ref.read(indexListProvider).bottomMenu(1, context);
+                break;
+              case 2:
+                Navigator.pushReplacementNamed(context, Routes.homeScreen);
+                ref.read(indexListProvider).bottomMenu(2, context);
+                break;
+              case 3:
+                Navigator.pushReplacementNamed(context, Routes.homeScreen);
+                ref.read(indexListProvider).bottomMenu(3, context);
+                break;
+              case 4:
+                // Already on profile screen
+                break;
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 7),
+            decoration: BoxDecoration(
+                border: isSelected
+                    ? Border(
+                        top: BorderSide(
+                            color: theme.isDarkMode
+                                ? colors.colorLightBlue
+                                : colors.colorBlue,
+                            width: 2))
+                    : null),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                useHeight
+                    ? SvgPicture.asset(
+                        iconAsset,
+                        height: height,
+                        color: _getBottomNavColor(theme, isSelected),
+                      )
+                    : SvgPicture.asset(
+                        iconAsset,
+                        color: _getBottomNavColor(theme, isSelected),
+                      ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: TextWidget.textStyle(
+                      fontSize: 12,
+                      color: _getBottomNavColor(theme, isSelected),
+                      theme: theme.isDarkMode,
+                      fw: isSelected ? 1 : 00),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Add this function
+  Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
+    if (theme.isDarkMode && isSelected) {
+      return colors.colorLightBlue;
+    } else if (isSelected) {
+      return colors.colorBlue;
+    } else {
+      return colors.colorGrey;
+    }
   }
 }
 
@@ -2479,9 +2931,7 @@ class UserInfoColumn extends StatelessWidget {
             ),
             style: TextStyle(
               overflow: TextOverflow.ellipsis,
-              color: theme.isDarkMode
-                  ? colors.colorWhite
-                  : colors.colorBlack,
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -2491,4 +2941,122 @@ class UserInfoColumn extends StatelessWidget {
     );
   }
 }
+//   final selectedBtmIndx = 4;
+
+//   // Add this function
+//   Widget buildBottomNav(int selectedTab, ThemesProvider theme,
+//       BuildContext context, WidgetRef ref) {
+//     final uid = ref.watch(userProfileProvider.select(
+//         (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
+//     return BottomAppBar(
+//       height: 64,
+//       shadowColor:
+//           theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+//       padding: EdgeInsets.zero,
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: <Widget>[
+//           _buildBottomNavItem(
+//               1, assets.watchlistIcon, "Watchlists", selectedTab, theme,
+//               context: context, ref: ref),
+//           _buildBottomNavItem(
+//               2, assets.portfolioIcon, "Portfolio", selectedTab, theme,
+//               context: context, ref: ref),
+//           _buildBottomNavItem(
+//               3, assets.ordersIcon, "Orders", selectedTab, theme,
+//               context: context, ref: ref),
+//           _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
+//               useHeight: true, height: 18, context: context, ref: ref),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // Add this function
+//   Widget _buildBottomNavItem(int index, String iconAsset, String label,
+//       int selectedIndex, ThemesProvider theme,
+//       {bool useHeight = false,
+//       double height = 24,
+//       required BuildContext context,
+//       required WidgetRef ref}) {
+//     final isSelected = selectedIndex == index;
+
+//     return Expanded(
+//       child: RepaintBoundary(
+//         child: InkWell(
+//           onTap: () {
+//             // Navigate to the corresponding screen
+//             switch (index) {
+//               case 1:
+//                 Navigator.pushReplacementNamed(context, Routes.homeScreen);
+//                 ref.read(indexListProvider).bottomMenu(1, context);
+//                 break;
+//               case 2:
+//                 Navigator.pushReplacementNamed(context, Routes.homeScreen);
+//                 ref.read(indexListProvider).bottomMenu(2, context);
+//                 break;
+//               case 3:
+//                 Navigator.pushReplacementNamed(context, Routes.homeScreen);
+//                 ref.read(indexListProvider).bottomMenu(3, context);
+//                 break;
+//               case 4:
+//                 // Already on profile screen
+//                 break;
+//             }
+//           },
+//           child: Container(
+//             margin: const EdgeInsets.symmetric(horizontal: 7),
+//             decoration: BoxDecoration(
+//                 border: isSelected
+//                     ? Border(
+//                         top: BorderSide(
+//                             color: theme.isDarkMode
+//                                 ? colors.colorLightBlue
+//                                 : colors.colorBlue,
+//                             width: 2))
+//                     : null),
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               crossAxisAlignment: CrossAxisAlignment.center,
+//               children: [
+//                 useHeight
+//                     ? SvgPicture.asset(
+//                         iconAsset,
+//                         height: height,
+//                         color: _getBottomNavColor(theme, isSelected),
+//                       )
+//                     : SvgPicture.asset(
+//                         iconAsset,
+//                         color: _getBottomNavColor(theme, isSelected),
+//                       ),
+//                 const SizedBox(height: 8),
+//                 Text(
+//                   label,
+//                   style: TextWidget.textStyle(
+//                       fontSize: 12,
+//                       color: _getBottomNavColor(theme, isSelected),
+//                       theme: theme.isDarkMode,
+//                       fw: isSelected ? 1 : 00),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   // Add this function
+//   Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
+//     if (theme.isDarkMode && isSelected) {
+//       return colors.colorLightBlue;
+//     } else if (isSelected) {
+//       return colors.colorBlue;
+//     } else {
+//       return colors.colorGrey;
+//     }
+//   }
+// }
+
+
 
