@@ -19,6 +19,7 @@ import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'filter_scrip_bottom_sheet.dart';
+import 'order_book_detail.dart';
 
 class OrderBook extends ConsumerStatefulWidget {
   final List<OrderBookModel> orderBook;
@@ -39,7 +40,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
   // Cache of items needing updates
   final Map<String, Map<String, dynamic>> _pendingUpdates = {};
   Timer? _batchUpdateTimer;
-  
+
   // Timer for periodic data refresh - especially useful after market hours
   Timer? _periodicRefreshTimer;
 
@@ -47,10 +48,10 @@ class _OrderBookState extends ConsumerState<OrderBook> {
   void initState() {
     super.initState();
     _setupSocketSubscription();
-    
+
     // Schedule initial data fetch for any missing LTPs
     _scheduleDataFetch();
-    
+
     // Set up periodic refresh to keep data fresh even without socket updates
     _setupPeriodicRefresh();
   }
@@ -197,105 +198,110 @@ class _OrderBookState extends ConsumerState<OrderBook> {
     // Delay the fetch to allow for widget initialization
     Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
-      
+
       // Get order items that need updating
       final itemsToUpdate = _getItemsWithMissingData();
       if (itemsToUpdate.isEmpty) return;
-      
+
       // Fetch LTP data for these orders
       _fetchCurrentLtpData(itemsToUpdate);
     });
   }
-  
+
   List<OrderBookModel> _getItemsWithMissingData() {
     final items = _getActiveOrders();
-    
+
     // Filter to orders with missing or zero LTP
     return items.where((order) {
       // Check if LTP is missing or invalid
-      return order.token != null && 
-             order.token!.isNotEmpty && 
-             (order.ltp == null || 
-              order.ltp == "null" || 
-              order.ltp == "0" || 
+      return order.token != null &&
+          order.token!.isNotEmpty &&
+          (order.ltp == null ||
+              order.ltp == "null" ||
+              order.ltp == "0" ||
               order.ltp == "0.00");
     }).toList();
   }
-  
+
   Future<void> _fetchCurrentLtpData(List<OrderBookModel> items) async {
     if (items.isEmpty) return;
-    
+
     try {
       final orderProv = ref.read(orderProvider);
-      
+
       // Create batch LTP arguments
       List<Map<String, String>> ltpArgs = [];
       for (var order in items) {
         if (order.token == null || order.exch == null) continue;
         ltpArgs.add({"exch": order.exch!, "token": order.token!});
       }
-      
+
       if (ltpArgs.isEmpty) return;
-      
+
       // Call API to get current LTP data
       final api = ref.read(orderProvider).api;
       final response = await api.getLTP(ltpArgs);
-      
+
       if (response.statusCode != 200) return;
-      
+
       Map res = jsonDecode(response.body);
       if (res["data"] == null) return;
-      
+
       bool hasUpdates = false;
-      
+
       // Update the orders with the fetched data
       for (var order in items) {
-        if (order.token == null || !res["data"].containsKey(order.token)) continue;
-        
+        if (order.token == null || !res["data"].containsKey(order.token))
+          continue;
+
         final data = res["data"][order.token];
-        
+
         // Helper function to check if a string is a valid numeric price
         bool isValidNumeric(String? value) {
-          if (value == null || value == "null" || value == "0" || value == "0.00") {
+          if (value == null ||
+              value == "null" ||
+              value == "0" ||
+              value == "0.00") {
             return false;
           }
           return double.tryParse(value) != null;
         }
-        
+
         // Update LTP if available
         if (data["lp"] != null && isValidNumeric(data["lp"].toString())) {
           order.ltp = data["lp"].toString();
           hasUpdates = true;
         }
-        
+
         // Update close price if available
         if (data["close"] != null && isValidNumeric(data["close"].toString())) {
           order.close = data["close"].toString();
           order.c = data["close"].toString();
           hasUpdates = true;
         }
-        
+
         // Calculate or update changes
         if (isValidNumeric(order.ltp) && isValidNumeric(order.close)) {
           final ltp = double.tryParse(order.ltp!)!;
           final close = double.tryParse(order.close!)!;
-          
+
           // Update change
           order.change = (ltp - close).toStringAsFixed(2);
-          
+
           // Update percent change
           if (close > 0) {
             order.perChange = ((ltp - close) * 100 / close).toStringAsFixed(2);
           }
-          
+
           hasUpdates = true;
-        } else if (data["change"] != null && isValidNumeric(data["change"].toString())) {
+        } else if (data["change"] != null &&
+            isValidNumeric(data["change"].toString())) {
           // If direct calculation not possible but API provides change
           order.perChange = data["change"].toString();
           hasUpdates = true;
         }
       }
-      
+
       if (hasUpdates && mounted) {
         // Apply any persistent sort setting
         if (orderProv.lastOrderSortMethod.isNotEmpty) {
@@ -313,12 +319,11 @@ class _OrderBookState extends ConsumerState<OrderBook> {
     final order = ref.watch(orderProvider);
     final searchorder = order.orderSearchItem;
     final theme = ref.read(themeProvider);
-    
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Column(children: [
-        if (widget.orderBook.isNotEmpty)
-          _buildFilterSearchHeader(order, theme),
+        if (widget.orderBook.isNotEmpty) _buildFilterSearchHeader(order, theme),
         Expanded(
           child: RefreshIndicator(
               onRefresh: () async {
@@ -338,38 +343,38 @@ class _OrderBookState extends ConsumerState<OrderBook> {
   }
 
   // Filter and search header
- Widget _buildFilterSearchHeader(OrderProvider order, ThemesProvider theme) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    decoration: BoxDecoration(
-      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      border: Border(
-        bottom: BorderSide(
-          color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-          width: 1,
+  Widget _buildFilterSearchHeader(OrderProvider order, ThemesProvider theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+            width: 1,
+          ),
         ),
       ),
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xffF1F3F8).withOpacity(0.5),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 12),
-                SvgPicture.asset(
-                  assets.searchIcon,
-                  width: 18,
-                  height: 18,
-                  color: const Color(0xff586279),
-                ),
-                const SizedBox(width: 8),
-                                  Expanded(
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xffF1F3F8).withOpacity(0.5),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 12),
+                  SvgPicture.asset(
+                    assets.searchIcon,
+                    width: 18,
+                    height: 18,
+                    color: const Color(0xff586279),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
                     child: TextFormField(
                       controller: order.orderSearchCtrl,
                       autofocus: false,
@@ -389,72 +394,73 @@ class _OrderBookState extends ConsumerState<OrderBook> {
                           color: const Color(0xff69758F),
                           fw: 00,
                         ),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onChanged: (value) {
+                        order.orderSearch(value, context);
+                      },
                     ),
-                    onChanged: (value) {
-                      order.orderSearch(value, context);
-                    },
                   ),
-                ),
-                if (order.orderSearchCtrl.text.isNotEmpty)
-                  InkWell(
-                    onTap: () {
-                      order.clearOrderSearch();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: SvgPicture.asset(
-                        assets.removeIcon,
-                        width: 18,
-                        height: 18,
-                        color: const Color(0xff586279),
+                  if (order.orderSearchCtrl.text.isNotEmpty)
+                    InkWell(
+                      onTap: () {
+                        order.clearOrderSearch();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: SvgPicture.asset(
+                          assets.removeIcon,
+                          width: 18,
+                          height: 18,
+                          color: const Color(0xff586279),
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        InkWell(
-          onTap: () async {
-            FocusScope.of(context).unfocus();
-            showModalBottomSheet(
-              useSafeArea: true,
-              isScrollControlled: true,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              context: context,
-              builder: (context) {
-                return const OrderbookFilterBottomSheet();
-              },
-            );
-          },
-          child: SvgPicture.asset(
-            assets.filterLines,
-            width: 20,
-            height: 20,
-            color: theme.isDarkMode ? colors.darkiconcolor : const Color(0xff333333),
+          const SizedBox(width: 12),
+          InkWell(
+            onTap: () async {
+              FocusScope.of(context).unfocus();
+              showModalBottomSheet(
+                useSafeArea: true,
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                context: context,
+                builder: (context) {
+                  return const OrderbookFilterBottomSheet();
+                },
+              );
+            },
+            child: SvgPicture.asset(
+              assets.filterLines,
+              width: 20,
+              height: 20,
+              color: theme.isDarkMode
+                  ? colors.darkiconcolor
+                  : const Color(0xff333333),
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
- 
+        ],
+      ),
+    );
+  }
+
   // Order list view
-  Widget _buildOrderList(List<OrderBookModel> items, OrderProvider order,
-      ThemesProvider theme) {
-                            return ListView.separated(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              shrinkWrap: false,
-                              itemBuilder: (context, index) {
-                                final itemIndex = index;
-                                
-                                
+  Widget _buildOrderList(
+      List<OrderBookModel> items, OrderProvider order, ThemesProvider theme) {
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
+      shrinkWrap: false,
+      itemBuilder: (context, index) {
+        final itemIndex = index;
 
         // Use Builder to get fresh context for each item
         return Builder(builder: (itemContext) {
@@ -476,12 +482,11 @@ class _OrderBookState extends ConsumerState<OrderBook> {
           );
         });
       },
-      itemCount: items.length, 
-      separatorBuilder: (BuildContext context, int index) {  
+      itemCount: items.length,
+      separatorBuilder: (BuildContext context, int index) {
         return Container(
-              color:
-                  theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                      height: 1);
+            color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+            height: 1);
       },
     );
   }
@@ -496,7 +501,8 @@ class _OrderBookState extends ConsumerState<OrderBook> {
           .fetchLinkeScrip("${order.token}", "${order.exch}", context);
 
       // Fetch scrip quote data
-      final quoteResponse = await ref.watch(marketWatchProvider)
+      final quoteResponse = await ref
+          .watch(marketWatchProvider)
           .fetchScripQuote("${order.token}", "${order.exch}", context);
 
       // Update the order with latest price data from the quote
@@ -551,9 +557,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
       }
 
       // Fetch order history
-      ref
-          .read(orderProvider)
-          .fetchOrderHistory("${order.norenordno}", context);
+      ref.read(orderProvider).fetchOrderHistory("${order.norenordno}", context);
 
       // Fetch tech data for equity instruments
       if ((order.exch == "NSE" || order.exch == "BSE") &&
@@ -566,7 +570,27 @@ class _OrderBookState extends ConsumerState<OrderBook> {
       }
 
       // Use the fresh context for navigation
-      Navigator.pushNamed(context, Routes.orderDetail, arguments: order);
+
+      if (mounted) {
+        showModalBottomSheet(
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          isDismissible: true,
+          enableDrag: false,
+          useSafeArea: true,
+          context: context,
+          builder: (context) => Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: OrderBookDetail(orderBookData: order)),
+        );
+      }
     } catch (e) {
       print("Error navigating to order details: $e");
     }
@@ -667,14 +691,15 @@ class _OrderItemState extends State<_OrderItem> {
                       Flexible(
                         child: Row(
                           children: [
-                                                        TextWidget.subText(
+                            TextWidget.subText(
                               text: "${widget.orderItem.symbol} ",
                               theme: widget.theme.isDarkMode,
                               fw: 1,
                             ),
                             Flexible(
                               child: TextWidget.subText(
-                                text: "${widget.orderItem.expDate} ${widget.orderItem.option ?? ''} ",
+                                text:
+                                    "${widget.orderItem.expDate} ${widget.orderItem.option ?? ''} ",
                                 color: const Color(0xff666666),
                                 theme: widget.theme.isDarkMode,
                                 fw: 00,
@@ -686,11 +711,10 @@ class _OrderItemState extends State<_OrderItem> {
                               color: const Color(0xff666666),
                               theme: widget.theme.isDarkMode,
                               fw: 00,
-                        ),
+                            ),
                           ],
                         ),
                       ),
-                     
                     ],
                   ),
                 ),
@@ -740,7 +764,8 @@ class _OrderItemState extends State<_OrderItem> {
                         fw: 00,
                       ),
                       TextWidget.paraText(
-                        text: formatDateTime(value: widget.orderItem.norentm!).substring(12, 21),
+                        text: formatDateTime(value: widget.orderItem.norentm!)
+                            .substring(12, 21),
                         theme: false,
                         color: const Color(0xff666666),
                         fw: 00,
@@ -776,7 +801,9 @@ class _OrderItemState extends State<_OrderItem> {
                     TextWidget.paraText(
                       text: widget.orderItem.trantype == "S" ? "SELL " : "BUY ",
                       theme: false,
-                      color: widget.orderItem.trantype == "S" ? colors.darkred : colors.ltpgreen,
+                      color: widget.orderItem.trantype == "S"
+                          ? colors.darkred
+                          : colors.ltpgreen,
                       fw: 1,
                     ),
                     const SizedBox(width: 4),
@@ -797,18 +824,16 @@ class _OrderItemState extends State<_OrderItem> {
                       fw: 0,
                     ),
                     if (widget.orderItem.prctyp == "SL-LMT" ||
-            widget.orderItem.prctyp == "SL-MKT") ...[
-          const SizedBox(child: Text(' / ')),
-          TextWidget.subText(
-              text: "${widget.orderItem.trgprc ?? 0.00}",
-              theme: widget.theme.isDarkMode,
-              color: const Color(0xff666666),
-              fw: 0),
-        ]
+                        widget.orderItem.prctyp == "SL-MKT") ...[
+                      const SizedBox(child: Text(' / ')),
+                      TextWidget.subText(
+                          text: "${widget.orderItem.trgprc ?? 0.00}",
+                          theme: widget.theme.isDarkMode,
+                          color: const Color(0xff666666),
+                          fw: 0),
+                    ]
                   ],
                 ),
-                
-                
               ],
             ),
           ],
@@ -821,7 +846,8 @@ class _OrderItemState extends State<_OrderItem> {
   Color _getStatusColor() {
     if (widget.orderItem.status == "COMPLETE") {
       return colors.ltpgreen;
-    } else if (widget.orderItem.status == "CANCELED" || widget.orderItem.status == "REJECTED") {
+    } else if (widget.orderItem.status == "CANCELED" ||
+        widget.orderItem.status == "REJECTED") {
       return colors.darkred;
     } else {
       // For OPEN, PENDING, TRIGGER_PENDING, etc.
@@ -858,26 +884,26 @@ class _OrderItemState extends State<_OrderItem> {
   // Get total value
   String _getAvgPrice() {
     try {
-      final price = double.tryParse(widget.orderItem.status == "COMPLETE" 
-          ? widget.orderItem.avgprc ?? "0" 
-          : widget.orderItem.prc ?? "0") ?? 0.0;
-      
+      final price = double.tryParse(widget.orderItem.status == "COMPLETE"
+              ? widget.orderItem.avgprc ?? "0"
+              : widget.orderItem.prc ?? "0") ??
+          0.0;
+
       final qty = int.tryParse(widget.orderItem.qty.toString()) ?? 0;
       final lotSize = widget.orderItem.exch == 'MCX'
           ? (int.tryParse(widget.orderItem.ls.toString()) ?? 1)
           : 1;
-      
+
       final totalValue = price;
       return totalValue.toStringAsFixed(2);
-      
     } catch (e) {
       return "0.00";
     }
   }
 
-    // Get total value
+  // Get total value
   String _getTrgPrice() {
-      return widget.orderItem.trgprc ?? "0.00";
+    return widget.orderItem.trgprc ?? "0.00";
   }
 
   // Get valid price for display (fixing null/0 LTP issue)

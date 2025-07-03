@@ -333,14 +333,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         // Use select to listen only to the selected bottom index
         final selectedBtmIndx = ref.watch(indexListProvider
             .select((indexProvide) => indexProvide.selectedBtmIndx));
-          
+
         final theme = ref.watch(
             themeProvider); // Theme is used throughout, so watching the whole provider is acceptable here
 
         return Scaffold(
           // Pass only the selected index to the AppBar builder
           appBar: _buildAppBar(selectedBtmIndx, theme.isDarkMode),
-          bottomNavigationBar: _buildBottomNav(selectedBtmIndx, theme),
+          bottomNavigationBar: buildBottomNav(selectedBtmIndx, theme),
           // Pass only the selected index and theme to the Body builder
           body: _buildBody(selectedBtmIndx, theme),
         );
@@ -444,16 +444,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // }
 
     // For other tabs
-  else if(selectedTab == 3 || selectedTab == 2){
-    return AppBar(
-      shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-      leadingWidth: 205,
-      elevation: .3,
-      leading: _buildAppBarLeading(selectedTab),
-      actions: _buildAppBarActions(selectedTab),
-      bottom: _buildAppBarBottom(selectedTab),
-    );
-  }
+    else if (selectedTab == 3 || selectedTab == 2) {
+      return AppBar(
+        shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        leadingWidth: 205,
+        elevation: .3,
+        leading: _buildAppBarLeading(selectedTab),
+        actions: _buildAppBarActions(selectedTab),
+        bottom: _buildAppBarBottom(selectedTab),
+      );
+    }
     return null;
   }
 
@@ -528,7 +528,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       width: 14)
                 ])));
       });
-    } else if(selectedTab == 3 || selectedTab == 2){
+    } else if (selectedTab == 3 || selectedTab == 2) {
       return Consumer(builder: (context, ref, _) {
         final theme = ref.watch(themeProvider); // Theme is needed here
 
@@ -551,8 +551,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
         );
       });
-    }
-    else{
+    } else {
       return const SizedBox.shrink();
     }
   }
@@ -602,7 +601,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               child: const DefaultIndexList(src: false),
             );
           }));
-    } 
+    }
     // else if (selectedTab == 4) {
     //   return PreferredSize(
     //     preferredSize: const Size(20, 8), // Adjust height as needed
@@ -645,7 +644,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   // Bottom navigation
-  Widget _buildBottomNav(int selectedTab, ThemesProvider theme) {
+  Widget buildBottomNav(int selectedTab, ThemesProvider theme) {
     final uid = ref.watch(userProfileProvider.select(
         (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
     return BottomAppBar(
@@ -660,9 +659,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
           _buildBottomNavItem(
               2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
-          _buildBottomNavItem(3, assets.ordersIcon, "Orders", selectedTab, theme),
           _buildBottomNavItem(
-              4, assets.profileIcon, uid, selectedTab, theme,
+              3, assets.ordersIcon, "Orders", selectedTab, theme),
+          _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
               useHeight: true, height: 18),
         ],
       ),

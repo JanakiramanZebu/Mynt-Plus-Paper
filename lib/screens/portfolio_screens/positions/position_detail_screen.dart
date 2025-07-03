@@ -1,805 +1,797 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
+import 'package:mynt_plus/screens/market_watch/futures/future_screen.dart';
+import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/user_profile_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/custom_back_btn.dart';
+import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
-import '../../../sharedWidget/functions.dart';
-import '../../../sharedWidget/scrip_info_btns.dart';
+import '../../market_watch/scrip_depth_info.dart';
 import 'convert_position_dialogue.dart';
 
-class PositionDetailScreen extends ConsumerWidget {
+class PositionDetailScreen extends ConsumerStatefulWidget {
   final PositionBookModel positionList;
   const PositionDetailScreen({super.key, required this.positionList});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final positions = ref.watch(portfolioProvider);
-    final theme = ref.read(themeProvider);
-    
-    return StreamBuilder<Map>(
-      stream: ref.watch(websocketProvider).socketDataStream,
-      builder: (context, snapshot) {
-        final socketDatas = snapshot.data ?? {};
-        
-        // Update position data with real-time values if available
-        if (socketDatas.containsKey(positionList.token)) {
-          final lp = socketDatas["${positionList.token}"]['lp']?.toString();
-          final pc = socketDatas["${positionList.token}"]['pc']?.toString();
-          final chng = socketDatas["${positionList.token}"]['chng']?.toString();
-          final close = socketDatas["${positionList.token}"]['c']?.toString(); // Get close price from socket data
-          
-          // Store previous values to detect changes
-          final prevLtp = positionList.lp;
-          
-          if (lp != null && lp != "null") {
-            positionList.lp = lp;
-          }
-          
-          if (pc != null && pc != "null") {
-            positionList.perChange = pc;
-          }
-          
-          if (chng != null && chng != "null") {
-            positionList.chng = chng;
-          }
-          
-          // Calculate MTM/PNL values based on updated data
-          if (positionList.lp != null && positionList.netqty != null) {
-            final ltp = double.tryParse(positionList.lp ?? "0.0") ?? 0.0;
-            final qty = int.tryParse(positionList.netqty ?? "0") ?? 0;
-            final avgPrice = double.tryParse(positionList.avgPrc ?? "0.0") ?? 0.0;
-            
-            if (ltp > 0 && qty != 0 && avgPrice > 0) {
-              final pnl = (ltp - avgPrice) * qty;
-              positionList.profitNloss = pnl.toStringAsFixed(2);
-              
-              // Calculate MTM
-              positionList.mTm = pnl.toStringAsFixed(2);
-            }
-            
-            // Calculate change value if it's missing or invalid but we have close price from socket
-            if ((positionList.chng == null || positionList.chng == "null" || positionList.chng == "0" || positionList.chng == "0.00") 
-                && ltp > 0 && close != null && close != "null") {
-              final closePrice = double.tryParse(close) ?? 0.0;
-              if (closePrice > 0) {
-                positionList.chng = (ltp - closePrice).toStringAsFixed(2);
-              }
-            }
-            
-            // If we still don't have valid change value but have perChange, try to calculate change
-            if ((positionList.chng == null || positionList.chng == "null" || positionList.chng == "0" || positionList.chng == "0.00") 
-                && ltp > 0 && positionList.perChange != null && positionList.perChange != "null") {
-              final perChange = double.tryParse(positionList.perChange!) ?? 0.0;
-              if (perChange != 0) {
-                // Calculate implied close price and then change value
-                final impliedClosePrice = ltp / (1 + (perChange / 100));
-                positionList.chng = (ltp - impliedClosePrice).toStringAsFixed(2);
-              }
-            }
-          }
-        }
-        
-        // Make a final check to ensure change value is valid - calculate it from perChange and LTP if needed
-        if ((positionList.chng == null || positionList.chng == "null" || positionList.chng == "0" || positionList.chng == "0.00") 
-            && positionList.lp != null && positionList.perChange != null) {
-          final ltp = double.tryParse(positionList.lp!) ?? 0.0;
-          final perChange = double.tryParse(positionList.perChange!) ?? 0.0;
-          
-          if (ltp > 0 && perChange != 0) {
-            // Calculate implied close price from percentage change
-            final impliedClosePrice = ltp / (1 + (perChange / 100));
-            positionList.chng = (ltp - impliedClosePrice).toStringAsFixed(2);
-          }
-        }
-        
-        // Make sure the formatting of the change display matches the text format
-        final changeTextDisplay = positionList.chng ?? "0.00";
-        try {
-          // Ensure change value is properly formatted even if it's a string already
-          positionList.chng = double.parse(changeTextDisplay).toStringAsFixed(2);
-        } catch (e) {
-          // If parsing fails, leave it as is but ensure it's not null
-          positionList.chng = changeTextDisplay;
-        }
-        
-        return Scaffold(
-            appBar: AppBar(
-                elevation: .2,
-                centerTitle: false,
-                leadingWidth: 41,
-                titleSpacing: 6,
-                leading: const CustomBackBtn(),
-                title: Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                TextWidget.titleText(
-                                    text: "${positionList.symbol}",
-                                    fw: 1,
-                                        color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    theme: false),
-                                TextWidget.subText(
-                                    text: " ${positionList.option} ",
-                                    fw: 1,
-                                        color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    theme: false,
-                                    textOverflow: TextOverflow.ellipsis),
-                              ],
-                            ),
-                            TextWidget.titleText(
-                                text: "₹${positionList.lp}",
-                                fw: 1,
-                                color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                theme: false),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Row(children: [
-                                CustomExchBadge(exch: "${positionList.exch}"),
-                                TextWidget.paraText(
-                                    text: "  ${positionList.expDate}",
-                                    fw: 1,
-                                    color: const Color(0xff000000),
-                                    theme: false),
-                              ]),
-                              TextWidget.paraText(
-                                  text:
-                                  "${double.parse("${positionList.chng ?? 0.00} ").toStringAsFixed(2)} (${positionList.perChange ?? 0.00}%)",
-                                  fw: 0,
-                                  color: (positionList.chng == "null" ||
-                                                  positionList.chng == null) ||
-                                              positionList.chng == "0.00"
-                                          ? colors.ltpgrey
-                                          : positionList.chng!.startsWith("-") ||
-                                                  positionList.perChange!
-                                                      .startsWith("-")
-                                              ? colors.darkred
-                                              : colors.ltpgreen,
-                                  theme: false),
-                            ])
-                      ]),
-                )),
-            body: ListView(children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: positionList.sPrdtAli == "BO" ||
-                          positionList.sPrdtAli == "CO" ||
-                          positionList.sPrdtAli == "MTF"
-                      ? MainAxisAlignment.end
-                      : MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4),
-                                color: theme.isDarkMode
-                                    ? const Color(0xff666666).withOpacity(.2)
-                                    : const Color(0xff999999).withOpacity(.2)),
-                            child: TextWidget.paraText(
-                                text: "${positionList.sPrdtAli}",
-                                fw: 1,
-                                color: const Color(0xff666666),
-                                theme: false)),
-                        if ((positionList.netqty != "0") &&
-                            (positionList.sPrdtAli == "MIS" ||
-                                positionList.sPrdtAli == "CNC" ||
-                                positionList.sPrdtAli == "NRML")) ...[
-                          Row(
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return ConvertPositionDialogue(
-                                            convertPosition: positionList);
-                                      });
-                                },
-                                child: Container(
-                                    decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: theme.isDarkMode
-                                                ? colors.colorGrey
-                                                : colors.colorBlack),
-                                        borderRadius: BorderRadius.circular(32)),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 5),
-                                    child: TextWidget.paraText(
-                                        text: "Convert",
-                                        fw: 1,
-                                        color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                        theme: false)),
-                              ),
-                            ],
-                          )
-                        ],
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextWidget.paraText(
-                            text: positions.isNetPnl ? "P&L" : "MTM",
-                            fw: 0,
-                            color: const Color(0xff5E6B7D),
-                            theme: false),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            if (positions.isNetPnl) ...[
-                              TextWidget.titleText(
-                                  text:
-                                  "₹${positionList.profitNloss ?? positionList.rpnl}",
-                                  theme: false,
-                                  color: positionList.profitNloss != null
-                                          ? positionList.profitNloss!
-                                                  .startsWith("-")
-                                              ? colors.darkred
-                                              : positionList.profitNloss == "0.00"
-                                                  ? colors.ltpgrey
-                                                  : colors.ltpgreen
-                                          : positionList.rpnl!.startsWith("-")
-                                              ? colors.darkred
-                                              : positionList.rpnl == "0.00"
-                                                  ? colors.ltpgrey
-                                                  : colors.ltpgreen,
-                                  fw: 1),
-                            ] else ...[
-                              TextWidget.titleText(
-                                  text: "₹${positionList.mTm}",
-                                  color: positionList.mTm!.startsWith("-")
-                                          ? colors.darkred
-                                          : positionList.mTm == "0.00"
-                                              ? colors.ltpgrey
-                                              : colors.ltpgreen,
-                                  fw: 1,
-                                  theme: false),
-                            ]
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              ScripInfoBtns(
-                  exch: '${positionList.exch}',
-                  token: '${positionList.token}',
-                  insName: '',
-                  tsym: '${positionList.tsym}'),
-              Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10),
-                        TextWidget.titleText(
-                            text: "Position details",
-                            color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                            fw: 1,
-                            theme: false),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextWidget.subText(
-                                      text: "Price",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                      fw: 1),
-                                  const SizedBox(height: 2),
-                                  TextWidget.subText(
-                                      text: "${positionList.dayavgprc ?? 0.00}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                      fw: 1),
-                                  const SizedBox(height: 2),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                  TextWidget.paraText(
-                                      text: "Day Buy Avg",
-                                      theme: false,
-                                      color: const Color(0xff666666),
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  TextWidget.subText(
-                                      text:
-                                    "${positionList.daybuyavgprc ?? 0.00}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 27),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextWidget.subText(
-                                      text: "Net Qty",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                      fw: 1),
-                                  const SizedBox(height: 2),
-                                  TextWidget.subText(
-                                      text:
-                                      "${((int.tryParse(positionList.netqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                      fw: 1),
-                                  const SizedBox(height: 2),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                  TextWidget.paraText(
-                                      text: "Day Buy Qty",
-                                      theme: false,
-                                      color: const Color(0xff666666),
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  TextWidget.subText(
-                                      text:
-                                    "${((int.tryParse(positionList.daybuyqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextWidget.paraText(
-                                      text: "Day Sell Avg",
-                                      theme: false,
-                                      color: const Color(0xff666666),
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  TextWidget.subText(
-                                      text:
-                                    "${positionList.daysellavgprc ?? 0.00}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 27),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextWidget.paraText(
-                                      text: "Day Sell Qty",
-                                      theme: false,
-                                      fw: 0,
-                                      color: const Color(0xff666666)),
-                                  const SizedBox(height: 2),
-                                  TextWidget.subText(
-                                      text:
-                                    "${((int.tryParse(positionList.daysellqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextWidget.paraText(
-                                      text: "CF Buy Avg",
-                                      theme: false,
-                                      color: const Color(0xff666666),
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  TextWidget.subText(
-                                      text:
-                                    "${positionList.cfbuyavgprc ?? 0.00}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 27),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextWidget.paraText(
-                                      text: "CF Buy Qty",
-                                      theme: false,
-                                      color: const Color(0xff666666),
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  TextWidget.subText(
-                                      text:
-                                    "${((int.tryParse(positionList.cfbuyqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextWidget.paraText(
-                                      text: "CF Sell Avg",
-                                      theme: false,
-                                      color: const Color(0xff666666),
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  TextWidget.subText(
-                                      text:
-                                    "${positionList.cfsellavgprc ?? 0.00}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 27),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextWidget.paraText(
-                                      text: "CF Sell Qty",
-                                      theme: false,
-                                      color: const Color(0xff666666),
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  TextWidget.subText(
-                                      text:
-                                    "${((int.tryParse(positionList.cfsellqty.toString()) ?? 0) / (positionList.exch == 'MCX' ? (int.tryParse(positionList.ls.toString()) ?? 1) : 1)).toInt()}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                      fw: 0),
-                                  const SizedBox(height: 2),
-                                  Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        TextWidget.subText(
-                            text: "Net Buy Value",
-                            theme: false,
-                            color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        TextWidget.subText(
-                            text: "${positionList.totbuyamt ?? 0.00}",
-                            theme: false,
-                            color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider),
-                        const SizedBox(height: 4),
-                        TextWidget.subText(
-                            text: "Net Sell Value",
-                            theme: false,
-                            color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        TextWidget.subText(
-                            text: "${positionList.totsellamt ?? 0.00}",
-                            theme: false,
-                            color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider),
-                        const SizedBox(height: 4),
-                        TextWidget.subText(
-                            text: "Net Value",
-                            theme: false,
-                            color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        TextWidget.subText(
-                            text: (double.parse(
-                                        "${positionList.totbuyamt ?? 0.00}") +
-                                  double.parse(
-                                      "${positionList.totsellamt ?? 0.00}"))
-                              .toStringAsFixed(2),
-                            theme: false,
-                            color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider),
-                        const SizedBox(height: 4),
-                        TextWidget.subText(
-                            text: "Act Avg Price",
-                            theme: false,
-                            color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                            fw: 0),
-                        const SizedBox(height: 2),
-                        TextWidget.subText(
-                            text: (double.parse(
-                                    "${positionList.upldprc ?? 0.00}"))
-                              .toStringAsFixed(2),
-                            theme: false,
-                            color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                            fw: 0),
-                      ])),
-              // ScripInfoBtns(exch: '${positionList.exch}', token: '${positionList.token}', insName: '')
-            ]),
-            bottomNavigationBar: positionList.sPrdtAli == "BO" ||
-                    positionList.sPrdtAli == "CO"
-                ? null
-                : BottomAppBar(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    shape: const CircularNotchedRectangle(),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Row(children: [
-                        Expanded(
-                          child: Container(
-                              height: 38,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                  color: const Color(0xff43A833),
-                                  borderRadius: BorderRadius.circular(32)),
-                              width: MediaQuery.of(context).size.width,
-                              child: InkWell(
-                                onTap: () async {
-                                  await ref.read(marketWatchProvider)
-                                      .fetchScripInfo("${positionList.token}",
-                                          '${positionList.exch}', context, true);
-                                  int lotsize = int.parse(ref.read(marketWatchProvider)
-                                      .scripInfoModel!
-                                      .ls
-                                      .toString());
-                                  Navigator.pop(context);
-                                  OrderScreenArgs orderArgs = OrderScreenArgs(
-                                      exchange: '${positionList.exch}',
-                                      tSym: '${positionList.tsym}',
-                                      isExit: false,
-                                      token: "${positionList.token}",
-                                      transType: int.parse(positionList.netqty!) < 0
-                                          ? false
-                                          : true,
-                                      prd: '${positionList.prd}',
-                                      // change: depthData.chng,
-                                      // close: depthData.c,
-                                      lotSize: lotsize.toString(),
-                                      ltp: positionList.lp,
-                                      perChange: positionList.perChange ?? "0.00",
-                                      orderTpye: '',
-                                      holdQty: '${positionList.netqty}',
-                                      isModify: false,
-                                      raw: {});
+  ConsumerState<PositionDetailScreen> createState() =>
+      _PositionDetailScreenState();
+}
 
-                                  Navigator.pushNamed(
-                                      context, Routes.placeOrderScreen,
-                                      arguments: {
-                                        "orderArg": orderArgs,
-                                        "scripInfo": ref.read(marketWatchProvider)
-                                            .scripInfoModel!,
-                                        "isBskt": ""
-                                      });
-                                },
-                                child: Center(
-                                  child: TextWidget.subText(
-                                      text: "Add More",
-                                      theme: false,
-                                      color: const Color(0xffFFFFFF),
-                                      fw: 1),
-                                ),
-                              )),
-                        ),
-                        if (positionList.qty != "0" && !positions.isDay) ...[
-                          const SizedBox(width: 12),
-                          Expanded(
-                              child: Container(
-                                  height: 38,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                      color: colors.darkred,
-                                      borderRadius: BorderRadius.circular(32)),
-                                  width: MediaQuery.of(context).size.width,
-                                  child: InkWell(
-                                    onTap: () async {
-                                      await ref.read(marketWatchProvider)
-                                          .fetchScripInfo("${positionList.token}",
-                                              '${positionList.exch}', context, true);
-                                      Navigator.pop(context);
-                                      OrderScreenArgs orderArgs = OrderScreenArgs(
-                                          exchange: '${positionList.exch}',
-                                          tSym: '${positionList.tsym}',
-                                          isExit: true,
-                                          token: "${positionList.token}",
-                                          transType:
-                                              int.parse(positionList.netqty!) < 0
-                                                  ? true
-                                                  : false,
-                                          prd: '${positionList.prd}',
-                                          // change: depthData.chng,
-                                          // close: depthData.c,
-                                          lotSize: positionList.netqty,
-                                          ltp: positionList.lp,
-                                          perChange:
-                                              positionList.perChange ?? "0.00",
-                                          orderTpye: '',
-                                          holdQty: '${positionList.netqty}',
-                                          isModify: false,
-                                          raw: {});
-
-                                      Navigator.pushNamed(
-                                          context, Routes.placeOrderScreen,
-                                          arguments: {
-                                            "orderArg": orderArgs,
-                                            "scripInfo": ref.read(marketWatchProvider)
-                                                .scripInfoModel!,
-                                            "isBskt": ""
-                                          });
-                                    },
-                                    child: Center(
-                                      child: TextWidget.subText(
-                                          text: "Exit",
-                                          theme: false,
-                                          color: const Color(0xffFFFFFF),
-                                          fw: 1),
-                                    ),
-                                  )))
-                        ]
-                      ]),
-                    )));
+class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        if (details.primaryVelocity != null && details.primaryVelocity! > 400) {
+          Navigator.of(context).pop();
+        }
       },
+      child: DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.88,
+        minChildSize: 0.05,
+        maxChildSize: 0.99,
+        builder: (context, scrollController) {
+          return Consumer(
+            builder: (context, ref, _) {
+              final positions = ref.watch(portfolioProvider);
+              final theme = ref.read(themeProvider);
+              final marketwatch = ref.watch(marketWatchProvider);
+              final depthData = ref.watch(marketWatchProvider).getQuotes!;
+              final scripInfo = ref.watch(marketWatchProvider);
+              final userProfile = ref.watch(userProfileProvider);
+
+              DepthInputArgs depthArgs = DepthInputArgs(
+                  exch: widget.positionList.exch ?? "",
+                  token: widget.positionList.token ?? "",
+                  tsym: marketwatch.getQuotes!.tsym ?? '',
+                  instname: marketwatch.getQuotes!.instname ?? "",
+                  symbol: marketwatch.getQuotes!.symbol ?? '',
+                  expDate: marketwatch.getQuotes!.expDate ?? '',
+                  option: marketwatch.getQuotes!.option ?? '');
+
+              return StreamBuilder<Map>(
+                stream: ref.watch(websocketProvider).socketDataStream,
+                builder: (context, snapshot) {
+                  final socketDatas = snapshot.data ?? {};
+
+                  // Update position data with real-time values if available
+                  if (socketDatas.containsKey(widget.positionList.token)) {
+                    final lp = socketDatas["${widget.positionList.token}"]['lp']
+                        ?.toString();
+                    final pc = socketDatas["${widget.positionList.token}"]['pc']
+                        ?.toString();
+                    final chng = socketDatas["${widget.positionList.token}"]
+                            ['chng']
+                        ?.toString();
+                    final close = socketDatas["${widget.positionList.token}"]
+                            ['c']
+                        ?.toString();
+
+                    if (lp != null && lp != "null") {
+                      widget.positionList.lp = lp;
+                    }
+
+                    if (pc != null && pc != "null") {
+                      widget.positionList.perChange = pc;
+                    }
+
+                    if (chng != null && chng != "null") {
+                      widget.positionList.chng = chng;
+                    }
+
+                    // Calculate MTM/PNL values based on updated data
+                    if (widget.positionList.lp != null &&
+                        widget.positionList.netqty != null) {
+                      final ltp =
+                          double.tryParse(widget.positionList.lp ?? "0.0") ??
+                              0.0;
+                      final qty =
+                          int.tryParse(widget.positionList.netqty ?? "0") ?? 0;
+                      final avgPrice = double.tryParse(
+                              widget.positionList.avgPrc ?? "0.0") ??
+                          0.0;
+
+                      if (ltp > 0 && qty != 0 && avgPrice > 0) {
+                        final pnl = (ltp - avgPrice) * qty;
+                        widget.positionList.profitNloss =
+                            pnl.toStringAsFixed(2);
+                        widget.positionList.mTm = pnl.toStringAsFixed(2);
+                      }
+
+                      // Calculate change value if needed
+                      if ((widget.positionList.chng == null ||
+                              widget.positionList.chng == "null" ||
+                              widget.positionList.chng == "0" ||
+                              widget.positionList.chng == "0.00") &&
+                          ltp > 0 &&
+                          close != null &&
+                          close != "null") {
+                        final closePrice = double.tryParse(close) ?? 0.0;
+                        if (closePrice > 0) {
+                          widget.positionList.chng =
+                              (ltp - closePrice).toStringAsFixed(2);
+                        }
+                      }
+                    }
+                  }
+
+                  return Scaffold(
+                    backgroundColor: Colors.transparent,
+                    body: Container(
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                        ),
+                      ),
+                      child: Column(
+                        children: <Widget>[
+                          const CustomDragHandler(),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              controller: scrollController,
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 16),
+                                        Material(
+                                          color: Colors.transparent,
+                                          shape: const BeveledRectangleBorder(),
+                                          child: InkWell(
+                                            customBorder:
+                                                const BeveledRectangleBorder(),
+                                            splashColor:
+                                                Colors.black.withOpacity(0.15),
+                                            highlightColor:
+                                                Colors.black.withOpacity(0.08),
+                                            onTap: () async {
+                                              await scripInfo
+                                                  .chngDephBtn("Overview");
+                                              marketwatch.scripdepthsize(true);
+                                              // Navigator.pop(context);
+
+                                              showModalBottomSheet(
+                                                  barrierColor:
+                                                      Colors.transparent,
+                                                  isScrollControlled: true,
+                                                  useSafeArea: true,
+                                                  isDismissible: true,
+                                                  shape: const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.vertical(
+                                                              top: Radius
+                                                                  .circular(
+                                                                      16))),
+                                                  backgroundColor:
+                                                      const Color(0xffffffff),
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      ScripDepthInfo(
+                                                          wlValue: depthArgs,
+                                                          isBasket: ''));
+                                            },
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .end,
+                                                      children: [
+                                                        TextWidget.titleText(
+                                                          text:
+                                                              "${widget.positionList.symbol} ",
+                                                          fw: 0,
+                                                          color: theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
+                                                          theme: false,
+                                                        ),
+                                                        TextWidget.subText(
+                                                          text:
+                                                              "${widget.positionList.expDate}",
+                                                          fw: 3,
+                                                          color: theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
+                                                          theme: false,
+                                                        ),
+                                                        TextWidget.subText(
+                                                          text:
+                                                              "${widget.positionList.option} ",
+                                                          fw: 3,
+                                                          color: theme.isDarkMode
+                                                              ? colors
+                                                                  .colorWhite
+                                                              : colors
+                                                                  .colorBlack,
+                                                          theme: false,
+                                                          textOverflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                        ),
+                                                        CustomExchBadge(
+                                                            exch:
+                                                                "${widget.positionList.exch}"),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    TextWidget.titleText(
+                                                      text:
+                                                          "${widget.positionList.lp}",
+                                                      fw: 1,
+                                                      color: (widget.positionList
+                                                                          .lp ==
+                                                                      "null" ||
+                                                                  widget.positionList
+                                                                          .lp ==
+                                                                      null) ||
+                                                              widget.positionList
+                                                                      .lp ==
+                                                                  "0.00"
+                                                          ? colors.ltpgrey
+                                                          : widget.positionList
+                                                                  .lp!
+                                                                  .startsWith(
+                                                                      "-")
+                                                              ? colors.darkred
+                                                              : colors.ltpgreen,
+                                                      theme: false,
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    TextWidget.paraText(
+                                                      text:
+                                                          "${double.parse("${widget.positionList.chng ?? 0.00}").toStringAsFixed(2)} (${widget.positionList.perChange ?? 0.00}%)",
+                                                      fw: 3,
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : colors.colorBlack,
+                                                      // (widget.positionList
+                                                      //                     .chng ==
+                                                      //                 "null" ||
+                                                      //             widget.positionList
+                                                      //                     .chng ==
+                                                      //                 null) ||
+                                                      //         widget.positionList
+                                                      //                 .chng ==
+                                                      //             "0.00"
+                                                      //     ? colors.ltpgrey
+                                                      //     : widget.positionList
+                                                      //                 .chng!
+                                                      //                 .startsWith(
+                                                      //                     "-") ||
+                                                      //             widget
+                                                      //                 .positionList
+                                                      //                 .perChange!
+                                                      //                 .startsWith(
+                                                      //                     "-")
+                                                      //         ? colors.darkred
+                                                      //         : colors
+                                                      //             .ltpgreen,
+                                                      theme: false,
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    const SizedBox(width: 8),
+                                                    Container(
+                                                      height: 45,
+                                                      width: 26,
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              7),
+                                                      child: SvgPicture.asset(
+                                                        assets.rightarrowcur,
+                                                        width: 12,
+                                                        height: 12,
+                                                        color: const Color(
+                                                            0xff777777),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0, vertical: 4),
+                                    child: Column(
+                                      children: [
+                                        const SizedBox(height: 16),
+                                        if (widget.positionList.sPrdtAli !=
+                                                "BO" &&
+                                            widget.positionList.sPrdtAli !=
+                                                "CO")
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Container(
+                                                  height: 40,
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        const Color(0xffF1F3F8),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                    border: Border.all(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorGrey
+                                                          : const Color(
+                                                              0xff0037B7),
+                                                      width: 1,
+                                                    ),
+                                                  ),
+                                                  child: Material(
+                                                    color: Colors.transparent,
+                                                    shape:
+                                                        const BeveledRectangleBorder(),
+                                                    child: InkWell(
+                                                      customBorder:
+                                                          const BeveledRectangleBorder(),
+                                                      splashColor: Colors.black
+                                                          .withOpacity(0.15),
+                                                      highlightColor: Colors
+                                                          .black
+                                                          .withOpacity(0.08),
+                                                      onTap: () async {
+                                                        await ref
+                                                            .read(
+                                                                marketWatchProvider)
+                                                            .fetchScripInfo(
+                                                              "${widget.positionList.token}",
+                                                              '${widget.positionList.exch}',
+                                                              context,
+                                                              true,
+                                                            );
+                                                        int lotsize = int.parse(ref
+                                                            .read(
+                                                                marketWatchProvider)
+                                                            .scripInfoModel!
+                                                            .ls
+                                                            .toString());
+                                                        Navigator.pop(context);
+                                                        OrderScreenArgs
+                                                            orderArgs =
+                                                            OrderScreenArgs(
+                                                          exchange:
+                                                              '${widget.positionList.exch}',
+                                                          tSym:
+                                                              '${widget.positionList.tsym}',
+                                                          isExit: false,
+                                                          token:
+                                                              "${widget.positionList.token}",
+                                                          transType: int.parse(widget
+                                                                      .positionList
+                                                                      .netqty!) <
+                                                                  0
+                                                              ? false
+                                                              : true,
+                                                          prd:
+                                                              '${widget.positionList.prd}',
+                                                          lotSize: lotsize
+                                                              .toString(),
+                                                          ltp: widget
+                                                              .positionList.lp,
+                                                          perChange: widget
+                                                                  .positionList
+                                                                  .perChange ??
+                                                              "0.00",
+                                                          orderTpye: '',
+                                                          holdQty:
+                                                              '${widget.positionList.netqty}',
+                                                          isModify: false,
+                                                          raw: {},
+                                                        );
+
+                                                        Navigator.pushNamed(
+                                                            context,
+                                                            Routes
+                                                                .placeOrderScreen,
+                                                            arguments: {
+                                                              "orderArg":
+                                                                  orderArgs,
+                                                              "scripInfo": ref
+                                                                  .read(
+                                                                      marketWatchProvider)
+                                                                  .scripInfoModel!,
+                                                              "isBskt": "",
+                                                            });
+                                                      },
+                                                      child: Center(
+                                                        child:
+                                                            TextWidget.subText(
+                                                          text: "Add",
+                                                          theme: false,
+                                                          color: const Color(
+                                                              0xff0037B7),
+                                                          fw: 1,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              // if (widget.positionList.qty !=
+                                              //         "0" &&
+                                              //     !positions.isDay) ...[
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Container(
+                                                  height: 40,
+                                                  decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorGrey
+                                                          : const Color(
+                                                              0xff0037B7),
+                                                    ),
+                                                    color:
+                                                        const Color(0xffF1F3F8),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                  ),
+                                                  child: Material(
+                                                    color: Colors.transparent,
+                                                    shape:
+                                                        const BeveledRectangleBorder(),
+                                                    child: InkWell(
+                                                      customBorder:
+                                                          const BeveledRectangleBorder(),
+                                                      splashColor: Colors.black
+                                                          .withOpacity(0.15),
+                                                      highlightColor: Colors
+                                                          .black
+                                                          .withOpacity(0.08),
+                                                      onTap: () async {
+                                                        await ref
+                                                            .read(
+                                                                marketWatchProvider)
+                                                            .fetchScripInfo(
+                                                              "${widget.positionList.token}",
+                                                              '${widget.positionList.exch}',
+                                                              context,
+                                                              true,
+                                                            );
+                                                        Navigator.pop(context);
+                                                        OrderScreenArgs
+                                                            orderArgs =
+                                                            OrderScreenArgs(
+                                                          exchange:
+                                                              '${widget.positionList.exch}',
+                                                          tSym:
+                                                              '${widget.positionList.tsym}',
+                                                          isExit: true,
+                                                          token:
+                                                              "${widget.positionList.token}",
+                                                          transType: int.parse(widget
+                                                                      .positionList
+                                                                      .netqty!) <
+                                                                  0
+                                                              ? true
+                                                              : false,
+                                                          prd:
+                                                              '${widget.positionList.prd}',
+                                                          lotSize: widget
+                                                              .positionList
+                                                              .netqty,
+                                                          ltp: widget
+                                                              .positionList.lp,
+                                                          perChange: widget
+                                                                  .positionList
+                                                                  .perChange ??
+                                                              "0.00",
+                                                          orderTpye: '',
+                                                          holdQty:
+                                                              '${widget.positionList.netqty}',
+                                                          isModify: false,
+                                                          raw: {},
+                                                        );
+
+                                                        Navigator.pushNamed(
+                                                            context,
+                                                            Routes
+                                                                .placeOrderScreen,
+                                                            arguments: {
+                                                              "orderArg":
+                                                                  orderArgs,
+                                                              "scripInfo": ref
+                                                                  .read(
+                                                                      marketWatchProvider)
+                                                                  .scripInfoModel!,
+                                                              "isBskt": "",
+                                                            });
+                                                      },
+                                                      child: Center(
+                                                        child:
+                                                            TextWidget.subText(
+                                                          text: "Exit",
+                                                          theme: false,
+                                                          color: const Color(
+                                                              0xff0037B7),
+                                                          fw: 1,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                            // ],
+                                          ),
+                                        const SizedBox(height: 16),
+                                      ],
+                                    ),
+                                  ),
+                                  // ScripInfoBtns(
+                                  //   exch: '${widget.positionList.exch}',
+                                  //   token: '${widget.positionList.token}',
+                                  //   insName: '',
+                                  //   tsym: '${widget.positionList.tsym}',
+                                  // ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Material(
+                                              color: Colors.transparent,
+                                              shape:
+                                                  const BeveledRectangleBorder(),
+                                              child: InkWell(
+                                                customBorder:
+                                                    const BeveledRectangleBorder(),
+                                                splashColor: Colors.black
+                                                    .withOpacity(0.15),
+                                                highlightColor: Colors.black
+                                                    .withOpacity(0.08),
+                                                onTap: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return ConvertPositionDialogue(
+                                                          convertPosition: widget
+                                                              .positionList);
+                                                    },
+                                                  );
+                                                },
+                                                child: Center(
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      SvgPicture.asset(
+                                                        assets
+                                                            .convertpositionicon,
+                                                        width: 14,
+                                                        height: 14,
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : const Color(
+                                                                0xff0037B7),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      TextWidget.subText(
+                                                        text:
+                                                            "Convert Position",
+                                                        fw: 0,
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : const Color(
+                                                                0xff0037B7),
+                                                        theme: false,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+
+                                        const SizedBox(height: 20),
+                                        // const SizedBox(height: 10),
+                                        TextWidget.titleText(
+                                          text: "Details",
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : const Color(0xff666666),
+                                          fw: 1,
+                                          theme: false,
+                                        ),
+                                        const SizedBox(height: 24),
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            TextWidget.subText(
+                                              text: positions.isNetPnl
+                                                  ? "P&L"
+                                                  : "MTM",
+                                              fw: 0,
+                                              color: const Color(0xff666666),
+                                              theme: false,
+                                            ),
+                                            if (positions.isNetPnl)
+                                              TextWidget.titleText(
+                                                text:
+                                                    "${widget.positionList.profitNloss ?? widget.positionList.rpnl}",
+                                                theme: false,
+                                                color: widget.positionList
+                                                            .profitNloss !=
+                                                        null
+                                                    ? widget.positionList
+                                                            .profitNloss!
+                                                            .startsWith("-")
+                                                        ? colors.darkred
+                                                        : widget.positionList
+                                                                    .profitNloss ==
+                                                                "0.00"
+                                                            ? colors.ltpgrey
+                                                            : colors.ltpgreen
+                                                    : widget.positionList.rpnl!
+                                                            .startsWith("-")
+                                                        ? colors.darkred
+                                                        : widget.positionList
+                                                                    .rpnl ==
+                                                                "0.00"
+                                                            ? colors.ltpgrey
+                                                            : colors.ltpgreen,
+                                                fw: 0,
+                                              )
+                                            else
+                                              TextWidget.headText(
+                                                text:
+                                                    "${widget.positionList.mTm}",
+                                                color: widget.positionList.mTm!
+                                                        .startsWith("-")
+                                                    ? colors.darkred
+                                                    : widget.positionList.mTm ==
+                                                            "0.00"
+                                                        ? colors.ltpgrey
+                                                        : colors.ltpgreen,
+                                                fw: 0,
+                                                theme: false,
+                                              ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Divider(
+                                            thickness: 1,
+                                            color: theme.isDarkMode
+                                                ? colors.darkColorDivider
+                                                : const Color(0xffEBEEF3)),
+                                        const SizedBox(height: 8),
+                                        _buildInfoRow(
+                                            "Net Qty",
+                                            "${((int.tryParse(widget.positionList.netqty.toString()) ?? 0) / (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()}",
+                                            theme),
+                                        const SizedBox(height: 8),
+                                        _buildInfoRow(
+                                            "Avg Price",
+                                            "${widget.positionList.dayavgprc ?? 0.00}",
+                                            theme),
+                                        const SizedBox(height: 8),
+                                        _buildInfoRow(
+                                            "Product",
+                                            "${widget.positionList.sPrdtAli}",
+                                            theme),
+                                        const SizedBox(height: 8),
+                                        _buildInfoRow(
+                                            "Buy Qty ( Day / CF )",
+                                            "${((int.tryParse(widget.positionList.daybuyqty.toString()) ?? 0) / (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()} / ${widget.positionList.cfbuyqty}",
+                                            theme),
+                                        const SizedBox(height: 8),
+                                        _buildInfoRow(
+                                            "Sell Qty ( Day / CF )",
+                                            "${((int.tryParse(widget.positionList.daysellqty.toString()) ?? 0) / (widget.positionList.exch == 'MCX' ? (int.tryParse(widget.positionList.ls.toString()) ?? 1) : 1)).toInt()} / ${widget.positionList.cfsellqty}",
+                                            theme),
+                                        const SizedBox(height: 8),
+                                        _buildInfoRow(
+                                            "Buy Avg prc ( Day / CF )",
+                                            "${widget.positionList.daybuyavgprc ?? 0.00} / ${widget.positionList.cfbuyavgprc}",
+                                            theme),
+                                        const SizedBox(height: 8),
+                                        _buildInfoRow(
+                                            "Sell Avg prc ( Day / CF )",
+                                            "${widget.positionList.daybuyavgprc ?? 0.00} / ${widget.positionList.cfbuyavgprc}",
+                                            theme),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
+  }
+
+  Widget _buildInfoRow(String title1, String value1, ThemesProvider theme) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextWidget.subText(
+              text: title1,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.colorWhite
+                  : const Color(0xff666666),
+              fw: 0),
+          TextWidget.subText(
+              text: value1,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.colorWhite
+                  : const Color(0xff666666),
+              fw: 0),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Divider(
+          color: theme.isDarkMode
+              ? colors.darkColorDivider
+              : const Color(0xffEBEEF3),
+          thickness: 1)
+    ]);
   }
 }
