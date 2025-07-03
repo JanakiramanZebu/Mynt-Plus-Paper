@@ -1,6 +1,74 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+
+
+
+
+
+// === PRIMARY COLORS ===
+  final primary = const Color(0xFF0037B7);
+  final primaryLight = const Color(0xFF0037B7);
+  final primaryDark = const Color(0xFF002A8F);
+
+  // === SECONDARY COLORS ===
+  final secondary = const Color(0xFF0052CC);
+  final secondaryLight = const Color(0xFF0052CC);
+  final secondaryDark = const Color(0xFF0052CC);
+
+// === TEXT COLORS ===
+  final textPrimary = const Color(0xFF121212);
+  final textPrimaryLight = const Color(0xFF121212);
+  final textSecondary = const Color(0xFF4A4A4A);
+  final textSecondaryLight = const Color(0xFF4A4A4A);
+  final textDisabled = const Color(0xFFBDBDBD);
+
+// Dark theme text colors
+  final textPrimaryDark = const Color(0xFFFFFFFF);
+  final textSecondaryDark = const Color(0xFFFFFFFF);
+  final textDisabledDark = const Color(0xFF404040);
+
+// === STATUS COLORS ===
+  final error = const Color(0xFFFF1717);
+  final errorLight = const Color(0xFFFF1717);
+  final errorDark = const Color(0xFFC53030);
+
+  // static const Color warning = Color(0xFFDD6B20);
+  // final warningLight = Color(0xFFFEEBC8);
+  // static const Color warningDark = Color(0xFFC05621);
+
+  final success = const Color(0xFF00B14F);
+  final successLight = const Color(0xFF00B14F);
+  final successDark = const Color(0xFF2F855A);
+
+  // static const Color info = Color(0xFF3182CE);
+  // final infoLight = Color(0xFFBEE3F8);
+  // static const Color infoDark = Color(0xFF2C5282);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   final colorWhite = const Color(0xffFFFFFF);
   final colorBlack = const Color(0xff000000);
   final logoColor = const Color(0xff0037B7);

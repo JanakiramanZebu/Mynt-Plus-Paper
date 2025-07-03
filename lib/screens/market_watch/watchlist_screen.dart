@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
+import 'package:mynt_plus/res/colors.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
@@ -549,9 +550,7 @@ class _WatchListScreen extends State<WatchListScreen>
                                 Expanded(
                                   child: TextWidget.subText(
                                     text: 'Search & Add stocks',
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
+                                    color: theme.isDarkMode ? colors.textPrimaryDark :  colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
                                   ),
                                 ),
@@ -898,13 +897,13 @@ class _WatchListScreen extends State<WatchListScreen>
                         text: _formatTabName(name),
                         color: isSelected
                             ? theme.isDarkMode
-                                ? colors.colorLightBlue
-                                : colors.colorBlue
-                            : Color(0xFF666666),
+                                ? colors.secondaryDark
+                                : colors.secondaryLight
+                            : colors.textSecondaryLight,
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: isSelected ? 1 : 0),
+                        fw: isSelected ? 0 : null),
                   ),
                   // Animated underline indicator
                   AnimatedContainer(

@@ -132,7 +132,7 @@ class TextWidget {
                       : fw == 00
                         ? FontWeight.w400
                       : FontWeight.normal,
-          letterSpacing: letterSpacing,
+          letterSpacing: letterSpacing ?? 0.5,
         ),
       ),
     );
@@ -170,7 +170,7 @@ class TextWidget {
                     : fw == 3
                         ? FontWeight.w400
                         : FontWeight.normal,
-                        letterSpacing: letterSpacing,
+                        letterSpacing: letterSpacing ?? 0.5,
       )),
     );
   }
@@ -270,7 +270,7 @@ class TextWidget {
                 : fw == 0
                     ? FontWeight.w500
                     : FontWeight.normal,
-        letterSpacing: letterSpacing,
+        letterSpacing: letterSpacing ?? 0.5,
       )),
     );
   }
@@ -300,7 +300,7 @@ class TextWidget {
                             ? FontWeight.w400
                             : FontWeight.normal,
         height: height,
-        letterSpacing: letterSpacing,
+        letterSpacing: letterSpacing ?? 0.5,
         decoration: decoration,
       ),
     );
