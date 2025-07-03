@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,9 +20,11 @@ import '../models/desk_reports_model/calender_pnl_model.dart';
 import '../models/desk_reports_model/cdsl_response_model.dart';
 import '../models/desk_reports_model/cp_action_model.dart';
 import '../models/desk_reports_model/dercomcur_taxpnl_model.dart';
+import '../models/desk_reports_model/editreport_model.dart';
 import '../models/desk_reports_model/holdings_model.dart';
 import '../models/desk_reports_model/ledger_bill_model.dart';
 import '../models/desk_reports_model/ledger_model.dart';
+import '../models/desk_reports_model/order_response_cop.dart';
 import '../models/desk_reports_model/pledge_history_model.dart';
 import '../models/desk_reports_model/pledge_segment_check_model.dart';
 import '../models/desk_reports_model/pledge_unpledge_model.dart';
@@ -54,6 +57,8 @@ class LDProvider extends DefaultChangeNotifier {
 
   List<dynamic> _tradebookfilterarray = [];
 
+  List<dynamic> _isinlistforcopedisdata = [];
+
   List<dynamic> get tradebookfilterarray => _tradebookfilterarray;
 
   Map<DateTime, double> _heatmapData = {};
@@ -69,6 +74,12 @@ class LDProvider extends DefaultChangeNotifier {
 
   CPActionModule? _cpactiondata;
   CPActionModule? get cpactiondata => _cpactiondata;
+
+  GetOrderlistCopModel? _orderdetailsdatacop;
+  GetOrderlistCopModel? get orderdetailsdatacop => _orderdetailsdatacop;
+
+  EdisReportModel? _edisreportdata;
+  EdisReportModel? get edisreportdata => _edisreportdata;
 
   // ProfileAllDetails? _profiledetails;
   // ProfileAllDetails? get profiledetails => _profiledetails;
@@ -171,8 +182,21 @@ class LDProvider extends DefaultChangeNotifier {
   Timer? _timer;
   Timer? get timer => _timer;
 
+  bool _edisclickfromcpaction = false;
+  bool get edisclickfromcpaction => _edisclickfromcpaction;
+
   String _timedis = '';
   String get timedis => _timedis;
+
+  String _requiredamountforofs = 'Required Amount to bid';
+  String get requiredamountforofs => _requiredamountforofs;
+
+  set requireamountsetter(val) {
+    _requiredamountforofs = val;
+  }
+
+  String _captionforofs = 'Enter bid quantity and price';
+  String get captionforofs => _captionforofs;
 
   String _noticenewfeature = '';
   String get noticenewfeature => _noticenewfeature;
@@ -183,6 +207,15 @@ class LDProvider extends DefaultChangeNotifier {
 
   bool _valforcheck = false;
   bool get valforcheck => _valforcheck;
+
+  bool _cutoffcheckboxofs = false;
+  bool get cutoffcheckboxofs => _cutoffcheckboxofs;
+
+  bool _pricevalidcp = false;
+  bool get pricevalidcp => _pricevalidcp;
+
+  bool _qtyvalidcp = false;
+  bool get qtyvalidcp => _qtyvalidcp;
 
   bool _pnlrmtm = true;
   bool get pnlrmtm => _pnlrmtm;
@@ -242,6 +275,12 @@ class LDProvider extends DefaultChangeNotifier {
   String _pledgeoruppledgedelete = "";
   String get pledgeoruppledgedelete => _pledgeoruppledgedelete;
 
+  String _cpactionerrormsg = "";
+  String get cpactionerrormsg => _cpactionerrormsg;
+
+  bool _cpactionsubtn = false;
+  bool get cpactionsubtn => _cpactionsubtn;
+
   Map _segresponse = {};
   Map get segresponse => _segresponse;
 
@@ -264,6 +303,11 @@ class LDProvider extends DefaultChangeNotifier {
 
   set setselectvalueofcpaction(val) {
     _selectvalueofcpaction = val;
+    notifyListeners();
+  }
+
+  set setedisclickfromcpaction(val) {
+    _edisclickfromcpaction = val;
     notifyListeners();
   }
 
@@ -807,6 +851,8 @@ class LDProvider extends DefaultChangeNotifier {
   Future fetchholdingsData(String from, BuildContext context) async {
     try {
       _holdingsloading = true;
+      _cpactionloader = true;
+
       notifyListeners();
 
       _holdingsAllData = await api.getHoldingsdata(from);
@@ -830,28 +876,15 @@ class LDProvider extends DefaultChangeNotifier {
 
   Future fetchcpactiondata(BuildContext context) async {
     try {
-      // _cpactionloader = true;
+      _cpactionloader = true;
       // notifyListeners();
 
       _cpactiondata = await api.getcpactiondata();
-      print(
-          "${_cpactiondata?.corporateAction} ........................._cpactiondata");
+      // print(
+      //     "${_cpactiondata?.corporateAction} ........................._cpactiondata");
+
       if (_cpactiondata != null) {
-        for (var i = 0; i < _cpactiondata!.corporateAction!.length; i++) {
-          final data = _cpactiondata!.corporateAction![i];
-          data.eligibleornot = 'no';
-          if (_holdingsAllData != null) {
-            for (var y = 0; y < _holdingsAllData!.holdings!.length; y++) {
-              final data2 = _holdingsAllData!.holdings![y];
-              if (data.isin == data2['ISIN']) {
-                print(
-                    "${data.isin} /////${data2['ISIN']} ............................data.isin == data2['ISIN']");
-                data.eligibleornot = 'yes';
-                break;
-              }
-            }
-          }
-        }
+        await hodlingshavecheckfunction();
       }
 
       //  _ledgerAllData = new LedgerModelData();
@@ -864,6 +897,157 @@ class LDProvider extends DefaultChangeNotifier {
       //   warningMessage(context, 'Error occurred try again later'),
       // );
       debugPrint("$e");
+      notifyListeners();
+    }
+  }
+
+  ordercheckfunction() async {
+    try {
+      // Fetch order details once before processing
+      _orderdetailsdatacop = await api.getorderdetails();
+
+      for (var i = 0; i < _cpactiondata!.corporateAction!.length; i++) {
+        final data = _cpactiondata!.corporateAction![i];
+        bool matchFound = false;
+
+        if (_orderdetailsdatacop?.msg != null) {
+          // Search for matching order details
+          for (var j = 0; j < _orderdetailsdatacop!.msg!.length; j++) {
+            final data2 = _orderdetailsdatacop!.msg![j];
+            if (data.symbol == data2.symbol) {
+              // Match found - set order details
+              data.orderstatus = data2.status;
+              data.bidqty = data2.bidQuan;
+              data.appno = data2.applicationNo;
+              data.orderprice = data2.price;
+
+              matchFound = true;
+              // Exit inner loop once match is found
+            }
+          }
+        }
+
+        // If no match found, set default values
+        if (!matchFound) {
+          data.orderstatus = 'null';
+          data.bidqty = 'null';
+          data.appno = 'null';
+          data.orderprice = 'null';
+        }
+      }
+
+      await edischeckfunction('');
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  hodlingshavecheckfunction() async {
+    for (var i = 0; i < _cpactiondata!.corporateAction!.length; i++) {
+      final data = _cpactiondata!.corporateAction![i];
+      data.eligibleornot = 'no';
+      if (_holdingsAllData != null) {
+        for (var y = 0; y < _holdingsAllData!.holdings!.length; y++) {
+          final data2 = _holdingsAllData!.holdings![y];
+          if (data.isin == data2['ISIN']) {
+            print(
+                "${data.isin} /////${data2['ISIN']} ............................data.isin == data2['ISIN']");
+            data.eligibleornot = 'yes';
+            data.havingqty = data2['NET'].toString();
+            _isinlistforcopedisdata.add(data2['ISIN']);
+
+            break;
+          }
+        }
+      }
+    }
+    await ordercheckfunction();
+
+    notifyListeners();
+  }
+
+  edischeckfunction(String key) async {
+    if (key == 'fromedit') {
+      _cpactionloader = true;
+    }
+    _edisreportdata = await api.geteditsdata(_isinlistforcopedisdata);
+    if (_edisreportdata?.data != null) {
+      for (var i = 0; i < _cpactiondata!.corporateAction!.length; i++) {
+        final data = _cpactiondata!.corporateAction![i];
+        data.approvedqty = '0';
+        for (var j = 0; j < _edisreportdata!.data!.length; j++) {
+          final data2 = _edisreportdata!.data![j];
+          if (data.isin == data2.isin) {
+            data.approvedqty = data2.qty.toString();
+          }
+        }
+      }
+    }
+    if (key == 'fromedit') {
+      _cpactionloader = false;
+    }
+    notifyListeners();
+  }
+
+  Future putordercopaction(
+      String tabval,
+      String sym,
+      String exchange,
+      String issueType,
+      String qty,
+      String price,
+      BuildContext context,
+      String ordertype,
+      String appno) async {
+    try {
+      _cpactionloader = true;
+      notifyListeners();
+
+      // Pop only after API result to avoid context issues
+      final res = await api.putorderapicopaction(
+          tabval, sym, exchange, issueType, qty, price, ordertype, appno);
+
+      if (res.msg == 'success') {
+        await ordercheckfunction();
+        _cpactionloader = false;
+
+        // Safely show snackbar
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(
+              context,
+              ordertype == 'ER' ? 'Order placed' : 'Order cancelled',
+            ),
+          );
+           
+        }
+      }else  if (res.msg == 'error occured on data fetch') {
+        await ordercheckfunction();
+        _cpactionloader = false;
+
+        // Safely show snackbar
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(
+              context,
+             "${res.msg}", // 'Order cancelled',
+            ),
+          );
+         
+        }
+      }
+       Navigator.pop(context); // Pop after snackbar
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          warningMessage(context, '$e'),
+        );
+      }
+ Navigator.pop(context); // Pop after snackbar
+      debugPrint("$e");
+    } finally {
+      _cpactionloader = false;
       notifyListeners();
     }
   }
@@ -1030,8 +1214,8 @@ class LDProvider extends DefaultChangeNotifier {
               String dateString = element.tRADEDATE!;
 
               try {
-                DateFormat inputFormat =
-                    DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+                               DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
                 DateTime parsedDate = inputFormat.parse(dateString);
                 print("${element.realisedpnl}");
                 _heatmapData[DateTime(
@@ -1045,8 +1229,8 @@ class LDProvider extends DefaultChangeNotifier {
         }
         if (_calenderpnlAllData!.data != null) {
           for (var trade in _calenderpnlAllData!.data!) {
-            DateFormat inputFormat =
-                DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+                            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
             DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
             final dateKey =
                 DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
@@ -1991,6 +2175,10 @@ class LDProvider extends DefaultChangeNotifier {
   late DateTime selectedMonth;
   // late String selectnetpledge;
   TextEditingController selectnetpledge = TextEditingController();
+  TextEditingController selectedqtyforcpaction =
+      TextEditingController(text: '');
+  TextEditingController selectedpriceforcpaction =
+      TextEditingController(text: '');
 
   late bool pledgesubtn = true;
   late String pledgedropdown;
@@ -2019,6 +2207,348 @@ class LDProvider extends DefaultChangeNotifier {
   void setSelectedMonth(DateTime month) {
     selectedMonth = month;
     notifyListeners();
+  }
+
+  ///////////////////////////////////////////////////////////ofs/////////////////////////////////////////////////
+
+  void setordervalueforofs(String qty, String price, String balance) {
+    
+    selectedqtyforcpaction.text = qty;
+
+    final int qtyInt = int.parse(qty);
+    final num priceNum =
+        price.contains('.') ? double.parse(price) : int.parse(price);
+    selectedpriceforcpaction.text = priceNum.toString();
+
+
+    final num requiredAmount = qtyInt * priceNum;
+    _requiredamountforofs = requiredAmount.toString();
+    _cpactionerrormsg = '';
+    // final balanceDouble =
+    //     balance.contains('.') ? double.parse(balance) : int.parse(balance);
+    //     _cpactionerrormsg = '';
+          _pricevalidcp = true;
+          _qtyvalidcp = true;
+    checkbalace(_requiredamountforofs, balance);
+  
+    notifyListeners();
+  }
+
+  setCutoffcheckboxforofs(bool val, String cutOffPrice,String balance) {
+    _cutoffcheckboxofs = val;
+    if (val) {
+      // Keep existing quantity, set price to cutoff price
+      selectedpriceforcpaction.text = cutOffPrice;
+      _pricevalidcp = true;
+      checkbalace(_requiredamountforofs, balance);
+      _cpactionerrormsg = '';
+
+    } else {
+      selectedpriceforcpaction.text = '';
+      _pricevalidcp = false;
+        _cpactionsubtn = false;
+      _cpactionerrormsg = 'Price cannot be empty';
+
+    }
+    
+    
+    notifyListeners();
+  }
+
+  setofpricebox(String price, String balance, String base) {
+    selectedpriceforcpaction.text = price;
+    final baseprice = base.contains('.')
+        ? double.parse(base)
+        : int.parse(base);
+    final priceText = selectedpriceforcpaction.text.trim();
+    // final balanceDouble =
+    //     balance.contains('.') ? double.parse(balance) : int.parse(balance);
+    final parsedPrice = price != '' ? int.parse(priceText) : 0;
+
+    _requiredamountforofs =
+        (parsedPrice * int.parse(selectedqtyforcpaction.text)).toString();
+
+    if (priceText.isEmpty) {
+      _cpactionerrormsg = 'Price cannot be empty';
+      _pricevalidcp = false;
+        _cpactionsubtn = false;
+
+    }  else {
+      final parsedPrice = int.tryParse(priceText);
+      if (parsedPrice != null && parsedPrice > 0) {
+       
+          _cpactionerrormsg = '';
+          if (baseprice > parsedPrice) {
+            _captionforofs = 'Price cannot be less than base price ₹$base';
+            _pricevalidcp = false;
+            _cpactionsubtn = false;
+          } else {
+            _cpactionerrormsg = '';
+            _qtyvalidcp = true;
+            _pricevalidcp = true; 
+            _cpactionsubtn = true;
+            checkbalace(_requiredamountforofs, balance);
+          }
+          
+         
+      } else {
+        _cpactionerrormsg = 'Invalid price input';
+        _pricevalidcp = false;
+        _cpactionsubtn = false;
+      }
+    }
+    
+
+    notifyListeners();
+  }
+
+  setofqtybox(String qty, String balance) {
+    selectedqtyforcpaction.text = qty;
+    // Validate quantity input
+    final int qtyInt = int.tryParse(qty) ?? 0;
+    final num priceNum = selectedpriceforcpaction.text.contains('.')
+        ? double.parse(selectedpriceforcpaction.text)
+        : int.parse(selectedpriceforcpaction.text);
+    // final balanceDouble =
+    //     balance.contains('.') ? double.parse(balance) : int.parse(balance);
+
+    _requiredamountforofs = (qtyInt * priceNum).toString();
+    if (qty.isEmpty) {
+      _cpactionerrormsg = 'Quantity cannot be empty';
+        _cpactionsubtn = false; 
+      _qtyvalidcp = false;
+
+    } else if (qty.contains('.')) {
+      _cpactionerrormsg = 'Quantity cannot be decimal';
+      _cpactionsubtn = false;
+      
+      _qtyvalidcp = false;
+       
+
+    }   else {
+      final qtyInt = int.parse(qty);
+      if (qtyInt > 0) {
+        _cpactionerrormsg = '';
+        _cpactionsubtn = true;
+
+        _qtyvalidcp = true;
+      } else {
+        _cpactionerrormsg = 'Invalid quantity input';
+        _cpactionsubtn = false;
+
+        _qtyvalidcp = false;
+      }
+    }
+
+    checkbalace(_requiredamountforofs, balance);
+
+    notifyListeners();
+  }
+
+  checkbalace(String req, String balance) {
+    final balanceDouble =
+        balance.contains('.') ? double.parse(balance) : int.parse(balance);
+    final requiredAmount = req.contains('.')
+        ? double.parse(req)
+        : int.parse(req);
+
+   
+     if (requiredAmount > 200000) {
+      _captionforofs = 'Bid amount ₹$requiredAmount exceeds limit of ₹200,000';
+      _cpactionsubtn = false;
+    } 
+    else if ((balanceDouble < requiredAmount) ) {
+      _captionforofs = 'Insufficient balance for bid';
+      _cpactionsubtn = false;
+    }
+    else if (balanceDouble >= requiredAmount && _qtyvalidcp == true && _pricevalidcp == true) {
+      _captionforofs = 'Required amount for bid';
+      _cpactionsubtn = true;
+    }else{
+      _captionforofs = 'Enter bid quantity and price';
+      _cpactionsubtn = false; 
+    }
+   
+    notifyListeners();
+
+  }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Helper method to recalculate OFS amount
+  void _recalculateOFSAmount(String balance) {
+    final qtyText = selectedqtyforcpaction.text.trim();
+    final priceText = selectedpriceforcpaction.text.trim();
+
+    final qtyInt = int.tryParse(qtyText) ?? 0;
+    final priceInt = int.tryParse(priceText) ?? 0;
+    final balanceDouble = double.tryParse(balance) ?? 0.0;
+
+    if (qtyInt > 0 && priceInt > 0) {
+      final totalAmount = qtyInt * priceInt;
+      _requiredamountforofs = totalAmount.toString();
+
+      // Update caption based on validation rules
+      if (totalAmount > 200000) {
+        _captionforofs = 'Bid amount ₹$totalAmount exceeds limit of ₹200,000';
+        _cpactionsubtn = false;
+      } else if (totalAmount > balanceDouble) {
+        _captionforofs = 'Insufficient balance for bid: ₹$totalAmount';
+        _cpactionsubtn = false;
+      } else {
+        _captionforofs = 'Required amount for bid: ₹$totalAmount';
+        _cpactionsubtn = _qtyvalidcp && _pricevalidcp;
+      }
+    } else {
+      _requiredamountforofs = '0';
+      _captionforofs = 'Enter bid quantity and price';
+      _cpactionsubtn = false;
+    }
+    notifyListeners();
+  }
+
+  void setCutoffcheckboxofs(bool val, String cutOffPrice, String balance) {
+    _cutoffcheckboxofs = val;
+    if (val) {
+      // Keep existing quantity, set price to cutoff price
+      selectedpriceforcpaction.text = cutOffPrice;
+      _pricevalidcp = true;
+      _cpactionerrormsg = '';
+    } else {
+      selectedpriceforcpaction.text = '';
+      _pricevalidcp = false;
+      _cpactionerrormsg = '';
+    }
+    _recalculateOFSAmount(balance);
+    notifyListeners();
+  }
+
+  void setCPActionQty(String setnet, String qty, String type, String balance) {
+    if (type == 'OFS') {
+      selectedqtyforcpaction.text = setnet;
+
+      // Validate quantity input for OFS
+      if (setnet.isEmpty) {
+        _cpactionerrormsg = 'Quantity cannot be empty';
+        _qtyvalidcp = false;
+      } else {
+        final qtyInt = int.tryParse(setnet);
+        if (qtyInt != null && qtyInt > 0) {
+          _qtyvalidcp = true;
+          _cpactionerrormsg = '';
+        } else {
+          _cpactionerrormsg = 'Invalid quantity input';
+          _qtyvalidcp = false;
+        }
+      }
+
+      // Recalculate amount using existing price
+      _recalculateOFSAmount(balance);
+    } else {
+      final net = int.tryParse(setnet);
+      final qtyDouble = double.tryParse(qty);
+      final qtyInt = qtyDouble != null ? (qtyDouble.toInt()) : null;
+      if (setnet.isEmpty) {
+        _cpactionerrormsg = 'Quantity cannot be empty';
+        _qtyvalidcp = false;
+      } else if (net != null && qtyInt != null) {
+        if (net > qtyInt) {
+          _cpactionerrormsg = 'Qty must be less than or equal to $qty';
+          _qtyvalidcp = false;
+        } else {
+          _qtyvalidcp = true;
+        }
+      } else {
+        _cpactionerrormsg = 'Invalid quantity input';
+        _qtyvalidcp = false;
+      }
+
+      selectedqtyforcpaction.text = setnet;
+      _evaluateCPActionValidation();
+    }
+    notifyListeners();
+  }
+
+  void setCPActionPrice(
+      String setprice, double min, double max, String type, String balance) {
+    if (type == 'OFS') {
+      selectedpriceforcpaction.text = setprice;
+
+      // Validate price input for OFS
+      if (setprice.isEmpty) {
+        _pricevalidcp = false;
+        _cpactionerrormsg = 'Price cannot be empty';
+      } else {
+        final parsedPrice = int.tryParse(setprice);
+        if (parsedPrice != null && parsedPrice > 0) {
+          if (parsedPrice < min) {
+            _pricevalidcp = false;
+            _cpactionerrormsg =
+                'Price cannot be below base price (₹${min.toInt()})';
+          } else {
+            _pricevalidcp = true;
+            _cpactionerrormsg = '';
+          }
+        } else {
+          _pricevalidcp = false;
+          _cpactionerrormsg = 'Invalid price input';
+        }
+      }
+
+      // Recalculate amount using existing quantity
+      _recalculateOFSAmount(balance);
+    } else {
+      if (setprice.isEmpty) {
+        _pricevalidcp = false;
+        _cpactionerrormsg = 'Price cannot be empty';
+        selectedpriceforcpaction.text = '';
+        _evaluateCPActionValidation();
+        notifyListeners();
+        return;
+      }
+
+      final parsedValue = double.tryParse(setprice);
+
+      if (parsedValue != null) {
+        if (parsedValue >= min && parsedValue <= max) {
+          _pricevalidcp = true;
+        } else {
+          _pricevalidcp = false;
+          _cpactionerrormsg = 'Price must be between $min - $max';
+        }
+      } else {
+        _pricevalidcp = false;
+        _cpactionerrormsg = 'Invalid price input'; /////
+      }
+
+      selectedpriceforcpaction.text = setprice;
+      _evaluateCPActionValidation();
+    }
+
+    notifyListeners();
+  }
+
+  /// Combines the result of both validations
+  void _evaluateCPActionValidation() {
+    // For OFS, we need to check both validation flags and the required amount
+    if (_qtyvalidcp && _pricevalidcp) {
+      // Don't override the button state set by captioncheckofs for OFS
+      // For non-OFS actions, enable the button
+      if (_requiredamountforofs == '0') {
+        _cpactionsubtn = false;
+      } else {
+        // For non-OFS or when OFS has valid amount
+        if (_captionforofs.contains('exceeds') ||
+            _captionforofs.contains('Insufficient')) {
+          _cpactionsubtn = false;
+        } else {
+          _cpactionsubtn = true;
+        }
+      }
+      _cpactionerrormsg = '';
+    } else {
+      _cpactionsubtn = false;
+      // Error message is already set in the individual validation methods
+    }
   }
 
   void setselectnetpledge(String setnet, String net) {
@@ -2325,6 +2855,19 @@ class LDProvider extends DefaultChangeNotifier {
       years.add("$startY-${startY + 1}");
     }
     return years;
+  }
+
+  void clearOFSFields() {
+    selectedqtyforcpaction.text = '';
+    selectedpriceforcpaction.text = '';
+    _requiredamountforofs = '0';
+    _captionforofs = 'Enter bid quantity and price';
+    _qtyvalidcp = false;
+    _pricevalidcp = false;
+    _cpactionsubtn = false;
+    _cpactionerrormsg = '';
+    _cutoffcheckboxofs = false;
+    notifyListeners();
   }
 }
 // List<double> getCustItemsHeight() {

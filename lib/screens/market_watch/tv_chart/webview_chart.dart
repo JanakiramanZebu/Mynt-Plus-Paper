@@ -89,18 +89,18 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
       builder: (context, WidgetRef widgetRef, _) {
         // Store ref for use in other methods
         ref = widgetRef;
-        
+
         final tvChart = ref.watch(marketWatchProvider);
         final theme = ref.watch(themeProvider);
         final userProfile = ref.watch(userProfileProvider);
         final chartUpdate = ref.watch(chartUpdateProvider);
-        
+
         // Load tabs and scroll on first build
         WidgetsBinding.instance.addPostFrameCallback((_) {
           ref.read(marketWatchProvider).loadDefaultTabs();
           ref.read(marketWatchProvider).scrollToSelectedTab(false);
         });
-        
+
         bool transbtn = tvChart.getQuotes?.instname != "UNDIND" &&
             tvChart.getQuotes?.instname != "COM";
         return Column(
@@ -203,20 +203,20 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
               width: 44,
               child: IconButton(
                 padding: const EdgeInsets.all(0),
-                icon: const Icon(Icons.chevron_left, size: 38,),
+                icon: const Icon(
+                  Icons.chevron_left,
+                  size: 38,
+                ),
                 onPressed: () async {
-                  userProfile.setChartdialog(false);                  
-                  // Check if we came from holding detail screen
+                  userProfile.setChartdialog(false);
                   if (tvChart.scripsize) {
                     tvChart.chngDephBtn("Overview");
                   } else {
-                    // Default behavior - show scrip depth info
                     tvChart.chngDephBtn("Overview");
                     tvChart.singlePageloader(true);
                     await tvChart.calldepthApis(context, tvChart.getQuotes, "");
                     tvChart.singlePageloader(false);
                   }
-                  
                   tvChart.setChartScript('ABC', '0123', 'ABCD');
                   chartUpdate.changeOrientation('portrait');
                 },
@@ -249,14 +249,13 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                       padding: index > 1
                           ? const EdgeInsets.only(left: 16)
                           : const EdgeInsets.symmetric(horizontal: 8),
-                      label:
-                        TextWidget.paraText(
-                      text: tab.tsym,
-                      color: theme.isDarkMode
+                      label: TextWidget.paraText(
+                          text: tab.tsym,
+                          color: theme.isDarkMode
                               ? Color(isSelected ? 0xff000000 : 0xffffffff)
-                              : Color(isSelected ? 0xffffffff : 0xff000000),				
-                      theme: theme.isDarkMode,
-                      fw: 0),
+                              : Color(isSelected ? 0xffffffff : 0xff000000),
+                          theme: theme.isDarkMode,
+                          fw: 0),
                       backgroundColor: theme.isDarkMode
                           ? (isSelected
                               ? const Color(0xffffffff)
@@ -391,8 +390,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
           setState(() {
             this.progress = progress / 100;
-            if (ref.read(userProfileProvider).showchartof &&
-                progress == 100) {
+            if (ref.read(userProfileProvider).showchartof && progress == 100) {
               final mktpro = ref.read(marketWatchProvider).getQuotes;
 
               String redirUrl = currentUrl.toString();

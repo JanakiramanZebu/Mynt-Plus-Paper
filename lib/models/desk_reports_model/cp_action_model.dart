@@ -26,6 +26,12 @@ class CorporateAction {
   String? asbanonasba;
   String? orderstatus;
   String? eligibleornot;
+  String? bidqty;
+  String? approvedqty;
+  String? appno;
+  String? orderprice;
+  String? havingqty;
+  String? edisqty;
   String? baseprice;
   String? biddingEndDate;
   String? biddingStartDate;
@@ -65,8 +71,14 @@ class CorporateAction {
 
   CorporateAction(
       {this.asbanonasba,
+      this.havingqty,
+      this.edisqty,
       this.eligibleornot,
+      this.bidqty,
+      this.approvedqty,
       this.orderstatus,
+      this.appno,
+      this.orderprice,
       this.baseprice,
       this.biddingEndDate,
       this.biddingStartDate,
@@ -107,6 +119,12 @@ class CorporateAction {
   CorporateAction.fromJson(Map<String, dynamic> json) {
     asbanonasba = json['asbanonasba'].toString();
     eligibleornot = json['eligibleornot'].toString();
+    bidqty = json['bidqty'].toString();
+    approvedqty = json['approvedqty'].toString();
+    appno = json['appno'].toString();
+    orderprice = json['orderprice'].toString();
+    havingqty = json['havingqty'].toString();
+    edisqty = json['edisqty'].toString();
     orderstatus = json['orderstatus'].toString();
     baseprice = json['baseprice'].toString();
     biddingEndDate = json['biddingEndDate'].toString();
@@ -150,6 +168,12 @@ class CorporateAction {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['asbanonasba'] = this.asbanonasba;
     data['eligibleornot'] = this.eligibleornot;
+    data['bidqty'] = this.bidqty;
+    data['approvedqty'] = this.approvedqty;
+    data['appno'] = this.appno;
+    data['orderprice'] = this.orderprice;
+    data['havingqty'] = this.havingqty;
+    data['edisqty'] = this.edisqty;
     data['orderstatus'] = this.orderstatus;
     data['baseprice'] = this.baseprice;
     data['biddingEndDate'] = this.biddingEndDate;
