@@ -96,7 +96,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                           widget.watchListData["symbol"].toString().toUpperCase(),
                           style: TextWidget.textStyle(
                 fontSize: 14,
-                color: theme.isDarkMode ? colors.textPrimaryLight : colors.textPrimaryDark,
+                color: theme.isDarkMode ?  colors.textPrimaryDark : colors.textPrimaryLight,
                 theme: theme.isDarkMode,   
                 ),
                         ),
