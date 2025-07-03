@@ -57,6 +57,10 @@ class Assets {
   final String removeIcon = "assets/icon/watchlistIcon/remove_text.svg";
   final String charts = "assets/icon/watchlistIcon/charts.svg";
   final String options = "assets/icon/watchlistIcon/options.svg";
+  final String rightarrowcur = "assets/icon/watchlistIcon/rightarrow.svg";
+  final String convertpositionicon =
+      "assets/icon/watchlistIcon/convertposition.svg";
+  final String orderhistoryicon = "assets/icon/watchlistIcon/orderhistory.svg";
   final String switchIcon = "assets/icon/switchIcon.svg";
   final String minusIcon = "assets/icon/minus_btn.svg";
   final String addIcon = "assets/icon/add_btn.svg";

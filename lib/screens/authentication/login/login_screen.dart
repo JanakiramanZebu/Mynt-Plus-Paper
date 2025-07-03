@@ -614,14 +614,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: OutlinedButton(
                                   style: OutlinedButton.styleFrom(
                                       elevation: 0,
-                                      backgroundColor: !theme.isDarkMode
-                                          ? auth.isDisableBtn
-                                              ? const Color(0xff0037B7)
-                                                  .withOpacity(0.3)
-                                              : const Color(0xff0037B7)
-                                          : auth.isDisableBtn
-                                              ? colors.darkGrey
-                                              : colors.colorbluegrey,
+                                      backgroundColor: auth.isDisableBtn &&
+                                              (auth.loginMethCtrl.text
+                                                      .isEmpty ||
+                                                  auth.passCtrl.text.isEmpty)
+                                          ? const Color(0xff0037B7)
+                                              .withOpacity(0.3)
+                                          : const Color(0xff0037B7),
                                       side: BorderSide.none,
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 13),

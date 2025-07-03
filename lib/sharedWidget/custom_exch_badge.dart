@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/res.dart';
 
 import '../provider/thems.dart';
 import '../res/global_state_text.dart';
+<<<<<<< HEAD
 import '../res/res.dart';
+=======
+>>>>>>> 9869f2b53d8963762cb31e72b98a185281f0ffd9
 
 // A cached map of exchange badges to avoid recreating them
 final _exchangeBadgeCache = <String, Widget>{};
@@ -28,12 +32,22 @@ class CustomExchBadge extends ConsumerWidget {
 
     // Create a new badge if not in cache
     final badge = Container(
+<<<<<<< HEAD
       child: TextWidget.paraText(
         text: exch,
         textOverflow: TextOverflow.ellipsis,
         maxLines: 1,
         color: colors.textSecondaryLight,
         theme: theme.isDarkMode,
+=======
+      child: TextWidget.subText(
+        text: exch,
+        textOverflow: TextOverflow.ellipsis,
+        maxLines: 1,
+        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        theme: false,
+        fw: 3,
+>>>>>>> 9869f2b53d8963762cb31e72b98a185281f0ffd9
       ),
     );
 

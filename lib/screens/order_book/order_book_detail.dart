@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/order_book_model/order_book_model.dart';
 import '../../provider/market_watch_provider.dart';
 import '../../provider/order_provider.dart';
@@ -10,225 +11,466 @@ import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_back_btn.dart';
+import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/scrip_info_btns.dart';
 import '../../sharedWidget/time_line.dart';
+import '../market_watch/scrip_depth_info.dart';
 
-class OrderBookDetail extends ConsumerWidget {
+class OrderBookDetail extends ConsumerStatefulWidget {
   final OrderBookModel orderBookData;
   const OrderBookDetail({super.key, required this.orderBookData});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Use read for static data that doesn't need to trigger rebuilds
-    final theme = ref.read(themeProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        elevation: .2,
-        leadingWidth: 41,
-        centerTitle: false,
-        titleSpacing: 6,
-        leading: const CustomBackBtn(),
-        shadowColor: const Color(0xffECEFF3),
-        title: _OrderAppBarTitle(orderBookData: orderBookData),
-      ),
-      body: _OrderDetailBody(orderBookData: orderBookData),
-      bottomNavigationBar: _BottomActionBar(orderBookData: orderBookData),
-    );
-  }
+  ConsumerState<OrderBookDetail> createState() => _OrderBookDetailState();
 }
 
-// Extracted AppBar title component
-class _OrderAppBarTitle extends ConsumerWidget {
-  final OrderBookModel orderBookData;
-
-  const _OrderAppBarTitle({required this.orderBookData});
-
+class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeProvider);
+  Widget build(BuildContext context) {
+    final marketwatch = ref.watch(marketWatchProvider);
+    final depthData = ref.watch(marketWatchProvider).getQuotes!;
 
-    // Only watch the WebSocket data for this specific symbol
-    return Consumer(builder: (context, watch, _) {
-      final socketData = ref.watch(websocketProvider).socketDataStream;
+    DepthInputArgs depthArgs = DepthInputArgs(
+        exch: widget.orderBookData.exch ?? "",
+        token: widget.orderBookData.token ?? "",
+        tsym: marketwatch.getQuotes!.tsym ?? '',
+        instname: marketwatch.getQuotes!.instname ?? "",
+        symbol: marketwatch.getQuotes!.symbol ?? '',
+        expDate: marketwatch.getQuotes!.expDate ?? '',
+        option: marketwatch.getQuotes!.option ?? '');
+    // Use read for static data that doesn't need to trigger rebuilds
 
-      return StreamBuilder<Map>(
-          stream: socketData,
-          builder: (context, snapshot) {
-            // Initialize display data with original
-            var displayData = orderBookData;
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        if (details.primaryVelocity != null && details.primaryVelocity! > 400) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.88,
+        minChildSize: 0.05,
+        maxChildSize: 0.99,
+        builder: (context, scrollController) {
+          return Consumer(builder: (context, ref, child) {
+            final theme = ref.read(themeProvider);
 
-            // Update with WebSocket data if available
-            final socketDatas = snapshot.data ?? {};
-            if (socketDatas.containsKey(orderBookData.token)) {
-              final socketData = socketDatas[orderBookData.token];
+            final orderHistory = ref.watch(orderProvider).orderHistoryModel;
+            final socketData = ref.watch(websocketProvider).socketDataStream;
 
-              // Only update with non-zero values
-              final lp = socketData['lp']?.toString();
-              if (lp != null && lp != "null" && lp != "0" && lp != "0.00") {
-                displayData.ltp = lp;
-              }
+            return StreamBuilder<Map>(
+                stream: socketData,
+                builder: (context, snapshot) {
+                  // Initialize display data with original
+                  var displayData = widget.orderBookData;
 
-              final pc = socketData['pc']?.toString();
-              if (pc != null && pc != "null" && pc != "0" && pc != "0.00") {
-                displayData.perChange = pc;
-              }
+                  // Update with WebSocket data if available
+                  final socketDatas = snapshot.data ?? {};
+                  if (socketDatas.containsKey(widget.orderBookData.token)) {
+                    final socketData = socketDatas[widget.orderBookData.token];
 
-              final chng = socketData['chng']?.toString();
-              if (chng != null && chng != "null") {
-                displayData.change = chng;
-              }
-            }
+                    // Only update with non-zero values
+                    final lp = socketData['lp']?.toString();
+                    if (lp != null &&
+                        lp != "null" &&
+                        lp != "0" &&
+                        lp != "0.00") {
+                      displayData.ltp = lp;
+                    }
 
-            return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          TextWidget.titleText(
-                              text: "${displayData.symbol}",
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              fw: 1),
-                          TextWidget.subText(
-                              text: " ${displayData.option} ",
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              fw: 1,
-                              textOverflow: TextOverflow.ellipsis),
+                    final pc = socketData['pc']?.toString();
+                    if (pc != null &&
+                        pc != "null" &&
+                        pc != "0" &&
+                        pc != "0.00") {
+                      displayData.perChange = pc;
+                    }
+
+                    final chng = socketData['chng']?.toString();
+                    if (chng != null && chng != "null") {
+                      displayData.change = chng;
+                    }
+                  }
+
+                  return Scaffold(
+                    backgroundColor: Colors.transparent,
+                    body: Container(
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                        ),
+                      ),
+                      child: Column(
+                        children: <Widget>[
+                          const CustomDragHandler(),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              controller: scrollController,
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 16),
+
+                                        Material(
+                                          color: Colors.transparent,
+                                          shape: const BeveledRectangleBorder(),
+                                          child: InkWell(
+                                            customBorder:
+                                                const BeveledRectangleBorder(),
+                                            splashColor:
+                                                Colors.black.withOpacity(0.15),
+                                            highlightColor:
+                                                Colors.black.withOpacity(0.08),
+                                            onTap: () async {
+                                              await marketwatch
+                                                  .chngDephBtn("Overview");
+                                              marketwatch.scripdepthsize(true);
+                                              // Navigator.pop(context);
+
+                                              showModalBottomSheet(
+                                                  barrierColor:
+                                                      Colors.transparent,
+                                                  isScrollControlled: true,
+                                                  useSafeArea: true,
+                                                  isDismissible: true,
+                                                  shape: const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.vertical(
+                                                              top: Radius
+                                                                  .circular(
+                                                                      16))),
+                                                  backgroundColor:
+                                                      const Color(0xffffffff),
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      ScripDepthInfo(
+                                                          wlValue: depthArgs,
+                                                          isBasket: ''));
+                                            },
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        TextWidget.titleText(
+                                                            text:
+                                                                "${displayData.symbol}",
+                                                            theme: false,
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            fw: 0),
+                                                        TextWidget.subText(
+                                                            text:
+                                                                "${displayData.option}",
+                                                            theme: false,
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            fw: 3,
+                                                            textOverflow:
+                                                                TextOverflow
+                                                                    .ellipsis),
+                                                        const SizedBox(
+                                                            width: 4),
+                                                        CustomExchBadge(
+                                                            exch: displayData
+                                                                .exch!),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    TextWidget.titleText(
+                                                        text:
+                                                            "${displayData.ltp}",
+                                                        theme: false,
+                                                        color: (displayData.change ==
+                                                                        "null" ||
+                                                                    displayData
+                                                                            .change ==
+                                                                        null) ||
+                                                                displayData
+                                                                        .change ==
+                                                                    "0.00"
+                                                            ? colors.ltpgrey
+                                                            : displayData
+                                                                        .change!
+                                                                        .startsWith(
+                                                                            "-") ||
+                                                                    displayData
+                                                                        .perChange!
+                                                                        .startsWith(
+                                                                            "-")
+                                                                ? colors.ltpred
+                                                                : colors
+                                                                    .ltpgreen,
+                                                        fw: 0),
+                                                    const SizedBox(height: 4),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        TextWidget.paraText(
+                                                            text:
+                                                                "${displayData.expDate}",
+                                                            theme: false,
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            fw: 3),
+                                                        TextWidget.paraText(
+                                                            text:
+                                                                "${double.parse("${displayData.change != "null" ? displayData.change ?? 0.00 : 0.0} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
+                                                            theme: false,
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            fw: 0),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      height: 45,
+                                                      width: 26,
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              7),
+                                                      child: SvgPicture.asset(
+                                                        assets.rightarrowcur,
+                                                        width: 12,
+                                                        height: 12,
+                                                        color: const Color(
+                                                            0xff777777),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 16),
+                                        (widget.orderBookData.status ==
+                                                    "PENDING" ||
+                                                widget.orderBookData.status ==
+                                                    "OPEN" ||
+                                                widget.orderBookData.status ==
+                                                    "TRIGGER_PENDING")
+                                            ? _buildActionButtonsBar(
+                                                context,
+                                                theme,
+                                                ref,
+                                                widget.orderBookData)
+                                            : _buildRepeatOrderBar(
+                                                context,
+                                                theme,
+                                                ref,
+                                                widget.orderBookData),
+
+                                        // ScripInfoBtns(
+                                        //     exch:
+                                        //         '${widget.orderBookData.exch}',
+                                        //     token:
+                                        //         '${widget.orderBookData.token}',
+                                        //     insName: '',
+                                        //     tsym:
+                                        //         '${widget.orderBookData.tsym}'),
+
+                                        const SizedBox(height: 25),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            // if ((widget.positionList.netqty !=
+                                            //         "0") &&
+                                            //     (widget.positionList
+                                            //                 .sPrdtAli ==
+                                            //             "MIS" ||
+                                            //         widget.positionList
+                                            //                 .sPrdtAli ==
+                                            //             "CNC" ||
+                                            //         widget.positionList
+                                            //                 .sPrdtAli ==
+                                            //             "NRML"))
+                                            Material(
+                                              color: Colors.transparent,
+                                              shape:
+                                                  const BeveledRectangleBorder(),
+                                              child: InkWell(
+                                                customBorder:
+                                                    const BeveledRectangleBorder(),
+                                                splashColor: Colors.black
+                                                    .withOpacity(0.15),
+                                                highlightColor: Colors.black
+                                                    .withOpacity(0.08),
+                                                onTap: () {
+                                                  // showDialog(
+                                                  //   context: context,
+                                                  //   builder:
+                                                  //       (BuildContext context) {
+                                                  //     return ConvertPositionDialogue(
+                                                  //         convertPosition: widget
+                                                  //             .positionList);
+                                                  //   },
+                                                  // );
+                                                },
+                                                child: Center(
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      SvgPicture.asset(
+                                                        assets.orderhistoryicon,
+                                                        width: 14,
+                                                        height: 14,
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : const Color(
+                                                                0xff0037B7),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      TextWidget.subText(
+                                                        text: "Order History",
+                                                        fw: 1,
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : const Color(
+                                                                0xff0037B7),
+                                                        theme: false,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        _OrderDetailsSection(
+                                            orderBookData:
+                                                widget.orderBookData),
+
+                                        // Order status header
+                                        // Padding(
+                                        //   padding: const EdgeInsets.symmetric(
+                                        //       horizontal: 16.0),
+                                        //   child: Row(
+                                        //     mainAxisAlignment:
+                                        //         MainAxisAlignment.spaceBetween,
+                                        //     crossAxisAlignment:
+                                        //         CrossAxisAlignment.end,
+                                        //     children: [
+                                        //       TextWidget.titleText(
+                                        //           text: "Order Status",
+                                        //           theme: false,
+                                        //           color: theme.isDarkMode
+                                        //               ? colors.colorWhite
+                                        //               : const Color(0xff26324A),
+                                        //           fw: 1),
+                                        //       Row(
+                                        //         crossAxisAlignment:
+                                        //             CrossAxisAlignment.center,
+                                        //         mainAxisAlignment:
+                                        //             MainAxisAlignment.start,
+                                        //         children: [
+                                        //           SvgPicture.asset(widget
+                                        //                       .orderBookData
+                                        //                       .status ==
+                                        //                   "COMPLETE"
+                                        //               ? assets.completedIcon
+                                        //               : widget.orderBookData
+                                        //                               .status ==
+                                        //                           "CANCELED" ||
+                                        //                       widget.orderBookData
+                                        //                               .status ==
+                                        //                           "REJECTED"
+                                        //                   ? assets.cancelledIcon
+                                        //                   : assets.warningIcon),
+                                        //           TextWidget.subText(
+                                        //               text:
+                                        //                   "  ${widget.orderBookData.stIntrn![0].toUpperCase()}${widget.orderBookData.stIntrn!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
+                                        //               theme: false,
+                                        //               color: theme.isDarkMode
+                                        //                   ? colors.colorWhite
+                                        //                   : colors.colorBlack,
+                                        //               fw: 0),
+                                        //         ],
+                                        //       ),
+                                        //     ],
+                                        //   ),
+                                        // ),
+
+                                        // Order history timeline
+                                        // if (orderHistory != null &&
+                                        //     orderHistory.isNotEmpty &&
+                                        //     orderHistory[0].stat != "Not_Ok")
+                                        //   ListView.builder(
+                                        //     reverse: true,
+                                        //     itemCount: orderHistory.length,
+                                        //     physics:
+                                        //         const NeverScrollableScrollPhysics(),
+                                        //     shrinkWrap: true,
+                                        //     itemBuilder: (BuildContext context,
+                                        //         int index) {
+                                        //       return TimeLineWidget(
+                                        //           isfFrist:
+                                        //               orderHistory.length - 1 ==
+                                        //                       index
+                                        //                   ? true
+                                        //                   : false,
+                                        //           isLast:
+                                        //               index == 0 ? true : false,
+                                        //           orderHistoryData:
+                                        //               orderHistory[index]);
+                                        //     },
+                                        //   ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                      TextWidget.titleText(
-                          text: "₹${displayData.ltp}",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          fw: 1),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Row(children: [
-                          CustomExchBadge(exch: displayData.exch!),
-                          TextWidget.paraText(
-                              text: "  ${displayData.expDate}",
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              fw: 1),
-                        ]),
-                        TextWidget.paraText(
-                            text:
-                                "${double.parse("${displayData.change != "null" ? displayData.change ?? 0.00 : 0.0} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
-                            theme: false,
-                            color: (displayData.change == "null" ||
-                                        displayData.change == null) ||
-                                    displayData.change == "0.00"
-                                ? colors.ltpgrey
-                                : displayData.change!.startsWith("-") ||
-                                        displayData.perChange!.startsWith("-")
-                                    ? colors.darkred
-                                    : colors.ltpgreen,
-                            fw: 0),
-                      ])
-                ]);
+                    ),
+                  );
+                });
           });
-    });
-  }
-}
-
-// Main body of the order detail
-class _OrderDetailBody extends ConsumerWidget {
-  final OrderBookModel orderBookData;
-
-  const _OrderDetailBody({required this.orderBookData});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeProvider);
-    // Only watch the specific data needed
-    final orderHistory = ref.watch(orderProvider).orderHistoryModel;
-
-    return ListView(
-      children: [
-        ScripInfoBtns(
-            exch: '${orderBookData.exch}',
-            token: '${orderBookData.token}',
-            insName: '',
-            tsym: '${orderBookData.tsym}'),
-
-        // Order details section
-        _OrderDetailsSection(orderBookData: orderBookData),
-
-        // Order status header
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              TextWidget.titleText(
-                  text: "Order Status",
-                  theme: false,
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : const Color(0xff26324A),
-                  fw: 1),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  SvgPicture.asset(orderBookData.status == "COMPLETE"
-                      ? assets.completedIcon
-                      : orderBookData.status == "CANCELED" ||
-                              orderBookData.status == "REJECTED"
-                          ? assets.cancelledIcon
-                          : assets.warningIcon),
-                  TextWidget.subText(
-                      text:
-                          "  ${orderBookData.stIntrn![0].toUpperCase()}${orderBookData.stIntrn!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                      fw: 0),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // Order history timeline
-        if (orderHistory != null &&
-            orderHistory.isNotEmpty &&
-            orderHistory[0].stat != "Not_Ok")
-          ListView.builder(
-            reverse: true,
-            itemCount: orderHistory.length,
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemBuilder: (BuildContext context, int index) {
-              return TimeLineWidget(
-                  isfFrist: orderHistory.length - 1 == index ? true : false,
-                  isLast: index == 0 ? true : false,
-                  orderHistoryData: orderHistory[index]);
-            },
-          ),
-      ],
+        },
+      ),
     );
   }
 }
@@ -242,315 +484,284 @@ class _OrderDetailsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.read(themeProvider);
+    final color = orderBookData.status == "COMPLETE"
+        ? const Color(0xff43A833)
+        : orderBookData.status == "OPEN"
+            ? const Color(0xffFFB038)
+            : (orderBookData.status == "CANCELED" ||
+                    orderBookData.status == "REJECTED")
+                ? const Color(0xffFF1717)
+                : const Color(0xff666666);
 
-    return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const SizedBox(height: 10),
-          TextWidget.titleText(
-              text: "Order details",
-              theme: false,
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              fw: 1),
-
-          const SizedBox(height: 16),
-          _buildInfoRow(
-              "Transaction Type",
-              orderBookData.trantype == "B" ? "Buy" : "Sell",
-              "Price Type",
-              "${orderBookData.prctyp}",
-              theme),
-          const SizedBox(height: 4),
-          _buildInfoRow("Price", "${orderBookData.prc}", "Avg.Price",
-              "${orderBookData.avgprc ?? 0.00}", theme),
-          const SizedBox(height: 4),
-          _buildInfoRow("Trigger Price", "${orderBookData.trgprc ?? 0.00}", "",
-              "", theme),
-          const SizedBox(height: 4),
-          _buildInfoRow(
-              "Filled Qty",
-              "${((orderBookData.status != "COMPLETE" && (orderBookData.fillshares?.isNotEmpty ?? false) ? (int.tryParse(orderBookData.fillshares.toString()) ?? 0) : orderBookData.status == "COMPLETE" ? (int.tryParse(orderBookData.rqty.toString()) ?? 0) : (int.tryParse(orderBookData.dscqty.toString()) ?? 0)).toInt() / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}/${((int.tryParse(orderBookData.qty.toString()) ?? 0) / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}",
-              "MKT Protection",
-              orderBookData.mktProtection ?? "-",
-              theme),
-          const SizedBox(height: 4),
-          _buildInfoRow("Validity", "${orderBookData.ret}", "Product",
-              "${orderBookData.sPrdtAli}", theme),
-          const SizedBox(height: 4),
-          _buildInfoRow(
-              "After Market Order",
-              orderBookData.amo ?? "-",
-              "Status",
-              "${orderBookData.stIntrn![0].toUpperCase()}${orderBookData.stIntrn!.toLowerCase().replaceAll("_", " ").substring(1)}",
-              theme),
-          const SizedBox(height: 4),
-          _buildInfoRow(
-              "Order Id",
-              "${orderBookData.norenordno}",
-              "Date & Time",
-              formatDateTime(value: orderBookData.norentm!),
-              theme),
-
-          // Show rejection reason if present
-          if (orderBookData.rejreason != null) ...[
-            Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                        TextWidget.paraText(
-                            text: "Rejected Reason",
-                            theme: false,
-                            color: const Color(0xff666666),
-                            fw: 0),
-                        const SizedBox(height: 3),
-                        TextWidget.subText(
-                            text: '${orderBookData.rejreason}',
-                            theme: false,
-                            color: colors.darkred,
-                            fw: 0),
-                      ]))
-                ]),
-            const SizedBox(height: 10),
-          ]
-        ]));
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const SizedBox(height: 20),
+      TextWidget.titleText(
+        text: "Details",
+        color: theme.isDarkMode ? colors.colorWhite : const Color(0xff666666),
+        fw: 1,
+        theme: false,
+      ),
+      const SizedBox(height: 24),
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextWidget.subText(
+                text: "Status",
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.colorWhite
+                    : const Color(0xff666666),
+                fw: 0),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(
+                  color: color,
+                  width: 1,
+                ),
+              ),
+              child: TextWidget.subText(
+                  text:
+                      "${orderBookData.status![0].toUpperCase()}${orderBookData.status!.toLowerCase().replaceAll("_", " ").substring(1)}",
+                  theme: false,
+                  color: color,
+                  fw: 0),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : const Color(0xffEBEEF3),
+            thickness: 1)
+      ]),
+      const SizedBox(height: 8),
+      _buildInfoRow(
+          "Type", orderBookData.trantype == "B" ? "Buy" : "Sell", theme),
+      const SizedBox(height: 8),
+      _buildInfoRow(
+          "Qty",
+          "${((orderBookData.status != "COMPLETE" && (orderBookData.fillshares?.isNotEmpty ?? false) ? (int.tryParse(orderBookData.fillshares.toString()) ?? 0) : orderBookData.status == "COMPLETE" ? (int.tryParse(orderBookData.rqty.toString()) ?? 0) : (int.tryParse(orderBookData.dscqty.toString()) ?? 0)).toInt() / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}/${((int.tryParse(orderBookData.qty.toString()) ?? 0) / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}",
+          theme),
+      const SizedBox(height: 8),
+      _buildInfoRow("Price", "${orderBookData.prc ?? "-"}", theme),
+      const SizedBox(height: 8),
+      _buildInfoRow("Avg Price", "${orderBookData.avgprc ?? "-"}", theme),
+      const SizedBox(height: 8),
+      _buildInfoRow("Trigger Price", "${orderBookData.trgprc ?? "-"}", theme),
+      const SizedBox(height: 8),
+      _buildInfoRow("Product / Type",
+          "${orderBookData.sPrdtAli} / ${orderBookData.prctyp ?? "-"}", theme),
+      const SizedBox(height: 8),
+      _buildInfoRow(
+          "Market Protection", "${orderBookData.mktProtection ?? "-"}", theme),
+      const SizedBox(height: 8),
+      _buildInfoRow("AMO", "${orderBookData.amo ?? "-"}", theme),
+      const SizedBox(height: 8),
+      _buildInfoRow("Order Id", "${orderBookData.norenordno ?? "-"}", theme),
+      const SizedBox(height: 8),
+      _buildInfoRow("Exchange", "${orderBookData.exchordid ?? "-"}", theme),
+      const SizedBox(height: 8),
+      _buildInfoRow("Date & Time",
+          "${formatDateTime(value: orderBookData.norentm ?? "-")}", theme),
+      const SizedBox(height: 40),
+    ]);
   }
 
-  Widget _buildInfoRow(String title1, String value1, String title2,
-      String value2, ThemesProvider theme) {
-    return Row(children: [
-      Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        TextWidget.paraText(
-            text: title1, theme: false, color: const Color(0xff666666), fw: 0),
-        const SizedBox(height: 2),
-        TextWidget.subText(
-            text: value1,
-            theme: false,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            fw: 0),
-        const SizedBox(height: 2),
-        Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider)
-      ])),
-      const SizedBox(width: 24),
-      Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        TextWidget.paraText(
-            text: title2, theme: false, color: const Color(0xff666666), fw: 0),
-        const SizedBox(height: 2),
-        TextWidget.subText(
-            text: value2,
-            theme: false,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            fw: 0),
-        const SizedBox(height: 2),
-        Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider)
-      ]))
+  Widget _buildInfoRow(String title1, String value1, ThemesProvider theme) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextWidget.subText(
+              text: title1,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.colorWhite
+                  : const Color(0xff666666),
+              fw: 0),
+          TextWidget.subText(
+              text: value1,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.colorWhite
+                  : const Color(0xff666666),
+              fw: 0),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Divider(
+          color: theme.isDarkMode
+              ? colors.darkColorDivider
+              : const Color(0xffEBEEF3),
+          thickness: 1)
     ]);
   }
 }
 
 // Bottom action bar for order actions
-class _BottomActionBar extends ConsumerWidget {
-  final OrderBookModel orderBookData;
-
-  const _BottomActionBar({required this.orderBookData});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeProvider);
-
-    // Show different bottom bar based on order status
-    if (orderBookData.status == "PENDING" ||
-        orderBookData.status == "OPEN" ||
-        orderBookData.status == "TRIGGER_PENDING") {
-      return _buildActionButtonsBar(context, theme, ref);
-    } else {
-      return _buildRepeatOrderBar(context, theme, ref);
-    }
-  }
-
-  Widget _buildActionButtonsBar(
-      BuildContext context, ThemesProvider theme, WidgetRef ref) {
-    return BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(children: [
-              if ((orderBookData.sPrdtAli == "BO" ||
-                      orderBookData.sPrdtAli == "CO") &&
-                  orderBookData.snonum != null) ...[
-                Expanded(
-                    child: SizedBox(
-                        height: 40,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              shadowColor: Colors.transparent,
-                              elevation: 0,
-                              backgroundColor: const Color(0XFFD34645),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              )),
-                          onPressed: () async {
-                            _showExitPositionDialog(context, theme, ref);
-                          },
-                          child: TextWidget.subText(text: "Exit",theme: false,color: const Color(0XFFFFFFFF),fw: 1),
-                        )))
-              ] else ...[
-                Expanded(
-                  child: InkWell(
-                    onTap: () async {
-                      _showCancelOrderDialog(context, theme, ref);
-                    },
-                    child: Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          borderRadius: BorderRadius.circular(108)),
-                      child: Center(
-                        child: TextWidget.subText(text: "Cancel Order",theme: false,color: !theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,fw: 1),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(width: 16),
-              Expanded(
-                child: InkWell(
-                  onTap: () async {
-                    await _navigateToModifyOrder(context, ref);
-                  },
-                  child: Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                        border: Border.all(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack),
-                        borderRadius: BorderRadius.circular(108)),
-                    child: Center(
-                      child: TextWidget.subText(text: "Modify Order",theme:theme.isDarkMode,fw: 1),
-                    ),
-                  ),
+Widget _buildActionButtonsBar(
+    BuildContext context, ThemesProvider theme, WidgetRef ref, orderBookData) {
+  return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+    if ((orderBookData.sPrdtAli == "BO" || orderBookData.sPrdtAli == "CO") &&
+        orderBookData.snonum != null) ...[
+      Expanded(
+          child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xffF1F3F8),
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(
+                  color: theme.isDarkMode
+                      ? colors.colorGrey
+                      : const Color(0xff0037B7),
+                  width: 1,
                 ),
               ),
-            ])));
-  }
-
-  Widget _buildRepeatOrderBar(
-      BuildContext context, ThemesProvider theme, WidgetRef ref) {
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      child: Container(
-          height: 38,
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          padding: const EdgeInsets.symmetric(vertical: 5),
+              child: InkWell(
+                onTap: () async {
+                  _showExitPositionDialog(context, theme, ref, orderBookData);
+                },
+                child: Center(
+                  child: TextWidget.subText(
+                      text: "Exit",
+                      theme: false,
+                      color: const Color(0xff0037B7),
+                      fw: 1),
+                ),
+              )))
+    ] else ...[
+      Expanded(
+        child: Container(
+          height: 40,
           decoration: BoxDecoration(
+            color: const Color(0xffF1F3F8),
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(
               color:
-                  theme.isDarkMode ? colors.colorbluegrey : colors.colorBlack,
-              borderRadius: BorderRadius.circular(32)),
-          width: MediaQuery.of(context).size.width,
+                  theme.isDarkMode ? colors.colorGrey : const Color(0xff0037B7),
+              width: 1,
+            ),
+          ),
           child: InkWell(
             onTap: () async {
-              await _navigateToPlaceOrder(context, ref);
+              _showCancelOrderDialog(context, theme, ref, orderBookData);
             },
             child: Center(
-                child: TextWidget.subText(text: "Repeat order",theme: false,color: !theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,fw: 1)),
-          )),
-    );
-  }
+              child: TextWidget.subText(
+                  text: "Cancel Order",
+                  theme: false,
+                  color: const Color(0xff0037B7),
+                  fw: 1),
+            ),
+          ),
+        ),
+      ),
+    ],
+    const SizedBox(width: 16),
+    Expanded(
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: const Color(0xffF1F3F8),
+          borderRadius: BorderRadius.circular(5),
+          border: Border.all(
+            color:
+                theme.isDarkMode ? colors.colorGrey : const Color(0xff0037B7),
+            width: 1,
+          ),
+        ),
+        child: InkWell(
+          onTap: () async {
+            await _navigateToModifyOrder(context, ref, orderBookData);
+          },
+          child: Center(
+            child: TextWidget.subText(
+                text: "Modify Order",
+                theme: false,
+                color: const Color(0xff0037B7),
+                fw: 1),
+          ),
+        ),
+      ),
+    ),
+  ]);
+}
 
-  void _showExitPositionDialog(
-      BuildContext context, ThemesProvider theme, WidgetRef ref) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: theme.isDarkMode
-                ? const Color.fromARGB(255, 18, 18, 18)
-                : colors.colorWhite,
-            titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-                color:
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-            contentTextStyle: textStyles.menuTxt,
-            titlePadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(14))),
-            scrollable: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
+Widget _buildRepeatOrderBar(
+    BuildContext context, ThemesProvider theme, WidgetRef ref, orderBookData) {
+  return Row(
+    children: [
+      Expanded(
+        child: Container(
+          height: 40,
+          decoration: BoxDecoration(
+            color: const Color(0xffF1F3F8),
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(
+              color:
+                  theme.isDarkMode ? colors.colorGrey : const Color(0xff0037B7),
+              width: 1,
             ),
-            insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-            title: TextWidget.titleText(text: "Exit Position",theme: theme.isDarkMode,fw: 1),            content: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [TextWidget.subText(text: "Are you sure you want to exit a position ?",theme: theme.isDarkMode,fw: 0),],
-              ),
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: TextWidget.subText(text: "No",theme: false,color: theme.isDarkMode
-                              ? colors.colorLightBlue
-                              : colors.colorBlue,fw: 0)),
-              ElevatedButton(
-                onPressed: () async {
-                  await ref.read(orderProvider).fetchExitSNOOrd(
-                      "${orderBookData.snonum}",
-                      "${orderBookData.prd}",
-                      context,
-                      true);
-                },
-                style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: theme.isDarkMode
+          ),
+          child: InkWell(
+            onTap: () async {
+              await _navigateToPlaceOrder(context, ref, orderBookData);
+            },
+            child: Center(
+                child: TextWidget.subText(
+                    text: "Repeat order",
+                    theme: false,
+                    color: const Color(0xff0037B7),
+                    fw: 1)),
+          ),
+        ),
+      ),
+      const SizedBox(width: 12),
+      Expanded(
+          child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                border: Border.all(
+                    color: theme.isDarkMode
                         ? colors.colorWhite
-                        : colors.colorBlack,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    )),
-                child: TextWidget.subText(text: "Yes",theme:theme.isDarkMode ,fw: 0),
+                        : const Color(0xff0037B7),
+                    width: 1),
+                color: const Color(0xffF1F3F8),
+                borderRadius: BorderRadius.circular(5),
               ),
-            ],
-          );
-        });
-  }
+              child: InkWell(
+                onTap: () async {},
+                child: Center(
+                  child: TextWidget.subText(
+                      text: "Cancel",
+                      theme: false,
+                      color: const Color(0xff0037B7),
+                      fw: 1),
+                ),
+              )))
+    ],
+  );
+}
 
-  void _showCancelOrderDialog(
-      BuildContext context, ThemesProvider theme, WidgetRef ref) {
-    showDialog(
+void _showExitPositionDialog(
+    BuildContext context, ThemesProvider theme, WidgetRef ref, orderBookData) {
+  showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: theme.isDarkMode
               ? const Color.fromARGB(255, 18, 18, 18)
               : colors.colorWhite,
-          titleTextStyle: TextWidget.textStyle(theme: false,color: 
-              !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              fontSize: 16,fw:1),
-          contentTextStyle:
-             TextWidget.textStyle(color: const Color(0XFF666666),fontSize: 14, fw: 0,theme: false),
+          titleTextStyle: textStyles.appBarTitleTxt.copyWith(
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+          contentTextStyle: textStyles.menuTxt,
           titlePadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(14))),
           scrollable: true,
@@ -558,114 +769,204 @@ class _BottomActionBar extends ConsumerWidget {
             horizontal: 14,
           ),
           insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: Row(
-            children: [
-              TextWidget.titleText(text: "${orderBookData.tsym}",theme: theme.isDarkMode ,fw: 1),
-              Container(
-                margin: const EdgeInsets.only(left: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                    color: const Color(0xffF1F3F8),
-                    borderRadius: BorderRadius.circular(4)),
-                child: TextWidget.captionText(text: "${orderBookData.exch}",theme: false,color: const Color(0XFF666666),fw: 1),
-              ),
-              Container(
-                margin: const EdgeInsets.only(left: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                    color: const Color(0xffFCF3F3),
-                    borderRadius: BorderRadius.circular(4)),
-                child: TextWidget.captionText(text: "${orderBookData.status}",theme: false,color: colors.darkred,fw: 1),
-              ),
-            ],
-          ),
+          title: TextWidget.titleText(
+              text: "Exit Position", theme: theme.isDarkMode, fw: 1),
           content: SizedBox(
             width: MediaQuery.of(context).size.width,
-            child:  Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [TextWidget.titleText(text: "Do you want to Cancel this order?",theme: theme.isDarkMode,fw: 1)]
+              children: [
+                TextWidget.subText(
+                    text: "Are you sure you want to exit a position ?",
+                    theme: theme.isDarkMode,
+                    fw: 0),
+              ],
             ),
           ),
           actions: [
             TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: TextWidget.subText(text: "No",theme: false,color: theme.isDarkMode
-                          ? colors.colorLightBlue
-                          : colors.colorBlue,fw: 0)),
+                onPressed: () => Navigator.of(context).pop(),
+                child: TextWidget.subText(
+                    text: "No",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.colorLightBlue
+                        : colors.colorBlue,
+                    fw: 0)),
             ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    )),
-                onPressed: () async {
-                  await ref.read(orderProvider).fetchOrderCancel(
-                      "${orderBookData.norenordno}", context, true);
-                },
-                child: TextWidget.subText(text: "Yes",theme: false,color: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,fw: 0)),
+              onPressed: () async {
+                await ref.read(orderProvider).fetchExitSNOOrd(
+                    "${orderBookData.snonum}",
+                    "${orderBookData.prd}",
+                    context,
+                    true);
+              },
+              style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  )),
+              child: TextWidget.subText(
+                  text: "Yes", theme: theme.isDarkMode, fw: 0),
+            ),
           ],
         );
-      },
-    );
-  }
+      });
+}
 
-  Future<void> _navigateToModifyOrder(
-      BuildContext context, WidgetRef ref) async {
-    await ref.read(marketWatchProvider).fetchScripInfo(
-        "${orderBookData.token}", '${orderBookData.exch}', context);
+void _showCancelOrderDialog(
+    BuildContext context, ThemesProvider theme, WidgetRef ref, orderBookData) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: theme.isDarkMode
+            ? const Color.fromARGB(255, 18, 18, 18)
+            : colors.colorWhite,
+        titleTextStyle: TextWidget.textStyle(
+            theme: false,
+            color: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            fontSize: 16,
+            fw: 1),
+        contentTextStyle: TextWidget.textStyle(
+            color: const Color(0XFF666666), fontSize: 14, fw: 0, theme: false),
+        titlePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(14))),
+        scrollable: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        title: Row(
+          children: [
+            TextWidget.titleText(
+                text: "${orderBookData.tsym}", theme: theme.isDarkMode, fw: 1),
+            Container(
+              margin: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                  color: const Color(0xffF1F3F8),
+                  borderRadius: BorderRadius.circular(4)),
+              child: TextWidget.captionText(
+                  text: "${orderBookData.exch}",
+                  theme: false,
+                  color: const Color(0XFF666666),
+                  fw: 1),
+            ),
+            Container(
+              margin: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                  color: const Color(0xffFCF3F3),
+                  borderRadius: BorderRadius.circular(4)),
+              child: TextWidget.captionText(
+                  text: "${orderBookData.status}",
+                  theme: false,
+                  color: colors.darkred,
+                  fw: 1),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            TextWidget.titleText(
+                text: "Do you want to Cancel this order?",
+                theme: theme.isDarkMode,
+                fw: 1)
+          ]),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: TextWidget.subText(
+                  text: "No",
+                  theme: false,
+                  color: theme.isDarkMode
+                      ? colors.colorLightBlue
+                      : colors.colorBlue,
+                  fw: 0)),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  )),
+              onPressed: () async {
+                await ref.read(orderProvider).fetchOrderCancel(
+                    "${orderBookData.norenordno}", context, true);
+              },
+              child: TextWidget.subText(
+                  text: "Yes",
+                  theme: false,
+                  color:
+                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  fw: 0)),
+        ],
+      );
+    },
+  );
+}
 
-    OrderScreenArgs orderArgs = OrderScreenArgs(
-        exchange: '${orderBookData.exch}',
-        tSym: '${orderBookData.tsym}',
-        isExit: false,
-        token: "${orderBookData.token}",
-        transType: true,
-        lotSize: orderBookData.ls,
-        ltp: orderBookData.ltp,
-        perChange: orderBookData.perChange,
-        orderTpye: '',
-        holdQty: '',
-        isModify: false,
-        raw: {});
+Future<void> _navigateToModifyOrder(
+    BuildContext context, WidgetRef ref, orderBookData) async {
+  await ref.read(marketWatchProvider).fetchScripInfo(
+      "${orderBookData.token}", '${orderBookData.exch}', context);
 
-    Navigator.pop(context);
-    Navigator.pushNamed(context, Routes.modifyOrder, arguments: {
-      "modifyOrderArgs": orderBookData,
-      "orderArg": orderArgs,
-      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!
-    });
-  }
+  OrderScreenArgs orderArgs = OrderScreenArgs(
+      exchange: '${orderBookData.exch}',
+      tSym: '${orderBookData.tsym}',
+      isExit: false,
+      token: "${orderBookData.token}",
+      transType: true,
+      lotSize: orderBookData.ls,
+      ltp: orderBookData.ltp,
+      perChange: orderBookData.perChange,
+      orderTpye: '',
+      holdQty: '',
+      isModify: false,
+      raw: {});
 
-  Future<void> _navigateToPlaceOrder(
-      BuildContext context, WidgetRef ref) async {
-    Navigator.pop(context);
+  Navigator.pop(context);
+  Navigator.pushNamed(context, Routes.modifyOrder, arguments: {
+    "modifyOrderArgs": orderBookData,
+    "orderArg": orderArgs,
+    "scripInfo": ref.read(marketWatchProvider).scripInfoModel!
+  });
+}
 
-    await ref.read(marketWatchProvider).fetchScripInfo(
-        "${orderBookData.token}", "${orderBookData.exch}", context, true);
+Future<void> _navigateToPlaceOrder(
+    BuildContext context, WidgetRef ref, orderBookData) async {
+  Navigator.pop(context);
 
-    OrderScreenArgs orderArgs = OrderScreenArgs(
-        exchange: orderBookData.exch.toString(),
-        tSym: orderBookData.tsym.toString(),
-        isExit: false,
-        token: orderBookData.token.toString(),
-        transType: orderBookData.trantype == 'B' ? true : false,
-        lotSize: orderBookData.ls,
-        ltp: "${orderBookData.ltp ?? orderBookData.c ?? 0.00}",
-        perChange: orderBookData.change ?? "0.00",
-        orderTpye: '',
-        holdQty: '',
-        isModify: false,
-        raw: orderBookData.toJson());
+  await ref.read(marketWatchProvider).fetchScripInfo(
+      "${orderBookData.token}", "${orderBookData.exch}", context, true);
 
-    Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
-      "orderArg": orderArgs,
-      "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
-      "isBskt": ''
-    });
-  }
+  OrderScreenArgs orderArgs = OrderScreenArgs(
+      exchange: orderBookData.exch.toString(),
+      tSym: orderBookData.tsym.toString(),
+      isExit: false,
+      token: orderBookData.token.toString(),
+      transType: orderBookData.trantype == 'B' ? true : false,
+      lotSize: orderBookData.ls,
+      ltp: "${orderBookData.ltp ?? orderBookData.c ?? 0.00}",
+      perChange: orderBookData.change ?? "0.00",
+      orderTpye: '',
+      holdQty: '',
+      isModify: false,
+      raw: orderBookData.toJson());
+
+  Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+    "orderArg": orderArgs,
+    "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
+    "isBskt": ''
+  });
 }
