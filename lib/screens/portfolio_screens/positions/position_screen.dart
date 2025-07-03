@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/screens/portfolio_screens/positions/position_detail_screen.dart';
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -383,13 +384,11 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         }
 
         // Wrap each position item with RepaintBoundary to isolate updates
-        return RepaintBoundary(
-          child: _PositionItem(
-            position: itemsToDisplay[index],
-            isSearchItem: positionBook.positionSearchItem.isNotEmpty,
-            showLongPressOption: positionBook.openPosition!.length > 1 &&
-                itemsToDisplay[index].qty != "0",
-          ),
+        return _PositionItem(
+          position: itemsToDisplay[index],
+          isSearchItem: positionBook.positionSearchItem.isNotEmpty,
+          showLongPressOption: positionBook.openPosition!.length > 1 &&
+              itemsToDisplay[index].qty != "0",
         );
       },
       itemCount: itemsToDisplay.length * 2 - 1,
@@ -894,8 +893,24 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
 
     // Navigate to position detail
     if (mounted) {
-      Navigator.pushNamed(context, Routes.positionDetail,
-          arguments: widget.position);
+      showModalBottomSheet(
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+        ),
+        isDismissible: true,
+        enableDrag: false,
+        useSafeArea: true,
+        context: context,
+        builder: (context) => Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: PositionDetailScreen(positionList: widget.position)),
+      );
     }
   }
 }

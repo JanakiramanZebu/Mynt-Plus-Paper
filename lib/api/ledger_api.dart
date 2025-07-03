@@ -12,9 +12,12 @@ import '../models/desk_reports_model/calender_pnl_model.dart';
 import '../models/desk_reports_model/cdsl_response_model.dart';
 import '../models/desk_reports_model/cp_action_model.dart';
 import '../models/desk_reports_model/dercomcur_taxpnl_model.dart';
+import '../models/desk_reports_model/editreport_model.dart';
 import '../models/desk_reports_model/holdings_model.dart';
 import '../models/desk_reports_model/ledger_bill_model.dart';
 import '../models/desk_reports_model/ledger_model.dart';
+import '../models/desk_reports_model/order_response_cop.dart';
+import '../models/desk_reports_model/placeorder_response_model.dart';
 import '../models/desk_reports_model/pledge_history_model.dart';
 import '../models/desk_reports_model/pledge_segment_check_model.dart';
 import '../models/desk_reports_model/pledge_unpledge_model.dart';
@@ -37,7 +40,7 @@ mixin LedgerApi on ApiCore {
     try {
       final uri =
           // Uri.parse('${apiLinks.reportsapiforcpaction}/getCorporateAction');
-          Uri.parse('http://192.168.5.207:5010/getCorporateAction');
+          Uri.parse('${apiLinks.reportsapiforcpaction}/getCorporateAction');
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           // headers: testingrameshheader,
@@ -49,6 +52,51 @@ mixin LedgerApi on ApiCore {
         return CPActionModule.fromJson(json as Map<String, dynamic>);
       } else {
         return CPActionModule.fromJson({});
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<GetOrderlistCopModel> getorderdetails() async {
+    try {
+      final uri =
+          // Uri.parse('${apiLinks.reportsapiforcpaction}/getCorporateAction');
+          Uri.parse('${apiLinks.reportsapiforcpaction}/fetchorderdetailcorp');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body: jsonEncode({}));
+
+      final json = jsonDecode((res.body));
+      // print("${json['stat']}");
+      if (json['msg'] != 'No data') {
+        return GetOrderlistCopModel.fromJson(json as Map<String, dynamic>);
+      } else {
+        return GetOrderlistCopModel.fromJson({});
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<EdisReportModel> geteditsdata(List<dynamic> isinlist) async {
+    try {
+      final uri =
+          // Uri.parse('${apiLinks.reportsapiforcpaction}/getCorporateAction');
+          Uri.parse('${apiLinks.reportsapiforcpaction}/EdisReport');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body:
+              jsonEncode({"clientid": "${prefs.clientId}", "isin": isinlist}));
+
+      final json = jsonDecode((res.body));
+      // print("${json['stat']}");
+      if (json['msg'] != 'edis report error') {
+        return EdisReportModel.fromJson(json as Map<String, dynamic>);
+      } else {
+        return EdisReportModel.fromJson({});
       }
     } catch (e) {
       rethrow;
@@ -165,6 +213,61 @@ mixin LedgerApi on ApiCore {
       } else {
         return SharingResponse.fromJson({});
       }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<placeOrderResponseCopModel> putorderapicopaction(
+      String tabval,
+      String sym,
+      String exchange,
+      String issueType,
+      String qty,
+      String price,
+      String ordertype,
+      String appno) async {
+    try {
+      final uri = Uri.parse('${apiLinks.reportsapiforcpaction}/addCorporateAction');
+      dynamic data;
+      if (issueType == 'RS' || issueType == 'IS') {
+        data = {
+          "exchange": exchange,
+          "symbol": sym,
+          "series": issueType,
+          "activityType": ordertype,
+          "quantity": int.parse(qty),
+          "price": int.parse(double.parse(price).toStringAsFixed(0)),
+          "cutOffPrice": false,
+          ordertype == 'CR' ? "applicationNo" : "appno": appno
+        };
+      } else {
+        data = {
+          "exchange": exchange,
+          "symbol": sym,
+          "series": issueType,
+          "activityType": ordertype,
+          "bidQuantity": int.parse(qty),
+          "price": int.parse(double.parse(price).toStringAsFixed(0)),
+          ordertype == 'CR' ? "applicationNo" : "appno": appno
+        };
+      }
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
+          body: jsonEncode(data));
+      print("res.body ${res.body}");
+      final json = jsonDecode((res.body));
+      if (json['msg'] == 'success') {
+        return placeOrderResponseCopModel
+            .fromJson(json as Map<String, dynamic>);
+      } else  if (json['msg'] == 'error occured on data fetch') {
+        return placeOrderResponseCopModel
+            .fromJson(json as Map<String, dynamic>);
+      }else {
+        return placeOrderResponseCopModel.fromJson({});
+      }
+      
     } catch (e) {
       rethrow;
     }

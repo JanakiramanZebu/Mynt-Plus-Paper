@@ -131,16 +131,12 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                                   : colors.ltpgreen.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(60)),
                           child: Center(
-                              child: 
-                                      
-                                      TextWidget.titleText(
-                      text: "BUY",
-                      color:Color(0XFFFFFFFF) ,
-                      theme: theme.isDarkMode,
-                      fw: 1),
-                                      
-                                      
-                                      )),
+                            child: TextWidget.titleText(
+                                text: "BUY",
+                                color: Color(0XFFFFFFFF),
+                                theme: theme.isDarkMode,
+                                fw: 1),
+                          )),
                     )),
                     const SizedBox(width: 18),
                     Expanded(
@@ -160,15 +156,12 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                                         : colors.darkred.withOpacity(0.2),
                                     borderRadius: BorderRadius.circular(60)),
                                 child: Center(
-                                    child: 
-                                            
-                                             TextWidget.titleText(
-                      text: "SELL",
-                      color: Color(0XFFFFFFFF) ,
-                      theme: theme.isDarkMode,
-                      fw: 1),
-                                            
-                                            ))))
+                                  child: TextWidget.titleText(
+                                      text: "SELL",
+                                      color: Color(0XFFFFFFFF),
+                                      theme: theme.isDarkMode,
+                                      fw: 1),
+                                ))))
                   ]),
             )
           ],
@@ -194,29 +187,20 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
               width: 44,
               child: IconButton(
                 padding: const EdgeInsets.all(0),
-                icon: const Icon(Icons.chevron_left, size: 38,),
+                icon: const Icon(
+                  Icons.chevron_left,
+                  size: 38,
+                ),
                 onPressed: () async {
                   userProfile.setChartdialog(false);
-                  
-                  // Check if we came from holding detail screen
-                   if (tvChart.scripsize) {
+                  if (tvChart.scripsize) {
                     tvChart.chngDephBtn("Overview");
-
-                    // tvChart.singlePageloader(true);
-
-                    //  await tvChart.calldepthApis(context, tvChart.getQuotes, "");
-                    // tvChart.singlePageloader(false);
-
-                    // Clear the context and just close chart - don't show any bottom sheet
-                    // Don't show any bottom sheet, just return to main screen
                   } else {
-                    // Default behavior - show scrip depth info
                     tvChart.chngDephBtn("Overview");
                     tvChart.singlePageloader(true);
                     await tvChart.calldepthApis(context, tvChart.getQuotes, "");
                     tvChart.singlePageloader(false);
                   }
-                  
                   tvChart.setChartScript('ABC', '0123', 'ABCD');
                   chartUpdate.changeOrientation('portrait');
                 },
@@ -249,14 +233,13 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
                       padding: index > 1
                           ? const EdgeInsets.only(left: 16)
                           : const EdgeInsets.symmetric(horizontal: 8),
-                      label: 
-                       TextWidget.paraText(
-                      text: tab.tsym,
-                      color: theme.isDarkMode
+                      label: TextWidget.paraText(
+                          text: tab.tsym,
+                          color: theme.isDarkMode
                               ? Color(isSelected ? 0xff000000 : 0xffffffff)
-                              : Color(isSelected ? 0xffffffff : 0xff000000) ,
-                      theme: theme.isDarkMode,
-                      fw: 0),
+                              : Color(isSelected ? 0xffffffff : 0xff000000),
+                          theme: theme.isDarkMode,
+                          fw: 0),
                       backgroundColor: theme.isDarkMode
                           ? (isSelected
                               ? const Color(0xffffffff)
@@ -397,8 +380,7 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
 
           setState(() {
             this.progress = progress / 100;
-            if (ref.read(userProfileProvider).showchartof &&
-                progress == 100) {
+            if (ref.read(userProfileProvider).showchartof && progress == 100) {
               final mktpro = ref.read(marketWatchProvider).getQuotes;
 
               String redirUrl = currentUrl.toString();
@@ -445,4 +427,4 @@ class _ChartScreenWebViewState extends ConsumerState<ChartScreenWebView> {
       "isBskt": ''
     });
   }
-} 
+}

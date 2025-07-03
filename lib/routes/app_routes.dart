@@ -97,11 +97,12 @@ import '../screens/profile_screen/my_account_screens/profile_details_bank_screen
 import '../screens/profile_screen/my_account_screens/profile_details_screen.dart';
 import '../screens/profile_screen/notification_screens/notification_screen.dart';
 import '../screens/profile_screen/order_prefere_screen.dart';
+import '../screens/profile_screen/profile_main_screen.dart' as account;
 import '../screens/profile_screen/qr_scan_widget.dart';
 import '../screens/profile_screen/setting_screen/notification_setting.dart';
 import '../screens/profile_screen/setting_screen/settingmaincscreen.dart';
 import '../screens/profile_screen/setting_screen/window_settings.dart';
-import '../screens/profile_screen/settingui.dart';
+import '../screens/profile_screen/settingui.dart' as settingUI;
 import '../screens/splash_screen.dart';
 import '../screens/stocks/explore/stocks/indices/all_index_screen.dart';
 import '../screens/stocks/explore/stocks/news/news_listdata.dart';
@@ -424,7 +425,12 @@ class AppRoutes {
       case Routes.reports:
         return _createRoute(
           pageBuilder: (_, __, ___) => const ReportsScreen(),
-          beginOffset: const Offset(0.0, 1.0),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+      case Routes.myaccountScreen:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const account.MyAccountScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       // reports_dm
@@ -534,12 +540,12 @@ class AppRoutes {
       case Routes.settingscreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => const SettingMainScreen(),
-          beginOffset: const Offset(0.0, 1.0),
+          beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.myAcc:
         return _createRoute(
           pageBuilder: (_, __, ___) => const ProfileDetailsMainScreen(),
-          beginOffset: const Offset(0.0, 1.0),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       // case Routes.profileDetail:
@@ -621,8 +627,8 @@ class AppRoutes {
 
       case Routes.profilesettingscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const SettingsScreen(),
-          beginOffset: const Offset(0.0, 1.0),
+          pageBuilder: (_, __, ___) => const settingUI.SettingsScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.repeatOrd:
@@ -674,7 +680,7 @@ class AppRoutes {
           beginOffset: const Offset(0.0, 1.0),
         );
 
-        case Routes.ipoopendetailsscreen:
+      case Routes.ipoopendetailsscreen:
         return _createRoute(
           pageBuilder: (_, __, ___) => IpoOpenOrderDetails(ipodetails: args),
           beginOffset: const Offset(0.0, 1.0),
