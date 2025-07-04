@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 class AppColors {
 
 
+// ----------------------------------------------------------------------------------------------
 
+                                       //new colors implementation
 
 
 // === PRIMARY COLORS ===
@@ -15,6 +17,14 @@ class AppColors {
   final secondary = const Color(0xFF0052CC);
   final secondaryLight = const Color(0xFF0052CC);
   final secondaryDark = const Color(0xFF0052CC);
+
+  // === SECONDARY COLORS ===
+  final tertiary = const Color(0xFFC40024);
+  // final tertiaryLight = const Color(0xFF0052CC);
+  // final tertiaryDark = const Color(0xFF0052CC);
+
+
+
 
 // === TEXT COLORS ===
   final textPrimary = const Color(0xFF121212);
@@ -29,17 +39,39 @@ class AppColors {
   final textDisabledDark = const Color(0xFF404040);
 
 // === STATUS COLORS ===
-  final error = const Color(0xFFFF1717);
-  final errorLight = const Color(0xFFFF1717);
-  final errorDark = const Color(0xFFC53030);
+  final profit = const Color(0xFFFF1717);
+  final profitLight = const Color(0xFFFF1717);
+  final profitDark = const Color(0xFFC53030);
 
   // static const Color warning = Color(0xFFDD6B20);
   // final warningLight = Color(0xFFFEEBC8);
   // static const Color warningDark = Color(0xFFC05621);
 
-  final success = const Color(0xFF00B14F);
+  final loss = const Color(0xFF00B14F);
+  final lossLight = const Color(0xFF00B14F);
+  final lossDark = const Color(0xFF2F855A);
+
+
+  final error = const Color(0xFFFF1717);
+  final errorLight = const Color(0xFFFF1717);
+  final errorDark = const Color(0xFFC53030);
+
+   final success = const Color(0xFF00B14F);
   final successLight = const Color(0xFF00B14F);
   final successDark = const Color(0xFF2F855A);
+
+  final divider = const Color(0xffDDE2E7);
+  final dividerLight = const Color(0xffDDE2E7);
+  final dividerDark = const Color(0xffECEDEE).withOpacity(.1);
+
+
+// === BACKGROUND COLORS ===
+  final btnBg = const Color(0XFFF1F3F8);
+
+  // === BORDER COLORS ===
+  final btnOutlinedBorder = Color(0xFF0037B7);
+
+  
 
   // static const Color info = Color(0xFF3182CE);
   // final infoLight = Color(0xFFBEE3F8);
@@ -49,9 +81,9 @@ class AppColors {
 
 
 
+// -----------------------------------------------------------------------------------------------------------
 
-
-
+                          // old colors
 
 
 

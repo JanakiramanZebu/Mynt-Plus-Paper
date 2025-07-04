@@ -86,6 +86,7 @@ class UserAccountScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 IconButton(
+                  splashRadius: 20,
                   icon: SvgPicture.asset(
                     assets.qrIcon, // This is your asset path
                     height: 20,
@@ -98,6 +99,7 @@ class UserAccountScreen extends ConsumerWidget {
                   },
                 ),
                 IconButton(
+                  splashRadius: 20,
                   icon: SvgPicture.asset(
                     assets.notifyIcon, // This is your asset path
                     height: 20,
@@ -122,82 +124,90 @@ class UserAccountScreen extends ConsumerWidget {
           /// 🔹 Profile Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: InkWell(
-              onTap: () {
-                showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    isDismissible: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
+            child: Material(
+              color: Colors.transparent,
+              // shape: const CircleBorder(),
+              clipBehavior: Clip.hardEdge,
+              child: InkWell(
+                // customBorder: const CircleBorder(),
+                splashColor: Colors.black.withOpacity(0.15),
+                highlightColor: Colors.black.withOpacity(0.08),
+                onTap: () {
+                  showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      isDismissible: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10),
+                        ),
+                      ),
+                      builder: (_) =>
+                          const LoggedUserBottomSheet(initRoute: 'switchAcc'));
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFFF1F3F8),
+                        border: Border.all(
+                          color: const Color(0xFF0037B7),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Center(
+                        child: TextWidget.custmText(
+                          text: userProfile.userDetailModel?.uname
+                                  ?.substring(0, 1)
+                                  .toUpperCase() ??
+                              "U",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : const Color(0xff0037B7),
+                          fs: 40,
+                          fw: 3,
+                        ),
                       ),
                     ),
-                    builder: (_) =>
-                        const LoggedUserBottomSheet(initRoute: 'switchAcc'));
-              },
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFF1F3F8),
-                      border: Border.all(
-                        color: const Color(0xFF0037B7),
-                        width: 1.5,
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextWidget.heroText(
+                              text: _truncateProfileName(
+                                  userProfile.userDetailModel?.uname ?? ""),
+                              theme: false,
+                              color: !theme.isDarkMode
+                                  ? const Color(0xff141414)
+                                  : colors.colorGrey,
+                              fw: 1),
+                          // const SizedBox(height: 4),
+                          // TextWidget.paraText(
+                          //     text: userProfile.userDetailModel?.uid ?? "",
+                          //     theme: false,
+                          //     color: !theme.isDarkMode
+                          //         ? colors.colorGrey
+                          //         : colors.colorGrey,
+                          //     fw: 00)
+                        ],
                       ),
                     ),
-                    child: Center(
-                      child: TextWidget.custmText(
-                        text: userProfile.userDetailModel?.uname
-                                ?.substring(0, 1)
-                                .toUpperCase() ??
-                            "U",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : const Color(0xff0037B7),
-                        fs: 40,
-                        fw: 3,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextWidget.heroText(
-                            text: _truncateProfileName(
-                                userProfile.userDetailModel?.uname ?? ""),
-                            theme: false,
-                            color: !theme.isDarkMode
-                                ? const Color(0xff141414)
-                                : colors.colorGrey,
-                            fw: 1),
-                        // const SizedBox(height: 4),
-                        // TextWidget.paraText(
-                        //     text: userProfile.userDetailModel?.uid ?? "",
-                        //     theme: false,
-                        //     color: !theme.isDarkMode
-                        //         ? colors.colorGrey
-                        //         : colors.colorGrey,
-                        //     fw: 00)
-                      ],
-                    ),
-                  ),
-                  // Row(
-                  //   children: [
-                  //     Icon(Icons.arrow_forward_ios,
-                  //         size: 16, color: colors.colorGrey)
-                  //   ],
-                  // )
-                ],
+                    // Row(
+                    //   children: [
+                    //     Icon(Icons.arrow_forward_ios,
+                    //         size: 16, color: colors.colorGrey)
+                    //   ],
+                    // )
+                  ],
+                ),
               ),
             ),
           ),
@@ -628,12 +638,14 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         elevation: 0,
         leading: IconButton(
+          splashRadius: 20,
           icon: Icon(Icons.arrow_back,
               color: theme.isDarkMode ? Colors.white : Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
+            splashRadius: 20,
             icon: SvgPicture.asset(
               assets.qrIcon, // This is your asset path
               height: 20,
@@ -646,6 +658,7 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           IconButton(
+            splashRadius: 20,
             icon: SvgPicture.asset(
               assets.notifyIcon, // This is your asset path
               height: 20,
@@ -1039,7 +1052,7 @@ class SettingsScreen extends ConsumerWidget {
                                 child: TextWidget.subText(
                                     text: "Continue",
                                     theme: false,
-                                    color: theme.isDarkMode
+                                    color: !theme.isDarkMode
                                         ? colors.colorWhite
                                         : colors.colorBlack,
                                     fw: 0),
@@ -1388,12 +1401,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         elevation: 0,
         leading: IconButton(
+          splashRadius: 20,
           icon: Icon(Icons.arrow_back,
               color: theme.isDarkMode ? Colors.white : Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
+            splashRadius: 20,
             icon: SvgPicture.asset(
               assets.qrIcon, // This is your asset path
               height: 20,
@@ -1404,6 +1419,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             onPressed: () => Navigator.pushNamed(context, Routes.qrscanner),
           ),
           IconButton(
+            splashRadius: 20,
             icon: SvgPicture.asset(
               assets.notifyIcon, // This is your asset path
               height: 20,
@@ -2551,12 +2567,14 @@ class ReportsScreen extends ConsumerWidget {
         backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         elevation: 0,
         leading: IconButton(
+          splashRadius: 20,
           icon: Icon(Icons.arrow_back,
               color: theme.isDarkMode ? Colors.white : Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
+            splashRadius: 20,
             icon: SvgPicture.asset(
               assets.qrIcon, // This is your asset path
               height: 20,
@@ -2569,6 +2587,7 @@ class ReportsScreen extends ConsumerWidget {
             },
           ),
           IconButton(
+            splashRadius: 20,
             icon: SvgPicture.asset(
               assets.notifyIcon, // This is your asset path
               height: 20,
@@ -2626,17 +2645,15 @@ class ReportsScreen extends ConsumerWidget {
                             userProfile.userDetailModel?.uname ?? ""),
                         theme: false,
                         color: !theme.isDarkMode
-                            ? colors.textPrimaryLight
-                            : colors.textPrimaryDark,
+                            ? colors.colorBlack
+                            : colors.colorGrey,
                         fw: 0,
                       ),
-                      const SizedBox(height: 6.0),
+                      const SizedBox(height: 4),
                       TextWidget.paraText(
                         text: userProfile.userDetailModel?.uid ?? "",
                         theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.textSecondaryLight
-                            : colors.textSecondaryDark,
+                        color: colors.colorGrey,
                         fw: 00,
                       )
                     ],
@@ -2717,46 +2734,46 @@ class ReportsScreen extends ConsumerWidget {
                         case 'Ledger':
                           await ledgerdate.getCurrentDate('else');
 
-                          Navigator.pushNamed(context, Routes.ledgerscreen,
-                              arguments: "DDDDD");
-                          break;
-                        case 'Holdings':
+                        Navigator.pushNamed(context, Routes.ledgerscreen,
+                            arguments: "DDDDD");
+                        break;
+                      case 'Holdings':
+                        await ledgerdate.getCurrentDate('else');
+
+                        Navigator.pushNamed(context, Routes.holdingscreen,
+                            arguments: "DDDDD");
+                        break;
+                      case 'Positions':
+                        ledgerdate.fetchposition(context);
+
+                        Navigator.pushNamed(context, Routes.positionscreen,
+                            arguments: "DDDDD");
+                        break;
+                      case 'Profit & Loss':
+                        // ledgerdate.fetchposition(context);
+                        if (ledgerdate.pnlAllData == null) {
                           await ledgerdate.getCurrentDate('else');
+                          ledgerdate.fetchpnldata(context, ledgerdate.startDate,
+                              ledgerdate.today, true);
+                        }
 
-                          Navigator.pushNamed(context, Routes.holdingscreen,
-                              arguments: "DDDDD");
-                          break;
-                        case 'Positions':
-                          ledgerdate.fetchposition(context);
+                        Navigator.pushNamed(context, Routes.pnlscreen,
+                            arguments: "DDDDD");
+                        break;
 
-                          Navigator.pushNamed(context, Routes.positionscreen,
-                              arguments: "DDDDD");
-                          break;
-                        case 'Profit & Loss':
-                          // ledgerdate.fetchposition(context);
-                          if (ledgerdate.pnlAllData == null) {
-                            await ledgerdate.getCurrentDate('else');
-                            ledgerdate.fetchpnldata(context,
-                                ledgerdate.startDate, ledgerdate.today, true);
-                          }
+                      case 'Tax P&L':
+                        // await ledgerdate.getYearlistTaxpnl();
+                        if (ledgerdate.taxpnldercomcur == null &&
+                            ledgerdate.taxpnleq == null) {
+                          await ledgerdate.getYearlistTaxpnl();
+                          ledgerdate.getCurrentDate('');
+                          ledgerdate.fetchtaxpnleqdata(
+                              context, ledgerdate.yearforTaxpnl);
 
-                          Navigator.pushNamed(context, Routes.pnlscreen,
-                              arguments: "DDDDD");
-                          break;
-
-                        case 'Tax P&L':
-                          // await ledgerdate.getYearlistTaxpnl();
-                          if (ledgerdate.taxpnldercomcur == null &&
-                              ledgerdate.taxpnleq == null) {
-                            await ledgerdate.getYearlistTaxpnl();
-                            ledgerdate.getCurrentDate('');
-                            ledgerdate.fetchtaxpnleqdata(
-                                context, ledgerdate.yearforTaxpnl);
-
-                            ledgerdate.taxpnlExTabchange(0);
-                            ledgerdate.chargesforeqtaxpnl(
-                                context, ledgerdate.yearforTaxpnl);
-                          }
+                          ledgerdate.taxpnlExTabchange(0);
+                          ledgerdate.chargesforeqtaxpnl(
+                              context, ledgerdate.yearforTaxpnl);
+                        }
 
                           Navigator.pushNamed(context, Routes.taxpnlscreen,
                               arguments: "DDDDD");
@@ -2798,15 +2815,15 @@ class ReportsScreen extends ConsumerWidget {
                           }
                           // cop action
 
-                          break;
-                        case 'CA Events':
-                          // ledgerdate.fetchposition(context);
-                          // }
-                          if (ledgerdate.caeventalldata == null) {
-                            await ledgerdate.getCurrentDate('caevent');
-                            ledgerdate.fetchcaeventsdata(context,
-                                ledgerdate.startDate, ledgerdate.endDate);
-                          }
+                        break;
+                      case 'CA Events':
+                        // ledgerdate.fetchposition(context);
+                        // }
+                        if (ledgerdate.caeventalldata == null) {
+                          await ledgerdate.getCurrentDate('caevent');
+                          ledgerdate.fetchcaeventsdata(context,
+                              ledgerdate.startDate, ledgerdate.endDate);
+                        }
 
                           Navigator.pushNamed(context, Routes.caeventmainpage,
                               arguments: "DDDDD");

@@ -820,18 +820,22 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     highlightColor:
                                         Colors.black.withOpacity(0.08),
                                     onTap: () async {
-                                      holdingProvider.clearHoldSearch();
-                                      if (holdingProvider
-                                          .holdingSearchCtrl.text.isEmpty) {
-                                        holdingProvider.showHoldSearch(false);
-                                      }
-                                      // Clear cached widgets when search is cleared
-                                      setState(() {
-                                        _cachedSummarySection = null;
-                                        _cachedActionButtons = null;
-                                        _cachedEmptyState = null;
-                                        _cachedActionButtonsKey = null;
-                                        _cachedSummaryKey = null;
+                                      Future.delayed(
+                                          const Duration(milliseconds: 150),
+                                          () {
+                                        holdingProvider.clearHoldSearch();
+                                        if (holdingProvider
+                                            .holdingSearchCtrl.text.isEmpty) {
+                                          holdingProvider.showHoldSearch(false);
+                                        }
+                                        // Clear cached widgets when search is cleared
+                                        setState(() {
+                                          _cachedSummarySection = null;
+                                          _cachedActionButtons = null;
+                                          _cachedEmptyState = null;
+                                          _cachedActionButtonsKey = null;
+                                          _cachedSummaryKey = null;
+                                        });
                                       });
                                     },
                                     child: SvgPicture.asset(assets.removeIcon,
@@ -1156,28 +1160,27 @@ class _HoldingItemWrapperState extends ConsumerState<_HoldingItemWrapper> {
     // Navigate to detail screen
 
     showModalBottomSheet(
-        isScrollControlled: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
         ),
-        isDismissible: true,
-        enableDrag: false,
-        useSafeArea: true,
-        context: context,
-        builder: (context) => Container(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-             child: HoldingDetailScreen(
-      holdingData: widget.holding,
-      exchTsym: widget.holding.exchTsym![0],
-    ),
+      ),
+      isDismissible: true,
+      enableDrag: false,
+      useSafeArea: true,
+      context: context,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: HoldingDetailScreen(
+          holdingData: widget.holding,
+          exchTsym: widget.holding.exchTsym![0],
+        ),
       ),
     );
-      
 
     // Navigator.pushNamed(context, Routes.holdingDetail, arguments: {
     //   "holdingData": widget.holding,

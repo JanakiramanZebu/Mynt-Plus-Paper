@@ -30,6 +30,7 @@ import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_new_model.dart';
 import '../models/marketwatch_model/watchlist_rename_model.dart';
+import '../res/global_state_text.dart';
 import '../res/res.dart';
 import '../screens/market_watch/scrip_depth_info.dart';
 import '../sharedWidget/functions.dart';
@@ -819,14 +820,21 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         [
           DropdownMenuItem<String>(
               value: item.toString(),
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: Text(item.toString()))),
+              child: TextWidget.paraText(
+                text: item.toString(),
+                theme: ref.read(themeProvider).isDarkMode,
+                fw: 0,
+              )),
           //If it's last item, we will not add Divider after it.
           if (item != numofList.last)
             DropdownMenuItem<String>(
               enabled: false,
-              child: Divider(color: colors.colorDivider),
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2.0),
+                  child: Divider(
+                    color: colors.colorDivider,
+                    height: 1,
+                  )),
             ),
         ],
       );

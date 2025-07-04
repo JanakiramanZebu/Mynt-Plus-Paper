@@ -196,8 +196,9 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                 controller: textCtrl,
                                 style: TextWidget.textStyle(
                                   fontSize: 14,
+                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 0,
+                                 
                                 ),
                                 textCapitalization:
                                     TextCapitalization.characters,
@@ -217,9 +218,8 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                       "Search stocks, indices, options...",
                                   hintStyle: TextWidget.textStyle(
                                     fontSize: 14,
-                                    theme: theme.isDarkMode,
-                                    fw: 0,
-                                    color: const Color(0xff666666),
+                                    theme: theme.isDarkMode,                                
+                                    color: theme.isDarkMode ? colors.textPrimaryDark :  colors.textPrimaryLight,
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 0, vertical: 12),
@@ -389,15 +389,15 @@ class _AddScripState extends ConsumerState<SearchScreen>
                         horizontal: 10, vertical: 10),
                     child: TextWidget.subText(
                         text: tab.text ?? '',
-                        color: isSelected
+                        color:isSelected
                             ? theme.isDarkMode
-                                ? colors.colorLightBlue
-                                : colors.colorBlue
-                            : Color(0xFF666666),
+                                ? colors.secondaryDark
+                                : colors.secondaryLight
+                            : colors.textSecondaryLight,
                         textOverflow: TextOverflow.visible,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: isSelected ? 1 : 0),
+                        fw: isSelected ? 0 : null),
                   ),
                   // Animated underline indicator
                   AnimatedContainer(

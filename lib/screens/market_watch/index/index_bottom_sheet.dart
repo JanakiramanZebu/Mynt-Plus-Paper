@@ -138,13 +138,13 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                               horizontal: 10, vertical: 6),
                                           child: TextWidget.subText(
                                             text: exchange,
-                                            color: isSelected
-                                                ? theme.isDarkMode
-                                                    ? colors.colorLightBlue
-                                                    : colors.colorBlue
+                                            color:isSelected
+                            ? theme.isDarkMode
+                                ? colors.secondaryDark
+                                : colors.secondaryLight
                                                 : theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
+                                                    ?  colors.textSecondaryDark
+                                                    :  colors.textSecondaryLight,
                                             textOverflow: TextOverflow.ellipsis,
                                             maxLines: 1,
                                             theme: theme.isDarkMode,
@@ -580,27 +580,20 @@ class _StaticIndexContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-//  TextWidget.subText(
-//                       text: itemData.idxname!.toUpperCase(),
-//                       maxLines: 1,
-//                       textOverflow: TextOverflow.ellipsis,
-//                       color: isDarkMode ? colors.colorWhite : colors.colorBlack,
-//                       theme: false,
-//                       fw: 0),
-
-        Text(
-          itemData.idxname!.toUpperCase(),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextWidget.textStyle(
-            fontSize: 14,
-            color: isDarkMode ? Colors.white : Colors.black,
-            theme: false,
-            // fw: 0,
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            itemData.idxname!.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextWidget.textStyle(
+              fontSize: 14,
+              color : isDarkMode ?  colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: false,
+              // fw: 0,
+            ),
           ),
         ),
-
-        const SizedBox(height: 8),
         CustomExchBadge(exch: exch ?? ""),
       ],
     );
@@ -648,13 +641,13 @@ class _DynamicPriceContent extends StatelessWidget {
     if (!_colorCache.containsKey(key)) {
       if (value.toString().startsWith("-") ||
           percentValue.toString().startsWith('-')) {
-        _colorCache[key] = colors.darkred;
+        _colorCache[key] = colors.errorLight;
       } else if ((value.toString() == "null" ||
               percentValue.toString() == "null") ||
           (value.toString() == "0.00" || percentValue.toString() == "0.00")) {
-        _colorCache[key] = colors.ltpgrey;
+        _colorCache[key] = colors.textSecondaryLight;
       } else {
-        _colorCache[key] = colors.ltpgreen;
+        _colorCache[key] =  colors.successLight;
       }
     }
     return _colorCache[key]!;
@@ -664,28 +657,28 @@ class _DynamicPriceContent extends StatelessWidget {
   Widget build(BuildContext context) {
     // Pre-calculate all styles at once to avoid repeated calculations
     final priceStyle = _getCachedStyle(
-        isDarkMode ? colors.colorWhite : colors.colorBlack, 12, 3);
+        isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, 12, );
 
     final changeColor = _getCachedChangeColor(ch, chp);
     final changeStyle = _getCachedStyle(changeColor, 16, 0);
 
     // Create the price text once with proper formatting
     final String formattedChange =
-        "${ch == "null" ? 0.00 : ch} ${chp == "null" ? 0.00 : chp}%";
+        "${ch == "null" ? 0.00 : ch} (${chp == "null" ? 0.00 : chp}%)";
 
     // Avoid unnecessary nested widgets when possible
     return RepaintBoundary(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text("$ltp", style:changeStyle ),
-          //  TextWidget.subText(
-          //             text: "₹$ltp",
-          //             color: ,
-          //             theme: theme.isDarkMode,
-          //             fw: 0),
-          const SizedBox(height: 8),
-          Text(formattedChange, style: priceStyle),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text("$ltp", style:changeStyle ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(formattedChange, style: priceStyle),
+          ),
         ],
       ),
     );

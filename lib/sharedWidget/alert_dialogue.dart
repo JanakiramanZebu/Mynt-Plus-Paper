@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import 'custom_exch_badge.dart';
@@ -19,7 +19,9 @@ class AlertDialogue extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.read(themeProvider);
     return AlertDialog(
-       backgroundColor:theme.isDarkMode? const Color.fromARGB(255, 18, 18, 18):colors.colorWhite,
+      backgroundColor: theme.isDarkMode
+          ? const Color.fromARGB(255, 18, 18, 18)
+          : colors.colorWhite,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16))),
       scrollable: true,
@@ -32,8 +34,12 @@ class AlertDialogue extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text('Information',
-              style: textStyle( theme.isDarkMode?colors.colorWhite:colors.colorBlack, 16, FontWeight.w600)),
+              style: textStyle(
+                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  16,
+                  FontWeight.w600)),
           IconButton(
+              splashRadius: 20,
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -51,8 +57,11 @@ class AlertDialogue extends ConsumerWidget {
                 Text("$scripName  ",
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
-                    style: textStyles.appBarTitleTxt.copyWith(color: theme.isDarkMode?colors.colorWhite:colors.colorBlack)),
-                 CustomExchBadge(exch: exch)
+                    style: textStyles.appBarTitleTxt.copyWith(
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack)),
+                CustomExchBadge(exch: exch)
               ],
             ),
             const SizedBox(height: 16),
@@ -60,7 +69,11 @@ class AlertDialogue extends ConsumerWidget {
               Expanded(
                   child: Text(content,
                       style: textStyle(
-                           theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)))
+                          theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          14,
+                          FontWeight.w500)))
             ]),
             const SizedBox(height: 10),
           ])),
@@ -73,12 +86,16 @@ class AlertDialogue extends ConsumerWidget {
             },
             style: ElevatedButton.styleFrom(
               elevation: 0,
-              backgroundColor:  theme.isDarkMode?colors.colorWhite:colors.colorBlack,
+              backgroundColor:
+                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50)),
             ),
             child: Text("Ok",
-                style: textStyle( !theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)),
+                style: textStyle(
+                    !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    14,
+                    FontWeight.w500)),
           ),
         ),
       ],

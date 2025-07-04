@@ -77,7 +77,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     final key = '${color.value}_title';
     return _titleStyleCache.putIfAbsent(
       key,
-      () => _getTextStyle(color, 12, 3),
+      () => _getTextStyle(color, 12, ),
     );
   }
 
@@ -85,7 +85,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     final key = '${color.value}_value';
     return _valueStyleCache.putIfAbsent(
       key,
-      () => _getTextStyle(color, 14, 0),
+      () => _getTextStyle(color, 14, ),
     );
   }
 
@@ -248,11 +248,11 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: _getTitleStyle(const Color(0xff666666))),
+            Text(title, style: _getTitleStyle( theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight)),
             const SizedBox(height: 4),
             Text(value,
                 style: _getValueStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack)),
+                    theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight)),
             const SizedBox(height: 4),
             Divider(
                 color: theme.isDarkMode
@@ -490,11 +490,11 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                     TextWidget.titleText(
                                                                         text:
                                                                             "${widget.wlValue.symbol.toUpperCase()} ",
-                                                                        color: !theme.isDarkMode
+                                                                        color: theme.isDarkMode
                                                                             ? colors
-                                                                                .colorBlack
+                                                                                .textPrimaryDark
                                                                             : colors
-                                                                                .colorWhite,
+                                                                                .textPrimaryLight,
                                                                         theme: theme
                                                                             .isDarkMode,
                                                                         fw: 1),
@@ -502,11 +502,11 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         text: widget
                                                                             .wlValue
                                                                             .option,
-                                                                        color: !theme.isDarkMode
+                                                                        color: theme.isDarkMode
                                                                             ? colors
-                                                                                .colorBlack
+                                                                                .textPrimaryDark
                                                                             : colors
-                                                                                .colorWhite,
+                                                                                .textPrimaryLight,
                                                                         theme: theme
                                                                             .isDarkMode,
                                                                         fw: 1),
@@ -653,15 +653,14 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                               null) ||
                                                                       depthData.chng ==
                                                                           "0.00"
-                                                                  ? colors
-                                                                      .ltpgrey
+                                                                  ? colors.textSecondaryLight
                                                                   : depthData.chng!.startsWith("-") ||
                                                                           depthData.pc!.startsWith(
                                                                               "-")
                                                                       ? colors
-                                                                          .darkred
+                                                                          .error
                                                                       : colors
-                                                                          .ltpgreen,
+                                                                          .success,
                                                               theme: theme
                                                                   .isDarkMode,
                                                               fw: 0),
@@ -670,21 +669,16 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                           TextWidget.paraText(
                                                               text:
                                                                   "${(double.tryParse(depthData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthData.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                                                              color: !theme
-                                                                      .isDarkMode
-                                                                  ? colors
-                                                                      .colorBlack
-                                                                  : colors
-                                                                      .colorWhite,
+                                                              color: theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
                                                               theme: theme
                                                                   .isDarkMode,
-                                                              fw: 3)
+                                                              )
                                                         ])),
 
                                                 Padding(
                                                   padding: const EdgeInsets
                                                       .symmetric(
-                                                      horizontal: 14),
+                                                      horizontal: 16),
                                                   child: Column(
                                                     children: [
                                                       // Row(
@@ -739,7 +733,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                     horizontal:
                                                                         0,
                                                                     vertical:
-                                                                        20),
+                                                                        16),
                                                                 child: Row(
                                                                     mainAxisAlignment:
                                                                         MainAxisAlignment
@@ -760,18 +754,18 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                             height:
                                                                                 40,
                                                                             decoration:
-                                                                                BoxDecoration(color: const Color(0xff43A833), borderRadius: BorderRadius.circular(5)),
-                                                                            child: Center(child: TextWidget.titleText(text: "BUY", color: const Color(0XFFFFFFFF), theme: theme.isDarkMode, fw: 1))),
+                                                                                BoxDecoration(color: colors.primary, borderRadius: BorderRadius.circular(5)),
+                                                                            child: Center(child: TextWidget.titleText(text: "BUY", color:  colors.colorWhite, theme: theme.isDarkMode, fw: 0))),
                                                                       )),
                                                                       const SizedBox(
                                                                           width:
-                                                                              18),
+                                                                              16),
                                                                       Expanded(
                                                                           child: InkWell(
                                                                               onTap: () async {
                                                                                 await placeOrderInput(scripInfo, ctx, depthData, false);
                                                                               },
-                                                                              child: Container(height: 40, decoration: BoxDecoration(color: colors.darkred, borderRadius: BorderRadius.circular(5)), child: Center(child: TextWidget.titleText(text: "SELL", color: const Color(0XFFFFFFFF), theme: theme.isDarkMode, fw: 1)))))
+                                                                              child: Container(height: 40, decoration: BoxDecoration(color: colors.tertiary, borderRadius: BorderRadius.circular(5)), child: Center(child: TextWidget.titleText(text: "SELL", color: colors.colorWhite, theme: theme.isDarkMode, fw: 0)))))
                                                                     ])),
 
                                                       Row(
@@ -884,7 +878,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         horizontal:
                                                                             10,
                                                                         vertical:
-                                                                            8),
+                                                                            15),
                                                                     child: Row(
                                                                       mainAxisSize:
                                                                           MainAxisSize
@@ -999,8 +993,10 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                       ),
 
                                                       SizedBox(
-                                                        height: 16,
+                                                        height: 8,
                                                       ),
+
+                                                     
                                                     ],
                                                   ),
                                                 ),
@@ -1626,17 +1622,17 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                     widget.wlValue
                                                                             .instname !=
                                                                         "COM") ...[
-                                                                  Center(
-                                                                    child: TextWidget.titleText(
-                                                                        text:
-                                                                            "Market Depth",
-                                                                        theme: theme
-                                                                            .isDarkMode,
-                                                                        fw: 1),
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          10),
+                                                                  // Center(
+                                                                  //   child: TextWidget.titleText(
+                                                                  //       text:
+                                                                  //           "Market Depth",
+                                                                  //       theme: theme
+                                                                  //           .isDarkMode,
+                                                                  //       fw: 1),
+                                                                  // ),
+                                                                  // const SizedBox(
+                                                                  //     height:
+                                                                  //         10),
                                                                   Row(
                                                                       children: [
                                                                         Expanded(
@@ -1645,8 +1641,8 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                                 children: [
                                                                               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                                                                TextWidget.paraText(text: "Qty", color: const Color(0XFF506D84), theme: theme.isDarkMode, fw: 1),
-                                                                                TextWidget.paraText(text: "Bid", color: const Color(0xff43A833), theme: theme.isDarkMode, fw: 1)
+                                                                                TextWidget.paraText(text: "Quantity", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, theme: theme.isDarkMode,),
+                                                                                TextWidget.paraText(text: "Bid", color: colors.secondary   , theme: theme.isDarkMode,)
                                                                               ]),
                                                                               const SizedBox(height: 7),
                                                                               _buildBidDepthPercentage("${depthData.bq1 ?? 0}", "${depthData.bp1 ?? 0.00}", scripInfo, theme),
@@ -1668,8 +1664,8 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                                 children: [
                                                                               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                                                                TextWidget.paraText(text: "Ask", color: colors.darkred, theme: theme.isDarkMode, fw: 1),
-                                                                                TextWidget.paraText(text: "Qty", color: const Color(0XFF506D84), theme: theme.isDarkMode, fw: 1)
+                                                                                TextWidget.paraText(text: "Ask", color: colors.tertiary, theme: theme.isDarkMode,),
+                                                                                TextWidget.paraText(text: "Quantity", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, theme: theme.isDarkMode,)
                                                                               ]),
                                                                               const SizedBox(height: 7),
                                                                               _buildAskDepthPercentage("${depthData.sp1 ?? 0.00}", "${depthData.sq1 ?? 0}", scripInfo, theme),
@@ -1695,31 +1691,34 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           children: [
                                                                             TextWidget.subText(
                                                                                 text: "${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}",
+                                                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                                 theme: theme.isDarkMode,
-                                                                                fw: 1),
-                                                                            SizedBox(
+                                                                                ),
+                                                                            const SizedBox(
                                                                               width: 4,
                                                                             ),
-                                                                            TextWidget.subText(
+                                                                            TextWidget.paraText(
                                                                                 text: "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
-                                                                                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                                                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                                 theme: theme.isDarkMode,
-                                                                                fw: 1),
+                                                                                ),
                                                                           ],
                                                                         ),
                                                                         Row(
                                                                           children: [
-                                                                            TextWidget.subText(
+                                                                            TextWidget.paraText(
                                                                                 text: "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
+                                                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                                 theme: theme.isDarkMode,
-                                                                                fw: 0),
+                                                                                ),
                                                                             SizedBox(
                                                                               width: 4,
                                                                             ),
                                                                             TextWidget.subText(
                                                                                 text: "${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}",
+                                                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                                                 theme: theme.isDarkMode,
-                                                                                fw: 1),
+                                                                                ),
                                                                           ],
                                                                         )
                                                                       ]),
@@ -1761,8 +1760,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                   "0.00")
                                                                           ? const Color(
                                                                               0xffECEDEE)
-                                                                          : const Color(
-                                                                              0XFFD34645),
+                                                                          : colors.tertiary,
                                                                       percent: scripInfo
                                                                           .totBuyQtyPerChng,
                                                                       padding: const EdgeInsets
@@ -1770,8 +1768,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           horizontal:
                                                                               0),
                                                                       progressColor:
-                                                                          const Color(
-                                                                              0xff43A833)),
+                                                                          colors.primary),
                                                                   const SizedBox(
                                                                       height:
                                                                           16),
@@ -1833,31 +1830,31 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                       "DPR",
                                                                       "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}",
                                                                       theme),
-                                                                  if (depthData
-                                                                          .seg !=
-                                                                      "EQT") ...[
-                                                                    _buildInfoRow(
-                                                                        "Open Interest (OI)",
-                                                                        "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
-                                                                        "Change in OI",
-                                                                        "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
-                                                                        theme),
-                                                                    const SizedBox(
-                                                                        height:
-                                                                            4),
-                                                                  ],
+                                                                  // if (depthData
+                                                                  //         .seg !=
+                                                                  //     "EQT") ...[
+                                                                  //   _buildInfoRow(
+                                                                  //       "Open Interest (OI)",
+                                                                  //       "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}",
+                                                                  //       "Change in OI",
+                                                                  //       "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}",
+                                                                  //       theme),
+                                                                  //   const SizedBox(
+                                                                  //       height:
+                                                                  //           4),
+                                                                  // ],
                                                                   if (scripInfo
                                                                       .returnsGridview
                                                                       .isNotEmpty) ...[
-                                                                    TextWidget.subText(
-                                                                        text:
-                                                                            "Returns",
-                                                                        theme: theme
-                                                                            .isDarkMode,
-                                                                        fw: 1),
-                                                                    const SizedBox(
-                                                                        height:
-                                                                            8),
+                                                                    // TextWidget.titleText(
+                                                                    //     text:
+                                                                    //         "Returns",
+                                                                    //     theme: theme
+                                                                    //         .isDarkMode,
+                                                                    //     fw: 1),
+                                                                    // const SizedBox(
+                                                                    //     height:
+                                                                    //         8),
                                                                     GridView.count(
                                                                         crossAxisCount: 3,
                                                                         physics: const NeverScrollableScrollPhysics(),
@@ -1897,15 +1894,19 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                       depthData),
 
                                                                 // Fundamentals Section (conditional)
-                                                                if (widget.wlValue
-                                                                            .exch ==
-                                                                        'NSE' ||
-                                                                    widget.wlValue
-                                                                            .exch ==
-                                                                        'BSE')
+                                                                if (scripInfo
+                                                                            .fundamentalData !=
+                                                                        null &&
+                                                                    scripInfo
+                                                                            .fundamentalData
+                                                                            ?.msg !=
+                                                                        "no data found") ...[
                                                                   _buildFundamentalsSection(
                                                                       theme,
                                                                       depthData),
+                                                                ] else ...[
+                                                                  const SizedBox(),
+                                                                ]
                                                               ]))
                                                     ] else if (scripInfo
                                                             .actDeptBtn ==
@@ -2089,18 +2090,18 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     final color = colors.darkred;
 
     return Stack(children: [
-      Transform.flip(
-        flipX: true,
-        child: LinearPercentIndicator(
-          lineHeight: 20.0,
-          backgroundColor:
-              !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          percent: barPercentage,
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          progressColor: color.withOpacity(.2),
-          // barRadius: const Radius.circular(10.0), // Half of lineHeight for capsule shape
-        ),
-      ),
+      // Transform.flip(
+      //   flipX: true,
+      //   child: LinearPercentIndicator(
+      //     lineHeight: 20.0,
+      //     backgroundColor:
+      //         !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+      //     percent: barPercentage,
+      //     padding: const EdgeInsets.symmetric(horizontal: 0),
+      //     progressColor: color.withOpacity(.2),
+      //     // barRadius: const Radius.circular(10.0), // Half of lineHeight for capsule shape
+      //   ),
+      // ),
       Padding(
         padding: const EdgeInsets.only(top: 1.5),
         child: Row(
@@ -2108,10 +2109,12 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
           children: [
             TextWidget.paraText(
                 text: " ${price != "null" ? price : '0.00'} ",
+                color: colors.tertiary ,
                 theme: theme.isDarkMode,
                 fw: 0),
             TextWidget.paraText(
                 text: " ${qty != "null" ? qty : '0'} ",
+                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                 theme: theme.isDarkMode,
                 fw: 0),
           ],
@@ -2129,15 +2132,15 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
     final color = colors.ltpgreen;
 
     return Stack(children: [
-      LinearPercentIndicator(
-        lineHeight: 20.0,
-        backgroundColor:
-            !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-        percent: barPercentage,
-        padding: const EdgeInsets.symmetric(horizontal: 0),
-        progressColor: color.withOpacity(.2),
-        // barRadius: const Radius.circular(4), // Half of lineHeight for capsule shape
-      ),
+      // LinearPercentIndicator(
+      //   lineHeight: 20.0,
+      //   backgroundColor:
+      //       !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+      //   percent: barPercentage,
+      //   padding: const EdgeInsets.symmetric(horizontal: 0),
+      //   progressColor: color.withOpacity(.2),
+      //   // barRadius: const Radius.circular(4), // Half of lineHeight for capsule shape
+      // ),
       Padding(
         padding: const EdgeInsets.only(top: 1.5),
         child: Row(
@@ -2145,11 +2148,12 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
           children: [
             TextWidget.paraText(
                 text: " ${qty != "null" ? qty : '0'} ",
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                 theme: theme.isDarkMode,
                 fw: 0),
             TextWidget.paraText(
                 text: " ${price != "null" ? price : '0.00'} ",
+                color: theme.isDarkMode ? colors.secondaryDark :  colors.secondaryLight,
                 theme: theme.isDarkMode,
                 fw: 0),
           ],
@@ -2325,16 +2329,16 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.paraText(
+              TextWidget.subText(
                   text: name,
                   theme: false,
-                  color: const Color(0xff666666),
-                  fw: 0),
+                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  ),
               TextWidget.subText(
                   text: value,
                   theme: false,
-                  color: const Color(0xff000000),
-                  fw: 0),
+                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  ),
             ],
           ),
           const SizedBox(height: 12),
