@@ -221,7 +221,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const SizedBox(height: 30),
+                                const SizedBox(height: 34),
                                 TextWidget.custmText(
                                     text:
                                         "Enter the ${auth.totp ? '6-digit TOTP' : '4-digit OTP'}",
@@ -332,7 +332,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                       autofocus: false,
                                       focusNode: _focusNode,
                                       separatorBuilder: (index) =>
-                                          SizedBox(width: auth.totp ? 15 : 25),
+                                          SizedBox(width: auth.totp ? 24 : 32),
                                       controller: otpController,
                                       length: auth.totp ? 6 : 4,
                                       defaultPinTheme: defaultPinThemes,
@@ -402,9 +402,9 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
                       width: screenWidth,
-                      height: 46,
+                      height: 50,
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
                             elevation: 0,
@@ -488,9 +488,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                             child: TextWidget.subText(
                                                 text: "Resend OTP",
                                                 theme: false,
-                                                color: theme.isDarkMode
-                                                    ? colors.colorLightBlue
-                                                    : const Color(0xff737373),
+                                               color:  theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
                                                 fw: 3),
                                           )),
                                     )
@@ -499,9 +497,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                       theme: false,
                                       color: resendTime == "00 : 00"
                                           ? Colors.transparent
-                                          : theme.isDarkMode
-                                              ? colors.colorLightBlue
-                                              : const Color(0xff737373),
+                                          :  theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
                                       fw: 3)
                               : const SizedBox(),
                           Material(
@@ -537,9 +533,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                           ? 'Switch OTP'
                                           : 'Switch TOTP',
                                       theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.colorLightBlue
-                                          : const Color(0xff737373),
+                                      color:  theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
                                       fw: 3),
                                 )),
                           ),

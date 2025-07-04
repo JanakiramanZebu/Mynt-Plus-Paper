@@ -113,6 +113,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: 29.0),
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -132,7 +133,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                             color: theme.isDarkMode
                                 ? colors.colorWhite
                                 : colors.colorBlack,
-                            fw: 1),
+                            fw: 2),
                         // const SizedBox(
                         //   height: 20,
                         // ),
@@ -402,7 +403,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                             labelText: "New Password",
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
                             labelStyle: TextWidget.textStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               theme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? colors.colorWhite
@@ -497,7 +498,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                         const SizedBox(height: 30),
                         SizedBox(
                             width: screenWidth,
-                            height: 44,
+                            height: 50,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 8),
                               child: OutlinedButton(
@@ -505,12 +506,11 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                       elevation: 0,
                                       backgroundColor: !theme.isDarkMode
                                           ? changepassword.isDisableChangepassbtn
-                                              ? const Color(0xff0037B7)
-                                                  .withOpacity(0.3)
-                                              : const Color(0xff0037B7)
+                                              ? const Color(0xFF0037B7).withOpacity(0.3)
+                                      : colors.primaryLight
                                           : changepassword.isDisableChangepassbtn
-                                              ? colors.darkGrey
-                                              : colors.colorbluegrey,
+                                              ?  const Color(0xFF002A8F).withOpacity(0.3)
+                                      : colors.primaryDark,
                                       side: BorderSide.none,
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 13),
@@ -540,7 +540,7 @@ class _ChangePassState extends ConsumerState<ChangePass> {
                                               strokeWidth: 2,
                                               color: colors.colorWhite),
                                         )
-                                      : TextWidget.subText(
+                                      : TextWidget.titleText(
                                           text: "Set New Password",
                                           theme: false,
                                           color: !theme.isDarkMode

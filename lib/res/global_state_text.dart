@@ -144,6 +144,7 @@ class TextWidget {
       Color? color,
       int? fw,
       int? maxLines,
+      double? height,
       TextAlign? align,
       TextOverflow? textOverflow,
        double? letterSpacing,
@@ -152,7 +153,7 @@ class TextWidget {
       text,
       maxLines: maxLines,
       overflow: textOverflow,
-      textAlign: align,
+      textAlign: align, 
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: 12,
@@ -161,6 +162,7 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
+                height: height,
         fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1

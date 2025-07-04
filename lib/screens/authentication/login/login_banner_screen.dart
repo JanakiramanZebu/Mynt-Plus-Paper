@@ -180,18 +180,18 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                         SvgPicture.asset(
                           "assets/icon/Mynt New logo.svg",
                           color: const Color(0xff0037B7),
-                          width: 110,
+                          width: 150,
                           fit: BoxFit.contain,
                         ),
                         SizedBox(
-                          height: 16,
+                          height: 20,
                         ),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
                             "Invest in your future",
                             style: TextWidget.textStyle(
-                                fontSize: 32, theme: theme.isDarkMode, fw: 2),
+                                fontSize: 32, theme: theme.isDarkMode, fw: 1,color: theme.isDarkMode ?  colors.textPrimaryDark : colors.textPrimaryLight),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -205,12 +205,12 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                           child: Text(
                             "Stock, F&O, Mutual Fund, IPO, Bond",
                             style: TextWidget.textStyle(
-                                fontSize: 16, theme: theme.isDarkMode, fw: 0),
+                                fontSize: 16, theme: theme.isDarkMode,color: theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight),
                             textAlign: TextAlign.center,
                           ),
                         ),
                         SizedBox(
-                          height: 24,
+                          height: 36,
                         ),
 
                         // SvgPicture.asset(
@@ -228,11 +228,11 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                         // ),
 
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
                           child: OutlinedButton(
                             onPressed: _isAnyProcessing ? null : _handleLogin,
                             style: OutlinedButton.styleFrom(
-                              backgroundColor: const Color(0xff0037B7),
+                              backgroundColor: theme.isDarkMode ?  colors.primaryDark : colors.primaryLight,
                               minimumSize: const Size.fromHeight(46),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),
@@ -253,15 +253,14 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                                 : TextWidget.titleText(
                                     text: "Open your FREE demat account",
                                     theme: false,
-                                    color: !theme.isDarkMode
-                                        ? const Color(0xffFFFFFF)
-                                        : const Color(0xff0037B7),
+                                    color:  const Color(0xffFFFFFF)
+                                         ,
                                     fw: 2),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 20),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
                           child: OutlinedButton(
                             onPressed: _isAnyProcessing
                                 ? null
@@ -285,7 +284,7 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                                         height: 16,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          color: Color(0xff0037B7),
+                                          color: Color.fromARGB(255, 209, 210, 212),
                                         ),
                                       )
                                     : TextWidget.titleText(
@@ -331,15 +330,16 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                         text:
                             "Zebu, SEBI Registration No: INZ000174634 | Research Analyst : INH200006044 | NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL : 12080400 | AMFI ARN : 113118",
                         theme: false,
-                        color: const Color(0xff737373),
+                        color:  theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
                         // fw: 3,
                         align: TextAlign.left,
+                        height: 1.8,
                       ),
                       const SizedBox(height: 10),
                       TextWidget.paraText(
                         text: "Version 3.0.2",
                         theme: false,
-                        color: const Color(0xff737373),
+                        color: theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
                         // fw: 3,
                         align: TextAlign.left,
                       ),
