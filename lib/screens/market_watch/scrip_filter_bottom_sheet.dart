@@ -134,11 +134,14 @@ class _WatchlistsBottomSheetState
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [               
-                 TextWidget.titleText(
-                      text:  "Sort by",
-                      theme: theme.isDarkMode,
-                      fw: 1),
+              children: [
+                TextWidget.titleText(
+                    text: "Sort by",
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    theme: theme.isDarkMode,
+                    fw: 1),
               ],
             ),
           ),
@@ -161,33 +164,40 @@ class _WatchlistsBottomSheetState
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
-                        color:  currentSortType == "scrip"
-                            ? const Color(0xFF0037B7) 
-                            : colors.colorGrey,
+                        color: currentSortType == "scrip"
+                            ? theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight
+                            : theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                       ),
                       const SizedBox(
                         width: 15,
                       ),
-                     
 
                       // TextWidget.subText(
                       // text:"Scrip Name" ,
-                      // color: colors.colorGrey, 
+                      // color: colors.colorGrey,
                       // theme: theme.isDarkMode,
                       // fw:  currentSortType == "scrip"
                       //         ? 1
                       //         : null),
 
-                              Text(
-  "Scrip Name",
-  style: TextWidget.textStyle(
-                 fontSize: 14 , color: currentSortType == "scrip" ? Color(0xFF0037B7) : colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "scrip"
-                              ? 0
-                              : null ),
-)
-
-
-
+                      Text(
+                        "Scrip Name",
+                        style: TextWidget.textStyle(
+                            fontSize: 14,
+                            color: currentSortType == "scrip"
+                                ? theme.isDarkMode
+                                    ? colors.primaryDark
+                                    : colors.primaryLight
+                                : theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                            theme: theme.isDarkMode,
+                            fw: currentSortType == "scrip" ? 0 : null),
+                      )
                     ],
                   ),
                 ),
@@ -210,29 +220,40 @@ class _WatchlistsBottomSheetState
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 20,
-                        color:    currentSortType == "price" ? Color(0xFF0037B7) : colors.colorGrey,
+                        color: currentSortType == "price"
+                            ? theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight
+                            : theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                       ),
                       const SizedBox(
                         width: 15,
                       ),
-                     
+
                       //  TextWidget.subText(
                       // text:"LTP",
-                      // color: colors.colorGrey, 
+                      // color: colors.colorGrey,
                       // theme: theme.isDarkMode,
                       // fw:  currentSortType == "price"
                       //         ? 1
                       //         : null),
 
-Text(
-  "LTP",
-  style: TextWidget.textStyle(
-                 fontSize: 13 , color: currentSortType == "price" ? Color(0xFF0037B7) : colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "price"
-                              ? 0
-                              : null ),
-)
-
-
+                      Text(
+                        "LTP",
+                        style: TextWidget.textStyle(
+                            fontSize: 14,
+                            color: currentSortType == "price"
+                                ? theme.isDarkMode
+                                    ? colors.primaryDark
+                                    : colors.primaryLight
+                                : theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                            theme: theme.isDarkMode,
+                            fw: currentSortType == "price" ? 0 : null),
+                      )
                     ],
                   ),
                 ),
@@ -251,32 +272,34 @@ Text(
                   child: Row(
                     children: [
                       Icon(
-                        perchangisAscending
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 20,
-                        color: currentSortType == "perchng" ? Color(0xFF0037B7) : colors.colorGrey,
-                      ),
+                          perchangisAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: currentSortType == "perchng"
+                              ? theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight
+                              : theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight),
                       const SizedBox(
                         width: 15,
                       ),
-                      
-                      //  TextWidget.subText(
-                      // text:"Perc.Change" ,
-                      // color: colors.colorGrey, 
-                      // theme: theme.isDarkMode,
-                      // fw:  currentSortType == "perchng"
-                      //         ? 1
-                      //         : null),
-
-                              Text(
-  "Perc.Change",
-  style:TextWidget.textStyle(
-                 fontSize: 13 , color: currentSortType == "perchng" ? Color(0xFF0037B7) : colors.colorGrey, theme: theme.isDarkMode , fw:  currentSortType == "perchng"
-                              ? 0
-                              : null ),
-)
-
+                      Text(
+                        "Perc.Change",
+                        style: TextWidget.textStyle(
+                            fontSize: 14,
+                            color: currentSortType == "perchng"
+                                ? theme.isDarkMode
+                                    ? colors.primaryDark
+                                    : colors.primaryLight
+                                : theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                            theme: theme.isDarkMode,
+                            fw: currentSortType == "perchng" ? 0 : null),
+                      )
                     ],
                   ),
                 ),

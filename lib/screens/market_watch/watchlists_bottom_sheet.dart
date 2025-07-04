@@ -56,6 +56,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                             child: TextWidget.titleText(
                                 text: "Manage Watchlist",
                                 // (${watchlist.length >= 10 ? 10 : watchlist.length})
+                                color:   theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
                                 theme: theme.isDarkMode,
                                 fw: 1),
                           ),
@@ -96,16 +99,16 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                       child: Row(children: [
                                         SvgPicture.asset(assets.addCircleIcon,
                                             color: theme.isDarkMode
-                                                ? colors.colorLightBlue
-                                                : colors.colorBlue),
+                                                ? colors.secondaryDark
+                                                : colors.secondaryLight),
                                         const SizedBox(width: 3),
                                         TextWidget.subText(
                                             text: "Add Watchlist",
                                             color: theme.isDarkMode
-                                                ? colors.colorLightBlue
-                                                : colors.colorBlue,
+                                                ? colors.secondaryDark
+                                                : colors.secondaryLight,
                                             theme: theme.isDarkMode,
-                                            fw: 0),
+                                            ),
                                       ]))),
                             )
                         ])),
@@ -174,14 +177,6 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                           ? assets.actProductIcon
                                           : assets.productIcon),
                                   title:
-                                      //  TextWidget.subText(
-                                      //     text:  watchlist[index].isEmpty
-                                      //         ? watchlist[index]
-                                      //         : "${watchlist[index][0].toUpperCase()}${watchlist[index].substring(1)}",
-                                      //     color: ,
-                                      //     theme: theme.isDarkMode,
-                                      //     fw: 0),
-
                                       Text(
                                     watchlist[index].isEmpty
                                         ? watchlist[index]
@@ -194,13 +189,17 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                     ? "Nifty Bank"
                                                     : "${watchlist[index][0].toUpperCase()}${watchlist[index].substring(1)}",
                                     style: TextWidget.textStyle(
-                                      fontSize: 14,
-                                      color: widget.currentWLName !=
-                                              watchlist[index]
-                                          ? colors.colorGrey
-                                          : const Color(0xFF0037B7),
-                                      theme: theme.isDarkMode,
-                                    ),
+                                        fontSize: 14,
+                                        color: widget.currentWLName !=
+                                                watchlist[index] 
+                                            ? theme.isDarkMode                               
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight 
+                                            : theme.isDarkMode
+                                ? colors.secondaryDark
+                                : colors.secondaryLight ,
+                                        theme: theme.isDarkMode,
+                                        ),
                                   ),
                                   trailing: watchlist.length > 1
                                       ? Row(
@@ -326,6 +325,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                   TextWidget.titleText(
                                                                       text:
                                                                           "Delete Watchlist",
+                                                                          color:  theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
                                                                       theme: theme
                                                                           .isDarkMode,
                                                                       fw: 1),
@@ -390,7 +392,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                                 'Are you sure you want to delete "${watchlist[index]}" ?',
                                                                             theme:
                                                                                 theme.isDarkMode,
-                                                                            fw: 0),
+                                                                            ),
                                                                       ),
                                                                     ])),
                                                             actions: [
@@ -425,7 +427,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                             40), // width, height
                                                                         side: BorderSide(
                                                                             color:
-                                                                                colors.darkred), // Outline border color
+                                                                                colors.error), // Outline border color
                                                                         shape:
                                                                             RoundedRectangleBorder(
                                                                           borderRadius:
@@ -444,7 +446,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                             )
                                                                           : TextWidget.subText(
                                                                               text: "Delete",
-                                                                              color: colors.kColorRedText,
+                                                                              color: colors.error,
                                                                               theme: theme.isDarkMode,
                                                                               fw: 0),
                                                                     ),

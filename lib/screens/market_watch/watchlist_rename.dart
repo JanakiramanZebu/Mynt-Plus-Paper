@@ -78,6 +78,9 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                 children: [
                   TextWidget.titleText(
                     text: 'Edit Watchlist Name',
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
                     theme: theme.isDarkMode,
                     fw: 1,
                   ),
@@ -133,11 +136,12 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                         FilteringTextInputFormatter.allow(
                             RegExp(r'[a-zA-Z0-9 ]')),
                       ],
-                      style: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: theme.isDarkMode,
-                        fw: 0,
-                      ),
+                      style:  TextWidget.textStyle(
+                                  fontSize: 14,
+                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                  theme: theme.isDarkMode,
+                                 
+                                ),
                       decoration: InputDecoration(
                         hintText: "Enter watchlist name",
                         hintStyle: TextWidget.textStyle(
@@ -172,7 +176,7 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                       alignment: Alignment.centerLeft,
                       child: TextWidget.captionText(
                         text: errorText!,
-                        color: colors.darkred,
+                        color: colors.error,
                         theme: theme.isDarkMode,
                         fw: 0,
                       ),
@@ -197,19 +201,19 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                         elevation: 0,
                          minimumSize: const Size(0, 40), // width, height
                         backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : Color(0xFF0037B7),
+                          ? colors.primaryDark
+                          : colors.primaryLight,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
                       ),
                       child: (_isProcessing ||
                               ref.read(marketWatchProvider).loading)
-                          ? const SizedBox(
+                          ?  SizedBox(
                               width: 18,
                               height: 20,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Color(0xff666666)),
+                                  strokeWidth: 2, color:  colors.textSecondaryLight),
                             )
                           : TextWidget.subText(
                               text: "Update",
