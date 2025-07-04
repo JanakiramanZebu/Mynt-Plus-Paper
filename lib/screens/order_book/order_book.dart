@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,6 +19,7 @@ import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_data_found.dart';
+import '../../utils/no_emoji_inputformatter.dart';
 import 'filter_scrip_bottom_sheet.dart';
 import 'order_book_detail.dart';
 
@@ -355,97 +357,118 @@ class _OrderBookState extends ConsumerState<OrderBook> {
           ),
         ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xffF1F3F8).withOpacity(0.5),
-                borderRadius: BorderRadius.circular(20),
+          SizedBox(
+            height: 40,
+            child: TextFormField(
+              controller: order.orderSearchCtrl,
+              autofocus: false,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [
+                UpperCaseTextFormatter(),
+                NoEmojiInputFormatter(),
+                FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/.,]'))
+              ],
+              style: TextWidget.textStyle(
+                fontSize: 14,
+                theme: theme.isDarkMode,
+                color: const Color(0xff000000),
+                fw: 00,
               ),
-              child: Row(
-                children: [
-                  const SizedBox(width: 12),
-                  SvgPicture.asset(
-                    assets.searchIcon,
-                    width: 18,
-                    height: 18,
-                    color: const Color(0xff586279),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      controller: order.orderSearchCtrl,
-                      autofocus: false,
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [UpperCaseTextFormatter()],
-                      style: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: theme.isDarkMode,
-                        color: const Color(0xff000000),
-                        fw: 00,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: "Search",
-                        hintStyle: TextWidget.textStyle(
-                          fontSize: 14,
-                          theme: false,
-                          color: const Color(0xff69758F),
-                          fw: 00,
-                        ),
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      onChanged: (value) {
-                        order.orderSearch(value, context);
-                      },
-                    ),
-                  ),
-                  if (order.orderSearchCtrl.text.isNotEmpty)
-                    InkWell(
-                      onTap: () {
-                        order.clearOrderSearch();
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: SvgPicture.asset(
-                          assets.removeIcon,
-                          width: 18,
-                          height: 18,
-                          color: const Color(0xff586279),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          InkWell(
-            onTap: () async {
-              FocusScope.of(context).unfocus();
-              showModalBottomSheet(
-                useSafeArea: true,
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              onChanged: (value) {
+                order.orderSearch(value, context);
+              },
+              decoration: InputDecoration(
+                fillColor: theme.isDarkMode
+                    ? colors.darkGrey
+                    : const Color(0xffF1F3F8).withOpacity(0.5),
+                filled: true,
+                hintStyle: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: theme.isDarkMode,
+                    color: const Color(0xff000000),
+                    fw: 3),
+                hintText: "Search",
+                enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(20)),
+                disabledBorder: InputBorder.none,
+                focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(20)),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(20)),
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SvgPicture.asset(assets.searchIcon,
+                      width: 18,
+                      height: 18,
+                      color: const Color(0xff586279),
+                      fit: BoxFit.scaleDown),
                 ),
-                context: context,
-                builder: (context) {
-                  return const OrderbookFilterBottomSheet();
-                },
-              );
-            },
-            child: SvgPicture.asset(
-              assets.filterLines,
-              width: 20,
-              height: 20,
-              color: theme.isDarkMode
-                  ? colors.darkiconcolor
-                  : const Color(0xff333333),
+                suffixIcon: order.orderSearchCtrl.text.isNotEmpty
+                    ? Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.hardEdge,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: Colors.black.withOpacity(0.15),
+                          highlightColor: Colors.black.withOpacity(0.08),
+                          onTap: () {
+                            Future.delayed(const Duration(milliseconds: 150),
+                                () {
+                              order.clearOrderSearch();
+                            });
+                          },
+                          child: SvgPicture.asset(
+                            assets.removeIcon,
+                            width: 18,
+                            height: 18,
+                            color: const Color(0xff586279),
+                            fit: BoxFit.scaleDown,
+                          ),
+                        ),
+                      )
+                    : Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.hardEdge,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: Colors.black.withOpacity(0.15),
+                          highlightColor: Colors.black.withOpacity(0.08),
+                          onTap: () async {
+                            FocusScope.of(context).unfocus();
+                            showModalBottomSheet(
+                              useSafeArea: true,
+                              isScrollControlled: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16)),
+                              ),
+                              context: context,
+                              builder: (context) {
+                                return const OrderbookFilterBottomSheet();
+                              },
+                            );
+                          },
+                          child: SvgPicture.asset(
+                            assets.filterLines,
+                            width: 18,
+                            height: 18,
+                            color: theme.isDarkMode
+                                ? colors.darkiconcolor
+                                : const Color(0xff333333),
+                            fit: BoxFit.scaleDown,
+                          ),
+                        ),
+                      ),
+              ),
             ),
           ),
         ],
@@ -456,6 +479,19 @@ class _OrderBookState extends ConsumerState<OrderBook> {
   // Order list view
   Widget _buildOrderList(
       List<OrderBookModel> items, OrderProvider order, ThemesProvider theme) {
+    final isSearchActive = order.showSearchHold;
+    final searchText = order.orderSearchCtrl.text;
+
+    // Determine what items to display
+    final itemsToDisplay = isSearchActive && searchText.isNotEmpty
+        ? order.orderSearchItem
+        : widget.orderBook;
+
+    if (itemsToDisplay!.isEmpty) {
+      return const Center(
+        child: SizedBox(height: 500, child: NoDataFound()),
+      );
+    }
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
       shrinkWrap: false,
@@ -465,6 +501,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
         // Use Builder to get fresh context for each item
         return Builder(builder: (itemContext) {
           return _OrderItem(
+            ref: ref,
             key: ValueKey('${items[itemIndex].norenordno}'),
             orderItem: items[itemIndex],
             theme: theme,
@@ -629,13 +666,14 @@ class _OrderItem extends StatefulWidget {
   final ThemesProvider theme;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
-
+  final WidgetRef ref;
   const _OrderItem({
     required Key key,
     required this.orderItem,
     required this.theme,
     required this.onTap,
     required this.onLongPress,
+    required this.ref,
   }) : super(key: key);
 
   @override
@@ -651,6 +689,7 @@ class _OrderItemState extends State<_OrderItem> {
     return InkWell(
       onLongPress: widget.onLongPress,
       onTap: () async {
+        widget.ref.read(orderProvider).showorderHistory(false);
         // Prevent multiple navigation events on rapid taps
         if (_isNavigating) return;
 

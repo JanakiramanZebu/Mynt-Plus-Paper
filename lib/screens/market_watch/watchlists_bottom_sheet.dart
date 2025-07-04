@@ -65,8 +65,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                               child: InkWell(
                                   onTap: () async {
                                     // Add delay for visual feedback
-                                    await Future.delayed(const Duration(milliseconds: 150));
-                                    
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 150));
+
                                     if (context.mounted) {
                                       Navigator.pop(context);
                                     }
@@ -109,16 +110,12 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                             )
                         ])),
                 const SizedBox(height: 10),
-
-                // Remove pre-defined watchlist buttons and just keep the divider
                 Divider(
                   color: theme.isDarkMode
                       ? colors.darkColorDivider
                       : colors.colorDivider,
                   height: 0,
                 ),
-
-                // Flexible scrollable list with max height constraint
                 Flexible(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -153,7 +150,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                       .read(marketWatchProvider)
                                       .changeWlName(watchlist[index], "No");
 
-                                   marketWatch.changeWLScrip(
+                                  marketWatch.changeWLScrip(
                                       watchlist[index], context);
 
                                   Navigator.pop(context);
@@ -175,9 +172,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                           : assets.darkProductIcon
                                       : widget.currentWLName == watchlist[index]
                                           ? assets.actProductIcon
-                                          : assets.productIcon
-                                          
-                                          ),
+                                          : assets.productIcon),
                                   title:
                                       //  TextWidget.subText(
                                       //     text:  watchlist[index].isEmpty
@@ -199,13 +194,13 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                     ? "Nifty Bank"
                                                     : "${watchlist[index][0].toUpperCase()}${watchlist[index].substring(1)}",
                                     style: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        color: widget.currentWLName !=
-                                                watchlist[index]
-                                            ? colors.colorGrey
-                                            : const Color(0xFF0037B7),
-                                        theme: theme.isDarkMode,
-                                        ),
+                                      fontSize: 14,
+                                      color: widget.currentWLName !=
+                                              watchlist[index]
+                                          ? colors.colorGrey
+                                          : const Color(0xFF0037B7),
+                                      theme: theme.isDarkMode,
+                                    ),
                                   ),
                                   trailing: watchlist.length > 1
                                       ? Row(
@@ -217,8 +212,10 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                               child: InkWell(
                                                 onTap: () async {
                                                   // Add delay for visual feedback
-                                                  await Future.delayed(const Duration(milliseconds: 150));
-                                                  
+                                                  await Future.delayed(
+                                                      const Duration(
+                                                          milliseconds: 150));
+
                                                   showModalBottomSheet(
                                                     context: context,
                                                     useSafeArea: true,
@@ -242,18 +239,20 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 borderRadius:
                                                     BorderRadius.circular(20),
                                                 splashColor: theme.isDarkMode
-                                                    ? Colors.white.withOpacity(0.15)
-                                                    : Colors.black.withOpacity(0.15),
+                                                    ? Colors.white
+                                                        .withOpacity(0.15)
+                                                    : Colors.black
+                                                        .withOpacity(0.15),
                                                 highlightColor: theme.isDarkMode
-                                                    ? Colors.white.withOpacity(0.08)
-                                                    : Colors.black.withOpacity(0.08),
+                                                    ? Colors.white
+                                                        .withOpacity(0.08)
+                                                    : Colors.black
+                                                        .withOpacity(0.08),
                                                 child: const Padding(
-                                                  padding:
-                                                      EdgeInsets.all(8),
+                                                  padding: EdgeInsets.all(8),
                                                   child: Icon(
                                                     Icons.edit_outlined,
-                                                    color:
-                                                        Color(0xff666666),
+                                                    color: Color(0xff666666),
                                                     size: 20,
                                                   ),
                                                 ),
@@ -266,8 +265,10 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                               child: InkWell(
                                                 onTap: () async {
                                                   // Add delay for visual feedback
-                                                  await Future.delayed(const Duration(milliseconds: 150));
-                                                  
+                                                  await Future.delayed(
+                                                      const Duration(
+                                                          milliseconds: 150));
+
                                                   // Click to Delete watchlist name
                                                   await showDialog(
                                                     context: context,
@@ -419,7 +420,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                             },
                                                                       style: OutlinedButton
                                                                           .styleFrom(
-                                                                             minimumSize: const Size(0, 40), // width, height
+                                                                        minimumSize: const Size(
+                                                                            0,
+                                                                            40), // width, height
                                                                         side: BorderSide(
                                                                             color:
                                                                                 colors.darkred), // Outline border color
@@ -462,8 +465,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                       const EdgeInsets.all(8),
                                                   child: Icon(
                                                     Icons.delete_outlined,
-                                                    color:
-                                                        colors.kColorRedText,
+                                                    color: colors.kColorRedText,
                                                     size: 20,
                                                   ),
                                                 ),
@@ -504,7 +506,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                             context: context,
                                             isSubscribe: true);
                                   } else {
-                                     marketWatch.changeWLScrip(
+                                    marketWatch.changeWLScrip(
                                         preDefWl[preDefIndex], context);
                                   }
 
@@ -553,14 +555,14 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                 ? "Nifty Bank"
                                                 : "${preDefWl[preDefIndex][0].toUpperCase()}${preDefWl[preDefIndex].substring(1)}",
                                     style: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        color: isSelected
-                                            ? (theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack)
-                                            : colors.colorGrey,
-                                        theme: theme.isDarkMode,
-                                        ),
+                                      fontSize: 14,
+                                      color: isSelected
+                                          ? (theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack)
+                                          : colors.colorGrey,
+                                      theme: theme.isDarkMode,
+                                    ),
                                   ),
                                 ),
                               ),

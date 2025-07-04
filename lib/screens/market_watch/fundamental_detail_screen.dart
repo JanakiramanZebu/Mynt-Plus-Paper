@@ -28,13 +28,16 @@ class FundamentalDetailScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<FundamentalDetailScreen> createState() => _FundamentalDetailScreenState();
+  ConsumerState<FundamentalDetailScreen> createState() =>
+      _FundamentalDetailScreenState();
 }
 
-class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScreen> with SingleTickerProviderStateMixin {
+class _FundamentalDetailScreenState
+    extends ConsumerState<FundamentalDetailScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final double tabWidth = 85.0;
-  
+
   final List<Map<String, String>> _tabs = [
     {'title': 'Ratios', 'subtitle': 'Fundamental ratios'},
     {'title': 'Financial', 'subtitle': 'Financial data'},
@@ -79,24 +82,21 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
               onTap: () {
                 Navigator.pop(context);
               },
-              child:
-                 Container(
+              child: Container(
                 width: 44,
                 height: 44,
                 alignment: Alignment.center,
                 child: Icon(
                   Icons.arrow_back_ios_outlined,
                   size: 18,
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack,
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                 ),
               ),
             ),
           ),
-          shadowColor: theme.isDarkMode
-              ? colors.darkColorDivider
-              : colors.colorDivider,
+          shadowColor:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
           title: TextWidget.titleText(
               text: "${widget.wlValue.symbol.toUpperCase()}  Fundamental",
               color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
@@ -119,7 +119,9 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
                   ),
                   Container(
                     height: 1,
-                    color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider,
                   ),
                 ],
               ),
@@ -150,7 +152,8 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
       isScrollable: true,
       physics: const BouncingScrollPhysics(),
       labelColor: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
-      unselectedLabelColor: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+      unselectedLabelColor:
+          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
       indicatorColor: colors.colorBlue,
       indicatorSize: TabBarIndicatorSize.tab,
       labelStyle: TextWidget.textStyle(
@@ -163,28 +166,31 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
         theme: theme.isDarkMode,
         fw: 0,
       ),
-      tabs: _tabs.map((tab) => Tab(
-        child: Container(
-          width: tabWidth - 18,
-          alignment: Alignment.center,
-          child: Text(
-            tab['title']!,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      )).toList(),
+      tabs: _tabs
+          .map((tab) => Tab(
+                child: Container(
+                  width: tabWidth - 18,
+                  alignment: Alignment.center,
+                  child: Text(
+                    tab['title']!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ))
+          .toList(),
     );
   }
 
-  Widget _buildRatiosTab(MarketWatchProvider marketWatch, ThemesProvider theme) {
+  Widget _buildRatiosTab(
+      MarketWatchProvider marketWatch, ThemesProvider theme) {
     if (marketWatch.fundamentalData?.fundamental?.isEmpty ?? true) {
       return const Center(child: NoDataFound());
     }
-    
+
     final funData = marketWatch.fundamentalData!.fundamental![0];
     final symbolName = marketWatch.getQuotes?.tsym?.replaceAll("-EQ", "") ?? "";
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -208,11 +214,12 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
     );
   }
 
-  Widget _buildFinancialTab(MarketWatchProvider marketWatch, ThemesProvider theme) {
+  Widget _buildFinancialTab(
+      MarketWatchProvider marketWatch, ThemesProvider theme) {
     if (marketWatch.fundamentalData?.msg == "no data found") {
       return const Center(child: NoDataFound());
     }
-    
+
     return const SingleChildScrollView(
       padding: EdgeInsets.all(16),
       child: FinancialWidget(),
@@ -223,29 +230,31 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
     if (marketWatch.fundamentalData?.msg == "no data found") {
       return const Center(child: NoDataFound());
     }
-    
+
     return const SingleChildScrollView(
       padding: EdgeInsets.all(16),
       child: PriceComparision(),
     );
   }
 
-  Widget _buildHoldingsTab(MarketWatchProvider marketWatch, ThemesProvider theme) {
-    if (marketWatch.fundamentalData?.msg == "no data found" || 
+  Widget _buildHoldingsTab(
+      MarketWatchProvider marketWatch, ThemesProvider theme) {
+    if (marketWatch.fundamentalData?.msg == "no data found" ||
         marketWatch.fundamentalData?.shareholdings == null) {
       return const Center(child: NoDataFound());
     }
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: _buildHoldingsContent(marketWatch, theme),
     );
   }
 
-  Widget _buildHoldingsContent(MarketWatchProvider marketWatch, ThemesProvider theme) {
+  Widget _buildHoldingsContent(
+      MarketWatchProvider marketWatch, ThemesProvider theme) {
     final stockHold = marketWatch.fundamentalData?.shareholdings ?? [];
     final shareHoldings = marketWatch;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -255,19 +264,19 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
           fw: 1,
         ),
         const SizedBox(height: 16),
-        
-                 // Date selection
-         Container(
-           height: 36,
-           child: stockHold.isEmpty
-               ? Center(
-                   child: TextWidget.subText(
-                     text: "No Holdings",
-                     theme: theme.isDarkMode,
-                     fw: 0,
-                   ),
-                 )
-               : ListView.separated(
+
+        // Date selection
+        Container(
+          height: 36,
+          child: stockHold.isEmpty
+              ? Center(
+                  child: TextWidget.subText(
+                    text: "No Holdings",
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                )
+              : ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: shareHoldings.mfHoldingDate.length,
                   itemBuilder: (BuildContext context, int index) {
@@ -276,25 +285,30 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
                         color: theme.isDarkMode
-                            ? shareHoldings.selectedMfHolddate == shareHoldings.mfHoldingDate[index]
+                            ? shareHoldings.selectedMfHolddate ==
+                                    shareHoldings.mfHoldingDate[index]
                                 ? const Color(0xffB0BEC5)
                                 : const Color(0xffB5C0CF).withOpacity(.15)
-                            : shareHoldings.selectedMfHolddate == shareHoldings.mfHoldingDate[index]
+                            : shareHoldings.selectedMfHolddate ==
+                                    shareHoldings.mfHoldingDate[index]
                                 ? const Color(0xff000000)
                                 : const Color(0xffF1F3F8),
                         borderRadius: BorderRadius.circular(98),
                       ),
                       child: InkWell(
                         onTap: () async {
-                          shareHoldings.chngMfHoldDate(shareHoldings.mfHoldingDate[index], index);
+                          shareHoldings.chngMfHoldDate(
+                              shareHoldings.mfHoldingDate[index], index);
                         },
                         child: TextWidget.paraText(
                           text: shareHoldings.mfHoldingDate[index],
                           color: theme.isDarkMode
-                              ? shareHoldings.selectedMfHolddate == shareHoldings.mfHoldingDate[index]
+                              ? shareHoldings.selectedMfHolddate ==
+                                      shareHoldings.mfHoldingDate[index]
                                   ? const Color(0xff000000)
                                   : const Color(0xffffffff)
-                              : shareHoldings.selectedMfHolddate == shareHoldings.mfHoldingDate[index]
+                              : shareHoldings.selectedMfHolddate ==
+                                      shareHoldings.mfHoldingDate[index]
                                   ? const Color(0xffffffff)
                                   : const Color(0xff000000),
                           theme: theme.isDarkMode,
@@ -309,7 +323,7 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
                 ),
         ),
         const SizedBox(height: 16),
-        
+
         // Holdings table header
         Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -336,21 +350,58 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
             ],
           ),
         ),
-        
-                 // Holdings data
-         if (stockHold.isNotEmpty && shareHoldings.selectedMfHoldindex < stockHold.length) ...[
-           _buildHoldingItem("Promoter Holding", "${stockHold[shareHoldings.selectedMfHoldindex].promoters ?? 'N/A'}", const Color(0xff2e8564), theme),
-           Divider(thickness: 0, color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider, height: 0),
-           _buildHoldingItem("Foreign Institution", "${stockHold[shareHoldings.selectedMfHoldindex].fiiFpi ?? 'N/A'}", const Color(0xff7cd36f), theme),
-           Divider(thickness: 0, color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider, height: 0),
-           _buildHoldingItem("Other Domestic Institution", "${stockHold[shareHoldings.selectedMfHoldindex].dii ?? 'N/A'}", const Color(0xfff7cd6c), theme),
-           Divider(thickness: 0, color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider, height: 0),
-           _buildHoldingItem("Retail and Others", "${stockHold[shareHoldings.selectedMfHoldindex].retailAndOthers ?? 'N/A'}", const Color(0XFFfbebc4), theme),
-           Divider(thickness: 0, color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider, height: 0),
-         ],
-        
+
+        // Holdings data
+        if (stockHold.isNotEmpty &&
+            shareHoldings.selectedMfHoldindex < stockHold.length) ...[
+          _buildHoldingItem(
+              "Promoter Holding",
+              "${stockHold[shareHoldings.selectedMfHoldindex].promoters ?? 'N/A'}",
+              const Color(0xff2e8564),
+              theme),
+          Divider(
+              thickness: 0,
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+              height: 0),
+          _buildHoldingItem(
+              "Foreign Institution",
+              "${stockHold[shareHoldings.selectedMfHoldindex].fiiFpi ?? 'N/A'}",
+              const Color(0xff7cd36f),
+              theme),
+          Divider(
+              thickness: 0,
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+              height: 0),
+          _buildHoldingItem(
+              "Other Domestic Institution",
+              "${stockHold[shareHoldings.selectedMfHoldindex].dii ?? 'N/A'}",
+              const Color(0xfff7cd6c),
+              theme),
+          Divider(
+              thickness: 0,
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+              height: 0),
+          _buildHoldingItem(
+              "Retail and Others",
+              "${stockHold[shareHoldings.selectedMfHoldindex].retailAndOthers ?? 'N/A'}",
+              const Color(0XFFfbebc4),
+              theme),
+          Divider(
+              thickness: 0,
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+              height: 0),
+        ],
+
         const SizedBox(height: 16),
-        
+
         // Chart section
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -361,14 +412,28 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
                 height: 36,
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton2<String>(
-                    style: TextWidget.textStyle(fontSize: 12, theme: theme.isDarkMode, fw: 0),
+                    isExpanded: true,
+                    dropdownStyleData: const DropdownStyleData(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                        maxHeight: 280,
+                        width: 250),
+                    menuItemStyleData: const MenuItemStyleData(
+                      padding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      height: 30,
+                    ),
+                    style: TextWidget.textStyle(
+                        fontSize: 12, theme: theme.isDarkMode, fw: 0),
                     hint: TextWidget.paraText(
                       text: shareHoldings.selctedShareHold,
-                      color: theme.isDarkMode ? colors.colorBlack : colors.colorBlack,
+                      color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorBlack,
                       theme: theme.isDarkMode,
                       fw: 0,
                     ),
-                    items: shareHoldings.addDividersAfterExpDates(shareHoldings.shareHoldType),
+                    items: shareHoldings
+                        .addDividersAfterExpDates(shareHoldings.shareHoldType),
                     value: shareHoldings.selctedShareHold,
                     onChanged: (value) async {
                       shareHoldings.chngshareHold("$value");
@@ -376,16 +441,16 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               const ShareHoldChart(),
             ],
           ),
         ),
-        
+
         const SizedBox(height: 8),
         Divider(color: colors.colorDivider),
         const SizedBox(height: 4),
-        
+
         // Mutual Fund Holdings
         const MutualFundholdings(),
         const SizedBox(height: 10),
@@ -393,7 +458,8 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
     );
   }
 
-  Widget _buildHoldingItem(String name, String value, Color color, ThemesProvider theme) {
+  Widget _buildHoldingItem(
+      String name, String value, Color color, ThemesProvider theme) {
     return ListTile(
       minLeadingWidth: 10,
       leading: Container(
@@ -419,22 +485,24 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
     );
   }
 
-  Widget _buildEventsTab(MarketWatchProvider marketWatch, ThemesProvider theme) {
+  Widget _buildEventsTab(
+      MarketWatchProvider marketWatch, ThemesProvider theme) {
     if (marketWatch.fundamentalData?.msg == "no data found") {
       return const Center(child: NoDataFound());
     }
-    
+
     return const SingleChildScrollView(
       padding: EdgeInsets.all(16),
       child: StockEvents(),
     );
   }
 
-  Widget _buildOverviewTab(MarketWatchProvider marketWatch, ThemesProvider theme) {
+  Widget _buildOverviewTab(
+      MarketWatchProvider marketWatch, ThemesProvider theme) {
     if (marketWatch.fundamentalData?.stockDescription?.isEmpty ?? true) {
       return const Center(child: NoDataFound());
     }
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -590,4 +658,4 @@ class _FundamentalDetailScreenState extends ConsumerState<FundamentalDetailScree
       ],
     );
   }
-} 
+}

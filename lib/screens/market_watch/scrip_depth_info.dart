@@ -739,7 +739,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                     horizontal:
                                                                         0,
                                                                     vertical:
-                                                                        20),
+                                                                        10),
                                                                 child: Row(
                                                                     mainAxisAlignment:
                                                                         MainAxisAlignment
@@ -884,7 +884,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         horizontal:
                                                                             10,
                                                                         vertical:
-                                                                            8),
+                                                                            15),
                                                                     child: Row(
                                                                       mainAxisSize:
                                                                           MainAxisSize
@@ -999,7 +999,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                       ),
 
                                                       SizedBox(
-                                                        height: 16,
+                                                        height: 8,
                                                       ),
                                                     ],
                                                   ),
@@ -1897,15 +1897,19 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                       depthData),
 
                                                                 // Fundamentals Section (conditional)
-                                                                if (widget.wlValue
-                                                                            .exch ==
-                                                                        'NSE' ||
-                                                                    widget.wlValue
-                                                                            .exch ==
-                                                                        'BSE')
+                                                                if (scripInfo
+                                                                            .fundamentalData !=
+                                                                        null &&
+                                                                    scripInfo
+                                                                            .fundamentalData
+                                                                            ?.msg !=
+                                                                        "no data found") ...[
                                                                   _buildFundamentalsSection(
                                                                       theme,
                                                                       depthData),
+                                                                ] else ...[
+                                                                  const SizedBox(),
+                                                                ]
                                                               ]))
                                                     ] else if (scripInfo
                                                             .actDeptBtn ==

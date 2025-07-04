@@ -146,10 +146,13 @@ class _WatchListScreen extends State<WatchListScreen>
 
     // Initialize page controller with saved page index
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializePageController();
+      if (!_isDisposed) {
+        // Try to initialize immediately if we have data
+        _initializePageController();
 
-      // Ensure predefined watchlists are loaded properly
-      _ensurePredefinedWatchlistsLoaded();
+        // Ensure predefined watchlists are loaded properly
+        _ensurePredefinedWatchlistsLoaded();
+      }
     });
 
     // Add listener to scroll controller to track user scrolling
@@ -240,18 +243,78 @@ class _WatchListScreen extends State<WatchListScreen>
     if (_isDisposed || _isPageControllerInitialized) return;
 
     try {
-      // Get the current index from the provider using Consumer
+      // Get the current state from the provider
       final marketWatch =
           ProviderScope.containerOf(context).read(marketWatchProvider);
-      final savedIndex = marketWatch.currentWatchlistPageIndex;
+      final currentWLName = marketWatch.wlName;
+      final marketWatchlist = marketWatch.marketWatchlist;
 
-      // Only update if we have a valid index and the controller is not disposed
-      if (savedIndex >= 0 && _controller.hasClients) {
-        _controller.jumpToPage(savedIndex);
+      // If we have watchlist data, find the correct index based on current wlName
+      int targetIndex = 0;
+      if (marketWatchlist?.values != null && currentWLName.isNotEmpty) {
+        final foundIndex = marketWatchlist!.values!.indexOf(currentWLName);
+        if (foundIndex != -1) {
+          // Found the watchlist by name - use this index
+          targetIndex = foundIndex;
+          print(
+              "Found current watchlist '$currentWLName' at index $targetIndex");
+        } else {
+          // Watchlist name not found, fall back to saved index or 0
+          final savedIndex = marketWatch.currentWatchlistPageIndex;
+          targetIndex =
+              (savedIndex >= 0 && savedIndex < marketWatchlist.values!.length)
+                  ? savedIndex
+                  : 0;
+          print(
+              "Watchlist '$currentWLName' not found, using index $targetIndex");
+        }
+      } else {
+        // No watchlist data yet, use saved index
+        final savedIndex = marketWatch.currentWatchlistPageIndex;
+        targetIndex = savedIndex >= 0 ? savedIndex : 0;
+        print("No watchlist data yet, using saved index $targetIndex");
+      }
+
+      // Update both the UI state and provider state
+      _selectedTabIndex = targetIndex;
+      marketWatch.setCurrentWatchlistPageIndex(targetIndex);
+
+      // Only jump to page if the controller is ready and we have a valid index
+      if (_controller.hasClients && targetIndex >= 0) {
+        _controller.jumpToPage(targetIndex);
         _isPageControllerInitialized = true;
+        print(
+            "Initialized page controller to index $targetIndex for watchlist '$currentWLName'");
+
+        // If this is a predefined watchlist, ensure it has data
+        if (marketWatchlist?.values != null &&
+            targetIndex < marketWatchlist!.values!.length) {
+          final targetWatchlistName = marketWatchlist.values![targetIndex];
+          if (targetWatchlistName == "Nifty50" ||
+              targetWatchlistName == "Niftybank" ||
+              targetWatchlistName == "Sensex") {
+            // For predefined lists, ensure data is available
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              if (!_isDisposed) {
+                print(
+                    "Ensuring data for predefined watchlist: $targetWatchlistName");
+                await marketWatch.fetchMWScrip(targetWatchlistName, context);
+                await marketWatch.changeWLScrip(targetWatchlistName, context);
+                await marketWatch.requestMWScrip(
+                    context: context, isSubscribe: true);
+              }
+            });
+          }
+        }
       }
     } catch (e) {
       print("Error initializing page controller: $e");
+      // Fallback to default state
+      _selectedTabIndex = 0;
+      if (_controller.hasClients) {
+        _controller.jumpToPage(0);
+        _isPageControllerInitialized = true;
+      }
     }
   }
 
@@ -367,46 +430,76 @@ class _WatchListScreen extends State<WatchListScreen>
       // Use the original marketWatchlist data as-is
       final marketWatchlist = originalMarketWatchlist;
 
-      // Ensure page controller is initialized with the correct index
-      // This also helps when the user returns to the screen
-      if (!_isPageControllerInitialized) {
-        final savedIndex =
-            ref.read(marketWatchProvider).currentWatchlistPageIndex;
-        if (savedIndex >= 0 &&
-            savedIndex < (marketWatchlist?.values?.length ?? 0)) {
-          // Set the selected tab index for immediate UI updates
-          _selectedTabIndex = savedIndex;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!_isDisposed && _controller.hasClients) {
-              _controller.jumpToPage(savedIndex);
-              _isPageControllerInitialized = true;
-
-              // When initializing, ensure the current page has data
-              final currentName = marketWatchlist?.values?[savedIndex];
-              if (currentName != null &&
-                  (currentName == "Nifty50" ||
-                      currentName == "Niftybank" ||
-                      currentName == "Sensex")) {
-                // Immediately force refresh for predefined watchlists
-                ref
-                    .read(marketWatchProvider)
-                    .fetchMWScrip(currentName, context)
-                    .then((_) {
-                  // And re-subscribe to ensure we get updates
-                  ref
-                      .read(marketWatchProvider)
-                      .requestMWScrip(context: context, isSubscribe: true);
-                });
-              }
-            }
-          });
-        }
+      // Ensure page controller is initialized when watchlist data becomes available
+      // This is especially important when returning to the screen
+      if (!_isPageControllerInitialized && marketWatchlist?.values != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!_isDisposed) {
+            _initializePageController();
+          }
+        });
       }
 
       // Check if watchlist changed to reduce rebuilds when only prices change
       bool watchlistChanged = _currentWatchlist != wlName;
       if (watchlistChanged) {
         _currentWatchlist = wlName;
+      }
+
+      // Enhanced synchronization: Always ensure tab selection matches the current wlName
+      // This is crucial when returning to the screen
+      bool needsIndexSync = false;
+      int correctIndex = _selectedTabIndex;
+
+      if (marketWatchlist?.values != null &&
+          marketWatchlist!.values!.isNotEmpty) {
+        // Find the correct index for the current watchlist name
+        final wlNameIndex = marketWatchlist.values!.indexOf(wlName);
+
+        if (wlNameIndex != -1) {
+          // Found the watchlist - check if our selected index matches
+          if (_selectedTabIndex != wlNameIndex) {
+            correctIndex = wlNameIndex;
+            needsIndexSync = true;
+            print(
+                "Syncing tab: current index $_selectedTabIndex -> correct index $wlNameIndex for watchlist '$wlName'");
+          }
+        } else {
+          // Current watchlist not found in list - this might happen during initialization
+          print(
+              "Warning: Current watchlist '$wlName' not found in watchlist values: ${marketWatchlist.values}");
+          // Keep the current index but clamp it to valid range
+          correctIndex =
+              _selectedTabIndex.clamp(0, marketWatchlist.values!.length - 1);
+          if (correctIndex != _selectedTabIndex) {
+            needsIndexSync = true;
+          }
+        }
+      }
+
+      // Apply the synchronization if needed
+      if (needsIndexSync) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!_isDisposed) {
+            setState(() {
+              _selectedTabIndex = correctIndex;
+            });
+
+            // Update the provider's saved index to match
+            ref
+                .read(marketWatchProvider)
+                .setCurrentWatchlistPageIndex(correctIndex);
+
+            // Jump to the correct page if needed
+            if (_controller.hasClients &&
+                _controller.page?.round() != correctIndex) {
+              _controller.jumpToPage(correctIndex);
+            }
+
+            // Scroll to highlight the correct tab
+            _scrollToSelectedTab(correctIndex, force: true);
+          }
+        });
       }
 
       // Always sync the selected tab index with the provider's current watchlist
@@ -454,43 +547,6 @@ class _WatchListScreen extends State<WatchListScreen>
         } else if (isPredefinedAddition) {
           print(
               "DEBUG UI: Predefined lists addition detected, no additional refresh needed");
-        }
-
-        final newIndex = marketWatchlist!.values!.indexOf(wlName);
-
-        // Ensure selected index is valid and matches current watchlist
-        bool needsUpdate = false;
-        int targetIndex = _selectedTabIndex;
-
-        if (newIndex != -1) {
-          // Current watchlist found in the list
-          if (newIndex != _selectedTabIndex) {
-            targetIndex = newIndex;
-            needsUpdate = true;
-          }
-        } else {
-          // Current watchlist not found, might be deleted
-          // Clamp to valid range
-          if (_selectedTabIndex >= watchlistCount) {
-            targetIndex = watchlistCount - 1;
-            needsUpdate = true;
-          }
-        }
-
-        // Ensure index is never negative
-        if (targetIndex < 0 && watchlistCount > 0) {
-          targetIndex = 0;
-          needsUpdate = true;
-        }
-
-        if (needsUpdate) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!_isDisposed) {
-              setState(() {
-                _selectedTabIndex = targetIndex;
-              });
-            }
-          });
         }
       }
 
@@ -576,8 +632,9 @@ class _WatchListScreen extends State<WatchListScreen>
                                     : Colors.black.withOpacity(0.08),
                                 onTap: () async {
                                   // Add delay for visual feedback
-                                  await Future.delayed(const Duration(milliseconds: 150));                                  
-                                  
+                                  await Future.delayed(
+                                      const Duration(milliseconds: 150));
+
                                   FocusScope.of(context).unfocus();
                                   showModalBottomSheet(
                                     useSafeArea: true,
@@ -706,13 +763,14 @@ class _WatchListScreen extends State<WatchListScreen>
             controller: _controller,
             onPageChanged: (int d) async {
               // Immediately update selected tab index for instant UI feedback
+
+              // Force scroll to the new active tab since user swiped to change watchlist
+              _scrollToSelectedTab(d, force: true);
+
               setState(() {
                 _tappedwatch = true;
                 _selectedTabIndex = d;
               });
-
-              // Force scroll to the new active tab since user swiped to change watchlist
-              _scrollToSelectedTab(d, force: true);
 
               // Save the current page index to the provider
               ref.read(marketWatchProvider).setCurrentWatchlistPageIndex(d);
@@ -773,7 +831,7 @@ class _WatchListScreen extends State<WatchListScreen>
                   : jsonDecode(
                       marketWatch.marketWatchScripData[pageName] ?? '[]');
 
-              // ---------- 2.  give the page its own key so Flutter won’t recycle ----------
+              // ---------- 2.  give the page its own key so Flutter won't recycle ----------
               return KeyedSubtree(
                 key: ValueKey(pageName),
                 child: RefreshIndicator(

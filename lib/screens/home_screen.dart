@@ -1363,8 +1363,14 @@ class _OrderbookActions extends ConsumerWidget {
             height: 30,
             child: OutlinedButton(
                 onPressed: () {
-                  showDialog(
+                  showModalBottomSheet(
                       context: context,
+                      useSafeArea: true,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(16)),
+                      ),
                       builder: (BuildContext context) {
                         return const CreateBasket();
                       });
