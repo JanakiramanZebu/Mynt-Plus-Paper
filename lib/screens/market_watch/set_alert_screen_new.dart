@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import '../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../provider/thems.dart';
@@ -11,12 +12,9 @@ import 'set_alert_screen.dart';
 class SetAlertScreen extends ConsumerWidget {
   final GetQuotes depthdata;
   final DepthInputArgs wlvalue;
-  
-  const SetAlertScreen({
-    super.key, 
-    required this.depthdata, 
-    required this.wlvalue
-  });
+
+  const SetAlertScreen(
+      {super.key, required this.depthdata, required this.wlvalue});
 
   // Process depth data with socket updates
   void _processDepthData(GetQuotes depthData, Map<String, dynamic> socketData) {
@@ -36,7 +34,7 @@ class SetAlertScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.read(themeProvider);
-    
+
     return Scaffold(
       backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       appBar: AppBar(
@@ -44,97 +42,99 @@ class SetAlertScreen extends ConsumerWidget {
         leadingWidth: 48,
         centerTitle: false,
         titleSpacing: 0,
-        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        leading: Material(
-          color: Colors.transparent,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            splashColor: Colors.black.withOpacity(0.15),
-            highlightColor: Colors.black.withOpacity(0.08),
-            onTap: () {
-              
-              Navigator.pop(context);},
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.arrow_back_ios_outlined,
-                size: 18,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        backgroundColor:
+            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.hardEdge,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor: Colors.black.withOpacity(0.15),
+              highlightColor: Colors.black.withOpacity(0.08),
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.arrow_back_ios_outlined,
+                  size: 18,
+                  color: theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.colorBlack,
+                ),
               ),
             ),
           ),
         ),
-        shadowColor: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        shadowColor:
+            theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
         title: StreamBuilder<Map>(
           stream: ref.watch(websocketProvider).socketDataStream,
           builder: (context, snapshot) {
             final socketDatas = snapshot.data ?? {};
-            
+      
             // Update depth data with WebSocket data if available
             if (socketDatas.containsKey(wlvalue.token)) {
               _processDepthData(depthdata, socketDatas[wlvalue.token]);
             }
-
+      
             return Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Column(
+              padding: const EdgeInsets.fromLTRB(8, 8.0, 16, 8.0),// left, top, right, bottom
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      Text(
-                        "${wlvalue.symbol.toUpperCase()}",
-                        style: TextWidget.textStyle(
-                  fontSize: 13,
-                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack ,
-                  theme: theme.isDarkMode,
-                  fw: 0),
+                      TextWidget.titleText(
+                        text: wlvalue.symbol.toUpperCase(),
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        theme: theme.isDarkMode,
                       ),
-                      Text(
-                        wlvalue.option,
-                        style: TextWidget.textStyle(
-                    fontSize: 13,
-                    color: Color(0xff666666),
-                    theme: theme.isDarkMode,
-                    fw: 0),
+                      const SizedBox(width: 4),
+                      TextWidget.titleText(
+                        text: wlvalue.option,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        theme: theme.isDarkMode,
                       ),
-                      const Spacer(),
-                     
-              
-                       TextWidget.subText(
-                text:  "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? '0.00' : '0.00'}", fw: 0, theme: theme.isDarkMode),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Row(
+                  Column(
                     children: [
-                      if (wlvalue.expDate.isNotEmpty)
-                        TextWidget.paraText(text:wlvalue.expDate, fw: 00, theme: theme.isDarkMode),     
-                      const Spacer(),
-                      Text(
-                        "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)}   ${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%",
-                        style: 
-              
-                        TextWidget.textStyle(
-                    fontSize: 12, // or keep 12 if you prefer
-                    color: (depthdata.chng == "null" || depthdata.chng == null) || depthdata.chng == "0.00"
-                              ? colors.ltpgrey
-                              : depthdata.chng!.startsWith("-") || depthdata.pc!.startsWith("-")
-                                  ? colors.darkred
-                                  : colors.ltpgreen,
+                       TextWidget.titleText(
+                    text:
+                        "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? 0.00 : '0.00'}",
+                    color: (depthdata.chng == "null" ||
+                                depthdata.chng == null) ||
+                            depthdata.chng == "0.00"
+                        ? colors.textSecondaryLight
+                        : depthdata.chng!.startsWith("-") ||
+                                depthdata.pc!.startsWith("-")
+                            ? colors.error
+                            : colors.success,
                     theme: theme.isDarkMode,
-                    fw: 2, // fw = 0 → FontWeight.w500 as per your logic
-                  )
-                      ),
-              
-                      
+                  ),
+                  const SizedBox(height: 8),
+                  TextWidget.paraText(
+                    text:
+                        "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    theme: theme.isDarkMode,
+                  ),
                     ],
                   ),
+                 
+                 
                 ],
               ),
             );

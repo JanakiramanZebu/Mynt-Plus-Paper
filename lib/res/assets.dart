@@ -62,7 +62,7 @@ class Assets {
 
   final String iosuparrow = "assets/icon/iosuparrow.svg";
   final String removeIcon = "assets/icon/watchlistIcon/remove_text.svg";
-  final String charts = "assets/icon/watchlistIcon/charts.svg";
+  final String chart = "assets/icon/watchlistIcon/charts.svg";
   final String options = "assets/icon/watchlistIcon/options.svg";
   final String rightarrowcur = "assets/icon/watchlistIcon/rightarrow.svg";
   final String convertpositionicon =

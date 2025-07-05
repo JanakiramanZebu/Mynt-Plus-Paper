@@ -134,65 +134,64 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                     //   },
                     // ),
                     Expanded(
-        child: InkWell(
-          onTap: () async {
-            if (transbtn) {
-              userProfile.setChartdialog(false);
-              await placeOrderInput(
-                  tvChart, context, tvChart.getQuotes!, true);
-            }
-          },
-          child: Container(
-            height: 40,
-            decoration: BoxDecoration(
-              color: transbtn
-                  ? const Color(0xFF0037B7) // Blue color for Buy
-                  : const Color(0xFF0037B7).withOpacity(0.2),
-              borderRadius: const BorderRadius.all(
-               Radius.circular(6)
-              ),
-            ),
-            child: Center(
-              child: TextWidget.subText(
-                text: "Buy",
-                color: const Color(0XFFFFFFFF),
-                theme: theme.isDarkMode,
-                fw: 0,
-              ),
-            ),
-          ),
-        ),
-      ),
+                      child: InkWell(
+                        onTap: () async {
+                          if (transbtn) {
+                            userProfile.setChartdialog(false);
+                            await placeOrderInput(
+                                tvChart, context, tvChart.getQuotes!, true);
+                          }
+                        },
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: transbtn
+                                ? const Color(0xFF0037B7) // Blue color for Buy
+                                : const Color(0xFF0037B7).withOpacity(0.2),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(6)),
+                          ),
+                          child: Center(
+                            child: TextWidget.subText(
+                              text: "Buy",
+                              color: const Color(0XFFFFFFFF),
+                              theme: theme.isDarkMode,
+                              fw: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 18),
                     Expanded(
-        child: InkWell(
-          onTap: () async {
-            if (transbtn) {
-              userProfile.setChartdialog(false);
-              await placeOrderInput(tvChart, context,
-                  tvChart.getQuotes!, false);
-            }
-          },
-          child: Container(
-            height: 40,
-            decoration: BoxDecoration(
-              color: transbtn
-                  ? const Color(0xFFC40024) // Red color for Sell
-                  : const Color(0xFFC40024).withOpacity(0.2),
-              borderRadius: const BorderRadius.all(Radius.circular(6)
-              ),
-            ),
-            child: Center(
-              child: TextWidget.subText(
-                text: "Sell",
-                color: const Color(0XFFFFFFFF),
-                theme: theme.isDarkMode,
-                fw: 0,
-              ),
-            ),
-          ),
-        ),
-      ),
+                      child: InkWell(
+                        onTap: () async {
+                          if (transbtn) {
+                            userProfile.setChartdialog(false);
+                            await placeOrderInput(
+                                tvChart, context, tvChart.getQuotes!, false);
+                          }
+                        },
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: transbtn
+                                ? const Color(0xFFC40024) // Red color for Sell
+                                : const Color(0xFFC40024).withOpacity(0.2),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(6)),
+                          ),
+                          child: Center(
+                            child: TextWidget.subText(
+                              text: "Sell",
+                              color: const Color(0XFFFFFFFF),
+                              theme: theme.isDarkMode,
+                              fw: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ]),
             )
           ],
@@ -215,29 +214,47 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
           children: [
             SizedBox(
               width: 40,
-              child: IconButton(
-                padding: const EdgeInsets.all(0),
-                icon: SvgPicture.asset(
-  assets.backCustomIcon,
-  width: 20,
-  height: 20,
-),
-                onPressed: () async {
-                  userProfile.setChartdialog(false);
-                  if (tvChart.scripsize) {
-                    tvChart.chngDephBtn("Overview");
-                  } else {
-                    tvChart.chngDephBtn("Overview");
-                    tvChart.singlePageloader(true);
-                    await tvChart.calldepthApis(context, tvChart.getQuotes, "");
-                    tvChart.singlePageloader(false);
-                  }
-                  tvChart.setChartScript('ABC', '0123', 'ABCD');
-                  chartUpdate.changeOrientation('portrait');
-                },
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: Colors.grey.withOpacity(0.4),
+                  highlightColor: Colors.grey.withOpacity(0.2),
+                  onTap: () async {
+                    // Add delay for visual feedback
+                    await Future.delayed(const Duration(milliseconds: 150));
+
+                    userProfile.setChartdialog(false);
+                    if (tvChart.scripsize) {
+                      tvChart.chngDephBtn("Overview");
+                    } else {
+                      tvChart.chngDephBtn("Overview");
+                      tvChart.singlePageloader(true);
+                      await tvChart.calldepthApis(
+                          context, tvChart.getQuotes, "");
+                      tvChart.singlePageloader(false);
+                    }
+                    tvChart.setChartScript('ABC', '0123', 'ABCD');
+                    chartUpdate.changeOrientation('portrait');
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.arrow_back_ios_outlined,
+                      size: 18,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                    ),
+                  ),
+                ),
               ),
             ),
-            const Spacer(),            // Expanded(
+            const Spacer(), // Expanded(
             //   child: ListView.separated(
             //     controller: tvChart.scrollController,
             //     scrollDirection: Axis.horizontal,
@@ -316,40 +333,70 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
             //     },
             //   ),
             // ),
-            
-            IconButton(
-              padding: const EdgeInsets.all(0),
-              icon: SvgPicture.asset(
-  assets.rotationIcon,
-  width: 20,
-  height: 20,
-), // Back icon
-              onPressed: () async {
-                if (chartUpdate.orientation == 'portrait') {
-                  chartUpdate.changeOrientation('landscape');
-                } else {
-                  chartUpdate.changeOrientation('portrait');
-                }
-              },
+
+            Material(
+              color: Colors.transparent, // Needed for ripple effect to show
+              child: InkWell(
+                customBorder: const CircleBorder(),// Optional: match icon shape
+                splashColor: theme.isDarkMode
+                    ? colors.splashColorDark
+                    : colors.splashColorLight,
+                highlightColor: theme.isDarkMode
+                    ? colors.highlightDark
+                    : colors.highlightLight,
+                onTap: () async {
+                  if (chartUpdate.orientation == 'portrait') {
+                    chartUpdate.changeOrientation('landscape');
+                  } else {
+                    chartUpdate.changeOrientation('portrait');
+                  }
+                },
+                child: Padding(
+                  padding:
+                      EdgeInsets.all(8), // Slight padding for ripple visibility
+                  child: SvgPicture.asset(
+                    assets.rotationIcon,
+                    width: 20,
+                    height: 20,
+                  ),
+                ),
+              ),
             ),
-            IconButton(
-              padding: const EdgeInsets.all(0),
-              icon: SvgPicture.asset(
-  assets.searchIcon1,
-  width: 20,
-  height: 20,
-),// Back icon
-              onPressed: () async {
-                ref
-                    .read(marketWatchProvider)
-                    .requestMWScrip(context: context, isSubscribe: false);
-                Navigator.pushNamed(
-                  context,
-                  Routes.searchScrip,
-                  arguments: "Chart||Is",
-                );
-                // userProfile.setChartdialog(false);
-              },
+
+            const SizedBox(width: 8),
+
+            Material(
+              color: Colors
+                  .transparent, // Ensures ripple shows on transparent background
+              child: InkWell(
+               customBorder: const CircleBorder(), // Optional: for a smooth ripple
+                splashColor: theme.isDarkMode
+                    ? colors.splashColorDark
+                    : colors.splashColorLight,
+                highlightColor: theme.isDarkMode
+                    ? colors.highlightDark
+                    : colors.highlightLight,
+                onTap: () async {
+                  ref
+                      .read(marketWatchProvider)
+                      .requestMWScrip(context: context, isSubscribe: false);
+                  Navigator.pushNamed(
+                    context,
+                    Routes.searchScrip,
+                    arguments: "Chart||Is",
+                  );
+                  // userProfile.setChartdialog(false);
+                },
+                child: Padding(
+                  padding:
+                      EdgeInsets.all(8), // Gives space for ripple visibility
+                  child: SvgPicture.asset(
+                    assets.searchIcon1,
+                    width: 20,
+                    height: 20,
+                  ),
+                ),
+              ),
             )
           ],
         ),

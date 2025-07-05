@@ -304,6 +304,7 @@ class TextWidget {
         height: height,
         letterSpacing: letterSpacing ?? 0.5,
         decoration: decoration,
+        
       ),
     );
   }

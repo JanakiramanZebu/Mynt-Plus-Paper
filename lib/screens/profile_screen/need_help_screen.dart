@@ -42,9 +42,9 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
             TextWidget.subText(
                 text: "Customer Support & Assistance",
                 theme: false,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                fw: 1),
-            const SizedBox(height: 10),
+                color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 0),
+            const SizedBox(height: 14),
             InkWell(
               onTap: () async {
                 final Uri url = Uri(scheme: 'tel', path: "9380108010");
@@ -56,11 +56,14 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
                 TextWidget.paraText(
                     text: ConstantName.phoneNum,
                     theme: false,
-                    color: colors.colorGrey,
-                    fw: 0)
+                   color: !theme.isDarkMode
+                  ? colors.textSecondaryLight
+                  : colors.textSecondaryDark,
+              fw: 3,
+                    )
               ]),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             InkWell(
               onTap: () async {
                 final Uri url = Uri(scheme: 'mailto', path: ConstantName.gamil);
@@ -72,17 +75,20 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
                 TextWidget.paraText(
                     text: ConstantName.gamil,
                     theme: false,
-                    color: colors.colorGrey,
-                    fw: 0)
+                     color: !theme.isDarkMode
+                  ? colors.textSecondaryLight
+                  : colors.textSecondaryDark,
+              fw: 3,
+                    )
               ]),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             TextWidget.subText(
                 text: "Investor grievance:",
                 theme: false,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                fw: 1),
-            const SizedBox(height: 3),
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 0),
+            const SizedBox(height: 8),
             InkWell(
               onTap: () async {
                 final Uri url =
@@ -94,21 +100,30 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
                 child: TextWidget.paraText(
                     text: ConstantName.gamil1,
                     theme: false,
-                    color: colors.colorGrey,
-                    fw: 0),
+                    color: !theme.isDarkMode
+                  ? colors.textSecondaryLight
+                  : colors.textSecondaryDark,
+              fw: 3,
+                    ),
               ),
             ),
+            const SizedBox(height: 8),
+
             Divider(
                 color: theme.isDarkMode
                     ? colors.darkColorDivider
                     : colors.colorDivider,
                 thickness: 1),
+            // const SizedBox(height: 8),
+
             TextWidget.subText(
                 text: "Follow us",
                 theme: false,
-                color: colors.colorGrey,
-                fw: 1),
-            const SizedBox(height: 10),
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 0),
+            const SizedBox(height: 20),
             SizedBox(
                 height: 30,
                 child: ListView.builder(

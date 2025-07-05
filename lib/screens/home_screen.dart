@@ -963,37 +963,56 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     scrollable: true,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14),
                     insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-                    title: const Text("Exit App"),
+                    title:  TextWidget.titleText(
+                  text: "Exit App",
+                  theme: false,
+                  color: Color(0xff000000),
+                  fw: 0,
+                ),
                     content: SizedBox(
                         width: MediaQuery.of(context).size.width,
                         child: const Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [Text("Do you want to Exit the App?")])),
+                            children: [
+                              Text("Do you want to Exit the App?")
+                              ])),
                     actions: [
-                      TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: Text("No",
-                              style: textStyles.textBtn.copyWith(
-                                  color: theme.isDarkMode
-                                      ? colors.colorLightBlue
-                                      : colors.colorBlue))),
                       ElevatedButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: theme.isDarkMode
-                                  ? colors.colorbluegrey
-                                  : colors.colorBlack,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              )),
-                          child: Text("Yes",
-                              style: textStyle(
-                                  !theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  14,
-                                  FontWeight.w500)))
+                                onPressed: () => Navigator.of(context).pop(false),
+                                style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: theme.isDarkMode
+                                        ? const Color(0xffF1F3F8)
+                                        : const Color(0xffF1F3F8),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(4))),
+                                child: TextWidget.subText(
+                                    text: "No",
+                                    theme: false,
+                                    color: !theme.isDarkMode
+                                        ? const Color(0xff666666)
+                                        : const Color(0xff666666),
+                                    fw: 0),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: theme.isDarkMode
+                                        ? colors.primaryDark
+                                        : colors.primaryLight,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(4))),
+                                child: TextWidget.subText(
+                                    text: "Yes",
+                                    theme: false,
+                                    color: colors.colorWhite,
+                                        
+                                    fw: 0),
+                              ),
+                       
                     ]);
               }) ??
           false;

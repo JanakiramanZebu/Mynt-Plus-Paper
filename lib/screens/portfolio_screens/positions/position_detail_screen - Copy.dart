@@ -894,7 +894,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                   MainAxisAlignment.center,
                                               children: [
                                                 SvgPicture.asset(
-                                                  assets.charts,
+                                                  assets.chart,
                                                   color: Color(0xFF0037B7),
                                                   width: 16,
                                                   height: 16,

@@ -54,7 +54,7 @@ class StrikePriceListCard extends ConsumerWidget {
     //   () => GoogleFonts.inter(
     //     textStyle: 
 return TextWidget.textStyle(
-                 fontSize: 14 ,  theme: false , fw: 00 );
+                 fontSize: 14 ,  theme: false , );
 
 
     //   ).copyWith(color: color),
