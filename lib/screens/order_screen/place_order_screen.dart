@@ -1383,10 +1383,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                       r'[^0-9]'),
                                                                   '');
 
-                                                          int number =
-                                                              int.tryParse(
-                                                                      newValue) ??
-                                                                  0;
+                                                          int number = int.tryParse(newValue) ??  0;
                                                           if (number >
                                                               ((frezQtyOrderSliceMaxLimit *
                                                                           frezQty) ==
@@ -2105,7 +2102,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           "Price", theme),
                                                       const SizedBox(width: 4),
                                                       Text(
-                                                          "${orderInput.actPrcType}",
+                                                          "${orderInput.actOcoPrcType}",
                                                           style: textStyle(
                                                               const Color(
                                                                   0xff777777),
@@ -2381,15 +2378,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                               // ),
 
                               //  ],
-                              if ((orderInput.actOcoPrcType == "Market" ||
-                                      orderInput.actOcoPrcType == "SL MKT") ||
-                                  (orderInput.actPrcType == "Market" ||
-                                      orderInput.actPrcType == "SL MKT")) ...[
-                                const SizedBox(height: 16),
-                                marketProtectionDisclaimer(theme, context,
-                                    widget.scripInfo, mktProtCtrl.text),
-                                const SizedBox(height: 16),
-                              ],
+                              // if ((orderInput.actOcoPrcType == "Market" ||
+                              //         orderInput.actOcoPrcType == "SL MKT") ||
+                              //     (orderInput.actPrcType == "Market" ||
+                              //         orderInput.actPrcType == "SL MKT")) ...[
+                              //   const SizedBox(height: 16),
+                              //   marketProtectionDisclaimer(theme, context,
+                              //       widget.scripInfo, mktProtCtrl.text),
+                              //   const SizedBox(height: 16),
+                              // ],
                               const SizedBox(height: 100)
                             ] else ...[
                               // If Order Tab is Regular then show investment type and investment type radio button
