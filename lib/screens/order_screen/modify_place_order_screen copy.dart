@@ -40,7 +40,7 @@ class ModifyPlaceOrderScreen extends ConsumerStatefulWidget {
 
 class _ModifyPlaceOrderScreenState
     extends ConsumerState<ModifyPlaceOrderScreen> {
-  // bool addStoploss = false;
+  bool addStoploss = false;
   bool isAgree = false;
   bool addValidity = false;
   bool isAmo = false;
@@ -54,9 +54,9 @@ class _ModifyPlaceOrderScreenState
   TextEditingController targetCtrl = TextEditingController();
   TextEditingController trailingTickCtrl = TextEditingController();
   List<String> priceType = ["Limit", "Market", "SL Limit", "SL MKT"];
-  // List<bool> isActivePrice = [];
+  List<bool> isActivePrice = [];
   List<String> validityType = ["Day", "IOC"];
-  // List<bool> isActiveValidity = [true, false];
+  List<bool> isActiveValidity = [true, false];
 
   String prcType = "";
 
@@ -66,10 +66,8 @@ class _ModifyPlaceOrderScreenState
   String price = "0.00";
   String validity = "DAY";
   bool _isMarketOrder = false;
-  bool _isStoplossOrder = false;
-  bool _isBOCOOrderEnabled = false;
+  // bool _isStoplossOrder = false;
   bool isAdvancedOptionClicked = false;
-  // String orderType = "Delivery";
 
   double tik = 0.00;
   double roundOffWithInterval(double input, double interval) {
@@ -81,12 +79,12 @@ class _ModifyPlaceOrderScreenState
     tik = double.parse(widget.scripInfo.ti.toString());
 
     prcType = widget.modifyOrderArgs.prctyp!;
-    // isActivePrice = [
-    //   prcType == 'LMT' ? true : false,
-    //   prcType == 'MKT' ? true : false,
-    //   prcType == 'SL-LMT' ? true : false,
-    //   prcType == 'SL-MKT' ? true : false
-    // ];
+    isActivePrice = [
+      prcType == 'LMT' ? true : false,
+      prcType == 'MKT' ? true : false,
+      prcType == 'SL-LMT' ? true : false,
+      prcType == 'SL-MKT' ? true : false
+    ];
     int sfq = int.tryParse(widget.scripInfo.frzqty?.toString() ?? '1') ?? 1;
     lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
 
@@ -111,7 +109,7 @@ class _ModifyPlaceOrderScreenState
         }
       }
       if (widget.orderArg.exchange == "MCX") {
-        qtyCtrl.text = (int.parse(qtyCtrl.text) ~/ lotSize).toString();
+        qtyCtrl.text = (int.parse(qtyCtrl.text) / lotSize).toInt().toString();
       }
       mktProtCtrl = TextEditingController(
           text: widget.modifyOrderArgs.mktProtection == null
@@ -127,10 +125,10 @@ class _ModifyPlaceOrderScreenState
       discQtyCtrl = TextEditingController(text: widget.modifyOrderArgs.dscqty);
       validity = widget.modifyOrderArgs.ret!.toUpperCase();
 
-      // isActiveValidity = [
-      //   validity == 'DAY' ? true : false,
-      //   validity == 'IOC' ? true : false,
-      // ];
+      isActiveValidity = [
+        validity == 'DAY' ? true : false,
+        validity == 'IOC' ? true : false,
+      ];
       addValidity = validity.toUpperCase() == 'IOC' ||
               (widget.modifyOrderArgs.dscqty != null &&
                   int.parse(widget.modifyOrderArgs.dscqty.toString()) > 0)
@@ -138,23 +136,26 @@ class _ModifyPlaceOrderScreenState
           : false;
 
       if (prcType == "MKT" || prcType == "SL-MKT") {
-                double ltp = (double.parse("${widget.orderArg.ltp}") *
-                double.parse(mktProtCtrl.text.isEmpty ? "0" : mktProtCtrl.text)) /100;
+        double ltp = (double.parse("${widget.orderArg.ltp}") *
+                double.parse(
+                    mktProtCtrl.text.isEmpty ? "0" : mktProtCtrl.text)) /
+            100;
         if (widget.modifyOrderArgs.trantype == "B") {
-                price = (double.parse("${widget.orderArg.ltp ?? 0.00}") + ltp).toStringAsFixed(2);
+          price = (double.parse("${widget.orderArg.ltp ?? 0.00}") + ltp)
+              .toStringAsFixed(2);
         } else {
-                price = (double.parse("${widget.orderArg.ltp ?? 0.00}") - ltp).toStringAsFixed(2);
+          price = (double.parse("${widget.orderArg.ltp ?? 0.00}") - ltp)
+              .toStringAsFixed(2);
         }
-                priceCtrl.text = "Market";
+        priceCtrl.text = "Market";
       } else {
-               priceCtrl.text = "${widget.modifyOrderArgs.prc}";
+        priceCtrl.text = "${widget.modifyOrderArgs.prc}";
       }
 
-      _isMarketOrder = prcType == "MKT";
-      _isStoplossOrder = prcType == "SL-LMT" || prcType == "SL-MKT";
-      _isBOCOOrderEnabled = widget.modifyOrderArgs.sPrdtAli == "BO" || widget.modifyOrderArgs.sPrdtAli == "CO";
-
-      
+      addStoploss = widget.modifyOrderArgs.sPrdtAli == "BO" ||
+              widget.modifyOrderArgs.sPrdtAli == "CO"
+          ? true
+          : false;
       marginUpdate();
     });
     super.initState();
@@ -898,17 +899,15 @@ class _ModifyPlaceOrderScreenState
 
                               // const SizedBox(height: 16),
                               // const Divider(color: Color(0xffDDDDDD)),
-                              // (widget.modifyOrderArgs.sPrdtAli != "BO" && widget.modifyOrderArgs.sPrdtAli != "CO") &&
-                              if ( (prcType == "SL-LMT" || prcType == "SL-MKT"))...[
-                                const SizedBox(height: 16),
+                              if (prcType == "SL-LMT" || prcType == "SL-MKT")
                                 triggerOption(theme, context, widget.scripInfo),
                               Divider(
                                   color: theme.isDarkMode
                                       ? colors.darkColorDivider
                                       : colors.colorDivider),
-                              ],
-                              if (_isBOCOOrderEnabled) ...[
-                                const SizedBox(height: 16),
+
+                              if (addStoploss) ...[
+                                const SizedBox(height: 12),
                                stopLossOption(theme, context, widget.scripInfo)
                               ],
                               // Padding(
@@ -1706,13 +1705,9 @@ class _ModifyPlaceOrderScreenState
                                       style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 10),
-                                          backgroundColor: theme.isDarkMode
-                                                      ?  isBuy
-                                                          ? colors.ltpgreen
-                                                          : colors.darkred
-                                                      : isBuy
-                                                          ? colors.ltpgreen
-                                                          : colors.darkred
+                                          backgroundColor: !theme.isDarkMode
+                                              ? colors.colorBlack
+                                              : colors.colorWhite,
                                           // shape: const StadiumBorder()
                                           ),
                                       child: orderProvide.orderloader
@@ -1826,7 +1821,7 @@ class _ModifyPlaceOrderScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           prcType == "SL-LMT" ? const SizedBox(height: 10) : Container(),
-          if (widget.modifyOrderArgs.sPrdtAli == "BO" && widget.modifyOrderArgs.bpprc != null) ...[
+          if (widget.modifyOrderArgs.sPrdtAli == "BO") ...[
             headerTitleText("Target", theme),
             const SizedBox(height: 7),
             SizedBox(
@@ -1842,9 +1837,13 @@ class _ModifyPlaceOrderScreenState
                       if (value.isNotEmpty && inputPrice > 0) {
                         final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
                         if (!regex.hasMatch(value)) {
-                          targetCtrl.text = value.substring(0,value.length -1); // Revert to previous valid input
+                          targetCtrl.text = value.substring(
+                              0,
+                              value.length -
+                                  1); // Revert to previous valid input
                           targetCtrl.selection = TextSelection.collapsed(
-                              offset: targetCtrl.text.length); // Keep cursor at the end
+                              offset: targetCtrl
+                                  .text.length); // Keep cursor at the end
                         }
                       }
 
@@ -1883,7 +1882,6 @@ class _ModifyPlaceOrderScreenState
                     textAlign: TextAlign.start)),
             const SizedBox(height: 10),
           ],
-          if ((widget.modifyOrderArgs.sPrdtAli == "CO" || widget.modifyOrderArgs.sPrdtAli == "BO") && widget.modifyOrderArgs.blprc != null) ...[
           headerTitleText("Stoploss", theme),
           const SizedBox(height: 7),
           SizedBox(
@@ -1937,7 +1935,6 @@ class _ModifyPlaceOrderScreenState
                   ),
                   textCtrl: stopLossCtrl,
                   textAlign: TextAlign.start)),
-          ],
         ],
       ),
     );
@@ -2139,9 +2136,9 @@ class _ModifyPlaceOrderScreenState
           dscqty: widget.modifyOrderArgs.dscqty ?? "0",
           token: widget.modifyOrderArgs.token!,
           exch: widget.modifyOrderArgs.exch!,
-          mktProt:mktProtCtrl.text.isEmpty ? widget.modifyOrderArgs.mktProtection ?? "" : mktProtCtrl.text,
+          mktProt: widget.modifyOrderArgs.mktProtection ?? "",
           orderNum: widget.modifyOrderArgs.norenordno!,
-          prc: price, //priceCtrl.text,
+          prc: priceCtrl.text,
           prd: widget.modifyOrderArgs.prd!,
           trantype: widget.modifyOrderArgs.trantype!,
           prctyp: prcType,
@@ -2159,12 +2156,11 @@ class _ModifyPlaceOrderScreenState
   }
 
   void updatePriceType() {
-
-    if (_isStoplossOrder && _isMarketOrder) {
+    if (addStoploss && _isMarketOrder) {
       prcType = "SL-MKT";
-    } else if (_isStoplossOrder && !_isMarketOrder) {
+    } else if (addStoploss && !_isMarketOrder) {
       prcType = "SL-LMT";
-    }else if (_isMarketOrder) {
+    } else if (_isMarketOrder) {
       prcType = "MKT";
     } else {
       prcType = "LMT";
@@ -2173,16 +2169,18 @@ class _ModifyPlaceOrderScreenState
     // Update price controller based on type
     if (prcType == "MKT" || prcType == "SL-MKT") {
       double ltp = (double.parse("${widget.orderArg.ltp}") *
-              double.parse(mktProtCtrl.text.isEmpty ? "0" : mktProtCtrl.text)) / 100;
+              double.parse(mktProtCtrl.text.isEmpty ? "0" : mktProtCtrl.text)) /
+          100;
       if (widget.modifyOrderArgs.trantype == "B") {
-        price = (double.parse("${widget.orderArg.ltp ?? 0.00}") + ltp).toStringAsFixed(2);
+        price = (double.parse("${widget.orderArg.ltp ?? 0.00}") + ltp)
+            .toStringAsFixed(2);
       } else {
-        price = (double.parse("${widget.orderArg.ltp ?? 0.00}") - ltp).toStringAsFixed(2);
+        price = (double.parse("${widget.orderArg.ltp ?? 0.00}") - ltp)
+            .toStringAsFixed(2);
       }
       priceCtrl.text = "Market";
     } else if (priceCtrl.text == "Market") {
-      priceCtrl.text = (widget.modifyOrderArgs.prc?.isNotEmpty ?? false) && double.tryParse(widget.modifyOrderArgs.prc!) != null && double.tryParse(widget.modifyOrderArgs.prc!)! > 0
-       ? "${widget.modifyOrderArgs.prc}" : "${widget.orderArg.ltp}";
+      priceCtrl.text = "${widget.orderArg.ltp}";
       price = priceCtrl.text;
     }
   }

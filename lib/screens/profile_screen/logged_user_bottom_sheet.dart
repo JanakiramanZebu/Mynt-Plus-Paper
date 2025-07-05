@@ -394,9 +394,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                   .read(websocketProvider)
                                   .changeconnectioncount();
                               if (context.mounted) {
-                                ref
-                                    .read(indexListProvider)
-                                    .bottomMenu(4, context);
+                                ref.read(indexListProvider).bottomMenu(3, context);
                               }
                             }
                           },

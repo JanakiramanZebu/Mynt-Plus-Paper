@@ -7,6 +7,11 @@ class Assets {
   final String qrIcon = "assets/icon/qr_new.svg";
   final String notifyIcon = "assets/icon/notify_new.svg";
   final String ipoIcon = "assets/icon/ipo_icon.svg";
+  final String searchIcon1 = "assets/icon/search 1.svg";
+  final String rotationIcon = "assets/icon/rotation.svg";
+  final String backCustomIcon = "assets/icon/back_custom.svg";
+  final String filterIcon = "assets/icon/filterIcon.svg";
+
 
   final String optionZIcon = "assets/icon/optionz_icon.svg";
 
@@ -21,6 +26,8 @@ class Assets {
   final String calendarDate = "assets/icon/appbarIcon/calendar_date.svg";
   final String downArrow = "assets/icon/down_arrow.svg";
   final String leftArrow = "assets/icon/arrow_left.svg";
+  final String hamMenu = "assets/icon/hamburger-menu.svg";
+  final String searchFilter = "assets/icon/search-filter.svg";
   final String alert = "assets/icon/alert.svg";
   final String ckeckboxIcon = "assets/icon/check_box.svg";
   final String ckeckedboxIcon = "assets/icon/checked_box.svg";

@@ -96,9 +96,8 @@ class _searchScripList extends State<SearchScripList> {
                     );
                   }
                 },
-                dense: true,
-                contentPadding:
-                    EdgeInsets.only(left: 16, right: 0, top: 0, bottom: 0),
+                dense: false,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 title: Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Row(

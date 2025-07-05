@@ -130,7 +130,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ref.read(websocketProvider).changeconnectioncount();
 
         // Navigate to profile tab
-        ref.read(indexListProvider).bottomMenu(4, context);
+                      ref.read(indexListProvider).bottomMenu(3, context);
 
         // Wait for a short time to ensure data is loaded
         await Future.delayed(const Duration(milliseconds: 200));

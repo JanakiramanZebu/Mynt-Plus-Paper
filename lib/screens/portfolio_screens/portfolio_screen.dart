@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
 import '../../provider/portfolio_provider.dart';
+import '../../provider/order_provider.dart';
+import '../../provider/market_watch_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
@@ -11,6 +13,7 @@ import '../profile_screen/fund_screen/secure_fund.dart';
 import 'allholdings/allholdings_screen.dart';
 import 'holdings/holding_screen.dart';
 import 'positions/position_screen.dart';
+import '../order_book/order_book_screen.dart';
 
 class PortfolioScreen extends ConsumerStatefulWidget {
   const PortfolioScreen({super.key});
@@ -60,6 +63,25 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
             .requestallHoldings(context: context, isSubscribe: false);
 
         ref.read(portfolioProvider).timerfunc();
+      } else if (ref.read(portfolioProvider).selectedTab == 2) {
+        // Orders tab - handle order-related logic
+        ref.read(portfolioProvider).cancelTimer();
+        ref
+            .read(portfolioProvider)
+            .requestWSPosition(context: context, isSubscribe: false);
+        ref
+            .read(portfolioProvider)
+            .requestWSHoldings(context: context, isSubscribe: false);
+        ref
+            .read(portfolioProvider)
+            .requestallHoldings(context: context, isSubscribe: false);
+        
+        // Load order-related data
+        ref.read(orderProvider).fetchOrderBook(context, false);
+        ref.read(orderProvider).fetchTradeBook(context);
+        ref.read(orderProvider).fetchSipOrderHistory(context);
+        ref.read(marketWatchProvider).fetchPendingAlert(context);
+        ref.read(orderProvider).requestWSOrderBook(context: context, isSubscribe: true);
       } else if (ref.read(portfolioProvider).selectedTab == 3) {
         ref.read(portfolioProvider).cancelTimer();
 
@@ -119,14 +141,14 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                     theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
                 unselectedLabelColor: const Color(0XFF777777),
                 unselectedLabelStyle: TextWidget.textStyle(
-                    fontSize: 12,
+                    fontSize: 14,
                     theme: theme.isDarkMode,
-                    fw: 0,
+                    fw: 00,
                     letterSpacing: -0.28),
                 labelColor:
                     theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
                 labelStyle: TextWidget.textStyle(
-                    fontSize: 12, theme: theme.isDarkMode, fw: 1),
+                    fontSize: 14, theme: theme.isDarkMode, fw: 00),
                 controller: portfolio.portTab,
                 tabs: portfolio.portTabName)),
         Expanded(
@@ -135,9 +157,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
           child: TabBarView(controller: portfolio.portTab, children: [
             PositionScreen(listofPosition: portfolio.allPostionList),
             const HoldingScreen(),
-            // if (portfolio.mfHoldingsModel!.isNotEmpty) ...[
-            //   if (portfolio.mfHoldingsModel![0].stat != "Not_Ok") ...[
-            // const MFHoldingScreen(),
+            const OrdersTabView(),
             const SecureFund(),
             //   ]
             // ],
@@ -147,5 +167,15 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
         ),
       ]);
     });
+  }
+}
+
+// Orders tab view that embeds the OrderBook functionality
+class OrdersTabView extends ConsumerWidget {
+  const OrdersTabView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return const OrderBookScreen();
   }
 }
