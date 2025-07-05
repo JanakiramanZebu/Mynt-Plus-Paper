@@ -352,11 +352,11 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
     // return _textStyleCache.putIfAbsent(
     //   color,
       // () {
-        Color color = colors.ltpgrey;
+        Color color = colors.textSecondaryLight;
         if (perChange != "0.00") {
-          color = perChange.startsWith("-") ? colors.darkred : colors.ltpgreen;
+          color = perChange.startsWith("-") ? colors.error : colors.profitLight;
         }
-        return TextWidget.textStyle(fontSize: 14, color: color, theme: false, fw: 00);
+        return TextWidget.textStyle(fontSize: 14, color: color, theme: false,);
       // },
     // );
   }
@@ -366,12 +366,12 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
     // return _percentageStyleCache.putIfAbsent(
     //   key,
     //   () {
-        Color color = colors.ltpgrey;
+        Color color = colors.textSecondaryLight;
         // if (value != null && value != "0.00") {
         //   color = value.startsWith("-") ? colors.darkred : colors.ltpgreen;
         // } 
         return TextWidget.textStyle(
-            fontSize: 12, color: color, theme: false, fw: 00);
+            fontSize: 12, color: color, theme: false, );
     //   },
     // );
   }

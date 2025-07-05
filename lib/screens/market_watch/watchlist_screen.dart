@@ -962,7 +962,7 @@ class _WatchListScreen extends State<WatchListScreen>
                         textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: isSelected ? 0 : null),
+                        fw: isSelected ? 2 : null),
                   ),
                   // Animated underline indicator
                   AnimatedContainer(

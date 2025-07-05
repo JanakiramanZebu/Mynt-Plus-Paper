@@ -41,14 +41,11 @@ class ScripDetailDialogue extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Row(
-                          children: [
-                           
-
+                          children: [   
                                      TextWidget.titleText(
                       text: '${scripInfo.symbol} ',                  
                       theme: theme.isDarkMode,
-                      fw: 1),                           
-
+                      fw: 1),    
                                      TextWidget.titleText(
                       text:' ${scripInfo.option}',   
                       color: Color(0xff666666),               
@@ -71,16 +68,31 @@ class ScripDetailDialogue extends ConsumerWidget {
                           ],
                         ),
                       ]),
-                  IconButton(
-                      onPressed: () {
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
                         Navigator.pop(context);
                       },
-                      icon: Icon(
-                        Icons.close_rounded,
-                        color: theme.isDarkMode
-                            ? const Color(0xffBDBDBD)
-                            : colors.colorGrey,
-                      ))
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode 
+                          ? Colors.white.withOpacity(0.15)
+                          : Colors.black.withOpacity(0.15),
+                      highlightColor: theme.isDarkMode 
+                          ? Colors.white.withOpacity(0.08)
+                          : Colors.black.withOpacity(0.08),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
+                        ),
+                      ),
+                    ),
+                  )
                 ]),
           ),
           Divider(

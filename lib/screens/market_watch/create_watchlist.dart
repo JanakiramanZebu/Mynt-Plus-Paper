@@ -224,6 +224,7 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                                 ? colors.colorWhite
                                 : colors.colorBlack,
                             theme: theme.isDarkMode,
+                            fw: 2,
                            
                           ),
                   ),

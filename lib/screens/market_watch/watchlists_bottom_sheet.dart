@@ -448,7 +448,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                               text: "Delete",
                                                                               color: colors.error,
                                                                               theme: theme.isDarkMode,
-                                                                              fw: 0),
+                                                                              fw: 2),
                                                                     ),
                                                                   ),
                                                                 ],
