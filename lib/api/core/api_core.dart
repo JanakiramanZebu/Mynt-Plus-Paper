@@ -15,9 +15,9 @@ class _ConditionalTimeoutClient extends BaseClient {
   final Duration _timeout;
 
   final List<String> _timeoutBaseUrls = const [
-    'https://go.mynt.in/NorenWClient',
-    'https://be.mynt.in/',
-    'https://ws.mynt.in/'
+    // 'https://go.mynt.in/NorenWClient',
+    // 'https://be.mynt.in/',
+    // 'https://ws.mynt.in/'
   ];
 
   _ConditionalTimeoutClient(this._inner,

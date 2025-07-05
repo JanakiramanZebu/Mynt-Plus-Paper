@@ -6,6 +6,7 @@ import '../../models/order_book_model/place_order_model.dart';
 import '../../provider/index_list_provider.dart';
 import '../../provider/order_input_provider.dart';
 import '../../provider/order_provider.dart';
+import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
@@ -62,6 +63,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
       final orders = ref.watch(orderProvider);
       final indexpro = ref.watch(indexListProvider);
       final orderInput = ref.watch(ordInputProvider);
+      final portfoliopro = ref.read(portfolioProvider);
       return PopScope(
           canPop: !orders.orderloader,
           onPopInvoked: (didPop) {
@@ -135,7 +137,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
                       ),
                     ),
                     if (widget.reminder != 0) _buildReminderSection(theme),
-                    _buildActionButton(theme, orders, orderInput, indexpro),
+                    _buildActionButton(theme, orders, orderInput, indexpro,portfoliopro),
                     const SizedBox(height: 10),
                   ],
                 ),
@@ -219,6 +221,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
     orders,
     orderInput,
     indexpro,
+    portfoliopro,
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -242,7 +245,8 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
             }
 
             // await orders.fetchOrderBook(context, true);
-            await indexpro.bottomMenu(3, context);
+            portfoliopro.changeTabIndex(2);
+            await indexpro.bottomMenu(2, context);
             ScaffoldMessenger.of(context).showSnackBar(
                 successMessage(context, "Order placed successfully."));
             Navigator.pop(context);

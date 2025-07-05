@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../res/res.dart';
+import '../../provider/index_list_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
@@ -29,8 +30,9 @@ class _MfmainScreenState extends State<MfmainScreen> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.watch(themeProvider);
-      final mf = ref.watch(mfProvider);
-      final portfolio = ref.watch(portfolioProvider);
+      // final mf = ref.watch(mfProvider);
+      // final portfolio = ref.watch(portfolioProvider);
+      // final indexList = ref.watch(indexListProvider);
       return Scaffold(
         appBar: AppBar(
           // automaticallyImplyLeading: false,
@@ -39,7 +41,7 @@ class _MfmainScreenState extends State<MfmainScreen> {
              child: IconButton(
                  icon: Icon(Icons.arrow_back_ios, color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack), 
                  onPressed: () {
-             
+                  // ref.read(indexListProvider).bottomMenu(2, context);
                   Navigator.pop(context);
                  },
                ),

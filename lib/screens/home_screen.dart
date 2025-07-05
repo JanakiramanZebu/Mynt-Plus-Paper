@@ -372,7 +372,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ref.read(portfolioProvider).fetchHoldings(context, "");
         ref.read(portfolioProvider).fetchPositionBook(context, false);
         break;
-      case 3: // Profile
+      case 4: // Profile
         ref.read(userProfileProvider).fetchUserDetail(context);
         break;
     }
@@ -649,7 +649,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
           _buildBottomNavItem(
               2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
-          _buildBottomNavItem(3, assets.profileIcon, uid, selectedTab, theme,
+          _buildBottomNavItem(
+              3, assets.mfIcon, "Mutual Fund", selectedTab, theme),
+          _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
               useHeight: true, height: 18),
         ],
       ),
@@ -679,6 +681,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 _handlePortfolioTap();
                 break;
               case 3:
+                _handleMutualFundTap();
+                break;
+              case 4:
                 _handleProfileTap();
                 break;
             }
@@ -799,6 +804,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     portfolio.timerfunc();
   }
 
+  void _handleMutualFundTap() {
+    final portfolio = ref.read(portfolioProvider);
+    portfolio.cancelTimer();
+    ref.read(indexListProvider).bottomMenu(3, context);
+  }
+
   void _handleProfileTap() {
     final indexProvide = ref.read(indexListProvider);
     final portfolio = ref.read(portfolioProvider);
@@ -809,7 +820,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final orderProviderRef = ref.read(orderProvider);
     final authProviderRef = ref.read(authProvider);
 
-    indexProvide.bottomMenu(3, context);
+    indexProvide.bottomMenu(4, context);
     portfolio.cancelTimer();
 
     // Load minimal required profile data
@@ -914,6 +925,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       case 2:
         return const PortfolioScreen();
       case 3:
+        // Navigate to mutual fund screen
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(indexListProvider).bottomMenu(1, context);
+          Navigator.pushNamed(context, Routes.mfmainscreen);
+        });
+        return const SizedBox.shrink();
+      case 4:
         return const UserAccountScreen();
       default:
         return const SizedBox.shrink();

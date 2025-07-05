@@ -22,6 +22,7 @@ import '../../provider/index_list_provider.dart';
 import '../../provider/ledger_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/notification_provider.dart';
+import '../../provider/portfolio_provider.dart';
 import '../../provider/profile_all_details_provider.dart';
 import '../../provider/thems.dart';
 import '../../provider/transcation_provider.dart';
@@ -505,17 +506,19 @@ class UserAccountScreen extends ConsumerWidget {
                   ),
                 ),
                 onPressed: () async {
-                  ref.read(transcationProvider).fetchValidateToken(context);
-                  Future.delayed(const Duration(milliseconds: 100), () async {
-                    await trancation.ip();
-                    await trancation.fetchupiIdView(
-                        trancation.bankdetails!.dATA![trancation.indexss][1],
-                        trancation.bankdetails!.dATA![trancation.indexss][2]);
-                    await trancation.fetchcwithdraw(context);
-                  });
-                  trancation.changebool(true);
-                  Navigator.pushNamed(context, Routes.fundscreen,
-                      arguments: trancation);
+                  // ref.read(transcationProvider).fetchValidateToken(context);
+                  // Future.delayed(const Duration(milliseconds: 100), () async {
+                  //   await trancation.ip();
+                  //   await trancation.fetchupiIdView(
+                  //       trancation.bankdetails!.dATA![trancation.indexss][1],
+                  //       trancation.bankdetails!.dATA![trancation.indexss][2]);
+                  //   await trancation.fetchcwithdraw(context);
+                  // });
+                  // trancation.changebool(true);
+                  // Navigator.pushNamed(context, Routes.fundscreen,
+                  //     arguments: trancation);
+                  ref.read(portfolioProvider).changeTabIndex(3);
+                  ref.read(indexListProvider).bottomMenu(2, context);
                 },
                 child: TextWidget.paraText(
                     text: "Add Fund",
@@ -1115,111 +1118,111 @@ class SettingsScreen extends ConsumerWidget {
           ),SizedBox(height: 8.0)
         ],
       ),
-      bottomNavigationBar: buildBottomNav(4, theme, context, ref),
+      // bottomNavigationBar: buildBottomNav(4, theme, context, ref),
     );
   }
 
-  Widget buildBottomNav(int selectedTab, ThemesProvider theme,
-      BuildContext context, WidgetRef ref) {
-    final uid = ref.watch(userProfileProvider.select(
-        (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
-    return BottomAppBar(
-      height: 64,
-      shadowColor:
-          theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-      padding: EdgeInsets.zero,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          _buildBottomNavItem(
-              1, assets.watchlistIcon, "Watchlists", selectedTab, theme,
-              context: context, ref: ref),
-          _buildBottomNavItem(
-              2, assets.portfolioIcon, "Portfolio", selectedTab, theme,
-              context: context, ref: ref),
-          _buildBottomNavItem(
-              3, assets.ordersIcon, "Orders", selectedTab, theme,
-              context: context, ref: ref),
-          _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
-              useHeight: true, height: 18, context: context, ref: ref),
-        ],
-      ),
-    );
-  }
+  // Widget buildBottomNav(int selectedTab, ThemesProvider theme,
+  //     BuildContext context, WidgetRef ref) {
+  //   final uid = ref.watch(userProfileProvider.select(
+  //       (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
+  //   return BottomAppBar(
+  //     height: 64,
+  //     shadowColor:
+  //         theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+  //     padding: EdgeInsets.zero,
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: <Widget>[
+  //         _buildBottomNavItem(
+  //             1, assets.watchlistIcon, "Watchlists", selectedTab, theme,
+  //             context: context, ref: ref),
+  //         _buildBottomNavItem(
+  //             2, assets.portfolioIcon, "Portfolio", selectedTab, theme,
+  //             context: context, ref: ref),
+  //         _buildBottomNavItem(
+  //             3, assets.ordersIcon, "Orders", selectedTab, theme,
+  //             context: context, ref: ref),
+  //         _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
+  //             useHeight: true, height: 18, context: context, ref: ref),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // Add this function
-  Widget _buildBottomNavItem(int index, String iconAsset, String label,
-      int selectedIndex, ThemesProvider theme,
-      {bool useHeight = false,
-      double height = 24,
-      required BuildContext context,
-      required WidgetRef ref}) {
-    final isSelected = selectedIndex == index;
+  // Widget _buildBottomNavItem(int index, String iconAsset, String label,
+  //     int selectedIndex, ThemesProvider theme,
+  //     {bool useHeight = false,
+  //     double height = 24,
+  //     required BuildContext context,
+  //     required WidgetRef ref}) {
+  //   final isSelected = selectedIndex == index;
 
-    return Expanded(
-      child: RepaintBoundary(
-        child: InkWell(
-          onTap: () {
-            // Navigate to the corresponding screen
-            switch (index) {
-              case 1:
-                Navigator.pushReplacementNamed(context, Routes.homeScreen);
-                ref.read(indexListProvider).bottomMenu(1, context);
-                break;
-              case 2:
-                Navigator.pushReplacementNamed(context, Routes.homeScreen);
-                ref.read(indexListProvider).bottomMenu(2, context);
-                break;
-              case 3:
-                Navigator.pushReplacementNamed(context, Routes.homeScreen);
-                ref.read(indexListProvider).bottomMenu(3, context);
-                break;
-              case 4:
-                // Already on profile screen
-                break;
-            }
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 7),
-            decoration: BoxDecoration(
-                border: isSelected
-                    ? Border(
-                        top: BorderSide(
-                            color: theme.isDarkMode
-                                ? colors.colorLightBlue
-                                : colors.colorBlue,
-                            width: 2))
-                    : null),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                useHeight
-                    ? SvgPicture.asset(
-                        iconAsset,
-                        height: height,
-                        color: _getBottomNavColor(theme, isSelected),
-                      )
-                    : SvgPicture.asset(
-                        iconAsset,
-                        color: _getBottomNavColor(theme, isSelected),
-                      ),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getBottomNavColor(theme, isSelected),
-                      theme: theme.isDarkMode,
-                      fw: isSelected ? 1 : 00),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  //   return Expanded(
+  //     child: RepaintBoundary(
+  //       child: InkWell(
+  //         onTap: () {
+  //           // Navigate to the corresponding screen
+  //           switch (index) {
+  //             case 1:
+  //               Navigator.pushReplacementNamed(context, Routes.homeScreen);
+  //               ref.read(indexListProvider).bottomMenu(1, context);
+  //               break;
+  //             case 2:
+  //               Navigator.pushReplacementNamed(context, Routes.homeScreen);
+  //               ref.read(indexListProvider).bottomMenu(2, context);
+  //               break;
+  //             case 3:
+  //               Navigator.pushReplacementNamed(context, Routes.homeScreen);
+  //               ref.read(indexListProvider).bottomMenu(3, context);
+  //               break;
+  //             case 4:
+  //               // Already on profile screen
+  //               break;
+  //           }
+  //         },
+  //         child: Container(
+  //           margin: const EdgeInsets.symmetric(horizontal: 7),
+  //           decoration: BoxDecoration(
+  //               border: isSelected
+  //                   ? Border(
+  //                       top: BorderSide(
+  //                           color: theme.isDarkMode
+  //                               ? colors.colorLightBlue
+  //                               : colors.colorBlue,
+  //                           width: 2))
+  //                   : null),
+  //           child: Column(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: [
+  //               useHeight
+  //                   ? SvgPicture.asset(
+  //                       iconAsset,
+  //                       height: height,
+  //                       color: _getBottomNavColor(theme, isSelected),
+  //                     )
+  //                   : SvgPicture.asset(
+  //                       iconAsset,
+  //                       color: _getBottomNavColor(theme, isSelected),
+  //                     ),
+  //               const SizedBox(height: 8),
+  //               Text(
+  //                 label,
+  //                 style: TextWidget.textStyle(
+  //                     fontSize: 12,
+  //                     color: _getBottomNavColor(theme, isSelected),
+  //                     theme: theme.isDarkMode,
+  //                     fw: isSelected ? 1 : 00),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // Add this function
   Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
@@ -1259,101 +1262,101 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   // Add this variable
   final selectedBtmIndx = 4;
 
-  // Add this function
-  Widget buildBottomNav(int selectedTab, ThemesProvider theme) {
-    final uid = ref.watch(userProfileProvider.select(
-        (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
-    return BottomAppBar(
-      height: 64,
-      shadowColor:
-          theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-      padding: EdgeInsets.zero,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          _buildBottomNavItem(
-              1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
-          _buildBottomNavItem(
-              2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
-          _buildBottomNavItem(
-              3, assets.ordersIcon, "Orders", selectedTab, theme),
-          _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
-              useHeight: true, height: 18),
-        ],
-      ),
-    );
-  }
+  // // Add this function
+  // Widget buildBottomNav(int selectedTab, ThemesProvider theme) {
+  //   final uid = ref.watch(userProfileProvider.select(
+  //       (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
+  //   return BottomAppBar(
+  //     height: 64,
+  //     shadowColor:
+  //         theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+  //     padding: EdgeInsets.zero,
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: <Widget>[
+  //         _buildBottomNavItem(
+  //             1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
+  //         _buildBottomNavItem(
+  //             2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
+  //         _buildBottomNavItem(
+  //             3, assets.ordersIcon, "Orders", selectedTab, theme),
+  //         _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
+  //             useHeight: true, height: 18),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  // Add this function
-  Widget _buildBottomNavItem(int index, String iconAsset, String label,
-      int selectedIndex, ThemesProvider theme,
-      {bool useHeight = false, double height = 24}) {
-    final isSelected = selectedIndex == index;
+  // // Add this function
+  // Widget _buildBottomNavItem(int index, String iconAsset, String label,
+  //     int selectedIndex, ThemesProvider theme,
+  //     {bool useHeight = false, double height = 24}) {
+  //   final isSelected = selectedIndex == index;
 
-    return Expanded(
-      child: RepaintBoundary(
-        child: InkWell(
-          onTap: () {
-            // Navigate to the corresponding screen
-            switch (index) {
-              case 1:
-                Navigator.pushReplacementNamed(context, Routes.homeScreen);
-                ref.read(indexListProvider).bottomMenu(1, context);
-                break;
-              case 2:
-                Navigator.pushReplacementNamed(context, Routes.homeScreen);
-                ref.read(indexListProvider).bottomMenu(2, context);
-                break;
-              case 3:
-                Navigator.pushReplacementNamed(context, Routes.homeScreen);
-                ref.read(indexListProvider).bottomMenu(3, context);
-                break;
-              case 4:
-                // Already on profile screen
-                break;
-            }
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 7),
-            decoration: BoxDecoration(
-                border: isSelected
-                    ? Border(
-                        top: BorderSide(
-                            color: theme.isDarkMode
-                                ? colors.colorLightBlue
-                                : colors.colorBlue,
-                            width: 2))
-                    : null),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                useHeight
-                    ? SvgPicture.asset(
-                        iconAsset,
-                        height: height,
-                        color: _getBottomNavColor(theme, isSelected),
-                      )
-                    : SvgPicture.asset(
-                        iconAsset,
-                        color: _getBottomNavColor(theme, isSelected),
-                      ),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getBottomNavColor(theme, isSelected),
-                      theme: theme.isDarkMode,
-                      fw: isSelected ? 1 : 00),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  //   return Expanded(
+  //     child: RepaintBoundary(
+  //       child: InkWell(
+  //         onTap: () {
+  //           // Navigate to the corresponding screen
+  //           switch (index) {
+  //             case 1:
+  //               Navigator.pushReplacementNamed(context, Routes.homeScreen);
+  //               ref.read(indexListProvider).bottomMenu(1, context);
+  //               break;
+  //             case 2:
+  //               Navigator.pushReplacementNamed(context, Routes.homeScreen);
+  //               ref.read(indexListProvider).bottomMenu(2, context);
+  //               break;
+  //             case 3:
+  //               Navigator.pushReplacementNamed(context, Routes.homeScreen);
+  //               ref.read(indexListProvider).bottomMenu(3, context);
+  //               break;
+  //             case 4:
+  //               // Already on profile screen
+  //               break;
+  //           }
+  //         },
+  //         child: Container(
+  //           margin: const EdgeInsets.symmetric(horizontal: 7),
+  //           decoration: BoxDecoration(
+  //               border: isSelected
+  //                   ? Border(
+  //                       top: BorderSide(
+  //                           color: theme.isDarkMode
+  //                               ? colors.colorLightBlue
+  //                               : colors.colorBlue,
+  //                           width: 2))
+  //                   : null),
+  //           child: Column(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: [
+  //               useHeight
+  //                   ? SvgPicture.asset(
+  //                       iconAsset,
+  //                       height: height,
+  //                       color: _getBottomNavColor(theme, isSelected),
+  //                     )
+  //                   : SvgPicture.asset(
+  //                       iconAsset,
+  //                       color: _getBottomNavColor(theme, isSelected),
+  //                     ),
+  //               const SizedBox(height: 8),
+  //               Text(
+  //                 label,
+  //                 style: TextWidget.textStyle(
+  //                     fontSize: 12,
+  //                     color: _getBottomNavColor(theme, isSelected),
+  //                     theme: theme.isDarkMode,
+  //                     fw: isSelected ? 1 : 00),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // Add this function
   Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
@@ -1563,7 +1566,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: buildBottomNav(selectedBtmIndx, theme),
+      // bottomNavigationBar: buildBottomNav(selectedBtmIndx, theme),
     );
   }
 
@@ -2868,114 +2871,114 @@ class ReportsScreen extends ConsumerWidget {
           )
         ],
       ),
-      bottomNavigationBar: buildBottomNav(4, theme, context, ref),
+      // bottomNavigationBar: buildBottomNav(4, theme, context, ref),
     );
   }
 
   final selectedBtmIndx = 4;
 
   // Add this function
-  Widget buildBottomNav(int selectedTab, ThemesProvider theme,
-      BuildContext context, WidgetRef ref) {
-    final uid = ref.watch(userProfileProvider.select(
-        (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
-    return BottomAppBar(
-      height: 64,
-      shadowColor:
-          theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-      padding: EdgeInsets.zero,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          _buildBottomNavItem(
-              1, assets.watchlistIcon, "Watchlists", selectedTab, theme,
-              context: context, ref: ref),
-          _buildBottomNavItem(
-              2, assets.portfolioIcon, "Portfolio", selectedTab, theme,
-              context: context, ref: ref),
-          _buildBottomNavItem(
-              3, assets.ordersIcon, "Orders", selectedTab, theme,
-              context: context, ref: ref),
-          _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
-              useHeight: true, height: 18, context: context, ref: ref),
-        ],
-      ),
-    );
-  }
+  // Widget buildBottomNav(int selectedTab, ThemesProvider theme,
+  //     BuildContext context, WidgetRef ref) {
+  //   final uid = ref.watch(userProfileProvider.select(
+  //       (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
+  //   return BottomAppBar(
+  //     height: 64,
+  //     shadowColor:
+  //         theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+  //     padding: EdgeInsets.zero,
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: <Widget>[
+  //         _buildBottomNavItem(
+  //             1, assets.watchlistIcon, "Watchlists", selectedTab, theme,
+  //             context: context, ref: ref),
+  //         _buildBottomNavItem(
+  //             2, assets.portfolioIcon, "Portfolio", selectedTab, theme,
+  //             context: context, ref: ref),
+  //         _buildBottomNavItem(
+  //             3, assets.ordersIcon, "Orders", selectedTab, theme,
+  //             context: context, ref: ref),
+  //         _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
+  //             useHeight: true, height: 18, context: context, ref: ref),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  // Add this function
-  Widget _buildBottomNavItem(int index, String iconAsset, String label,
-      int selectedIndex, ThemesProvider theme,
-      {bool useHeight = false,
-      double height = 24,
-      required BuildContext context,
-      required WidgetRef ref}) {
-    final isSelected = selectedIndex == index;
+  // // Add this function
+  // Widget _buildBottomNavItem(int index, String iconAsset, String label,
+  //     int selectedIndex, ThemesProvider theme,
+  //     {bool useHeight = false,
+  //     double height = 24,
+  //     required BuildContext context,
+  //     required WidgetRef ref}) {
+  //   final isSelected = selectedIndex == index;
 
-    return Expanded(
-      child: RepaintBoundary(
-        child: InkWell(
-          onTap: () {
-            // Navigate to the corresponding screen
-            switch (index) {
-              case 1:
-                Navigator.pushReplacementNamed(context, Routes.homeScreen);
-                ref.read(indexListProvider).bottomMenu(1, context);
-                break;
-              case 2:
-                Navigator.pushReplacementNamed(context, Routes.homeScreen);
-                ref.read(indexListProvider).bottomMenu(2, context);
-                break;
-              case 3:
-                Navigator.pushReplacementNamed(context, Routes.homeScreen);
-                ref.read(indexListProvider).bottomMenu(3, context);
-                break;
-              case 4:
-                // Already on profile screen
-                break;
-            }
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 7),
-            decoration: BoxDecoration(
-                border: isSelected
-                    ? Border(
-                        top: BorderSide(
-                            color: theme.isDarkMode
-                                ? colors.colorLightBlue
-                                : colors.colorBlue,
-                            width: 2))
-                    : null),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                useHeight
-                    ? SvgPicture.asset(
-                        iconAsset,
-                        height: height,
-                        color: _getBottomNavColor(theme, isSelected),
-                      )
-                    : SvgPicture.asset(
-                        iconAsset,
-                        color: _getBottomNavColor(theme, isSelected),
-                      ),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getBottomNavColor(theme, isSelected),
-                      theme: theme.isDarkMode,
-                      fw: isSelected ? 1 : 00),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  //   return Expanded(
+  //     child: RepaintBoundary(
+  //       child: InkWell(
+  //         onTap: () {
+  //           // Navigate to the corresponding screen
+  //           switch (index) {
+  //             case 1:
+  //               Navigator.pushReplacementNamed(context, Routes.homeScreen);
+  //               ref.read(indexListProvider).bottomMenu(1, context);
+  //               break;
+  //             case 2:
+  //               Navigator.pushReplacementNamed(context, Routes.homeScreen);
+  //               ref.read(indexListProvider).bottomMenu(2, context);
+  //               break;
+  //             case 3:
+  //               Navigator.pushReplacementNamed(context, Routes.homeScreen);
+  //               ref.read(indexListProvider).bottomMenu(3, context);
+  //               break;
+  //             case 4:
+  //               // Already on profile screen
+  //               break;
+  //           }
+  //         },
+  //         child: Container(
+  //           margin: const EdgeInsets.symmetric(horizontal: 7),
+  //           decoration: BoxDecoration(
+  //               border: isSelected
+  //                   ? Border(
+  //                       top: BorderSide(
+  //                           color: theme.isDarkMode
+  //                               ? colors.colorLightBlue
+  //                               : colors.colorBlue,
+  //                           width: 2))
+  //                   : null),
+  //           child: Column(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: [
+  //               useHeight
+  //                   ? SvgPicture.asset(
+  //                       iconAsset,
+  //                       height: height,
+  //                       color: _getBottomNavColor(theme, isSelected),
+  //                     )
+  //                   : SvgPicture.asset(
+  //                       iconAsset,
+  //                       color: _getBottomNavColor(theme, isSelected),
+  //                     ),
+  //               const SizedBox(height: 8),
+  //               Text(
+  //                 label,
+  //                 style: TextWidget.textStyle(
+  //                     fontSize: 12,
+  //                     color: _getBottomNavColor(theme, isSelected),
+  //                     theme: theme.isDarkMode,
+  //                     fw: isSelected ? 1 : 00),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // Add this function
   Color _getBottomNavColor(ThemesProvider theme, bool isSelected) {
