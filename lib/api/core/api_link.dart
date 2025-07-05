@@ -41,6 +41,7 @@ class ApiLinks {
 // Market watxhlist
 
   String get watchList => '$goMyntURL/MWList';
+  String get tpseries => '$goMyntURL/TPSeries';
   String get preDefinedMWList => '$goMyntURL/PreDefinedMWList';
   // String get preDefinedMarketWatchScrip => '$goMyntURL/PreDefinedMW';
   String get marketWatchScrip => '$goMyntURL/MarketWatch';

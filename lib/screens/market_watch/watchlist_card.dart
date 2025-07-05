@@ -33,10 +33,10 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(6),
-        splashColor: theme.isDarkMode 
+        splashColor: theme.isDarkMode
             ? Colors.white.withOpacity(0.15)
             : Colors.black.withOpacity(0.15),
-        highlightColor: theme.isDarkMode 
+        highlightColor: theme.isDarkMode
             ? Colors.white.withOpacity(0.08)
             : Colors.black.withOpacity(0.08),
         onLongPress: () {
@@ -50,7 +50,8 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => EditScrip(wlName: marketWatch.wlName)));
+                    builder: (context) =>
+                        EditScrip(wlName: marketWatch.wlName)));
           }
         },
         onTap: () async {
@@ -82,89 +83,81 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
             }
           }
         },
-        child: Container(
-         
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            dense: false,
-      title: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            widget.watchListData["symbol"].toString().toUpperCase(),
-            style: TextWidget.textStyle(
-                fontSize: 14,
-                color: theme.isDarkMode ? Colors.white : Colors.black,
-                theme: theme.isDarkMode,   
-                ),
-          ),
-          const SizedBox(
-            width: 4,
-          ),
-          if (widget.watchListData["option"].toString().isNotEmpty)
-            Text(
-              "${widget.watchListData["option"]}",
-              style: TextWidget.textStyle(
-                  fontSize: 14,
-                  color: Color(0xff666666),
-                  theme: theme.isDarkMode,
-                  
-                  
-                  ),
-            )
-        ],
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              CustomExchBadge(exch: '${widget.watchListData["exch"]}'),
-              if (widget.watchListData['expDate'].toString().isNotEmpty)
-                // Text(" ${widget.watchListData['expDate']}  ",
-                //     style: textStyles.scripExchTxtStyle.copyWith(
-                //         color: theme.isDarkMode
-                //             ? colors.colorWhite
-                //             : colors.colorBlack)),
-
-                TextWidget.paraText(
-                  text: " ${widget.watchListData['expDate']}  ", color: theme.isDarkMode
-                  ? const Color(0xffFFFFFF)
-                  : const Color(0xff666666),
-                  theme: theme.isDarkMode, 
-                 
-                ),
-
-                
-              if (widget.watchListData['holdingQty'] != null &&
-                  widget.watchListData['holdingQty'].toString().isNotEmpty &&
-                  widget.watchListData['holdingQty'] != "null") ...[
-                SvgPicture.asset(assets.suitcase,
-                    height: 12,
-                    width: 16,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          dense: false,
+          // visualDensity: VisualDensity.compact,
+          // minVerticalPadding: 0,
+          title: Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  widget.watchListData["symbol"].toString().toUpperCase(),
+                  style: TextWidget.textStyle(
+                    fontSize: 14,
                     color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue),
-                TextWidget.captionText(
-                    text: " ${widget.watchListData['holdingQty']}",
-                    color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
                     theme: theme.isDarkMode,
-                    fw: 1),
-              ]
+                  ),
+                ),
+                if (widget.watchListData["option"].toString().isNotEmpty)
+                  Text(
+                    "${widget.watchListData["option"]}",
+                    style: TextWidget.textStyle(
+                      fontSize: 14,
+                      color: colors.textPrimaryLight,
+                      theme: theme.isDarkMode,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    CustomExchBadge(exch: '${widget.watchListData["exch"]}'),
+                    if (widget.watchListData['expDate'].toString().isNotEmpty)
+                      TextWidget.paraText(
+                        text: " ${widget.watchListData['expDate']}",
+                        color: theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
+                        theme: theme.isDarkMode,
+                      ),
+                    if (widget.watchListData['holdingQty'] != null &&
+                        widget.watchListData['holdingQty']
+                            .toString()
+                            .isNotEmpty &&
+                        widget.watchListData['holdingQty'] != "null") ...[
+                      SvgPicture.asset(assets.suitcase,
+                          height: 12,
+                          width: 16,
+                          color: theme.isDarkMode
+                              ? colors.secondaryDark
+                              : colors.secondaryLight),
+                      TextWidget.captionText(
+                        text: "${widget.watchListData['holdingQty']}",
+                        color: colors.secondaryLight,
+                        theme: theme.isDarkMode,
+                      ),
+                    ]
+                  ],
+                ),
+              ),
             ],
           ),
-        ],
-      ),
-            trailing: RepaintBoundary(
-              child: _PriceDataWidget(
-                  token: widget.watchListData['token'],
-                  initialData: widget.watchListData),
-            ),
+          trailing: RepaintBoundary(
+            child: _PriceDataWidget(
+                token: widget.watchListData['token'],
+                initialData: widget.watchListData),
           ),
         ),
       ),
@@ -282,16 +275,16 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
 
     final changeColor =
         displayChange.startsWith("-") || displayPerChange.startsWith('-')
-            ? colors.darkred
+            ? colors.errorLight
             : (displayChange == "0.00" || displayPerChange == "0.00")
-                ? colors.ltpgrey
-                : colors.ltpgreen;
+                ? colors.textSecondaryLight
+                : colors.successLight;
 
     final changeTextStyle = TextWidget.textStyle(
       fontSize: 16, // or keep 12 if you prefer
       color: changeColor,
       theme: theme.isDarkMode,
-      fw: 0, // fw = 0 → FontWeight.w500 as per your logic
+      // fw = 0 → FontWeight.w500 as per your logic
     );
 
     // Build the UI with minimal widget creation
@@ -299,14 +292,22 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("$displayLtp"
-           ,
-            style: changeTextStyle,
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              displayLtp,
+              style: changeTextStyle,
+            ),
           ),
-          const SizedBox(height: 8),
-         
-           TextWidget.paraText(
-              text:  "$displayChange $displayPerChange%", fw: 3, theme: theme.isDarkMode),
+          // const SizedBox(height: 8),
+
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: TextWidget.paraText(
+                text: "$displayChange ($displayPerChange%)",
+                color: colors.textSecondaryLight,
+                theme: theme.isDarkMode),
+          ),
         ]);
   }
 }

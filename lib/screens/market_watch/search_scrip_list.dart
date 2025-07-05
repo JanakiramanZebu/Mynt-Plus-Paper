@@ -96,64 +96,54 @@ class _searchScripList extends State<SearchScripList> {
                     );
                   }
                 },
-                dense: true,
-                contentPadding:
-                    EdgeInsets.only(left: 16, right: 0, top: 0, bottom: 0),
+                dense: false,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 title: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: 4),
                   child: Row(
                     children: [
-                      //  TextWidget.subText(
-                      //     text:  "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym} ",
-
-                      //     theme: theme.isDarkMode,
-                      //     fw: 1),
-
                       Text(
                         "${scrip.symbol?.isNotEmpty == true ? scrip.symbol : scrip.tsym} ",
                         style: TextWidget.textStyle(
-                            fontSize: 14, theme: theme.isDarkMode),
+                            fontSize: 14, theme: theme.isDarkMode , color: theme.isDarkMode ?  colors.textPrimaryDark : colors.textPrimaryLight,),
                       ),
-
                       if (scrip.option != null)
-
-                        // TextWidget.subText(
-                        //   text:  "${scrip.option}",
-                        // color: Color(0xff666666),
-                        //   theme: theme.isDarkMode,
-                        //   fw: 1),
-
                         Text(
                           "${scrip.option}",
                           style: TextWidget.textStyle(
-                              fontSize: 13,
-                              color: Color(0xff666666),
+                              fontSize: 14,
+                             color: theme.isDarkMode ?  colors.textPrimaryDark : colors.textPrimaryLight,
                               theme: theme.isDarkMode,
-                              fw: 0),
+                              ),
                         )
                     ],
                   ),
                 ),
-                subtitle: Row(
-                  children: [
-                    CustomExchBadge(exch: "${scrip.exch}"),
-                    SizedBox(
-                      width: 4,
-                    ),
-                    if (scrip.expDate != null)
-                      TextWidget.paraText(
-                        text: "${scrip.expDate} ",
-                        theme: theme.isDarkMode,
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    children: [
+                      CustomExchBadge(exch: "${scrip.exch}"),
+                      const SizedBox(
+                        width: 4,
                       ),
-                    if (scrip.expDate == "" && scrip.cname != null)
-                      Expanded(
-                        child: TextWidget.paraText(
-                          text: "${scrip.cname}",
-                          textOverflow: TextOverflow.ellipsis,
+                      if (scrip.expDate != null)
+                        TextWidget.paraText(
+                          text: "${scrip.expDate} ",
+                          color: theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
                           theme: theme.isDarkMode,
                         ),
-                      ),
-                  ],
+                      if (scrip.expDate == "" && scrip.cname != null)
+                        Expanded(
+                          child: TextWidget.paraText(
+                            text: "${scrip.cname}",
+                            textOverflow: TextOverflow.ellipsis,
+                            color:  theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
+                            theme: theme.isDarkMode,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
                 trailing: widget.isBasket == "Chart||Is" ||
                         widget.isBasket == "Option||Is" ||

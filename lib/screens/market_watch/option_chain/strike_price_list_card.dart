@@ -49,15 +49,15 @@ class StrikePriceListCard extends ConsumerWidget {
   static final Map<Color, TextStyle> _textStyleCache = {};
   
   static TextStyle _getTextStyle(Color color) {
-    return _textStyleCache.putIfAbsent(
-      color,
-      () => GoogleFonts.inter(
-        textStyle: 
-TextWidget.textStyle(
-                 fontSize: 12 ,  theme: false , fw: 0 ),	
+    // return _textStyleCache.putIfAbsent(
+    //   color,
+    //   () => GoogleFonts.inter(
+    //     textStyle: 
+return TextWidget.textStyle(
+                 fontSize: 14 ,  theme: false , fw: 00 );
 
 
-      ).copyWith(color: color),
-    );
+    //   ).copyWith(color: color),
+    // );
   }
 }

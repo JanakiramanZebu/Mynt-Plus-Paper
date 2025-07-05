@@ -152,7 +152,9 @@ class PortfolioProvider extends DefaultChangeNotifier {
   bool get exitAll => _exitAll;
   List<Tab> _portTabName = [
     const Tab(text: "Positions"),
-    const Tab(text: "Holdings")
+    const Tab(text: "Holdings"),
+    const Tab(text: "Orders"),
+    const Tab(text: "Funds")
   ];
   List<Tab> get portTabName => _portTabName;
 
@@ -303,7 +305,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
             Text(
-              "Position${_allPostionList.isNotEmpty ? "s (${_allPostionList.length})" : ""}",
+              "Positions${_allPostionList.isNotEmpty ? " (${_allPostionList.length})" : ""}",
             ),
           ])),
       Tab(
@@ -312,32 +314,26 @@ class PortfolioProvider extends DefaultChangeNotifier {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-                "Holding${_holdingsModel!.isNotEmpty ? "s (${_holdingsModel!.length})" : ""}")
+                "Holdings${_holdingsModel!.isNotEmpty ? " (${_holdingsModel!.length})" : ""}")
           ],
         ),
       ),
-      // if (_mfHoldingsModel!.isNotEmpty) ...[
-      //   if (_mfHoldingsModel![0].stat != "Not_Ok") ...[
       const Tab(
         child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                  // "MF Holding${_mfHoldingsModel!.isNotEmpty ? "s (${_mfHoldingsModel!.length})" : ""}"
-                  "Funds")
+              Text("Orders")
             ]),
       ),
-      //   ]
-      // ],
-      // Tab(
-      //     child: Row(
-      //         mainAxisAlignment: MainAxisAlignment.center,
-      //         crossAxisAlignment: CrossAxisAlignment.center,
-      //         children: [
-      //       Text(
-      //           "Total Portfolio${_allholds.isNotEmpty ? "s (${_allholds.length})" : ""}")
-      //     ])),
+      const Tab(
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text("Funds")
+            ]),
+      ),
     ];
 
     notifyListeners();
@@ -378,6 +374,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   clearPositionSearch() {
     positionSearchCtrl.clear();
     _positionSearchItem = [];
+    _showSearchPosition = false;
 
     notifyListeners();
   }
@@ -592,7 +589,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
             double avgCost = double.parse(
                 "${element.upldprc == "0.00" ? element.exchTsym![0].close ?? 0.0 : element.upldprc ?? 0.00}");
 
-            element.avgPrc = "$avgCost";
+            element.avgPrc = "${qty > 0 ? avgCost : 0.00}";
+            String avgPrc = "$avgCost";
             element.invested = (qty * avgCost).toStringAsFixed(2);
 
             invest += double.parse("${element.invested}");
@@ -608,7 +606,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             if (element.sellAmt != null && element.sellAmt != "0.000000") {
               element.rpnl = (double.parse("${element.sellAmt ?? 0.00}") -
                       ((double.parse("${element.trdqty ?? 0.00}")) *
-                          (double.parse("${element.avgPrc ?? 0.00}"))))
+                          (double.parse("${avgPrc ?? 0.00}"))))
                   .toStringAsFixed(2);
               // element.rpnl = (double.parse("${element.invested ?? 0.00}") - double.parse("${element.sellAmt ?? 0.00}")).toString();
             }
@@ -1555,12 +1553,16 @@ class PortfolioProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
   positionSearch(String value, BuildContext context) {
     if (value.length > 1) {
+      _showSearchPosition = true;
       _positionSearchItem = [];
       _positionSearchItem = _allPostionList
           .where((element) =>
-              element.tsym!.toLowerCase().contains(value.toLowerCase()))
+              element.tsym!.toLowerCase().contains(value.toLowerCase()) ||
+              (element.symbol?.toLowerCase().contains(value.toLowerCase()) ??
+                  false))
           .toList();
     } else {
+      _showSearchPosition = false;
       _positionSearchItem = [];
     }
     notifyListeners();
@@ -1750,7 +1752,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
   // Helper method to update derived values
   void _updateDerivedValues(HoldingsModel holding) {
     final qty = holding.currentQty ?? 0;
-    if (qty <= 0) return; // Nothing to calculate for zero quantity
+    final usedqty = int.parse(holding.usedqty ?? "0");
+    // if (qty <= 0) return; // Nothing to calculate for zero quantity
 
     final lpDouble = double.tryParse(holding.exchTsym![0].lp ?? '0.0') ?? 0.0;
     if (lpDouble <= 0) return; // Can't calculate with invalid price
@@ -1789,7 +1792,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     // Calculate one day change if close value is valid
     if (closeVal > 0) {
       holding.exchTsym![0].oneDayChg =
-          ((lpDouble - closeVal) * qty).toStringAsFixed(2);
+          (((lpDouble - closeVal) * (qty - usedqty))).toStringAsFixed(2);
     }
 
     // Update totals

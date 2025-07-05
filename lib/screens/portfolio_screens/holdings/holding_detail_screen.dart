@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/portfolio_model/holdings_model.dart';
+import '../../../provider/ledger_provider copy.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
@@ -451,6 +452,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
     final scripInfo = ref.watch(marketWatchProvider);
     final depthData = ref.watch(marketWatchProvider).getQuotes!;
     final userProfile = ref.watch(userProfileProvider);
+    final ledgerdate = ref.watch(ledgerProvider);
 
     DepthInputArgs depthArgs = DepthInputArgs(
         exch: _exchTsym.exch ?? "",
@@ -644,22 +646,24 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                               theme.isDarkMode,
                                                           fw: 3)
                                                     ]),
-                                                Container(
-                                                  height: 35,
-                                                  width: 25,
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                    color: Color(0xffF1F3F8),
-                                                    // borderRadius: BorderRadius.circular(8),
-                                                  ),
-                                                  child: Center(
-                                                    child: SvgPicture.asset(
-                                                      assets.leftArrow,
-                                                      width: 20,
-                                                      height: 20,
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      height: 45,
+                                                      width: 26,
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              7),
+                                                      child: SvgPicture.asset(
+                                                        assets.rightarrowcur,
+                                                        width: 12,
+                                                        height: 12,
+                                                        color: const Color(
+                                                            0xff777777),
+                                                      ),
                                                     ),
-                                                  ),
-                                                )
+                                                  ],
+                                                ),
                                               ],
                                             ),
                                           ]),
@@ -791,7 +795,18 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                         child: InkWell(
                                           borderRadius:
                                               BorderRadius.circular(6),
-                                          onTap: () {},
+                                          onTap: () async {
+                                            if (ledgerdate.pledgeandunpledge ==
+                                                null) {
+                                              await ledgerdate
+                                                  .getCurrentDate("pandu");
+                                              ledgerdate.fetchpledgeandunpledge(
+                                                  context);
+                                            }
+                                            Navigator.pushNamed(
+                                                context, Routes.pledgeandun,
+                                                arguments: "DDDDD");
+                                          },
                                           splashColor: theme.isDarkMode
                                               ? Colors.white.withOpacity(0.15)
                                               : Colors.black.withOpacity(0.15),

@@ -95,7 +95,7 @@ class _EditScripState extends ConsumerState<EditScrip> {
                   text:
                       "Edit ${widget.wlName}'s",
                       //  (${marketwatch.scrips.length})
-                  color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
+                  color: theme.isDarkMode ? colors.textPrimaryDark :  colors.textPrimaryLight,
                   theme: theme.isDarkMode,
                   fw: 1),
               actions: [
@@ -173,10 +173,9 @@ class _EditScripState extends ConsumerState<EditScrip> {
                               onTap: () {
                                 marketwatch.selectDeleteScrip(i);
                               },
-                              contentPadding: const EdgeInsets.only(left: 16, right: 12),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                               dense: false,
                               minLeadingWidth: 24, // Just enough for checkbox + minimal spacing
-                              visualDensity: VisualDensity.compact,
                               leading: SizedBox(
                                 width: 20, // Fixed width for the checkbox
                                 height: 20, // Fixed height for the checkbox
@@ -214,6 +213,9 @@ class _EditScripState extends ConsumerState<EditScrip> {
                                       "${marketwatch.scrips[i]['symbol']}",
                                       style: TextWidget.textStyle(
                                           fontSize: 14,
+                                          color : theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
                                           theme: theme.isDarkMode,
                                           ),
                                     ),
@@ -224,7 +226,9 @@ class _EditScripState extends ConsumerState<EditScrip> {
                                         " ${marketwatch.scrips[i]['option']}",
                                         style: TextWidget.textStyle(
                                             fontSize: 14,
-                                            color: Color(0xff666666),
+                                            color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
                                             theme: theme.isDarkMode,
                                             ),
                                       )
@@ -237,7 +241,7 @@ class _EditScripState extends ConsumerState<EditScrip> {
 
                                   TextWidget.paraText(
                                       text: "${marketwatch.scrips[i]['exch']}",
-                                      color: colors.colorGrey,
+                                      color: theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
                                       theme: theme.isDarkMode,
                                       ),
                                   const SizedBox(width: 4),
@@ -246,7 +250,7 @@ class _EditScripState extends ConsumerState<EditScrip> {
                                       .isNotEmpty)
                                     TextWidget.paraText(
                                         text: "${marketwatch.scrips[i]['expDate']}",
-                                        color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
+                                        color: theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
                                         theme: theme.isDarkMode,
                                         ),
                                 ],

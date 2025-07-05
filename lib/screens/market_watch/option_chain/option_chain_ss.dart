@@ -38,6 +38,7 @@ class OptionChainSS extends ConsumerStatefulWidget {
 
 class _OptionChainSSState extends ConsumerState<OptionChainSS> {
   String regtoken = "";
+  bool showPriceView = true; // true for Price, false for OI
 
   final ScrollController _controller = ScrollController();
   final ScrollController _mainScrollController = ScrollController();
@@ -137,8 +138,14 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
               leadingWidth: 32,
               toolbarHeight: 40,
               elevation: 0,
-          title: _OptionTopBar(
+          title: _NewAppBarTitle(
             wlValue: widget.wlValue,
+            showPriceView: showPriceView,
+            onToggleView: () {
+              setState(() {
+                showPriceView = !showPriceView;
+              });
+            },
             scrollToStrikePrice: _scrollToCurrentStrikePrice,
           ),
             ),
@@ -147,15 +154,10 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-              // Date selector tabs
-              _DateSelectorTabs(
-                                controller: _controller,
-                scrollToStrikePrice: _scrollToCurrentStrikePrice,
-              ),
-              
               // Column headers
               _ColumnHeaders(
                 scrollToStrikePrice: _scrollToCurrentStrikePrice,
+                showPriceView: showPriceView,
               ),
               
               // Pre-defined watchlist info banner (conditional)
@@ -166,6 +168,7 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
                 strikePriceKey: _strikePriceKey,
                 mainScrollController: _mainScrollController,
                 swipecontroller: swipecontroller,
+                showPriceView: showPriceView,
               ),
               
               // Buy/Sell buttons (conditional)
@@ -178,262 +181,131 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
   }
 }
 
-// Widget for the top bar with script tabs
-class _OptionTopBar extends ConsumerWidget {
+// New App Bar Title with Symbol, Expiry Dropdown, and Search with Price/OI toggle
+class _NewAppBarTitle extends ConsumerWidget {
   final DepthInputArgs wlValue;
+  final bool showPriceView;
+  final VoidCallback onToggleView;
   final VoidCallback scrollToStrikePrice;
   
-  const _OptionTopBar({
+  const _NewAppBarTitle({
     Key? key,
     required this.wlValue,
+    required this.showPriceView,
+    required this.onToggleView,
     required this.scrollToStrikePrice,
   }) : super(key: key);
   
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tvChart = ref.watch(marketWatchProvider);
-    final theme = ref.read(themeProvider);
-    
-    return RepaintBoundary(
-      child: Container(
-      decoration: const BoxDecoration(
-        color: Colors.transparent,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 0),
-      height: 32,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: ListView.separated(
-              controller: tvChart.scrollController,
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(right: 0),
-                itemCount: tvChart.optionTabs.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final last = tvChart.optionTabs.first;
-                final tab = tvChart.optionTabs[index];
-                final isSelected = tab.token == tvChart.oactiveTab?.token;
-                return InkWell(
-                  onTap: () async {
-                    // Show loading indicator immediately
-                    tvChart.singlePageloader(true);
-                    
-                    // Set the script with a catch for error handling
-                    try {
-                    tvChart.setOptionScript(context, tab.exch.toString(),
-                        tab.token.toString(), tab.tsym.toString());
-
-                      // Force reload if data doesn't appear within 1 second
-                      Future.delayed(const Duration(milliseconds: 1000), () {
-                        if (tvChart.optChainCallUP.isEmpty || 
-                            tvChart.optChainPutUp.isEmpty) {
-                          // Trigger a reload if data isn't loaded yet
-                          tvChart.fetchOPtionChain(
-                            context: context,
-                            exchange: tvChart.optionExch ?? tab.exch.toString(),
-                            numofStrike: tvChart.numStrike,
-                            strPrc: tvChart.optionStrPrc,
-                            tradeSym: tvChart.selectedTradeSym ?? tab.tsym.toString()
-                          );
-                        }
-                      });
-                    } catch (e) {
-                      // Handle any errors during script setting
-                      debugPrint("Error loading option chain: $e");
-                      
-                      // Ensure loading indicator is turned off in case of error
-                      tvChart.singlePageloader(false);
-                    }
-
-                    // Scroll to the current strike price after a delay
-                         Future.delayed(const Duration(milliseconds: 500), () {
-                        scrollToStrikePrice();
-                                                                          });
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Chip(
-                    visualDensity:
-                        const VisualDensity(vertical: -4, horizontal: 0),
-                    labelPadding: const EdgeInsets.only(right: 0),
-                    padding: index > 1
-                        ? const EdgeInsets.only(left: 16)
-                        : const EdgeInsets.symmetric(horizontal: 8),
-                    label: 
-
-
-                     TextWidget.paraText(
-                      text: tab.tsym ,
-                      color: theme.isDarkMode
-                            ? Color(isSelected ? 0xff000000 : 0xffffffff)
-                            : Color(isSelected ? 0xffffffff : 0xff000000) ,
-                      theme: theme.isDarkMode,
-                      fw: 0),
-                    backgroundColor: theme.isDarkMode
-                        ? (isSelected
-                            ? const Color(0xffffffff)
-                            : const Color(0xff000000))
-                        : (isSelected
-                            ? const Color(0xff000000)
-                            : const Color(0xffffffff)),
-                    shape: StadiumBorder(
-                      side: BorderSide(
-                        color: theme.isDarkMode
-                            ? (!isSelected
-                                ? colors.colorWhite
-                                : colors.colorBlack)
-                            : (isSelected
-                                ? colors.colorWhite
-                                : colors.colorBlack),
-                      ),
-                    ),
-                    deleteIcon: index > 1
-                        ? Icon(
-                            Icons.close,
-                            size: 16,
-                            color: theme.isDarkMode
-                                ? Color(isSelected ? 0xff000000 : 0xffffffff)
-                                : Color(isSelected ? 0xffffffff : 0xff000000),
-                          )
-                        : null,
-                    onDeleted: index > 1
-                        ? () async {
-                            tvChart.removeChartTab(tab, true);
-                            if (tvChart.oactiveTab?.token == tab.token) {
-                              await tvChart.fetchScripQuoteIndex(
-                                  last.token, last.exch, context);
-                              tvChart.setChartScript(
-                                  last.exch, last.token, last.tsym);
-                            }
-                          }
-                        : null,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                );
-              },
-            ),
-          ),
-          IconButton(
-            padding: const EdgeInsets.all(0),
-              icon: Icon(Icons.add_circle_outline,
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack),
-            onPressed: () async {
-              Navigator.pushNamed(
-                context,
-                Routes.searchScrip,
-                arguments: "Option||Is",
-              );
-            },
-          ),
-        ],
-        ),
-      ),
-    );
-  }
-}
-
-// Widget for date selector tabs
-class _DateSelectorTabs extends ConsumerWidget {
-  final ScrollController controller;
-  final VoidCallback scrollToStrikePrice;
-  
-  const _DateSelectorTabs({
-    Key? key,
-    required this.controller,
-    required this.scrollToStrikePrice,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scripInfo = ref.watch(marketWatchProvider);
     final theme = ref.read(themeProvider);
     
-    return RepaintBoundary(
-      child: Padding(
-        padding: const EdgeInsets.only(right: 3, left: 16, top: 10, bottom: 8),
-        child: SizedBox(
-          height: 32,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            controller: controller,
-            itemBuilder: (context, index) {
-              final isSelected = scripInfo.selectedExpDate! == scripInfo.sortDate[index];
-              return Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? isSelected
-                          ? const Color(0xffF1F3F8)
-                          : const Color(0xffB5C0CF).withOpacity(.15)
-                      : isSelected
-                          ? const Color(0xff000000)
-                          : const Color(0xffF1F3F8),
-                  borderRadius: BorderRadius.circular(98)
-                ),
-                child: InkWell(
-                  onTap: () async {
-                    if (scripInfo.sortDate.length <= 12) {
-                      controller.animateTo(
-                        scripInfo.sortDate.length <= 4
-                            ? index * 40
-                            : index * 100,
-                        duration: const Duration(seconds: 1),
-                        curve: Curves.fastOutSlowIn
-                      );
-                    } else {
-                      controller.animateTo(
-                        index * 112,
-                        duration: const Duration(seconds: 1),
-                        curve: Curves.fastOutSlowIn
-                      );
-                    }
-
-                    for (var i = 0; i < scripInfo.optExp!.length; i++) {
-                      if (scripInfo.sortDate[index] == scripInfo.optExp![i].exd) {
-                        scripInfo.selecTradSym("${scripInfo.optExp![i].tsym}");
-                        scripInfo.optExch("${scripInfo.optExp![i].exch}");
-                      }
-                    }
-                    scripInfo.selecexpDate(scripInfo.sortDate[index]);
-
-                    await ref.read(marketWatchProvider).fetchOPtionChain(
-                      context: context,
-                      exchange: scripInfo.optionExch!,
-                      numofStrike: scripInfo.numStrike,
-                      strPrc: scripInfo.optionStrPrc,
-                      tradeSym: scripInfo.selectedTradeSym!
+    return Row(
+      children: [
+        // Symbol Name and Expiry Dropdown
+        Expanded(
+          flex: 3,
+          child: Row(
+            children: [
+              TextWidget.subText(
+                text: wlValue.tsym.split(' ')[0], // Get base symbol name
+                theme: theme.isDarkMode,
+                fw: 1,
+                maxLines: 1,
+                textOverflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(width: 8),
+              DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: scripInfo.selectedExpDate,
+                  isExpanded: false,
+                  isDense: true,
+                  icon: Icon(
+                    Icons.arrow_drop_down,
+                    color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    size: 18,
+                  ),
+                  style: TextWidget.textStyle(
+                    fontSize: 12,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                  items: scripInfo.sortDate.map((String date) {
+                    return DropdownMenuItem<String>(
+                      value: date,
+                      child: TextWidget.paraText(
+                        text: date.replaceAll("-", " "),
+                        theme: theme.isDarkMode,
+                        fw: 0,
+                      ),
                     );
-                                
-                    // Add a delay to ensure the UI is updated before scrolling
-                    Future.delayed(const Duration(milliseconds: 300), () {
-                      scrollToStrikePrice();
-                    });
+                  }).toList(),
+                  onChanged: (String? newValue) async {
+                    if (newValue != null) {
+                      for (var i = 0; i < scripInfo.optExp!.length; i++) {
+                        if (newValue == scripInfo.optExp![i].exd) {
+                          scripInfo.selecTradSym("${scripInfo.optExp![i].tsym}");
+                          scripInfo.optExch("${scripInfo.optExp![i].exch}");
+                        }
+                      }
+                      scripInfo.selecexpDate(newValue);
+
+                      await ref.read(marketWatchProvider).fetchOPtionChain(
+                        context: context,
+                        exchange: scripInfo.optionExch!,
+                        numofStrike: scripInfo.numStrike,
+                        strPrc: scripInfo.optionStrPrc,
+                        tradeSym: scripInfo.selectedTradeSym!
+                      );
+                                  
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        scrollToStrikePrice();
+                      });
+                    }
                   },
-                  child: 
-
-
-                   TextWidget.paraText(
-                      text:  scripInfo.sortDate[index].replaceAll("-", " "),
-                      color: theme.isDarkMode
-                          ? Color(isSelected ? 0xff000000 : 0xffffffff)
-                          : Color(isSelected ? 0xffffffff : 0xff000000),
-                      theme: theme.isDarkMode,
-                      fw: 0),
                 ),
-              );
-            },
-            separatorBuilder: (context, index) {
-              return const SizedBox(width: 8);
-            },
-            shrinkWrap: true,
-            itemCount: scripInfo.sortDate.length
-          )
-        )
-      ),
+              ),
+            ],
+          ),
+        ),
+        
+        const Spacer(),
+
+        // Price/OI Toggle Button
+        InkWell(
+          onTap: onToggleView,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: TextWidget.paraText(
+              text: showPriceView ? "Price ⊛" : "OI ⊛",
+              color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+              theme: theme.isDarkMode,
+              fw: 1,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 4),
+
+        // Search Icon
+        IconButton(
+          padding: const EdgeInsets.all(4),
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          icon: Icon(
+            Icons.search,
+            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            size: 20,
+          ),
+          onPressed: () async {
+            Navigator.pushNamed(
+              context,
+              Routes.searchScrip,
+              arguments: "Option||Replace",
+            );
+          },
+        ),
+      ],
     );
   }
 }
@@ -543,10 +415,12 @@ void _showStrikeCountSelector(BuildContext context, WidgetRef ref, MarketWatchPr
 // Widget for column headers - updated to ConsumerWidget
 class _ColumnHeaders extends ConsumerWidget {
   final VoidCallback scrollToStrikePrice;
+  final bool showPriceView;
   
   const _ColumnHeaders({
     Key? key, 
-    required this.scrollToStrikePrice
+    required this.scrollToStrikePrice,
+    required this.showPriceView,
   }) : super(key: key);
 
   @override
@@ -558,26 +432,23 @@ class _ColumnHeaders extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         height: 36,
-        color: theme.isDarkMode
-            ? const Color(0xffB5C0CF).withOpacity(.15)
-            : const Color(0xffFAFBFF),
+        color: colors.colorWhite,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
            
 
-             TextWidget.paraText(
-                      text:"OI" ,
-                   
-                      theme: theme.isDarkMode,
-                      fw: 0),
+            //  TextWidget.paraText(
+            //           text: showPriceView ? "Call Price" : "Call OI",
+            //           theme: theme.isDarkMode,
+            //           fw: 0),
           
 
 
 
              TextWidget.paraText(
-                      text:"  Call LTP   " ,
-                    
+                      text: showPriceView ? "  Call Price   " : "  Call OI   ",
+                    color: Color(0xff4A4A4A),
                       theme: theme.isDarkMode,
                       fw: 0),
             Container(
@@ -590,7 +461,7 @@ class _ColumnHeaders extends ConsumerWidget {
                   children: [
                                          TextWidget.paraText(
                       text:"${scripInfo.numStrike} " ,
-                      color:theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue ,
+                      color: Color(0xff4A4A4A),
                       theme: theme.isDarkMode,
                       fw: 0),
                    
@@ -598,14 +469,14 @@ class _ColumnHeaders extends ConsumerWidget {
 
                      TextWidget.paraText(
                       text: "Strike",
-                      color:theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue ,
+                      color: Color(0xff4A4A4A),
                       theme: theme.isDarkMode,
                       fw: 0),
 
 
                     Icon(
                       Icons.arrow_drop_down,
-                      color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                      color: Color(0xff4A4A4A),
                       size: 20
                     )
                   ]
@@ -615,19 +486,19 @@ class _ColumnHeaders extends ConsumerWidget {
           
 
                TextWidget.paraText(
-                      text:"  Put LTP   " ,
-                    
+                      text: showPriceView ? "Put Price" : "Put OI",
+                      color: Color(0xff4A4A4A),
                       theme: theme.isDarkMode,
                       fw: 0),
 
 
          
 
-             TextWidget.paraText(
-                      text: "OI",
+            //  TextWidget.paraText(
+            //           text: "OI",
                  
-                      theme: theme.isDarkMode,
-                      fw: 0),
+            //           theme: theme.isDarkMode,
+            //           fw: 0),
           ]
         )
       ),
@@ -658,9 +529,6 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(assets.dInfo, color: colors.colorBlue),
-           
-
-
              TextWidget.paraText(
                       text:" Long press to add Watchlist / Swipe to Trade" ,
                       color:colors.colorBlue ,
@@ -678,12 +546,14 @@ class _OptionChainContent extends ConsumerWidget {
   final GlobalKey strikePriceKey;
   final ScrollController mainScrollController;
   final SwipeActionController swipecontroller;
+  final bool showPriceView;
   
   const _OptionChainContent({
     Key? key,
     required this.strikePriceKey,
     required this.mainScrollController,
     required this.swipecontroller,
+    required this.showPriceView,
   }) : super(key: key);
 
   @override
@@ -769,51 +639,64 @@ class _OptionChainContent extends ConsumerWidget {
           children: [
             RepaintBoundary(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 0),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Flexible(
-                      child: OptChainCallList(
-                        swipe: swipecontroller,
-                        callData: scripInfo.optChainCallUP,
-                        isCallUp: false
-                      ),
-                    ),
+                    Expanded(
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: OptChainCallList(
+            swipe: swipecontroller,
+            callData: scripInfo.optChainCallUP,
+            isCallUp: false,
+            showPriceView: showPriceView,
+          ),
+        ),
+      ),
                     SizedBox(
-                      width: 100,
+                      width: 150,
                       child: StrikePriceListCard(
                         strike: scripInfo.optChainCallUP,
                         isCallUp: false
                       ),
                     ),
-                    Flexible(
-                      child: OptChainPutList(
-                        putData: scripInfo.optChainPutUp,
-                        isPutUp: false
-                      ),
-                    )
+                    Expanded(
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: OptChainPutList(
+            putData: scripInfo.optChainPutUp,
+            isPutUp: false,
+            showPriceView: showPriceView,
+          ),
+        ),
+      ),
                   ],
                 ),
               ),
             ),
-            CurStrkprice(
-              key: strikePriceKey,
-              token: depthData.undTk ?? depthData.token ?? "0.00"
+            Padding(
+              padding: const EdgeInsets.only(top:0,bottom: 0),
+              child: CurStrkprice(
+                key: strikePriceKey,
+                token: depthData.undTk ?? depthData.token ?? "0.00"
+              ),
             ),
             RepaintBoundary(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 16),
                 child: Row(
                   children: <Widget>[
                     Flexible(
                       child: OptChainCallList(
                         swipe: swipecontroller,
                         callData: scripInfo.optChainCallDown,
-                        isCallUp: false
+                        isCallUp: false,
+                        showPriceView: showPriceView,
                       ),
                     ),
                     SizedBox(
-                      width: 100,
+                      width: 150,
                       child: StrikePriceListCard(
                         strike: scripInfo.optChainCallDown,
                         isCallUp: false
@@ -822,7 +705,8 @@ class _OptionChainContent extends ConsumerWidget {
                     Flexible(
                       child: OptChainPutList(
                         putData: scripInfo.optChainPutDown,
-                        isPutUp: false
+                        isPutUp: false,
+                        showPriceView: showPriceView,
                       ),
                     )
                   ],

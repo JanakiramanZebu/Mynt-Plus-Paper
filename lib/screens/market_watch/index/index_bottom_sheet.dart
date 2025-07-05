@@ -138,13 +138,13 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                               horizontal: 10, vertical: 6),
                                           child: TextWidget.subText(
                                             text: exchange,
-                                            color: isSelected
-                                                ? theme.isDarkMode
-                                                    ? colors.colorLightBlue
-                                                    : colors.colorBlue
+                                            color:isSelected
+                            ? theme.isDarkMode
+                                ? colors.secondaryDark
+                                : colors.secondaryLight
                                                 : theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
+                                                    ?  colors.textSecondaryDark
+                                                    :  colors.textSecondaryLight,
                                             textOverflow: TextOverflow.ellipsis,
                                             maxLines: 1,
                                             theme: theme.isDarkMode,
@@ -184,66 +184,92 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                         : colors.colorDivider),
 
                 Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _exchanges.length,
-                    onPageChanged: (index) async {
-                      setState(() {
-                        _currentPageIndex = index;
-                      });
-                      // Call the existing function to update the list
-                      await indexProvide.fetchIndexList(
-                          _exchanges[index], context);
-                    },
-                    itemBuilder: (context, pageIndex) {
-                      return indexProvide.isLoad
-                          ? const Center(child: CircularProgressIndicator())
-                          : indexProvide.indValuesList.isNotEmpty
-                              ? ListView.builder(
-                                  shrinkWrap: false,
-                                  controller: controller,
-                                  physics: const BouncingScrollPhysics(
-                                      parent: AlwaysScrollableScrollPhysics()),
-                                  itemCount:
-                                      indexProvide.indValuesList.length * 2 - 1,
-                                  itemBuilder: (BuildContext context, idx) {
-                                    // For odd indices, show divider
-                                    if (idx.isOdd) {
-                                      return const ListDivider();
-                                    }
+                  child: Column(
+                    children: [
+                      // Sticky header that doesn't scroll
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              assets.dInfo,
+                              color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                            ),
+                            TextWidget.paraText(
+                                text: " Long press to add to Slot ${widget.indexPosition + 1}",
+                                color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                                theme: theme.isDarkMode,
+                                ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Scrollable list content
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: _exchanges.length,
+                          onPageChanged: (index) async {
+                            setState(() {
+                              _currentPageIndex = index;
+                            });
+                            // Call the existing function to update the list
+                            await indexProvide.fetchIndexList(
+                                _exchanges[index], context);
+                          },
+                          itemBuilder: (context, pageIndex) {
+                            return indexProvide.isLoad
+                                ? const Center(child: CircularProgressIndicator())
+                                : indexProvide.indValuesList.isNotEmpty
+                                    ? ListView.builder(
+                                        shrinkWrap: false,
+                                        controller: controller,
+                                        physics: const BouncingScrollPhysics(
+                                            parent: AlwaysScrollableScrollPhysics()),
+                                        itemCount:
+                                            indexProvide.indValuesList.length * 2 - 1,
+                                        itemBuilder: (BuildContext context, idx) {
+                                          // For odd indices, show divider
+                                          if (idx.isOdd) {
+                                            return const ListDivider();
+                                          }
 
-                                    int index = idx ~/ 2;
-                                    // Get the current index data
-                                    var itemData =
-                                        indexProvide.indValuesList[index];
+                                          int index = idx ~/ 2;
+                                          // Get the current index data
+                                          var itemData =
+                                              indexProvide.indValuesList[index];
 
-                                    // Determine if the index is checked
-                                    bool ischeck = indexProvide
-                                        .defaultIndexList!.indValues!
-                                        .any((element) =>
-                                            element.token == itemData.token);
+                                          // Determine if the index is checked
+                                          bool ischeck = indexProvide
+                                              .defaultIndexList!.indValues!
+                                              .any((element) =>
+                                                  element.token == itemData.token);
 
-                                    return IndexListItemWithStream(
-                                      key: ValueKey(
-                                          'index-item-${itemData.token}'),
-                                      itemData: itemData,
-                                      indexProvider: indexProvide,
-                                      marketWatch: marketWatch,
-                                      ischeck: ischeck,
-                                      src: widget.src,
-                                      isDarkMode: theme.isDarkMode,
-                                      indexPosition: widget.indexPosition,
-                                    );
-                                  })
-                              : Center(
-                                  child: TextWidget.subText(
-                                    text: "No Data found",
-                                    color: Color(0xff777777),
-                                    theme: theme.isDarkMode,
-                                    fw: 0,
-                                  ),
-                                );
-                    },
+                                          return IndexListItemWithStream(
+                                            key: ValueKey(
+                                                'index-item-${itemData.token}'),
+                                            itemData: itemData,
+                                            indexProvider: indexProvide,
+                                            marketWatch: marketWatch,
+                                            ischeck: ischeck,
+                                            src: widget.src,
+                                            isDarkMode: theme.isDarkMode,
+                                            indexPosition: widget.indexPosition,
+                                          );
+                                        })
+                                    : Center(
+                                        child: TextWidget.subText(
+                                          text: "No Data found",
+                                          color: Color(0xff777777),
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                      );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 )
               ],
@@ -473,8 +499,22 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => _handleTap(context),
+      onLongPress: !widget.src ? () async {
+        if (widget.ischeck) {
+          Fluttertoast.showToast(
+            msg: "Scrip Already Exist!!",
+            backgroundColor: Colors.amber,
+          );
+        } else {
+          await widget.indexProvider.changeIndex(widget.itemData, context, widget.indexPosition);
+          Navigator.of(context).pop();
+        }
+      } : null,
       child: Container(
-        padding: const EdgeInsets.only(left: 16, right: 8, top: 16, bottom: 16),
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
+        color: widget.ischeck 
+          ? (widget.isDarkMode ? colors.colorWhite.withOpacity(0.05) : colors.colorBlack.withOpacity(0.05))
+          : Colors.transparent,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -497,18 +537,17 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
               isDarkMode: widget.isDarkMode,
             ),
 
-            // Action button that only appears in certain contexts
-            // Use RepaintBoundary to isolate rendering
-            if (!widget.src)
-              RepaintBoundary(
-                child: _ActionButton(
-                  ischeck: widget.ischeck,
-                  itemData: widget.itemData,
-                  indexProvider: widget.indexProvider,
-                  isDarkMode: widget.isDarkMode,
-                  indexPosition: widget.indexPosition,
-                ),
-              ),
+           
+            // if (!widget.src)
+            //   RepaintBoundary(
+            //     child: _ActionButton(
+            //       ischeck: widget.ischeck,
+            //       itemData: widget.itemData,
+            //       indexProvider: widget.indexProvider,
+            //       isDarkMode: widget.isDarkMode,
+            //       indexPosition: widget.indexPosition,
+            //     ),
+            //   ),
           ],
         ),
       ),
@@ -580,27 +619,20 @@ class _StaticIndexContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-//  TextWidget.subText(
-//                       text: itemData.idxname!.toUpperCase(),
-//                       maxLines: 1,
-//                       textOverflow: TextOverflow.ellipsis,
-//                       color: isDarkMode ? colors.colorWhite : colors.colorBlack,
-//                       theme: false,
-//                       fw: 0),
-
-        Text(
-          itemData.idxname!.toUpperCase(),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextWidget.textStyle(
-            fontSize: 14,
-            color: isDarkMode ? Colors.white : Colors.black,
-            theme: false,
-            // fw: 0,
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Text(
+            itemData.idxname!.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextWidget.textStyle(
+              fontSize: 14,
+              color : isDarkMode ?  colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: false,
+              // fw: 0,
+            ),
           ),
         ),
-
-        const SizedBox(height: 8),
         CustomExchBadge(exch: exch ?? ""),
       ],
     );
@@ -648,13 +680,13 @@ class _DynamicPriceContent extends StatelessWidget {
     if (!_colorCache.containsKey(key)) {
       if (value.toString().startsWith("-") ||
           percentValue.toString().startsWith('-')) {
-        _colorCache[key] = colors.darkred;
+        _colorCache[key] = colors.errorLight;
       } else if ((value.toString() == "null" ||
               percentValue.toString() == "null") ||
           (value.toString() == "0.00" || percentValue.toString() == "0.00")) {
-        _colorCache[key] = colors.ltpgrey;
+        _colorCache[key] = colors.textSecondaryLight;
       } else {
-        _colorCache[key] = colors.ltpgreen;
+        _colorCache[key] =  colors.successLight;
       }
     }
     return _colorCache[key]!;
@@ -664,28 +696,28 @@ class _DynamicPriceContent extends StatelessWidget {
   Widget build(BuildContext context) {
     // Pre-calculate all styles at once to avoid repeated calculations
     final priceStyle = _getCachedStyle(
-        isDarkMode ? colors.colorWhite : colors.colorBlack, 12, 3);
+        isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, 12, );
 
     final changeColor = _getCachedChangeColor(ch, chp);
-    final changeStyle = _getCachedStyle(changeColor, 16, 0);
+    final changeStyle = _getCachedStyle(changeColor, 16, );
 
     // Create the price text once with proper formatting
     final String formattedChange =
-        "${ch == "null" ? 0.00 : ch} ${chp == "null" ? 0.00 : chp}%";
+        "${ch == "null" ? 0.00 : ch} (${chp == "null" ? 0.00 : chp}%)";
 
     // Avoid unnecessary nested widgets when possible
     return RepaintBoundary(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text("$ltp", style:changeStyle ),
-          //  TextWidget.subText(
-          //             text: "₹$ltp",
-          //             color: ,
-          //             theme: theme.isDarkMode,
-          //             fw: 0),
-          const SizedBox(height: 8),
-          Text(formattedChange, style: priceStyle),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: Text("$ltp", style:changeStyle ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Text(formattedChange, style: priceStyle),
+          ),
         ],
       ),
     );

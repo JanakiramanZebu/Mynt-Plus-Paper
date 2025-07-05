@@ -34,6 +34,7 @@ import 'index_list_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_input_provider.dart';
 import 'websocket_provider.dart';
+import 'portfolio_provider.dart';
 
 final orderProvider = ChangeNotifierProvider((ref) => OrderProvider(ref));
 
@@ -155,6 +156,9 @@ class OrderProvider extends DefaultChangeNotifier {
   bool _isExitAllOrder = false;
   bool get isExitAllOrder => _isExitAllOrder;
 
+  bool _showOrderHistory = false;
+  bool get showOrderHistory => _showOrderHistory;
+
   // Track currently subscribed symbols to avoid duplicate subscriptions
   Set<String> _subscribedSymbols = {};
 
@@ -183,6 +187,12 @@ class OrderProvider extends DefaultChangeNotifier {
     _selectedTab = 0;
     // Clear subscription tracking
     clearSubscriptions();
+    notifyListeners();
+  }
+
+  showorderHistory(value) {
+    _showOrderHistory = value;
+    print("showOrderHistory: $_showOrderHistory");
     notifyListeners();
   }
 
@@ -285,6 +295,9 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   changeTabIndex(int index, BuildContext context) {
+    // Unfocus any active text fields when switching tabs
+    FocusScope.of(context).unfocus();
+    
     _selectedTab = index;
     tabSize();
     showOrderSearch(false);
@@ -384,7 +397,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       // Create input string for WebSocket subscription - only for symbols not already subscribed
       Set<String> symbolsToSubscribe = {};
-      
+
       for (var script in _bsktScripList) {
         final symbolKey = "${script['exch']}|${script['token']}";
         if (!_subscribedSymbols.contains(symbolKey)) {
@@ -392,7 +405,7 @@ class OrderProvider extends DefaultChangeNotifier {
           _subscribedSymbols.add(symbolKey);
         }
       }
-          
+
       // Only establish new connections if needed
       if (symbolsToSubscribe.isNotEmpty) {
         input = symbolsToSubscribe.join("#");
@@ -400,7 +413,7 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(websocketProvider).establishConnection(
             channelInput: input, task: "t", context: context);
       }
-      
+
       // Update basket with latest values from socket data
       updateBasketFromSocketData();
     }
@@ -416,23 +429,23 @@ class OrderProvider extends DefaultChangeNotifier {
     try {
       final socketDatas = ref.read(websocketProvider).socketDatas;
       if (socketDatas.isEmpty || _bsktScripList.isEmpty) return;
-      
+
       bool updated = false;
-      
+
       // Update basket script list with current socket values
       for (var script in _bsktScripList) {
         final token = script['token']?.toString();
         if (token != null && socketDatas.containsKey(token)) {
           final lp = socketDatas[token]['lp']?.toString();
           final pc = socketDatas[token]['pc']?.toString();
-          
+
           if (lp != null && lp != "null") {
             if (script['lp']?.toString() != lp) {
               script['lp'] = lp;
               updated = true;
             }
           }
-          
+
           if (pc != null && pc != "null") {
             if (script['pc']?.toString() != pc) {
               script['pc'] = pc;
@@ -441,7 +454,7 @@ class OrderProvider extends DefaultChangeNotifier {
           }
         }
       }
-      
+
       if (updated) {
         notifyBasketUpdates();
       }
@@ -449,7 +462,7 @@ class OrderProvider extends DefaultChangeNotifier {
       print("Error updating basket from socket data: $e");
     }
   }
-  
+
   // Notify listeners about basket updates without creating a full rebuild cycle
   void notifyBasketUpdates() {
     notifyListeners();
@@ -460,19 +473,24 @@ class OrderProvider extends DefaultChangeNotifier {
       // Tab(text: _allOrder!.isNotEmpty ? "All (${_allOrder!.length})" : "All"),
       Tab(
           text:
-              _openOrder!.isNotEmpty ? "Open (${_openOrder!.length})" : "Open"),
+              _openOrder!.isNotEmpty ? "Open ${_openOrder!.length}" : "Open"),
       Tab(
           text: _executedOrder!.isNotEmpty
-              ? "Executed (${_executedOrder!.length})"
+              ? "Executed ${_executedOrder!.length}"
               : "Executed"),
       Tab(
+        text: (_tradeBook != null && _tradeBook!.isNotEmpty)
+            ? "Trade ${_tradeBook!.length}"
+            : "Trade",
+      ),
+      Tab(
         text: (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty)
-            ? "GTT (${_gttOrderBookModel!.length})"
+            ? "GTT ${_gttOrderBookModel!.length}"
             : "GTT",
       ),
       Tab(
         text: _bsktList.isNotEmpty
-            ? "Basket (${_bsktList.length})"
+            ? "Basket ${_bsktList.length}"
             : "Basket",
       ),
       // Tab(
@@ -480,24 +498,23 @@ class OrderProvider extends DefaultChangeNotifier {
       //       ? "Trade Book (${_tradeBook!.length})"
       //       : "Trade Book",
       // ),
-      
 
       Tab(
         text: (_siporderBookModel?.sipDetails?.isNotEmpty ?? false)
-            ? "SIP (${_siporderBookModel!.sipDetails!.length})"
+            ? "SIP ${_siporderBookModel!.sipDetails!.length}"
             : "SIP",
       ),
       const Tab(
         text: ("Alerts"),
-      // ref.read(marketWatchProvider).alertPendingModel != null &&
-      //           ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty)
-      //       ? "Alert (${ref.read(marketWatchProvider).alertPendingModel!.length})"
-      //       :
+        // ref.read(marketWatchProvider).alertPendingModel != null &&
+        //           ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty)
+        //       ? "Alert (${ref.read(marketWatchProvider).alertPendingModel!.length})"
+        //       :
       )
     ];
     notifyListeners();
   }
-  
+
   showOrderSearch(bool value) {
     _showSearchOrder = value;
     if (!_showSearchOrder) {
@@ -554,19 +571,77 @@ class OrderProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  // A single search function to handle search for all order tabs
+  searchOrders(String value, BuildContext context) {
+    // Clear all previous search results
+    _orderSearchItem = [];
+    _tradeBooksearch = [];
+    _gttOrderBookSearch = [];
+    _siporderBookSearch = [];
+    ref.read(marketWatchProvider).clearAlertSearch();
+
+    if (value.isNotEmpty) {
+      switch (_selectedTab) {
+        case 0: // Open Orders
+          _orderSearchItem = _openOrder!
+              .where((element) =>
+                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
+              .toList();
+          break;
+        case 1: // Executed Orders
+          _orderSearchItem = _executedOrder!
+              .where((element) =>
+                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
+              .toList();
+          break;
+        case 2: // Trade Book
+          _tradeBooksearch = _tradeBook!
+              .where((element) =>
+                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
+              .toList();
+          break;
+        case 3: // GTT Orders
+          _gttOrderBookSearch = _gttOrderBookModel!
+              .where((element) =>
+                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
+              .toList();
+          break;
+        case 4: // Basket Orders - Search not applicable
+          break;
+        case 5: // SIP Orders
+          _siporderBookSearch = _siporderBookModel!.sipDetails!
+              .where((element) =>
+                  element.sipName!.toUpperCase().contains(value.toUpperCase()))
+              .toList();
+          break;
+        case 6: // Alerts
+          final alertProvider = ref.read(marketWatchProvider);
+          if (alertProvider.alertPendingModel != null) {
+            final searchResult = alertProvider.alertPendingModel!
+                .where((element) =>
+                    element.tsym!.toUpperCase().contains(value.toUpperCase()))
+                .toList();
+            alertProvider.setAlertPendingSearch(searchResult);
+          }
+          break;
+      }
+    }
+    notifyListeners();
+  }
+
   orderSearch(String value, BuildContext context) {
     if (value.length > 1) {
+      _showSearchOrder = true;
       _orderSearchItem = [];
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _orderSearchItem = _allOrder!
           .where((element) =>
-              element.tsym!.toUpperCase().contains(value.toUpperCase()))
+              element.tsym!.toLowerCase().contains(value.toLowerCase()) ||
+              (element.symbol?.toLowerCase().contains(value.toLowerCase()) ??
+                  false))
           .toList();
       if (_orderSearchItem!.isEmpty) {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'No Data Found'));
-      } else {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     } else {
       _orderSearchItem = [];
@@ -578,7 +653,6 @@ class OrderProvider extends DefaultChangeNotifier {
   orderGttSearch(String value, BuildContext context) {
     if (value.length > 1) {
       _gttOrderBookSearch = [];
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _gttOrderBookSearch = _gttOrderBookModel!
           .where((element) =>
               element.tsym!.toUpperCase().contains(value.toUpperCase()))
@@ -586,8 +660,6 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_gttOrderBookSearch!.isEmpty) {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'No Data Found'));
-      } else {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     } else {
       _gttOrderBookSearch = [];
@@ -599,7 +671,6 @@ class OrderProvider extends DefaultChangeNotifier {
   orderSipSearch(String value, BuildContext context) {
     if (value.length > 1) {
       _siporderBookSearch = [];
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _siporderBookSearch = _siporderBookModel!.sipDetails!
           .where((element) =>
               element.sipName!.toUpperCase().contains(value.toUpperCase()))
@@ -607,8 +678,6 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_siporderBookSearch!.isEmpty) {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'No Data Found'));
-      } else {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     } else {
       _siporderBookSearch = [];
@@ -620,7 +689,6 @@ class OrderProvider extends DefaultChangeNotifier {
   orderTradeBookSearch(String value, BuildContext context) {
     if (value.length > 1) {
       _tradeBooksearch = [];
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _tradeBooksearch = _tradeBook!
           .where((element) =>
               element.tsym!.toUpperCase().contains(value.toUpperCase()))
@@ -628,8 +696,6 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_tradeBooksearch!.isEmpty) {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, 'No Data Found'));
-      } else {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     } else {
       _tradeBooksearch = [];
@@ -655,13 +721,13 @@ class OrderProvider extends DefaultChangeNotifier {
         //     ConstantName.sessCheck = true;
         //     for (var element in _orderBookModel!) {
         //       if (element.norenordno == _placeOrderModel!.norenordno) {
-                ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                    context, "Order placed successfully."
-                    // "Your ${element.trantype == "B" ? "buy" : "sell"} order ${element.norenordno} for ${element.tsym} in ${element.exch} is ${element.status}"
-                    ));
-              // }
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(
+            context, "Order placed successfully."
+            // "Your ${element.trantype == "B" ? "buy" : "sell"} order ${element.norenordno} for ${element.tsym} in ${element.exch} is ${element.status}"
+            ));
+        // }
         //     }
-            notifyListeners();
+        notifyListeners();
         //   } else {
         //     if (_orderBookModel![0].emsg ==
         //             "Session Expired :  Invalid Session Key" &&
@@ -676,7 +742,9 @@ class OrderProvider extends DefaultChangeNotifier {
         } else {
           Navigator.pop(context);
         }
-        ref.read(indexListProvider).bottomMenu(3, context);
+        ref.read(indexListProvider).bottomMenu(2, context);
+        // Switch to Orders tab in Portfolio screen
+        ref.read(portfolioProvider).changeTabIndex(2);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -692,7 +760,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _placeOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Place Order", "Error": "$e"});
       notifyListeners();
@@ -717,7 +786,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _placeOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Place Slice  Order", "Error": "$e"});
       notifyListeners();
@@ -802,7 +872,8 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       return _orderBookModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Order Book", "Error": "$e"});
       notifyListeners();
@@ -863,7 +934,8 @@ class OrderProvider extends DefaultChangeNotifier {
       return _tradeBook;
     } catch (e) {
       print("Trade book $e");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Trade Book", "Error": "$e"});
       notifyListeners();
@@ -884,7 +956,7 @@ class OrderProvider extends DefaultChangeNotifier {
         if (_gttOrderBookModel![0].stat == "Ok") {
           ConstantName.sessCheck = true;
           if (initLoad != "initLoad") {
-            _selectedTab = 2;
+            _selectedTab = 3;
             requestWSOrderBook(isSubscribe: true, context: context);
           }
 
@@ -914,12 +986,12 @@ class OrderProvider extends DefaultChangeNotifier {
       return _gttOrderBookModel;
     } catch (e) {
       print("GTT Order book $e");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API GTT Order Book", "Error": "$e"});
     } finally {
-            notifyListeners();
-
+      notifyListeners();
     }
   }
 
@@ -939,7 +1011,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _orderHistoryModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Single Order His", "Error": "$e"});
       notifyListeners();
@@ -1004,7 +1077,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _cancelOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Order Canl", "Error": "$e"});
       notifyListeners();
@@ -1031,7 +1105,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _cancelOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Order Canl", "Error": "$e"});
       notifyListeners();
@@ -1060,7 +1135,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _modifyOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Modify Order", "Error": "$e"});
       notifyListeners();
@@ -1081,7 +1157,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _orderMarginModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Order Margin", "Error": "$e"});
       notifyListeners();
@@ -1103,7 +1180,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _getBrokerageModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Brokerage", "Error": "$e"});
       notifyListeners();
@@ -1132,26 +1210,28 @@ class OrderProvider extends DefaultChangeNotifier {
         print("=== GTT ORDER SOCKET SUBSCRIPTION ===");
         print("GTT Orders count: ${_gttOrderBookModel!.length}");
         print("Subscribe mode: ${isSubscribe ? 'SUBSCRIBE' : 'UNSUBSCRIBE'}");
-        
+
         final gttTokens = _gttOrderBookModel!
             .map((e) => "${e.exch}|${e.token}")
             .toSet()
             .join("#");
-        
+
         // Debug: Print first 3 GTT order details
         for (int i = 0; i < _gttOrderBookModel!.length && i < 3; i++) {
           final gtt = _gttOrderBookModel![i];
-          print("  GTT $i: ${gtt.tsym} (${gtt.exch}|${gtt.token}) - Current LTP: ${gtt.ltp ?? 'null'}");
+          print(
+              "  GTT $i: ${gtt.tsym} (${gtt.exch}|${gtt.token}) - Current LTP: ${gtt.ltp ?? 'null'}");
         }
-        
+
         if (input.isNotEmpty) {
           input += "#$gttTokens";
         } else {
           input = gttTokens;
         }
-        
+
         print("Total subscription input length: ${input.length}");
-        print("First 100 chars: ${input.substring(0, input.length > 100 ? 100 : input.length)}");
+        print(
+            "First 100 chars: ${input.substring(0, input.length > 100 ? 100 : input.length)}");
         print("=====================================");
       }
 
@@ -1254,24 +1334,43 @@ class OrderProvider extends DefaultChangeNotifier {
     // Save the last sort method
     _lastOrderSortMethod = sorting;
 
-    // Determine which list to sort
-    List<OrderBookModel>? listToSort;
+    // Determine which lists to sort (both main lists and search results)
+    List<OrderBookModel>? mainListToSort;
+    List<OrderBookModel>? searchListToSort;
+    
     if (_selectedTab == 0) {
-      listToSort = _openOrder;
+      mainListToSort = _openOrder;
+      searchListToSort = _orderSearchItem;
     } else if (_selectedTab == 1) {
-      listToSort = _executedOrder;
+      mainListToSort = _executedOrder;
+      searchListToSort = _orderSearchItem;
     } else if (_selectedTab == 2) {
-      // Assuming GTT orders might need sorting too, though they have a separate filter method
-      // If not, this can be removed.
+      // Trade book - handle separately since it's a different model type
+      _sortTradeBook(sorting);
+      return;
+    } else if (_selectedTab == 3) {
+      // GTT orders - handle separately since it's a different model type
+      _sortGttOrders(sorting);
       return; 
     } else {
-      listToSort = _allOrder;
+      mainListToSort = _allOrder;
+      searchListToSort = _orderSearchItem;
     }
     
-    if (listToSort == null || listToSort.isEmpty) {
-      return;
+    // Sort main list if it exists
+    if (mainListToSort != null && mainListToSort.isNotEmpty) {
+      _applySortingToOrderList(mainListToSort, sorting);
     }
+    
+    // Sort search results if they exist
+    if (searchListToSort != null && searchListToSort.isNotEmpty) {
+      _applySortingToOrderList(searchListToSort, sorting);
+    }
+    
+    notifyListeners();
+  }
 
+  void _applySortingToOrderList(List<OrderBookModel> listToSort, String sorting) {
     // Sorting logic based on the 'sorting' parameter
     switch (sorting) {
       case "ASC":
@@ -1316,6 +1415,85 @@ class OrderProvider extends DefaultChangeNotifier {
         break;
       case "TIMEASC":
         listToSort.sort((a, b) {
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
+              DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
+              DateTime(1970);
+          return aDate.compareTo(bDate);
+        });
+        break;
+      case "TIMEDSC":
+        listToSort.sort((a, b) {
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
+              DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
+              DateTime(1970);
+          return bDate.compareTo(aDate);
+        });
+        break;
+      default:
+        // No sorting
+        break;
+    }
+  }
+
+  void _sortTradeBook(String sorting) {
+    // Sort main trade book list
+    if (_tradeBook != null && _tradeBook!.isNotEmpty) {
+      _applySortingToTradeBookList(_tradeBook!, sorting);
+    }
+    
+    // Sort trade book search results
+    if (_tradeBooksearch != null && _tradeBooksearch!.isNotEmpty) {
+      _applySortingToTradeBookList(_tradeBooksearch!, sorting);
+    }
+  }
+
+  void _applySortingToTradeBookList(List<dynamic> listToSort, String sorting) {
+    // Sorting logic for trade book
+    switch (sorting) {
+      case "ASC":
+        listToSort.sort((a, b) => a.tsym!.compareTo(b.tsym!));
+        break;
+      case "DSC":
+        listToSort.sort((a, b) => b.tsym!.compareTo(a.tsym!));
+        break;
+      case "LTPASC":
+        listToSort.sort((a, b) {
+          final aPrice = double.tryParse(a.avgprc ?? '0.0') ?? 0.0;
+          final bPrice = double.tryParse(b.avgprc ?? '0.0') ?? 0.0;
+          return aPrice.compareTo(bPrice);
+        });
+        break;
+      case "LTPDSC":
+        listToSort.sort((a, b) {
+          final aPrice = double.tryParse(a.avgprc ?? '0.0') ?? 0.0;
+          final bPrice = double.tryParse(b.avgprc ?? '0.0') ?? 0.0;
+          return bPrice.compareTo(aPrice);
+        });
+        break;
+      case "PRODUCTASC":
+        listToSort.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
+        break;
+      case "PRODUCTDSC":
+        listToSort.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
+        break;
+      case "QTYASC":
+        listToSort.sort((a, b) {
+          final aQty = int.tryParse(a.flqty ?? '0') ?? 0;
+          final bQty = int.tryParse(b.flqty ?? '0') ?? 0;
+          return aQty.compareTo(bQty);
+        });
+        break;
+      case "QTYDSC":
+        listToSort.sort((a, b) {
+          final aQty = int.tryParse(a.flqty ?? '0') ?? 0;
+          final bQty = int.tryParse(b.flqty ?? '0') ?? 0;
+          return bQty.compareTo(aQty);
+        });
+        break;
+      case "TIMEASC":
+        listToSort.sort((a, b) {
           final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
           final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
           return aDate.compareTo(bDate);
@@ -1332,8 +1510,81 @@ class OrderProvider extends DefaultChangeNotifier {
         // No sorting
         break;
     }
+  }
+
+  void _sortGttOrders(String sorting) {
+    // Sort main GTT orders list
+    if (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty) {
+      _applySortingToGttOrdersList(_gttOrderBookModel!, sorting);
+    }
     
-    notifyListeners();
+    // Sort GTT orders search results
+    if (_gttOrderBookSearch != null && _gttOrderBookSearch!.isNotEmpty) {
+      _applySortingToGttOrdersList(_gttOrderBookSearch!, sorting);
+    }
+  }
+
+  void _applySortingToGttOrdersList(List<dynamic> listToSort, String sorting) {
+    // Sorting logic for GTT orders
+    switch (sorting) {
+      case "ASC":
+        listToSort.sort((a, b) => a.tsym!.compareTo(b.tsym!));
+        break;
+      case "DSC":
+        listToSort.sort((a, b) => b.tsym!.compareTo(a.tsym!));
+        break;
+      case "LTPASC":
+        listToSort.sort((a, b) {
+          final aPrice = double.tryParse(a.d ?? '0.0') ?? 0.0;
+          final bPrice = double.tryParse(b.d ?? '0.0') ?? 0.0;
+          return aPrice.compareTo(bPrice);
+        });
+        break;
+      case "LTPDSC":
+        listToSort.sort((a, b) {
+          final aPrice = double.tryParse(a.d ?? '0.0') ?? 0.0;
+          final bPrice = double.tryParse(b.d ?? '0.0') ?? 0.0;
+          return bPrice.compareTo(aPrice);
+        });
+        break;
+      case "PRODUCTASC":
+        listToSort.sort((a, b) => a.sPrdtAli!.compareTo(b.sPrdtAli!));
+        break;
+      case "PRODUCTDSC":
+        listToSort.sort((a, b) => b.sPrdtAli!.compareTo(a.sPrdtAli!));
+        break;
+      case "QTYASC":
+        listToSort.sort((a, b) {
+          final aQty = int.tryParse(a.qty ?? '0') ?? 0;
+          final bQty = int.tryParse(b.qty ?? '0') ?? 0;
+          return aQty.compareTo(bQty);
+        });
+        break;
+      case "QTYDSC":
+        listToSort.sort((a, b) {
+          final aQty = int.tryParse(a.qty ?? '0') ?? 0;
+          final bQty = int.tryParse(b.qty ?? '0') ?? 0;
+          return bQty.compareTo(aQty);
+        });
+        break;
+      case "TIMEASC":
+        listToSort.sort((a, b) {
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
+          return aDate.compareTo(bDate);
+        });
+        break;
+      case "TIMEDSC":
+        listToSort.sort((a, b) {
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
+          return bDate.compareTo(aDate);
+        });
+        break;
+      default:
+        // No sorting
+        break;
+    }
   }
 
   placeGTTOrder(PlaceGTTOrderInput input, BuildContext context) async {
@@ -1346,7 +1597,9 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(3, context);
+        ref.read(indexListProvider).bottomMenu(2, context);
+        // Switch to Orders tab in Portfolio screen
+        ref.read(portfolioProvider).changeTabIndex(2);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1358,7 +1611,8 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API GTT Order ", "Error": "$e"});
       notifyListeners();
@@ -1377,7 +1631,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(3, context);
+        ref.read(indexListProvider).bottomMenu(2, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1389,7 +1643,8 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Modify GTT Order ", "Error": "$e"});
       notifyListeners();
@@ -1402,12 +1657,11 @@ class OrderProvider extends DefaultChangeNotifier {
       _placeGttOrderModel = await api.cancelGTTOrderAPI(canId);
 
       if (_placeGttOrderModel!.stat == "OI deleted") {
-      
         ConstantName.sessCheck = true;
 
         // Navigator.pop(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "GTT Order Cancelled Successfully"));
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "GTT Order Cancelled Successfully"));
         Navigator.pop(context);
       } else {
         if (_placeGttOrderModel!.emsg ==
@@ -1417,21 +1671,21 @@ class OrderProvider extends DefaultChangeNotifier {
         }
       }
       //  Navigator.pop(context);
-       if(_placeGttOrderModel!.stat=="Invalid Oi"){
-      await fetchGTTOrderBook(context, "");
-       ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, "Provided GTT Order is not found"));
-       Navigator.pop(context);
-            }
+      if (_placeGttOrderModel!.stat == "Invalid Oi") {
+        await fetchGTTOrderBook(context, "");
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "Provided GTT Order is not found"));
+        Navigator.pop(context);
+      }
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API GTT Order  CANCEL", "Error": "$e"});
     } finally {
-            await fetchGTTOrderBook(context, "");
-            toggleLoadingOn(false);
-            notifyListeners();
-
+      await fetchGTTOrderBook(context, "");
+      toggleLoadingOn(false);
+      notifyListeners();
     }
   }
 
@@ -1445,7 +1699,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(3, context);
+        ref.read(indexListProvider).bottomMenu(2, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1455,9 +1709,9 @@ class OrderProvider extends DefaultChangeNotifier {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
-      
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API OCO Order ", "Error": "$e"});
     } finally {
@@ -1477,7 +1731,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(3, context);
+        ref.read(indexListProvider).bottomMenu(2, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1489,7 +1743,8 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Modify OCO Order ", "Error": "$e"});
       notifyListeners();
@@ -1604,8 +1859,10 @@ class OrderProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _sipPlaceOrder = await api.getPlaceSipOrder(sipOrderInput);
       if (_sipPlaceOrder!.reqStatus == "OK") {
-        changeTabIndex(7, context);
-        ref.read(indexListProvider).bottomMenu(3, context);
+        changeTabIndex(5, context);
+        ref.read(indexListProvider).bottomMenu(2, context);
+        // Switch to Orders tab in Portfolio screen
+        ref.read(portfolioProvider).changeTabIndex(2);
         fetchSipOrderHistory(context);
         tabSize();
         Navigator.pop(context);
@@ -1648,7 +1905,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _modifySipModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "MODIFYSIP API", "Error": "$e"});
       notifyListeners();
@@ -1739,8 +1997,7 @@ class OrderProvider extends DefaultChangeNotifier {
                 _siporderBookModel!.sipDetails![main].scrips![i].close =
                     "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["close"]}";
 
-                _siporderBookModel!
-                    .sipDetails![main].scrips![i].perChange =
+                _siporderBookModel!.sipDetails![main].scrips![i].perChange =
                     "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["change"]}";
                 _siporderBookModel!
                     .sipDetails![main].scrips![i].change = (double.parse(
@@ -1761,7 +2018,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _siporderBookModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "SIP ORDER HISTORY API", "Error": "$e"});
       notifyListeners();
@@ -1785,7 +2043,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _cancleSipOrder;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "SIP CANCEL API", "Error": "$e"});
       notifyListeners();
@@ -1832,13 +2091,14 @@ class OrderProvider extends DefaultChangeNotifier {
 
       await fetchOrderBook(context, false);
       await changeTabIndex(0, context);
-      ref.read(indexListProvider).bottomMenu(3, context);
+      ref.read(indexListProvider).bottomMenu(2, context);
 
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
           successMessage(context, "Basket Order Sucessfully Placed"));
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Place Slice  Order", "Error": "$e"});
       notifyListeners();
@@ -1856,7 +2116,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await fetchGTTOrderBook(context, "");
 
         Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(3, context);
+        ref.read(indexListProvider).bottomMenu(2, context);
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1868,7 +2128,8 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API GTT Order ", "Error": "$e"});
       notifyListeners();

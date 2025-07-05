@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/marketwatch_model/alert_model/alert_pending_model.dart';
@@ -16,8 +15,10 @@ import '../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../models/marketwatch_model/scrip_overview/technical_data.dart';
 import '../models/marketwatch_model/search_scrip_model.dart';
 import '../models/marketwatch_model/search_scrip_new_model.dart';
+import '../models/marketwatch_model/tpseries.dart';
 import '../models/marketwatch_model/watchlist_rename_model.dart';
 import 'core/api_core.dart';
+import 'package:intl/intl.dart';
 
 mixin MarketWatchApi on ApiCore {
   // Get List of watchlist names form kambala
@@ -37,6 +38,43 @@ mixin MarketWatchApi on ApiCore {
       rethrow;
     }
   }
+
+  Future<TpSeries> getTPSeries({
+  String? exchange,
+  String? token,
+  String? timeframe,
+  String? fromDate,
+  String? toDate,
+}) async {
+  try {
+    // final fromTimestamp = fromDate != null
+    //     ? (DateFormat('dd-MM-yyyy').parse(fromDate).millisecondsSinceEpoch ~/ 1000)
+    //     : (DateTime.now().subtract(const Duration(days: 90)).millisecondsSinceEpoch ~/ 1000);
+    // final toTimestamp = toDate != null
+    //     ? (DateFormat('dd-MM-yyyy').parse(toDate).millisecondsSinceEpoch ~/ 1000)
+    //     : (DateTime.now().millisecondsSinceEpoch ~/ 1000);
+
+    final uri = Uri.parse(apiLinks.tpseries);
+    final res = await apiClient.post(
+      uri,
+      headers: defaultHeaders,
+      body:
+          '''jData={"uid":"${prefs.clientId}","exch":"${exchange ?? 'NSE'}","token":"${token ?? 'Nifty%2050'}","st":"$fromDate / 1000","et":"$toDate","intrv":"${timeframe ?? '5'}"}&jKey=${prefs.clientSession}''',
+    );
+print("res.body: ${res.body}");
+    final json = jsonDecode(res.body);
+    print("json: $json");
+    if (json is List) {
+      return TpSeries.fromJson({"data": json});
+    } else if (json is Map) {
+      return TpSeries.fromJson(json as Map<String, dynamic>);
+    } else {
+      throw Exception("Unexpected JSON type: ${json.runtimeType}");
+    }
+  } catch (e) {
+    rethrow;
+  }
+}
 
 // Edit watchlist name from kambala
 

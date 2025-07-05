@@ -47,9 +47,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
               final positions = ref.watch(portfolioProvider);
               final theme = ref.read(themeProvider);
               final marketwatch = ref.watch(marketWatchProvider);
-              final depthData = ref.watch(marketWatchProvider).getQuotes!;
               final scripInfo = ref.watch(marketWatchProvider);
-              final userProfile = ref.watch(userProfileProvider);
 
               DepthInputArgs depthArgs = DepthInputArgs(
                   exch: widget.positionList.exch ?? "",

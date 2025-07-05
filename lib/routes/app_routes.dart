@@ -828,11 +828,11 @@ class AppRoutes {
           beginOffset: const Offset(-1.0, 0.0),
         );
 
-      case Routes.optionStrategy:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => const OptionStrategey(),
-          beginOffset: const Offset(-1.0, 0.0),
-        );
+      // case Routes.optionStrategy:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => const OptionStrategey(),
+      //     beginOffset: const Offset(-1.0, 0.0),
+      //   );
 
       case Routes.bestMfScreen:
         return _createRoute(

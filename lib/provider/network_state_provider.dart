@@ -133,17 +133,12 @@ class NetworkStateProvider extends ChangeNotifier {
             .requestWSHoldings(isSubscribe: true, context: _globbcontext!);
         await ref.read(portfolioProvider)
             .requestWSPosition(isSubscribe: true, context: _globbcontext!);
-        // await ref.read(portfolioProvider).fetchHoldings(_globbcontext, "");
-        // await ref.read(portfolioProvider).fetchPositionBook(_globbcontext!, false);
-      } else if (ref.read(indexListProvider).selectedBtmIndx == 3) {
         await ref.read(orderProvider)
             .requestWSOrderBook(isSubscribe: true, context: _globbcontext!);
-
-        // ref.read(orderProvider).fetchOrderBook(_globbcontext!, true);
-        // ref.read(orderProvider).fetchTradeBook(_globbcontext!);
-
-        // ref.read(orderProvider).fetchGTTOrderBook(_globbcontext!, "");
+        // await ref.read(portfolioProvider).fetchHoldings(_globbcontext, "");
+        // await ref.read(portfolioProvider).fetchPositionBook(_globbcontext!, false);
       }
+      // Note: Orders functionality is now part of Portfolio (index 2)
     }
     // log(" connectionStatus - $_connectionStatus");
     notifyListeners();
