@@ -130,12 +130,12 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                       },
                       style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          backgroundColor:  theme.isDarkMode?colors.colorbluegrey:colors.colorBlack,
+                          backgroundColor:  theme.isDarkMode?colors.primaryDark:colors.primaryLight,
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50))),
+                              borderRadius: BorderRadius.circular(4))),
                       child: Text("I Understand",
                           style: textStyle(
-                              ! theme.isDarkMode?colors.colorWhite:colors.colorBlack, 14, FontWeight.w500)))),
+                              ! theme.isDarkMode?colors.colorWhite:colors.colorWhite, 14, FontWeight.w500)))),
               const SizedBox(height: 14)
             ]));
   }

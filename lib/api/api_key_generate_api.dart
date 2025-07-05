@@ -25,6 +25,22 @@ mixin GenerateApiKey on ApiCore {
   }
 
 // Get REgenerate API key from kambala
+Future<GenerateApikeyModel> generateapikeynewuser(String month) async {
+    try {
+      final uri = Uri.parse(apiLinks.generateapiKeynewuser);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}", "valTime":"$month"}&jKey=${prefs.clientSession}''');
+
+      final json = jsonDecode(res.body);
+
+      return GenerateApikeyModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<GenerateApikeyModel> regenerateapikey(String month) async {
     try {
       final uri = Uri.parse(apiLinks.generateapiKey);
@@ -32,7 +48,7 @@ mixin GenerateApiKey on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}", "valTime":"$month"}&jKey=${prefs.clientSession}''');
-
+      print((res.body));
       final json = jsonDecode(res.body);
 
       return GenerateApikeyModel.fromJson(json as Map<String, dynamic>);

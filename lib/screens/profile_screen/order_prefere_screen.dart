@@ -138,10 +138,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             : colors.colorBlack)))
             : const CustomBackBtn(),
         elevation: 0.2,
-        title: TextWidget.subText(
+        title: TextWidget.heroText(
           text: 'Order Preference',
           theme: theme.isDarkMode,
-          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
           fw: 1,
         ),
       ),
@@ -157,7 +159,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText("Product type", theme)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: SizedBox(
@@ -173,17 +175,21 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       FocusScope.of(context).unfocus();
                                     },
                                     style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 0),
-                                        backgroundColor: !theme.isDarkMode
-                                            ? orderType != orderTypes[index]
-                                                ? const Color(0xffF1F3F8)
-                                                : colors.colorBlack
-                                            : orderType != orderTypes[index]
-                                                ? colors.darkGrey
-                                                : colors.colorbluegrey,
-                                        shape: const StadiumBorder()),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 0),
+                                      backgroundColor: !theme.isDarkMode
+                                          ? orderType != orderTypes[index]
+                                              ? const Color(0xffF1F3F8)
+                                              : colors.primaryLight
+                                          : orderType != orderTypes[index]
+                                              ? colors.darkGrey
+                                              : colors.colorbluegrey,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            4), // Set to 0 for sharp edges
+                                      ),
+                                    ),
                                     child: Text(
                                         orderTypes[index] == "Delivery"
                                             ? "Delivery / Carry"
@@ -199,7 +205,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
                                             fw: orderType == orderTypes[index]
-                                                ? 1
+                                                ? 0
                                                 : 0)));
                               },
                               separatorBuilder: (context, index) {
@@ -210,7 +216,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText("Order type", theme)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: SizedBox(
@@ -226,19 +232,23 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       FocusScope.of(context).unfocus();
                                     },
                                     style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 0),
-                                        backgroundColor: !theme.isDarkMode
-                                            ? priceType !=
-                                                    priceTypes[index]['type']
-                                                ? const Color(0xffF1F3F8)
-                                                : colors.colorBlack
-                                            : priceType !=
-                                                    priceTypes[index]['type']
-                                                ? colors.darkGrey
-                                                : colors.colorbluegrey,
-                                        shape: const StadiumBorder()),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 0),
+                                      backgroundColor: !theme.isDarkMode
+                                          ? priceType !=
+                                                  priceTypes[index]['type']
+                                              ? const Color(0xffF1F3F8)
+                                              : colors.primaryLight
+                                          : priceType !=
+                                                  priceTypes[index]['type']
+                                              ? colors.darkGrey
+                                              : colors.colorbluegrey,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            4), // Set to 0 for sharp edges
+                                      ),
+                                    ),
                                     child: Text(priceTypes[index]['type'],
                                         style: TextWidget.textStyle(
                                             color: !theme.isDarkMode
@@ -256,7 +266,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             theme: theme.isDarkMode,
                                             fw: priceType ==
                                                     priceTypes[index]['type']
-                                                ? 1
+                                                ? 0
                                                 : 0)));
                               },
                               separatorBuilder: (context, index) {
@@ -267,7 +277,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText("Validity", theme)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: SizedBox(
@@ -283,17 +293,21 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       FocusScope.of(context).unfocus();
                                     },
                                     style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 0),
-                                        backgroundColor: !theme.isDarkMode
-                                            ? validity != validityTypes[index]
-                                                ? const Color(0xffF1F3F8)
-                                                : colors.colorBlack
-                                            : validity != validityTypes[index]
-                                                ? colors.darkGrey
-                                                : colors.colorbluegrey,
-                                        shape: const StadiumBorder()),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 0),
+                                      backgroundColor: !theme.isDarkMode
+                                          ? validity != validityTypes[index]
+                                              ? const Color(0xffF1F3F8)
+                                              : colors.primaryLight
+                                          : validity != validityTypes[index]
+                                              ? colors.darkGrey
+                                              : colors.colorbluegrey,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            4), // Set to 0 for sharp edges
+                                      ),
+                                    ),
                                     child: Text(validityTypes[index],
                                         style: TextWidget.textStyle(
                                             color: !theme.isDarkMode
@@ -308,7 +322,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
                                             fw: validity == validityTypes[index]
-                                                ? 1
+                                                ? 0
                                                 : 0)));
                               },
                               separatorBuilder: (context, index) {
@@ -327,12 +341,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             return const Color(0xff666666);
                           }
                           return theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xff666666);
+                              ? colors.primaryDark
+                              : colors.primaryLight;
                         }),
                         activeColor: theme.isDarkMode
-                            ? colors.colorWhite
-                            : const Color(0xff666666),
+                            ? colors.primaryDark
+                            : colors.primaryLight,
                         value: OrdQtyPref.mktqty,
                         groupValue: QtyPrefer,
                         onChanged: (OrdQtyPref? value) {
@@ -341,18 +355,19 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             qtyCtrl.text = "1";
                           });
                         }),
-                    Text('Minimum Qty',
-                        style: TextWidget.textStyle(
-                            color: theme.isDarkMode
-                                ? Color(QtyPrefer == OrdQtyPref.mktqty
-                                    ? 0xffffffff
-                                    : 0xff666666)
-                                : Color(QtyPrefer == OrdQtyPref.mktqty
-                                    ? 0xff3E4763
-                                    : 0xff666666),
-                            fontSize: 14,
-                            theme: theme.isDarkMode,
-                            fw: 0)),
+                          TextWidget.subText(
+                      text: 'Minimum Qty',
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? Color(QtyPrefer == OrdQtyPref.mktqty
+                              ? 0xffffffff
+                              : 0xff666666)
+                          : Color(QtyPrefer == OrdQtyPref.mktqty
+                              ? 0xff3E4763
+                              : 0xff666666),
+                      fw: 3,
+                    ),
+                     
                     Radio<OrdQtyPref>(
                         fillColor: MaterialStateProperty.resolveWith<Color>(
                             (Set<MaterialState> states) {
@@ -360,8 +375,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             return const Color(0xff666666);
                           }
                           return theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xff666666);
+                              ? colors.primaryDark
+                              : colors.primaryLight;
                         }),
                         activeColor: theme.isDarkMode
                             ? colors.colorWhite
@@ -373,18 +388,18 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             QtyPrefer = value!;
                           });
                         }),
-                    Text("No.of Market Lots",
-                        style: TextWidget.textStyle(
-                            color: theme.isDarkMode
-                                ? Color(QtyPrefer == OrdQtyPref.mktqty
-                                    ? 0xffffffff
-                                    : 0xff666666)
-                                : Color(QtyPrefer == OrdQtyPref.mktqty
-                                    ? 0xff3E4763
-                                    : 0xff666666),
-                            fontSize: 14,
-                            theme: theme.isDarkMode,
-                            fw: 0))
+                    TextWidget.subText(
+                      text: 'No.of Market Lots',
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? Color(QtyPrefer == OrdQtyPref.mktqty
+                              ? 0xffffffff
+                              : 0xff666666)
+                          : Color(QtyPrefer == OrdQtyPref.mktqty
+                              ? 0xff3E4763
+                              : 0xff666666),
+                      fw: 3,
+                    ),
                   ]),
                   if (QtyPrefer == OrdQtyPref.mktlot) ...[
                     Container(
@@ -437,9 +452,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                     }
                                   }))
                         ])),
-                    const SizedBox(height: 14),
                   ],
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16, bottom: 12),
                       child: headerTitleText("Market Protection%", theme)),
@@ -500,11 +514,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                 ),
                                 textAlign: TextAlign.start))
                       ])),
+                  const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText(
                           "Position exit ${expriceType}", theme)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: SizedBox(
@@ -521,19 +536,23 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       FocusScope.of(context).unfocus();
                                     },
                                     style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 0),
-                                        backgroundColor: !theme.isDarkMode
-                                            ? expriceType !=
-                                                    expriceTypes[index]['type']
-                                                ? const Color(0xffF1F3F8)
-                                                : colors.colorBlack
-                                            : expriceType !=
-                                                    expriceTypes[index]['type']
-                                                ? colors.darkGrey
-                                                : colors.colorbluegrey,
-                                        shape: const StadiumBorder()),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 0),
+                                      backgroundColor: !theme.isDarkMode
+                                          ? expriceType !=
+                                                  expriceTypes[index]['type']
+                                              ? const Color(0xffF1F3F8)
+                                              : colors.primaryLight
+                                          : expriceType !=
+                                                  expriceTypes[index]['type']
+                                              ? colors.darkGrey
+                                              : colors.colorbluegrey,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            4), // Set to 0 for sharp edges
+                                      ),
+                                    ),
                                     child: TextWidget.subText(
                                       text: expriceTypes[index]['type'],
                                       theme: false,
@@ -548,7 +567,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               : colors.colorBlack,
                                       fw: expriceType ==
                                               expriceTypes[index]['type']
-                                          ? 1
+                                          ? 0
                                           : 0,
                                     ));
                               },
@@ -571,10 +590,10 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                         elevation: 0,
                         shadowColor: Colors.transparent,
                         backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
+                            ? colors.primaryDark
+                            : colors.primaryLight,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
+                          borderRadius: BorderRadius.circular(4),
                         )),
                     onPressed: () async {
                       if (mktProtCtrl.text.isEmpty ||
@@ -617,7 +636,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
     return TextWidget.subText(
       text: text,
       theme: theme.isDarkMode,
-      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+      color:
+          theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
       fw: 0,
     );
   }
