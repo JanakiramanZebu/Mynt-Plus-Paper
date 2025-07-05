@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../res/global_state_text.dart';
 
 class CustomTextBtn extends ConsumerWidget {
   final String label;
@@ -18,7 +19,7 @@ class CustomTextBtn extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-     final theme = ref.read(themeProvider);
+    final theme = ref.read(themeProvider);
     return InkWell(
       borderRadius: BorderRadius.circular(32),
       onTap: () {
@@ -33,17 +34,18 @@ class CustomTextBtn extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                  textStyle:
-                      textStyle( theme.isDarkMode?colors.colorLightBlue:colors.colorBlue, 14, FontWeight.w600)),
+            TextWidget.subText(
+              text: label,
+              color: theme.isDarkMode
+                  ? colors.secondaryDark
+                  : colors.secondaryLight,
+              theme: theme.isDarkMode,
             ),
             const SizedBox(width: 8),
-            SvgPicture.asset(
-              icon,
-              color: theme.isDarkMode?colors.colorLightBlue:colors.colorBlue
-            )
+            SvgPicture.asset(icon,
+                color: theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight)
           ],
         ),
       ),

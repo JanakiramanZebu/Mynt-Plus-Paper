@@ -574,8 +574,8 @@ class _WatchListScreen extends State<WatchListScreen>
                   child: Container(
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Color(0x80F1F3F8),
-                      borderRadius: BorderRadius.circular(22),
+                      color: colors.searchBg,
+                      borderRadius: BorderRadius.circular(5),
                     ),
                     child: Row(
                       children: [
@@ -593,19 +593,17 @@ class _WatchListScreen extends State<WatchListScreen>
                             child: Row(
                               children: [
                                 // Search icon
-                                Padding(
-                                    padding:
-                                        EdgeInsets.only(left: 16, right: 10),
-                                    child: SvgPicture.asset(
-                                      assets.search,
-                                      width: 16,
-                                      height: 16,
-                                    )),
-
+                                const SizedBox(width: 12),
+                                SvgPicture.asset(
+                                  assets.searchIcon,
+                                  width: 18,
+                                  height: 18,
+                                ),
+                                const SizedBox(width: 8),
                                 // Search text
                                 Expanded(
                                   child: TextWidget.subText(
-                                    text: 'Search & Add stocks',
+                                    text: 'Search & add',
                                     color: theme.isDarkMode ? colors.textPrimaryDark :  colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
                                   ),
@@ -651,10 +649,12 @@ class _WatchListScreen extends State<WatchListScreen>
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: SvgPicture.asset(
-                                    assets.filterLines,
-                                    width: 18,
-                                    height: 18,
-                                    color: colors.colorGrey,
+                                    assets.searchFilter,
+                                    width: 16,
+                                    height: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
                                   ),
                                 ),
                               ),
@@ -685,9 +685,9 @@ class _WatchListScreen extends State<WatchListScreen>
                       border: Border(
                         bottom: BorderSide(
                           color: theme.isDarkMode
-                              ? const Color(0xFF2A2A2A)
-                              : const Color(0xFFE0E0E0),
-                          width: 1.0,
+                              ? colors.dividerDark
+                              : colors.dividerLight,
+                          
                         ),
                       ),
                     ),
@@ -731,12 +731,13 @@ class _WatchListScreen extends State<WatchListScreen>
                                   height: 32,
                                   width: 32,
                                   child: Center(
-                                    child: Icon(
-                                      Icons.menu,
-                                      size: 24,
+                                    child: SvgPicture.asset(
+                                      assets.hamMenu,
+                                      width: 20,
+                                      height: 20,
                                       color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
                                     ),
                                   ),
                                 ),
@@ -891,7 +892,7 @@ class _WatchListScreen extends State<WatchListScreen>
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(6),
+              // borderRadius: BorderRadius.circular(6),
               splashColor: theme.isDarkMode
                   ? Colors.white.withOpacity(0.05)
                   : Colors.black.withOpacity(0.05),
@@ -1023,9 +1024,9 @@ class _WatchListScreen extends State<WatchListScreen>
                 icon: assets.addCircleIcon),
             TextWidget.subText(
                 text: "No symbol in this watchlist",
-                color: colors.colorBlack,
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                 theme: theme.isDarkMode,
-                fw: 00),
+                ),
             const SizedBox(height: 8),
             SizedBox(
               width: 250,
@@ -1033,10 +1034,10 @@ class _WatchListScreen extends State<WatchListScreen>
                 child: TextWidget.paraText(
                     text:
                         "Use the search box above to find and add stocks, indices, futures or options. ",
-                    color: const Color(0xff666666),
+                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                     theme: theme.isDarkMode,
                     align: TextAlign.center,
-                    fw: 00),
+                    ),
               ),
             ),
           ],

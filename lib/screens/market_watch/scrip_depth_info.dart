@@ -497,7 +497,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 .textPrimaryLight,
                                                                         theme: theme
                                                                             .isDarkMode,
-                                                                        fw: 1),
+                                                                        ),
                                                                     TextWidget.titleText(
                                                                         text: widget
                                                                             .wlValue
@@ -509,18 +509,21 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 .textPrimaryLight,
                                                                         theme: theme
                                                                             .isDarkMode,
-                                                                        fw: 1),
+                                                                        ),
                                                                     Material(
-                                                                      color: Colors
-                                                                          .white
-                                                                          .withOpacity(
-                                                                              0.01),
+                                                                      color: Colors.transparent,
                                                                       shape:
                                                                           const CircleBorder(),
                                                                       child: InkWell(
                                                                           customBorder: const CircleBorder(),
-                                                                          splashColor: Colors.grey.withOpacity(0.2), // Customize as needed
-                                                                          highlightColor: Colors.grey.withOpacity(0.1),
+                                                                          splashColor: theme
+                                                                          .isDarkMode
+                                                                      ? colors.splashColorDark
+                                                                      : colors.splashColorLight, // Customize as needed
+                                                                          highlightColor: theme
+                                                                          .isDarkMode
+                                                                      ? colors.highlightDark
+                                                                      : colors.highlightLight,
                                                                           onTap: () async {
                                                                             await scripInfo.fetchScripInfo(
                                                                                 depthData.token!,
@@ -529,7 +532,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                             if (scripInfo.scripInfoModel!.stat ==
                                                                                 "Ok") {
                                                                               showModalBottomSheet(
-                                                                                  backgroundColor: const Color(0xff000000),
+                                                                                  backgroundColor: colors.colorBlack,
                                                                                   isScrollControlled: true,
                                                                                   useSafeArea: true,
                                                                                   isDismissible: true,
@@ -540,7 +543,9 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                   });
                                                                             }
                                                                           },
-                                                                          child: Container(padding: const EdgeInsets.all(8.0), child: SvgPicture.asset(assets.dInfo, width: 18, height: 15, color: const Color(0xff666666)))),
+                                                                          child: Container(padding: const EdgeInsets.all(8.0), child: SvgPicture.asset(assets.dInfo, width: 18, height: 15, color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,))),
                                                                     )
                                                                   ]),
                                                               Row(
@@ -603,19 +608,13 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         }
                                                                       },
                                                                       splashColor: theme
-                                                                              .isDarkMode
-                                                                          ? Colors.white.withOpacity(
-                                                                              0.15)
-                                                                          : Colors
-                                                                              .black
-                                                                              .withOpacity(0.15),
+                                                                          .isDarkMode
+                                                                      ? colors.splashColorDark
+                                                                      : colors.splashColorLight,
                                                                       highlightColor: theme
-                                                                              .isDarkMode
-                                                                          ? Colors.white.withOpacity(
-                                                                              0.08)
-                                                                          : Colors
-                                                                              .black
-                                                                              .withOpacity(0.08),
+                                                                          .isDarkMode
+                                                                      ? colors.highlightDark
+                                                                      : colors.highlightLight,
                                                                       child:
                                                                           Container(
                                                                         padding: const EdgeInsets
@@ -635,7 +634,11 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           height:
                                                                               20,
                                                                           color:
-                                                                              Color(0xFF0037B7),
+                                                                               theme.isDarkMode
+                                                                            ? colors
+                                                                                .textPrimaryDark
+                                                                            : colors
+                                                                                .textPrimaryLight,
                                                                         ),
                                                                       ),
                                                                     ),
@@ -663,7 +666,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           .success,
                                                               theme: theme
                                                                   .isDarkMode,
-                                                              fw: 0),
+                                                              ),
                                                           const SizedBox(
                                                               height: 4),
                                                           TextWidget.paraText(
@@ -768,238 +771,20 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                               child: Container(height: 40, decoration: BoxDecoration(color: colors.tertiary, borderRadius: BorderRadius.circular(5)), child: Center(child: TextWidget.titleText(text: "SELL", color: colors.colorWhite, theme: theme.isDarkMode, fw: 0)))))
                                                                     ])),
 
-                                                      Row(
-                                                        children: [
-                                                          // Chart button - always takes 50% width
-                                                          Expanded(
-                                                            child: Center(
-                                                              child: Material(
-                                                                color: Colors
-                                                                    .transparent,
-                                                                child: InkWell(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              6),
-                                                                  onTap:
-                                                                      () async {
-                                                                    // Add delay for visual feedback
-                                                                    await Future.delayed(const Duration(
-                                                                        milliseconds:
-                                                                            150));
-
-                                                                    scripInfo
-                                                                        .singlePageloader(
-                                                                            true);
-
-                                                                    setState(
-                                                                        () {
-                                                                      initSize =
-                                                                          _getSafeInitialSize(
-                                                                              0.28);
-                                                                      scripInfo
-                                                                          .chngDephBtn(
-                                                                              "Chart");
-                                                                    });
-
-                                                                    if (scripInfo
-                                                                        .scripsize) {
-                                                                      Navigator.pop(
-                                                                          context);
-                                                                      Navigator.pop(
-                                                                          context);
-                                                                    } else {
-                                                                      Navigator.pop(
-                                                                          context);
-                                                                    }
-
-                                                                    if (currentRouteName ==
-                                                                        Routes
-                                                                            .searchScrip) {
-                                                                      scripInfo.requestMWScrip(
-                                                                          context:
-                                                                              context,
-                                                                          isSubscribe:
-                                                                              true);
-                                                                      scripInfo
-                                                                          .searchClear();
-                                                                      scripInfo
-                                                                          .setpageName(
-                                                                              "");
-                                                                      Navigator.pop(
-                                                                          context);
-                                                                      currentRouteName =
-                                                                          'homeScreen';
-                                                                    }
-
-                                                                    userProfile
-                                                                        .setChartdialog(
-                                                                            true);
-
-                                                                    scripInfo.setChartScript(
-                                                                        widget
-                                                                            .wlValue
-                                                                            .exch,
-                                                                        widget
-                                                                            .wlValue
-                                                                            .token,
-                                                                        widget
-                                                                            .wlValue
-                                                                            .tsym);
-
-                                                                    scripInfo
-                                                                        .singlePageloader(
-                                                                            false);
-                                                                  },
-                                                                  splashColor: theme
-                                                                          .isDarkMode
-                                                                      ? Colors
-                                                                          .white
-                                                                          .withOpacity(
-                                                                              0.15)
-                                                                      : Colors
-                                                                          .black
-                                                                          .withOpacity(
-                                                                              0.15),
-                                                                  highlightColor: theme
-                                                                          .isDarkMode
-                                                                      ? Colors
-                                                                          .white
-                                                                          .withOpacity(
-                                                                              0.08)
-                                                                      : Colors
-                                                                          .black
-                                                                          .withOpacity(
-                                                                              0.08),
-                                                                  child:
-                                                                      Container(
-                                                                    padding: const EdgeInsets
-                                                                        .symmetric(
-                                                                        horizontal:
-                                                                            10,
-                                                                        vertical:
-                                                                            15),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .min,
-                                                                      children: [
-                                                                        SvgPicture
-                                                                            .asset(
-                                                                          assets
-                                                                              .charts,
-                                                                          color:
-                                                                              Color(0xFF0037B7),
-                                                                          width:
-                                                                              16,
-                                                                          height:
-                                                                              16,
-                                                                        ),
-                                                                        const SizedBox(
-                                                                            width:
-                                                                                4),
-                                                                        TextWidget.subText(
-                                                                            text:
-                                                                                "Chart",
-                                                                            color:
-                                                                                Color(0xFF0037B7),
-                                                                            theme: theme.isDarkMode,
-                                                                            fw: 0),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-
-                                                          // Spacer between buttons
-                                                          const SizedBox(
-                                                              width: 20),
-
-                                                          // Options button - always takes 50% width (visible or invisible)
-                                                          Expanded(
-                                                            child: scripInfo.getOptionawait(
-                                                                    widget
-                                                                        .wlValue
-                                                                        .exch,
-                                                                    widget
-                                                                        .wlValue
-                                                                        .token)
-                                                                ? Center(
-                                                                    child:
-                                                                        Material(
-                                                                      color: Colors
-                                                                          .transparent,
-                                                                      child:
-                                                                          InkWell(
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(6),
-                                                                        onTap:
-                                                                            () async {
-                                                                          // scripInfo.singlePageloader(true);
-
-                                                                          scripInfo.setOptionScript(
-                                                                              context,
-                                                                              widget.wlValue.exch,
-                                                                              widget.wlValue.token,
-                                                                              widget.wlValue.tsym);
-
-                                                                          await Future.delayed(
-                                                                              const Duration(milliseconds: 100));
-
-                                                                          if (mounted) {
-                                                                            Navigator.pop(context);
-                                                                            await Navigator.pushNamed(context,
-                                                                                Routes.optionChain,
-                                                                                arguments: widget.wlValue);
-                                                                          }
-                                                                        },
-                                                                        splashColor: theme.isDarkMode
-                                                                            ? Colors.white.withOpacity(0.15)
-                                                                            : Colors.black.withOpacity(0.15),
-                                                                        highlightColor: theme.isDarkMode
-                                                                            ? Colors.white.withOpacity(0.08)
-                                                                            : Colors.black.withOpacity(0.08),
-                                                                        child:
-                                                                            Container(
-                                                                          padding: const EdgeInsets
-                                                                              .symmetric(
-                                                                              horizontal: 10,
-                                                                              vertical: 8),
-                                                                          child:
-                                                                              Row(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.min,
-                                                                            children: [
-                                                                              SvgPicture.asset(
-                                                                                assets.options,
-                                                                                color: Color(0xFF0037B7),
-                                                                                width: 16,
-                                                                                height: 16,
-                                                                              ),
-                                                                              const SizedBox(width: 4),
-                                                                              TextWidget.subText(text: "Options", color: Color(0xFF0037B7), theme: theme.isDarkMode, fw: 0),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  )
-                                                                : const SizedBox
-                                                                    .shrink(), // Invisible placeholder when options not available
-                                                          ),
-                                                        ],
-                                                      ),
-
-                                                      SizedBox(
-                                                        height: 8,
-                                                      ),
+                                                      
 
                                                      
                                                     ],
                                                   ),
                                                 ),
+                                                 if (!scripInfo
+                                                              .scripDepthloader &&
+                                                          widget.wlValue
+                                                                  .instname !=
+                                                              "UNDIND" &&
+                                                          widget.wlValue
+                                                                  .instname !=
+                                                              "COM")
                                                 const ListDivider(),
                                                 // Chart button above tabs - Now in Column layout
                                                 // Container(
@@ -1501,6 +1286,229 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                       const AlwaysScrollableScrollPhysics(),
                                                   controller: scrollController,
                                                   children: [
+
+                                                    Padding(
+                                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                                      child: Row(
+                                                          children: [
+                                                            // Chart button
+                                                            if (true) // Chart is always available
+                                                              Expanded(
+                                                                child: Center(
+                                                                  child: Material(
+                                                                    color: Colors
+                                                                        .transparent,
+                                                                    child: InkWell(
+                                                                      borderRadius:
+                                                                          BorderRadius
+                                                                              .circular(
+                                                                                  6),
+                                                                      onTap:
+                                                                          () async {
+                                                                        // Add delay for visual feedback
+                                                                        await Future.delayed(const Duration(
+                                                                            milliseconds:
+                                                                                150));
+                                                        
+                                                                        scripInfo
+                                                                            .singlePageloader(
+                                                                                true);
+                                                        
+                                                                        setState(
+                                                                            () {
+                                                                          initSize =
+                                                                              _getSafeInitialSize(
+                                                                                  0.28);
+                                                                          scripInfo
+                                                                              .chngDephBtn(
+                                                                                  "Chart");
+                                                                        });
+                                                        
+                                                                        if (scripInfo
+                                                                            .scripsize) {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        } else {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        }
+                                                        
+                                                                        if (currentRouteName ==
+                                                                            Routes
+                                                                                .searchScrip) {
+                                                                          scripInfo.requestMWScrip(
+                                                                              context:
+                                                                                  context,
+                                                                              isSubscribe:
+                                                                                  true);
+                                                                          scripInfo
+                                                                              .searchClear();
+                                                                          scripInfo
+                                                                              .setpageName(
+                                                                                  "");
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                          currentRouteName =
+                                                                              'homeScreen';
+                                                                        }
+                                                        
+                                                                        userProfile
+                                                                            .setChartdialog(
+                                                                                true);
+                                                        
+                                                                        scripInfo.setChartScript(
+                                                                            widget
+                                                                                .wlValue
+                                                                                .exch,
+                                                                            widget
+                                                                                .wlValue
+                                                                                .token,
+                                                                            widget
+                                                                                .wlValue
+                                                                                .tsym);
+                                                        
+                                                                        scripInfo
+                                                                            .singlePageloader(
+                                                                                false);
+                                                                      },
+                                                                      splashColor: theme
+                                                                              .isDarkMode
+                                                                          ? colors.splashColorDark
+                                                                          : colors.splashColorLight,
+                                                                      highlightColor:theme
+                                                                              .isDarkMode
+                                                                          ? colors.highlightDark
+                                                                          : colors.highlightLight,
+                                                                      child:
+                                                                          Container(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal:
+                                                                                8,
+                                                                            vertical:
+                                                                                8),
+                                                                        child: Row(
+                                                                          mainAxisSize:
+                                                                              MainAxisSize
+                                                                                  .min,
+                                                                          children: [
+                                                                            SvgPicture
+                                                                                .asset(
+                                                                              assets
+                                                                                  .charts,
+                                                                              color:
+                                                                                  theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                                                                              width:
+                                                                                  16,
+                                                                              height:
+                                                                                  16,
+                                                                            ),
+                                                                            const SizedBox(
+                                                                                width:
+                                                                                    4),
+                                                                            TextWidget.subText(
+                                                                                text:
+                                                                                    "Chart",
+                                                                                color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight
+                                                                                    ,
+                                                                                theme: theme.isDarkMode,
+                                                                                ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                        
+                                                            // Spacer between buttons - only show if both buttons are visible
+                                                            if (scripInfo.getOptionawait(
+                                                                    widget
+                                                                        .wlValue
+                                                                        .exch,
+                                                                    widget
+                                                                        .wlValue
+                                                                        .token))
+                                                              const SizedBox(
+                                                                  width: 20),
+                                                        
+                                                            // Options button
+                                                            if (scripInfo.getOptionawait(
+                                                                    widget
+                                                                        .wlValue
+                                                                        .exch,
+                                                                    widget
+                                                                        .wlValue
+                                                                        .token))
+                                                              Expanded(
+                                                                child: Center(
+                                                                  child: Material(
+                                                                    color: Colors
+                                                                        .transparent,
+                                                                    child: InkWell(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(6),
+                                                                      onTap:
+                                                                          () async {
+                                                                        // scripInfo.singlePageloader(true);
+                                                        
+                                                                        scripInfo.setOptionScript(
+                                                                            context,
+                                                                            widget.wlValue.exch,
+                                                                            widget.wlValue.token,
+                                                                            widget.wlValue.tsym);
+                                                        
+                                                                        await Future.delayed(
+                                                                            const Duration(milliseconds: 150));
+                                                        
+                                                                        if (mounted) {
+                                                                          Navigator.pop(context);
+                                                                          await Navigator.pushNamed(context,
+                                                                              Routes.optionChain,
+                                                                              arguments: widget.wlValue);
+                                                                        }
+                                                                      },
+                                                                      splashColor:theme
+                                                                        .isDarkMode
+                                                                    ? colors.splashColorDark
+                                                                    : colors.splashColorLight,
+                                                                      highlightColor: theme
+                                                                        .isDarkMode
+                                                                    ? colors.highlightDark
+                                                                    : colors.highlightLight,
+                                                                      child:
+                                                                          Container(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal: 10,
+                                                                            vertical: 8),
+                                                                        child:
+                                                                            Row(
+                                                                          mainAxisSize:
+                                                                              MainAxisSize.min,
+                                                                          children: [
+                                                                            SvgPicture.asset(
+                                                                              assets.options,
+                                                                              color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                                                                              width: 16,
+                                                                              height: 16,
+                                                                            ),
+                                                                            const SizedBox(width: 4),
+                                                                            TextWidget.subText(text: "Options", color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight, theme: theme.isDarkMode,),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                          ],
+                                                        ),
+                                                    ),
+
+                                                     
                                                     if (scripInfo.actDeptBtn ==
                                                         "Overview") ...[
                                                       Padding(
@@ -1534,7 +1542,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                     "${depthData.h != "null" ? depthData.h ?? 0.00 : '0.00'}",
                                                                     "Low",
                                                                     "${depthData.l != "null" ? depthData.l ?? 0.00 : '0.00'}",
-                                                                    "Close",
+                                                                    "P.Close",
                                                                     "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
                                                                     theme),
                                                                 const SizedBox(
@@ -1644,7 +1652,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 TextWidget.paraText(text: "Quantity", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, theme: theme.isDarkMode,),
                                                                                 TextWidget.paraText(text: "Bid", color: colors.secondary   , theme: theme.isDarkMode,)
                                                                               ]),
-                                                                              const SizedBox(height: 7),
+                                                                              const SizedBox(height: 10),
                                                                               _buildBidDepthPercentage("${depthData.bq1 ?? 0}", "${depthData.bp1 ?? 0.00}", scripInfo, theme),
                                                                               const SizedBox(height: 6),
                                                                               _buildBidDepthPercentage("${depthData.bq2 ?? 0}", "${depthData.bp2 ?? 0.00}", scripInfo, theme),
@@ -1667,7 +1675,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 TextWidget.paraText(text: "Ask", color: colors.tertiary, theme: theme.isDarkMode,),
                                                                                 TextWidget.paraText(text: "Quantity", color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, theme: theme.isDarkMode,)
                                                                               ]),
-                                                                              const SizedBox(height: 7),
+                                                                              const SizedBox(height: 10),
                                                                               _buildAskDepthPercentage("${depthData.sp1 ?? 0.00}", "${depthData.sq1 ?? 0}", scripInfo, theme),
                                                                               const SizedBox(height: 6),
                                                                               _buildAskDepthPercentage("${depthData.sp2 ?? 0.00}", "${depthData.sq2 ?? 0}", scripInfo, theme),
@@ -1758,8 +1766,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                       backgroundColor: (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" &&
                                                                               scripInfo.totSellQtyPer.toStringAsFixed(2) ==
                                                                                   "0.00")
-                                                                          ? const Color(
-                                                                              0xffECEDEE)
+                                                                          ?  colors.textSecondaryLight
                                                                           : colors.tertiary,
                                                                       percent: scripInfo
                                                                           .totBuyQtyPerChng,
@@ -1852,9 +1859,9 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                     //     theme: theme
                                                                     //         .isDarkMode,
                                                                     //     fw: 1),
-                                                                    // const SizedBox(
-                                                                    //     height:
-                                                                    //         8),
+                                                                    const SizedBox(
+                                                                        height:
+                                                                            16),
                                                                     GridView.count(
                                                                         crossAxisCount: 3,
                                                                         physics: const NeverScrollableScrollPhysics(),
@@ -1866,11 +1873,13 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           return Container(
                                                                               width: 120,
                                                                               padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 8),
-                                                                              decoration: BoxDecoration(color: const Color(0xffB5C0CF).withOpacity(.15), borderRadius: BorderRadius.circular(8)),
+                                                                              decoration: BoxDecoration(color: colors.btnBg, borderRadius: BorderRadius.circular(8)),
                                                                               child: Column(children: [
-                                                                                TextWidget.headText(text: "${scripInfo.returnsGridview[index]['percent']}%", color: Color(scripInfo.returnsGridview[index]['percent'].toString().startsWith("-") ? 0xffF44336 : 0xff43A833), theme: theme.isDarkMode, fw: 0),
+                                                                                TextWidget.subText(text: "${scripInfo.returnsGridview[index]['percent']}%", color: Color(scripInfo.returnsGridview[index]['percent'].toString().startsWith("-") ? 0xFFFF1717 : 0xFF00B14F), theme: theme.isDarkMode, ),
                                                                                 const SizedBox(height: 4),
-                                                                                Center(child: TextWidget.paraText(text: "${scripInfo.returnsGridview[index]['duration']}", align: TextAlign.center, color: const Color(0xff666666), theme: theme.isDarkMode, fw: 0))
+                                                                                Center(child: TextWidget.paraText(text: "${scripInfo.returnsGridview[index]['duration']}", align: TextAlign.center, color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight, theme: theme.isDarkMode, ))
                                                                               ]));
                                                                         })),
                                                                   ]
@@ -1962,11 +1971,10 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                 TextWidget.paraText(
                                                                     text:
                                                                         " Long press to add ${scripInfo.wlName}'s Watchlist",
-                                                                    color: colors
-                                                                        .colorBlue,
+                                                                    color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
                                                                     theme: theme
                                                                         .isDarkMode,
-                                                                    fw: 0)
+                                                                    )
                                                               ])),
                                                       const FutureScreen()
                                                     ] else if (scripInfo
@@ -2033,7 +2041,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
         valueValue != null ? [valueValue] : [0.0]; // Fallback if parsing fails
 
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      TextWidget.subText(text: low, theme: theme.isDarkMode, fw: 0),
+      TextWidget.subText(text: low, theme: theme.isDarkMode,),
       SizedBox(
         width: MediaQuery.of(context).size.width / 1.8,
         child: FlutterSlider(
@@ -2077,7 +2085,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
           text: high,
           color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
           theme: theme.isDarkMode,
-          fw: 0)
+          )
     ]);
   }
 
@@ -2103,20 +2111,20 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
       //   ),
       // ),
       Padding(
-        padding: const EdgeInsets.only(top: 1.5),
+        padding: const EdgeInsets.only(bottom: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextWidget.paraText(
+            TextWidget.subText(
                 text: " ${price != "null" ? price : '0.00'} ",
                 color: colors.tertiary ,
                 theme: theme.isDarkMode,
-                fw: 0),
-            TextWidget.paraText(
+                ),
+            TextWidget.subText(
                 text: " ${qty != "null" ? qty : '0'} ",
                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                 theme: theme.isDarkMode,
-                fw: 0),
+                ),
           ],
         ),
       )
@@ -2142,20 +2150,20 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
       //   // barRadius: const Radius.circular(4), // Half of lineHeight for capsule shape
       // ),
       Padding(
-        padding: const EdgeInsets.only(top: 1.5),
+        padding: const EdgeInsets.only(bottom: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextWidget.paraText(
+            TextWidget.subText(
                 text: " ${qty != "null" ? qty : '0'} ",
                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                 theme: theme.isDarkMode,
-                fw: 0),
-            TextWidget.paraText(
+                ),
+            TextWidget.subText(
                 text: " ${price != "null" ? price : '0.00'} ",
                 color: theme.isDarkMode ? colors.secondaryDark :  colors.secondaryLight,
                 theme: theme.isDarkMode,
-                fw: 0),
+                ),
           ],
         ),
       )
@@ -2179,21 +2187,26 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
+              
                   const SizedBox(height: 12),
+                      
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      
                       TextWidget.subText(
                           text: "Futures",
                           theme: false,
-                          color: const Color(0xff000000),
-                          fw: 0),
+                          color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                          ),
                       AnimatedRotation(
                         turns: scripInfo.isFuturesExpanded ? 0.25 : 0,
                         duration: const Duration(milliseconds: 200),
                         child: Icon(
                           Icons.chevron_right,
-                          color: const Color(0xff666666),
+                          color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                           size: 20,
                         ),
                       ),
@@ -2223,14 +2236,14 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                         children: [
                           SvgPicture.asset(
                             assets.dInfo,
-                            color: colors.colorBlue,
+                            color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
                           ),
                           TextWidget.paraText(
                               text:
                                   " Long press to add ${scripInfo.wlName}'s Watchlist",
-                              color: colors.colorBlue,
+                              color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
                               theme: theme.isDarkMode,
-                              fw: 0),
+                              ),
                         ],
                       ),
                     ),
@@ -2299,11 +2312,13 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                       TextWidget.subText(
                           text: "Fundamentals",
                           theme: false,
-                          color: const Color(0xff000000),
-                          fw: 0),
+                          color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                          ),
                       Icon(
                         Icons.chevron_right,
-                        color: const Color(0xff666666),
+                        color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
                         size: 20,
                       ),
                     ],
@@ -2341,14 +2356,11 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                   ),
             ],
           ),
-          const SizedBox(height: 12),
+          // const SizedBox(height: 12),
           Divider(
-            height: 1,
-            thickness: 0.5,
-            color: theme.isDarkMode
-                ? colors.darkColorDivider.withOpacity(0.3)
-                : colors.colorDivider.withOpacity(0.3),
-          )
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider)
         ],
       ),
     );

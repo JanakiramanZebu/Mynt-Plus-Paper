@@ -85,52 +85,56 @@ class FutureScreen extends ConsumerWidget {
                     },
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                      dense: true,
-                      title: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            "${displayData.symbol}",
-                            style: TextWidget.textStyle(
-                                fontSize: 13,
-                                color: theme.isDarkMode
-                                    ? Colors.white
-                                    : Colors.black,
-                                theme: theme.isDarkMode,
-                                fw: 0),
-                          ),
-                          SizedBox(
-                            width: 2,
-                          ),
-                          if (displayData.option!.isNotEmpty)
+                      dense: false,
+                      title: Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
                             Text(
-                              "${displayData.option}",
+                              "${displayData.symbol}",
                               style: TextWidget.textStyle(
-                                  fontSize: 13,
-                                  color: Color(0xff666666),
+                                  fontSize: 14,
+                                  color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 0),
-                            )
-                        ],
+                                  ),
+                            ),
+                           
+                            if (displayData.option!.isNotEmpty)
+                              Text(
+                                "${displayData.option}",
+                                style: TextWidget.textStyle(
+                        fontSize: 14,
+                        color: colors.textPrimaryLight,
+                        theme: theme.isDarkMode,
+                                            ),
+                              )
+                          ],
+                        ),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              TextWidget.paraText(
-                                  text: "${displayData.exch}  ",
-                                  color: colors.colorGrey,
-                                  theme: theme.isDarkMode,
-                                  fw: 3),
-                              if (displayData.expDate!.isNotEmpty)
+                          Padding(
+                           padding: const EdgeInsets.only(top: 4),
+                            child: Row(
+                              children: [
                                 TextWidget.paraText(
-                                    text: "${displayData.expDate}  ",
+                                    text: "${displayData.exch}",
+                                    color:  colors.textSecondaryLight,
                                     theme: theme.isDarkMode,
-                                    fw: 3),
-                            ],
+                                    ),
+                                if (displayData.expDate!.isNotEmpty)
+                                  TextWidget.paraText(
+                                      text: "${displayData.expDate}",
+                                      color: theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
+                                      theme: theme.isDarkMode,
+                                      ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -138,28 +142,35 @@ class FutureScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          TextWidget.subText(
-                              text:
-                                  "₹${displayData.ltp ?? displayData.close ?? 0.00}",
-                              theme: theme.isDarkMode,
-                              fw: 0),
-                          const SizedBox(height: 4),
-                          TextWidget.paraText(
-                              text:
-                                  "${displayData.change == "null" ? "0.00 " : double.parse("${displayData.change}").toStringAsFixed(2)} "
-                                  "${displayData.perChange == "null" ? "(0.00%)" : "(${displayData.perChange ?? 0.00}%)"}",
-                              color: displayData.change!.startsWith("-") ||
-                                      displayData.perChange!.startsWith('-')
-                                  ? colors.darkred
-                                  : (displayData.change == "null" ||
-                                              displayData.perChange ==
-                                                  "null") ||
-                                          (displayData.change == "0.00" ||
-                                              displayData.perChange == "0.00")
-                                      ? colors.ltpgrey
-                                      : colors.ltpgreen,
-                              theme: theme.isDarkMode,
-                              fw: 2),
+                          Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                            child: TextWidget.titleText(
+                                text:
+                                    "₹${displayData.ltp ?? displayData.close ?? 0.00}",
+                                    color: displayData.change!.startsWith("-") ||
+                                        displayData.perChange!.startsWith('-')
+                                    ? colors.darkred
+                                    : (displayData.change == "null" ||
+                                                displayData.perChange ==
+                                                    "null") ||
+                                            (displayData.change == "0.00" ||
+                                                displayData.perChange == "0.00")
+                                        ? colors.ltpgrey
+                                        : colors.ltpgreen,
+                                theme: theme.isDarkMode,
+                                ),
+                          ),
+                          
+                          Padding(
+                             padding: const EdgeInsets.only(top: 4),
+                            child: TextWidget.paraText(
+                                text:
+                                    "${displayData.change == "null" ? "0.00 " : double.parse("${displayData.change}").toStringAsFixed(2)} "
+                                    "${displayData.perChange == "null" ? "(0.00%)" : "(${displayData.perChange ?? 0.00}%)"}",
+                                color:colors.textSecondaryLight ,
+                                theme: theme.isDarkMode,
+                                ),
+                          ),
                         ],
                       ),
                     )),

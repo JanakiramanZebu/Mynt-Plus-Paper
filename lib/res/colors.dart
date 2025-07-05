@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+
+
 class AppColors {
 
 
@@ -39,17 +41,13 @@ class AppColors {
   final textDisabledDark = const Color(0xFF404040);
 
 // === STATUS COLORS ===
-  final profit = const Color(0xFFFF1717);
-  final profitLight = const Color(0xFFFF1717);
-  final profitDark = const Color(0xFFC53030);
+  final  profit = const Color(0xFF00B14F);
+  final  profitLight = const Color(0xFF00B14F);
+  final  profitDark = const Color(0xFF2F855A);
 
-  // static const Color warning = Color(0xFFDD6B20);
-  // final warningLight = Color(0xFFFEEBC8);
-  // static const Color warningDark = Color(0xFFC05621);
-
-  final loss = const Color(0xFF00B14F);
-  final lossLight = const Color(0xFF00B14F);
-  final lossDark = const Color(0xFF2F855A);
+  final loss = const Color(0xFFFF1717);
+  final lossLight = const Color(0xFFFF1717);
+  final lossDark = const Color(0xFFC53030);
 
 
   final error = const Color(0xFFFF1717);
@@ -67,11 +65,23 @@ class AppColors {
 
 // === BACKGROUND COLORS ===
   final btnBg = const Color(0XFFF1F3F8);
+  final searchBg = const Color(0XFFF9F9F9);
 
   // === BORDER COLORS ===
   final btnOutlinedBorder = Color(0xFF0037B7);
 
-  
+
+  //inkwell splash color
+
+  final splashColorLight = const Color(0xff000000).withOpacity(0.15);
+  final splashColorDark = const Color(0xffFFFFFF).withOpacity(0.15);
+
+
+// inkwell highlight color (tapfeedback)
+
+
+ final highlightLight = const Color(0xff000000).withOpacity(0.08);
+  final highlightDark = const Color(0xffFFFFFF).withOpacity(0.08);
 
   // static const Color info = Color(0xFF3182CE);
   // final infoLight = Color(0xFFBEE3F8);
