@@ -206,7 +206,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             theme: theme.isDarkMode,
                                             fw: orderType == orderTypes[index]
                                                 ? 0
-                                                : 0)));
+                                                : 3)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
@@ -266,7 +266,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             theme: theme.isDarkMode,
                                             fw: priceType ==
                                                     priceTypes[index]['type']
-                                                ? 0
+                                                ? 1
                                                 : 0)));
                               },
                               separatorBuilder: (context, index) {
@@ -274,61 +274,154 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                               },
                               itemCount: priceTypes.length))),
                   const SizedBox(height: 8),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 16, top: 16),
-                      child: headerTitleText("Validity", theme)),
-                  const SizedBox(height: 14),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: SizedBox(
-                          height: 38,
-                          child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context, index) {
-                                return ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        validity = validityTypes[index];
-                                      });
-                                      FocusScope.of(context).unfocus();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 0),
-                                      backgroundColor: !theme.isDarkMode
-                                          ? validity != validityTypes[index]
-                                              ? const Color(0xffF1F3F8)
-                                              : colors.primaryLight
-                                          : validity != validityTypes[index]
-                                              ? colors.darkGrey
-                                              : colors.colorbluegrey,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            4), // Set to 0 for sharp edges
-                                      ),
-                                    ),
-                                    child: Text(validityTypes[index],
-                                        style: TextWidget.textStyle(
-                                            color: !theme.isDarkMode
-                                                ? validity !=
-                                                        validityTypes[index]
-                                                    ? const Color(0xff666666)
-                                                    : colors.colorWhite
-                                                : validity !=
-                                                        validityTypes[index]
-                                                    ? const Color(0xff666666)
-                                                    : colors.colorBlack,
-                                            fontSize: 14,
-                                            theme: theme.isDarkMode,
-                                            fw: validity == validityTypes[index]
-                                                ? 0
-                                                : 0)));
-                              },
-                              separatorBuilder: (context, index) {
-                                return const SizedBox(width: 8);
-                              },
-                              itemCount: validityTypes.length))),
+                  Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      flex: 1,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 16),
+            child: headerTitleText("Validity", theme),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 8),
+            child: SizedBox(
+              height: 38,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  final isSelected = validity == validityTypes[index];
+                  return ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        validity = validityTypes[index];
+                      });
+                      FocusScope.of(context).unfocus();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      backgroundColor: !theme.isDarkMode
+                          ? isSelected
+                              ? colors.primaryLight
+                              : const Color(0xffF1F3F8)
+                          : isSelected
+                              ? colors.colorbluegrey
+                              : colors.darkGrey,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    child: Text(
+                      validityTypes[index],
+                      style: TextWidget.textStyle(
+                        color: !theme.isDarkMode
+                            ? isSelected
+                                ? colors.colorWhite
+                                : const Color(0xff666666)
+                            : isSelected
+                                ? colors.colorBlack
+                                : const Color(0xff666666),
+                        fontSize: 14,
+                        theme: theme.isDarkMode,
+                        fw: isSelected ? 1 : 0,
+                      ),
+                    ),
+                  );
+                },
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemCount: validityTypes.length,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+    Expanded(
+      flex: 1,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only( top: 16, bottom: 8),
+            child: headerTitleText("Market Protection%", theme),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Container(
+              height: 40,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CustomTextFormField(
+                      fillColor: theme.isDarkMode
+                          ? colors.darkGrey
+                          : const Color(0xffF1F3F8),
+                      inputFormate: [
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          if (value.isNotEmpty) {
+                            int parsed = int.tryParse(value) ?? 1;
+                            if (parsed > 20) {
+                              mktProtCtrl.text = "20";
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(context,
+                                    "can't enter greater than 20% of Market Protection"),
+                              );
+                            } else if (parsed < 1) {
+                              mktProtCtrl.text = "1";
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(context,
+                                    "can't enter less than 1% of Market Protection"),
+                              );
+                            }
+                          }
+                        });
+                      },
+                      style: TextWidget.textStyle(
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        fontSize: 14,
+                        theme: theme.isDarkMode,
+                        fw: 1,
+                      ),
+                      textCtrl: mktProtCtrl,
+                      prefixIcon: Container(
+                        margin: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: theme.isDarkMode
+                              ? const Color(0xff555555)
+                              : colors.colorWhite,
+                        ),
+                        child: SvgPicture.asset(
+                          assets.precentIcon,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorGrey,
+                          fit: BoxFit.scaleDown,
+                        ),
+                      ),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ],
+),
+
                   const SizedBox(height: 24),
                   Padding(
                       padding: const EdgeInsets.only(left: 16, bottom: 0),
@@ -453,68 +546,69 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                   }))
                         ])),
                   ],
-                  const SizedBox(height: 14),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 16, bottom: 12),
-                      child: headerTitleText("Market Protection%", theme)),
-                  Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      height: 40,
-                      child: Row(children: [
-                        Expanded(
-                            child: CustomTextFormField(
-                                fillColor: theme.isDarkMode
-                                    ? colors.darkGrey
-                                    : const Color(0xffF1F3F8),
-                                inputFormate: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    ScaffoldMessenger.of(context)
-                                        .hideCurrentSnackBar();
-                                    if (value.isNotEmpty) {
-                                      if (int.parse(value) > 20) {
-                                        mktProtCtrl.text = "20";
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                "can't enter greater than 20% of Market Protection"));
-                                      } else if (int.parse(value) < 1) {
-                                        mktProtCtrl.text = "1";
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                "can't enter less than 1% of Market Protection"));
-                                      }
-                                    }
-                                  });
-                                },
-                                style: TextWidget.textStyle(
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    fontSize: 14,
-                                    theme: theme.isDarkMode,
-                                    fw: 1),
-                                textCtrl: mktProtCtrl,
-                                prefixIcon: Container(
-                                  margin: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      color: theme.isDarkMode
-                                          ? const Color(0xff555555)
-                                          : colors.colorWhite),
-                                  child: SvgPicture.asset(
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorGrey,
-                                      assets.precentIcon,
-                                      fit: BoxFit.scaleDown),
-                                ),
-                                textAlign: TextAlign.start))
-                      ])),
-                  const SizedBox(height: 14),
+                  // const SizedBox(height: 14),
+                  // Padding(
+                  //     padding: const EdgeInsets.only(left: 16, bottom: 12),
+                  //     child: headerTitleText("Market Protection%", theme)),
+                  // Container(
+                  //     padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  //     height: 40,
+                  //     width: MediaQuery.of(context).size.width * 0.5,
+                  //     child: Row(children: [
+                  //       Expanded(
+                  //           child: CustomTextFormField(
+                  //               fillColor: theme.isDarkMode
+                  //                   ? colors.darkGrey
+                  //                   : const Color(0xffF1F3F8),
+                  //               inputFormate: [
+                  //                 FilteringTextInputFormatter.digitsOnly
+                  //               ],
+                  //               onChanged: (value) {
+                  //                 setState(() {
+                  //                   ScaffoldMessenger.of(context)
+                  //                       .hideCurrentSnackBar();
+                  //                   if (value.isNotEmpty) {
+                  //                     if (int.parse(value) > 20) {
+                  //                       mktProtCtrl.text = "20";
+                  //                       ScaffoldMessenger.of(context)
+                  //                           .showSnackBar(warningMessage(
+                  //                               context,
+                  //                               "can't enter greater than 20% of Market Protection"));
+                  //                     } else if (int.parse(value) < 1) {
+                  //                       mktProtCtrl.text = "1";
+                  //                       ScaffoldMessenger.of(context)
+                  //                           .showSnackBar(warningMessage(
+                  //                               context,
+                  //                               "can't enter less than 1% of Market Protection"));
+                  //                     }
+                  //                   }
+                  //                 });
+                  //               },
+                  //               style: TextWidget.textStyle(
+                  //                   color: theme.isDarkMode
+                  //                       ? colors.colorWhite
+                  //                       : colors.colorBlack,
+                  //                   fontSize: 14,
+                  //                   theme: theme.isDarkMode,
+                  //                   fw: 1),
+                  //               textCtrl: mktProtCtrl,
+                  //               prefixIcon: Container(
+                  //                 margin: const EdgeInsets.all(12),
+                  //                 decoration: BoxDecoration(
+                  //                     borderRadius: BorderRadius.circular(20),
+                  //                     color: theme.isDarkMode
+                  //                         ? const Color(0xff555555)
+                  //                         : colors.colorWhite),
+                  //                 child: SvgPicture.asset(
+                  //                     color: theme.isDarkMode
+                  //                         ? colors.colorWhite
+                  //                         : colors.colorGrey,
+                  //                     assets.precentIcon,
+                  //                     fit: BoxFit.scaleDown),
+                  //               ),
+                  //               textAlign: TextAlign.start))
+                  //     ])),
+                  // const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText(
@@ -633,12 +727,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
   // }
 
   Widget headerTitleText(String text, ThemesProvider theme) {
-    return TextWidget.titleText(
+    return TextWidget.subText(
       text: text,
       theme: theme.isDarkMode,
       color:
           theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-      fw: 1,
+      fw: 0,
     );
   }
 

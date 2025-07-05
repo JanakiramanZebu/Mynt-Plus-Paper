@@ -697,11 +697,7 @@ class SettingsScreen extends ConsumerWidget {
       body: Column(
         children: [
           /// Profile Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: InkWell(
-              onTap: () {
-                // showModalBottomSheet(
+          ///  // showModalBottomSheet(
                 //     context: context,
                 //     isScrollControlled: true,
                 //     isDismissible: true,
@@ -713,47 +709,47 @@ class SettingsScreen extends ConsumerWidget {
                 //     ),
                 //     builder: (_) =>
                 //         const LoggedUserBottomSheet(initRoute: 'switchAcc'));
-              },
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: colors.fundbuttonBg,
-                    child: Text(
-                      userProfile.userDetailModel?.uname
-                              ?.substring(0, 1)
-                              .toUpperCase() ??
-                          "U",
-                      style: const TextStyle(color: Colors.black),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: colors.fundbuttonBg,
+                  child: Text(
+                    userProfile.userDetailModel?.uname
+                            ?.substring(0, 1)
+                            .toUpperCase() ??
+                        "U",
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      text: _truncateProfileName(
+                          userProfile.userDetailModel?.uname ?? ""),
+                      theme: false,
+                      color: !theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorGrey,
+                      fw: 0,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.subText(
-                        text: _truncateProfileName(
-                            userProfile.userDetailModel?.uname ?? ""),
-                        theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorGrey,
-                        fw: 0,
-                      ),
-                      const SizedBox(height: 4),
-                      TextWidget.paraText(
-                        text: userProfile.userDetailModel?.uid ?? "",
-                        theme: false,
-                        color: colors.colorGrey,
-                        fw: 00,
-                      )
-                    ],
-                  ),
-                  const Spacer(),
-                  Icon(Icons.arrow_forward_ios,
-                      size: 16, color: colors.colorGrey)
-                ],
-              ),
+                    const SizedBox(height: 4),
+                    TextWidget.paraText(
+                      text: userProfile.userDetailModel?.uid ?? "",
+                      theme: false,
+                      color: colors.colorGrey,
+                      fw: 00,
+                    )
+                  ],
+                ),
+                // const Spacer(),
+                // Icon(Icons.arrow_forward_ios,
+                //     size: 16, color: colors.colorGrey)
+              ],
             ),
           ),
 
@@ -1042,16 +1038,16 @@ class SettingsScreen extends ConsumerWidget {
                                       children: [
                                         TextWidget.titleText(
                                             text:
-                                                "Are you sure you want to Freeze yor Account?",
+                                                "Freeze Account",
                                             theme: false,
                                             color: theme.isDarkMode
                                                 ? colors.textPrimaryDark
                                                 : colors.textPrimaryLight,
-                                            fw: 1),
+                                            fw: 0),
                                         const SizedBox(height: 12),
-                                        TextWidget.paraText(
+                                        TextWidget.subText(
                                             text:
-                                                "* Note: Open order(s) will be cancelled, but position(s) will not be closed",
+                                                "Account freeze notice: All open orders will be cancelled due to the freeze. Existing positions will remain open and will not be affected.",
                                             theme: false,
                                             color: theme.isDarkMode
                                                 ? colors.textSecondaryDark
@@ -1495,62 +1491,46 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           children: [
             /// Profile Header (retained from your original design)
             const SizedBox(height: 10),
-            InkWell(
-              onTap: () {
-                // showModalBottomSheet(
-                //     context: context,
-                //     isScrollControlled: true,
-                //     isDismissible: true,
-                //     shape: const RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.only(
-                //         topLeft: Radius.circular(10),
-                //         topRight: Radius.circular(10),
-                //       ),
-                //     ),
-                //     builder: (_) =>
-                //         const LoggedUserBottomSheet(initRoute: 'switchAcc'));
-              },
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: colors.fundbuttonBg,
-                    child: Text(
-                      userProfile.userDetailModel?.uname
-                              ?.substring(0, 1)
-                              .toUpperCase() ??
-                          "U",
-                      style: const TextStyle(color: Colors.black),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: colors.fundbuttonBg,
+                  child: Text(
+                    userProfile.userDetailModel?.uname
+                            ?.substring(0, 1)
+                            .toUpperCase() ??
+                        "U",
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      fw: 0,
+                      text: _truncateProfileName(
+                          userProfile.userDetailModel?.uname ?? ""),
+                      theme: false,
+                      color: !theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorGrey,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.subText(
-                        fw: 0,
-                        text: _truncateProfileName(
-                            userProfile.userDetailModel?.uname ?? ""),
-                        theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorGrey,
-                      ),
-                      const SizedBox(height: 6),
-                      TextWidget.paraText(
-                        text: userProfile.userDetailModel?.uid ?? "",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                      )
-                    ],
-                  ),
-                  const Spacer(),
-                  Icon(Icons.arrow_forward_ios,
-                      size: 16, color: colors.colorGrey)
-                ],
-              ),
+                    const SizedBox(height: 6),
+                    TextWidget.paraText(
+                      text: userProfile.userDetailModel?.uid ?? "",
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                    )
+                  ],
+                ),
+                // const Spacer(),
+                // Icon(Icons.arrow_forward_ios,
+                //     size: 16, color: colors.colorGrey)
+              ],
             ),
             const SizedBox(height: 10),
             Divider(
@@ -2726,61 +2706,45 @@ class ReportsScreen extends ConsumerWidget {
           /// Profile Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: InkWell(
-              onTap: () {
-                // showModalBottomSheet(
-                //     context: context,
-                //     isScrollControlled: true,
-                //     isDismissible: true,
-                //     shape: const RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.only(
-                //         topLeft: Radius.circular(10),
-                //         topRight: Radius.circular(10),
-                //       ),
-                //     ),
-                //     builder: (_) =>
-                //         const LoggedUserBottomSheet(initRoute: 'switchAcc'));
-              },
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: colors.fundbuttonBg,
-                    child: Text(
-                      userProfile.userDetailModel?.uname
-                              ?.substring(0, 1)
-                              .toUpperCase() ??
-                          "U",
-                      style: const TextStyle(color: Colors.black),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: colors.fundbuttonBg,
+                  child: Text(
+                    userProfile.userDetailModel?.uname
+                            ?.substring(0, 1)
+                            .toUpperCase() ??
+                        "U",
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      text: _truncateProfileName(
+                          userProfile.userDetailModel?.uname ?? ""),
+                      theme: false,
+                      color: !theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorGrey,
+                      fw: 0,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.subText(
-                        text: _truncateProfileName(
-                            userProfile.userDetailModel?.uname ?? ""),
-                        theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorGrey,
-                        fw: 0,
-                      ),
-                      const SizedBox(height: 4),
-                      TextWidget.paraText(
-                        text: userProfile.userDetailModel?.uid ?? "",
-                        theme: false,
-                        color: colors.colorGrey,
-                        fw: 00,
-                      )
-                    ],
-                  ),
-                  const Spacer(),
-                  Icon(Icons.arrow_forward_ios,
-                      size: 16, color: colors.colorGrey)
-                ],
-              ),
+                    const SizedBox(height: 4),
+                    TextWidget.paraText(
+                      text: userProfile.userDetailModel?.uid ?? "",
+                      theme: false,
+                      color: colors.colorGrey,
+                      fw: 00,
+                    )
+                  ],
+                ),
+                // const Spacer(),
+                // Icon(Icons.arrow_forward_ios,
+                //     size: 16, color: colors.colorGrey)
+              ],
             ),
           ),
 
