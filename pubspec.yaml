@@ -135,8 +135,7 @@ flutter:
     - assets/keyboardicons/
     - assets/explore/
     - assets/strategiesimg/
-    - assets/json/
-    - assets/json/strategy.json
+    - assets/mock_json/
     - assets/explore/
     - assets/icon/dashboard/
     - shorebird.yaml
