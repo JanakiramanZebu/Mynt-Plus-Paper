@@ -18,23 +18,24 @@ class CurStrkprice extends ConsumerWidget {
       stream: ref.watch(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return _buildStrikePriceWidget(strikePrc!.lp ?? "0.00");
+          return _buildStrikePriceWidget(strikePrc!.lp ?? "0.00", strikePrc.pc ?? "0.00");
         }
         
         final socketDatas = snapshot.data!;
         String price = strikePrc!.lp ?? "0.00";
-        
+        String pc = strikePrc.pc ?? "0.00";
         if (socketDatas.containsKey(token)) {
           price = "${socketDatas[token]['lp']}";
+          pc = "${socketDatas[token]['pc']}";
         }
         
         ref.watch(marketWatchProvider).updateOptStrPrc(price);
-        return _buildStrikePriceWidget(price);
+        return _buildStrikePriceWidget(price, pc);
       },
     );
   }
   
-  Widget _buildStrikePriceWidget(String price) {
+  Widget _buildStrikePriceWidget(String price, String pc) {
     return Row(
       children: [
         const Expanded(
@@ -44,15 +45,15 @@ class CurStrkprice extends ConsumerWidget {
             decoration: BoxDecoration(
                 color: const Color(0xff666666),
                 borderRadius: BorderRadius.circular(40)),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
             child: 
                     
                     
-                     TextWidget.paraText(
-                      text:"₹$price" ,
+                     TextWidget.subText(
+                      text:"₹$price (${double.parse(pc) >= 0 ? "+" : "-"}${double.parse(pc).toStringAsFixed(2)}%)" ,
                       color:Color(0xffffffff) ,
                       theme: false,
-                      fw: 1),
+                      fw: 3),
                     
                     
                     

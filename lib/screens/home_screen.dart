@@ -229,12 +229,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ref
               .read(portfolioProvider)
               .requestWSPosition(context: context, isSubscribe: true);
-          break;
-        case 3:
           ref
               .read(orderProvider)
               .requestWSOrderBook(context: context, isSubscribe: true);
           break;
+        // case 3:
+        //   ref
+        //       .read(orderProvider)
+        //       .requestWSOrderBook(context: context, isSubscribe: true);
+        //   break;
         case 4:
           // Profile tab has no websocket dependency
           break;
@@ -369,10 +372,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ref.read(portfolioProvider).fetchHoldings(context, "");
         ref.read(portfolioProvider).fetchPositionBook(context, false);
         break;
-      case 3: // Orders
-        ref.read(orderProvider).fetchOrderBook(context, false);
-        break;
-      case 4: // Profile
+      case 3: // Profile
         ref.read(userProfileProvider).fetchUserDetail(context);
         break;
     }
@@ -444,7 +444,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // }
 
     // For other tabs
-    else if (selectedTab == 3 || selectedTab == 2) {
+    else if (selectedTab == 2) {
       return AppBar(
         shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
         leadingWidth: 205,
@@ -528,7 +528,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       width: 14)
                 ])));
       });
-    } else if (selectedTab == 3 || selectedTab == 2) {
+    } else if (selectedTab == 2) {
       return Consumer(builder: (context, ref, _) {
         final theme = ref.watch(themeProvider); // Theme is needed here
 
@@ -538,11 +538,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                  selectedTab == 3
-                      ? "Orders"
-                      : selectedTab == 2
-                          ? "Portfolio"
-                          : "Dashboard",
+                  "Portfolio",
                   style: textStyle(
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                       17,
@@ -574,12 +570,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (selectedTab == 2) {
       // Return the extracted widget within a list
       return [_PortfolioActions()];
-    }
-
-    // Orderbook actions (tab 3)
-    if (selectedTab == 3) {
-      // Return the extracted widget within a list
-      return [_OrderbookActions()];
     }
 
     // Default empty list for other tabs
@@ -659,9 +649,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
           _buildBottomNavItem(
               2, assets.portfolioIcon, "Portfolio", selectedTab, theme),
-          _buildBottomNavItem(
-              3, assets.ordersIcon, "Orders", selectedTab, theme),
-          _buildBottomNavItem(4, assets.profileIcon, uid, selectedTab, theme,
+          _buildBottomNavItem(3, assets.profileIcon, uid, selectedTab, theme,
               useHeight: true, height: 18),
         ],
       ),
@@ -691,9 +679,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 _handlePortfolioTap();
                 break;
               case 3:
-                _handleOrderbookTap();
-                break;
-              case 4:
                 _handleProfileTap();
                 break;
             }
@@ -801,41 +786,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
         // Funds data
         fundProviderRef.fetchFunds(context);
+        
+        // Order data for the Orders tab
+        orderProviderRef.fetchOrderBook(context, false);
+        orderProviderRef.fetchTradeBook(context);
+        orderProviderRef.fetchSipOrderHistory(context);
+        marketWatchList.fetchPendingAlert(context);
       }
     });
 
     // Start position update timer
     portfolio.timerfunc();
-  }
-
-  void _handleOrderbookTap() async {
-    final indexProvide = ref.read(indexListProvider);
-    final portfolio = ref.read(portfolioProvider);
-    final marketWatchList = ref.read(marketWatchProvider);
-    final orderProviderRef = ref.read(orderProvider);
-
-    indexProvide.bottomMenu(3, context);
-    portfolio.cancelTimer();
-
-    await orderProviderRef.fetchSipOrderHistory(context);
-    await marketWatchList.fetchPendingAlert(context);
-    await marketWatchList.requestMWScrip(context: context, isSubscribe: false);
-    await portfolio.requestWSHoldings(context: context, isSubscribe: false);
-    await portfolio.requestWSPosition(context: context, isSubscribe: false);
-    orderProviderRef.requestWSOrderBook(context: context, isSubscribe: true);
-
-    // Fetch all order-related data in the background without blocking UI
-    Future.microtask(() {
-      if (mounted) {
-        // Order book, trade book, and other order-related data
-        orderProviderRef.fetchOrderBook(context, false);
-        orderProviderRef.fetchTradeBook(context);
-        orderProviderRef.fetchSipOrderHistory(context);
-
-        // Fetch alerts since they're shown in the orders section
-        marketWatchList.fetchPendingAlert(context);
-      }
-    });
   }
 
   void _handleProfileTap() {
@@ -848,7 +809,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final orderProviderRef = ref.read(orderProvider);
     final authProviderRef = ref.read(authProvider);
 
-    indexProvide.bottomMenu(4, context);
+    indexProvide.bottomMenu(3, context);
     portfolio.cancelTimer();
 
     // Load minimal required profile data
@@ -953,8 +914,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       case 2:
         return const PortfolioScreen();
       case 3:
-        return const OrderBookScreen();
-      case 4:
         return const UserAccountScreen();
       default:
         return const SizedBox.shrink();
@@ -1119,8 +1078,53 @@ class _PortfolioActions extends ConsumerWidget {
 
     if (selectedTab == 0 && allPostionListLength > 0) {
       // return _PositionGroupActions();
-    } else if (selectedTab == 2) {
+    } else if (selectedTab == 2) { // Orders tab
+      return _OrdersActions();
+    } else if (selectedTab == 3) { // Funds tab
       return _FundsWebActions();
+    }
+
+    return SizedBox.shrink();
+  }
+}
+
+// Orders actions
+class _OrdersActions extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use select to listen only to the selectedTab from order provider
+    final selectedTab = ref.watch(
+        orderProvider.select((orderProvider) => orderProvider.selectedTab));
+    final theme = ref.watch(themeProvider); // Theme is needed here
+
+    if (selectedTab == 3) { // Basket tab
+      return Row(children: [
+        Container(
+            margin: const EdgeInsets.only(right: 8),
+            height: 30,
+            child: OutlinedButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return const CreateBasket();
+                      });
+                },
+                style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                        color: theme.isDarkMode
+                            ? colors.colorGrey
+                            : colors.colorBlack),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(32)))),
+                child: Text("Create Basket",
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        12,
+                        FontWeight.w600))))
+      ]);
     }
 
     return SizedBox.shrink();
@@ -1347,48 +1351,7 @@ class _FundsWebActions extends ConsumerWidget {
   }
 }
 
-// Orderbook actions
-class _OrderbookActions extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Use select to listen only to the selectedTab
-    final selectedTab = ref.watch(
-        orderProvider.select((orderProvider) => orderProvider.selectedTab));
-    final theme = ref.watch(themeProvider); // Theme is needed here
 
-    if (selectedTab == 3) {
-      return Row(children: [
-        Container(
-            margin: const EdgeInsets.only(right: 8),
-            height: 30,
-            child: OutlinedButton(
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return const CreateBasket();
-                      });
-                },
-                style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                        color: theme.isDarkMode
-                            ? colors.colorGrey
-                            : colors.colorBlack),
-                    shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(32)))),
-                child: Text("Create Basket",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        12,
-                        FontWeight.w600))))
-      ]);
-    }
-
-    return SizedBox.shrink();
-  }
-}
 
 // User profile tile
 class _UserProfileTile extends ConsumerWidget {

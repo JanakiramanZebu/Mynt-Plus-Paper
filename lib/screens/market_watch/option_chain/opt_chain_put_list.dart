@@ -19,12 +19,14 @@ class OptChainPutList extends StatelessWidget {
   final List<OptionValues>? putData;
   final bool isPutUp;
   final SwipeActionController? swipe;
+  final bool showPriceView;
 
   const OptChainPutList({
     super.key,
     this.putData,
     this.swipe,
     required this.isPutUp,
+    required this.showPriceView,
   });
 
   @override
@@ -42,6 +44,7 @@ class OptChainPutList extends StatelessWidget {
           option: option,
           swipe: swipe,
           index: index,
+          showPriceView: showPriceView,
         );
       },
     );
@@ -52,12 +55,14 @@ class _OptionChainPutRow extends StatefulWidget {
   final OptionValues option;
   final SwipeActionController? swipe;
   final int index;
+  final bool showPriceView;
 
   const _OptionChainPutRow({
     Key? key,
     required this.option,
     this.swipe,
     required this.index,
+    required this.showPriceView,
   }) : super(key: key);
 
   @override
@@ -223,15 +228,9 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
           child: Container(
             height: 58,
             padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: _buildPriceData(theme),
-                ),
-                _buildOIData(theme),
-              ],
-            ),
+            child: widget.showPriceView
+                ? _buildPriceData(theme)
+                : _buildOIData(theme),
           ),
         ),
       ),
@@ -240,13 +239,13 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
 
   Widget _buildPriceData(ThemesProvider theme) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
           _lp,
           style: _getTextStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,_perChange),
         ),
         const SizedBox(height: 3),
         Text(
@@ -259,13 +258,13 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
 
   Widget _buildOIData(ThemesProvider theme) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
           _oiLack,
           style: _getTextStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,_oiPerChng),
         ),
         const SizedBox(height: 3),
         Text(
@@ -346,27 +345,33 @@ class _OptionChainPutRowState extends State<_OptionChainPutRow> {
     );
   }
 
-  static TextStyle _getTextStyle(Color color) {
-    return _textStyleCache.putIfAbsent(
-      color,
-      () =>
-          TextWidget.textStyle(fontSize: 12, color: color, theme: false, fw: 0),
-    );
+  static TextStyle _getTextStyle(Color color, String perChange) {
+    // return _textStyleCache.putIfAbsent(
+    //   color,
+      // () {
+      Color color = colors.ltpgrey;
+        if (perChange != null && perChange != "0.00") {
+          color = perChange.startsWith("-") ? colors.darkred : colors.ltpgreen;
+        }
+          return TextWidget.textStyle(fontSize: 14, color: color, theme: false, fw: 00);
+    
   }
+    // );
+  // }
 
   static TextStyle _getPercentageStyle(String? value) {
     final key = value ?? "0.00";
-    return _percentageStyleCache.putIfAbsent(
-      key,
-      () {
+    // return _percentageStyleCache.putIfAbsent(
+    //   key,
+    //   () {
         Color color = colors.ltpgrey;
-        if (value != null && value != "0.00") {
-          color = value.startsWith("-") ? colors.darkred : colors.ltpgreen;
-        }
+        // if (value != null && value != "0.00") {
+        //   color = value.startsWith("-") ? colors.darkred : colors.ltpgreen;
+        // }
         return TextWidget.textStyle(
-            fontSize: 11, color: color, theme: false, fw: 0);
-      },
-    );
+            fontSize: 12, color: color, theme: false, fw: 00);
+    //   },
+    // );
   }
 }
 

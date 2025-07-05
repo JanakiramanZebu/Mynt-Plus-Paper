@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
@@ -97,8 +98,8 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
         // Load tabs and scroll on first build
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          ref.read(marketWatchProvider).loadDefaultTabs();
-          ref.read(marketWatchProvider).scrollToSelectedTab(false);
+          // ref.read(marketWatchProvider).loadDefaultTabs();
+          // ref.read(marketWatchProvider).scrollToSelectedTab(false);
         });
 
         bool transbtn = tvChart.getQuotes?.instname != "UNDIND" &&
@@ -116,68 +117,82 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      padding: const EdgeInsets.all(0),
-                      icon: Icon(Icons.restart_alt,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack), // Back icon
-                      onPressed: () {
-                        ConstantName.chartwebViewController?.loadUrl(
-                          urlRequest: URLRequest(
-                            url: WebUri(
-                              "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}",
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    // IconButton(
+                    //   padding: const EdgeInsets.all(0),
+                    //   icon: Icon(Icons.restart_alt,
+                    //       color: theme.isDarkMode
+                    //           ? colors.colorWhite
+                    //           : colors.colorBlack), // Back icon
+                    //   onPressed: () {
+                    //     ConstantName.chartwebViewController?.loadUrl(
+                    //       urlRequest: URLRequest(
+                    //         url: WebUri(
+                    //           "https://mynt.zebuetrade.com/tv?src=app&symbol=${widget.chartArgs.tsym}&user=${prefs.clientId}&usession=${prefs.clientSession}&token=${widget.chartArgs.token}&exch=${widget.chartArgs.exch}&dark=${theme.isDarkMode}",
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
                     Expanded(
-                        child: InkWell(
-                      onTap: () async {
-                        if (transbtn) {
-                          userProfile.setChartdialog(false);
-                          await placeOrderInput(
-                              tvChart, context, tvChart.getQuotes!, true);
-                        }
-                      },
-                      child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                              color: transbtn
-                                  ? colors.ltpgreen
-                                  : colors.ltpgreen.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(60)),
-                          child: Center(
-                              child: TextWidget.titleText(
-                                  text: "BUY",
-                                  color: const Color(0XFFFFFFFF),
-                                  theme: theme.isDarkMode,
-                                  fw: 1))),
-                    )),
+        child: InkWell(
+          onTap: () async {
+            if (transbtn) {
+              userProfile.setChartdialog(false);
+              await placeOrderInput(
+                  tvChart, context, tvChart.getQuotes!, true);
+            }
+          },
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: transbtn
+                  ? const Color(0xFF0037B7) // Blue color for Buy
+                  : const Color(0xFF0037B7).withOpacity(0.2),
+              borderRadius: const BorderRadius.all(
+               Radius.circular(6)
+              ),
+            ),
+            child: Center(
+              child: TextWidget.subText(
+                text: "Buy",
+                color: const Color(0XFFFFFFFF),
+                theme: theme.isDarkMode,
+                fw: 0,
+              ),
+            ),
+          ),
+        ),
+      ),
                     const SizedBox(width: 18),
                     Expanded(
-                        child: InkWell(
-                            onTap: () async {
-                              if (transbtn) {
-                                userProfile.setChartdialog(false);
-                                await placeOrderInput(tvChart, context,
-                                    tvChart.getQuotes!, false);
-                              }
-                            },
-                            child: Container(
-                                height: 40,
-                                decoration: BoxDecoration(
-                                    color: transbtn
-                                        ? colors.darkred
-                                        : colors.darkred.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(60)),
-                                child: Center(
-                                    child: TextWidget.titleText(
-                                        text: "SELL",
-                                        color: const Color(0XFFFFFFFF),
-                                        theme: theme.isDarkMode,
-                                        fw: 1)))))
+        child: InkWell(
+          onTap: () async {
+            if (transbtn) {
+              userProfile.setChartdialog(false);
+              await placeOrderInput(tvChart, context,
+                  tvChart.getQuotes!, false);
+            }
+          },
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: transbtn
+                  ? const Color(0xFFC40024) // Red color for Sell
+                  : const Color(0xFFC40024).withOpacity(0.2),
+              borderRadius: const BorderRadius.all(Radius.circular(6)
+              ),
+            ),
+            child: Center(
+              child: TextWidget.subText(
+                text: "Sell",
+                color: const Color(0XFFFFFFFF),
+                theme: theme.isDarkMode,
+                fw: 0,
+              ),
+            ),
+          ),
+        ),
+      ),
                   ]),
             )
           ],
@@ -197,16 +212,16 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
         padding: const EdgeInsets.symmetric(horizontal: 6),
         height: 40,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             SizedBox(
-              width: 44,
+              width: 40,
               child: IconButton(
                 padding: const EdgeInsets.all(0),
-                icon: const Icon(
-                  Icons.chevron_left,
-                  size: 38,
-                ),
+                icon: SvgPicture.asset(
+  assets.backCustomIcon,
+  width: 20,
+  height: 20,
+),
                 onPressed: () async {
                   userProfile.setChartdialog(false);
                   if (tvChart.scripsize) {
@@ -222,91 +237,108 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                 },
               ),
             ),
-            Expanded(
-              child: ListView.separated(
-                controller: tvChart.scrollController,
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(right: 8),
-                itemCount:
-                    tvChart.chartTabs.length, // List of tabs (tokens/symbols)
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final last = tvChart.chartTabs.first;
-                  final tab = tvChart.chartTabs[index];
-                  final isSelected = tab.token == tvChart.activeTab?.token;
+            const Spacer(),            // Expanded(
+            //   child: ListView.separated(
+            //     controller: tvChart.scrollController,
+            //     scrollDirection: Axis.horizontal,
+            //     padding: const EdgeInsets.only(right: 8),
+            //     itemCount:
+            //         tvChart.chartTabs.length, // List of tabs (tokens/symbols)
+            //     separatorBuilder: (_, __) => const SizedBox(width: 8),
+            //     itemBuilder: (context, index) {
+            //       final last = tvChart.chartTabs.first;
+            //       final tab = tvChart.chartTabs[index];
+            //       final isSelected = tab.token == tvChart.activeTab?.token;
 
-                  return InkWell(
-                    onTap: () async {
-                      await tvChart.fetchScripQuoteIndex(
-                          tab.token, tab.exch, context);
-                      tvChart.setChartScript(tab.exch, tab.token, tab.tsym);
-                    },
-                    borderRadius: BorderRadius.circular(16),
-                    child: Chip(
-                      visualDensity:
-                          const VisualDensity(vertical: -4, horizontal: 0),
-                      labelPadding: const EdgeInsets.only(right: 0),
-                      padding: index > 1
-                          ? const EdgeInsets.only(left: 16)
-                          : const EdgeInsets.symmetric(horizontal: 8),
-                      label: TextWidget.paraText(
-                          text: tab.tsym,
-                          color: theme.isDarkMode
-                              ? Color(isSelected ? 0xff000000 : 0xffffffff)
-                              : Color(isSelected ? 0xffffffff : 0xff000000),
-                          theme: theme.isDarkMode,
-                          fw: 0),
-                      backgroundColor: theme.isDarkMode
-                          ? (isSelected
-                              ? const Color(0xffffffff)
-                              : const Color(0xff000000))
-                          : (isSelected
-                              ? const Color(0xff000000)
-                              : const Color(0xffffffff)),
-                      shape: StadiumBorder(
-                        side: BorderSide(
-                          color: theme.isDarkMode
-                              ? (!isSelected
-                                  ? colors.colorWhite
-                                  : colors.colorBlack)
-                              : (isSelected
-                                  ? colors.colorWhite
-                                  : colors.colorBlack),
-                        ),
-                      ),
-                      deleteIcon: index > 1
-                          ? Icon(
-                              Icons.close,
-                              size: 16,
-                              color: theme.isDarkMode
-                                  ? Color(isSelected ? 0xff000000 : 0xffffffff)
-                                  : Color(isSelected ? 0xffffffff : 0xff000000),
-                            )
-                          : null,
-                      onDeleted: index > 1
-                          ? () async {
-                              tvChart.removeChartTab(tab, false);
-                              if (tvChart.activeTab?.token == tab.token) {
-                                await tvChart.fetchScripQuoteIndex(
-                                    last.token, last.exch, context);
-                                tvChart.setChartScript(
-                                    last.exch, last.token, last.tsym);
-                              }
-                            }
-                          : null,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      // padding: const EdgeInsets.symmetric(horizontal: 8),
-                    ),
-                  );
-                },
-              ),
+            //       return InkWell(
+            //         onTap: () async {
+            //           await tvChart.fetchScripQuoteIndex(
+            //               tab.token, tab.exch, context);
+            //           tvChart.setChartScript(tab.exch, tab.token, tab.tsym);
+            //         },
+            //         borderRadius: BorderRadius.circular(16),
+            //         child: Chip(
+            //           visualDensity:
+            //               const VisualDensity(vertical: -4, horizontal: 0),
+            //           labelPadding: const EdgeInsets.only(right: 0),
+            //           padding: index > 1
+            //               ? const EdgeInsets.only(left: 16)
+            //               : const EdgeInsets.symmetric(horizontal: 8),
+            //           label: TextWidget.paraText(
+            //               text: tab.tsym,
+            //               color: theme.isDarkMode
+            //                   ? Color(isSelected ? 0xff000000 : 0xffffffff)
+            //                   : Color(isSelected ? 0xffffffff : 0xff000000),
+            //               theme: theme.isDarkMode,
+            //               fw: 0),
+            //           backgroundColor: theme.isDarkMode
+            //               ? (isSelected
+            //                   ? const Color(0xffffffff)
+            //                   : const Color(0xff000000))
+            //               : (isSelected
+            //                   ? const Color(0xff000000)
+            //                   : const Color(0xffffffff)),
+            //           shape: StadiumBorder(
+            //             side: BorderSide(
+            //               color: theme.isDarkMode
+            //                   ? (!isSelected
+            //                       ? colors.colorWhite
+            //                       : colors.colorBlack)
+            //                   : (isSelected
+            //                       ? colors.colorWhite
+            //                       : colors.colorBlack),
+            //             ),
+            //           ),
+            //           // deleteIcon: index > 1
+            //           //     ? Icon(
+            //           //         Icons.close,
+            //           //         size: 16,
+            //           //         color: theme.isDarkMode
+            //           //             ? Color(isSelected ? 0xff000000 : 0xffffffff)
+            //           //             : Color(isSelected ? 0xffffffff : 0xff000000),
+            //           //       )
+            //           //     : null,
+            //           // onDeleted: index > 1
+            //           //     ? () async {
+            //           //         tvChart.removeChartTab(tab, false);
+            //           //         if (tvChart.activeTab?.token == tab.token) {
+            //           //           await tvChart.fetchScripQuoteIndex(
+            //           //               last.token, last.exch, context);
+            //           //           tvChart.setChartScript(
+            //           //               last.exch, last.token, last.tsym);
+            //           //         }
+            //           //       }
+            //           //     : null,
+            //           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            //           // padding: const EdgeInsets.symmetric(horizontal: 8),
+            //         ),
+            //       );
+            //     },
+            //   ),
+            // ),
+            
+            IconButton(
+              padding: const EdgeInsets.all(0),
+              icon: SvgPicture.asset(
+  assets.rotationIcon,
+  width: 20,
+  height: 20,
+), // Back icon
+              onPressed: () async {
+                if (chartUpdate.orientation == 'portrait') {
+                  chartUpdate.changeOrientation('landscape');
+                } else {
+                  chartUpdate.changeOrientation('portrait');
+                }
+              },
             ),
             IconButton(
               padding: const EdgeInsets.all(0),
-              icon: Icon(Icons.search,
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack), // Back icon
+              icon: SvgPicture.asset(
+  assets.searchIcon1,
+  width: 20,
+  height: 20,
+),// Back icon
               onPressed: () async {
                 ref
                     .read(marketWatchProvider)
@@ -317,20 +349,6 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                   arguments: "Chart||Is",
                 );
                 // userProfile.setChartdialog(false);
-              },
-            ),
-            IconButton(
-              padding: const EdgeInsets.all(0),
-              icon: Icon(Icons.screen_rotation,
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack), // Back icon
-              onPressed: () async {
-                if (chartUpdate.orientation == 'portrait') {
-                  chartUpdate.changeOrientation('landscape');
-                } else {
-                  chartUpdate.changeOrientation('portrait');
-                }
               },
             )
           ],

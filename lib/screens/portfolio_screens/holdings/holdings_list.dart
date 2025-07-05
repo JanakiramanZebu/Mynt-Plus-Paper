@@ -279,7 +279,7 @@ class _StaticPriceInfo extends StatelessWidget {
       return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
         Text("Avg ",
             style: _getStyle(labelColor, 12, 3, 'qty-label', theme.isDarkMode)),
-        Text("${holdingData.upldprc ?? exchTsym.close ?? 0.00}",
+        Text("${holdingData.avgPrc}",
             style:
                 _getStyle(contentColor, 12, 3, 'qty-value', theme.isDarkMode)),
       ]);
@@ -319,7 +319,7 @@ class _StaticInvestmentInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final investedValue = double.parse(
-        "${holdingData.invested == "0.00" ? exchTsym.close ?? 0.00 : holdingData.invested ?? 0.00}");
+        "${holdingData.invested ?? 0.00}");
 
     return Consumer(
       builder: (context, ref, _) {

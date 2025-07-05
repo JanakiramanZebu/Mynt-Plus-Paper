@@ -141,7 +141,7 @@ class IndexListProvider extends DefaultChangeNotifier {
     }
 
     // Ensure data is properly refreshed when switching to profile tab
-    if (value == 4 && previousIndex != 4) {
+    if (value == 3 && previousIndex != 3) {
       ref.read(userProfileProvider).fetchprofilemenu();
     }
 

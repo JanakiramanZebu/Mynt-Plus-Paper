@@ -7,6 +7,11 @@ class Assets {
   final String qrIcon = "assets/icon/qr_new.svg";
   final String notifyIcon = "assets/icon/notify_new.svg";
   final String ipoIcon = "assets/icon/ipo_icon.svg";
+  final String searchIcon1 = "assets/icon/search 1.svg";
+  final String rotationIcon = "assets/icon/rotation.svg";
+  final String backCustomIcon = "assets/icon/back_custom.svg";
+  final String filterIcon = "assets/icon/filterIcon.svg";
+
 
   final String optionZIcon = "assets/icon/optionz_icon.svg";
 

@@ -224,6 +224,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   List<AlertPendingModel>? _alertPendingSearch = [];
   List<AlertPendingModel>? get alertPendingSearch => _alertPendingSearch;
 
+  void setAlertPendingSearch(List<AlertPendingModel> searchResult) {
+    _alertPendingSearch = searchResult;
+    notifyListeners();
+  }
+
   WatchlistRenameModel? _watchlistRenameModel;
   WatchlistRenameModel? get watchlistRenameModel => _watchlistRenameModel;
 
@@ -721,7 +726,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   List<String> shareHoldType = [
     "Promoter Holding",
-    "Foriegin Institution",
+    "Foriegn Institution",
     "Other Domestic Institution",
     "Retail and Others",
     "Mutual Funds"
@@ -934,8 +939,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   ChartArgs? get oactiveTab => _oactiveTab;
 
   final List<ChartArgs> defaultChartTabs = [
-    ChartArgs(tsym: "Nifty 50", token: "26000", exch: "NSE"),
-    ChartArgs(tsym: "Nifty Bank", token: "26009", exch: "NSE"),
+    // ChartArgs(tsym: "Nifty 50", token: "26000", exch: "NSE"),
+    // ChartArgs(tsym: "Nifty Bank", token: "26009", exch: "NSE"),
     // ChartArgs(tsym: "Sensex", token: "1", exch: "BSE"),
     // ChartArgs(tsym: "India VIX", token: "26017", exch: "NSE"),
   ];
@@ -3663,7 +3668,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
       if (_alertPendingModel!.isNotEmpty) {
         if (_alertPendingModel![0].stat != "Not_Ok") {
-          ref.read(indexListProvider).bottomMenu(3, context);
+          // ref.read(indexListProvider).bottomMenu(3, context);
           ConstantName.sessCheck = true;
           for (var element in _alertPendingModel!) {
             ltpArgs

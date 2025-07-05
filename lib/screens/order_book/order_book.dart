@@ -323,7 +323,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Column(children: [
-        if (widget.orderBook.isNotEmpty) _buildFilterSearchHeader(order, theme),
+        // if (widget.orderBook.isNotEmpty) _buildFilterSearchHeader(order, theme),
         Expanded(
           child: RefreshIndicator(
               onRefresh: () async {
@@ -647,200 +647,131 @@ class _OrderItemState extends State<_OrderItem> {
   bool _isNavigating = false;
 
   @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onLongPress: widget.onLongPress,
-      onTap: () async {
-        // Prevent multiple navigation events on rapid taps
-        if (_isNavigating) return;
+Widget build(BuildContext context) {
+  return InkWell(
+    onLongPress: widget.onLongPress,
+    onTap: () async {
+      if (_isNavigating) return;
 
-        try {
-          setState(() {
-            _isNavigating = true;
+      try {
+        setState(() => _isNavigating = true);
+        await Future.microtask(() => widget.onTap());
+      } catch (e) {
+        print("Navigation error: $e");
+      } finally {
+        if (mounted) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              setState(() => _isNavigating = false);
+            }
           });
-
-          // Execute the navigation with await to catch exceptions
-          await Future.microtask(() => widget.onTap());
-        } catch (e) {
-          print("Navigation error: $e");
-        } finally {
-          // Reset navigation lock after some delay
-          if (mounted) {
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (mounted) {
-                setState(() {
-                  _isNavigating = false;
-                });
-              }
-            });
-          }
         }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // First Row: Symbol + Expiry + Exchange Badge | Status Badge
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: Row(
-                          children: [
-                            TextWidget.subText(
-                              text: "${widget.orderItem.symbol} ",
-                              theme: widget.theme.isDarkMode,
-                              fw: 1,
-                            ),
-                            Flexible(
-                              child: TextWidget.subText(
-                                text:
-                                    "${widget.orderItem.expDate} ${widget.orderItem.option ?? ''} ",
-                                color: const Color(0xff666666),
-                                theme: widget.theme.isDarkMode,
-                                fw: 00,
-                                textOverflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            TextWidget.captionText(
-                              text: "${widget.orderItem.exch}",
-                              color: const Color(0xff666666),
-                              theme: widget.theme.isDarkMode,
-                              fw: 00,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Status Badge
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SvgPicture.asset(
-                      widget.orderItem.status == "COMPLETE"
-                          ? assets.completedIcon
-                          : widget.orderItem.status == "CANCELED" ||
-                                  widget.orderItem.status == "REJECTED"
-                              ? assets.cancelledIcon
-                              : assets.warningIcon,
-                      width: 16,
-                      height: 12,
-                    ),
-                    const SizedBox(width: 6),
-                    TextWidget.paraText(
-                      text: _getStatusText(),
-                      theme: false,
-                      color: const Color(0xff666666),
-                      fw: 0,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // Second Row: Product + Order Type + Time | LTP
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      TextWidget.paraText(
-                        text: "${widget.orderItem.sPrdtAli}  ",
-                        theme: false,
-                        color: const Color(0xff666666),
-                        fw: 00,
-                      ),
-                      TextWidget.paraText(
-                        text: "${widget.orderItem.prctyp}  ",
-                        theme: false,
-                        color: const Color(0xff666666),
-                        fw: 00,
-                      ),
-                      TextWidget.paraText(
-                        text: formatDateTime(value: widget.orderItem.norentm!)
-                            .substring(12, 21),
-                        theme: false,
-                        color: const Color(0xff666666),
-                        fw: 00,
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
-                  children: [
-                    TextWidget.paraText(
-                      text: "LTP ",
-                      color: const Color(0xff666666),
-                      theme: widget.theme.isDarkMode,
-                      fw: 0,
-                    ),
-                    TextWidget.subText(
-                      text: _getValidPrice(),
-                      color: const Color(0xff666666),
-                      theme: widget.theme.isDarkMode,
-                      fw: 0,
-                    )
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // Third Row: BUY/SELL + Quantity | Total Value
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    TextWidget.paraText(
-                      text: widget.orderItem.trantype == "S" ? "SELL " : "BUY ",
-                      theme: false,
-                      color: widget.orderItem.trantype == "S"
-                          ? colors.darkred
-                          : colors.ltpgreen,
-                      fw: 1,
-                    ),
-                    const SizedBox(width: 4),
-                    TextWidget.subText(
-                      color: const Color(0xff666666),
-                      text: _getQuantityDisplay(),
-                      theme: widget.theme.isDarkMode,
-                      fw: 00,
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    TextWidget.subText(
-                      text: _getAvgPrice(),
-                      color: const Color(0xff666666),
-                      theme: widget.theme.isDarkMode,
-                      fw: 0,
-                    ),
-                    if (widget.orderItem.prctyp == "SL-LMT" ||
-                        widget.orderItem.prctyp == "SL-MKT") ...[
-                      const SizedBox(child: Text(' / ')),
-                      TextWidget.subText(
-                          text: "${widget.orderItem.trgprc ?? 0.00}",
-                          theme: widget.theme.isDarkMode,
-                          color: const Color(0xff666666),
-                          fw: 0),
-                    ]
-                  ],
-                ),
-              ],
-            ),
-          ],
+      }
+    },
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xffEEEEEE), width: 1),
         ),
       ),
-    );
-  }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Row 1: Symbol + Expiry | Status badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // SYMBOL + EXPIRY
+              Expanded(
+                child: TextWidget.subText(
+                  text: "${widget.orderItem.symbol} ${widget.orderItem.expDate} ${widget.orderItem.option ?? ''}",
+                  theme: widget.theme.isDarkMode,
+                  fw: 3,
+                  maxLines: 1,
+                  textOverflow: TextOverflow.ellipsis,
+                ),
+              ),
+
+              // Status badge (pill shape)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  border: Border.all(color: _getStatusColor()),
+                  borderRadius: BorderRadius.circular(5),
+                  color: _getStatusColor().withOpacity(0.1),
+                ),
+                child: TextWidget.paraText(
+                  text: _getStatusText(),
+                  color: _getStatusColor(),
+                  theme: false,
+                  fw: 1,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          // Row 2: Exchange - OrderType - Time | LTP
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: TextWidget.paraText(
+                  text: "${widget.orderItem.exch} - ${widget.orderItem.prctyp} - ${formatDateTime(value: widget.orderItem.norentm!).substring(12, 21)}",
+                  theme: false,
+                  color: const Color(0xff666666),
+                  fw: 00,
+                ),
+              ),
+              TextWidget.paraText(
+                text: "LTP ${_getValidPrice()}",
+                theme: false,
+                color: const Color(0xff666666),
+                fw: 0,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          // Row 3: BUY/SELL qty | value
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  TextWidget.paraText(
+                    text: widget.orderItem.trantype == "S" ? "SELL" : "BUY",
+                    theme: false,
+                    color: widget.orderItem.trantype == "S"
+                        ? colors.darkred
+                        : colors.ltpgreen,
+                    fw: 1,
+                  ),
+                  const SizedBox(width: 8),
+                  TextWidget.subText(
+                    text: _getQuantityDisplay(),
+                    color: const Color(0xff666666),
+                    theme: widget.theme.isDarkMode,
+                    fw: 00,
+                  ),
+                ],
+              ),
+              TextWidget.subText(
+                text: _getAvgPrice(),
+                color: const Color(0xff666666),
+                theme: widget.theme.isDarkMode,
+                fw: 0,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   // Get status color based on order status (matching existing logic)
   Color _getStatusColor() {
@@ -851,7 +782,7 @@ class _OrderItemState extends State<_OrderItem> {
       return colors.darkred;
     } else {
       // For OPEN, PENDING, TRIGGER_PENDING, etc.
-      return colors.colorLightBlue;
+      return const Color(0xffFFB038);
     }
   }
 
