@@ -25,8 +25,8 @@ class Apikeymodel {
   Apikeymodel.fromJson(Map<String, dynamic> json) {
     requestTime = json['request_time'];
     uid = json['uid'];
-    apistatus = "EXPIRED";
-    // apistatus = json['apistatus'] ?? json['status'];
+    // apistatus = "EXPIRED";
+    apistatus = json['apistatus'] ?? json['status'];
     exd = json['exd'];
     apikey = json['apikey'];
     renStatus = json['ren_status'];
