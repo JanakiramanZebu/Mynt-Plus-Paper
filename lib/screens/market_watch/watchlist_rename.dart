@@ -221,7 +221,7 @@ class _WatchListRenameState extends ConsumerState<WatchListRename> {
                                   ? colors.colorWhite
                                   : colors.colorBlack,
                               theme: theme.isDarkMode,
-                              fw: 0,
+                              fw: 2,
                             ),
                     ),
                   ),

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../models/marketwatch_model/add_delete_scrip_model.dart';
 import '../models/marketwatch_model/alert_model/alert_pending_model.dart';
@@ -30,7 +32,7 @@ mixin MarketWatchApi on ApiCore {
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-      //  log("Market Watchlist => ${res.body}");
+       print("Market Watchlist => ${res.body}");
       final json = jsonDecode(res.body);
 
       return MarketWatchlist.fromJson(json as Map<String, dynamic>);
@@ -104,7 +106,7 @@ print("res.body: ${res.body}");
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","wlname":"$wlname"}&jKey=${prefs.clientSession}''');
-      // log("Market WatchScrip => ${res.body}");
+      print("Market WatchScrip => ${res.body}");
       final json = jsonDecode(res.body);
 
       return MarketWatchScrip.fromJson(json as Map<String, dynamic>);
