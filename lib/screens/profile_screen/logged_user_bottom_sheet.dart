@@ -292,15 +292,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                             pref.setClientName(acc.userName);
                             pref.setImei(acc.imei);
                             pref.setMobileLogin(true);
-
-                            await ref.read(authProvider).fetchMobileLogin(
-                                  context,
-                                  "",
-                                  acc.clientId,
-                                  "switchAc",
-                                  acc.imei,
-                                  true,
-                                );
+                            
                             await ref.read(authProvider).fetchMobileLogin(
                                   context,
                                   "",

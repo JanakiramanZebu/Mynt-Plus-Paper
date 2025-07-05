@@ -1462,7 +1462,7 @@ class AuthProvider extends DefaultChangeNotifier {
       ConstantName.timer =
           Timer.periodic(const Duration(seconds: 1), (timer) {});
       ConstantName.timer!.cancel();
-      ref.read(indexListProvider).bottomMenu(s.isEmpty ? 1 : 3, context);
+      ref.read(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
 
       if (s.isNotEmpty || pref.clientSession!.isNotEmpty) {
         ref.read(websocketProvider).closeSocket(true);
