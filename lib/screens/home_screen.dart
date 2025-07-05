@@ -1097,7 +1097,7 @@ class _OrdersActions extends ConsumerWidget {
         orderProvider.select((orderProvider) => orderProvider.selectedTab));
     final theme = ref.watch(themeProvider); // Theme is needed here
 
-    if (selectedTab == 3) { // Basket tab
+    if (selectedTab == 4) { // Basket tab
       return Row(children: [
         Container(
             margin: const EdgeInsets.only(right: 8),
