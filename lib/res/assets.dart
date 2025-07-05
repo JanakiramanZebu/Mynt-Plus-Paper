@@ -26,6 +26,8 @@ class Assets {
   final String calendarDate = "assets/icon/appbarIcon/calendar_date.svg";
   final String downArrow = "assets/icon/down_arrow.svg";
   final String leftArrow = "assets/icon/arrow_left.svg";
+  final String hamMenu = "assets/icon/hamburger-menu.svg";
+  final String searchFilter = "assets/icon/search-filter.svg";
   final String alert = "assets/icon/alert.svg";
   final String ckeckboxIcon = "assets/icon/check_box.svg";
   final String ckeckedboxIcon = "assets/icon/checked_box.svg";

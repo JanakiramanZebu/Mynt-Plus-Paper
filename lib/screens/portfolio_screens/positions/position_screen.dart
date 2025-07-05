@@ -143,7 +143,10 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
 
                     // Search section if enabled
                     // if (positionBook.showSearchPosition)
-                    _buildSearchSection(context, theme, positionBook),
+                    if (positionBook.postionBookModel!.isNotEmpty &&
+                        widget.listofPosition.length > 1) ...[
+                      _buildSearchSection(context, theme, positionBook),
+                    ],
                     _buildPositionList(context, theme, positionBook),
 
                     // Position list section
@@ -261,7 +264,10 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                             splashColor: Colors.black.withOpacity(0.15),
                             highlightColor: Colors.black.withOpacity(0.08),
                             onTap: () {
-                              positionBook.clearPositionSearch();
+                              Future.delayed(const Duration(milliseconds: 150),
+                                  () {
+                                positionBook.clearPositionSearch();
+                              });
                             },
                             child: _getCachedIcon(
                               assets.removeIcon,
@@ -271,40 +277,53 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                         )
                       : widget.listofPosition.length > 1 &&
                               positionBook.posSelection == "All position"
-                          ? InkWell(
-                              onTap: () async {
-                                // Add navigation lock to prevent multiple filter sheets
-                                if (positionBook.isFilterNavigating) return;
+                          ? Material(
+                              color: Colors.transparent,
+                              shape: const CircleBorder(),
+                              clipBehavior: Clip.hardEdge,
+                              child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  splashColor: Colors.black.withOpacity(0.15),
+                                  highlightColor:
+                                      Colors.black.withOpacity(0.08),
+                                  onTap: () async {
+                                    Future.delayed(
+                                        const Duration(milliseconds: 150), () {
+                                      // Add navigation lock to prevent multiple filter sheets
+                                      if (positionBook.isFilterNavigating)
+                                        return;
 
-                                try {
-                                  positionBook.setFilterNavigating(true);
+                                      try {
+                                        positionBook.setFilterNavigating(true);
 
-                                  showModalBottomSheet(
-                                    useSafeArea: true,
-                                    isScrollControlled: true,
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(16))),
-                                    context: context,
-                                    builder: (context) =>
-                                        const PositionScripFilterBottomSheet(),
-                                  ).then((_) {
-                                    // Reset navigation lock after bottom sheet is closed
-                                    positionBook.setFilterNavigating(false);
-                                  });
-                                } catch (e) {
-                                  positionBook.setFilterNavigating(false);
-                                }
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 12),
-                                child: _getCachedIcon(
-                                  assets.filterLines,
-                                  color: theme.isDarkMode
-                                      ? const Color(0xffBDBDBD)
-                                      : colors.colorGrey,
-                                ),
-                              ))
+                                        showModalBottomSheet(
+                                          useSafeArea: true,
+                                          isScrollControlled: true,
+                                          shape: const RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.vertical(
+                                                      top:
+                                                          Radius.circular(16))),
+                                          context: context,
+                                          builder: (context) =>
+                                              const PositionScripFilterBottomSheet(),
+                                        ).then((_) {
+                                          // Reset navigation lock after bottom sheet is closed
+                                          positionBook
+                                              .setFilterNavigating(false);
+                                        });
+                                      } catch (e) {
+                                        positionBook.setFilterNavigating(false);
+                                      }
+                                    });
+                                  },
+                                  child: _getCachedIcon(
+                                    assets.filterLines,
+                                    color: theme.isDarkMode
+                                        ? const Color(0xffBDBDBD)
+                                        : colors.colorGrey,
+                                  )),
+                            )
                           : null,
                   enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide.none,
@@ -346,17 +365,10 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
     final isSearchActive = positionBook.showSearchPosition;
     final searchText = positionBook.positionSearchCtrl.text;
 
-    // If search is active and search field is empty, show no data found
-    if (isSearchActive && searchText.isEmpty) {
-      return const Center(
-        child: SizedBox(height: 500, child: NoDataFound()),
-      );
-    }
-
-    final itemsToDisplay =
-        positionBook.positionSearchItem.isEmpty && !isSearchActive
-            ? widget.listofPosition
-            : positionBook.positionSearchItem;
+    // Determine what items to display
+    final itemsToDisplay = isSearchActive && searchText.isNotEmpty
+        ? positionBook.positionSearchItem
+        : widget.listofPosition;
 
     if (positionBook.posSelection == "Group by symbol") {
       return const PositionGroupSymbol();

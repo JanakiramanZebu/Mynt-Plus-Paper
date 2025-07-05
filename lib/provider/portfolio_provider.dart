@@ -374,6 +374,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   clearPositionSearch() {
     positionSearchCtrl.clear();
     _positionSearchItem = [];
+    _showSearchPosition = false;
 
     notifyListeners();
   }
@@ -1552,12 +1553,16 @@ class PortfolioProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
   positionSearch(String value, BuildContext context) {
     if (value.length > 1) {
+      _showSearchPosition = true;
       _positionSearchItem = [];
       _positionSearchItem = _allPostionList
           .where((element) =>
-              element.tsym!.toLowerCase().contains(value.toLowerCase()))
+              element.tsym!.toLowerCase().contains(value.toLowerCase()) ||
+              (element.symbol?.toLowerCase().contains(value.toLowerCase()) ??
+                  false))
           .toList();
     } else {
+      _showSearchPosition = false;
       _positionSearchItem = [];
     }
     notifyListeners();

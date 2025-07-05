@@ -22,7 +22,8 @@ class ConvertPositionDialogue extends ConsumerStatefulWidget {
       _ConvertPositionDialogueState();
 }
 
-class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogue> {
+class _ConvertPositionDialogueState
+    extends ConsumerState<ConvertPositionDialogue> {
   TextEditingController qty = TextEditingController();
   TextEditingController maxQty = TextEditingController();
 
@@ -70,6 +71,7 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
               color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               fw: 1),
           IconButton(
+              splashRadius: 20,
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -91,8 +93,8 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
                 TextWidget.titleText(
                     text: "${widget.convertPosition.symbol} ",
                     theme: false,
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
+                    color: theme.isDarkMode
+                        ? colors.colorWhite
                         : colors.colorBlack,
                     fw: 1,
                     textOverflow: TextOverflow.ellipsis,
@@ -100,8 +102,8 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
                 TextWidget.titleText(
                     text: "${widget.convertPosition.option}  ",
                     theme: false,
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
+                    color: theme.isDarkMode
+                        ? colors.colorWhite
                         : colors.colorBlack,
                     fw: 1,
                     textOverflow: TextOverflow.ellipsis,
@@ -114,18 +116,18 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                    decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                        borderRadius: BorderRadius.circular(5)),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                  decoration: BoxDecoration(
+                      color: theme.isDarkMode
+                          ? colors.darkGrey
+                          : const Color(0xffF1F3F8),
+                      borderRadius: BorderRadius.circular(5)),
                   child: TextWidget.subText(
                       text: "${widget.convertPosition.sPrdtAli}",
                       theme: false,
                       color: theme.isDarkMode
-                                ? colors.colorWhite
+                          ? colors.colorWhite
                           : colors.colorBlack,
                       fw: 1),
                 ),
@@ -150,7 +152,7 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
                                     : "MIS",
                         theme: false,
                         color: theme.isDarkMode
-                                ? colors.colorWhite
+                            ? colors.colorWhite
                             : colors.colorBlack,
                         fw: 1)),
               ],
@@ -251,64 +253,80 @@ class _ConvertPositionDialogueState extends ConsumerState<ConvertPositionDialogu
       actions: [
         SizedBox(
           width: MediaQuery.of(context).size.width,
-          child: ElevatedButton(
-            onPressed: () async {
-              if (qty.text.isEmpty || qty.text == "0") {
-                ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                    context,
-                    qty.text.isEmpty
-                        ? 'Quantity can not be empty'
-                        : "Quantity can not be 0"));
-              } else if (int.parse(qty.text) > int.parse(maxQty.text)) {
-                setState(() {
-                  qty.text = maxQty.text;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(warningMessage(
-                    context, 'Quantity can not be greater than Max Quantity'));
-              } else {
-                PositionConvertionInput positionConvertionInput =
-                    PositionConvertionInput(
-                        exch: "${widget.convertPosition.exch}",
-                        postype: "DAY",
-                        prd: widget.convertPosition.sPrdtAli == "MIS" &&
-                                (widget.convertPosition.exch == "NSE" ||
-                                    widget.convertPosition.exch == "BSE")
-                            ? "C"
-                            : widget.convertPosition.sPrdtAli == "MIS"
-                                ? "M"
-                                : widget.convertPosition.sPrdtAli == "CNC"
-                                    ? "I"
-                                    : "I",
-                        prevprd: "${widget.convertPosition.prd}",
-                        qty: widget.convertPosition.exch == 'MCX'
-                            ? (int.parse(qty.text) *
-                                    int.parse(
-                                        widget.convertPosition.ls.toString()))
-                                .toInt()
-                                .toString()
-                            : qty.text,
-                        trantype: widget.convertPosition.netqty!.startsWith('-')
-                            ? "S"
-                            : "B",
-                        tsym: "${widget.convertPosition.tsym}");
-                ref
-                    .read(portfolioProvider)
-                    .fetchPositionConverstion(positionConvertionInput, context);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              backgroundColor:
-                  theme.isDarkMode ? colors.colorbluegrey : colors.colorBlack,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50)),
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xffF1F3F8),
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(
+                color: theme.isDarkMode
+                    ? colors.colorGrey
+                    : const Color(0xff0037B7),
+                width: 1,
+              ),
             ),
-            child: TextWidget.subText(
-                text: "Convert",
-                theme: false,
-                color:
-                    !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                fw: 0),
+            child: Material(
+              color: Colors.transparent,
+              shape: const BeveledRectangleBorder(),
+              child: InkWell(
+                customBorder: const BeveledRectangleBorder(),
+                splashColor: Colors.black.withOpacity(0.15),
+                highlightColor: Colors.black.withOpacity(0.08),
+                onTap: () async {
+                  if (qty.text.isEmpty || qty.text == "0") {
+                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                        context,
+                        qty.text.isEmpty
+                            ? 'Quantity can not be empty'
+                            : "Quantity can not be 0"));
+                  } else if (int.parse(qty.text) > int.parse(maxQty.text)) {
+                    setState(() {
+                      qty.text = maxQty.text;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                        context,
+                        'Quantity can not be greater than Max Quantity'));
+                  } else {
+                    PositionConvertionInput positionConvertionInput =
+                        PositionConvertionInput(
+                            exch: "${widget.convertPosition.exch}",
+                            postype: "DAY",
+                            prd: widget.convertPosition.sPrdtAli == "MIS" &&
+                                    (widget.convertPosition.exch == "NSE" ||
+                                        widget.convertPosition.exch == "BSE")
+                                ? "C"
+                                : widget.convertPosition.sPrdtAli == "MIS"
+                                    ? "M"
+                                    : widget.convertPosition.sPrdtAli == "CNC"
+                                        ? "I"
+                                        : "I",
+                            prevprd: "${widget.convertPosition.prd}",
+                            qty: widget.convertPosition.exch == 'MCX'
+                                ? (int.parse(qty.text) *
+                                        int.parse(widget.convertPosition.ls
+                                            .toString()))
+                                    .toInt()
+                                    .toString()
+                                : qty.text,
+                            trantype:
+                                widget.convertPosition.netqty!.startsWith('-')
+                                    ? "S"
+                                    : "B",
+                            tsym: "${widget.convertPosition.tsym}");
+                    ref.read(portfolioProvider).fetchPositionConverstion(
+                        positionConvertionInput, context);
+                  }
+                },
+                child: Center(
+                  child: TextWidget.subText(
+                    text: "Convert",
+                    theme: false,
+                    color: const Color(0xff0037B7),
+                    fw: 1,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ],

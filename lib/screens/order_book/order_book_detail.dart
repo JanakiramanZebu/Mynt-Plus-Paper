@@ -29,6 +29,9 @@ class OrderBookDetail extends ConsumerStatefulWidget {
 class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
   @override
   Widget build(BuildContext context) {
+    final ScrollController scrollController = ScrollController();
+    final GlobalKey orderStatusKey = GlobalKey();
+
     final marketwatch = ref.watch(marketWatchProvider);
     final depthData = ref.watch(marketWatchProvider).getQuotes!;
 
@@ -59,6 +62,16 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
 
             final orderHistory = ref.watch(orderProvider).orderHistoryModel;
             final socketData = ref.watch(websocketProvider).socketDataStream;
+            final order = ref.watch(orderProvider);
+
+            final color = widget.orderBookData.status == "COMPLETE"
+                ? const Color(0xff43A833)
+                : widget.orderBookData.status == "OPEN"
+                    ? const Color(0xffFFB038)
+                    : (widget.orderBookData.status == "CANCELED" ||
+                            widget.orderBookData.status == "REJECTED")
+                        ? const Color(0xffFF1717)
+                        : const Color(0xff666666);
 
             return StreamBuilder<Map>(
                 stream: socketData,
@@ -234,16 +247,16 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                           MainAxisAlignment
                                                               .start,
                                                       children: [
-                                                        TextWidget.paraText(
-                                                            text:
-                                                                "${displayData.expDate}",
-                                                            theme: false,
-                                                            color: theme.isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            fw: 3),
+                                                        // TextWidget.paraText(
+                                                        //     text:
+                                                        //         "${displayData.expDate}",
+                                                        //     theme: false,
+                                                        //     color: theme.isDarkMode
+                                                        //         ? colors
+                                                        //             .colorWhite
+                                                        //         : colors
+                                                        //             .colorBlack,
+                                                        //     fw: 3),
                                                         TextWidget.paraText(
                                                             text:
                                                                 "${double.parse("${displayData.change != "null" ? displayData.change ?? 0.00 : 0.0} ").toStringAsFixed(2)} (${displayData.perChange ?? 0.00}%)",
@@ -335,16 +348,19 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                     .withOpacity(0.15),
                                                 highlightColor: Colors.black
                                                     .withOpacity(0.08),
-                                                onTap: () {
-                                                  // showDialog(
-                                                  //   context: context,
-                                                  //   builder:
-                                                  //       (BuildContext context) {
-                                                  //     return ConvertPositionDialogue(
-                                                  //         convertPosition: widget
-                                                  //             .positionList);
-                                                  //   },
-                                                  // );
+                                                onTap: () async {
+                                                  await order
+                                                      .showorderHistory(true);
+                                                  await Future.delayed(
+                                                      const Duration(
+                                                          milliseconds: 100));
+                                                  Scrollable.ensureVisible(
+                                                    orderStatusKey
+                                                        .currentContext!,
+                                                    duration: const Duration(
+                                                        milliseconds: 300),
+                                                    curve: Curves.easeInOut,
+                                                  );
                                                 },
                                                 child: Center(
                                                   child: Row(
@@ -383,79 +399,78 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                 widget.orderBookData),
 
                                         // Order status header
-                                        // Padding(
-                                        //   padding: const EdgeInsets.symmetric(
-                                        //       horizontal: 16.0),
-                                        //   child: Row(
-                                        //     mainAxisAlignment:
-                                        //         MainAxisAlignment.spaceBetween,
-                                        //     crossAxisAlignment:
-                                        //         CrossAxisAlignment.end,
-                                        //     children: [
-                                        //       TextWidget.titleText(
-                                        //           text: "Order Status",
-                                        //           theme: false,
-                                        //           color: theme.isDarkMode
-                                        //               ? colors.colorWhite
-                                        //               : const Color(0xff26324A),
-                                        //           fw: 1),
-                                        //       Row(
-                                        //         crossAxisAlignment:
-                                        //             CrossAxisAlignment.center,
-                                        //         mainAxisAlignment:
-                                        //             MainAxisAlignment.start,
-                                        //         children: [
-                                        //           SvgPicture.asset(widget
-                                        //                       .orderBookData
-                                        //                       .status ==
-                                        //                   "COMPLETE"
-                                        //               ? assets.completedIcon
-                                        //               : widget.orderBookData
-                                        //                               .status ==
-                                        //                           "CANCELED" ||
-                                        //                       widget.orderBookData
-                                        //                               .status ==
-                                        //                           "REJECTED"
-                                        //                   ? assets.cancelledIcon
-                                        //                   : assets.warningIcon),
-                                        //           TextWidget.subText(
-                                        //               text:
-                                        //                   "  ${widget.orderBookData.stIntrn![0].toUpperCase()}${widget.orderBookData.stIntrn!.toLowerCase().replaceAll("_", " ").substring(1)}  ",
-                                        //               theme: false,
-                                        //               color: theme.isDarkMode
-                                        //                   ? colors.colorWhite
-                                        //                   : colors.colorBlack,
-                                        //               fw: 0),
-                                        //         ],
-                                        //       ),
-                                        //     ],
-                                        //   ),
-                                        // ),
+                                        order.showOrderHistory
+                                            ? Row(
+                                                key: orderStatusKey,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  TextWidget.subText(
+                                                      text: "Order Status",
+                                                      theme: false,
+                                                      color: theme.isDarkMode
+                                                          ? colors.colorWhite
+                                                          : const Color(
+                                                              0xff666666),
+                                                      fw: 0),
+                                                  Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 5),
+                                                    decoration: BoxDecoration(
+                                                      color: color
+                                                          .withOpacity(0.1),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                      border: Border.all(
+                                                        color: color,
+                                                        width: 1,
+                                                      ),
+                                                    ),
+                                                    child: TextWidget.subText(
+                                                        text:
+                                                            "${widget.orderBookData.status![0].toUpperCase()}${widget.orderBookData.status!.toLowerCase().replaceAll("_", " ").substring(1)}",
+                                                        theme: false,
+                                                        color: color,
+                                                        fw: 0),
+                                                  ),
+                                                ],
+                                              )
+                                            : const SizedBox.shrink(),
 
                                         // Order history timeline
-                                        // if (orderHistory != null &&
-                                        //     orderHistory.isNotEmpty &&
-                                        //     orderHistory[0].stat != "Not_Ok")
-                                        //   ListView.builder(
-                                        //     reverse: true,
-                                        //     itemCount: orderHistory.length,
-                                        //     physics:
-                                        //         const NeverScrollableScrollPhysics(),
-                                        //     shrinkWrap: true,
-                                        //     itemBuilder: (BuildContext context,
-                                        //         int index) {
-                                        //       return TimeLineWidget(
-                                        //           isfFrist:
-                                        //               orderHistory.length - 1 ==
-                                        //                       index
-                                        //                   ? true
-                                        //                   : false,
-                                        //           isLast:
-                                        //               index == 0 ? true : false,
-                                        //           orderHistoryData:
-                                        //               orderHistory[index]);
-                                        //     },
-                                        //   ),
+                                        if (orderHistory != null &&
+                                            orderHistory.isNotEmpty &&
+                                            orderHistory[0].stat != "Not_Ok" &&
+                                            order.showOrderHistory) ...[
+                                          ListView.builder(
+                                            reverse: true,
+                                            itemCount: orderHistory.length,
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            shrinkWrap: true,
+                                            itemBuilder: (BuildContext context,
+                                                int index) {
+                                              return TimeLineWidget(
+                                                  isfFrist:
+                                                      orderHistory.length - 1 ==
+                                                              index
+                                                          ? true
+                                                          : false,
+                                                  isLast:
+                                                      index == 0 ? true : false,
+                                                  orderHistoryData:
+                                                      orderHistory[index]);
+                                            },
+                                          ),
+                                        ] else ...[
+                                          const SizedBox.shrink(),
+                                        ]
                                       ],
                                     ),
                                   ),
@@ -568,7 +583,7 @@ class _OrderDetailsSection extends ConsumerWidget {
       const SizedBox(height: 8),
       _buildInfoRow("Date & Time",
           "${formatDateTime(value: orderBookData.norentm ?? "-")}", theme),
-      const SizedBox(height: 40),
+      const SizedBox(height: 8),
     ]);
   }
 
@@ -735,7 +750,9 @@ Widget _buildRepeatOrderBar(
                 borderRadius: BorderRadius.circular(5),
               ),
               child: InkWell(
-                onTap: () async {},
+                onTap: () async {
+                  _showCancelOrderDialog(context, theme, ref, orderBookData);
+                },
                 child: Center(
                   child: TextWidget.subText(
                       text: "Cancel",

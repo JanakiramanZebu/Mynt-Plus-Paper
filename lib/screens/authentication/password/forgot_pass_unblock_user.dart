@@ -129,7 +129,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 37),
                             TextWidget.heroText(
                                 text: "Forgot password",
                                 theme: false,
@@ -137,7 +137,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                     ? colors.colorWhite
                                     : colors.colorBlack,
                                 fw: 1),
-                            const SizedBox(height: 30),
+                            const SizedBox(height: 24),
                             // Row(
                             //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             //   children: [
@@ -269,19 +269,19 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                     ),
                     Container(
                         margin: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 20),
+                            horizontal: 24, vertical: 13),
                         width: screenWidth,
-                        height: 46,
+                        height: 50,
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
                               elevation: 0,
                               backgroundColor: !theme.isDarkMode
                                   ? authForgetpassword.isDisableforgetbtn
-                                      ? const Color(0xff0037B7).withOpacity(0.3)
-                                      : const Color(0xff0037B7)
+                                      ? const Color(0xFF0037B7).withOpacity(0.3)
+                                      : colors.primaryLight
                                   : authForgetpassword.isDisableforgetbtn
-                                      ? colors.darkGrey
-                                      : colors.colorbluegrey,
+                                      ?  const Color(0xFF002A8F).withOpacity(0.3)
+                                      : colors.primaryDark,
                               side: BorderSide.none,
                               padding: const EdgeInsets.symmetric(vertical: 13),
                               shape: RoundedRectangleBorder(
@@ -298,7 +298,7 @@ class _ForgotPassUnblockUserState extends State<ForgotPassUnblockUser> {
                                   child: CircularProgressIndicator(
                                       strokeWidth: 2, color: colors.colorWhite),
                                 )
-                              : TextWidget.subText(
+                              : TextWidget.titleText(
                                   text: "Reset",
                                   theme: false,
                                   color: !theme.isDarkMode

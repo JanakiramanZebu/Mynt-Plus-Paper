@@ -156,6 +156,9 @@ class OrderProvider extends DefaultChangeNotifier {
   bool _isExitAllOrder = false;
   bool get isExitAllOrder => _isExitAllOrder;
 
+  bool _showOrderHistory = false;
+  bool get showOrderHistory => _showOrderHistory;
+
   // Track currently subscribed symbols to avoid duplicate subscriptions
   Set<String> _subscribedSymbols = {};
 
@@ -184,6 +187,12 @@ class OrderProvider extends DefaultChangeNotifier {
     _selectedTab = 0;
     // Clear subscription tracking
     clearSubscriptions();
+    notifyListeners();
+  }
+
+  showorderHistory(value) {
+    _showOrderHistory = value;
+    print("showOrderHistory: $_showOrderHistory");
     notifyListeners();
   }
 
@@ -387,7 +396,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       // Create input string for WebSocket subscription - only for symbols not already subscribed
       Set<String> symbolsToSubscribe = {};
-      
+
       for (var script in _bsktScripList) {
         final symbolKey = "${script['exch']}|${script['token']}";
         if (!_subscribedSymbols.contains(symbolKey)) {
@@ -395,7 +404,7 @@ class OrderProvider extends DefaultChangeNotifier {
           _subscribedSymbols.add(symbolKey);
         }
       }
-          
+
       // Only establish new connections if needed
       if (symbolsToSubscribe.isNotEmpty) {
         input = symbolsToSubscribe.join("#");
@@ -403,7 +412,7 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(websocketProvider).establishConnection(
             channelInput: input, task: "t", context: context);
       }
-      
+
       // Update basket with latest values from socket data
       updateBasketFromSocketData();
     }
@@ -419,23 +428,23 @@ class OrderProvider extends DefaultChangeNotifier {
     try {
       final socketDatas = ref.read(websocketProvider).socketDatas;
       if (socketDatas.isEmpty || _bsktScripList.isEmpty) return;
-      
+
       bool updated = false;
-      
+
       // Update basket script list with current socket values
       for (var script in _bsktScripList) {
         final token = script['token']?.toString();
         if (token != null && socketDatas.containsKey(token)) {
           final lp = socketDatas[token]['lp']?.toString();
           final pc = socketDatas[token]['pc']?.toString();
-          
+
           if (lp != null && lp != "null") {
             if (script['lp']?.toString() != lp) {
               script['lp'] = lp;
               updated = true;
             }
           }
-          
+
           if (pc != null && pc != "null") {
             if (script['pc']?.toString() != pc) {
               script['pc'] = pc;
@@ -444,7 +453,7 @@ class OrderProvider extends DefaultChangeNotifier {
           }
         }
       }
-      
+
       if (updated) {
         notifyBasketUpdates();
       }
@@ -452,7 +461,7 @@ class OrderProvider extends DefaultChangeNotifier {
       print("Error updating basket from socket data: $e");
     }
   }
-  
+
   // Notify listeners about basket updates without creating a full rebuild cycle
   void notifyBasketUpdates() {
     notifyListeners();
@@ -483,6 +492,12 @@ class OrderProvider extends DefaultChangeNotifier {
             ? "Basket ${_bsktList.length}"
             : "Basket",
       ),
+      // Tab(
+      //   text: (_tradeBook != null && _tradeBook!.isNotEmpty)
+      //       ? "Trade Book (${_tradeBook!.length})"
+      //       : "Trade Book",
+      // ),
+
       Tab(
         text: (_siporderBookModel?.sipDetails?.isNotEmpty ?? false)
             ? "SIP ${_siporderBookModel!.sipDetails!.length}"
@@ -490,11 +505,15 @@ class OrderProvider extends DefaultChangeNotifier {
       ),
       const Tab(
         text: ("Alerts"),
+        // ref.read(marketWatchProvider).alertPendingModel != null &&
+        //           ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty)
+        //       ? "Alert (${ref.read(marketWatchProvider).alertPendingModel!.length})"
+        //       :
       )
     ];
     notifyListeners();
   }
-  
+
   showOrderSearch(bool value) {
     _showSearchOrder = value;
     if (!_showSearchOrder) {
@@ -611,10 +630,13 @@ class OrderProvider extends DefaultChangeNotifier {
 
   orderSearch(String value, BuildContext context) {
     if (value.length > 1) {
+      _showSearchOrder = true;
       _orderSearchItem = [];
       _orderSearchItem = _allOrder!
           .where((element) =>
-              element.tsym!.toUpperCase().contains(value.toUpperCase()))
+              element.tsym!.toLowerCase().contains(value.toLowerCase()) ||
+              (element.symbol?.toLowerCase().contains(value.toLowerCase()) ??
+                  false))
           .toList();
       if (_orderSearchItem!.isEmpty) {
         ScaffoldMessenger.of(context)
@@ -698,13 +720,13 @@ class OrderProvider extends DefaultChangeNotifier {
         //     ConstantName.sessCheck = true;
         //     for (var element in _orderBookModel!) {
         //       if (element.norenordno == _placeOrderModel!.norenordno) {
-                ScaffoldMessenger.of(context).showSnackBar(successMessage(
-                    context, "Order placed successfully."
-                    // "Your ${element.trantype == "B" ? "buy" : "sell"} order ${element.norenordno} for ${element.tsym} in ${element.exch} is ${element.status}"
-                    ));
-              // }
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(
+            context, "Order placed successfully."
+            // "Your ${element.trantype == "B" ? "buy" : "sell"} order ${element.norenordno} for ${element.tsym} in ${element.exch} is ${element.status}"
+            ));
+        // }
         //     }
-            notifyListeners();
+        notifyListeners();
         //   } else {
         //     if (_orderBookModel![0].emsg ==
         //             "Session Expired :  Invalid Session Key" &&
@@ -737,7 +759,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _placeOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Place Order", "Error": "$e"});
       notifyListeners();
@@ -762,7 +785,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _placeOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Place Slice  Order", "Error": "$e"});
       notifyListeners();
@@ -847,7 +871,8 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       return _orderBookModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Order Book", "Error": "$e"});
       notifyListeners();
@@ -908,7 +933,8 @@ class OrderProvider extends DefaultChangeNotifier {
       return _tradeBook;
     } catch (e) {
       print("Trade book $e");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Trade Book", "Error": "$e"});
       notifyListeners();
@@ -959,12 +985,12 @@ class OrderProvider extends DefaultChangeNotifier {
       return _gttOrderBookModel;
     } catch (e) {
       print("GTT Order book $e");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API GTT Order Book", "Error": "$e"});
     } finally {
-            notifyListeners();
-
+      notifyListeners();
     }
   }
 
@@ -984,7 +1010,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _orderHistoryModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Single Order His", "Error": "$e"});
       notifyListeners();
@@ -1049,7 +1076,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _cancelOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Order Canl", "Error": "$e"});
       notifyListeners();
@@ -1076,7 +1104,8 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _cancelOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Order Canl", "Error": "$e"});
       notifyListeners();
@@ -1105,7 +1134,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _modifyOrderModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Modify Order", "Error": "$e"});
       notifyListeners();
@@ -1126,7 +1156,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _orderMarginModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Order Margin", "Error": "$e"});
       notifyListeners();
@@ -1148,7 +1179,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _getBrokerageModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Brokerage", "Error": "$e"});
       notifyListeners();
@@ -1177,26 +1209,28 @@ class OrderProvider extends DefaultChangeNotifier {
         print("=== GTT ORDER SOCKET SUBSCRIPTION ===");
         print("GTT Orders count: ${_gttOrderBookModel!.length}");
         print("Subscribe mode: ${isSubscribe ? 'SUBSCRIBE' : 'UNSUBSCRIBE'}");
-        
+
         final gttTokens = _gttOrderBookModel!
             .map((e) => "${e.exch}|${e.token}")
             .toSet()
             .join("#");
-        
+
         // Debug: Print first 3 GTT order details
         for (int i = 0; i < _gttOrderBookModel!.length && i < 3; i++) {
           final gtt = _gttOrderBookModel![i];
-          print("  GTT $i: ${gtt.tsym} (${gtt.exch}|${gtt.token}) - Current LTP: ${gtt.ltp ?? 'null'}");
+          print(
+              "  GTT $i: ${gtt.tsym} (${gtt.exch}|${gtt.token}) - Current LTP: ${gtt.ltp ?? 'null'}");
         }
-        
+
         if (input.isNotEmpty) {
           input += "#$gttTokens";
         } else {
           input = gttTokens;
         }
-        
+
         print("Total subscription input length: ${input.length}");
-        print("First 100 chars: ${input.substring(0, input.length > 100 ? 100 : input.length)}");
+        print(
+            "First 100 chars: ${input.substring(0, input.length > 100 ? 100 : input.length)}");
         print("=====================================");
       }
 
@@ -1380,15 +1414,19 @@ class OrderProvider extends DefaultChangeNotifier {
         break;
       case "TIMEASC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
+              DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
+              DateTime(1970);
           return aDate.compareTo(bDate);
         });
         break;
       case "TIMEDSC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
+              DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
+              DateTime(1970);
           return bDate.compareTo(aDate);
         });
         break;
@@ -1572,7 +1610,8 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API GTT Order ", "Error": "$e"});
       notifyListeners();
@@ -1603,7 +1642,8 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Modify GTT Order ", "Error": "$e"});
       notifyListeners();
@@ -1616,12 +1656,11 @@ class OrderProvider extends DefaultChangeNotifier {
       _placeGttOrderModel = await api.cancelGTTOrderAPI(canId);
 
       if (_placeGttOrderModel!.stat == "OI deleted") {
-      
         ConstantName.sessCheck = true;
 
         // Navigator.pop(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "GTT Order Cancelled Successfully"));
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "GTT Order Cancelled Successfully"));
         Navigator.pop(context);
       } else {
         if (_placeGttOrderModel!.emsg ==
@@ -1631,21 +1670,21 @@ class OrderProvider extends DefaultChangeNotifier {
         }
       }
       //  Navigator.pop(context);
-       if(_placeGttOrderModel!.stat=="Invalid Oi"){
-      await fetchGTTOrderBook(context, "");
-       ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, "Provided GTT Order is not found"));
-       Navigator.pop(context);
-            }
+      if (_placeGttOrderModel!.stat == "Invalid Oi") {
+        await fetchGTTOrderBook(context, "");
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "Provided GTT Order is not found"));
+        Navigator.pop(context);
+      }
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API GTT Order  CANCEL", "Error": "$e"});
     } finally {
-            await fetchGTTOrderBook(context, "");
-            toggleLoadingOn(false);
-            notifyListeners();
-
+      await fetchGTTOrderBook(context, "");
+      toggleLoadingOn(false);
+      notifyListeners();
     }
   }
 
@@ -1669,9 +1708,9 @@ class OrderProvider extends DefaultChangeNotifier {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
-      
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API OCO Order ", "Error": "$e"});
     } finally {
@@ -1703,7 +1742,8 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Modify OCO Order ", "Error": "$e"});
       notifyListeners();
@@ -1864,7 +1904,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _modifySipModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "MODIFYSIP API", "Error": "$e"});
       notifyListeners();
@@ -1955,8 +1996,7 @@ class OrderProvider extends DefaultChangeNotifier {
                 _siporderBookModel!.sipDetails![main].scrips![i].close =
                     "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["close"]}";
 
-                _siporderBookModel!
-                    .sipDetails![main].scrips![i].perChange =
+                _siporderBookModel!.sipDetails![main].scrips![i].perChange =
                     "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["change"]}";
                 _siporderBookModel!
                     .sipDetails![main].scrips![i].change = (double.parse(
@@ -1977,7 +2017,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _siporderBookModel;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "SIP ORDER HISTORY API", "Error": "$e"});
       notifyListeners();
@@ -2001,7 +2042,8 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _cancleSipOrder;
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "SIP CANCEL API", "Error": "$e"});
       notifyListeners();
@@ -2054,7 +2096,8 @@ class OrderProvider extends DefaultChangeNotifier {
       ScaffoldMessenger.of(context).showSnackBar(
           successMessage(context, "Basket Order Sucessfully Placed"));
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API Place Slice  Order", "Error": "$e"});
       notifyListeners();
@@ -2084,7 +2127,8 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API GTT Order ", "Error": "$e"});
       notifyListeners();

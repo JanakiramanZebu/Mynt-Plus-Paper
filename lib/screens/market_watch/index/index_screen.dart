@@ -12,6 +12,7 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 
+import '../../../res/colors.dart';
 import 'index_bottom_sheet.dart';
 
 class DefaultIndexList extends ConsumerStatefulWidget {
@@ -136,7 +137,7 @@ class OptimizedIndexItem extends ConsumerWidget {
               ? Colors.grey.shade500.withOpacity(0.4)
               : Colors.grey.shade300.withOpacity(0.6),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8),
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
             decoration: BoxDecoration(
               color: theme.isDarkMode ? Colors.black : Colors.white,
             ),
@@ -441,25 +442,21 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
               children: [
                 Text(
                   "$_ltp  ",
-                  style: _getTextStyle(changeColor, 16, 0),
+                  style: _getTextStyle(changeColor, 16, ),
                 ),
                 Row(
                   children: [
                     Text("$_change ",
                         style: _getTextStyle(
-                            widget.isDarkMode
-                                ? const Color(0xffE5E5E5)
-                                : const Color(0xff000000),
+                         widget.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
                             12,
                             )),
-                    SizedBox(
+                    const SizedBox(
                       width: 4,
                     ),
-                    Text("$_perChange%",
+                    Text("($_perChange%)",
                         style: _getTextStyle(
-                            widget.isDarkMode
-                                ? const Color(0xffE5E5E5)
-                                : const Color(0xff000000),
+                            widget.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
                             12,
                             )),
                   ],
@@ -488,12 +485,12 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
     final key = '$change|$perChange';
     return _colorCache.putIfAbsent(key, () {
       if (change.startsWith("-") || perChange.startsWith('-')) {
-        return colors.darkred;
+        return colors.errorLight;
       } else if ((change == "null" || perChange == "null") ||
           (change == "0.00" || perChange == "0.00")) {
-        return colors.ltpgrey;
+        return colors.textSecondaryLight;
       } else {
-        return colors.ltpgreen;
+        return colors.successLight;
       }
     });
   }
@@ -521,7 +518,7 @@ class _StaticIndexName extends StatelessWidget {
     if (!_styleCache.containsKey(key)) {
       _styleCache[key] = TextWidget.textStyle(
           fontSize: 14,
-          color: isDarkMode ? const Color(0xffB5C0CF) : const Color(0xff000000),
+          color: isDarkMode ? colors.textPrimaryDark  : colors.textPrimaryLight ,
           theme: false);
     }
     return _styleCache[key]!;

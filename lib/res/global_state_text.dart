@@ -132,7 +132,7 @@ class TextWidget {
                       : fw == 00
                         ? FontWeight.w400
                       : FontWeight.normal,
-          letterSpacing: letterSpacing,
+          letterSpacing: letterSpacing ?? 0.5,
         ),
       ),
     );
@@ -144,6 +144,7 @@ class TextWidget {
       Color? color,
       int? fw,
       int? maxLines,
+      double? height,
       TextAlign? align,
       TextOverflow? textOverflow,
        double? letterSpacing,
@@ -152,7 +153,7 @@ class TextWidget {
       text,
       maxLines: maxLines,
       overflow: textOverflow,
-      textAlign: align,
+      textAlign: align, 
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: 12,
@@ -161,6 +162,7 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
+                height: height,
         fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
@@ -170,7 +172,7 @@ class TextWidget {
                     : fw == 3
                         ? FontWeight.w400
                         : FontWeight.normal,
-                        letterSpacing: letterSpacing,
+                        letterSpacing: letterSpacing ?? 0.5,
       )),
     );
   }
@@ -270,7 +272,7 @@ class TextWidget {
                 : fw == 0
                     ? FontWeight.w500
                     : FontWeight.normal,
-        letterSpacing: letterSpacing,
+        letterSpacing: letterSpacing ?? 0.5,
       )),
     );
   }
@@ -300,7 +302,7 @@ class TextWidget {
                             ? FontWeight.w400
                             : FontWeight.normal,
         height: height,
-        letterSpacing: letterSpacing,
+        letterSpacing: letterSpacing ?? 0.5,
         decoration: decoration,
       ),
     );

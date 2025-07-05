@@ -33,7 +33,12 @@ class SipCancelAlert extends ConsumerWidget {
       ),
       content: Column(
         children: [
-          TextWidget.titleText(text: "Are you sure you want to cancel the (${sipdetails.scrips![0].tsym.toString().toUpperCase()})",theme:theme.isDarkMode,fw: 1,align: TextAlign.center),
+          TextWidget.titleText(
+              text:
+                  "Are you sure you want to cancel the (${sipdetails.scrips![0].tsym.toString().toUpperCase()})",
+              theme: theme.isDarkMode,
+              fw: 1,
+              align: TextAlign.center),
         ],
       ),
       actions: [
@@ -51,7 +56,11 @@ class SipCancelAlert extends ConsumerWidget {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: TextWidget.paraText(text: "No",theme: false, color: colors.colorGrey,fw: 1)),
+                  child: TextWidget.paraText(
+                      text: "No",
+                      theme: false,
+                      color: colors.colorGrey,
+                      fw: 1)),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -68,7 +77,8 @@ class SipCancelAlert extends ConsumerWidget {
                     ref.read(orderProvider).fetchSipOrderCancel(
                         "${sipdetails.internal!.sipId}", context);
                   },
-                  child: TextWidget.paraText(text: "Yes",theme: theme.isDarkMode,fw: 1)),
+                  child: TextWidget.paraText(
+                      text: "Yes", theme: !theme.isDarkMode, fw: 1)),
             )
           ],
         ),

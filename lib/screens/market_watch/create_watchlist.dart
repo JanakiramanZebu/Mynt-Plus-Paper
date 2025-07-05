@@ -69,6 +69,9 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
               children: [
                 TextWidget.titleText(
                   text: 'Create Watchlist',
+                   color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight ,
                   theme: theme.isDarkMode,
                   fw: 1,
                 ),
@@ -126,18 +129,18 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                         FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9 ]')),
                       ],
                       style: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: theme.isDarkMode,
-                        
-                      ),
+                                  fontSize: 14,
+                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                  theme: theme.isDarkMode,
+                                 
+                                ),
                       decoration: InputDecoration(
                         hintText: "Enter watchlist name",
-                        hintStyle: TextWidget.textStyle(
-                          fontSize: 14,
-                          color: const Color(0xff666666),
-                          theme: theme.isDarkMode,
-                          fw: 0,
-                        ),
+                        hintStyle:TextWidget.textStyle(
+                                    fontSize: 14,
+                                    theme: theme.isDarkMode,                                
+                                    color: theme.isDarkMode ? colors.textPrimaryDark :  colors.textPrimaryLight,
+                                  ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
@@ -163,9 +166,9 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                       alignment: Alignment.centerLeft,
                       child: TextWidget.captionText(
                         text: errorText!,
-                        color: colors.darkred,
+                        color: colors.error,
                         theme: theme.isDarkMode,
-                        fw: 0,
+                        
                       ),
                     ),
                   ],
@@ -202,18 +205,18 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                        minimumSize: const Size(0, 40),// width, height
                     
                       backgroundColor: theme.isDarkMode
-                          ? colors.colorbluegrey
-                          : Color(0xFF0037B7),
+                          ? colors.primaryDark
+                          : colors.primaryLight,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
                     child: (_isProcessing || ref.read(marketWatchProvider).loading)
-                        ? const SizedBox(
+                        ?  SizedBox(
                             width: 18,
                             height: 20,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Color(0xff666666)),
+                                strokeWidth: 2, color: colors.textSecondaryLight),
                           )
                         : TextWidget.subText(
                             text: "Create",
@@ -221,7 +224,7 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                                 ? colors.colorWhite
                                 : colors.colorBlack,
                             theme: theme.isDarkMode,
-                            fw: 0,
+                           
                           ),
                   ),
                 ),

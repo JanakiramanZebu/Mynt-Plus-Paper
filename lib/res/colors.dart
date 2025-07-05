@@ -1,6 +1,116 @@
 import 'package:flutter/material.dart';
 
+
+
 class AppColors {
+
+
+// ----------------------------------------------------------------------------------------------
+
+                                       //new colors implementation
+
+
+// === PRIMARY COLORS ===
+  final primary = const Color(0xFF0037B7);
+  final primaryLight = const Color(0xFF0037B7);
+  final primaryDark = const Color(0xFF002A8F);
+
+  // === SECONDARY COLORS ===
+  final secondary = const Color(0xFF0052CC);
+  final secondaryLight = const Color(0xFF0052CC);
+  final secondaryDark = const Color(0xFF0052CC);
+
+  // === SECONDARY COLORS ===
+  final tertiary = const Color(0xFFC40024);
+  // final tertiaryLight = const Color(0xFF0052CC);
+  // final tertiaryDark = const Color(0xFF0052CC);
+
+
+
+
+// === TEXT COLORS ===
+  final textPrimary = const Color(0xFF121212);
+  final textPrimaryLight = const Color(0xFF121212);
+  final textSecondary = const Color(0xFF4A4A4A);
+  final textSecondaryLight = const Color(0xFF4A4A4A);
+  final textDisabled = const Color(0xFFBDBDBD);
+
+// Dark theme text colors
+  final textPrimaryDark = const Color(0xFFFFFFFF);
+  final textSecondaryDark = const Color(0xFFFFFFFF);
+  final textDisabledDark = const Color(0xFF404040);
+
+// === STATUS COLORS ===
+  final  profit = const Color(0xFF00B14F);
+  final  profitLight = const Color(0xFF00B14F);
+  final  profitDark = const Color(0xFF2F855A);
+
+  final loss = const Color(0xFFFF1717);
+  final lossLight = const Color(0xFFFF1717);
+  final lossDark = const Color(0xFFC53030);
+
+
+  final error = const Color(0xFFFF1717);
+  final errorLight = const Color(0xFFFF1717);
+  final errorDark = const Color(0xFFC53030);
+
+   final success = const Color(0xFF00B14F);
+  final successLight = const Color(0xFF00B14F);
+  final successDark = const Color(0xFF2F855A);
+
+  final divider = const Color(0xffDDE2E7);
+  final dividerLight = const Color(0xffDDE2E7);
+  final dividerDark = const Color(0xffECEDEE).withOpacity(.1);
+
+
+// === BACKGROUND COLORS ===
+  final btnBg = const Color(0XFFF1F3F8);
+  final searchBg = const Color(0XFFF9F9F9);
+
+  // === BORDER COLORS ===
+  final btnOutlinedBorder = Color(0xFF0037B7);
+
+
+  //inkwell splash color
+
+  final splashColorLight = const Color(0xff000000).withOpacity(0.15);
+  final splashColorDark = const Color(0xffFFFFFF).withOpacity(0.15);
+
+
+// inkwell highlight color (tapfeedback)
+
+
+ final highlightLight = const Color(0xff000000).withOpacity(0.08);
+  final highlightDark = const Color(0xffFFFFFF).withOpacity(0.08);
+
+  // static const Color info = Color(0xFF3182CE);
+  // final infoLight = Color(0xFFBEE3F8);
+  // static const Color infoDark = Color(0xFF2C5282);
+
+
+
+
+
+// -----------------------------------------------------------------------------------------------------------
+
+                          // old colors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   final colorWhite = const Color(0xffFFFFFF);
   final colorBlack = const Color(0xff000000);
   final logoColor = const Color(0xff0037B7);

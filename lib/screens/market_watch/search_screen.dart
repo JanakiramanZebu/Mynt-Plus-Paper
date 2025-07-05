@@ -171,8 +171,8 @@ class _AddScripState extends ConsumerState<SearchScreen>
                       child: Container(
                         height: 40,
                         decoration: BoxDecoration(
-                          color: Color(0x80F1F3F8),
-                          borderRadius: BorderRadius.circular(22),
+                          color: colors.searchBg,
+                          borderRadius: BorderRadius.circular(5),
                           // border: Border.all(
                           //   color: theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFEEEEEE),
                           //   width: 1,
@@ -184,7 +184,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             const SizedBox(width: 12),
                             SvgPicture.asset(
                               assets.searchIcon,
-                              color: const Color(0xff586279),
+                              // color: const Color(0xff586279),
                               width: 18,
                               height: 18,
                             ),
@@ -196,8 +196,9 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                 controller: textCtrl,
                                 style: TextWidget.textStyle(
                                   fontSize: 14,
+                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
-                                  fw: 0,
+                                 
                                 ),
                                 textCapitalization:
                                     TextCapitalization.characters,
@@ -217,9 +218,8 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                       "Search stocks, indices, options...",
                                   hintStyle: TextWidget.textStyle(
                                     fontSize: 14,
-                                    theme: theme.isDarkMode,
-                                    fw: 0,
-                                    color: const Color(0xff666666),
+                                    theme: theme.isDarkMode,                                
+                                    color: theme.isDarkMode ? colors.textPrimaryDark :  colors.textPrimaryLight,
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 0, vertical: 12),
@@ -289,7 +289,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
                           children: [
                             // Tabs content
                             Container(
-                              height: 40,
+                              height: 32,
                               child: Row(
                                 children: [
                                   const SizedBox(width: 8),
@@ -357,7 +357,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
         // Dynamically adjust width for Currency and Commodity tabs when selected
         final bool isLongTab =
             (tab.text == 'Currency' || tab.text == 'Commodity');
-        final double dynamicWidth = isLongTab ? 100.0 : tabWidth;
+        final double dynamicWidth = isLongTab ? 120.0 : tabWidth;
 
         return Container(
           width: dynamicWidth,
@@ -365,7 +365,7 @@ class _AddScripState extends ConsumerState<SearchScreen>
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(6),
+              // borderRadius: BorderRadius.circular(6),
               splashColor: theme.isDarkMode
                   ? Colors.white.withOpacity(0.05)
                   : Colors.black.withOpacity(0.05),
@@ -386,18 +386,18 @@ class _AddScripState extends ConsumerState<SearchScreen>
                     width: double.infinity,
                     alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 10),
+                        horizontal: 10, vertical: 6),
                     child: TextWidget.subText(
                         text: tab.text ?? '',
-                        color: isSelected
+                        color:isSelected
                             ? theme.isDarkMode
-                                ? colors.colorLightBlue
-                                : colors.colorBlue
-                            : Color(0xFF666666),
-                        textOverflow: TextOverflow.visible,
+                                ? colors.secondaryDark
+                                : colors.secondaryLight
+                            : colors.textSecondaryLight,
+                        textOverflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         theme: theme.isDarkMode,
-                        fw: isSelected ? 1 : 0),
+                        fw: isSelected ? 0 : null),
                   ),
                   // Animated underline indicator
                   AnimatedContainer(

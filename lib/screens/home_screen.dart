@@ -1351,7 +1351,54 @@ class _FundsWebActions extends ConsumerWidget {
   }
 }
 
+// Orderbook actions
+class _OrderbookActions extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use select to listen only to the selectedTab
+    final selectedTab = ref.watch(
+        orderProvider.select((orderProvider) => orderProvider.selectedTab));
+    final theme = ref.watch(themeProvider); // Theme is needed here
 
+    if (selectedTab == 3) {
+      return Row(children: [
+        Container(
+            margin: const EdgeInsets.only(right: 8),
+            height: 30,
+            child: OutlinedButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                      context: context,
+                      useSafeArea: true,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(16)),
+                      ),
+                      builder: (BuildContext context) {
+                        return const CreateBasket();
+                      });
+                },
+                style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                        color: theme.isDarkMode
+                            ? colors.colorGrey
+                            : colors.colorBlack),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(32)))),
+                child: Text("Create Basket",
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        12,
+                        FontWeight.w600))))
+      ]);
+    }
+
+    return SizedBox.shrink();
+  }
+}
 
 // User profile tile
 class _UserProfileTile extends ConsumerWidget {
