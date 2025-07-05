@@ -633,12 +633,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
   // }
 
   Widget headerTitleText(String text, ThemesProvider theme) {
-    return TextWidget.subText(
+    return TextWidget.titleText(
       text: text,
       theme: theme.isDarkMode,
       color:
           theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-      fw: 0,
+      fw: 1,
     );
   }
 

@@ -211,7 +211,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
-                    fw: 0),
+                    fw: 1),
                 const SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(

@@ -251,7 +251,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                       );
                                     },
                                     child: Icon(
-                                      Icons.ios_share_sharp,
+                                      Icons.share_outlined,
                                       size: 22,
                                     ),
                                   ),
