@@ -138,10 +138,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             : colors.colorBlack)))
             : const CustomBackBtn(),
         elevation: 0.2,
-        title: TextWidget.subText(
+        title: TextWidget.heroText(
           text: 'Order Preference',
           theme: theme.isDarkMode,
-          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
           fw: 1,
         ),
       ),
@@ -157,7 +159,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText("Product type", theme)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: SizedBox(
@@ -173,17 +175,21 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       FocusScope.of(context).unfocus();
                                     },
                                     style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 0),
-                                        backgroundColor: !theme.isDarkMode
-                                            ? orderType != orderTypes[index]
-                                                ? const Color(0xffF1F3F8)
-                                                : colors.colorBlack
-                                            : orderType != orderTypes[index]
-                                                ? colors.darkGrey
-                                                : colors.colorbluegrey,
-                                        shape: const StadiumBorder()),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 0),
+                                      backgroundColor: !theme.isDarkMode
+                                          ? orderType != orderTypes[index]
+                                              ? const Color(0xffF1F3F8)
+                                              : colors.primaryLight
+                                          : orderType != orderTypes[index]
+                                              ? colors.darkGrey
+                                              : colors.colorbluegrey,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            4), // Set to 0 for sharp edges
+                                      ),
+                                    ),
                                     child: Text(
                                         orderTypes[index] == "Delivery"
                                             ? "Delivery / Carry"
@@ -199,8 +205,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
                                             fw: orderType == orderTypes[index]
-                                                ? 1
-                                                : 0)));
+                                                ? 0
+                                                : 3)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
@@ -210,7 +216,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText("Order type", theme)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: SizedBox(
@@ -226,19 +232,23 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       FocusScope.of(context).unfocus();
                                     },
                                     style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 0),
-                                        backgroundColor: !theme.isDarkMode
-                                            ? priceType !=
-                                                    priceTypes[index]['type']
-                                                ? const Color(0xffF1F3F8)
-                                                : colors.colorBlack
-                                            : priceType !=
-                                                    priceTypes[index]['type']
-                                                ? colors.darkGrey
-                                                : colors.colorbluegrey,
-                                        shape: const StadiumBorder()),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 0),
+                                      backgroundColor: !theme.isDarkMode
+                                          ? priceType !=
+                                                  priceTypes[index]['type']
+                                              ? const Color(0xffF1F3F8)
+                                              : colors.primaryLight
+                                          : priceType !=
+                                                  priceTypes[index]['type']
+                                              ? colors.darkGrey
+                                              : colors.colorbluegrey,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            4), // Set to 0 for sharp edges
+                                      ),
+                                    ),
                                     child: Text(priceTypes[index]['type'],
                                         style: TextWidget.textStyle(
                                             color: !theme.isDarkMode
@@ -264,57 +274,154 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                               },
                               itemCount: priceTypes.length))),
                   const SizedBox(height: 8),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 16, top: 16),
-                      child: headerTitleText("Validity", theme)),
-                  const SizedBox(height: 10),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: SizedBox(
-                          height: 38,
-                          child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context, index) {
-                                return ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        validity = validityTypes[index];
-                                      });
-                                      FocusScope.of(context).unfocus();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 0),
-                                        backgroundColor: !theme.isDarkMode
-                                            ? validity != validityTypes[index]
-                                                ? const Color(0xffF1F3F8)
-                                                : colors.colorBlack
-                                            : validity != validityTypes[index]
-                                                ? colors.darkGrey
-                                                : colors.colorbluegrey,
-                                        shape: const StadiumBorder()),
-                                    child: Text(validityTypes[index],
-                                        style: TextWidget.textStyle(
-                                            color: !theme.isDarkMode
-                                                ? validity !=
-                                                        validityTypes[index]
-                                                    ? const Color(0xff666666)
-                                                    : colors.colorWhite
-                                                : validity !=
-                                                        validityTypes[index]
-                                                    ? const Color(0xff666666)
-                                                    : colors.colorBlack,
-                                            fontSize: 14,
-                                            theme: theme.isDarkMode,
-                                            fw: validity == validityTypes[index]
-                                                ? 1
-                                                : 0)));
-                              },
-                              separatorBuilder: (context, index) {
-                                return const SizedBox(width: 8);
-                              },
-                              itemCount: validityTypes.length))),
+                  Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      flex: 1,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 16),
+            child: headerTitleText("Validity", theme),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 8),
+            child: SizedBox(
+              height: 38,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  final isSelected = validity == validityTypes[index];
+                  return ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        validity = validityTypes[index];
+                      });
+                      FocusScope.of(context).unfocus();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      backgroundColor: !theme.isDarkMode
+                          ? isSelected
+                              ? colors.primaryLight
+                              : const Color(0xffF1F3F8)
+                          : isSelected
+                              ? colors.colorbluegrey
+                              : colors.darkGrey,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    child: Text(
+                      validityTypes[index],
+                      style: TextWidget.textStyle(
+                        color: !theme.isDarkMode
+                            ? isSelected
+                                ? colors.colorWhite
+                                : const Color(0xff666666)
+                            : isSelected
+                                ? colors.colorBlack
+                                : const Color(0xff666666),
+                        fontSize: 14,
+                        theme: theme.isDarkMode,
+                        fw: isSelected ? 1 : 0,
+                      ),
+                    ),
+                  );
+                },
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemCount: validityTypes.length,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+    Expanded(
+      flex: 1,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only( top: 16, bottom: 8),
+            child: headerTitleText("Market Protection%", theme),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Container(
+              height: 40,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CustomTextFormField(
+                      fillColor: theme.isDarkMode
+                          ? colors.darkGrey
+                          : const Color(0xffF1F3F8),
+                      inputFormate: [
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          if (value.isNotEmpty) {
+                            int parsed = int.tryParse(value) ?? 1;
+                            if (parsed > 20) {
+                              mktProtCtrl.text = "20";
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(context,
+                                    "can't enter greater than 20% of Market Protection"),
+                              );
+                            } else if (parsed < 1) {
+                              mktProtCtrl.text = "1";
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                warningMessage(context,
+                                    "can't enter less than 1% of Market Protection"),
+                              );
+                            }
+                          }
+                        });
+                      },
+                      style: TextWidget.textStyle(
+                        color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        fontSize: 14,
+                        theme: theme.isDarkMode,
+                        fw: 1,
+                      ),
+                      textCtrl: mktProtCtrl,
+                      prefixIcon: Container(
+                        margin: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: theme.isDarkMode
+                              ? const Color(0xff555555)
+                              : colors.colorWhite,
+                        ),
+                        child: SvgPicture.asset(
+                          assets.precentIcon,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorGrey,
+                          fit: BoxFit.scaleDown,
+                        ),
+                      ),
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ],
+),
+
                   const SizedBox(height: 24),
                   Padding(
                       padding: const EdgeInsets.only(left: 16, bottom: 0),
@@ -327,12 +434,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             return const Color(0xff666666);
                           }
                           return theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xff666666);
+                              ? colors.primaryDark
+                              : colors.primaryLight;
                         }),
                         activeColor: theme.isDarkMode
-                            ? colors.colorWhite
-                            : const Color(0xff666666),
+                            ? colors.primaryDark
+                            : colors.primaryLight,
                         value: OrdQtyPref.mktqty,
                         groupValue: QtyPrefer,
                         onChanged: (OrdQtyPref? value) {
@@ -341,18 +448,19 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             qtyCtrl.text = "1";
                           });
                         }),
-                    Text('Minimum Qty',
-                        style: TextWidget.textStyle(
-                            color: theme.isDarkMode
-                                ? Color(QtyPrefer == OrdQtyPref.mktqty
-                                    ? 0xffffffff
-                                    : 0xff666666)
-                                : Color(QtyPrefer == OrdQtyPref.mktqty
-                                    ? 0xff3E4763
-                                    : 0xff666666),
-                            fontSize: 14,
-                            theme: theme.isDarkMode,
-                            fw: 0)),
+                          TextWidget.subText(
+                      text: 'Minimum Qty',
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? Color(QtyPrefer == OrdQtyPref.mktqty
+                              ? 0xffffffff
+                              : 0xff666666)
+                          : Color(QtyPrefer == OrdQtyPref.mktqty
+                              ? 0xff3E4763
+                              : 0xff666666),
+                      fw: 3,
+                    ),
+                     
                     Radio<OrdQtyPref>(
                         fillColor: MaterialStateProperty.resolveWith<Color>(
                             (Set<MaterialState> states) {
@@ -360,8 +468,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             return const Color(0xff666666);
                           }
                           return theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xff666666);
+                              ? colors.primaryDark
+                              : colors.primaryLight;
                         }),
                         activeColor: theme.isDarkMode
                             ? colors.colorWhite
@@ -373,18 +481,18 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             QtyPrefer = value!;
                           });
                         }),
-                    Text("No.of Market Lots",
-                        style: TextWidget.textStyle(
-                            color: theme.isDarkMode
-                                ? Color(QtyPrefer == OrdQtyPref.mktqty
-                                    ? 0xffffffff
-                                    : 0xff666666)
-                                : Color(QtyPrefer == OrdQtyPref.mktqty
-                                    ? 0xff3E4763
-                                    : 0xff666666),
-                            fontSize: 14,
-                            theme: theme.isDarkMode,
-                            fw: 0))
+                    TextWidget.subText(
+                      text: 'No.of Market Lots',
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? Color(QtyPrefer == OrdQtyPref.mktqty
+                              ? 0xffffffff
+                              : 0xff666666)
+                          : Color(QtyPrefer == OrdQtyPref.mktqty
+                              ? 0xff3E4763
+                              : 0xff666666),
+                      fw: 3,
+                    ),
                   ]),
                   if (QtyPrefer == OrdQtyPref.mktlot) ...[
                     Container(
@@ -437,74 +545,75 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                     }
                                   }))
                         ])),
-                    const SizedBox(height: 14),
                   ],
-                  const SizedBox(height: 10),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 16, bottom: 12),
-                      child: headerTitleText("Market Protection%", theme)),
-                  Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      height: 40,
-                      child: Row(children: [
-                        Expanded(
-                            child: CustomTextFormField(
-                                fillColor: theme.isDarkMode
-                                    ? colors.darkGrey
-                                    : const Color(0xffF1F3F8),
-                                inputFormate: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    ScaffoldMessenger.of(context)
-                                        .hideCurrentSnackBar();
-                                    if (value.isNotEmpty) {
-                                      if (int.parse(value) > 20) {
-                                        mktProtCtrl.text = "20";
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                "can't enter greater than 20% of Market Protection"));
-                                      } else if (int.parse(value) < 1) {
-                                        mktProtCtrl.text = "1";
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(warningMessage(
-                                                context,
-                                                "can't enter less than 1% of Market Protection"));
-                                      }
-                                    }
-                                  });
-                                },
-                                style: TextWidget.textStyle(
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                    fontSize: 14,
-                                    theme: theme.isDarkMode,
-                                    fw: 1),
-                                textCtrl: mktProtCtrl,
-                                prefixIcon: Container(
-                                  margin: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      color: theme.isDarkMode
-                                          ? const Color(0xff555555)
-                                          : colors.colorWhite),
-                                  child: SvgPicture.asset(
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorGrey,
-                                      assets.precentIcon,
-                                      fit: BoxFit.scaleDown),
-                                ),
-                                textAlign: TextAlign.start))
-                      ])),
+                  // const SizedBox(height: 14),
+                  // Padding(
+                  //     padding: const EdgeInsets.only(left: 16, bottom: 12),
+                  //     child: headerTitleText("Market Protection%", theme)),
+                  // Container(
+                  //     padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  //     height: 40,
+                  //     width: MediaQuery.of(context).size.width * 0.5,
+                  //     child: Row(children: [
+                  //       Expanded(
+                  //           child: CustomTextFormField(
+                  //               fillColor: theme.isDarkMode
+                  //                   ? colors.darkGrey
+                  //                   : const Color(0xffF1F3F8),
+                  //               inputFormate: [
+                  //                 FilteringTextInputFormatter.digitsOnly
+                  //               ],
+                  //               onChanged: (value) {
+                  //                 setState(() {
+                  //                   ScaffoldMessenger.of(context)
+                  //                       .hideCurrentSnackBar();
+                  //                   if (value.isNotEmpty) {
+                  //                     if (int.parse(value) > 20) {
+                  //                       mktProtCtrl.text = "20";
+                  //                       ScaffoldMessenger.of(context)
+                  //                           .showSnackBar(warningMessage(
+                  //                               context,
+                  //                               "can't enter greater than 20% of Market Protection"));
+                  //                     } else if (int.parse(value) < 1) {
+                  //                       mktProtCtrl.text = "1";
+                  //                       ScaffoldMessenger.of(context)
+                  //                           .showSnackBar(warningMessage(
+                  //                               context,
+                  //                               "can't enter less than 1% of Market Protection"));
+                  //                     }
+                  //                   }
+                  //                 });
+                  //               },
+                  //               style: TextWidget.textStyle(
+                  //                   color: theme.isDarkMode
+                  //                       ? colors.colorWhite
+                  //                       : colors.colorBlack,
+                  //                   fontSize: 14,
+                  //                   theme: theme.isDarkMode,
+                  //                   fw: 1),
+                  //               textCtrl: mktProtCtrl,
+                  //               prefixIcon: Container(
+                  //                 margin: const EdgeInsets.all(12),
+                  //                 decoration: BoxDecoration(
+                  //                     borderRadius: BorderRadius.circular(20),
+                  //                     color: theme.isDarkMode
+                  //                         ? const Color(0xff555555)
+                  //                         : colors.colorWhite),
+                  //                 child: SvgPicture.asset(
+                  //                     color: theme.isDarkMode
+                  //                         ? colors.colorWhite
+                  //                         : colors.colorGrey,
+                  //                     assets.precentIcon,
+                  //                     fit: BoxFit.scaleDown),
+                  //               ),
+                  //               textAlign: TextAlign.start))
+                  //     ])),
+                  // const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText(
                           "Position exit ${expriceType}", theme)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: SizedBox(
@@ -521,19 +630,23 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       FocusScope.of(context).unfocus();
                                     },
                                     style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 0),
-                                        backgroundColor: !theme.isDarkMode
-                                            ? expriceType !=
-                                                    expriceTypes[index]['type']
-                                                ? const Color(0xffF1F3F8)
-                                                : colors.colorBlack
-                                            : expriceType !=
-                                                    expriceTypes[index]['type']
-                                                ? colors.darkGrey
-                                                : colors.colorbluegrey,
-                                        shape: const StadiumBorder()),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 0),
+                                      backgroundColor: !theme.isDarkMode
+                                          ? expriceType !=
+                                                  expriceTypes[index]['type']
+                                              ? const Color(0xffF1F3F8)
+                                              : colors.primaryLight
+                                          : expriceType !=
+                                                  expriceTypes[index]['type']
+                                              ? colors.darkGrey
+                                              : colors.colorbluegrey,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            4), // Set to 0 for sharp edges
+                                      ),
+                                    ),
                                     child: TextWidget.subText(
                                       text: expriceTypes[index]['type'],
                                       theme: false,
@@ -548,7 +661,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                               : colors.colorBlack,
                                       fw: expriceType ==
                                               expriceTypes[index]['type']
-                                          ? 1
+                                          ? 0
                                           : 0,
                                     ));
                               },
@@ -571,10 +684,10 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                         elevation: 0,
                         shadowColor: Colors.transparent,
                         backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
+                            ? colors.primaryDark
+                            : colors.primaryLight,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
+                          borderRadius: BorderRadius.circular(4),
                         )),
                     onPressed: () async {
                       if (mktProtCtrl.text.isEmpty ||
@@ -617,7 +730,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
     return TextWidget.subText(
       text: text,
       theme: theme.isDarkMode,
-      color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+      color:
+          theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
       fw: 0,
     );
   }

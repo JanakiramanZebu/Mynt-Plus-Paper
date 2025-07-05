@@ -10,6 +10,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     hide Consumer, ConsumerWidget;
 import '../../../provider/fund_provider.dart';
+import '../../../provider/ledger_provider copy.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
@@ -76,7 +77,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
     // Use a longer delay to ensure we batch multiple initialization steps
     Future.delayed(const Duration(milliseconds: 50), () {
       if (mounted) {
-        FocusScope.of(context).unfocus();
+        // FocusScope.of(context).unfocus();
         _calculateInitialValues();
         _setupSocketSubscription();
       }
@@ -454,40 +455,39 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
     final holdingProvider = ref.read(portfolioProvider);
 
     // Use a focused Consumer only for the loading status
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      behavior: HitTestBehavior
-          .opaque, // Ensures the gesture detector catches taps on empty areas
-      child: Consumer(builder: (context, watch, _) {
-        final isLoading = ref.watch(portfolioProvider).holdloader;
+    return Consumer(builder: (context, watch, _) {
+      final isLoading = ref.watch(portfolioProvider).holdloader;
 
-        if (isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      if (isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
 
-        return RefreshIndicator(
-          onRefresh: () async {
-            // Unfocus keyboard when refreshing
-            FocusScope.of(context).unfocus();
+      return RefreshIndicator(
+        onRefresh: () async {
+          // Unfocus keyboard when refreshing
+          // FocusScope.of(context).unfocus();
 
-            // Clear all cached widgets when manually refreshing
-            setState(() {
-              _cachedSummarySection = null;
-              _cachedActionButtons = null;
-              _cachedEmptyState = null;
-              _cachedActionButtonsKey = null;
-              _cachedSummaryKey = null;
-              _updatedTokens.clear();
-            });
+          // Clear all cached widgets when manually refreshing
+          setState(() {
+            _cachedSummarySection = null;
+            _cachedActionButtons = null;
+            _cachedEmptyState = null;
+            _cachedActionButtonsKey = null;
+            _cachedSummaryKey = null;
+            _updatedTokens.clear();
+          });
 
-            // Fetch fresh data
-            await ref.read(portfolioProvider).fetchHoldings(context, "Refresh");
+          // Fetch fresh data
+          await ref.read(portfolioProvider).fetchHoldings(context, "Refresh");
 
-            // Recalculate all summaries with the new data
-            _calculateSummaryValues();
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
+          // Recalculate all summaries with the new data
+          _calculateSummaryValues();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            behavior: HitTestBehavior.opaque,
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               // Summary section with investment and P&L information
@@ -495,16 +495,16 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
 
               // Action buttons section - using cached buttons when possible
               _getActionButtons(),
-
+              _buildSearchBar(),
               // Search bar (conditional)
 
               // Holdings list with selective rebuilding
               _buildHoldingsList()
             ]),
           ),
-        );
-      }),
-    );
+        ),
+      );
+    });
   }
 
   // Method to calculate summary values from holdings data
@@ -584,7 +584,10 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
       _cachedSummaryKey = memoKey;
       _cachedSummarySection = RepaintBoundary(
           child: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
         child: Column(
           children: [
             Padding(
@@ -602,33 +605,41 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 text: "1D Change",
                                 theme: false,
                                 color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : const Color(0xff5E6B7D),
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
                                 fw: 3),
                             const SizedBox(height: 4),
                             Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  TextWidget.titleText(
+                                  TextWidget.subText(
                                       text:
                                           "${getFormatter(value: _oneDayChng, v4d: false, noDecimal: false)}",
                                       theme: false,
                                       color: _oneDayChng
                                               .toStringAsFixed(2)
                                               .startsWith("-")
-                                          ? colors.ltpred
-                                          : colors.ltpgreen,
-                                      fw: 0),
+                                          ? theme.isDarkMode
+                                              ? colors.lossDark
+                                              : colors.lossLight
+                                          : theme.isDarkMode
+                                              ? colors.successDark
+                                              : colors.successLight,
+                                      fw: 3),
                                   const SizedBox(width: 4),
-                                  TextWidget.paraText(
+                                  TextWidget.subText(
                                       text:
                                           " (${_oneDayChngPer.isNaN ? "0.00" : _oneDayChngPer.toStringAsFixed(2)}%)",
                                       theme: false,
                                       color: _oneDayChngPer
                                               .toStringAsFixed(2)
                                               .startsWith("-")
-                                          ? colors.ltpred
-                                          : colors.ltpgreen,
+                                          ? theme.isDarkMode
+                                              ? colors.lossDark
+                                              : colors.lossLight
+                                          : theme.isDarkMode
+                                              ? colors.successDark
+                                              : colors.successLight,
                                       fw: 3),
                                 ])
                           ]),
@@ -639,39 +650,47 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                               text: "Total P&L",
                               theme: false,
                               color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : const Color(0xff5E6B7D),
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                               fw: 3),
                           const SizedBox(height: 4),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              TextWidget.titleText(
+                              TextWidget.subText(
+                                  text:
+                                      "(${_totPnlPercHolding == "NaN" ? 0.00 : _totPnlPercHolding}%)",
+                                  theme: false,
+                                  color: _totPnlPercHolding.startsWith("-")
+                                      ? theme.isDarkMode
+                                          ? colors.lossDark
+                                          : colors.lossLight
+                                      : theme.isDarkMode
+                                          ? colors.successDark
+                                          : colors.successLight,
+                                  fw: 3),
+                              const SizedBox(width: 4),
+                              TextWidget.headText(
                                   text:
                                       "${getFormatter(value: _totalPnlHolding, v4d: false, noDecimal: false)}",
                                   theme: false,
                                   color: _totalPnlHolding
                                           .toString()
                                           .startsWith("-")
-                                      ? colors.ltpred
-                                      : colors.ltpgreen,
+                                      ? theme.isDarkMode
+                                          ? colors.lossDark
+                                          : colors.lossLight
+                                      : theme.isDarkMode
+                                          ? colors.successDark
+                                          : colors.successLight,
                                   fw: 0),
-                              const SizedBox(width: 4),
-                              TextWidget.paraText(
-                                  text:
-                                      "(${_totPnlPercHolding == "NaN" ? 0.00 : _totPnlPercHolding}%)",
-                                  theme: false,
-                                  color: _totPnlPercHolding.startsWith("-")
-                                      ? colors.ltpred
-                                      : colors.ltpgreen,
-                                  fw: 3),
                             ],
                           ),
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 15),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -682,8 +701,8 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 text: "Invested",
                                 theme: false,
                                 color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : const Color(0xff5E6B7D),
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
                                 fw: 3),
                             const SizedBox(height: 4),
                             TextWidget.titleText(
@@ -691,9 +710,9 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     "${getFormatter(value: _invest, v4d: false, noDecimal: false)}",
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : const Color(0xff000000),
-                                fw: 0),
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                fw: 3),
                           ],
                         ),
                         Column(
@@ -703,8 +722,8 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 text: "Current",
                                 theme: false,
                                 color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : const Color(0xff5E6B7D),
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
                                 fw: 3),
                             const SizedBox(height: 4),
                             TextWidget.titleText(
@@ -712,19 +731,19 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     "${getFormatter(value: _totalCurrentVal, v4d: false, noDecimal: false)}",
                                 theme: theme.isDarkMode,
                                 color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : const Color(0xff000000),
-                                fw: 0),
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                                fw: 3),
                           ],
                         ),
                       ]),
                 ],
               ),
             ),
-            const SizedBox(height: 6),
-            Divider(
-              color: colors.colorDivider,
-            ),
+            const SizedBox(height: 15),
+            // Divider(
+            //   color: colors.colorDivider,
+            // ),
           ],
         ),
       ));
@@ -770,6 +789,12 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
     final holdingProvider = ref.read(portfolioProvider);
     final mf = ref.read(mfProvider);
     final theme = ref.read(themeProvider);
+    final ledgerdate = ref.watch(ledgerProvider);
+    final showSearch = ref.watch(portfolioProvider).showSearchHold;
+
+    if (showSearch) {
+      return const SizedBox.shrink();
+    }
 
     return RepaintBoundary(
         child: Padding(
@@ -779,144 +804,219 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
               children: [
                 SizedBox(
                   height: 40,
-                  child: TextFormField(
-                      controller: holdingProvider.holdingSearchCtrl,
-                      style: TextWidget.textStyle(
-                          fontSize: 14, theme: theme.isDarkMode, fw: 1),
-                      keyboardType: TextInputType.text,
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [
-                        UpperCaseTextFormatter(),
-                        NoEmojiInputFormatter(),
-                        FilteringTextInputFormatter.deny(
-                            RegExp('[π£•₹€℅™∆√¶/.,]'))
-                      ],
-                      decoration: InputDecoration(
-                          fillColor: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8).withOpacity(0.5),
-                          filled: true,
-                          hintStyle: TextWidget.textStyle(
-                              fontSize: 14,
-                              theme: theme.isDarkMode,
-                              color: const Color(0xff000000),
-                              fw: 3),
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SvgPicture.asset(assets.searchIcon,
-                                color: const Color(0xff586279),
-                                fit: BoxFit.scaleDown,
-                                width: 20),
-                          ),
-                          suffixIcon: holdingProvider
-                                  .holdingSearchCtrl.text.isNotEmpty
-                              ? Material(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                      color: colors.searchBg,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: Row(
+                            children: [
+                              Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                clipBehavior: Clip.hardEdge,
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  splashColor: theme.isDarkMode
+                                      ? colors.splashColorDark
+                                      : colors.splashColorLight,
+                                  highlightColor: theme.isDarkMode
+                                      ? colors.highlightDark
+                                      : colors.highlightLight,
+                                  onTap: () {
+                                    Future.delayed(
+                                        const Duration(milliseconds: 150),
+                                        () async {
+                                      ref
+                                          .read(portfolioProvider)
+                                          .showHoldSearch(true);
+                                      setState(() {
+                                        _cachedSummarySection = null;
+                                        _cachedActionButtons = null;
+                                        _cachedEmptyState = null;
+                                        _cachedActionButtonsKey = null;
+                                        _cachedSummaryKey = null;
+                                      });
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: SvgPicture.asset(
+                                      assets.searchIcon,
+                                      color: colors.textPrimaryLight,
+                                      width: 20,
+                                      fit: BoxFit.scaleDown,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (hasHoldings &&
+                                  holdingProvider.holdingsModel!.length > 1)
+                                Material(
                                   color: Colors.transparent,
                                   shape: const CircleBorder(),
                                   clipBehavior: Clip.hardEdge,
                                   child: InkWell(
                                     customBorder: const CircleBorder(),
-                                    splashColor: Colors.black.withOpacity(0.15),
-                                    highlightColor:
-                                        Colors.black.withOpacity(0.08),
+                                    splashColor: theme.isDarkMode
+                                        ? colors.splashColorDark
+                                        : colors.splashColorLight,
+                                    highlightColor: theme.isDarkMode
+                                        ? colors.highlightDark
+                                        : colors.highlightLight,
                                     onTap: () async {
                                       Future.delayed(
                                           const Duration(milliseconds: 150),
-                                          () {
-                                        holdingProvider.clearHoldSearch();
-                                        if (holdingProvider
-                                            .holdingSearchCtrl.text.isEmpty) {
-                                          holdingProvider.showHoldSearch(false);
-                                        }
-                                        // Clear cached widgets when search is cleared
-                                        setState(() {
-                                          _cachedSummarySection = null;
-                                          _cachedActionButtons = null;
-                                          _cachedEmptyState = null;
-                                          _cachedActionButtonsKey = null;
-                                          _cachedSummaryKey = null;
-                                        });
+                                          () async {
+                                        await showModalBottomSheet(
+                                          useSafeArea: true,
+                                          isScrollControlled: true,
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.vertical(
+                                                top: Radius.circular(16)),
+                                          ),
+                                          context: context,
+                                          builder: (context) =>
+                                              const HoldingsScripFilterBottomSheet(),
+                                        );
                                       });
                                     },
-                                    child: SvgPicture.asset(assets.removeIcon,
-                                        fit: BoxFit.scaleDown, width: 20),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: SvgPicture.asset(
+                                        assets.filterLinesDark,
+                                        width: 18,
+                                        color: colors.textPrimaryLight,
+                                        fit: BoxFit.scaleDown,
+                                      ),
+                                    ),
                                   ),
-                                )
-                              : hasHoldings &&
-                                      holdingProvider.holdingsModel!.length > 1
-                                  ? Material(
-                                      color: Colors.transparent,
-                                      shape: const CircleBorder(),
-                                      clipBehavior: Clip.hardEdge,
-                                      child: InkWell(
-                                          customBorder: const CircleBorder(),
-                                          splashColor:
-                                              Colors.black.withOpacity(0.15),
-                                          highlightColor:
-                                              Colors.black.withOpacity(0.08),
-                                          onTap: () async {
-                                            FocusScope.of(context).unfocus();
-                                            showModalBottomSheet(
-                                                useSafeArea: true,
-                                                isScrollControlled: true,
-                                                shape:
-                                                    const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.vertical(
-                                                                top: Radius
-                                                                    .circular(
-                                                                        16))),
-                                                context: context,
-                                                builder: (context) {
-                                                  return const HoldingsScripFilterBottomSheet();
-                                                });
-                                          },
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: SvgPicture.asset(
-                                                width: 20,
-                                                fit: BoxFit.scaleDown,
-                                                assets.filterLines,
-                                                color: theme.isDarkMode
-                                                    ? const Color(0xffBDBDBD)
-                                                    : colors.colorGrey),
-                                          )),
-                                    )
-                                  : null,
-                          enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(20)),
-                          disabledBorder: InputBorder.none,
-                          focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(20)),
-                          hintText: "Search",
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 5, vertical: 5),
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(20))),
-                      onChanged: (value) async {
-                        // Enable search mode when user starts typing
-                        if (value.isNotEmpty) {
-                          holdingProvider.showHoldSearch(true);
-                        } else {
-                          // Disable search mode when field is empty
-                          holdingProvider.showHoldSearch(false);
-                        }
-
-                        // Perform the search
-                        holdingProvider.holdingSearch(value, context);
-
-                        // Clear cached widgets to force rebuild with new data
-                        setState(() {
-                          _cachedSummarySection = null;
-                          _cachedActionButtons = null;
-                          _cachedEmptyState = null;
-                          _cachedActionButtonsKey = null;
-                          _cachedSummaryKey = null;
-                        });
-                      }),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            if (hasHoldings && showEdis)
+                              Material(
+                                color: Colors.transparent,
+                                shape: const RoundedRectangleBorder(),
+                                clipBehavior: Clip.hardEdge,
+                                child: InkWell(
+                                  customBorder: const RoundedRectangleBorder(),
+                                  splashColor: theme.isDarkMode
+                                      ? colors.splashColorDark
+                                      : colors.splashColorLight,
+                                  highlightColor: theme.isDarkMode
+                                      ? colors.highlightDark
+                                      : colors.highlightLight,
+                                  onTap: () async {
+                                    Future.delayed(Duration(milliseconds: 150),
+                                        () async {
+                                      await ref
+                                          .read(fundProvider)
+                                          .fetchHstoken(context);
+                                      await ref
+                                          .read(fundProvider)
+                                          .eDis(context);
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5),
+                                    child: TextWidget.paraText(
+                                      text: "E-DIS",
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.secondaryDark
+                                          : colors.secondaryLight,
+                                      fw: 3,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            Material(
+                              color: Colors.transparent,
+                              shape: const RoundedRectangleBorder(),
+                              clipBehavior: Clip.hardEdge,
+                              child: InkWell(
+                                customBorder: const RoundedRectangleBorder(),
+                                splashColor: theme.isDarkMode
+                                    ? colors.splashColorDark
+                                    : colors.splashColorLight,
+                                highlightColor: theme.isDarkMode
+                                    ? colors.highlightDark
+                                    : colors.highlightLight,
+                                onTap: () async {
+                                  Future.delayed(Duration(milliseconds: 150),
+                                      () async {
+                                    if (ledgerdate.pledgeandunpledge == null) {
+                                      await ledgerdate.getCurrentDate("pandu");
+                                      ledgerdate
+                                          .fetchpledgeandunpledge(context);
+                                    }
+                                    Navigator.pushNamed(
+                                        context, Routes.pledgeandun,
+                                        arguments: "DDDDD");
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  child: TextWidget.paraText(
+                                    text: "Pledge",
+                                    theme: false,
+                                    color: theme.isDarkMode
+                                        ? colors.secondaryDark
+                                        : colors.secondaryLight,
+                                    fw: 3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Material(
+                              color: Colors.transparent,
+                              shape: const RoundedRectangleBorder(),
+                              clipBehavior: Clip.hardEdge,
+                              child: InkWell(
+                                customBorder: const RoundedRectangleBorder(),
+                                splashColor: theme.isDarkMode
+                                    ? colors.splashColorDark
+                                    : colors.splashColorLight,
+                                highlightColor: theme.isDarkMode
+                                    ? colors.highlightDark
+                                    : colors.highlightLight,
+                                onTap: () async {
+                                  Future.delayed(Duration(milliseconds: 150),
+                                      () async {
+                                    await mf.mfApicallinit(context, 2);
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  child: TextWidget.paraText(
+                                    text: "My MF",
+                                    theme: false,
+                                    color: theme.isDarkMode
+                                        ? colors.secondaryDark
+                                        : colors.secondaryLight,
+                                    fw: 3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
                 ),
               ],
             )));
@@ -943,6 +1043,128 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   //   });
   // }
 
+  Widget _buildSearchBar() {
+    final holdingProvider = ref.read(portfolioProvider);
+
+    // Only watch the search visibility state with a focused Consumer
+    return Consumer(builder: (context, watch, _) {
+      final showSearch = ref.watch(portfolioProvider).showSearchHold;
+
+      if (!showSearch) {
+        return const SizedBox.shrink();
+      }
+
+      // Save theme reference to prevent repeated lookups
+      final theme = ref.read(themeProvider);
+
+      return RepaintBoundary(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: SizedBox(
+            height: 50,
+            child: TextFormField(
+                autofocus: true,
+                controller: holdingProvider.holdingSearchCtrl,
+                style: TextWidget.textStyle(
+                    fontSize: 14, theme: theme.isDarkMode, fw: 1),
+                keyboardType: TextInputType.text,
+                textCapitalization: TextCapitalization.characters,
+                inputFormatters: [
+                  UpperCaseTextFormatter(),
+                  NoEmojiInputFormatter(),
+                  FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/.,]'))
+                ],
+                decoration: InputDecoration(
+                    hintText: "Search",
+                    hintStyle: TextWidget.textStyle(
+                        fontSize: 14,
+                        theme: theme.isDarkMode,
+                        fw: 0,
+                        color: colors.textSecondaryLight),
+                    fillColor: colors.searchBg,
+                    filled: true,
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SvgPicture.asset(assets.searchIcon,
+                          color: colors.textPrimaryLight,
+                          fit: BoxFit.scaleDown,
+                          width: 20),
+                    ),
+                    suffixIcon: Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.hardEdge,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        splashColor: theme.isDarkMode
+                            ? colors.splashColorDark
+                            : colors.splashColorLight,
+                        highlightColor: theme.isDarkMode
+                            ? colors.highlightDark
+                            : colors.highlightLight,
+                        onTap: () async {
+                          Future.delayed(const Duration(milliseconds: 150), () {
+                            holdingProvider.clearHoldSearch();
+                            if (holdingProvider
+                                .holdingSearchCtrl.text.isEmpty) {
+                              holdingProvider.showHoldSearch(false);
+                            }
+                            // Clear cached widgets when search is cleared
+                            setState(() {
+                              _cachedSummarySection = null;
+                              _cachedActionButtons = null;
+                              _cachedEmptyState = null;
+                              _cachedActionButtonsKey = null;
+                              _cachedSummaryKey = null;
+                            });
+                          });
+                        },
+                        child: SvgPicture.asset(assets.removeIcon,
+                            fit: BoxFit.scaleDown, width: 20),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(20)),
+                    disabledBorder: InputBorder.none,
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(20)),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                    border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(20))),
+                onChanged: (value) {
+                  // Enable search mode when user starts typing
+                  if (value.isNotEmpty) {
+                    holdingProvider.showHoldSearch(true);
+                  } else {
+                    // Disable search mode when field is empty
+                    holdingProvider.showHoldSearch(false);
+                  }
+
+                  // Perform the search
+                  holdingProvider.holdingSearch(value, context);
+
+                  // Clear cached widgets to force rebuild with new data
+                  setState(() {
+                    _cachedSummarySection = null;
+                    _cachedActionButtons = null;
+                    _cachedEmptyState = null;
+                    _cachedActionButtonsKey = null;
+                    _cachedSummaryKey = null;
+                  });
+                }),
+          ),
+        ),
+      );
+    });
+  }
+
   // Holdings list section
   Widget _buildHoldingsList() {
     return _buildHoldingsListView();
@@ -951,12 +1173,14 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   // Get a cached divider container based on theme
   Widget _getDividerContainer(bool isDarkMode) {
     if (isDarkMode) {
-      _cachedDarkDivider ??=
-          Container(color: const Color(0xffECEDEE), height: 1);
+      _cachedDarkDivider ??= Container(
+          color: isDarkMode ? colors.dividerDark : colors.dividerLight,
+          height: 1);
       return _cachedDarkDivider!;
     } else {
-      _cachedLightDivider ??=
-          Container(color: const Color(0xffECEDEE), height: 1);
+      _cachedLightDivider ??= Container(
+          color: isDarkMode ? colors.dividerDark : colors.dividerLight,
+          height: 1);
       return _cachedLightDivider!;
     }
   }
@@ -972,14 +1196,15 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
 
       // Watch both search state and actual holdings data
       final showSearch = portfolioData.showSearchHold;
+      final searchText = portfolioData.holdingSearchCtrl.text;
 
       // Get the appropriate list based on search state - this will now update when holdings API updates
-      final items = showSearch
+      final items = showSearch && searchText.isNotEmpty
           ? (portfolioData.holdingSearchItem ?? [])
           : (portfolioData.holdingsModel ?? []);
 
-      // This will rebuild if the entire holdings list is refreshed from API
-      if (items.isEmpty) {
+      // Show "No Data Found" only when search is active with text and no results found
+      if (showSearch && searchText.isNotEmpty && items.isEmpty) {
         if (_cachedEmptyState == null) {
           _cachedEmptyState = const SizedBox(
             height: 400,
@@ -989,54 +1214,50 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
         return _cachedEmptyState!;
       }
 
+      // Don't show anything if no holdings data at all (not in search mode)
+      if (!showSearch && items.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
       // Pre-cache the divider containers
       final divider = _getDividerContainer(isDarkMode);
 
       // Use a more efficient ListView with selective rebuilding
       // Wrap in RepaintBoundary to isolate the whole list
       return RepaintBoundary(
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          behavior: HitTestBehavior
-              .opaque, // Ensures taps on list area unfocus keyboard
-          child: ListView.builder(
-            // Use a key that only changes when the list fundamentally changes
-            key: ValueKey('holdings-list-${items.length}'),
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemBuilder: (BuildContext context, int idx) {
-              final index = idx ~/ 2;
+        child: ListView.builder(
+          // Use a key that only changes when the list fundamentally changes
+          key: ValueKey('holdings-list-${items.length}'),
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemBuilder: (BuildContext context, int idx) {
+            final index = idx ~/ 2;
 
-              // Return cached divider for odd indices with tap handler to unfocus keyboard
-              if (idx.isOdd) {
-                return GestureDetector(
-                  onTap: () => FocusScope.of(context).unfocus(),
-                  behavior: HitTestBehavior.opaque,
-                  child: divider,
-                );
-              }
+            // Return cached divider for odd indices with tap handler to unfocus keyboard
+            if (idx.isOdd) {
+              return divider;
+            }
 
-              final holding = items[index];
-              if (holding.exchTsym == null || holding.exchTsym!.isEmpty) {
-                return const SizedBox.shrink();
-              }
+            final holding = items[index];
+            if (holding.exchTsym == null || holding.exchTsym!.isEmpty) {
+              return const SizedBox.shrink();
+            }
 
-              final token = holding.exchTsym![0].token;
-              final isUpdated = _updatedTokens.containsKey(token);
+            final token = holding.exchTsym![0].token;
+            final isUpdated = _updatedTokens.containsKey(token);
 
-              // Use a consistent key that only changes when the data changes
-              return _HoldingItemWrapper(
-                key: ValueKey('holding-$token-$isUpdated'),
-                holding: holding,
-                theme: theme,
-                onTap:
-                    () {}, // Empty function as navigation is now handled inside the wrapper
-                onLongPress:
-                    () {}, // Empty function as it's handled inside the wrapper
-              );
-            },
-            itemCount: items.length * 2 - 1,
-          ),
+            // Use a consistent key that only changes when the data changes
+            return _HoldingItemWrapper(
+              key: ValueKey('holding-$token-$isUpdated'),
+              holding: holding,
+              theme: theme,
+              onTap:
+                  () {}, // Empty function as navigation is now handled inside the wrapper
+              onLongPress:
+                  () {}, // Empty function as it's handled inside the wrapper
+            );
+          },
+          itemCount: items.length * 2 - 1,
         ),
       );
     });
@@ -1076,7 +1297,6 @@ class _HoldingItemWrapperState extends ConsumerState<_HoldingItemWrapper> {
         child: InkWell(
           onTap: () async {
             // Unfocus keyboard when tapping on holding item
-            FocusScope.of(newContext).unfocus();
 
             // Prevent multiple navigation events on rapid taps.
             if (_isNavigating) return;
@@ -1103,7 +1323,7 @@ class _HoldingItemWrapperState extends ConsumerState<_HoldingItemWrapper> {
           },
           onLongPress: () {
             // Unfocus keyboard when long pressing on holding item
-            FocusScope.of(newContext).unfocus();
+            // FocusScope.of(context).unfocus();
             // Use the newer context from Builder to avoid deactivated widget issues
             // Navigator.pushNamed(newContext, Routes.holdingExit);
           },

@@ -200,44 +200,45 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                     Row(
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment
-                                                              .end,
+                                                              .center,
                                                       children: [
-                                                        TextWidget.titleText(
+                                                        TextWidget.headText(
                                                           text:
                                                               "${widget.positionList.symbol} ",
                                                           fw: 0,
-                                                          color: theme.isDarkMode
+                                                          color: theme
+                                                                  .isDarkMode
                                                               ? colors
-                                                                  .colorWhite
+                                                                  .textPrimaryDark
                                                               : colors
-                                                                  .colorBlack,
+                                                                  .textPrimaryLight,
                                                           theme: false,
                                                         ),
-                                                        TextWidget.subText(
-                                                          text:
-                                                              "${widget.positionList.expDate}",
-                                                          fw: 3,
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          theme: false,
-                                                        ),
-                                                        TextWidget.subText(
-                                                          text:
-                                                              "${widget.positionList.option} ",
-                                                          fw: 3,
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          theme: false,
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                        ),
+                                                        // TextWidget.subText(
+                                                        //   text:
+                                                        //       "${widget.positionList.expDate}",
+                                                        //   fw: 3,
+                                                        //   color: theme.isDarkMode
+                                                        //       ?  colors
+                                                        //           .textPrimaryDark
+                                                        //       : colors
+                                                        //           .textPrimaryLight,
+                                                        //   theme: false,
+                                                        // ),
+                                                        // TextWidget.subText(
+                                                        //   text:
+                                                        //       "${widget.positionList.option} ",
+                                                        //   fw: 3,
+                                                        //   color: theme.isDarkMode
+                                                        //       ?  colors
+                                                        //           .textPrimaryDark
+                                                        //       : colors
+                                                        //           .textPrimaryLight,
+                                                        //   theme: false,
+                                                        //   textOverflow:
+                                                        //       TextOverflow
+                                                        //           .ellipsis,
+                                                        // ),
                                                         CustomExchBadge(
                                                             exch:
                                                                 "${widget.positionList.exch}"),
@@ -247,7 +248,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                     TextWidget.titleText(
                                                       text:
                                                           "${widget.positionList.lp}",
-                                                      fw: 1,
+                                                      fw: 3,
                                                       color: (widget.positionList
                                                                           .lp ==
                                                                       "null" ||
@@ -257,13 +258,22 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                               widget.positionList
                                                                       .lp ==
                                                                   "0.00"
-                                                          ? colors.ltpgrey
+                                                          ? colors
+                                                              .textSecondaryLight
                                                           : widget.positionList
                                                                   .lp!
                                                                   .startsWith(
                                                                       "-")
-                                                              ? colors.darkred
-                                                              : colors.ltpgreen,
+                                                              ? theme.isDarkMode
+                                                                  ? colors
+                                                                      .lossDark
+                                                                  : colors
+                                                                      .lossLight
+                                                              : theme.isDarkMode
+                                                                  ? colors
+                                                                      .successDark
+                                                                  : colors
+                                                                      .successLight,
                                                       theme: false,
                                                     ),
                                                     const SizedBox(height: 4),
@@ -272,8 +282,10 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                           "${double.parse("${widget.positionList.chng ?? 0.00}").toStringAsFixed(2)} (${widget.positionList.perChange ?? 0.00}%)",
                                                       fw: 3,
                                                       color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
                                                       // (widget.positionList
                                                       //                     .chng ==
                                                       //                 "null" ||
@@ -313,8 +325,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                         assets.rightarrowcur,
                                                         width: 12,
                                                         height: 12,
-                                                        color: const Color(
-                                                            0xff777777),
+                                                        color: colors.iconColor,
                                                       ),
                                                     ),
                                                   ],
@@ -344,16 +355,13 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                 child: Container(
                                                   height: 40,
                                                   decoration: BoxDecoration(
-                                                    color:
-                                                        const Color(0xffF1F3F8),
+                                                    color: colors.btnBg,
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             5),
                                                     border: Border.all(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorGrey
-                                                          : const Color(
-                                                              0xff0037B7),
+                                                      color: colors
+                                                          .btnOutlinedBorder,
                                                       width: 1,
                                                     ),
                                                   ),
@@ -364,11 +372,17 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                     child: InkWell(
                                                       customBorder:
                                                           const BeveledRectangleBorder(),
-                                                      splashColor: Colors.black
-                                                          .withOpacity(0.15),
-                                                      highlightColor: Colors
-                                                          .black
-                                                          .withOpacity(0.08),
+                                                      splashColor: theme
+                                                              .isDarkMode
+                                                          ? colors
+                                                              .splashColorDark
+                                                          : colors
+                                                              .splashColorLight,
+                                                      highlightColor: theme
+                                                              .isDarkMode
+                                                          ? colors.highlightDark
+                                                          : colors
+                                                              .highlightLight,
                                                       onTap: () async {
                                                         await ref
                                                             .read(
@@ -438,8 +452,12 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                             TextWidget.subText(
                                                           text: "Add",
                                                           theme: false,
-                                                          color: const Color(
-                                                              0xff0037B7),
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .primaryDark
+                                                              : colors
+                                                                  .primaryLight,
                                                           fw: 1,
                                                         ),
                                                       ),
@@ -474,11 +492,17 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                     child: InkWell(
                                                       customBorder:
                                                           const BeveledRectangleBorder(),
-                                                      splashColor: Colors.black
-                                                          .withOpacity(0.15),
-                                                      highlightColor: Colors
-                                                          .black
-                                                          .withOpacity(0.08),
+                                                      splashColor: theme
+                                                              .isDarkMode
+                                                          ? colors
+                                                              .splashColorDark
+                                                          : colors
+                                                              .splashColorLight,
+                                                      highlightColor: theme
+                                                              .isDarkMode
+                                                          ? colors.highlightDark
+                                                          : colors
+                                                              .highlightLight,
                                                       onTap: () async {
                                                         await ref
                                                             .read(
@@ -543,8 +567,12 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                             TextWidget.subText(
                                                           text: "Exit",
                                                           theme: false,
-                                                          color: const Color(
-                                                              0xff0037B7),
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .primaryDark
+                                                              : colors
+                                                                  .primaryLight,
                                                           fw: 1,
                                                         ),
                                                       ),
@@ -584,10 +612,12 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                               child: InkWell(
                                                 customBorder:
                                                     const BeveledRectangleBorder(),
-                                                splashColor: Colors.black
-                                                    .withOpacity(0.15),
-                                                highlightColor: Colors.black
-                                                    .withOpacity(0.08),
+                                                splashColor: theme.isDarkMode
+                                                    ? colors.splashColorDark
+                                                    : colors.splashColorLight,
+                                                highlightColor: theme.isDarkMode
+                                                    ? colors.highlightDark
+                                                    : colors.highlightLight,
                                                 onTap: () {
                                                   showDialog(
                                                     context: context,
@@ -610,20 +640,16 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                             .convertpositionicon,
                                                         width: 14,
                                                         height: 14,
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : const Color(
-                                                                0xff0037B7),
+                                                        color: colors
+                                                            .btnOutlinedBorder,
                                                       ),
                                                       const SizedBox(width: 6),
                                                       TextWidget.subText(
                                                         text:
                                                             "Convert Position",
                                                         fw: 0,
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : const Color(
-                                                                0xff0037B7),
+                                                        color:
+                                                            colors.primaryLight,
                                                         theme: false,
                                                       ),
                                                     ],
@@ -634,17 +660,17 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                           ],
                                         ),
 
-                                        const SizedBox(height: 20),
+                                        const SizedBox(height: 25),
                                         // const SizedBox(height: 10),
-                                        TextWidget.titleText(
-                                          text: "Details",
-                                          color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : const Color(0xff666666),
-                                          fw: 1,
-                                          theme: false,
-                                        ),
-                                        const SizedBox(height: 24),
+                                        // TextWidget.titleText(
+                                        //   text: "Details",
+                                        //   color: theme.isDarkMode
+                                        //       ? colors.colorWhite
+                                        //       : const Color(0xff666666),
+                                        //   fw: 1,
+                                        //   theme: false,
+                                        // ),
+                                        // const SizedBox(height: 24),
                                         Row(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.end,
@@ -655,8 +681,10 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                               text: positions.isNetPnl
                                                   ? "P&L"
                                                   : "MTM",
-                                              fw: 0,
-                                              color: const Color(0xff666666),
+                                              fw: 3,
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
                                               theme: false,
                                             ),
                                             if (positions.isNetPnl)
@@ -670,21 +698,33 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                     ? widget.positionList
                                                             .profitNloss!
                                                             .startsWith("-")
-                                                        ? colors.darkred
+                                                        ? theme.isDarkMode
+                                                            ? colors.lossDark
+                                                            : colors.lossLight
                                                         : widget.positionList
                                                                     .profitNloss ==
                                                                 "0.00"
-                                                            ? colors.ltpgrey
-                                                            : colors.ltpgreen
+                                                            ? colors
+                                                                .textSecondaryLight
+                                                            : theme.isDarkMode
+                                                                ? colors
+                                                                    .successDark
+                                                                : colors
+                                                                    .successLight
                                                     : widget.positionList.rpnl!
                                                             .startsWith("-")
                                                         ? colors.darkred
                                                         : widget.positionList
                                                                     .rpnl ==
                                                                 "0.00"
-                                                            ? colors.ltpgrey
-                                                            : colors.ltpgreen,
-                                                fw: 0,
+                                                            ? colors
+                                                                .textSecondaryLight
+                                                            : theme.isDarkMode
+                                                                ? colors
+                                                                    .successDark
+                                                                : colors
+                                                                    .successLight,
+                                                fw: 3,
                                               )
                                             else
                                               TextWidget.headText(
@@ -706,8 +746,8 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                         Divider(
                                             thickness: 1,
                                             color: theme.isDarkMode
-                                                ? colors.darkColorDivider
-                                                : const Color(0xffEBEEF3)),
+                                                ? colors.dividerDark
+                                                : colors.dividerLight),
                                         const SizedBox(height: 8),
                                         _buildInfoRow(
                                             "Net Qty",
@@ -772,23 +812,21 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
               text: title1,
               theme: false,
               color: theme.isDarkMode
-                  ? colors.colorWhite
-                  : const Color(0xff666666),
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
               fw: 0),
           TextWidget.subText(
               text: value1,
               theme: false,
               color: theme.isDarkMode
-                  ? colors.colorWhite
-                  : const Color(0xff666666),
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
               fw: 0),
         ],
       ),
       const SizedBox(height: 8),
       Divider(
-          color: theme.isDarkMode
-              ? colors.darkColorDivider
-              : const Color(0xffEBEEF3),
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           thickness: 1)
     ]);
   }

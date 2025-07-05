@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
+import '../../provider/ledger_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/market_watch_provider.dart';
@@ -39,7 +40,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
           .read(portfolioProvider)
           .changeTabIndex(ref.read(portfolioProvider).portTab.index);
 
-      ref.read(portfolioProvider).tabSize();
+      // ref.read(portfolioProvider).tabSize(ref.read(themeProvider));
       if (ref.read(portfolioProvider).selectedTab == 0) {
         ref.read(portfolioProvider).cancelTimer();
         ref
@@ -62,6 +63,11 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
             .read(portfolioProvider)
             .requestallHoldings(context: context, isSubscribe: false);
 
+        if (ref.read(ledgerProvider).pledgeandunpledge == null) {
+          ref.read(ledgerProvider).getCurrentDate("pandu");
+          ref.read(ledgerProvider).fetchpledgeandunpledge(context);
+        }
+
         ref.read(portfolioProvider).timerfunc();
       } else if (ref.read(portfolioProvider).selectedTab == 2) {
         // Orders tab - handle order-related logic
@@ -75,13 +81,15 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
         ref
             .read(portfolioProvider)
             .requestallHoldings(context: context, isSubscribe: false);
-        
+
         // Load order-related data
         ref.read(orderProvider).fetchOrderBook(context, false);
         ref.read(orderProvider).fetchTradeBook(context);
         ref.read(orderProvider).fetchSipOrderHistory(context);
         ref.read(marketWatchProvider).fetchPendingAlert(context);
-        ref.read(orderProvider).requestWSOrderBook(context: context, isSubscribe: true);
+        ref
+            .read(orderProvider)
+            .requestWSOrderBook(context: context, isSubscribe: true);
       } else if (ref.read(portfolioProvider).selectedTab == 3) {
         ref.read(portfolioProvider).cancelTimer();
 
@@ -122,35 +130,120 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
       final portfolio = ref.watch(portfolioProvider);
       final theme = ref.read(themeProvider);
       return Column(children: [
-        SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: 40,
-            child: TabBar(
-                // tabAlignment: portfolio.mfHoldingsModel!.isNotEmpty &&
-                //             portfolio.mfHoldingsModel![0].stat != "Not_Ok" ||
-                //         portfolio.allholds.isNotEmpty
-                //     ? TabAlignment.start
-                //     : TabAlignment.fill,
+        Column(
+          children: [
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: 40,
+              child: TabBar(
+                onTap: (index) {
+                  setState(() {});
+                },
                 tabAlignment: TabAlignment.start,
                 indicatorSize: TabBarIndicatorSize.tab,
-                // isScrollable: portfolio.mfHoldingsModel!.isNotEmpty &&
-                //         portfolio.mfHoldingsModel![0].stat != "Not_Ok" ||
-                //     portfolio.allholds.isNotEmpty,
                 isScrollable: true,
-                indicatorColor:
-                    theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
-                unselectedLabelColor: const Color(0XFF777777),
+                indicatorColor: theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight,
+                unselectedLabelColor: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
                 unselectedLabelStyle: TextWidget.textStyle(
-                    fontSize: 14,
-                    theme: theme.isDarkMode,
-                    fw: 00,
-                    letterSpacing: -0.28),
-                labelColor:
-                    theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
-                labelStyle: TextWidget.textStyle(
-                    fontSize: 14, theme: theme.isDarkMode, fw: 00),
+                  fontSize: 14,
+                  theme: false,
+                  fw: 3,
+                ),
+                labelColor: theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight,
+                labelStyle:
+                    TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
                 controller: portfolio.portTab,
-                tabs: portfolio.portTabName)),
+                tabs: List.generate(portfolio.portTabName.length, (index) {
+                  return AnimatedBuilder(
+                    animation: portfolio.portTab.animation!,
+                    builder: (context, child) {
+                      final isSelected = portfolio.portTab.index == index;
+                      final animationValue = portfolio.portTab.animation!.value;
+                      final isTransitioning =
+                          (animationValue - index).abs() < 1;
+
+                      final color = isTransitioning
+                          ? Color.lerp(
+                              theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              theme.isDarkMode
+                                  ? colors.secondaryDark
+                                  : colors.secondaryLight,
+                              1 - (animationValue - index).abs())
+                          : isSelected
+                              ? theme.isDarkMode
+                                  ? colors.secondaryDark
+                                  : colors.secondaryLight
+                              : theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight;
+
+                      return Tab(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            TextWidget.subText(
+                              text: index == 0
+                                  ? "Position${portfolio.allPostionList.isNotEmpty ? "s" : ""}"
+                                  : index == 1
+                                      ? "Holding${portfolio.holdingsModel!.isNotEmpty ? "s" : ""}"
+                                      : index == 2
+                                          ? "Orders"
+                                          : "Funds",
+                              theme: false,
+                              color: color,
+                              fw: isSelected ? 2 : null,
+                            ),
+                            const SizedBox(width: 5),
+                            if (index == 0 || index == 1)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: colors.btnBg,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: TextWidget.subText(
+                                  text: index == 0
+                                      ? (portfolio.allPostionList.isNotEmpty
+                                          ? "${portfolio.allPostionList.length}"
+                                          : "")
+                                      : index == 1
+                                          ? (portfolio.holdingsModel
+                                                      ?.isNotEmpty ??
+                                                  false
+                                              ? "${portfolio.holdingsModel!.length}"
+                                              : "")
+                                          : "",
+                                  theme: false,
+                                  color: color,
+                                  fw: isSelected ? 2 : null,
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ),
+            ),
+            Divider(
+              height: 1,
+              thickness: 1,
+              color:
+                  theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            ),
+          ],
+        ),
         Expanded(
           // child: TransparentLoaderScreen(
           // isLoading: portfolio.loading,

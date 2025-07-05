@@ -65,7 +65,6 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
             setState(() {
               _isNavigating = true;
             });
-
             // Add a small delay for the UI to reflect loading state if needed
             await marketWatch.calldepthApis(context, widget.watchListData, "");
           } catch (e) {
@@ -92,7 +91,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
             padding: const EdgeInsets.only(bottom: 4),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
+              children: [                
                 Text(
                   widget.watchListData["symbol"].toString().toUpperCase(),
                   style: TextWidget.textStyle(
@@ -137,13 +136,15 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                             .toString()
                             .isNotEmpty &&
                         widget.watchListData['holdingQty'] != "null") ...[
+                          const SizedBox(width: 4),
                       SvgPicture.asset(assets.suitcase,
                           height: 12,
                           width: 16,
                           color: theme.isDarkMode
                               ? colors.secondaryDark
                               : colors.secondaryLight),
-                      TextWidget.captionText(
+                              const SizedBox(width: 4),
+                      TextWidget.paraText(
                         text: "${widget.watchListData['holdingQty']}",
                         color: colors.secondaryLight,
                         theme: theme.isDarkMode,
@@ -275,10 +276,10 @@ class _PriceDataWidgetState extends ConsumerState<_PriceDataWidget> {
 
     final changeColor =
         displayChange.startsWith("-") || displayPerChange.startsWith('-')
-            ? colors.errorLight
+            ? colors.lossLight
             : (displayChange == "0.00" || displayPerChange == "0.00")
                 ? colors.textSecondaryLight
-                : colors.successLight;
+                : colors.profit;
 
     final changeTextStyle = TextWidget.textStyle(
       fontSize: 16, // or keep 12 if you prefer

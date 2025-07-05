@@ -57,6 +57,28 @@ class ApikeyProvider extends DefaultChangeNotifier {
   }
 
 // Fetching data from the api and stored in a variable
+
+Future fetchgenerateapikey(BuildContext context, String month) async {
+    try {
+      _generateApikey = await api.generateapikeynewuser(month);
+      ConstantName.sessCheck = true;
+      if (_generateApikey!.emsg == "Session Expired :  Invalid Session Key" &&
+          _generateApikey!.stat == "Not_Ok") {
+        ref.read(authProvider).ifSessionExpired(context);
+      }
+      notifyListeners();
+      return _generateApikey;
+    } catch (e) {
+      ref.read(indexListProvider)
+          .logError
+          .add({"type": "Regenerate API", "Error": "$e"});
+      notifyListeners();
+    } finally {
+      //_
+    }
+  }
+
+
   Future fetchregenerateapikey(BuildContext context, String month) async {
     try {
       _generateApikey = await api.regenerateapikey(month);

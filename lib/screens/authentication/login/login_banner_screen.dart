@@ -180,7 +180,7 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                         SvgPicture.asset(
                           "assets/icon/Mynt New logo.svg",
                           color: const Color(0xff0037B7),
-                          width: 150,
+                          width: 140,
                           fit: BoxFit.contain,
                         ),
                         SizedBox(
@@ -210,7 +210,7 @@ class _LoginBannerScreenState extends State<LoginBannerScreen> {
                           ),
                         ),
                         SizedBox(
-                          height: 36,
+                          height: 44,
                         ),
 
                         // SvgPicture.asset(

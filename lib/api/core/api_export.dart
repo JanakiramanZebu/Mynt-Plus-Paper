@@ -1,6 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/api/ledger_api.dart';
-
 import '../api_key_generate_api.dart';
 import '../auth_api.dart';
 import '../bond_api.dart';
@@ -8,7 +6,7 @@ import '../change_password_api.dart';
 import '../fund_api.dart';
 import '../index_api.dart';
 import '../ipo_api.dart';
-import '../json/strategy_json.dart';
+import '../mock_apis/mock_api_response.dart';
 import '../market_watch_api.dart';
 import '../mutual_fund_api.dart';
 import '../notification_api.dart';
@@ -39,7 +37,7 @@ class ApiExporter
         IPOApi,
         MutualFundApi,
         TranscationApi,
-        StrategyJson,
+        MockApiResponse,
         LedgerApi,
         ProfileAllDetailsApi,
         VersionApi {}

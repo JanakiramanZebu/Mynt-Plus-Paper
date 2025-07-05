@@ -42,9 +42,9 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
             TextWidget.subText(
                 text: "Customer Support & Assistance",
                 theme: false,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                 fw: 1),
-            const SizedBox(height: 10),
+            const SizedBox(height: 14),
             InkWell(
               onTap: () async {
                 final Uri url = Uri(scheme: 'tel', path: "9380108010");
@@ -53,14 +53,17 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
               child: Row(children: [
                 SvgPicture.asset(assets.phone, color: colors.colorGrey),
                 const SizedBox(width: 10),
-                TextWidget.paraText(
+                TextWidget.subText(
                     text: ConstantName.phoneNum,
                     theme: false,
-                    color: colors.colorGrey,
-                    fw: 0)
+                   color: !theme.isDarkMode
+                  ? colors.textSecondaryLight
+                  : colors.textSecondaryDark,
+              fw: 3,
+                    )
               ]),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             InkWell(
               onTap: () async {
                 final Uri url = Uri(scheme: 'mailto', path: ConstantName.gamil);
@@ -69,20 +72,23 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
               child: Row(children: [
                 SvgPicture.asset(assets.sendMsg, color: colors.colorGrey),
                 const SizedBox(width: 10),
-                TextWidget.paraText(
+                TextWidget.subText(
                     text: ConstantName.gamil,
                     theme: false,
-                    color: colors.colorGrey,
-                    fw: 0)
+                     color: !theme.isDarkMode
+                  ? colors.textSecondaryLight
+                  : colors.textSecondaryDark,
+              fw: 3,
+                    )
               ]),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             TextWidget.subText(
                 text: "Investor grievance:",
                 theme: false,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                 fw: 1),
-            const SizedBox(height: 3),
+            const SizedBox(height: 8),
             InkWell(
               onTap: () async {
                 final Uri url =
@@ -91,24 +97,33 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(vertical: 5),
-                child: TextWidget.paraText(
+                child: TextWidget.subText(
                     text: ConstantName.gamil1,
                     theme: false,
-                    color: colors.colorGrey,
-                    fw: 0),
+                    color: !theme.isDarkMode
+                  ? colors.textSecondaryLight
+                  : colors.textSecondaryDark,
+              fw: 3,
+                    ),
               ),
             ),
+            const SizedBox(height: 8),
+
             Divider(
                 color: theme.isDarkMode
                     ? colors.darkColorDivider
                     : colors.colorDivider,
                 thickness: 1),
+            // const SizedBox(height: 8),
+
             TextWidget.subText(
                 text: "Follow us",
                 theme: false,
-                color: colors.colorGrey,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight, 
                 fw: 1),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             SizedBox(
                 height: 30,
                 child: ListView.builder(

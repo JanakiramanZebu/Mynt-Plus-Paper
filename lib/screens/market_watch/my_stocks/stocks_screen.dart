@@ -144,72 +144,78 @@ class _StocksScreenState extends State<StocksScreen> {
                               child: ListTile(
                                 contentPadding:
                                     const EdgeInsets.symmetric(horizontal: 16),
-                                dense: true,
-                                title: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    //                   TextWidget.subText(
-                                    // text: "${holdingProvide[index].exchTsym![0].symbol} " ,
-                                    // theme: theme.isDarkMode,
-                                    // fw: 0),
-
-                                    Text(
-                                      "${holdingProvide[index].exchTsym![0].symbol} ",
-                                      style: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        theme: theme.isDarkMode,
-                                      ),
-                                    ),
-
-                                    SizedBox(
-                                      width: 4,
-                                    ),
-
-                                    if (holdingProvide[index]
-                                        .exchTsym![0]
-                                        .option!
-                                        .isNotEmpty)
+                                dense: false,
+                                title: Padding(
+                                   padding: const EdgeInsets.only(bottom: 4),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                    
                                       Text(
-                                        "${holdingProvide[index].exchTsym![0].option}",
+                                        "${holdingProvide[index].exchTsym![0].symbol} ",
                                         style: TextWidget.textStyle(
                                           fontSize: 14,
-                                          color: Color(0xff666666),
+                                          color: theme.isDarkMode
+                                                          ? colors.textPrimaryDark
+                                                          : colors.textPrimaryLight,
                                           theme: theme.isDarkMode,
                                         ),
                                       ),
-                                  ],
+                                     
+                                  
+                                      if (holdingProvide[index]
+                                          .exchTsym![0]
+                                          .option!
+                                          .isNotEmpty)
+                                        Text(
+                                          "${holdingProvide[index].exchTsym![0].option}",
+                                          style: TextWidget.textStyle(
+                                                        fontSize: 14,
+                                                        color: colors.textPrimaryLight,
+                                                        theme: theme.isDarkMode,
+                                                      ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
-                                    const SizedBox(height: 3),
-                                    Row(
-                                      children: [
-                                        CustomExchBadge(
-                                            exch:
-                                                "${holdingProvide[index].exchTsym![0].exch}"),
-                                        if (holdingProvide[index]
-                                            .exchTsym![0]
-                                            .expDate!
-                                            .isNotEmpty)
-                                          TextWidget.paraText(
+                                   
+                                    Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                      child: Row(
+                                        children: [
+                                          CustomExchBadge(
+                                              exch:
+                                                  "${holdingProvide[index].exchTsym![0].exch}"),
+                                          if (holdingProvide[index]
+                                              .exchTsym![0]
+                                              .expDate!
+                                              .isNotEmpty)
+                                            TextWidget.paraText(
                                               text:
                                                   " ${holdingProvide[index].exchTsym![0].expDate}  ",
-                                              color: colors.colorBlack,
+                                              color:theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
                                               theme: theme.isDarkMode,
-                                              fw: 00),
-                                        // SvgPicture.asset(assets.suitcase,
-                                        //     height: 12,
-                                        //     width: 16,
-                                        //     color: colors.colorBlue),
-                                        TextWidget.paraText(
+                                            ),
+                                              const SizedBox(width: 4),
+                                          SvgPicture.asset(assets.suitcase,
+                                              height: 12,
+                                              width: 16,
+                                              color: theme.isDarkMode
+                                                  ? colors.secondaryDark
+                                                  : colors.secondaryLight),
+                                          const SizedBox(width: 4),
+                                          TextWidget.paraText(
                                             text:
-                                                " ${holdingProvide[index].currentQty}",
-                                            color: colors.colorBlue,
+                                                "${holdingProvide[index].currentQty}",
+                                            color: colors.secondaryLight,
                                             theme: theme.isDarkMode,
-                                            fw: 0),
-                                      ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -217,46 +223,52 @@ class _StocksScreenState extends State<StocksScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    TextWidget.titleText(
-                                        text:
-                                            "${holdingProvide[index].exchTsym![0].lp}",
-                                        color: holdingProvide[index]
-                                                    .exchTsym![0]
-                                                    .change!
-                                                    .startsWith("-") ||
-                                                holdingProvide[index]
-                                                    .exchTsym![0]
-                                                    .perChange!
-                                                    .startsWith('-')
-                                            ? colors.darkred
-                                            : (holdingProvide[index]
-                                                                .exchTsym![0]
-                                                                .change ==
-                                                            "null" ||
-                                                        holdingProvide[index]
-                                                                .exchTsym![0]
-                                                                .perChange ==
-                                                            "null") ||
-                                                    (holdingProvide[index]
-                                                                .exchTsym![0]
-                                                                .change ==
-                                                            "0.00" ||
-                                                        holdingProvide[index]
-                                                                .exchTsym![0]
-                                                                .perChange ==
-                                                            "0.00")
-                                                ? colors.ltpgrey
-                                                : colors.ltpgreen,
-                                        theme: theme.isDarkMode,
-                                        fw: 0),
-                                    const SizedBox(height: 4),
-                                    TextWidget.paraText(
-                                        text:
-                                            "${holdingProvide[index].exchTsym![0].change == "null" ? "0.00 " : holdingProvide[index].exchTsym![0].change} "
-                                            "${holdingProvide[index].exchTsym![0].perChange == "null" ? "(0.00%)" : "   ${holdingProvide[index].exchTsym![0].perChange ?? 0.00}%"}",
-                                        textOverflow: TextOverflow.ellipsis,
-                                        theme: theme.isDarkMode,
-                                        fw: 3),
+                                    Padding(
+                                       padding: const EdgeInsets.only(bottom: 4),
+                                      child: TextWidget.titleText(
+                                          text:
+                                              "${holdingProvide[index].exchTsym![0].lp}",
+                                          color: holdingProvide[index]
+                                                      .exchTsym![0]
+                                                      .change!
+                                                      .startsWith("-") ||
+                                                  holdingProvide[index]
+                                                      .exchTsym![0]
+                                                      .perChange!
+                                                      .startsWith('-')
+                                              ? colors.lossLight
+                                              : (holdingProvide[index]
+                                                                  .exchTsym![0]
+                                                                  .change ==
+                                                              "null" ||
+                                                          holdingProvide[index]
+                                                                  .exchTsym![0]
+                                                                  .perChange ==
+                                                              "null") ||
+                                                      (holdingProvide[index]
+                                                                  .exchTsym![0]
+                                                                  .change ==
+                                                              "0.00" ||
+                                                          holdingProvide[index]
+                                                                  .exchTsym![0]
+                                                                  .perChange ==
+                                                              "0.00")
+                                                  ? colors.textSecondaryLight
+                                                  : colors.profit,
+                                          theme: theme.isDarkMode,
+                                          ),
+                                    ),
+                                    // const SizedBox(height: 4),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4),
+                                      child: TextWidget.paraText(
+                                          text:
+                                              "${holdingProvide[index].exchTsym![0].change == "null" ? "0.00 " : holdingProvide[index].exchTsym![0].change} "
+                                              "(${holdingProvide[index].exchTsym![0].perChange == "null" ? "(0.00%)" : "${holdingProvide[index].exchTsym![0].perChange ?? 0.00}%"})",
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          ),
+                                    ),
                                   ],
                                 ),
                               ));

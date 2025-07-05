@@ -32,6 +32,7 @@ import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/loader_ui.dart';
+import 'Api_key_screen.dart';
 import 'logged_user_bottom_sheet.dart';
 import 'need_help_screen.dart';
 
@@ -129,28 +130,11 @@ class UserAccountScreen extends ConsumerWidget {
               color: Colors.transparent,
               // shape: const CircleBorder(),
               clipBehavior: Clip.hardEdge,
-              child: InkWell(
-                // customBorder: const CircleBorder(),
-                splashColor: Colors.black.withOpacity(0.15),
-                highlightColor: Colors.black.withOpacity(0.08),
-                onTap: () {
-                  showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      isDismissible: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(10),
-                          topRight: Radius.circular(10),
-                        ),
-                      ),
-                      builder: (_) =>
-                          const LoggedUserBottomSheet(initRoute: 'switchAcc'));
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Container(
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
@@ -176,39 +160,62 @@ class UserAccountScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextWidget.heroText(
-                              text: _truncateProfileName(
-                                  userProfile.userDetailModel?.uname ?? ""),
-                              theme: false,
-                              color: !theme.isDarkMode
-                                  ? const Color(0xff141414)
-                                  : colors.colorGrey,
-                              fw: 1),
-                          // const SizedBox(height: 4),
-                          // TextWidget.paraText(
-                          //     text: userProfile.userDetailModel?.uid ?? "",
-                          //     theme: false,
-                          //     color: !theme.isDarkMode
-                          //         ? colors.colorGrey
-                          //         : colors.colorGrey,
-                          //     fw: 00)
-                        ],
+                  ),
+                  InkWell(
+                    // customBorder: const CircleBorder(),
+                    splashColor: Colors.black.withOpacity(0.15),
+                    highlightColor: Colors.black.withOpacity(0.08),
+                    onTap: () {
+                      showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          isDismissible: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                              topRight: Radius.circular(10),
+                            ),
+                          ),
+                          builder: (_) => const LoggedUserBottomSheet(
+                              initRoute: 'switchAcc'));
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextWidget.heroText(
+                                text: _truncateProfileName(
+                                    userProfile.userDetailModel?.uname ?? ""),
+                                theme: false,
+                                color: !theme.isDarkMode
+                                    ? const Color(0xff141414)
+                                    : colors.colorGrey,
+                                fw: 1),
+                            SizedBox(width: 8),
+                            Transform.rotate(
+                              angle: 90 * 3.1416 / 180,
+                              child: Icon(
+                                Icons.arrow_forward_ios,
+                                size: 20,
+                                color: !theme.isDarkMode
+                                    ? colors.primaryLight
+                                    : colors.primaryDark,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    // Row(
-                    //   children: [
-                    //     Icon(Icons.arrow_forward_ios,
-                    //         size: 16, color: colors.colorGrey)
-                    //   ],
-                    // )
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -475,24 +482,37 @@ class UserAccountScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                TextWidget.subText(
-                    text: "Account Balance",
-                    theme: false,
-                    color: !theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    fw: 3),
-                const SizedBox(height: 4),
-                TextWidget.subText(
-                    text: formatIndianCurrency(
-                        funds.fundDetailModel?.avlMrg ?? "0.00"),
-                    theme: false,
-                    color: !theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    fw: 0),
-              ]),
+              InkWell(
+                // onTap: () async {
+                //   ref.read(indexListProvider).bottomMenu(2, context);
+                //   await Future.delayed(
+                //       const Duration(milliseconds: 2000)); // Delay of 300ms
+                //   Navigator.pushReplacementNamed(context, Routes.homeScreen);
+
+                  
+                  
+                // },
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextWidget.subText(
+                          text: "Account Balance",
+                          theme: false,
+                          color: !theme.isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                          fw: 3),
+                      const SizedBox(height: 4),
+                      TextWidget.subText(
+                          text: formatIndianCurrency(
+                              funds.fundDetailModel?.avlMrg ?? "0.00"),
+                          theme: false,
+                          color: !theme.isDarkMode
+                              ? colors.colorBlack
+                              : colors.colorWhite,
+                          fw: 0),
+                    ]),
+              ),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   backgroundColor: colors.fundbuttonBg,
@@ -625,7 +645,7 @@ class SettingsScreen extends ConsumerWidget {
     final apikeys = ref.read(apikeyprovider);
 
     final settingsItems = [
-      {'title': 'Theme', 'section': 'Settings'},
+      // {'title': 'Theme', 'section': 'Settings'},
       {'title': 'Order Preference', 'section': 'Settings'},
     ];
 
@@ -680,63 +700,59 @@ class SettingsScreen extends ConsumerWidget {
       body: Column(
         children: [
           /// Profile Header
+          ///  // showModalBottomSheet(
+                //     context: context,
+                //     isScrollControlled: true,
+                //     isDismissible: true,
+                //     shape: const RoundedRectangleBorder(
+                //       borderRadius: BorderRadius.only(
+                //         topLeft: Radius.circular(10),
+                //         topRight: Radius.circular(10),
+                //       ),
+                //     ),
+                //     builder: (_) =>
+                //         const LoggedUserBottomSheet(initRoute: 'switchAcc'));
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: InkWell(
-              onTap: () {
-                showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    isDismissible: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                      ),
-                    ),
-                    builder: (_) =>
-                        const LoggedUserBottomSheet(initRoute: 'switchAcc'));
-              },
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: colors.fundbuttonBg,
-                    child: Text(
-                      userProfile.userDetailModel?.uname
-                              ?.substring(0, 1)
-                              .toUpperCase() ??
-                          "U",
-                      style: const TextStyle(color: Colors.black),
-                    ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: colors.fundbuttonBg,
+                  child: Text(
+                    userProfile.userDetailModel?.uname
+                            ?.substring(0, 1)
+                            .toUpperCase() ??
+                        "U",
+                    style: const TextStyle(color: Colors.black),
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.subText(
-                        text: _truncateProfileName(
-                            userProfile.userDetailModel?.uname ?? ""),
-                        theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorGrey,
-                        fw: 0,
-                      ),
-                      const SizedBox(height: 4),
-                      TextWidget.paraText(
-                        text: userProfile.userDetailModel?.uid ?? "",
-                        theme: false,
-                        color: colors.colorGrey,
-                        fw: 00,
-                      )
-                    ],
-                  ),
-                  const Spacer(),
-                  Icon(Icons.arrow_forward_ios,
-                      size: 16, color: colors.colorGrey)
-                ],
-              ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      text: _truncateProfileName(
+                          userProfile.userDetailModel?.uname ?? ""),
+                      theme: false,
+                      color: !theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorGrey,
+                      fw: 0,
+                    ),
+                    const SizedBox(height: 4),
+                    TextWidget.paraText(
+                      text: userProfile.userDetailModel?.uid ?? "",
+                      theme: false,
+                      color: colors.colorGrey,
+                      fw: 00,
+                    )
+                  ],
+                ),
+                // const Spacer(),
+                // Icon(Icons.arrow_forward_ios,
+                //     size: 16, color: colors.colorGrey)
+              ],
             ),
           ),
 
@@ -782,18 +798,19 @@ class SettingsScreen extends ConsumerWidget {
               return ListTile(
                 minTileHeight: 47,
                 title: TextWidget.subText(
-                        text: item['title']!,
-                        theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.textPrimaryLight
-                            : colors.textPrimaryDark,
-                        fw: 3),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: !theme.isDarkMode
-                          ? colors.textPrimaryLight
-                          : colors.textPrimaryDark,),
+                    text: item['title']!,
+                    theme: false,
+                    color: !theme.isDarkMode
+                        ? colors.textPrimaryLight
+                        : colors.textPrimaryDark,
+                    fw: 3),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: !theme.isDarkMode
+                      ? colors.textPrimaryLight
+                      : colors.textPrimaryDark,
+                ),
                 onTap: () {
                   // Handle settings navigation
                   switch (item['title']) {
@@ -924,8 +941,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
 
-
- Padding(
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Divider(
               color: colors.fundbuttonBg, // Optional: customize the color
@@ -950,7 +966,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
 
           const SizedBox(height: 12),
- Padding(
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Divider(
               color: colors.fundbuttonBg, // Optional: customize the color
@@ -965,19 +981,20 @@ class SettingsScreen extends ConsumerWidget {
               final item = securityItems[index];
               return ListTile(
                 minTileHeight: 47,
-               title: TextWidget.subText(
-                        text: item['title']!,
-                        theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.textPrimaryLight
-                            : colors.textPrimaryDark,
-                        fw: 3),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: !theme.isDarkMode
-                          ? colors.textPrimaryLight
-                          : colors.textPrimaryDark,),
+                title: TextWidget.subText(
+                    text: item['title']!,
+                    theme: false,
+                    color: !theme.isDarkMode
+                        ? colors.textPrimaryLight
+                        : colors.textPrimaryDark,
+                    fw: 3),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: !theme.isDarkMode
+                      ? colors.textPrimaryLight
+                      : colors.textPrimaryDark,
+                ),
                 onTap: () async {
                   // Handle security navigation
                   switch (item['title']) {
@@ -1000,44 +1017,65 @@ class SettingsScreen extends ConsumerWidget {
                                     BorderRadius.all(Radius.circular(14))),
                             scrollable: true,
                             contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 14),
+                                const EdgeInsets.symmetric(horizontal: 16),
                             insetPadding:
                                 const EdgeInsets.symmetric(horizontal: 20),
-                            title: TextWidget.titleText(
-                                text: "Freeze Account!",
-                                theme: theme.isDarkMode,
-                                fw: 0),
-                            content: SizedBox(
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      TextWidget.titleText(
-                                          text:
-                                              "Are you sure you want to Freeze yor Account?",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          fw: 1),
-                                      const SizedBox(height: 10),
-                                      TextWidget.paraText(
-                                          text:
-                                              "* Note: Open order(s) will be cancelled, but position(s) will not be closed",
-                                          theme: false,
-                                          color: colors.colorGrey,
-                                          fw: 1),
-                                    ])),
+                            // title: Padding(
+                            //   padding: const EdgeInsets.only(top : 8.0),
+                            //   child: TextWidget.titleText(
+                            //       text: "Freeze Account!",
+                            //       theme: theme.isDarkMode,
+                            //       color : theme.isDarkMode
+                            //           ? colors.textPrimaryDark
+                            //           : colors.textPrimaryLight,
+                            //       fw: 1),
+                            // ),
+
+                            content: Padding(
+                              padding: const EdgeInsets.only(top: 20.0),
+                              child: SizedBox(
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        TextWidget.titleText(
+                                            text:
+                                                "Freeze Account",
+                                            theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            fw: 0),
+                                        const SizedBox(height: 12),
+                                        TextWidget.subText(
+                                            text:
+                                                "Account freeze notice: All open orders will be cancelled due to the freeze. Existing positions will remain open and will not be affected.",
+                                            theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight,
+                                            fw: 3),
+                                        SizedBox(height: 14),
+                                      ])),
+                            ),
                             actions: [
-                              TextButton(
+                              ElevatedButton(
                                 onPressed: () => Navigator.of(context).pop(),
+                                style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: theme.isDarkMode
+                                        ? const Color(0xffF1F3F8)
+                                        : const Color(0xffF1F3F8),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(4))),
                                 child: TextWidget.subText(
                                     text: "Cancel",
                                     theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.colorLightBlue
-                                        : colors.colorBlue,
+                                    color: !theme.isDarkMode
+                                        ? const Color(0xff666666)
+                                        : const Color(0xff666666),
                                     fw: 0),
                               ),
                               ElevatedButton(
@@ -1047,17 +1085,15 @@ class SettingsScreen extends ConsumerWidget {
                                 style: ElevatedButton.styleFrom(
                                     elevation: 0,
                                     backgroundColor: theme.isDarkMode
-                                        ? colors.colorbluegrey
-                                        : colors.colorBlack,
+                                        ? colors.primaryDark
+                                        : colors.primaryLight,
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
-                                            BorderRadius.circular(50))),
+                                            BorderRadius.circular(4))),
                                 child: TextWidget.subText(
                                     text: "Continue",
                                     theme: false,
-                                    color: !theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
+                                    color: colors.colorWhite,
                                     fw: 0),
                               ),
                             ],
@@ -1072,9 +1108,21 @@ class SettingsScreen extends ConsumerWidget {
                           arguments: "Yes");
                       break;
                     case 'Generate API Key':
+                      showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          isDismissible: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                              topRight: Radius.circular(10),
+                            ),
+                          ),
+                          builder: (_) => ApiKeyScreen());
                       break;
                     case 'Generate TOTP':
                       await apikeys.fetchTotp();
+
                       showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
@@ -1115,7 +1163,8 @@ class SettingsScreen extends ConsumerWidget {
                   : colors.textSecondaryDark,
               fw: 3,
             ),
-          ),SizedBox(height: 8.0)
+          ),
+          SizedBox(height: 8.0)
         ],
       ),
       // bottomNavigationBar: buildBottomNav(4, theme, context, ref),
@@ -1445,62 +1494,46 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           children: [
             /// Profile Header (retained from your original design)
             const SizedBox(height: 10),
-            InkWell(
-              onTap: () {
-                showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    isDismissible: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                      ),
-                    ),
-                    builder: (_) =>
-                        const LoggedUserBottomSheet(initRoute: 'switchAcc'));
-              },
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: colors.fundbuttonBg,
-                    child: Text(
-                      userProfile.userDetailModel?.uname
-                              ?.substring(0, 1)
-                              .toUpperCase() ??
-                          "U",
-                      style: const TextStyle(color: Colors.black),
-                    ),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: colors.fundbuttonBg,
+                  child: Text(
+                    userProfile.userDetailModel?.uname
+                            ?.substring(0, 1)
+                            .toUpperCase() ??
+                        "U",
+                    style: const TextStyle(color: Colors.black),
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.subText(
-                        fw: 0,
-                        text: _truncateProfileName(
-                            userProfile.userDetailModel?.uname ?? ""),
-                        theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorGrey,
-                      ),
-                      const SizedBox(height: 6),
-                      TextWidget.paraText(
-                        text: userProfile.userDetailModel?.uid ?? "",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                      )
-                    ],
-                  ),
-                  const Spacer(),
-                  Icon(Icons.arrow_forward_ios,
-                      size: 16, color: colors.colorGrey)
-                ],
-              ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      fw: 0,
+                      text: _truncateProfileName(
+                          userProfile.userDetailModel?.uname ?? ""),
+                      theme: false,
+                      color: !theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorGrey,
+                    ),
+                    const SizedBox(height: 6),
+                    TextWidget.paraText(
+                      text: userProfile.userDetailModel?.uid ?? "",
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                    )
+                  ],
+                ),
+                // const Spacer(),
+                // Icon(Icons.arrow_forward_ios,
+                //     size: 16, color: colors.colorGrey)
+              ],
             ),
             const SizedBox(height: 10),
             Divider(
@@ -1536,10 +1569,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     onExpansionChanged: (isExpanding) =>
                         _onExpansionChanged(isExpanding, title),
                     tilePadding: const EdgeInsets.symmetric(horizontal: 0),
-                    title: TextWidget.subText(
+                    title: TextWidget.titleText(
                       text: title,
                       theme: false,
-                      color: colors.colorGrey,
+                      color: !theme.isDarkMode
+                          ? colors.textPrimaryLight
+                          : colors.textPrimaryDark,
+                      fw: 0,
                     ),
                     children: [
                       // Dynamically build the content based on the title
@@ -1612,7 +1648,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     // }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
+      padding: const EdgeInsets.only(bottom: 8.0, right: 12.0, left: 12.0),
       child: Column(
         children: [
           _buildDetailRow("Name", clientData?.panName ?? "N/A", theme),
@@ -1643,12 +1679,18 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 TextWidget.subText(
                   text: "Bank Accounts Linked",
                   theme: theme.isDarkMode,
-                  fw: 1,
+                  fw: 0,
                 ),
+                SizedBox(height: 4),
                 TextWidget.paraText(
                   text: "View bank details and add new banks.",
                   theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fw: 3,
                 ),
+                SizedBox(height: 10),
               ],
             ),
             IconButton(
@@ -1723,9 +1765,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                       text: bank.bankName ?? "Unknown Bank",
                                       textOverflow: TextOverflow.ellipsis,
                                       theme: theme.isDarkMode,
-                                      fw: 1,
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                      fw: 0,
                                     ),
                                   ),
+                                  SizedBox(height: 25.0),
                                   if (bank.defaultAc == "Yes")
                                     Container(
                                       padding: const EdgeInsets.symmetric(
@@ -1749,6 +1795,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                     'A/C No: ${profileDetails.formateDataToDisplay(bank.bankAcNo ?? "", 2, 4)}',
                                 theme: theme.isDarkMode,
                               ),
+                              SizedBox(height: 5.0),
                               TextWidget.paraText(
                                 text: 'IFSC: ${bank.iFSCCode ?? "N/A"}',
                                 theme: theme.isDarkMode,
@@ -1775,6 +1822,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               ),
             );
           }).toList(),
+        SizedBox(height: 16.0),
       ],
     );
   }
@@ -1803,7 +1851,12 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextWidget.subText(
-                          text: "Demat (CDSL)", theme: theme.isDarkMode, fw: 0),
+                          text: "Demat (CDSL)",
+                          theme: theme.isDarkMode,
+                          fw: 0,
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight),
                       Row(
                         children: [
                           Container(
@@ -1900,33 +1953,29 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 TextWidget.paraText(
                     text: "Do you want to sell your stocks without CDSL T-Pin",
                     theme: theme.isDarkMode,
-                    fw: 1),
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 0),
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () async {
                     profileprovider.openInWebURL(context, "deposltory");
                   },
                   style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    // minimumSize: Size(double.infinity, 30),
-                    backgroundColor: ref.read(themeProvider).isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    shape:
-                        // MaterialStateProperty.all(RoundedRectangleBorder( borderRadius: BorderRadius.circular(40) ))
-                        RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                    side: BorderSide(
-                      width: 1,
-                      color: ref.read(themeProvider).isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                    ),
-                  ),
+                      elevation: 0,
+                      backgroundColor: theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4))),
                   child: TextWidget.subText(
-                      text: "Activate DDPI", theme: theme.isDarkMode, fw: 1),
+                      text: "Activate DDPI",
+                      theme: false,
+                      color: colors.colorWhite,
+                      fw: 0),
                 ),
+                SizedBox(height: 10.0),
               ],
             ),
         ],
@@ -2231,7 +2280,10 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               TextWidget.subText(
                 text: "Segments",
                 theme: theme.isDarkMode,
-                fw: 1,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                fw: 0,
               ),
               IconButton(
                 onPressed: () {
@@ -2247,7 +2299,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 5),
+          // const SizedBox(height: 5),
           if (segmentsData != null) ...[
             _buildSegmentRow(
                 "Equities",
@@ -2327,7 +2379,10 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 TextWidget.subText(
                   text: "Nominee Details",
                   theme: theme.isDarkMode,
-                  fw: 1,
+                  fw: 0,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
                 ),
                 IconButton(
                   onPressed: () {
@@ -2343,7 +2398,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 1),
             _buildDetailRow(
                 "Nominee Name", clientData?.nomineeName ?? "N/A", theme),
             _buildDetailRow("Nominee Relation",
@@ -2366,34 +2421,60 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget.paraText(
+          TextWidget.subText(
             text: "Download various forms and documents",
             theme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            fw: 0,
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              profileDetails.openInWebURL(context, "formdownload");
-            },
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              minimumSize: const Size(double.infinity, 40),
-              backgroundColor:
-                  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(32),
-              ),
-              side: BorderSide(
-                width: 1,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              ),
-            ),
-            child: TextWidget.subText(
-              text: "Download Forms",
-              theme: theme.isDarkMode,
-              fw: 1,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                profileDetails.openInWebURL(context, "formdownload");
+              },
+              style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  minimumSize: const Size(double.infinity, 40),
+                  backgroundColor: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4))),
+              child: TextWidget.subText(
+                  text: "Download Forms",
+                  theme: false,
+                  color: colors.colorWhite,
+                  fw: 0),
             ),
           ),
+          // ElevatedButton(
+          //   onPressed: () {
+          //     profileDetails.openInWebURL(context, "formdownload");
+          //   },
+          //   style: ElevatedButton.styleFrom(
+          //     elevation: 0,
+          //     minimumSize: const Size(double.infinity, 40),
+          //     backgroundColor:
+          //         theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(32),
+          //     ),
+          //     side: BorderSide(
+          //       width: 1,
+          //       color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          //     ),
+          //   ),
+          //   child: TextWidget.subText(
+          //     text: "Download Forms",
+          //     theme: theme.isDarkMode,
+          //     fw: 1,
+          //   ),
+          // ),
+          SizedBox(height: 14.0),
         ],
       ),
     );
@@ -2412,27 +2493,34 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             text:
                 "* Closing your account is a permanent and irreversible action",
             theme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            fw: 3,
           ),
           const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              profileDetails.openInWebURL(context, "closure");
-            },
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              backgroundColor:
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-            ),
-            child: TextWidget.subText(
-              text: 'Close Account',
-              theme: !theme.isDarkMode,
-              fw: 1,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                profileDetails.openInWebURL(context, "closure");
+              },
+              style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  minimumSize: const Size(double.infinity, 40),
+                  backgroundColor: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4))),
+              child: TextWidget.subText(
+                  text: "Close Account",
+                  theme: false,
+                  color: colors.colorWhite,
+                  fw: 0),
             ),
           ),
+          const SizedBox(height: 12),
         ],
       ),
     );
@@ -2471,6 +2559,10 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           TextWidget.paraText(
             text: label,
             theme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+            fw: 0,
           ),
           Row(
             children: segments.map<Widget>((segment) {
@@ -2523,13 +2615,19 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         children: [
           TextWidget.paraText(
             text: label,
-            color: colors.colorGrey,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
             theme: theme.isDarkMode,
+            fw: 3,
           ),
           TextWidget.paraText(
             text: value,
-            color: !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
             theme: theme.isDarkMode,
+            fw: 0,
           ),
         ],
       ),
@@ -2561,7 +2659,7 @@ class ReportsScreen extends ConsumerWidget {
       {'title': 'Tradebook / Contract'},
       {'title': 'Downloads'},
       {'title': 'Corporate Actions'},
-      {'title': 'CA Events'},
+      // {'title': 'CA Events'},
       {'title': 'Pledge & Unpledge'},
     ];
 
@@ -2611,61 +2709,45 @@ class ReportsScreen extends ConsumerWidget {
           /// Profile Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: InkWell(
-              onTap: () {
-                showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    isDismissible: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                      ),
-                    ),
-                    builder: (_) =>
-                        const LoggedUserBottomSheet(initRoute: 'switchAcc'));
-              },
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: colors.fundbuttonBg,
-                    child: Text(
-                      userProfile.userDetailModel?.uname
-                              ?.substring(0, 1)
-                              .toUpperCase() ??
-                          "U",
-                      style: const TextStyle(color: Colors.black),
-                    ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: colors.fundbuttonBg,
+                  child: Text(
+                    userProfile.userDetailModel?.uname
+                            ?.substring(0, 1)
+                            .toUpperCase() ??
+                        "U",
+                    style: const TextStyle(color: Colors.black),
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.subText(
-                        text: _truncateProfileName(
-                            userProfile.userDetailModel?.uname ?? ""),
-                        theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorGrey,
-                        fw: 0,
-                      ),
-                      const SizedBox(height: 4),
-                      TextWidget.paraText(
-                        text: userProfile.userDetailModel?.uid ?? "",
-                        theme: false,
-                        color: colors.colorGrey,
-                        fw: 00,
-                      )
-                    ],
-                  ),
-                  const Spacer(),
-                  Icon(Icons.arrow_forward_ios,
-                      size: 16, color: colors.colorGrey)
-                ],
-              ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      text: _truncateProfileName(
+                          userProfile.userDetailModel?.uname ?? ""),
+                      theme: false,
+                      color: !theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorGrey,
+                      fw: 0,
+                    ),
+                    const SizedBox(height: 4),
+                    TextWidget.paraText(
+                      text: userProfile.userDetailModel?.uid ?? "",
+                      theme: false,
+                      color: colors.colorGrey,
+                      fw: 00,
+                    )
+                  ],
+                ),
+                // const Spacer(),
+                // Icon(Icons.arrow_forward_ios,
+                //     size: 16, color: colors.colorGrey)
+              ],
             ),
           ),
 
@@ -2737,46 +2819,46 @@ class ReportsScreen extends ConsumerWidget {
                         case 'Ledger':
                           await ledgerdate.getCurrentDate('else');
 
-                        Navigator.pushNamed(context, Routes.ledgerscreen,
-                            arguments: "DDDDD");
-                        break;
-                      case 'Holdings':
-                        await ledgerdate.getCurrentDate('else');
-
-                        Navigator.pushNamed(context, Routes.holdingscreen,
-                            arguments: "DDDDD");
-                        break;
-                      case 'Positions':
-                        ledgerdate.fetchposition(context);
-
-                        Navigator.pushNamed(context, Routes.positionscreen,
-                            arguments: "DDDDD");
-                        break;
-                      case 'Profit & Loss':
-                        // ledgerdate.fetchposition(context);
-                        if (ledgerdate.pnlAllData == null) {
+                          Navigator.pushNamed(context, Routes.ledgerscreen,
+                              arguments: "DDDDD");
+                          break;
+                        case 'Holdings':
                           await ledgerdate.getCurrentDate('else');
-                          ledgerdate.fetchpnldata(context, ledgerdate.startDate,
-                              ledgerdate.today, true);
-                        }
 
-                        Navigator.pushNamed(context, Routes.pnlscreen,
-                            arguments: "DDDDD");
-                        break;
+                          Navigator.pushNamed(context, Routes.holdingscreen,
+                              arguments: "DDDDD");
+                          break;
+                        case 'Positions':
+                          ledgerdate.fetchposition(context);
 
-                      case 'Tax P&L':
-                        // await ledgerdate.getYearlistTaxpnl();
-                        if (ledgerdate.taxpnldercomcur == null &&
-                            ledgerdate.taxpnleq == null) {
-                          await ledgerdate.getYearlistTaxpnl();
-                          ledgerdate.getCurrentDate('');
-                          ledgerdate.fetchtaxpnleqdata(
-                              context, ledgerdate.yearforTaxpnl);
+                          Navigator.pushNamed(context, Routes.positionscreen,
+                              arguments: "DDDDD");
+                          break;
+                        case 'Profit & Loss':
+                          // ledgerdate.fetchposition(context);
+                          if (ledgerdate.pnlAllData == null) {
+                            await ledgerdate.getCurrentDate('else');
+                            ledgerdate.fetchpnldata(context,
+                                ledgerdate.startDate, ledgerdate.today, true);
+                          }
 
-                          ledgerdate.taxpnlExTabchange(0);
-                          ledgerdate.chargesforeqtaxpnl(
-                              context, ledgerdate.yearforTaxpnl);
-                        }
+                          Navigator.pushNamed(context, Routes.pnlscreen,
+                              arguments: "DDDDD");
+                          break;
+
+                        case 'Tax P&L':
+                          // await ledgerdate.getYearlistTaxpnl();
+                          if (ledgerdate.taxpnldercomcur == null &&
+                              ledgerdate.taxpnleq == null) {
+                            await ledgerdate.getYearlistTaxpnl();
+                            ledgerdate.getCurrentDate('');
+                            ledgerdate.fetchtaxpnleqdata(
+                                context, ledgerdate.yearforTaxpnl);
+
+                            ledgerdate.taxpnlExTabchange(0);
+                            ledgerdate.chargesforeqtaxpnl(
+                                context, ledgerdate.yearforTaxpnl);
+                          }
 
                           Navigator.pushNamed(context, Routes.taxpnlscreen,
                               arguments: "DDDDD");
@@ -2818,15 +2900,15 @@ class ReportsScreen extends ConsumerWidget {
                           }
                           // cop action
 
-                        break;
-                      case 'CA Events':
-                        // ledgerdate.fetchposition(context);
-                        // }
-                        if (ledgerdate.caeventalldata == null) {
-                          await ledgerdate.getCurrentDate('caevent');
-                          ledgerdate.fetchcaeventsdata(context,
-                              ledgerdate.startDate, ledgerdate.endDate);
-                        }
+                          break;
+                        case 'CA Events':
+                          // ledgerdate.fetchposition(context);
+                          // }
+                          if (ledgerdate.caeventalldata == null) {
+                            await ledgerdate.getCurrentDate('caevent');
+                            ledgerdate.fetchcaeventsdata(context,
+                                ledgerdate.startDate, ledgerdate.endDate);
+                          }
 
                           Navigator.pushNamed(context, Routes.caeventmainpage,
                               arguments: "DDDDD");
@@ -3018,6 +3100,10 @@ class UserInfoColumn extends StatelessWidget {
           TextWidget.paraText(
             text: label.toUpperCase(),
             theme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+            fw: 3,
           ),
           TextFormField(
             initialValue: value,
@@ -3031,7 +3117,7 @@ class UserInfoColumn extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ],
@@ -3155,6 +3241,3 @@ class UserInfoColumn extends StatelessWidget {
 //     }
 //   }
 // }
-
-
-

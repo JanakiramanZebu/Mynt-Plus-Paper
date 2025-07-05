@@ -68,7 +68,9 @@ class _ConvertPositionDialogueState
           TextWidget.titleText(
               text: 'Position Convertion',
               theme: false,
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
               fw: 1),
           IconButton(
               splashRadius: 20,
@@ -76,9 +78,8 @@ class _ConvertPositionDialogueState
                 Navigator.pop(context);
               },
               icon: Icon(Icons.close_rounded,
-                  color: theme.isDarkMode
-                      ? const Color(0xffBDBDBD)
-                      : colors.colorGrey))
+                  color:
+                      theme.isDarkMode ? colors.colorWhite : colors.iconColor))
         ],
       ),
       content: SizedBox(
@@ -94,18 +95,18 @@ class _ConvertPositionDialogueState
                     text: "${widget.convertPosition.symbol} ",
                     theme: false,
                     color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                    fw: 1,
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 3,
                     textOverflow: TextOverflow.ellipsis,
                     align: TextAlign.center),
                 TextWidget.titleText(
                     text: "${widget.convertPosition.option}  ",
                     theme: false,
                     color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                    fw: 1,
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 3,
                     textOverflow: TextOverflow.ellipsis,
                     align: TextAlign.center),
                 CustomExchBadge(exch: "${widget.convertPosition.exch}")
@@ -119,9 +120,7 @@ class _ConvertPositionDialogueState
                   padding:
                       const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                   decoration: BoxDecoration(
-                      color: theme.isDarkMode
-                          ? colors.darkGrey
-                          : const Color(0xffF1F3F8),
+                      color: colors.btnBg,
                       borderRadius: BorderRadius.circular(5)),
                   child: TextWidget.subText(
                       text: "${widget.convertPosition.sPrdtAli}",
@@ -136,9 +135,7 @@ class _ConvertPositionDialogueState
                     padding:
                         const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
                     decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
+                        color: colors.btnBg,
                         borderRadius: BorderRadius.circular(5)),
                     child: TextWidget.subText(
                         text: widget.convertPosition.sPrdtAli == "MIS" &&
@@ -168,24 +165,32 @@ class _ConvertPositionDialogueState
                         text: "Max Quantity",
                         theme: false,
                         color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
                         fw: 0),
                     const SizedBox(height: 8),
                     SizedBox(
                         height: 44,
-                        child: CustomTextFormField(
-                          fillColor: theme.isDarkMode ? colors.darkGrey : null,
-                          isReadable: true,
+                        child: TextFormField(
+                          readOnly: true,
                           style: TextWidget.textStyle(
                               fontSize: 16,
                               color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                               theme: false,
-                              fw: 1),
-                          textCtrl: maxQty,
+                              fw: 3),
+                          controller: maxQty,
                           textAlign: TextAlign.center,
+                          decoration: InputDecoration(
+                            fillColor: colors.btnBg,
+                            filled: true,
+                            border: const OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 5),
+                          ),
                         ))
                   ])),
               const SizedBox(width: 32),
@@ -198,33 +203,31 @@ class _ConvertPositionDialogueState
                         text: "Quantity",
                         theme: false,
                         color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
                         fw: 0),
                     const SizedBox(height: 8),
                     SizedBox(
                         height: 44,
-                        child: CustomTextFormField(
-                            fillColor:
-                                theme.isDarkMode ? colors.darkGrey : null,
-                            inputFormate: [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            hintText: maxQty.text,
-                            hintStyle: TextWidget.textStyle(
-                                fontSize: 16,
-                                color: const Color(0xff666666),
-                                theme: false,
-                                fw: 00),
+                        child: TextFormField(
+                            decoration: InputDecoration(
+                              fillColor: colors.btnBg,
+                              filled: true,
+                              border: const OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 5),
+                            ),
+                            controller: qty,
+                            textAlign: TextAlign.center,
                             style: TextWidget.textStyle(
                                 fontSize: 16,
                                 color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
                                 theme: false,
-                                fw: 1),
-                            textCtrl: qty,
-                            textAlign: TextAlign.center,
+                                fw: 3),
                             onChanged: (value) {
                               if (value.isNotEmpty) {
                                 int number = int.tryParse(qty.text) ?? 0;
@@ -256,12 +259,10 @@ class _ConvertPositionDialogueState
           child: Container(
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xffF1F3F8),
+              color: colors.btnBg,
               borderRadius: BorderRadius.circular(5),
               border: Border.all(
-                color: theme.isDarkMode
-                    ? colors.colorGrey
-                    : const Color(0xff0037B7),
+                color: colors.btnOutlinedBorder,
                 width: 1,
               ),
             ),
@@ -270,8 +271,12 @@ class _ConvertPositionDialogueState
               shape: const BeveledRectangleBorder(),
               child: InkWell(
                 customBorder: const BeveledRectangleBorder(),
-                splashColor: Colors.black.withOpacity(0.15),
-                highlightColor: Colors.black.withOpacity(0.08),
+                splashColor: theme.isDarkMode
+                    ? colors.splashColorDark
+                    : colors.splashColorLight,
+                highlightColor: theme.isDarkMode
+                    ? colors.highlightDark
+                    : colors.highlightLight,
                 onTap: () async {
                   if (qty.text.isEmpty || qty.text == "0") {
                     ScaffoldMessenger.of(context).showSnackBar(warningMessage(
@@ -321,7 +326,9 @@ class _ConvertPositionDialogueState
                   child: TextWidget.subText(
                     text: "Convert",
                     theme: false,
-                    color: const Color(0xff0037B7),
+                    color: theme.isDarkMode
+                        ? colors.primaryDark
+                        : colors.primaryLight,
                     fw: 1,
                   ),
                 ),

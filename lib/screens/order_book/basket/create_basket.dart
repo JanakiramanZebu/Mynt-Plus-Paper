@@ -216,9 +216,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                         elevation: 0,
                         minimumSize: const Size(0, 40), // width, height
 
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : Color(0xFF0037B7),
+                        backgroundColor: colors.btnOutlinedBorder,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
