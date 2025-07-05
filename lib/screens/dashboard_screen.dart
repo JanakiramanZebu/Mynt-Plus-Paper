@@ -40,12 +40,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           centerTitle: false,
           title: Row(
             children: [
-              SvgPicture.asset(
-                assets.myntnewLogo,
-                width: 46,
-                height: 46,
-              ),
-              const SizedBox(width: 10),
+              // SvgPicture.asset(
+              //   assets.myntnewLogo,
+              //   width: 46,
+              //   height: 46,
+              // ),
+              // const SizedBox(width: 10),
               Expanded(
                 child: Container(
                     height: 40,

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
@@ -297,47 +299,88 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
-  tabSize() {
-    _portTabName = [
-      Tab(
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-            Text(
-              "Positions${_allPostionList.isNotEmpty ? " (${_allPostionList.length})" : ""}",
-            ),
-          ])),
-      Tab(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-                "Holdings${_holdingsModel!.isNotEmpty ? " (${_holdingsModel!.length})" : ""}")
-          ],
-        ),
-      ),
-      const Tab(
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text("Orders")
-            ]),
-      ),
-      const Tab(
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text("Funds")
-            ]),
-      ),
-    ];
+  // tabSize(theme) {
+  //   _portTabName = [
+  //     Tab(
+  //         child: Row(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: [
+  //           TextWidget.subText(
+  //               text:
+  //                   "Position${_allPostionList.isNotEmpty ? "s (${_allPostionList.length})" : ""}",
+  //               theme: false,
+  //               color: selectedTab == 0
+  //                   ? theme.isDarkMode
+  //                       ? colors.secondaryDark
+  //                       : colors.secondaryLight
+  //                   : theme.isDarkMode
+  //                       ? colors.textSecondaryDark
+  //                       : colors.textSecondaryLight,
+  //               fw: selectedTab == 0 ? 0 : null)
+  //         ])),
+  //     Tab(
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         crossAxisAlignment: CrossAxisAlignment.center,
+  //         children: [
+  //           TextWidget.subText(
+  //               text:
+  //                   "Holding${_holdingsModel!.isNotEmpty ? "s (${_holdingsModel!.length})" : ""}",
+  //               theme: false,
+  //               color: selectedTab == 1
+  //                   ? theme.isDarkMode
+  //                       ? colors.secondaryDark
+  //                       : colors.secondaryLight
+  //                   : theme.isDarkMode
+  //                       ? colors.textSecondaryDark
+  //                       : colors.textSecondaryLight,
+  //               fw: selectedTab == 1 ? 0 : null)
+  //         ],
+  //       ),
+  //     ),
+  //     // if (_mfHoldingsModel!.isNotEmpty) ...[
+  //     //   if (_mfHoldingsModel![0].stat != "Not_Ok") ...[
+  //     Tab(
+  //       child: Row(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           crossAxisAlignment: CrossAxisAlignment.center,
+  //           children: [
+  //             TextWidget.subText(
+  //                 text: "Orders",
+  //                 theme: false,
+  //                 color: selectedTab == 2
+  //                     ? theme.isDarkMode
+  //                         ? colors.secondaryDark
+  //                         : colors.secondaryLight
+  //                     : theme.isDarkMode
+  //                         ? colors.textSecondaryDark
+  //                         : colors.textSecondaryLight,
+  //                 fw: selectedTab == 2 ? 0 : null)
+  //           ]),
+  //     ),
+  //     Tab(
+  //       child: Row(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           crossAxisAlignment: CrossAxisAlignment.center,
+  //           children: [
+  //             TextWidget.subText(
+  //                 text: "Funds",
+  //                 theme: false,
+  //                 color: selectedTab == 3
+  //                     ? theme.isDarkMode
+  //                         ? colors.secondaryDark
+  //                         : colors.secondaryLight
+  //                     : theme.isDarkMode
+  //                         ? colors.textSecondaryDark
+  //                         : colors.textSecondaryLight,
+  //                 fw: selectedTab == 3 ? 0 : null)
+  //           ]),
+  //     ),
+  //   ];
 
-    notifyListeners();
-  }
+  //   notifyListeners();
+  // }
 
 // Holding search enable & hide
 
@@ -507,6 +550,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
   Future fetchHoldings(context, String initail) async {
+    final theme = ref.read(themeProvider);
     double invest = 0.0;
     try {
       await setPortfolioupdate('H');
@@ -547,8 +591,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       pref.setPerchnage(true);
       pref.setqty(true);
       pref.setInvestby(true);
-
-      tabSize();
+      // tabSize(theme);
       if (_holdingsModel!.isNotEmpty) {
         if (_holdingsModel![0].stat != "Not_Ok") {
           ConstantName.sessCheck = true;
@@ -738,6 +781,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
 
   Future fetchMFHoldings(context) async {
+    final theme = ref.read(themeProvider);
     try {
       _mfhloader = true;
       // _mfHoldingsModel = [];
@@ -751,7 +795,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
       pref.setMfPerchnage(true);
       pref.setMfqty(true);
       pref.setMfInvestby(true);
-      tabSize();
+      // tabSize(theme);
       if (_mfHoldingsModel!.isNotEmpty) {
         if (_mfHoldingsModel![0].stat != "Not_Ok") {
           ConstantName.sessCheck = true;
@@ -1405,10 +1449,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   exitPosition(BuildContext context, bool exitAll) async {
     // Set loading state to true at the beginning
-    if (exitAll) {
-      _isExitingAll = true;
-      notifyListeners();
-    }
+    // if (exitAll) {
+    //   _isExitingAll = true;
+    //   notifyListeners();
+    // }
 
     try {
       for (var element in _allPostionList) {
@@ -1474,10 +1518,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
     } finally {
       // Reset loading state when done (whether successful or not)
-      if (exitAll) {
-        _isExitingAll = false;
-        notifyListeners();
-      }
+      // if (exitAll) {
+      //   _isExitingAll = false;
+      //   notifyListeners();
+      // }
     }
 
     // ref.read(indexListProvider).bottomMenu(2);
@@ -1553,7 +1597,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
   positionSearch(String value, BuildContext context) {
     if (value.length > 1) {
-      _showSearchPosition = true;
+      // _showSearchPosition = true;
       _positionSearchItem = [];
       _positionSearchItem = _allPostionList
           .where((element) =>
@@ -1562,7 +1606,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                   false))
           .toList();
     } else {
-      _showSearchPosition = false;
+      // _showSearchPosition = false;
       _positionSearchItem = [];
     }
     notifyListeners();
@@ -1820,6 +1864,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   }
 
   splitPositionBook(bool isDay) async {
+    final theme = ref.read(themeProvider);
     if (_postionBookModel!.isNotEmpty) {
       _closedPosion = [];
       double totBuyAmts = 0.00;
@@ -1904,7 +1949,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       await positionCal(isDay);
       getPositionGroupNames();
-      tabSize();
+      // tabSize(theme);
 
       notifyListeners();
     }

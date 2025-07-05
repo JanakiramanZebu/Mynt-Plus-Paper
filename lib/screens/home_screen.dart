@@ -448,7 +448,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       return AppBar(
         shadowColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
         leadingWidth: 205,
-        elevation: .3,
+        elevation: selectedTab == 3 || selectedTab == 2 ? 0 : 0.3,
         leading: _buildAppBarLeading(selectedTab),
         actions: _buildAppBarActions(selectedTab),
         bottom: _buildAppBarBottom(selectedTab),
@@ -537,12 +537,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                  "Portfolio",
-                  style: textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      17,
-                      FontWeight.w600)),
+              TextWidget.heroText(
+                  text: selectedTab == 3
+                      ? "Orders"
+                      : selectedTab == 2
+                          ? "Portfolio"
+                          : "Dashboard",
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 1,
+                  theme: false)
             ],
           ),
         );
@@ -645,6 +650,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
+          // _buildBottomNavItem(
+          //     0, assets.geometry, "Dashboard", selectedTab, theme),
           _buildBottomNavItem(
               1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
           _buildBottomNavItem(
@@ -672,6 +679,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             // Always allow navigation taps regardless of internet status
             // This ensures UI stays interactive even during reconnection
             switch (index) {
+              // case 0:
+              //   _handleDashboardTap();
+              //   break;
               case 1:
                 _handleWatchlistTap();
                 break;
@@ -737,6 +747,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   // Bottom nav handlers
+  // void _handleDashboardTap() {
+  //   final indexProvide = ref.read(indexListProvider);
+  //   final portfolio = ref.read(portfolioProvider);
+  //   final marketWatchList = ref.read(marketWatchProvider);
+  //   final orderProviderRef = ref.read(orderProvider);
+
+  //   indexProvide.bottomMenu(0, context);
+  //   portfolio.cancelTimer();
+
+  //   // Unsubscribe from real-time data for other tabs
+  //   marketWatchList.requestMWScrip(context: context, isSubscribe: false);
+  //   portfolio.requestWSHoldings(context: context, isSubscribe: false);
+  //   orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
+  //   portfolio.requestWSPosition(context: context, isSubscribe: false);
+  // }
+
   void _handleWatchlistTap() async {
     final indexProvide = ref.read(indexListProvider);
     final portfolio = ref.read(portfolioProvider);
@@ -786,7 +812,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
         // Funds data
         fundProviderRef.fetchFunds(context);
-        
+
         // Order data for the Orders tab
         orderProviderRef.fetchOrderBook(context, false);
         orderProviderRef.fetchTradeBook(context);
@@ -1097,9 +1123,11 @@ class _PortfolioActions extends ConsumerWidget {
 
     if (selectedTab == 0 && allPostionListLength > 0) {
       // return _PositionGroupActions();
-    } else if (selectedTab == 2) { // Orders tab
+    } else if (selectedTab == 2) {
+      // Orders tab
       return _OrdersActions();
-    } else if (selectedTab == 3) { // Funds tab
+    } else if (selectedTab == 3) {
+      // Funds tab
       return _FundsWebActions();
     }
 
@@ -1116,15 +1144,22 @@ class _OrdersActions extends ConsumerWidget {
         orderProvider.select((orderProvider) => orderProvider.selectedTab));
     final theme = ref.watch(themeProvider); // Theme is needed here
 
-    if (selectedTab == 4) { // Basket tab
+    if (selectedTab == 4) {
+      // Basket tab
       return Row(children: [
         Container(
             margin: const EdgeInsets.only(right: 8),
             height: 30,
             child: OutlinedButton(
                 onPressed: () {
-                  showDialog(
+                  showModalBottomSheet(
                       context: context,
+                      useSafeArea: true,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(16)),
+                      ),
                       builder: (BuildContext context) {
                         return const CreateBasket();
                       });

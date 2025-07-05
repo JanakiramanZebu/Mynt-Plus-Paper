@@ -1016,6 +1016,7 @@ class LDProvider extends DefaultChangeNotifier {
 
   Future fetchpledgeandunpledge(BuildContext context) async {
     try {
+      print("fetchpledgeandunpledge");
       _reportsloading = true;
       notifyListeners();
       _pledgeandunpledge = await api.getpledgeandunpledge();
@@ -1038,6 +1039,7 @@ class LDProvider extends DefaultChangeNotifier {
     } catch (e) {
       debugPrint("$e");
       _reportsloading = false;
+      print("fetchpledgeandunpledge error $e");
 
       ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, 'Error occurred try again later'),

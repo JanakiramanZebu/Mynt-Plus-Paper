@@ -84,6 +84,9 @@ class LoggedUserBottomSheet extends ConsumerWidget {
               SizedBox(
                 height: 8.0,
               ),
+              SizedBox(
+                height: 8.0,
+              ),
               Divider(
                 height: 1,
                 thickness: 1,
@@ -298,6 +301,14 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                   acc.imei,
                                   true,
                                 );
+                            await ref.read(authProvider).fetchMobileLogin(
+                                  context,
+                                  "",
+                                  acc.clientId,
+                                  "switchAc",
+                                  acc.imei,
+                                  true,
+                                );
 
                             websocket.changeconnectioncount();
                             Future.delayed(const Duration(seconds: 2), () {
@@ -394,7 +405,9 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                   .read(websocketProvider)
                                   .changeconnectioncount();
                               if (context.mounted) {
-                                ref.read(indexListProvider).bottomMenu(3, context);
+                                ref
+                                    .read(indexListProvider)
+                                    .bottomMenu(3, context);
                               }
                             }
                           },
@@ -408,7 +421,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                       width: 1.4,
                       color: theme.isDarkMode
                           ? colors.primaryDark
-                          : colors.primaryLight, 
+                          : colors.primaryLight,
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 10.5),
                     shape: const RoundedRectangleBorder(
@@ -420,9 +433,9 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                     children: [
                       SvgPicture.asset(
                         assets.addCircleIcon,
-                       color: theme.isDarkMode
+                        color: theme.isDarkMode
                             ? colors.primaryDark
-                            : colors.primaryLight, 
+                            : colors.primaryLight,
                       ),
                       const SizedBox(width: 8),
                       TextWidget.subText(
@@ -430,7 +443,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                         theme: false,
                         color: theme.isDarkMode
                             ? colors.primaryDark
-                            : colors.primaryLight, 
+                            : colors.primaryLight,
                         fw: 0,
                       ),
                     ],

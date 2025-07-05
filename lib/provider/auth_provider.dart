@@ -42,6 +42,7 @@ import 'fund_provider.dart';
 import 'index_list_provider.dart';
 // import 'iop_provider.dart';
 import 'iop_provider.dart';
+import 'ledger_provider copy.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
@@ -1461,7 +1462,7 @@ class AuthProvider extends DefaultChangeNotifier {
       ConstantName.timer =
           Timer.periodic(const Duration(seconds: 1), (timer) {});
       ConstantName.timer!.cancel();
-      ref.read(indexListProvider).bottomMenu(s.isEmpty ? 1 : 4, context);
+      ref.read(indexListProvider).bottomMenu(s.isEmpty ? 1 : 3, context);
 
       if (s.isNotEmpty || pref.clientSession!.isNotEmpty) {
         ref.read(websocketProvider).closeSocket(true);
@@ -1510,6 +1511,9 @@ class AuthProvider extends DefaultChangeNotifier {
                 .read(marketWatchProvider)
                 .changeWLScrip(watchlistName, context);
           }
+          ref.read(portfolioProvider).clearAllportfolio();
+          ref.read(orderProvider).clearAllorders();
+          ref.read(ledgerProvider).setterfornullallSwitch = null;
 
           // initLaod(false);
           ref.read(orderProvider).fetchOrderBook(context, false);

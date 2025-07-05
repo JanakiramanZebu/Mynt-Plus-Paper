@@ -23,6 +23,7 @@ class Assets {
   final String editIcon = "assets/icon/appbarIcon/edit.svg";
   final String addCircleIcon = "assets/icon/appbarIcon/plus_circle.svg";
   final String filterLines = "assets/icon/appbarIcon/filter.svg";
+  final String filterLinesDark = "assets/icon/watchlistIcon/filtern.svg";
   final String calendarDate = "assets/icon/appbarIcon/calendar_date.svg";
   final String downArrow = "assets/icon/down_arrow.svg";
   final String leftArrow = "assets/icon/arrow_left.svg";

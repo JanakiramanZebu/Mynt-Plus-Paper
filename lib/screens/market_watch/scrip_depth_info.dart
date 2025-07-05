@@ -801,6 +801,13 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                     widget.wlValue.instname !=
                                                         "COM")
                                                   const ListDivider(),
+                                                if (!scripInfo
+                                                        .scripDepthloader &&
+                                                    widget.wlValue.instname !=
+                                                        "UNDIND" &&
+                                                    widget.wlValue.instname !=
+                                                        "COM")
+                                                  const ListDivider(),
                                                 // Chart button above tabs - Now in Column layout
                                                 // Container(
                                                 //     padding: const EdgeInsets
@@ -1544,7 +1551,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 : colors.secondaryLight,
                                                                             theme:
                                                                                 theme.isDarkMode,
-                                                                                 fw: 2,
+                                                                            fw: 2,
                                                                           ),
                                                                         ],
                                                                       ),

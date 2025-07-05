@@ -1020,9 +1020,8 @@ class LDProvider extends DefaultChangeNotifier {
               ordertype == 'ER' ? 'Order placed' : 'Order cancelled',
             ),
           );
-           
         }
-      }else  if (res.msg == 'error occured on data fetch') {
+      } else if (res.msg == 'error occured on data fetch') {
         await ordercheckfunction();
         _cpactionloader = false;
 
@@ -1031,20 +1030,19 @@ class LDProvider extends DefaultChangeNotifier {
           ScaffoldMessenger.of(context).showSnackBar(
             warningMessage(
               context,
-             "${res.msg}", // 'Order cancelled',
+              "${res.msg}", // 'Order cancelled',
             ),
           );
-         
         }
       }
-       Navigator.pop(context); // Pop after snackbar
+      Navigator.pop(context); // Pop after snackbar
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           warningMessage(context, '$e'),
         );
       }
- Navigator.pop(context); // Pop after snackbar
+      Navigator.pop(context); // Pop after snackbar
       debugPrint("$e");
     } finally {
       _cpactionloader = false;
@@ -1214,7 +1212,7 @@ class LDProvider extends DefaultChangeNotifier {
               String dateString = element.tRADEDATE!;
 
               try {
-                               DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
                 DateTime parsedDate = inputFormat.parse(dateString);
                 print("${element.realisedpnl}");
@@ -1229,7 +1227,7 @@ class LDProvider extends DefaultChangeNotifier {
         }
         if (_calenderpnlAllData!.data != null) {
           for (var trade in _calenderpnlAllData!.data!) {
-                            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
             DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
             final dateKey =
@@ -2212,7 +2210,6 @@ class LDProvider extends DefaultChangeNotifier {
   ///////////////////////////////////////////////////////////ofs/////////////////////////////////////////////////
 
   void setordervalueforofs(String qty, String price, String balance) {
-    
     selectedqtyforcpaction.text = qty;
 
     final int qtyInt = int.parse(qty);
@@ -2220,21 +2217,20 @@ class LDProvider extends DefaultChangeNotifier {
         price.contains('.') ? double.parse(price) : int.parse(price);
     selectedpriceforcpaction.text = priceNum.toString();
 
-
     final num requiredAmount = qtyInt * priceNum;
     _requiredamountforofs = requiredAmount.toString();
     _cpactionerrormsg = '';
     // final balanceDouble =
     //     balance.contains('.') ? double.parse(balance) : int.parse(balance);
     //     _cpactionerrormsg = '';
-          _pricevalidcp = true;
-          _qtyvalidcp = true;
+    _pricevalidcp = true;
+    _qtyvalidcp = true;
     checkbalace(_requiredamountforofs, balance);
-  
+
     notifyListeners();
   }
 
-  setCutoffcheckboxforofs(bool val, String cutOffPrice,String balance) {
+  setCutoffcheckboxforofs(bool val, String cutOffPrice, String balance) {
     _cutoffcheckboxofs = val;
     if (val) {
       // Keep existing quantity, set price to cutoff price
@@ -2242,24 +2238,19 @@ class LDProvider extends DefaultChangeNotifier {
       _pricevalidcp = true;
       checkbalace(_requiredamountforofs, balance);
       _cpactionerrormsg = '';
-
     } else {
       selectedpriceforcpaction.text = '';
       _pricevalidcp = false;
-        _cpactionsubtn = false;
+      _cpactionsubtn = false;
       _cpactionerrormsg = 'Price cannot be empty';
-
     }
-    
-    
+
     notifyListeners();
   }
 
   setofpricebox(String price, String balance, String base) {
     selectedpriceforcpaction.text = price;
-    final baseprice = base.contains('.')
-        ? double.parse(base)
-        : int.parse(base);
+    final baseprice = base.contains('.') ? double.parse(base) : int.parse(base);
     final priceText = selectedpriceforcpaction.text.trim();
     // final balanceDouble =
     //     balance.contains('.') ? double.parse(balance) : int.parse(balance);
@@ -2271,33 +2262,28 @@ class LDProvider extends DefaultChangeNotifier {
     if (priceText.isEmpty) {
       _cpactionerrormsg = 'Price cannot be empty';
       _pricevalidcp = false;
-        _cpactionsubtn = false;
-
-    }  else {
+      _cpactionsubtn = false;
+    } else {
       final parsedPrice = int.tryParse(priceText);
       if (parsedPrice != null && parsedPrice > 0) {
-       
+        _cpactionerrormsg = '';
+        if (baseprice > parsedPrice) {
+          _captionforofs = 'Price cannot be less than base price ₹$base';
+          _pricevalidcp = false;
+          _cpactionsubtn = false;
+        } else {
           _cpactionerrormsg = '';
-          if (baseprice > parsedPrice) {
-            _captionforofs = 'Price cannot be less than base price ₹$base';
-            _pricevalidcp = false;
-            _cpactionsubtn = false;
-          } else {
-            _cpactionerrormsg = '';
-            _qtyvalidcp = true;
-            _pricevalidcp = true; 
-            _cpactionsubtn = true;
-            checkbalace(_requiredamountforofs, balance);
-          }
-          
-         
+          _qtyvalidcp = true;
+          _pricevalidcp = true;
+          _cpactionsubtn = true;
+          checkbalace(_requiredamountforofs, balance);
+        }
       } else {
         _cpactionerrormsg = 'Invalid price input';
         _pricevalidcp = false;
         _cpactionsubtn = false;
       }
     }
-    
 
     notifyListeners();
   }
@@ -2315,17 +2301,14 @@ class LDProvider extends DefaultChangeNotifier {
     _requiredamountforofs = (qtyInt * priceNum).toString();
     if (qty.isEmpty) {
       _cpactionerrormsg = 'Quantity cannot be empty';
-        _cpactionsubtn = false; 
+      _cpactionsubtn = false;
       _qtyvalidcp = false;
-
     } else if (qty.contains('.')) {
       _cpactionerrormsg = 'Quantity cannot be decimal';
       _cpactionsubtn = false;
-      
-      _qtyvalidcp = false;
-       
 
-    }   else {
+      _qtyvalidcp = false;
+    } else {
       final qtyInt = int.parse(qty);
       if (qtyInt > 0) {
         _cpactionerrormsg = '';
@@ -2348,29 +2331,26 @@ class LDProvider extends DefaultChangeNotifier {
   checkbalace(String req, String balance) {
     final balanceDouble =
         balance.contains('.') ? double.parse(balance) : int.parse(balance);
-    final requiredAmount = req.contains('.')
-        ? double.parse(req)
-        : int.parse(req);
+    final requiredAmount =
+        req.contains('.') ? double.parse(req) : int.parse(req);
 
-   
-     if (requiredAmount > 200000) {
+    if (requiredAmount > 200000) {
       _captionforofs = 'Bid amount ₹$requiredAmount exceeds limit of ₹200,000';
       _cpactionsubtn = false;
-    } 
-    else if ((balanceDouble < requiredAmount) ) {
+    } else if ((balanceDouble < requiredAmount)) {
       _captionforofs = 'Insufficient balance for bid';
       _cpactionsubtn = false;
-    }
-    else if (balanceDouble >= requiredAmount && _qtyvalidcp == true && _pricevalidcp == true) {
+    } else if (balanceDouble >= requiredAmount &&
+        _qtyvalidcp == true &&
+        _pricevalidcp == true) {
       _captionforofs = 'Required amount for bid';
       _cpactionsubtn = true;
-    }else{
+    } else {
       _captionforofs = 'Enter bid quantity and price';
-      _cpactionsubtn = false; 
+      _cpactionsubtn = false;
     }
-   
-    notifyListeners();
 
+    notifyListeners();
   }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////

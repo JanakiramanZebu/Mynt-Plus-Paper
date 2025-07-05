@@ -81,8 +81,9 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
       }
     });
     final contentColor =
-        theme.isDarkMode ? colors.colorWhite : const Color(0xff666666);
-    final labelColor = const Color(0xff666666);
+        theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+    final labelColor =
+        theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
     final dividerColor =
         theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider;
 
@@ -95,99 +96,98 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
     final investKey =
         'invest-${widget.holdingData.invested}-${widget.exchTsym.close}-$themeKey';
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Container(
-          padding: const EdgeInsets.all(16),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            // Static header information (symbol name)
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              // Symbol name - static
-              _getCachedStaticComponent(
-                symbolKey,
-                () => TextWidget.subText(
-                    text: "${widget.exchTsym.tsym}",
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    color: const Color(0xff141414),
-                    fw: 0),
-              ),
-              _DynamicPnlInfo(
-                profitLoss: widget.exchTsym.profitNloss ?? '0.00',
-                pnlChange: widget.exchTsym.pNlChng ?? '0.00',
-              ),
+    return Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Static header information (symbol name)
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            // Symbol name - static
+            _getCachedStaticComponent(
+              symbolKey,
+              () => TextWidget.subText(
+                  textOverflow: TextOverflow.ellipsis,
+                  text:
+                      "${widget.exchTsym.tsym!.contains('-') ? widget.exchTsym.tsym!.split('-').first : widget.exchTsym.tsym}",
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 3),
+            ),
+            _DynamicPnlInfo(
+              profitLoss: widget.exchTsym.profitNloss ?? '0.00',
+              pnlChange: widget.exchTsym.pNlChng ?? '0.00',
+            ),
 
-              // LTP - dynamic, will update from socket
-            ]),
-            const SizedBox(height: 10),
-            // Exchange badge (static) and price change (dynamic)
-            // Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            //   // Static exchange badge - won't rebuild
-            //   // _getCachedStaticComponent(exchangeKey,
-            //   //     () => CustomExchBadge(exch: "${widget.exchTsym.exch}")),
-            //   // Dynamic percentage change
-            // ]),
-            // RepaintBoundary(child: Divider(color: dividerColor)),
-            // Quantity info (static) and P&L (dynamic)
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              // Static quantity information - use cached version
-              Row(
-                children: [
-                  _getCachedStaticComponent(
-                      qtyKey,
-                      () => _StaticQuantityInfo(
-                            holdingData: widget.holdingData,
-                            exchTsym: widget.exchTsym,
-                            labelColor: labelColor,
-                            contentColor: contentColor,
-                          )),
-                  const SizedBox(width: 4),
-                  _getCachedStaticComponent(
-                    investKey,
-                    () => _StaticPriceInfo(
-                      holdingData: widget.holdingData,
-                      exchTsym: widget.exchTsym,
-                      labelColor: labelColor,
-                      contentColor: contentColor,
-                    ),
+            // LTP - dynamic, will update from socket
+          ]),
+          const SizedBox(height: 10),
+          // Exchange badge (static) and price change (dynamic)
+          // Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          //   // Static exchange badge - won't rebuild
+          //   // _getCachedStaticComponent(exchangeKey,
+          //   //     () => CustomExchBadge(exch: "${widget.exchTsym.exch}")),
+          //   // Dynamic percentage change
+          // ]),
+          // RepaintBoundary(child: Divider(color: dividerColor)),
+          // Quantity info (static) and P&L (dynamic)
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            // Static quantity information - use cached version
+            Row(
+              children: [
+                _getCachedStaticComponent(
+                    qtyKey,
+                    () => _StaticQuantityInfo(
+                          holdingData: widget.holdingData,
+                          exchTsym: widget.exchTsym,
+                          labelColor: labelColor,
+                          contentColor: contentColor,
+                        )),
+                const SizedBox(width: 4),
+                _getCachedStaticComponent(
+                  investKey,
+                  () => _StaticPriceInfo(
+                    holdingData: widget.holdingData,
+                    exchTsym: widget.exchTsym,
+                    labelColor: labelColor,
+                    contentColor: contentColor,
                   ),
-                ],
-              ),
-              _DynamicLtpInfo(
-                ltp: widget.exchTsym.lp ?? '0.00',
-                labelColor: labelColor,
-                contentColor: contentColor,
-              ),
-            ]),
-            const SizedBox(height: 8),
-            // Investment (static) and current value (dynamic)
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              // Static investment information - use cached version
-              _StaticInvestmentInfo(
-                holdingData: widget.holdingData,
-                exchTsym: widget.exchTsym,
-                labelColor: labelColor,
-                contentColor: contentColor,
-              ),
+                ),
+              ],
+            ),
+            _DynamicLtpInfo(
+              ltp: widget.exchTsym.lp ?? '0.00',
+              labelColor: labelColor,
+              contentColor: contentColor,
+            ),
+          ]),
+          const SizedBox(height: 8),
+          // Investment (static) and current value (dynamic)
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            // Static investment information - use cached version
+            _StaticInvestmentInfo(
+              holdingData: widget.holdingData,
+              exchTsym: widget.exchTsym,
+              labelColor: labelColor,
+              contentColor: contentColor,
+            ),
 
-              // Row(
-              //   children: [
-              //     _DynamicPercentChange(
-              //       perChange: widget.exchTsym.perChange ?? '0.00',
-              //     ),
-              //   ],
-              // )
+            // Row(
+            //   children: [
+            //     _DynamicPercentChange(
+            //       perChange: widget.exchTsym.perChange ?? '0.00',
+            //     ),
+            //   ],
+            // )
 
-              // Dynamic current value information
-              _DynamicCurrentValueInfo(
-                currentValue: widget.holdingData.currentValue ?? '0.00',
-                labelColor: labelColor,
-                contentColor: contentColor,
-              )
-            ])
-          ])),
-    );
+            // Dynamic current value information
+            _DynamicCurrentValueInfo(
+              currentValue: widget.holdingData.currentValue ?? '0.00',
+              labelColor: labelColor,
+              contentColor: contentColor,
+            )
+          ])
+        ]));
   }
 }
 
@@ -584,23 +584,35 @@ class _DynamicPnlInfoState extends ConsumerState<_DynamicPnlInfo> {
     final theme = ref.watch(themeProvider);
 
     final pnlColor = _profitLoss.startsWith("-")
-        ? colors.ltpred
+        ? theme.isDarkMode
+            ? colors.lossDark
+            : colors.lossLight
         : _profitLoss == "0.00"
-            ? colors.ltpgrey
-            : colors.ltpgreen;
+            ? theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight
+            : theme.isDarkMode
+                ? colors.profitDark
+                : colors.profitLight;
 
     final pnlChangeColor = _pnlChange.startsWith("-")
-        ? colors.ltpred
+        ? theme.isDarkMode
+            ? colors.lossDark
+            : colors.lossLight
         : _pnlChange == "NaN"
-            ? colors.ltpred
-            : colors.ltpgreen;
+            ? theme.isDarkMode
+                ? colors.lossDark
+                : colors.lossLight
+            : theme.isDarkMode
+                ? colors.profitDark
+                : colors.profitLight;
 
     return RepaintBoundary(
       child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        Text(" (${_pnlChange == "NaN" ? 0.0 : _pnlChange}%) ",
+            style: _getStyle(pnlChangeColor, 12, 3, theme.isDarkMode)),
         Text("${_profitLoss}",
-            style: _getStyle(pnlColor, 16, 0, theme.isDarkMode)),
-        Text(" (${_pnlChange == "NaN" ? 0.0 : _pnlChange}%)",
-            style: _getStyle(pnlChangeColor, 12, 0, theme.isDarkMode))
+            style: _getStyle(pnlColor, 16, 3, theme.isDarkMode)),
       ]),
     );
   }

@@ -693,142 +693,157 @@ class _OrderItemState extends State<_OrderItem> {
         // Prevent multiple navigation events on rapid taps
         if (_isNavigating) return;
 
-      try {
-        setState(() => _isNavigating = true);
-        await Future.microtask(() => widget.onTap());
-      } catch (e) {
-        print("Navigation error: $e");
-      } finally {
-        if (mounted) {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              setState(() => _isNavigating = false);
-            }
-          });
+        try {
+          setState(() => _isNavigating = true);
+          await Future.microtask(() => widget.onTap());
+        } catch (e) {
+          print("Navigation error: $e");
+        } finally {
+          if (mounted) {
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                setState(() => _isNavigating = false);
+              }
+            });
+          }
         }
-      }
-    },
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Color(0xffEEEEEE), width: 1),
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Color(0xffEEEEEE), width: 1),
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Row 1: Symbol + Expiry | Status badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // SYMBOL + EXPIRY
-              Expanded(
-                child: TextWidget.subText(
-                  text: "${widget.orderItem.symbol} ${widget.orderItem.expDate} ${widget.orderItem.option ?? ''}",
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Row 1: Symbol + Expiry | Status badge
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // SYMBOL + EXPIRY
+                Expanded(
+                  child: TextWidget.subText(
+                    text:
+                        "${widget.orderItem.symbol} ${widget.orderItem.expDate} ${widget.orderItem.option ?? ''}",
+                    theme: widget.theme.isDarkMode,
+                    fw: 3,
+                    maxLines: 1,
+                    textOverflow: TextOverflow.ellipsis,
+                  ),
+                ),
+
+                // Status badge (pill shape)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: _getStatusColor()),
+                    borderRadius: BorderRadius.circular(5),
+                    color: _getStatusColor().withOpacity(0.1),
+                  ),
+                  child: TextWidget.paraText(
+                    text: _getStatusText(),
+                    color: _getStatusColor(),
+                    theme: false,
+                    fw: 3,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // Row 2: Exchange - OrderType - Time | LTP
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: TextWidget.paraText(
+                    text:
+                        "${widget.orderItem.exch} - ${widget.orderItem.prctyp} - ${formatDateTime(value: widget.orderItem.norentm!).substring(12, 21)}",
+                    theme: false,
+                    color: widget.theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 3,
+                  ),
+                ),
+                TextWidget.paraText(
+                  text: "LTP ${_getValidPrice()}",
+                  theme: false,
+                  color: widget.theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fw: 3,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // Row 3: BUY/SELL qty | value
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    TextWidget.paraText(
+                      text: widget.orderItem.trantype == "S" ? "SELL" : "BUY",
+                      theme: false,
+                      color: widget.orderItem.trantype == "S"
+                          ? widget.theme.isDarkMode
+                              ? colors.lossDark
+                              : colors.lossLight
+                          : widget.theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                      fw: 1,
+                    ),
+                    const SizedBox(width: 8),
+                    TextWidget.paraText(
+                      text: _getQuantityDisplay(),
+                      color: widget.theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      theme: widget.theme.isDarkMode,
+                      fw: 3,
+                    ),
+                  ],
+                ),
+                TextWidget.paraText(
+                  text: _getAvgPrice(),
+                  color: widget.theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
                   theme: widget.theme.isDarkMode,
                   fw: 3,
-                  maxLines: 1,
-                  textOverflow: TextOverflow.ellipsis,
                 ),
-              ),
-
-              // Status badge (pill shape)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  border: Border.all(color: _getStatusColor()),
-                  borderRadius: BorderRadius.circular(5),
-                  color: _getStatusColor().withOpacity(0.1),
-                ),
-                child: TextWidget.paraText(
-                  text: _getStatusText(),
-                  color: _getStatusColor(),
-                  theme: false,
-                  fw: 1,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // Row 2: Exchange - OrderType - Time | LTP
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: TextWidget.paraText(
-                  text: "${widget.orderItem.exch} - ${widget.orderItem.prctyp} - ${formatDateTime(value: widget.orderItem.norentm!).substring(12, 21)}",
-                  theme: false,
-                  color: const Color(0xff666666),
-                  fw: 00,
-                ),
-              ),
-              TextWidget.paraText(
-                text: "LTP ${_getValidPrice()}",
-                theme: false,
-                color: const Color(0xff666666),
-                fw: 0,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // Row 3: BUY/SELL qty | value
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  TextWidget.paraText(
-                    text: widget.orderItem.trantype == "S" ? "SELL" : "BUY",
-                    theme: false,
-                    color: widget.orderItem.trantype == "S"
-                        ? colors.darkred
-                        : colors.ltpgreen,
-                    fw: 1,
-                  ),
-                  const SizedBox(width: 8),
-                  TextWidget.subText(
-                    text: _getQuantityDisplay(),
-                    color: const Color(0xff666666),
-                    theme: widget.theme.isDarkMode,
-                    fw: 00,
-                  ),
-                ],
-              ),
-              TextWidget.subText(
-                text: _getAvgPrice(),
-                color: const Color(0xff666666),
-                theme: widget.theme.isDarkMode,
-                fw: 0,
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   // Get status color based on order status (matching existing logic)
   Color _getStatusColor() {
     if (widget.orderItem.status == "COMPLETE") {
-      return colors.ltpgreen;
+      return widget.theme.isDarkMode ? colors.profitDark : colors.profitLight;
     } else if (widget.orderItem.status == "CANCELED" ||
         widget.orderItem.status == "REJECTED") {
-      return colors.darkred;
+      return widget.theme.isDarkMode ? colors.lossDark : colors.lossLight;
     } else {
       // For OPEN, PENDING, TRIGGER_PENDING, etc.
-      return const Color(0xffFFB038);
+      return colors.pending;
     }
   }
 
   // Get status text for display (using exact status values)
   String _getStatusText() {
-    return widget.orderItem.status ?? 'Unknown';
+    return '${(widget.orderItem.status?.toString().toLowerCase() ?? 'unknown')[0].toUpperCase()}${(widget.orderItem.status?.toString().toLowerCase() ?? 'unknown').substring(1)}';
   }
 
   // Get quantity display like "56 / 423"

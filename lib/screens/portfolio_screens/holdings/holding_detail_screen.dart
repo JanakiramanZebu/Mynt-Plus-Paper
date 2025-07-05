@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/ledger_provider.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/portfolio_model/holdings_model.dart';
-import '../../../provider/ledger_provider copy.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/user_profile_provider.dart';
@@ -348,17 +348,19 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
           isModify: false,
           raw: {});
 
-      Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
-        "orderArg": orderArgs,
-        "scripInfo": mwProvider.scripInfoModel!,
-        "isBskt": ""
-      }).then((_) {
-        if (mounted) {
-          setState(() {
-            _isProcessingBuy = false;
-          });
-        }
-      });
+      if (mwProvider.scripInfoModel != null) {
+        Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+          "orderArg": orderArgs,
+          "scripInfo": mwProvider.scripInfoModel!,
+          "isBskt": ""
+        }).then((_) {
+          if (mounted) {
+            setState(() {
+              _isProcessingBuy = false;
+            });
+          }
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -426,17 +428,19 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
           isModify: false,
           raw: {});
 
-      Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
-        "orderArg": orderArgs,
-        "scripInfo": mwProvider.scripInfoModel!,
-        "isBskt": ""
-      }).then((_) {
-        if (mounted) {
-          setState(() {
-            _isProcessingSell = false;
-          });
-        }
-      });
+      if (mwProvider.scripInfoModel != null) {
+        Navigator.pushNamed(context, Routes.placeOrderScreen, arguments: {
+          "orderArg": orderArgs,
+          "scripInfo": mwProvider.scripInfoModel!,
+          "isBskt": ""
+        }).then((_) {
+          if (mounted) {
+            setState(() {
+              _isProcessingSell = false;
+            });
+          }
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -450,18 +454,21 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     final scripInfo = ref.watch(marketWatchProvider);
-    final depthData = ref.watch(marketWatchProvider).getQuotes!;
+    final depthData = ref.watch(marketWatchProvider).getQuotes;
     final userProfile = ref.watch(userProfileProvider);
     final ledgerdate = ref.watch(ledgerProvider);
+    final value = ledgerdate.pledgeandunpledge?.data?.isNotEmpty == true
+        ? ledgerdate.pledgeandunpledge!.data![0]
+        : null;
 
     DepthInputArgs depthArgs = DepthInputArgs(
         exch: _exchTsym.exch ?? "",
         token: _exchTsym.token ?? "",
-        tsym: scripInfo.getQuotes!.tsym ?? '',
-        instname: scripInfo.getQuotes!.instname ?? "",
-        symbol: scripInfo.getQuotes!.symbol ?? '',
-        expDate: scripInfo.getQuotes!.expDate ?? '',
-        option: scripInfo.getQuotes!.option ?? '');
+        tsym: scripInfo.getQuotes?.tsym ?? '',
+        instname: scripInfo.getQuotes?.instname ?? "",
+        symbol: scripInfo.getQuotes?.symbol ?? '',
+        expDate: scripInfo.getQuotes?.expDate ?? '',
+        option: scripInfo.getQuotes?.option ?? '');
 
     // Show loading state during initial load
     // if (_isLoading) {
@@ -593,57 +600,47 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
-                                                      TextWidget.titleText(
+                                                      TextWidget.headText(
                                                           text:
                                                               "${_exchTsym.tsym?.toUpperCase() ?? ''} ",
-                                                          color: !theme
+                                                          color: theme
                                                                   .isDarkMode
                                                               ? colors
-                                                                  .colorBlack
+                                                                  .textPrimaryDark
                                                               : colors
-                                                                  .colorWhite,
+                                                                  .textPrimaryLight,
                                                           theme:
                                                               theme.isDarkMode,
-                                                          fw: 1),
-                                                      const SizedBox(height: 8),
+                                                          fw: 0),
+                                                      const SizedBox(height: 6),
                                                       FadeTransition(
                                                         opacity:
                                                             _animationController,
-                                                        child: TextWidget
-                                                            .titleText(
-                                                                text:
-                                                                    "₹${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
-                                                                color: (_exchTsym.change ==
-                                                                                "null" ||
-                                                                            _exchTsym.change ==
-                                                                                null) ||
-                                                                        _exchTsym.change ==
-                                                                            "0.00"
-                                                                    ? colors
-                                                                        .ltpgrey
-                                                                    : _exchTsym.change!.startsWith("-") ||
-                                                                            _exchTsym.perChange!.startsWith(
-                                                                                "-")
-                                                                        ? colors
-                                                                            .darkred
-                                                                        : colors
-                                                                            .ltpgreen,
-                                                                theme: theme
-                                                                    .isDarkMode,
-                                                                fw: 0),
+                                                        child: TextWidget.titleText(
+                                                            text: "${_exchTsym.lp != "null" ? _exchTsym.lp ?? _exchTsym.close ?? 0.00 : '0.00'}",
+                                                            color: (_exchTsym.change == "null" || _exchTsym.change == null) || _exchTsym.change == "0.00"
+                                                                ? colors.textSecondaryLight
+                                                                : (_exchTsym.change?.startsWith("-") == true || _exchTsym.perChange?.startsWith("-") == true)
+                                                                    ? theme.isDarkMode
+                                                                        ? colors.lossDark
+                                                                        : colors.lossLight
+                                                                    : theme.isDarkMode
+                                                                        ? colors.successDark
+                                                                        : colors.successLight,
+                                                            theme: false,
+                                                            fw: 3),
                                                       ),
                                                       const SizedBox(height: 4),
                                                       TextWidget.paraText(
                                                           text:
                                                               "${(double.tryParse(_exchTsym.change ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_exchTsym.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                                                          color: !theme
+                                                          color: theme
                                                                   .isDarkMode
                                                               ? colors
-                                                                  .colorBlack
+                                                                  .textSecondaryDark
                                                               : colors
-                                                                  .colorWhite,
-                                                          theme:
-                                                              theme.isDarkMode,
+                                                                  .textSecondaryLight,
+                                                          theme: false,
                                                           fw: 3)
                                                     ]),
                                                 Row(
@@ -658,8 +655,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                         assets.rightarrowcur,
                                                         width: 12,
                                                         height: 12,
-                                                        color: const Color(
-                                                            0xff777777),
+                                                        color: colors.iconColor,
                                                       ),
                                                     ),
                                                   ],
@@ -682,42 +678,55 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                             height: 40,
                                             decoration: BoxDecoration(
                                                 border: Border.all(
-                                                  color: _isProcessingSell ||
-                                                          _holdingData
-                                                                  .saleableQty ==
-                                                              0
-                                                      ? Color(0xff0037B7)
-                                                          .withOpacity(.8)
-                                                      : Color(0xff0037B7),
+                                                  color:
+                                                      colors.btnOutlinedBorder,
                                                   width: 1,
                                                 ),
-                                                color: const Color(0xffF1F3F8),
+                                                color: colors.btnBg,
                                                 borderRadius:
                                                     BorderRadius.circular(5)),
-                                            child: InkWell(
-                                              onTap: _isProcessingBuy
-                                                  ? null
-                                                  : _handleBuy,
-                                              child: Center(
-                                                child: _isProcessingBuy
-                                                    ? const SizedBox(
-                                                        width: 18,
-                                                        height: 18,
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                          strokeWidth: 2,
-                                                          valueColor:
-                                                              AlwaysStoppedAnimation<
-                                                                      Color>(
-                                                                  Colors.white),
-                                                        ),
-                                                      )
-                                                    : TextWidget.subText(
-                                                        text: "Add",
-                                                        theme: false,
-                                                        color:
-                                                            Color(0xff0037B7),
-                                                        fw: 1),
+                                            child: Material(
+                                              color: Colors.transparent,
+                                              shape:
+                                                  const BeveledRectangleBorder(),
+                                              child: InkWell(
+                                                customBorder:
+                                                    const BeveledRectangleBorder(),
+                                                splashColor: theme.isDarkMode
+                                                    ? colors.splashColorDark
+                                                    : colors.splashColorLight,
+                                                highlightColor: theme.isDarkMode
+                                                    ? colors.highlightDark
+                                                    : colors.highlightLight,
+                                                onTap: _isProcessingBuy
+                                                    ? null
+                                                    : _handleBuy,
+                                                child: Center(
+                                                  child: _isProcessingBuy
+                                                      ? SizedBox(
+                                                          width: 18,
+                                                          height: 18,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            valueColor:
+                                                                AlwaysStoppedAnimation<
+                                                                        Color>(
+                                                                    colors
+                                                                        .secondary),
+                                                          ),
+                                                        )
+                                                      : TextWidget.subText(
+                                                          text: "Add",
+                                                          theme: false,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .primaryDark
+                                                              : colors
+                                                                  .primaryLight,
+                                                          fw: 1),
+                                                ),
                                               ),
                                             )),
                                       ),
@@ -727,57 +736,56 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                               height: 40,
                                               decoration: BoxDecoration(
                                                   border: Border.all(
-                                                    color: _isProcessingSell ||
-                                                            _holdingData
-                                                                    .saleableQty ==
-                                                                0
-                                                        ? Color(0xff0037B7)
-                                                            .withOpacity(.8)
-                                                        : Color(0xff0037B7),
+                                                    color: colors
+                                                        .btnOutlinedBorder,
                                                     width: 1,
                                                   ),
-                                                  color:
-                                                      const Color(0xffF1F3F8),
+                                                  color: colors.btnBg,
                                                   borderRadius:
                                                       BorderRadius.circular(5)),
-                                              child: InkWell(
-                                                onTap: _isProcessingSell
-                                                    ? null
-                                                    : _handleSell,
-                                                child: Center(
-                                                  child: _isProcessingSell
-                                                      ? SizedBox(
-                                                          width: 18,
-                                                          height: 18,
-                                                          child:
-                                                              CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                            valueColor: AlwaysStoppedAnimation<
-                                                                Color>(_isProcessingSell ||
-                                                                    _holdingData
-                                                                            .saleableQty ==
-                                                                        0
-                                                                ? colors.darkred
-                                                                    .withOpacity(
-                                                                        .8)
+                                              child: Material(
+                                                color: Colors.transparent,
+                                                shape:
+                                                    const BeveledRectangleBorder(),
+                                                child: InkWell(
+                                                  customBorder:
+                                                      const BeveledRectangleBorder(),
+                                                  splashColor: theme.isDarkMode
+                                                      ? colors.splashColorDark
+                                                      : colors.splashColorLight,
+                                                  highlightColor: theme
+                                                          .isDarkMode
+                                                      ? colors.highlightDark
+                                                      : colors.highlightLight,
+                                                  onTap: _isProcessingSell
+                                                      ? null
+                                                      : _handleSell,
+                                                  child: Center(
+                                                    child: _isProcessingSell
+                                                        ? SizedBox(
+                                                            width: 18,
+                                                            height: 18,
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                              valueColor:
+                                                                  AlwaysStoppedAnimation<
+                                                                          Color>(
+                                                                      colors
+                                                                          .secondary),
+                                                            ),
+                                                          )
+                                                        : TextWidget.subText(
+                                                            text: "Exit",
+                                                            theme: false,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .primaryDark
                                                                 : colors
-                                                                    .darkred),
-                                                          ),
-                                                        )
-                                                      : TextWidget.subText(
-                                                          text: "Exit",
-                                                          theme: false,
-                                                          color: _isProcessingSell ||
-                                                                  _holdingData
-                                                                          .saleableQty ==
-                                                                      0
-                                                              ? const Color(
-                                                                      0xff0037B7)
-                                                                  .withOpacity(
-                                                                      .8)
-                                                              : const Color(
-                                                                  0xff0037B7),
-                                                          fw: 1),
+                                                                    .primaryLight,
+                                                            fw: 1),
+                                                  ),
                                                 ),
                                               )))
                                     ],
@@ -808,11 +816,11 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                 arguments: "DDDDD");
                                           },
                                           splashColor: theme.isDarkMode
-                                              ? Colors.white.withOpacity(0.15)
-                                              : Colors.black.withOpacity(0.15),
+                                              ? colors.splashColorDark
+                                              : colors.splashColorLight,
                                           highlightColor: theme.isDarkMode
-                                              ? Colors.white.withOpacity(0.08)
-                                              : Colors.black.withOpacity(0.08),
+                                              ? colors.highlightDark
+                                              : colors.highlightLight,
                                           child: Container(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 10, vertical: 8),
@@ -821,8 +829,9 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                               children: [
                                                 TextWidget.subText(
                                                     text: "Pledge/Unpledge",
-                                                    color: Color(0xFF0037B7),
-                                                    theme: theme.isDarkMode,
+                                                    color: colors
+                                                        .btnOutlinedBorder,
+                                                    theme: false,
                                                     fw: 0),
                                               ],
                                             ),
@@ -843,8 +852,10 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                           TextWidget.subText(
                                               text: "P&L",
                                               theme: false,
-                                              color: const Color(0xff5E6B7D),
-                                              fw: 0),
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                              fw: 3),
 
                                           // Animate P&L changes
                                           FadeTransition(
@@ -857,19 +868,28 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                     text:
                                                         "${_exchTsym.profitNloss}",
                                                     theme: false,
-                                                    color: _exchTsym
-                                                            .profitNloss!
-                                                            .startsWith("-")
-                                                        ? colors.darkred
-                                                        : colors.ltpgreen,
-                                                    fw: 1),
+                                                    color: _exchTsym.profitNloss
+                                                                ?.startsWith(
+                                                                    "-") ==
+                                                            true
+                                                        ? theme.isDarkMode
+                                                            ? colors.lossDark
+                                                            : colors.lossLight
+                                                        : theme.isDarkMode
+                                                            ? colors.successDark
+                                                            : colors
+                                                                .successLight,
+                                                    fw: 3),
                                                 SizedBox(height: 4),
-                                                TextWidget.paraText(
+                                                TextWidget.subText(
                                                     text:
                                                         " (${_exchTsym.pNlChng})%",
                                                     theme: false,
-                                                    color: Color(0xFF666666),
-                                                    fw: 0),
+                                                    color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors
+                                                            .textPrimaryLight,
+                                                    fw: 3),
                                               ],
                                             ),
                                           ),
@@ -878,10 +898,16 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                             ),
                           ),
 
-                          Divider(
-                              color: theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : colors.colorDivider),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                            ),
+                            child: Divider(
+                                thickness: 1,
+                                color: theme.isDarkMode
+                                    ? colors.darkColorDivider
+                                    : colors.colorDivider),
+                          ),
 
                           // Details section
                           Column(
@@ -912,63 +938,26 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                         .toStringAsFixed(2),
                                     theme),
                                 if (_holdingData.btstqty != "0") ...[
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            TextWidget.paraText(
-                                                text: "T1 Qty",
-                                                theme: false,
-                                                color: const Color(0xff666666),
-                                                fw: 0),
-                                            const SizedBox(height: 2),
-                                            TextWidget.subText(
-                                                text:
-                                                    "${_holdingData.btstqty ?? 0}",
-                                                theme: false,
-                                                color: const Color(0xff000000),
-                                                fw: 0),
-                                            const SizedBox(height: 2),
-                                            Divider(color: colors.colorDivider),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                  data("T1 Qty", "${_holdingData.btstqty ?? 0}",
+                                      theme),
                                 ],
                                 if (_holdingData.rpnl != null &&
                                     _holdingData.rpnl != "0") ...[
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            TextWidget.paraText(
-                                                text: "Realised P&L",
-                                                theme: false,
-                                                color: const Color(0xff666666),
-                                                fw: 0),
-                                            const SizedBox(height: 2),
-                                            TextWidget.subText(
-                                                text:
-                                                    "${_holdingData.rpnl ?? 0}",
-                                                theme: false,
-                                                color: const Color(0xff000000),
-                                                fw: 0),
-                                            const SizedBox(height: 2),
-                                            Divider(color: colors.colorDivider),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                  data("Realised P&L",
+                                      "${_holdingData.rpnl ?? 0}", theme),
                                 ],
+                                // value.initiated == "0" &&
+                                //         value.status == 'Ok' &&
+                                //         (double.parse(value.nSOHQTY.toString())
+                                //                     .toInt()) +
+                                //                 (double.parse(
+                                //                         value.sOHQTY.toString())
+                                //                     .toInt()) !=
+                                data(
+                                    "Pledged Qty",
+                                    "${value?.dummvalue != 'null' ? "${value?.dummvalue!} /" : ''} ${(double.parse(value!.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt())}",
+                                    theme),
+                                // : const SizedBox.shrink(),
                               ]),
                         ], // Close ListView children
                       ),
@@ -1246,11 +1235,11 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
             DepthInputArgs depthArgs = DepthInputArgs(
                 exch: _exchTsym.exch ?? "",
                 token: _exchTsym.token ?? "",
-                tsym: scripInfo.getQuotes!.tsym ?? '',
-                instname: scripInfo.getQuotes!.instname ?? "",
-                symbol: scripInfo.getQuotes!.symbol ?? '',
-                expDate: scripInfo.getQuotes!.expDate ?? '',
-                option: scripInfo.getQuotes!.option ?? '');
+                tsym: scripInfo.getQuotes?.tsym ?? '',
+                instname: scripInfo.getQuotes?.instname ?? "",
+                symbol: scripInfo.getQuotes?.symbol ?? '',
+                expDate: scripInfo.getQuotes?.expDate ?? '',
+                option: scripInfo.getQuotes?.option ?? '');
             // Add delay for visual feedback
             await Future.delayed(const Duration(milliseconds: 150));
 
@@ -1338,25 +1327,26 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.paraText(
+              TextWidget.subText(
                   text: name,
                   theme: false,
-                  color: const Color(0xff666666),
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
                   fw: 0),
               TextWidget.subText(
                   text: value,
                   theme: false,
-                  color: const Color(0xff000000),
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
                   fw: 0),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Divider(
-            height: 1,
-            thickness: 0.5,
-            color: theme.isDarkMode
-                ? colors.darkColorDivider.withOpacity(0.3)
-                : colors.colorDivider.withOpacity(0.3),
+            thickness: 1,
+            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           )
         ],
       ),
