@@ -49,7 +49,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                     color: theme.isDarkMode
                         ? colors.colorWhite
                         : colors.colorBlack,
-                    fw: 1),
+                    fw: 0),
                 const SizedBox(height: 10),
 
                 Divider(
@@ -172,7 +172,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                   color: theme.isDarkMode
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,
-                                  fw: 1),
+                                  fw: 0),
                               const SizedBox(width: 8.0),
                               Row(
                                 children: [

@@ -43,7 +43,7 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
                 text: "Customer Support & Assistance",
                 theme: false,
                 color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 0),
+                fw: 1),
             const SizedBox(height: 14),
             InkWell(
               onTap: () async {
@@ -53,7 +53,7 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
               child: Row(children: [
                 SvgPicture.asset(assets.phone, color: colors.colorGrey),
                 const SizedBox(width: 10),
-                TextWidget.paraText(
+                TextWidget.subText(
                     text: ConstantName.phoneNum,
                     theme: false,
                    color: !theme.isDarkMode
@@ -72,7 +72,7 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
               child: Row(children: [
                 SvgPicture.asset(assets.sendMsg, color: colors.colorGrey),
                 const SizedBox(width: 10),
-                TextWidget.paraText(
+                TextWidget.subText(
                     text: ConstantName.gamil,
                     theme: false,
                      color: !theme.isDarkMode
@@ -87,7 +87,7 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
                 text: "Investor grievance:",
                 theme: false,
                 color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 0),
+                fw: 1),
             const SizedBox(height: 8),
             InkWell(
               onTap: () async {
@@ -97,7 +97,7 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(vertical: 5),
-                child: TextWidget.paraText(
+                child: TextWidget.subText(
                     text: ConstantName.gamil1,
                     theme: false,
                     color: !theme.isDarkMode
@@ -120,9 +120,9 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
                 text: "Follow us",
                 theme: false,
                 color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                fw: 0),
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight, 
+                fw: 1),
             const SizedBox(height: 20),
             SizedBox(
                 height: 30,

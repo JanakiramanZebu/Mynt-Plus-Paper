@@ -128,7 +128,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                     color: theme.isDarkMode
                         ? colors.colorWhite
                         : colors.colorBlack,
-                    fw: 1),
+                    fw: 0),
                 const SizedBox(height: 16),
                 InkWell(
                   onTap: () {
@@ -162,20 +162,20 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              TextWidget.custmText(
+                              TextWidget.titleText(
                                   text:
                                       "${otp.substring(0, 3)} ${otp.substring(3, 6)}",
                                   color: theme.isDarkMode
                                       ? colors.colorWhite
                                       : colors.colorBlack,
-                                  fs: 24,
-                                  fw: 2,
+                                   
+                                  fw: 0,
                                   theme: false,
-                                  letterSpacing: 2),
+                                  ),
                               const SizedBox(
                                 width: 8,
                               ),
-                              const Icon(Icons.copy, size: 20),
+                              const Icon(Icons.copy, size: 18),
                             ],
                           ),
                           // const SizedBox(height: 8),
@@ -192,7 +192,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                             minHeight: 6,
                           ),
                           const SizedBox(height: 14),
-                          TextWidget.paraText(
+                          TextWidget.subText(
                               text: '$remainingSeconds seconds remaining',
                               theme: false,
                               color: theme.isDarkMode
@@ -211,7 +211,7 @@ class _TotpScreenState extends ConsumerState<TotpScreen> {
                     color: theme.isDarkMode
                         ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
-                    fw: 1),
+                    fw: 0),
                 const SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
