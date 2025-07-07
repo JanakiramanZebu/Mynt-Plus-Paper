@@ -287,7 +287,7 @@ class MFProvider extends DefaultChangeNotifier {
     fetchsiprejreasn();
     // await fetchnewMFBestList();
     // await fetchBestMF();
-    Navigator.pushNamed(ctx, Routes.mfmainscreen);
+    // Navigator.pushNamed(ctx, Routes.mfmainscreen);
     // await fetchsiprejreasin();
     await fetchmfholdingnew();
 
