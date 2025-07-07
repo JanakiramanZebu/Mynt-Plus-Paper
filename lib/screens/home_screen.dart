@@ -34,6 +34,7 @@ import 'market_watch/scrip_filter_bottom_sheet.dart';
 import 'market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen.dart';
 import 'market_watch/watchlists_bottom_sheet.dart';
+import 'mutual_fund/mf_main_screen.dart';
 import 'order_book/basket/create_basket.dart';
 import 'order_book/order_book_screen.dart';
 import 'portfolio_screens/portfolio_screen.dart';
@@ -952,11 +953,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         return const PortfolioScreen();
       case 3:
         // Navigate to mutual fund screen
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ref.read(indexListProvider).bottomMenu(1, context);
-          Navigator.pushNamed(context, Routes.mfmainscreen);
-        });
-        return const SizedBox.shrink();
+        return const MfmainScreen();
+        // WidgetsBinding.instance.addPostFrameCallback((_) {
+        //   ref.read(indexListProvider).bottomMenu(1, context);
+        //   Navigator.pushNamed(context, Routes.mfmainscreen);
+        // });
+        // return const SizedBox.shrink();
       case 4:
         return const UserAccountScreen();
       default:

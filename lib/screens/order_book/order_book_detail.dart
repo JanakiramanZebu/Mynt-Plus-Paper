@@ -188,7 +188,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                       children: [
                                                         TextWidget.titleText(
                                                             text:
-                                                                "${displayData.symbol}",
+                                                                "${displayData.symbol?.replaceAll("-EQ", "")}",
                                                             theme: false,
                                                             color: theme
                                                                     .isDarkMode
@@ -930,7 +930,7 @@ void _showCancelOrderDialog(
                   children: [
                     TextWidget.subText(
                         text:
-                            "${orderBookData.symbol} ${orderBookData.option} ",
+                            "${orderBookData.symbol?.replaceAll("-EQ", "")} ${orderBookData.option} ",
                         theme: theme.isDarkMode,
                         fw: 3,
                         color: theme.isDarkMode

@@ -623,7 +623,7 @@ class _PositionScreen extends State<PositionScreen>
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           TextWidget.subText(
-                                              text: "${val.tsym}",
+                                              text: "${val.tsym?.replaceAll("-EQ", "")}",
                                               color: theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,

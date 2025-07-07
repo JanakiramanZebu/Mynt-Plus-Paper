@@ -205,7 +205,7 @@ class TradeBook extends ConsumerWidget {
                                     // SYMBOL + EXPIRY + OPTION
                                     Expanded(
                                       child: TextWidget.subText(
-                                        text: "${tradeBook[index].symbol} ${tradeBook[index].expDate} ${tradeBook[index].option ?? ''}",
+                                        text: "${tradeBook[index].symbol?.replaceAll("-EQ", "")} ${tradeBook[index].expDate} ${tradeBook[index].option ?? ''}",
                                         theme: theme.isDarkMode,
                                         fw: 3,
                                         maxLines: 1,
@@ -422,7 +422,7 @@ class TradeBook extends ConsumerWidget {
                                     // SYMBOL + EXPIRY + OPTION
                                     Expanded(
                                       child: TextWidget.subText(
-                                        text: "${order.tradeBooksearch![index].symbol} ${order.tradeBooksearch![index].expDate} ${order.tradeBooksearch![index].option ?? ''}",
+                                        text: "${order.tradeBooksearch![index].symbol?.replaceAll("-EQ", "")} ${order.tradeBooksearch![index].expDate} ${order.tradeBooksearch![index].option ?? ''}",
                                         theme: theme.isDarkMode,
                                         fw: 3,
                                         maxLines: 1,

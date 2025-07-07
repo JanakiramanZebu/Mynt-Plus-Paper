@@ -140,9 +140,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   // Update holdings data with socket updates - optimized version
   void _updateHoldingsData(Map socketDatas) {
     final holdingProvider = ref.read(portfolioProvider);
-    final holdings = holdingProvider.showSearchHold
-        ? holdingProvider.holdingSearchItem!
-        : holdingProvider.holdingsModel!;
+    final holdings = holdingProvider.holdingsModel!;
 
     if (holdings.isEmpty) return;
 
@@ -334,9 +332,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   // Process initial data without triggering setState during build
   void _processInitialData(Map socketDatas) {
     final holdingProvider = ref.read(portfolioProvider);
-    final holdings = holdingProvider.showSearchHold
-        ? holdingProvider.holdingSearchItem!
-        : holdingProvider.holdingsModel!;
+    final holdings = holdingProvider.holdingsModel!;
 
     if (holdings.isEmpty) return;
 
@@ -510,9 +506,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   // Method to calculate summary values from holdings data
   void _calculateSummaryValues() {
     final holdingProvider = ref.read(portfolioProvider);
-    final holdings = holdingProvider.showSearchHold
-        ? holdingProvider.holdingSearchItem!
-        : holdingProvider.holdingsModel!;
+    final holdings = holdingProvider.holdingsModel!;
 
     if (holdings.isEmpty) {
       _totalPnlHolding = 0.0;
@@ -1151,13 +1145,13 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                   holdingProvider.holdingSearch(value, context);
 
                   // Clear cached widgets to force rebuild with new data
-                  setState(() {
-                    _cachedSummarySection = null;
-                    _cachedActionButtons = null;
-                    _cachedEmptyState = null;
-                    _cachedActionButtonsKey = null;
-                    _cachedSummaryKey = null;
-                  });
+                  // setState(() {
+                  //   _cachedSummarySection = null;
+                  //   _cachedActionButtons = null;
+                  //   _cachedEmptyState = null;
+                  //   _cachedActionButtonsKey = null;
+                  //   _cachedSummaryKey = null;
+                  // });
                 }),
           ),
         ),

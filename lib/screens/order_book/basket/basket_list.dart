@@ -483,7 +483,7 @@ class BasketScripList extends ConsumerWidget {
                                             children: [
                                               TextWidget.titleText(
                                                   text:
-                                                      "Are you sure you want to delete this basket Scrip ${basket.bsktScripList[index]['symbol']}",
+                                                      "Are you sure you want to delete this basket Scrip ${basket.bsktScripList[index]['symbol']?.replaceAll("-EQ", "")}",
                                                   theme: theme.isDarkMode,
                                                   fw: 1,
                                                   align: TextAlign.center),
@@ -627,7 +627,7 @@ class BasketScripList extends ConsumerWidget {
                                               Row(children: [
                                                 TextWidget.subText(
                                                     text:
-                                                        "${basket.bsktScripList[index]['symbol']}",
+                                                        "${basket.bsktScripList[index]['symbol'].replaceAll("-EQ", "")} ",
                                                     theme: theme.isDarkMode,
                                                     fw: 1,
                                                     textOverflow:

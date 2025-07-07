@@ -354,7 +354,7 @@ class GttOrderBook extends ConsumerWidget {
                                                 Row(children: [
                                                   TextWidget.subText(
                                                       text:
-                                                          "${gttOrderBook[index].symbol} ",
+                                                          "${gttOrderBook[index].symbol?.replaceAll("-EQ", "")} ",
                                                       theme: false,
                                                       color: theme.isDarkMode
                                                           ? colors.colorWhite
@@ -657,7 +657,7 @@ class GttOrderBook extends ConsumerWidget {
                                           Row(children: [
                                             TextWidget.subText(
                                                 text:
-                                                    "${order.gttOrderBookSearch![index].symbol} ",
+                                                    "${order.gttOrderBookSearch![index].symbol?.replaceAll("-EQ", "")} ",
                                                 theme: theme.isDarkMode,
                                                 fw: 1,
                                                 textOverflow:

@@ -167,7 +167,7 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                                             children: [
                                               TextWidget.subText(
                                                   text:
-                                                      "${alert.tsym} ",
+                                                      "${alert.tsym?.replaceAll("-EQ", "")} ",
                                                   theme: theme.isDarkMode,
                                                   fw: 1,
                                                   textOverflow:

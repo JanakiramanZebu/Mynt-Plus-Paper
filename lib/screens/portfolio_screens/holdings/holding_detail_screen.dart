@@ -602,7 +602,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                     children: [
                                                       TextWidget.headText(
                                                           text:
-                                                              "${_exchTsym.tsym?.toUpperCase() ?? ''} ",
+                                                              "${_exchTsym.tsym?.replaceAll("-EQ", "").toUpperCase() ?? ''} ",
                                                           color: theme
                                                                   .isDarkMode
                                                               ? colors

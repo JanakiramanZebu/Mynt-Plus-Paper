@@ -500,7 +500,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                     TextWidget
                                                                         .titleText(
                                                                       text:
-                                                                          "${widget.wlValue.symbol.toUpperCase()} ",
+                                                                          "${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()} ",
                                                                       color: theme.isDarkMode
                                                                           ? colors
                                                                               .textPrimaryDark

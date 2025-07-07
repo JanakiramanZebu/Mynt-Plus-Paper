@@ -49,7 +49,14 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
       return const SizedBox.shrink();
     }
 
-    // Width calculation moved here to avoid context in initState
+
+    // Calculate pages (2 items per page)
+    final totalItems = indexValues.length;
+    final itemsPerPage = 2;
+    final totalPages = (totalItems / itemsPerPage).ceil();
+
+    // Width calculation for 2 items per page
+    final screenWidth = MediaQuery.of(context).size.width;
     final itemWidth = MediaQuery.of(context).size.width * 0.50;
 
     // Create a unique key based on the indices to force rebuild when they change
@@ -63,38 +70,88 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
           left: widget.src ? 0 : 12, right: widget.src ? 0 : 12),
       height: widget.src ? 56 : 55,
       child: RepaintBoundary(
-        child: ListView.separated(
-          controller: _scrollController,
-          shrinkWrap: true,
+        child: PageView.builder(
+          controller: PageController(
+          viewportFraction: 1.0, // Show one page at a time
+          initialPage: 0,
+        ),
+          // shrinkWrap: true,
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
-          itemCount: indexValues.length,
-          separatorBuilder: (context, index) => Container(
-            width: 0,
-            height: double.infinity,
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            color: ref.watch(themeProvider).isDarkMode
-                ? const Color(0xFF2A2A2A)
-                : const Color(0xFFE0E0E0),
-          ),
+          itemCount: totalPages,
+          // separatorBuilder: (context, index) => Container(
+          //   width: 0,
+          //   height: double.infinity,
+          //   margin: const EdgeInsets.symmetric(vertical: 8),
+          //   color: ref.watch(themeProvider).isDarkMode
+          //       ? const Color(0xFF2A2A2A)
+          //       : const Color(0xFFE0E0E0),
+          // ),
           itemBuilder: (BuildContext context, int index) {
             final indexItem = indexValues[index];
 
             // Create a key for efficient widget reuse
             final key = ValueKey('index-${indexItem.token}-${indexItem.exch}');
 
-            return OptimizedIndexItem(
-              key: key,
-              indexItem: indexItem,
-              src: widget.src,
-              itemWidth: itemWidth,
-            );
+            return _buildPageContent(
+            indexValues, 
+            index, 
+            itemsPerPage, 
+            itemWidth
+          );
           },
         ),
       ),
     );
   }
+
+  Widget _buildPageContent(
+  List<dynamic> indexValues,
+  int pageIndex,
+  int itemsPerPage,
+  double itemWidth,
+) {
+  final startIndex = pageIndex * itemsPerPage;
+  final endIndex = (startIndex + itemsPerPage).clamp(0, indexValues.length);
+  
+  return Row(
+    children: [
+      for (int i = startIndex; i < endIndex; i++)
+        Expanded(
+          child: Container(
+            margin: EdgeInsets.only(
+              right: i < endIndex - 1 ? 1 : 0, // Add separator between items
+            ),
+            // decoration: BoxDecoration(
+            //   border: i < endIndex - 1 
+            //     ? Border(
+            //         right: BorderSide(
+            //           width: 1,
+            //           color: ref.watch(themeProvider).isDarkMode
+            //               ? const Color(0xFF2A2A2A)
+            //               : const Color(0xFFE0E0E0),
+            //         ),
+            //       )
+            //     : null,
+            // ),
+            child: OptimizedIndexItem(
+              key: ValueKey('index-${indexValues[i].token}-${indexValues[i].exch}'),
+              indexItem: indexValues[i],
+              src: widget.src,
+              itemWidth: itemWidth,
+            ),
+          ),
+        ),
+      // Fill remaining space if odd number of items on last page
+      if (endIndex - startIndex < itemsPerPage)
+        const Expanded(child: SizedBox()),
+    ],
+  );
 }
+}
+
+
+
 
 // A completely static wrapper to prevent rebuilds
 class OptimizedIndexItem extends ConsumerWidget {

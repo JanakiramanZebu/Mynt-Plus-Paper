@@ -1548,6 +1548,8 @@ class AuthProvider extends DefaultChangeNotifier {
           // ref.read(mfProvider).fetchBestMF();
 
           // ref.read(mfProvider).fetchMfOrderbook(context);
+          ref.read(fundProvider).fetchPledgeDetails();
+          setmfapicalls(context);
           setProfileAPicalls();
           setPrefOrderPrefer(context);
           ref.read(orderProvider).setOrderIp();
@@ -1664,6 +1666,7 @@ class AuthProvider extends DefaultChangeNotifier {
     ref.read(mfProvider).fetchnewMFBestList();
     ref.read(mfProvider).fetchmfallcatnew();
     ref.read(mfProvider).fetchmfNFO(context);
+    ref.read(mfProvider).fetchMFWatchlist("", "", context, true, "");
     // ref.read(mfProvider).fetchmfNFO(context);
   }
 

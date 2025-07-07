@@ -93,7 +93,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [                
                 Text(
-                  widget.watchListData["symbol"].toString().toUpperCase(),
+                  widget.watchListData["symbol"].toString().replaceAll("-EQ", "").toUpperCase(),
                   style: TextWidget.textStyle(
                     fontSize: 14,
                     color: theme.isDarkMode

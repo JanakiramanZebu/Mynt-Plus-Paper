@@ -159,7 +159,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                         children: [
                                                           TextWidget.titleText(
                                                               text:
-                                                                  "${displayData.symbol}",
+                                                                  "${displayData.symbol?.replaceAll("-EQ", "")}",
                                                               theme: theme
                                                                   .isDarkMode,
                                                               fw: 1),
@@ -410,7 +410,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                   children: [
                                                                     TextWidget.titleText(
                                                                         text:
-                                                                            "${displayData.tsym}",
+                                                                            "${displayData.tsym?.replaceAll("-EQ", "")}",
                                                                         theme: theme
                                                                             .isDarkMode,
                                                                         fw: 1),

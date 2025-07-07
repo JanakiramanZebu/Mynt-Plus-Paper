@@ -91,7 +91,7 @@ class TradeBookDetail extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        TextWidget.titleText(text: "${displayData.symbol ?? ''}",theme: false,color: theme.isDarkMode
+                        TextWidget.titleText(text: "${displayData.symbol?.replaceAll("-EQ", "") ?? ''}",theme: false,color: theme.isDarkMode
                                     ? colors.colorWhite
                                     : colors.colorBlack,fw: 1),
 

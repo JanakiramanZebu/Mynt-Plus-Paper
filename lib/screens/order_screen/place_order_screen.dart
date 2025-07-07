@@ -455,7 +455,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                           Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text("${widget.scripInfo.symbol!} ",
+                                Text("${widget.scripInfo.symbol!.replaceAll("-EQ", "")} ",
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite

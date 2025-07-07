@@ -204,7 +204,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                       children: [
                                                         TextWidget.headText(
                                                           text:
-                                                              "${widget.positionList.symbol} ",
+                                                              "${widget.positionList.symbol?.replaceAll("-EQ", "")} ",
                                                           fw: 0,
                                                           color: theme
                                                                   .isDarkMode

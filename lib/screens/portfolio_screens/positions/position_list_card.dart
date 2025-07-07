@@ -172,7 +172,7 @@ class _PositionListCardState extends ConsumerState<PositionListCard> {
         Row(children: [
           TextWidget.subText(
               text:
-            "${widget.positionList.symbol} ${widget.positionList.expDate} ",
+            "${widget.positionList.symbol?.replaceAll("-EQ", "")} ${widget.positionList.expDate} ",
               theme: false,
               fw: 1,
               textOverflow: TextOverflow.ellipsis,

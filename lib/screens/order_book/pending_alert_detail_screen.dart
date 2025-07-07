@@ -245,7 +245,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        TextWidget.subText(text: "${widget.alert.tsym} ",theme:theme.isDarkMode,fw: 0,textOverflow: TextOverflow.ellipsis),
+                        TextWidget.subText(text: "${widget.alert.tsym?.replaceAll("-EQ", "")} ",theme:theme.isDarkMode,fw: 0,textOverflow: TextOverflow.ellipsis),
                         Row(
                           children: [
                             TextWidget.paraText(text: " LTP: ",theme: false,color: const Color(0xff5E6B7D),fw: 1),
