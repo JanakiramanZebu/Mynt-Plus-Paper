@@ -138,9 +138,9 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             : colors.colorBlack)))
             : const CustomBackBtn(),
         elevation: 0.2,
-        title: TextWidget.heroText(
+        title: TextWidget.titleText(
           text: 'Order Preference',
-          theme: theme.isDarkMode,
+          theme: false,
           color: theme.isDarkMode
               ? colors.textPrimaryDark
               : colors.textPrimaryLight,
@@ -159,7 +159,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText("Product type", theme)),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: SizedBox(
@@ -167,27 +167,31 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               itemBuilder: (context, index) {
-                                return ElevatedButton(
+                                return TextButton(
                                     onPressed: () {
                                       setState(() {
                                         orderType = orderTypes[index];
                                       });
                                       FocusScope.of(context).unfocus();
                                     },
-                                    style: ElevatedButton.styleFrom(
-                                      elevation: 0,
+                                    style: TextButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 0),
                                       backgroundColor: !theme.isDarkMode
-                                          ? orderType != orderTypes[index]
-                                              ? const Color(0xffF1F3F8)
-                                              : colors.primaryLight
-                                          : orderType != orderTypes[index]
-                                              ? colors.darkGrey
-                                              : colors.colorbluegrey,
+                                          ? orderType == orderTypes[index]
+                                              ? Color(0xffF1F3F8)
+                                              : Colors.transparent
+                                          : orderType == orderTypes[index]
+                                              ? colors.colorbluegrey
+                                              : Colors.transparent,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            4), // Set to 0 for sharp edges
+                                        borderRadius: BorderRadius.circular(4),
+                                        side: orderType == orderTypes[index]
+                                          ? BorderSide(
+                                              color: colors.primaryLight,
+                                              width: 1,
+                                            )
+                                          : BorderSide.none,
                                       ),
                                     ),
                                     child: Text(
@@ -195,28 +199,22 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                             ? "Delivery / Carry"
                                             : orderTypes[index],
                                         style: TextWidget.textStyle(
-                                            color: !theme.isDarkMode
-                                                ? orderType != orderTypes[index]
-                                                    ? const Color(0xff666666)
-                                                    : colors.colorWhite
-                                                : orderType != orderTypes[index]
-                                                    ? const Color(0xff666666)
-                                                    : colors.colorBlack,
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
-                                            fw: orderType == orderTypes[index]
-                                                ? 0
-                                                : 3)));
+                                            fw: orderType == orderTypes[index] ? 0 : null)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
                               },
                               itemCount: orderTypes.length))),
-                  const SizedBox(height: 6),
+                  // const SizedBox(height: 0),
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText("Order type", theme)),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: SizedBox(
@@ -224,56 +222,47 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               itemBuilder: (context, index) {
-                                return ElevatedButton(
+                                return TextButton(
                                     onPressed: () {
                                       setState(() {
                                         priceType = priceTypes[index]['type'];
                                       });
                                       FocusScope.of(context).unfocus();
                                     },
-                                    style: ElevatedButton.styleFrom(
-                                      elevation: 0,
+                                    style: TextButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 0),
                                       backgroundColor: !theme.isDarkMode
-                                          ? priceType !=
-                                                  priceTypes[index]['type']
-                                              ? const Color(0xffF1F3F8)
-                                              : colors.primaryLight
-                                          : priceType !=
-                                                  priceTypes[index]['type']
-                                              ? colors.darkGrey
-                                              : colors.colorbluegrey,
+                                          ? priceType == priceTypes[index]['type']
+                                              ? Color(0xffF1F3F8)
+                                              : Colors.transparent
+                                          : priceType == priceTypes[index]['type']
+                                              ? colors.colorbluegrey
+                                              : Colors.transparent,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            4), // Set to 0 for sharp edges
+                                        borderRadius: BorderRadius.circular(4),
+                                        side: priceType == priceTypes[index]['type']
+                                          ? BorderSide(
+                                              color: colors.primaryLight,
+                                              width: 1,
+                                            )
+                                          : BorderSide.none,
                                       ),
                                     ),
                                     child: Text(priceTypes[index]['type'],
                                         style: TextWidget.textStyle(
-                                            color: !theme.isDarkMode
-                                                ? priceType !=
-                                                        priceTypes[index]
-                                                            ['type']
-                                                    ? const Color(0xff666666)
-                                                    : colors.colorWhite
-                                                : priceType !=
-                                                        priceTypes[index]
-                                                            ['type']
-                                                    ? const Color(0xff666666)
-                                                    : colors.colorBlack,
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
-                                            fw: priceType ==
-                                                    priceTypes[index]['type']
-                                                ? 1
-                                                : 0)));
+                                            fw: priceType == priceTypes[index]['type'] ? 0 : null)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
                               },
                               itemCount: priceTypes.length))),
-                  const SizedBox(height: 8),
+                
                   Row(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
@@ -294,40 +283,41 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                 scrollDirection: Axis.horizontal,
                 itemBuilder: (context, index) {
                   final isSelected = validity == validityTypes[index];
-                  return ElevatedButton(
+                  return TextButton(
                     onPressed: () {
                       setState(() {
                         validity = validityTypes[index];
                       });
                       FocusScope.of(context).unfocus();
                     },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
+                    style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       backgroundColor: !theme.isDarkMode
                           ? isSelected
-                              ? colors.primaryLight
-                              : const Color(0xffF1F3F8)
+                              ? Color(0xffF1F3F8)
+                              : Colors.transparent
                           : isSelected
                               ? colors.colorbluegrey
-                              : colors.darkGrey,
+                              : Colors.transparent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),
+                        side: isSelected
+                          ? BorderSide(
+                              color: colors.primaryLight,
+                              width: 1,
+                            )
+                          : BorderSide.none,
                       ),
                     ),
                     child: Text(
                       validityTypes[index],
                       style: TextWidget.textStyle(
-                        color: !theme.isDarkMode
-                            ? isSelected
-                                ? colors.colorWhite
-                                : const Color(0xff666666)
-                            : isSelected
-                                ? colors.colorBlack
-                                : const Color(0xff666666),
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
                         fontSize: 14,
                         theme: theme.isDarkMode,
-                        fw: isSelected ? 1 : 0,
+                        fw: isSelected ? 0 : null,
                       ),
                     ),
                   );
@@ -372,7 +362,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                               mktProtCtrl.text = "20";
                               ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(context,
-                                    "can't enter greater than 20% of Market Protection"),
+                                    "Can't enter greater than 20% of Market Protection"),
                               );
                             } else if (parsed < 1) {
                               mktProtCtrl.text = "1";
@@ -385,12 +375,10 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                         });
                       },
                       style: TextWidget.textStyle(
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
+                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                         fontSize: 14,
                         theme: theme.isDarkMode,
-                        fw: 1,
+                        
                       ),
                       textCtrl: mktProtCtrl,
                       prefixIcon: Container(
@@ -422,7 +410,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
   ],
 ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   Padding(
                       padding: const EdgeInsets.only(left: 16, bottom: 0),
                       child: headerTitleText("Quantity preference", theme)),
@@ -458,7 +446,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           : Color(QtyPrefer == OrdQtyPref.mktqty
                               ? 0xff3E4763
                               : 0xff666666),
-                      fw: 3,
+                     
                     ),
                      
                     Radio<OrdQtyPref>(
@@ -491,7 +479,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           : Color(QtyPrefer == OrdQtyPref.mktqty
                               ? 0xff3E4763
                               : 0xff666666),
-                      fw: 3,
+                     
                     ),
                   ]),
                   if (QtyPrefer == OrdQtyPref.mktlot) ...[
@@ -506,20 +494,20 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       : const Color(0xffF1F3F8),
                                   hintText: qtyCtrl.text,
                                   hintStyle: TextWidget.textStyle(
-                                      color: const Color(0xff666666),
-                                      fontSize: 15,
+                                      color: colors.textSecondaryLight,
+                                      fontSize: 14,
                                       theme: theme.isDarkMode,
-                                      fw: 0),
+                                      ),
                                   inputFormate: [
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
                                   style: TextWidget.textStyle(
                                       color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      fontSize: 16,
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                      fontSize: 14,
                                       theme: theme.isDarkMode,
-                                      fw: 1),
+                                      ),
                                   textCtrl: qtyCtrl,
                                   textAlign: TextAlign.start,
                                   onChanged: (value) {
@@ -546,74 +534,11 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                   }))
                         ])),
                   ],
-                  // const SizedBox(height: 14),
-                  // Padding(
-                  //     padding: const EdgeInsets.only(left: 16, bottom: 12),
-                  //     child: headerTitleText("Market Protection%", theme)),
-                  // Container(
-                  //     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  //     height: 40,
-                  //     width: MediaQuery.of(context).size.width * 0.5,
-                  //     child: Row(children: [
-                  //       Expanded(
-                  //           child: CustomTextFormField(
-                  //               fillColor: theme.isDarkMode
-                  //                   ? colors.darkGrey
-                  //                   : const Color(0xffF1F3F8),
-                  //               inputFormate: [
-                  //                 FilteringTextInputFormatter.digitsOnly
-                  //               ],
-                  //               onChanged: (value) {
-                  //                 setState(() {
-                  //                   ScaffoldMessenger.of(context)
-                  //                       .hideCurrentSnackBar();
-                  //                   if (value.isNotEmpty) {
-                  //                     if (int.parse(value) > 20) {
-                  //                       mktProtCtrl.text = "20";
-                  //                       ScaffoldMessenger.of(context)
-                  //                           .showSnackBar(warningMessage(
-                  //                               context,
-                  //                               "can't enter greater than 20% of Market Protection"));
-                  //                     } else if (int.parse(value) < 1) {
-                  //                       mktProtCtrl.text = "1";
-                  //                       ScaffoldMessenger.of(context)
-                  //                           .showSnackBar(warningMessage(
-                  //                               context,
-                  //                               "can't enter less than 1% of Market Protection"));
-                  //                     }
-                  //                   }
-                  //                 });
-                  //               },
-                  //               style: TextWidget.textStyle(
-                  //                   color: theme.isDarkMode
-                  //                       ? colors.colorWhite
-                  //                       : colors.colorBlack,
-                  //                   fontSize: 14,
-                  //                   theme: theme.isDarkMode,
-                  //                   fw: 1),
-                  //               textCtrl: mktProtCtrl,
-                  //               prefixIcon: Container(
-                  //                 margin: const EdgeInsets.all(12),
-                  //                 decoration: BoxDecoration(
-                  //                     borderRadius: BorderRadius.circular(20),
-                  //                     color: theme.isDarkMode
-                  //                         ? const Color(0xff555555)
-                  //                         : colors.colorWhite),
-                  //                 child: SvgPicture.asset(
-                  //                     color: theme.isDarkMode
-                  //                         ? colors.colorWhite
-                  //                         : colors.colorGrey,
-                  //                     assets.precentIcon,
-                  //                     fit: BoxFit.scaleDown),
-                  //               ),
-                  //               textAlign: TextAlign.start))
-                  //     ])),
-                  // const SizedBox(height: 14),
                   Padding(
                       padding: const EdgeInsets.only(left: 16, top: 16),
                       child: headerTitleText(
                           "Position exit ${expriceType}", theme)),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   Padding(
                       padding: const EdgeInsets.only(left: 16),
                       child: SizedBox(
@@ -621,7 +546,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               itemBuilder: (context, index) {
-                                return ElevatedButton(
+                                return TextButton(
                                     onPressed: () {
                                       setState(() {
                                         expriceType =
@@ -629,53 +554,46 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       });
                                       FocusScope.of(context).unfocus();
                                     },
-                                    style: ElevatedButton.styleFrom(
-                                      elevation: 0,
+                                    style: TextButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 0),
                                       backgroundColor: !theme.isDarkMode
-                                          ? expriceType !=
-                                                  expriceTypes[index]['type']
-                                              ? const Color(0xffF1F3F8)
-                                              : colors.primaryLight
-                                          : expriceType !=
-                                                  expriceTypes[index]['type']
-                                              ? colors.darkGrey
-                                              : colors.colorbluegrey,
+                                          ? expriceType == expriceTypes[index]['type']
+                                              ? Color(0xffF1F3F8)
+                                              : Colors.transparent
+                                          : expriceType == expriceTypes[index]['type']
+                                              ? colors.colorbluegrey
+                                              : Colors.transparent,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            4), // Set to 0 for sharp edges
+                                        borderRadius: BorderRadius.circular(4),
+                                        side: expriceType == expriceTypes[index]['type']
+                                          ? BorderSide(
+                                              color: colors.primaryLight,
+                                              width: 1,
+                                            )
+                                          : BorderSide.none,
                                       ),
                                     ),
-                                    child: TextWidget.subText(
-                                      text: expriceTypes[index]['type'],
-                                      theme: false,
-                                      color: !theme.isDarkMode
-                                          ? expriceType !=
-                                                  expriceTypes[index]['type']
-                                              ? const Color(0xff666666)
-                                              : colors.colorWhite
-                                          : expriceType !=
-                                                  expriceTypes[index]['type']
-                                              ? const Color(0xff666666)
-                                              : colors.colorBlack,
-                                      fw: expriceType ==
-                                              expriceTypes[index]['type']
-                                          ? 0
-                                          : 0,
-                                    ));
+                                    child: Text(expriceTypes[index]['type'],
+                                        style: TextWidget.textStyle(
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            fontSize: 14,
+                                            theme: theme.isDarkMode,
+                                            fw: expriceType == expriceTypes[index]['type'] ? 0 : null)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
                               },
                               itemCount: expriceTypes.length))),
-                  const SizedBox(height: 8),
+                  
                 ],
               ),
             ),
           ),
           Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 24),
               child: SizedBox(
                 width: MediaQuery.of(context).size.width,
                 height: 46,
@@ -708,10 +626,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                     child: TextWidget.subText(
                       text: "Save",
                       theme: false,
-                      color: !theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                      fw: 0,
+                      color:  colors.colorWhite,
+                      fw: 2,
                       align: TextAlign.center,
                     )),
               ))
@@ -720,19 +636,13 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
     );
   }
 
-  // TextStyle textStyle(Color color, double fontSize, fWeight) {
-  //   return GoogleFonts.inter(
-  //       textStyle:
-  //           TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  // }
-
   Widget headerTitleText(String text, ThemesProvider theme) {
     return TextWidget.subText(
       text: text,
-      theme: theme.isDarkMode,
+      theme: false,
       color:
           theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-      fw: 0,
+      fw: null,
     );
   }
 
@@ -754,10 +664,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
     final authProv = ref.read(authProvider);
     await authProv.getPrefOrderPrefer(local, true, context);
 
-    // await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);
     ScaffoldMessenger.of(context).showSnackBar(
         successMessage(context, "Order Preference hav been saved"));
-    // await pref.init();
     await authProv.setPrefOrderPrefer(context);
     Navigator.pop(context);
     if (gobackOP) {

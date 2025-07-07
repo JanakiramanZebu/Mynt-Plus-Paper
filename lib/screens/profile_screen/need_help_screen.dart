@@ -42,8 +42,10 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
             TextWidget.subText(
                 text: "Customer Support & Assistance",
                 theme: false,
-                color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 1),
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                fw: 0),
             const SizedBox(height: 14),
             InkWell(
               onTap: () async {
@@ -54,13 +56,13 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
                 SvgPicture.asset(assets.phone, color: colors.colorGrey),
                 const SizedBox(width: 10),
                 TextWidget.subText(
-                    text: ConstantName.phoneNum,
-                    theme: false,
-                   color: !theme.isDarkMode
-                  ? colors.textSecondaryLight
-                  : colors.textSecondaryDark,
-              fw: 3,
-                    )
+                  text: ConstantName.phoneNum,
+                  theme: false,
+                  color: !theme.isDarkMode
+                      ? colors.textSecondaryLight
+                      : colors.textSecondaryDark,
+                  fw: 3,
+                )
               ]),
             ),
             const SizedBox(height: 12),
@@ -73,21 +75,23 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
                 SvgPicture.asset(assets.sendMsg, color: colors.colorGrey),
                 const SizedBox(width: 10),
                 TextWidget.subText(
-                    text: ConstantName.gamil,
-                    theme: false,
-                     color: !theme.isDarkMode
-                  ? colors.textSecondaryLight
-                  : colors.textSecondaryDark,
-              fw: 3,
-                    )
+                  text: ConstantName.gamil,
+                  theme: false,
+                  color: !theme.isDarkMode
+                      ? colors.textSecondaryLight
+                      : colors.textSecondaryDark,
+                  fw: 3,
+                )
               ]),
             ),
             const SizedBox(height: 20),
             TextWidget.subText(
                 text: "Investor grievance:",
                 theme: false,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 1),
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                fw: 0),
             const SizedBox(height: 8),
             InkWell(
               onTap: () async {
@@ -98,13 +102,13 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
               child: Container(
                 margin: const EdgeInsets.symmetric(vertical: 5),
                 child: TextWidget.subText(
-                    text: ConstantName.gamil1,
-                    theme: false,
-                    color: !theme.isDarkMode
-                  ? colors.textSecondaryLight
-                  : colors.textSecondaryDark,
-              fw: 3,
-                    ),
+                  text: ConstantName.gamil1,
+                  theme: false,
+                  color: !theme.isDarkMode
+                      ? colors.textSecondaryLight
+                      : colors.textSecondaryDark,
+                  fw: 3,
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -121,7 +125,7 @@ class _NeedHelpScreenState extends ConsumerState<NeedHelpScreen> {
                 theme: false,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
-                    : colors.textPrimaryLight, 
+                    : colors.textPrimaryLight,
                 fw: 1),
             const SizedBox(height: 20),
             SizedBox(

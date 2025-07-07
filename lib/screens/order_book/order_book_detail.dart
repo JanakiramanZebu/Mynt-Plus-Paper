@@ -185,6 +185,9 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
                                                       children: [
                                                         TextWidget.titleText(
                                                             text:
@@ -255,7 +258,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                         .profitDark
                                                                     : colors
                                                                         .profitLight,
-                                                        fw: 0),
+                                                        fw: 3),
                                                     const SizedBox(height: 4),
                                                     Row(
                                                       mainAxisAlignment:
@@ -395,7 +398,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                       const SizedBox(width: 6),
                                                       TextWidget.subText(
                                                         text: "Order History",
-                                                        fw: 0,
+                                                        fw: 2,
                                                         color: theme.isDarkMode
                                                             ? colors.primaryDark
                                                             : colors
@@ -485,7 +488,8 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                           ),
                                         ] else ...[
                                           const SizedBox.shrink(),
-                                        ]
+                                        ],
+                                        const SizedBox(height: 20),
                                       ],
                                     ),
                                   ),
@@ -578,39 +582,56 @@ class _OrderDetailsSection extends ConsumerWidget {
             thickness: 1)
       ]),
       const SizedBox(height: 8),
-      _buildInfoRow(
-          "Type", orderBookData.trantype == "B" ? "Buy" : "Sell", theme),
+      _buildInfoRow("Type", orderBookData.trantype == "B" ? "Buy" : "Sell",
+          theme, context),
       const SizedBox(height: 8),
       _buildInfoRow(
           "Qty",
           "${((orderBookData.status != "COMPLETE" && (orderBookData.fillshares?.isNotEmpty ?? false) ? (int.tryParse(orderBookData.fillshares.toString()) ?? 0) : orderBookData.status == "COMPLETE" ? (int.tryParse(orderBookData.rqty.toString()) ?? 0) : (int.tryParse(orderBookData.dscqty.toString()) ?? 0)).toInt() / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}/${((int.tryParse(orderBookData.qty.toString()) ?? 0) / (orderBookData.exch == 'MCX' ? (int.tryParse(orderBookData.ls.toString()) ?? 1) : 1)).toInt()}",
-          theme),
+          theme,
+          context),
       const SizedBox(height: 8),
-      _buildInfoRow("Price", "${orderBookData.prc ?? "-"}", theme),
-      const SizedBox(height: 8),
-      _buildInfoRow("Avg Price", "${orderBookData.avgprc ?? "-"}", theme),
-      const SizedBox(height: 8),
-      _buildInfoRow("Trigger Price", "${orderBookData.trgprc ?? "-"}", theme),
-      const SizedBox(height: 8),
-      _buildInfoRow("Product / Type",
-          "${orderBookData.sPrdtAli} / ${orderBookData.prctyp ?? "-"}", theme),
+      _buildInfoRow("Price", "${orderBookData.prc ?? "-"}", theme, context),
       const SizedBox(height: 8),
       _buildInfoRow(
-          "Market Protection", "${orderBookData.mktProtection ?? "-"}", theme),
+          "Avg Price", "${orderBookData.avgprc ?? "-"}", theme, context),
       const SizedBox(height: 8),
-      _buildInfoRow("AMO", "${orderBookData.amo ?? "-"}", theme),
+      _buildInfoRow(
+          "Trigger Price", "${orderBookData.trgprc ?? "-"}", theme, context),
       const SizedBox(height: 8),
-      _buildInfoRow("Order Id", "${orderBookData.norenordno ?? "-"}", theme),
+      _buildInfoRow(
+          "Product / Type",
+          "${orderBookData.sPrdtAli} / ${orderBookData.prctyp ?? "-"}",
+          theme,
+          context),
       const SizedBox(height: 8),
-      _buildInfoRow("Exchange", "${orderBookData.exchordid ?? "-"}", theme),
+      _buildInfoRow("Market Protection",
+          "${orderBookData.mktProtection ?? "-"}", theme, context),
       const SizedBox(height: 8),
-      _buildInfoRow("Date & Time",
-          "${formatDateTime(value: orderBookData.norentm ?? "-")}", theme),
+      _buildInfoRow("AMO", "${orderBookData.amo ?? "-"}", theme, context),
+      const SizedBox(height: 8),
+      _buildInfoRow(
+          "Order Id", "${orderBookData.norenordno ?? "-"}", theme, context),
+      const SizedBox(height: 8),
+      _buildInfoRow(
+          "Exchange", "${orderBookData.exchordid ?? "-"}", theme, context),
+      const SizedBox(height: 8),
+      _buildInfoRow(
+          "Date & Time",
+          "${formatDateTime(value: orderBookData.norentm ?? "-")}",
+          theme,
+          context),
+      const SizedBox(height: 8),
+      orderBookData.rejreason != null
+          ? _buildInfoRow(
+              "Reason", "${orderBookData.rejreason ?? "-"}", theme, context)
+          : const SizedBox.shrink(),
       const SizedBox(height: 8),
     ]);
   }
 
-  Widget _buildInfoRow(String title1, String value1, ThemesProvider theme) {
+  Widget _buildInfoRow(String title1, String value1, ThemesProvider theme,
+      BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -622,13 +643,20 @@ class _OrderDetailsSection extends ConsumerWidget {
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
               fw: 3),
-          TextWidget.subText(
-              text: value1,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 3),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.55,
+            child: TextWidget.subText(
+                align: TextAlign.end,
+                text: value1,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                maxLines: null,
+                textOverflow: TextOverflow.visible,
+                softWrap: true,
+                fw: 3),
+          ),
         ],
       ),
       const SizedBox(height: 8),
@@ -691,8 +719,10 @@ Widget _buildActionButtonsBar(
               child: TextWidget.subText(
                   text: "Cancel Order",
                   theme: false,
-                  color: const Color(0xff0037B7),
-                  fw: 1),
+                  color: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
+                  fw: 2),
             ),
           ),
         ),
@@ -719,8 +749,9 @@ Widget _buildActionButtonsBar(
             child: TextWidget.subText(
                 text: "Modify Order",
                 theme: false,
-                color: const Color(0xff0037B7),
-                fw: 1),
+                color:
+                    theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                fw: 2),
           ),
         ),
       ),
@@ -762,17 +793,17 @@ Widget _buildRepeatOrderBar(
                       color: theme.isDarkMode
                           ? colors.primaryDark
                           : colors.primaryLight,
-                      fw: 0)),
+                      fw: 2)),
             ),
           ),
         ),
       ),
-      const SizedBox(width: 12),
       if ((orderBookData.sPrdtAli != "BO" || orderBookData.sPrdtAli != "CO") &&
           orderBookData.snonum == null &&
           orderBookData.status == "OPEN")
         Expanded(
             child: Container(
+                margin: const EdgeInsets.only(left: 12),
                 height: 40,
                 decoration: BoxDecoration(
                   border: Border.all(color: colors.btnOutlinedBorder, width: 1),
@@ -976,19 +1007,19 @@ void _showCancelOrderDialog(
                         },
                         borderRadius: BorderRadius.circular(20),
                         splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.15)
-                            : Colors.black.withOpacity(0.15),
+                            ? colors.splashColorDark
+                            : colors.splashColorLight,
                         highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.08)
-                            : Colors.black.withOpacity(0.08),
+                            ? colors.splashColorDark
+                            : colors.splashColorLight,
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
                           child: Icon(
                             Icons.close_rounded,
                             size: 22,
                             color: theme.isDarkMode
-                                ? const Color(0xffBDBDBD)
-                                : colors.colorGrey,
+                                ? colors.colorWhite
+                                : colors.iconColor,
                           ),
                         ),
                       ),

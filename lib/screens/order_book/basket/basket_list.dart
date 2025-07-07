@@ -170,30 +170,30 @@ class BasketList extends ConsumerWidget {
                         basket.bsktList[index]['bsketName'], context);
                   },
                   dense: true,
-                  trailing: TextWidget.captionText(
+                  trailing: TextWidget.paraText(
                       text:
                           "${basket.bsktList[index]['curLength']} / ${basket.bsktList[index]['max']}",
                       theme: false,
                       color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                      fw: 0),
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 3),
                   title: TextWidget.subText(
                       text:
                           "Basket name: ${basket.bsktList[index]['bsketName']}",
                       theme: false,
                       color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                      fw: 0),
-                  subtitle: TextWidget.captionText(
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 3),
+                  subtitle: TextWidget.paraText(
                       text:
                           "Created on: ${basket.bsktList[index]['createdDate']}",
                       theme: false,
                       color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                      fw: 0));
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 3));
             },
             separatorBuilder: (BuildContext context, int index) {
               return const ListDivider();

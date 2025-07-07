@@ -292,7 +292,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                             pref.setClientName(acc.userName);
                             pref.setImei(acc.imei);
                             pref.setMobileLogin(true);
-                            
+
                             await ref.read(authProvider).fetchMobileLogin(
                                   context,
                                   "",
@@ -384,6 +384,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                     loggedUser.addClient(false);
                     loggedUser.clearError();
                     loggedUser.loginMethCtrl.clear();
+                    ref.read(authProvider).switchbackbutton(false);
 
                     Navigator.pop(context);
 
@@ -397,7 +398,9 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                   .read(websocketProvider)
                                   .changeconnectioncount();
                               if (context.mounted) {
-                                ref.read(indexListProvider).bottomMenu(4, context);
+                                ref
+                                    .read(indexListProvider)
+                                    .bottomMenu(4, context);
                               }
                             }
                           },

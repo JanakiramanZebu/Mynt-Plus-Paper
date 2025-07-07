@@ -39,30 +39,38 @@ class ExchangeMessage extends ConsumerWidget {
                                 text:
                                     "${noftification.exchangemessage![index].exchTm} (${noftification.exchangemessage![index].exch})",
                                 theme: false,
-                                fw: 0,
-                                color: colors.colorGrey),
+                                color: colors.textSecondaryLight),
                             const SizedBox(
                               height: 5,
                             ),
                             ReadMoreText(
                               "${noftification.exchangemessage![index].exchMsg}",
-                              style: textStyles.notificationtextstyle.copyWith(
-                                  color: theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack),
+                              style: TextWidget.textStyle(
+                                fontSize: 14,
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                              ),
                               textAlign: TextAlign.left,
                               trimLines: 2,
-                              moreStyle: textStyles.morestyle.copyWith(
-                                  color: theme.isDarkMode
-                                      ? colors.colorLightBlue
-                                      : colors.colorBlue),
-                              lessStyle: textStyles.morestyle.copyWith(
-                                  color: theme.isDarkMode
-                                      ? colors.colorLightBlue
-                                      : colors.colorBlue),
+                              moreStyle: TextWidget.textStyle(
+                                fontSize: 12,
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.secondaryDark
+                                    : colors.secondaryLight,
+                              ),
+                              lessStyle: TextWidget.textStyle(
+                                fontSize: 12,
+                                theme: false,
+                                color: theme.isDarkMode
+                                    ? colors.secondaryDark
+                                    : colors.secondaryLight,
+                              ),
                               colorClickableText: theme.isDarkMode
-                                  ? colors.colorLightBlue
-                                  : colors.colorBlue,
+                                  ? colors.secondaryDark
+                                  : colors.secondaryLight,
                               trimMode: TrimMode.Line,
                               trimCollapsedText: 'Read more',
                               trimExpandedText: ' Read less',

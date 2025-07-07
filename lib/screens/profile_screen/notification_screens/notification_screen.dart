@@ -48,7 +48,10 @@ class _NotificationpageState extends ConsumerState<Notificationpage>
           title: TextWidget.titleText(
             text: "Notificaton",
             theme: false,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            fw: 1,
           )),
       body: Consumer(builder: (context, WidgetRef ref, _) {
         final notification = ref.watch(notificationprovider);
@@ -67,20 +70,26 @@ class _NotificationpageState extends ConsumerState<Notificationpage>
                 child: TabBar(
                     indicatorSize: TabBarIndicatorSize.tab,
                     indicatorColor: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    unselectedLabelColor: const Color(0XFF777777),
-                    unselectedLabelStyle: GoogleFonts.inter(
-                        textStyle: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: -0.28)),
+                        ? colors.secondaryDark
+                        : colors.secondaryLight,
+                    unselectedLabelColor: colors.textSecondaryLight,
+                    unselectedLabelStyle: TextWidget.textStyle(
+                      fontSize: 14,
+                      theme: false,
+                      color: colors.textSecondaryLight,
+                  
+                    ),
                     labelColor: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    labelStyle: GoogleFonts.inter(
-                        textStyle: const TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w600)),
+                                ? colors.secondaryDark
+                                : colors.secondaryLight,
+                    labelStyle: TextWidget.textStyle(
+                      fontSize: 14,
+                      theme: false,
+                      color:theme.isDarkMode
+                                ? colors.secondaryDark
+                                : colors.secondaryLight,
+                      fw: 2,
+                    ),
                     controller: notification.notifytab,
                     tabs: notification.notifyTabName)),
             Expanded(

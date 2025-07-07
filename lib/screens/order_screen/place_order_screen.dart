@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
@@ -93,7 +94,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
   int reminder = 0;
   int maxQty = 0;
   int quantity = 0;
-  List orderTypes = ["Delivery", "Intraday", "CO / BO"];
+  List orderTypes = ["Delivery", "Intraday", "CO - BO"];
 
   List priceTypes = ["Limit", "Market", "SL Limit", "SL MKT"];
   List<String> validityTypes = ["DAY", "IOC", "EOS"];
@@ -142,25 +143,27 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     Map res = widget.orderArg.raw;
     bool prdcheck = widget.orderArg.prd?.isNotEmpty ?? false;
 
-    orderType = prdcheck                                           // ① honour prd
+    orderType = prdcheck // ① honour prd
         ? {
-             "C": "Delivery",
-             "I": "Intraday",
-             "F": "MTF",
-             "M": "CO / BO"     // map other product codes as needed
-           }[widget.orderArg.prd] ?? "Delivery"
-         : rep                                                    // ② old logic
-             ? {"B": "CO / BO", "H": "CO / BO", "F": "MTF"}[res['prd']] ?? "Delivery"
-             : defaultparams
-                 ? (["Delivery", "Intraday", "MTF"].contains(userOrderPreference['prd'])
-                     ? "Delivery"
-                     : userOrderPreference['prd'])
-                 : "Delivery";
+              "C": "Delivery",
+              "I": "Intraday",
+              "F": "MTF",
+              "M": "CO - BO" // map other product codes as needed
+            }[widget.orderArg.prd] ??
+            "Delivery"
+        : rep // ② old logic
+            ? {"B": "CO - BO", "H": "CO - BO", "F": "MTF"}[res['prd']] ??
+                "Delivery"
+            : defaultparams
+                ? (["Delivery", "Intraday", "MTF"]
+                        .contains(userOrderPreference['prd'])
+                    ? "Delivery"
+                    : userOrderPreference['prd'])
+                : "Delivery";
 
     orderTypes = [
       {"type": "Delivery"},
-      {"type": "Intraday"},
-      {"type": "CO / BO"}
+      {"type": "Intraday"}
     ];
 
     if (widget.isBasket != "Basket" && widget.isBasket != "BasketEdit") {
@@ -180,20 +183,23 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
         }
       }
 
+      // if (widget.scripInfo.instname == "EQ") {
+      //   orderTypes.add({
+      //     "type": "SIP",
+      //     "key": ref.read(showcaseProvide).sip,
+      //     "case": "Click here to view SIP order details."
+      //   });
+      // }
+    }
+    orderTypes.add({"type": "CO - BO"});
+
+    if (widget.isBasket != "Basket" && widget.isBasket != "BasketEdit") {
       if (widget.scripInfo.instname != "UNDIND" &&
           widget.scripInfo.instname != "COM") {
         orderTypes.add({
           "type": "GTT",
           "key": ref.read(showcaseProvide).orderscreenBracketcase,
           "case": "Click here to view GTT order details."
-        });
-      }
-
-      if (widget.scripInfo.instname == "EQ") {
-        orderTypes.add({
-          "type": "SIP",
-          "key": ref.read(showcaseProvide).sip,
-          "case": "Click here to view SIP order details."
         });
       }
     }
@@ -273,11 +279,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
 
       ref.read(ordInputProvider).chngInvesType(invesType, "PlcOrder");
 
-      ref.read(ordInputProvider)
+      ref
+          .read(ordInputProvider)
           .chngPriceType(priceType, widget.orderArg.exchange);
       marginUpdate();
-      if (orderType != "Delivery" && orderType != "Intraday" && orderType != "MTF") {
-        ref.read(ordInputProvider).chngOrderType(orderType, _isCoverOrderEnabled, _isBracketOrderEnabled);
+      if (orderType != "Delivery" &&
+          orderType != "Intraday" &&
+          orderType != "MTF") {
+        ref.read(ordInputProvider).chngOrderType(
+            orderType, _isCoverOrderEnabled, _isBracketOrderEnabled);
       }
     });
 
@@ -357,7 +367,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
 
     if (rep) {
       isBuy = res['trantype'] == 'S' ? false : true;
-    //   addStoploss = (res['prd'] == "B" || res['prd'] == "H") ? true : false;
+      //   addStoploss = (res['prd'] == "B" || res['prd'] == "H") ? true : false;
       _addValidityAndDisclosedQty = res['ret']?.toUpperCase() == 'IOC' ||
               (res['dscqty'] != null && int.parse(res['dscqty']) > 0)
           ? true
@@ -461,14 +471,17 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                             ? colors.colorWhite
                                             : colors.colorBlack,
                                         14,
-                                        FontWeight.w500),
+                                        FontWeight.w400),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1),
                                 if (widget.scripInfo.option!.isNotEmpty)
                                   Text(widget.scripInfo.option!,
-                                      style: textStyles.scripNameTxtStyle
-                                          .copyWith(
-                                              color: const Color(0xff666666)),
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          14,
+                                          FontWeight.w400),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1),
                                 if (widget.scripInfo.expDate!.isNotEmpty)
@@ -478,7 +491,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                               ? colors.colorWhite
                                               : colors.colorBlack,
                                           14,
-                                          FontWeight.w600)),
+                                          FontWeight.w400)),
                                 CustomExchBadge(
                                     exch: "${widget.scripInfo.exch}"),
                               ]),
@@ -564,24 +577,38 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                 }
                                               });
 
-                                              if (orderTypes[index]['type'] == "CO / BO") {
+                                              if (orderTypes[index]['type'] ==
+                                                  "CO - BO") {
                                                 orderInput.chngOrderType(
-                                                    orderTypes[index]['type'], _isCoverOrderEnabled, _isBracketOrderEnabled);
-                                              } else if (orderTypes[index]['type'] == "Intraday") {
-                                                orderInput.chngInvesType(InvestType.intraday, "PlcOrder");
-                                              } else if (orderTypes[index]['type'] == "MTF") {
-                                                orderInput.chngInvesType(InvestType.mtf, "PlcOrder");
-                                              }else {
+                                                    orderTypes[index]['type'],
+                                                    _isCoverOrderEnabled,
+                                                    _isBracketOrderEnabled);
+                                              } else if (orderTypes[index]
+                                                      ['type'] ==
+                                                  "Intraday") {
+                                                orderInput.chngInvesType(
+                                                    InvestType.intraday,
+                                                    "PlcOrder");
+                                              } else if (orderTypes[index]
+                                                      ['type'] ==
+                                                  "MTF") {
+                                                orderInput.chngInvesType(
+                                                    InvestType.mtf, "PlcOrder");
+                                              } else {
                                                 // this condition works both for PlcOrder and GTT
                                                 orderInput.chngInvesType(
-                                                    widget.scripInfo.seg == "EQT"
+                                                    widget.scripInfo.seg ==
+                                                            "EQT"
                                                         ? InvestType.delivery
-                                                        : InvestType.carryForward,
+                                                        : InvestType
+                                                            .carryForward,
                                                     "PlcOrder");
                                                 orderInput.chngInvesType(
-                                                    widget.scripInfo.seg == "EQT"
+                                                    widget.scripInfo.seg ==
+                                                            "EQT"
                                                         ? InvestType.delivery
-                                                        : InvestType.carryForward,
+                                                        : InvestType
+                                                            .carryForward,
                                                     "OCO");
                                               }
                                               if (orderType != "GTT") {
@@ -599,7 +626,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                     .updatePrcCtrl(
                                                         "${widget.orderArg.ltp}",
                                                         widget.orderArg.lotSize!
-                                                            .replaceAll("-", ""));
+                                                            .replaceAll(
+                                                                "-", ""));
                                                 ref
                                                     .read(ordInputProvider)
                                                     .chngGTTPriceType("Limit");
@@ -634,24 +662,42 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                         .colorBlue,
                                                                 width: 2))
                                                         : null),
-                                                child: Text(
-                                                    orderTypes[index]['type'],
-                                                    style: textStyle(
-                                                        orderType == orderTypes[index]['type'] &&
-                                                                theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : orderType ==
-                                                                    orderTypes[index]
-                                                                        ['type']
-                                                                ? colors
-                                                                    .colorBlue
-                                                                : const Color(
-                                                                    0xff666666),
-                                                        14,
-                                                        orderType ==
-                                                                orderTypes[index]['type']
-                                                            ? FontWeight.w600
-                                                            : FontWeight.w500))));
+                                                child: TextWidget.subText(
+                                                        text: orderTypes[index]['type'],
+                                                        color: orderType == orderTypes[index]['type']
+                                                            ? theme.isDarkMode
+                                                                ? colors.secondaryDark
+                                                                : colors.secondaryLight
+                                                            : colors.textSecondaryLight,
+                                                        textOverflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                        theme: theme.isDarkMode,
+                                                        fw: orderType == orderTypes[index]['type'] ? 2 : null)
+                                                
+                                                
+                                                
+                                                
+                                                // Text(
+                                                //     orderTypes[index]['type'],
+                                                //     style: textStyle(
+                                                //         orderType == orderTypes[index]['type'] &&
+                                                //                 theme.isDarkMode
+                                                //             ? colors.colorWhite
+                                                //             : orderType ==
+                                                //                     orderTypes[index]
+                                                //                         ['type']
+                                                //                 ? colors
+                                                //                     .colorBlue
+                                                //                 : const Color(
+                                                //                     0xff666666),
+                                                //         14,
+                                                //         orderType ==
+                                                //                 orderTypes[index]['type']
+                                                //             ? FontWeight.w600
+                                                //             : FontWeight.w500),
+                                                //             ),
+                                                            ),
+                                                            );
                                       },
                                       itemCount: orderTypes.length))
                             ]
@@ -659,74 +705,73 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                   body: Stack(children: [
                     SingleChildScrollView(
                       padding: EdgeInsets.only(
-                          bottom: ((priceType == "Market" || priceType == "SL MKT") && isAvbSecu) ? 120 : 90),
+                          bottom: ((priceType == "Market" ||
+                                      priceType == "SL MKT") &&
+                                  isAvbSecu)
+                              ? 120
+                              : 90),
                       // reverse: true,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 24),
-                          if (orderType == "SIP") ...[
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 4),
-                                      child: Row(children: [
-                                        Expanded(
-                                            child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                              headerTitleText(
-                                                  "Frequency", theme),
-                                              const SizedBox(height: 5),
-                                              SizedBox(
-                                                  height: 44,
-                                                  child:
-                                                      DropdownButtonHideUnderline(
-                                                          child:
-                                                              DropdownButton2(
-                                                                  dropdownStyleData: DropdownStyleData(
-                                                                      maxHeight:
-                                                                          240,
-                                                                      decoration: BoxDecoration(
-                                                                          borderRadius: BorderRadius.circular(
-                                                                              10),
-                                                                          color: !theme.isDarkMode
-                                                                              ? colors
-                                                                                  .colorWhite
-                                                                              : const Color.fromARGB(
-                                                                                  255, 18, 18, 18))),
-                                                                  buttonStyleData: ButtonStyleData(
-                                                                      height:
-                                                                          40,
-                                                                      decoration: BoxDecoration(
-                                                                          color: theme.isDarkMode
-                                                                              ? colors
-                                                                                  .darkGrey
-                                                                              : const Color(
-                                                                                  0xffF1F3F8),
-                                                                          borderRadius: const BorderRadius.all(Radius.circular(
-                                                                              32)))),
-                                                                  isExpanded:
-                                                                      true,
-                                                                  style: theme.isDarkMode ? textStyles.textFieldLabelStyle.copyWith(color: colors.colorWhite) : textStyles.textFieldLabelStyle,
-                                                                  items: sipDropdown.map((item) {
-                                                                    return DropdownMenuItem(
-                                                                      value:
-                                                                          item,
-                                                                      child: Text(
-                                                                          item.toString()),
-                                                                    );
-                                                                  }).toList(),
-                                                                  value: selectedValue,
-                                                                  onChanged: (newValue) {
-                                                                    setState(
-                                                                        () {
-                                                                      selectedValue =
-                                                                          newValue!
-                                                                              .toString();
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 24),
+                            if (orderType == "SIP") ...[
+                              Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 4),
+                                        child: Row(children: [
+                                          Expanded(
+                                              child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                headerTitleText(
+                                                    "Frequency", theme),
+                                                const SizedBox(height: 5),
+                                                SizedBox(
+                                                    height: 44,
+                                                    child:
+                                                        DropdownButtonHideUnderline(
+                                                            child:
+                                                                DropdownButton2(
+                                                                    dropdownStyleData: DropdownStyleData(
+                                                                        maxHeight:
+                                                                            240,
+                                                                        decoration: BoxDecoration(
+                                                                            borderRadius: BorderRadius.circular(
+                                                                                10),
+                                                                            color: !theme.isDarkMode
+                                                                                ? colors
+                                                                                    .colorWhite
+                                                                                : const Color.fromARGB(255, 18, 18,
+                                                                                    18))),
+                                                                    buttonStyleData: ButtonStyleData(
+                                                                        height:
+                                                                            40,
+                                                                        decoration: BoxDecoration(
+                                                                            color: theme.isDarkMode
+                                                                                ? colors.darkGrey
+                                                                                : const Color(0xffF1F3F8),
+                                                                            borderRadius: const BorderRadius.all(Radius.circular(32)))),
+                                                                    isExpanded: true,
+                                                                    style: theme.isDarkMode ? textStyles.textFieldLabelStyle.copyWith(color: colors.colorWhite) : textStyles.textFieldLabelStyle,
+                                                                    items: sipDropdown.map((item) {
+                                                                      return DropdownMenuItem(
+                                                                        value:
+                                                                            item,
+                                                                        child: Text(
+                                                                            item.toString()),
+                                                                      );
+                                                                    }).toList(),
+                                                                    value: selectedValue,
+                                                                    onChanged: (newValue) {
+                                                                      setState(
+                                                                          () {
+                                                                        selectedValue =
+                                                                            newValue!.toString();
 
                                                                         FocusScope.of(context)
                                                                             .unfocus();
@@ -1383,7 +1428,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                       r'[^0-9]'),
                                                                   '');
 
-                                                          int number = int.tryParse(newValue) ??  0;
+                                                          int number =
+                                                              int.tryParse(
+                                                                      newValue) ??
+                                                                  0;
                                                           if (number >
                                                               ((frezQtyOrderSliceMaxLimit *
                                                                           frezQty) ==
@@ -2557,7 +2605,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                               // if (orderType == "Regular" || orderType == "Cover" || orderType == "Bracket" || orderType == "GTT") ...[
                               if (orderType == "Delivery" ||
                                   orderType == "Intraday" ||
-                                  orderType == "CO / BO" ||
+                                  orderType == "CO - BO" ||
                                   orderType == "GTT" ||
                                   orderType == "MTF") ...[
                                 //   Padding(
@@ -3169,12 +3217,21 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
+
+                                  if ((priceType == "Market" ||
+                                      priceType == "SL MKT")) ...[
+                                    const SizedBox(height: 16),
+                                    marketProtectionDisclaimer(theme, context,
+                                        widget.scripInfo, mktProtCtrl.text),
+                                    // const SizedBox(height: 16),
+                                  ],
 
                                   if (orderType == "Delivery" ||
                                       orderType == "Intraday" ||
                                       orderType == "MTF") ...[
                                     // Advance Option section
+                                    const SizedBox(height: 16),
+
                                     Column(
                                       children: [
                                         GestureDetector(
@@ -3357,7 +3414,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                       ],
                                     ),
                                   ],
-                                  if (orderType == "CO / BO") ...[
+                                  if (orderType == "CO - BO") ...[
                                     Column(
                                       children: [
                                         Row(
@@ -3468,13 +3525,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                       ],
                                     ),
                                   ],
-                                  if ((priceType == "Market" ||
-                                      priceType == "SL MKT")) ...[
-                                    const SizedBox(height: 16),
-                                    marketProtectionDisclaimer(theme, context,
-                                        widget.scripInfo, mktProtCtrl.text),
-                                    const SizedBox(height: 16),
-                                  ],
+
                                   // if (priceType == "Market" || priceType == "SL MKT") ...[
                                   //   const SizedBox(height: 8),
                                   //   Padding(
@@ -3710,6 +3761,16 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                 ? () {}
                                                                 : () {
                                                                     marginUpdate();
+                                                                    BrokerageInput brokerageInput = BrokerageInput(
+                                                                        exch:"${widget.scripInfo.exch}",
+                                                                        prc: priceCtrl.text,
+                                                                        prd: orderInput.orderType,
+                                                                        qty:"${widget.scripInfo.ls}",
+                                                                        trantype: isBuy!? "B": "S",
+                                                                        tsym:"${widget.scripInfo.tsym}");
+                                                                        ref.read(orderProvider)
+                                                                        .fetchGetBrokerage(brokerageInput,context);
+
                                                                     showModalBottomSheet(
                                                                         useSafeArea:
                                                                             true,
@@ -3737,7 +3798,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                           FontWeight
                                                                               .w500)),
                                                                   Text(
-                                                                      "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
+                                                                      "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
                                                                       style: textStyle(
                                                                           !theme.isDarkMode
                                                                               ? colors.colorBlue
@@ -3835,76 +3896,59 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                   )
                                                                 : const SizedBox()
                                                             : const SizedBox(),
-                                                        CustomWidgetButton(
-                                                            onPress: internet
-                                                                        .connectionStatus ==
-                                                                    ConnectivityResult
-                                                                        .none
-                                                                ? () {}
-                                                                : () {
-                                                                    BrokerageInput brokerageInput = BrokerageInput(
-                                                                        exch:
-                                                                            "${widget.scripInfo.exch}",
-                                                                        prc: priceCtrl
-                                                                            .text,
-                                                                        prd: orderInput
-                                                                            .orderType,
-                                                                        qty:
-                                                                            "${widget.scripInfo.ls}",
-                                                                        trantype: isBuy!
-                                                                            ? "B"
-                                                                            : "S",
-                                                                        tsym:
-                                                                            "${widget.scripInfo.tsym}");
-                                                                    ref
-                                                                        .read(
-                                                                            orderProvider)
-                                                                        .fetchGetBrokerage(
-                                                                            brokerageInput,
-                                                                            context);
-                                                                    showModalBottomSheet(
-                                                                        useSafeArea:
-                                                                            true,
-                                                                        isScrollControlled:
-                                                                            true,
-                                                                        shape: const RoundedRectangleBorder(
-                                                                            borderRadius: BorderRadius.vertical(
-                                                                                top: Radius.circular(
-                                                                                    16))),
-                                                                        context:
-                                                                            context,
-                                                                        builder:
-                                                                            (context) {
-                                                                          return const ChargesDetailsBottomsheet();
-                                                                        });
-                                                                  },
-                                                            widget: Row(
-                                                                children: [
-                                                                  Text(
-                                                                      "Charges: ",
-                                                                      style: textStyle(
-                                                                          const Color(
-                                                                              0xff666666),
-                                                                          12,
-                                                                          FontWeight
-                                                                              .w500)),
-                                                                  Text(
-                                                                      "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                                      style: textStyle(
-                                                                          !theme.isDarkMode
-                                                                              ? colors.colorBlue
-                                                                              : colors.colorLightBlue,
-                                                                          12,
-                                                                          FontWeight.w600)),
-                                                                  Icon(
-                                                                      Icons
-                                                                          .arrow_drop_down,
-                                                                      color: !theme.isDarkMode
-                                                                          ? colors
-                                                                              .colorBlue
-                                                                          : colors
-                                                                              .colorLightBlue)
-                                                                ]))
+                                                        // CustomWidgetButton(
+                                                        //     onPress: internet
+                                                        //                 .connectionStatus ==
+                                                        //             ConnectivityResult
+                                                        //                 .none
+                                                        //         ? () {}
+                                                        //         : () {
+                                                        //             BrokerageInput brokerageInput = BrokerageInput(
+                                                        //                 exch:"${widget.scripInfo.exch}",
+                                                        //                 prc: priceCtrl.text,
+                                                        //                 prd: orderInput.orderType,
+                                                        //                 qty:"${widget.scripInfo.ls}",
+                                                        //                 trantype: isBuy!? "B": "S",
+                                                        //                 tsym:"${widget.scripInfo.tsym}");
+                                                        //                 ref.read(orderProvider)
+                                                        //                 .fetchGetBrokerage(brokerageInput,context);
+                                                        //             showModalBottomSheet(useSafeArea:true,
+                                                        //                 isScrollControlled:true,
+                                                        //                 shape: const RoundedRectangleBorder(
+                                                        //                 borderRadius: BorderRadius.vertical(
+                                                        //                 top: Radius.circular(16))),
+                                                        //                 context:context,
+                                                        //                 builder:(context) {
+                                                        //                   return const ChargesDetailsBottomsheet();
+                                                        //                 });
+                                                        //           },
+                                                        //     widget: Row(
+                                                        //         children: [
+                                                        //           Text(
+                                                        //               "Charges: ",
+                                                        //               style: textStyle(
+                                                        //                   const Color(
+                                                        //                       0xff666666),
+                                                        //                   12,
+                                                        //                   FontWeight
+                                                        //                       .w500)),
+                                                        //           Text(
+                                                        //               "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                        //               style: textStyle(
+                                                        //                   !theme.isDarkMode
+                                                        //                       ? colors.colorBlue
+                                                        //                       : colors.colorLightBlue,
+                                                        //                   12,
+                                                        //                   FontWeight.w600)),
+                                                        //           Icon(
+                                                        //               Icons
+                                                        //                   .arrow_drop_down,
+                                                        //               color: !theme.isDarkMode
+                                                        //                   ? colors
+                                                        //                       .colorBlue
+                                                        //                   : colors
+                                                        //                       .colorLightBlue)
+                                                        //         ]))
                                                       ]),
                                                       IconButton(
                                                           onPressed: internet
@@ -4472,7 +4516,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           }
                                                         }
                                                       } else if (_isCoverOrderEnabled &&
-                                                          orderType == "CO / BO" &&
+                                                          orderType == "CO - BO" &&
                                                           (priceType == "Limit" || priceType == "Market")) {
                                                         if (stopLossCtrl
                                                                 .text.isEmpty ||
@@ -4569,7 +4613,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           }
                                                         }
                                                       }
-                                                      // else if (orderType == "CO / BO" && (priceType == "SL Limit")) {
+                                                      // else if (orderType == "CO - BO" && (priceType == "SL Limit")) {
                                                       //   if (stopLossCtrl.text
                                                       //           .isEmpty ||
                                                       //       stopLossCtrl.text ==
@@ -4737,7 +4781,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                       // }
                                                       else if (_isBracketOrderEnabled &&
                                                           orderType ==
-                                                              "CO / BO" &&
+                                                              "CO - BO" &&
                                                           (priceType ==
                                                                   "Limit" ||
                                                               priceType ==
@@ -4811,7 +4855,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                           }
                                                         }
                                                       }
-                                                      // else if (orderType == "CO / BO" && (priceType == "SL Limit")) {
+                                                      // else if (orderType == "CO - BO" && (priceType == "SL Limit")) {
                                                       //   if (stopLossCtrl.text
                                                       //           .isEmpty ||
                                                       //       targetCtrl.text
@@ -4994,13 +5038,15 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                           style: ElevatedButton.styleFrom(
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 15),
-                                            backgroundColor: orderType == "SIP"
-                                                ? theme.isDarkMode
-                                                    ? colors.colorbluegrey
-                                                    : colors.colorBlack
-                                                : isBuy!
-                                                    ? colors.ltpgreen
-                                                    : colors.darkred,
+                                            backgroundColor:
+                                                // orderType == "SIP"
+                                                //     ? theme.isDarkMode
+                                                //         ? colors.primary
+                                                //         : colors.primary
+                                                //     :
+                                                isBuy!
+                                                    ? colors.primary
+                                                    : colors.tertiary,
                                             // shape: const StadiumBorder()
                                           ),
                                           child: orderProvide.orderloader
@@ -5025,8 +5071,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                       : orderType == "SIP"
                                                           ? "Create SIP"
                                                           : isBuy!
-                                                              ? 'Buy Now'
-                                                              : "Sell Now",
+                                                              ? 'Buy'
+                                                              : "Sell",
                                                   style: textStyle(
                                                       theme.isDarkMode
                                                           ? orderType == "SIP"
@@ -5538,7 +5584,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                   child: Text(
                     " $marketProtection %",
                     style: textStyle(
-                              theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                      theme.isDarkMode
+                          ? colors.colorLightBlue
+                          : colors.colorBlue,
                       14,
                       FontWeight.w600,
                     ).copyWith(
@@ -5643,8 +5691,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
           ref.read(orderProvider).setOrderloader(true);
           PlaceOrderInput placeOrderInput = PlaceOrderInput(
               amo: _afterMarketOrder ? "Yes" : "",
-              blprc: orderType == "CO / BO" ? stopLossCtrl.text : '',
-              bpprc: orderType == "CO / BO" && _isBracketOrderEnabled
+              blprc: orderType == "CO - BO" ? stopLossCtrl.text : '',
+              bpprc: orderType == "CO - BO" && _isBracketOrderEnabled
                   ? targetCtrl.text
                   : '',
               dscqty: discQtyCtrl.text,
@@ -5730,7 +5778,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
         rorgqty: '0',
         trantype: isBuy! ? "B" : "S",
         tsym: "${widget.scripInfo.tsym}",
-        blprc: orderType == "CO / BO" ? stopLossCtrl.text : '',
+        blprc: orderType == "CO - BO" ? stopLossCtrl.text : '',
         trgprc: priceType == "SL Limit" || priceType == "SL MKT"
             ? triggerPriceCtrl.text
             : "");
@@ -5823,8 +5871,8 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
       "token": widget.scripInfo.token,
       "date": curDate,
       "amo": _afterMarketOrder ? "Yes" : "",
-      "blprc": orderType == "CO / BO" ? stopLossCtrl.text : '',
-      "bpprc": orderType == "CO / BO" && _isBracketOrderEnabled
+      "blprc": orderType == "CO - BO" ? stopLossCtrl.text : '',
+      "bpprc": orderType == "CO - BO" && _isBracketOrderEnabled
           ? targetCtrl.text
           : '',
       "dscqty": discQtyCtrl.text,
@@ -5869,9 +5917,17 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
   }
 
   void updatePriceType() {
-    if ((orderType == "Delivery" || orderType == "Intraday" || orderType == "MTF") && _isStoplossOrder && _isMarketOrder) {
+    if ((orderType == "Delivery" ||
+            orderType == "Intraday" ||
+            orderType == "MTF") &&
+        _isStoplossOrder &&
+        _isMarketOrder) {
       priceType = "SL MKT";
-    } else if ((orderType == "Delivery" || orderType == "Intraday" || orderType == "MTF") && _isStoplossOrder && !_isMarketOrder) {
+    } else if ((orderType == "Delivery" ||
+            orderType == "Intraday" ||
+            orderType == "MTF") &&
+        _isStoplossOrder &&
+        !_isMarketOrder) {
       priceType = "SL Limit";
     } else if (_isMarketOrder) {
       priceType = "Market";
@@ -5911,12 +5967,14 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
   }
 
   void onOrderTypeChangeClearValues() {
-    if (orderType == "Delivery" || orderType == "Intraday" || orderType == "MTF") {
+    if (orderType == "Delivery" ||
+        orderType == "Intraday" ||
+        orderType == "MTF") {
       _isCoverOrderEnabled = true;
       _isBracketOrderEnabled = false;
-    } else if (orderType == "CO / BO") {
+    } else if (orderType == "CO - BO") {
       _isStoplossOrder = false;
-      _addValidityAndDisclosedQty= false;
+      _addValidityAndDisclosedQty = false;
       _afterMarketOrder = false;
     }
   }

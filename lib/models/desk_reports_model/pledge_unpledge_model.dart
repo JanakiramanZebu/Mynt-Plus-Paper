@@ -196,8 +196,8 @@ class Data {
     estPercentage = json['est_percentage'].toString();
     cRnc = json['c_nc'].toString();
     estimated = json['estimated'].toString();
-    dummvalue = json['dummvalue'].toString(); 
-    segmentselect = json['segmentselect'].toString(); 
+    dummvalue = json['dummvalue'].toString();
+    segmentselect = json['segmentselect'].toString();
     dummunpledgevalue = json['dummunpledgevalue'].toString();
     deleteselected = json['deleteselected'].toString();
     initiated = json['initiated'].toString();

@@ -107,13 +107,15 @@ class TextWidget {
     int? maxLines,
     TextAlign? align,
     TextOverflow? textOverflow,
-    double? letterSpacing, // ✅ Added optional letter spacing
+    double? letterSpacing,
+    bool? softWrap,
   }) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
       textAlign: align,
+      softWrap: softWrap,
       style: GoogleFonts.inter(
         textStyle: TextStyle(
           fontSize: 14,
@@ -127,33 +129,34 @@ class TextWidget {
               : fw == 1
                   ? FontWeight.w600
                   : fw == 0
-                      ? FontWeight.w500 : fw == 3
-                      ? FontWeight.w400
-                      : fw == 00
-                        ? FontWeight.w400
-                      : FontWeight.normal,
+                      ? FontWeight.w500
+                      : fw == 3
+                          ? FontWeight.w400
+                          : fw == 00
+                              ? FontWeight.w400
+                              : FontWeight.normal,
           letterSpacing: letterSpacing ?? 0.5,
         ),
       ),
     );
   }
 
-  static Widget paraText(
-      {required String text,
-      required bool theme,
-      Color? color,
-      int? fw,
-      int? maxLines,
-      double? height,
-      TextAlign? align,
-      TextOverflow? textOverflow,
-       double? letterSpacing,
-      }) {
+  static Widget paraText({
+    required String text,
+    required bool theme,
+    Color? color,
+    int? fw,
+    int? maxLines,
+    double? height,
+    TextAlign? align,
+    TextOverflow? textOverflow,
+    double? letterSpacing,
+  }) {
     return Text(
       text,
       maxLines: maxLines,
       overflow: textOverflow,
-      textAlign: align, 
+      textAlign: align,
       style: GoogleFonts.inter(
           textStyle: TextStyle(
         fontSize: 12,
@@ -162,7 +165,7 @@ class TextWidget {
             : theme
                 ? colors.colorWhite
                 : colors.colorBlack,
-                height: height,
+        height: height,
         fontWeight: fw == 2
             ? FontWeight.bold
             : fw == 1
@@ -172,7 +175,7 @@ class TextWidget {
                     : fw == 3
                         ? FontWeight.w400
                         : FontWeight.normal,
-                        letterSpacing: letterSpacing ?? 0.5,
+        letterSpacing: letterSpacing ?? 0.5,
       )),
     );
   }
@@ -304,7 +307,6 @@ class TextWidget {
         height: height,
         letterSpacing: letterSpacing ?? 0.5,
         decoration: decoration,
-        
       ),
     );
   }
