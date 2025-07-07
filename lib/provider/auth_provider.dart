@@ -447,11 +447,12 @@ class AuthProvider extends DefaultChangeNotifier {
     };
   }
 
-  bool? _switchback = false;
-  bool? get switchback => _switchback;
+  bool _switchback = false;
+  bool get switchback => _switchback;
 
   switchbackbutton(bool value) {
     _switchback = value;
+    print("switchback $value");
     notifyListeners();
   }
 

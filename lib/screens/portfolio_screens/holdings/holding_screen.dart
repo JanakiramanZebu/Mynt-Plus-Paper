@@ -491,10 +491,14 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               // Summary section with investment and P&L information
-              _buildSummarySection(),
+              holdingProvider.holdingsModel!.isEmpty
+                  ? const SizedBox.shrink()
+                  : _buildSummarySection(),
 
               // Action buttons section - using cached buttons when possible
-              _getActionButtons(),
+              holdingProvider.holdingsModel!.isEmpty
+                  ? const SizedBox.shrink()
+                  : _getActionButtons(),
               _buildSearchBar(),
               // Search bar (conditional)
 
@@ -1064,7 +1068,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
             borderRadius: BorderRadius.circular(5),
           ),
           child: SizedBox(
-            height: 50,
+            height: 40,
             child: TextFormField(
                 autofocus: true,
                 controller: holdingProvider.holdingSearchCtrl,

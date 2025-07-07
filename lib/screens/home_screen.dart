@@ -1007,56 +1007,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     scrollable: true,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14),
                     insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-                    title:  TextWidget.titleText(
-                  text: "Exit App",
-                  theme: false,
-                  color: Color(0xff000000),
-                  fw: 0,
-                ),
+                    title: TextWidget.titleText(
+                      text: "Exit App",
+                      theme: false,
+                      color: Color(0xff000000),
+                      fw: 0,
+                    ),
                     content: SizedBox(
                         width: MediaQuery.of(context).size.width,
                         child: const Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Do you want to Exit the App?")
-                              ])),
+                            children: [Text("Do you want to Exit the App?")])),
                     actions: [
                       ElevatedButton(
-                                onPressed: () => Navigator.of(context).pop(false),
-                                style: ElevatedButton.styleFrom(
-                                    elevation: 0,
-                                    backgroundColor: theme.isDarkMode
-                                        ? const Color(0xffF1F3F8)
-                                        : const Color(0xffF1F3F8),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(4))),
-                                child: TextWidget.subText(
-                                    text: "No",
-                                    theme: false,
-                                    color: !theme.isDarkMode
-                                        ? const Color(0xff666666)
-                                        : const Color(0xff666666),
-                                    fw: 0),
-                              ),
-                              ElevatedButton(
-                                onPressed: () => Navigator.of(context).pop(true),
-                                style: ElevatedButton.styleFrom(
-                                    elevation: 0,
-                                    backgroundColor: theme.isDarkMode
-                                        ? colors.primaryDark
-                                        : colors.primaryLight,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(4))),
-                                child: TextWidget.subText(
-                                    text: "Yes",
-                                    theme: false,
-                                    color: colors.colorWhite,
-                                        
-                                    fw: 0),
-                              ),
-                       
+                        onPressed: () => Navigator.of(context).pop(false),
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: theme.isDarkMode
+                                ? const Color(0xffF1F3F8)
+                                : const Color(0xffF1F3F8),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4))),
+                        child: TextWidget.subText(
+                            text: "No",
+                            theme: false,
+                            color: !theme.isDarkMode
+                                ? const Color(0xff666666)
+                                : const Color(0xff666666),
+                            fw: 0),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4))),
+                        child: TextWidget.subText(
+                            text: "Yes",
+                            theme: false,
+                            color: colors.colorWhite,
+                            fw: 0),
+                      ),
                     ]);
               }) ??
           false;
@@ -1166,36 +1160,51 @@ class _OrdersActions extends ConsumerWidget {
       // Basket tab
       return Row(children: [
         Container(
-            margin: const EdgeInsets.only(right: 8),
-            height: 30,
-            child: OutlinedButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                      context: context,
-                      useSafeArea: true,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(16)),
-                      ),
-                      builder: (BuildContext context) {
-                        return const CreateBasket();
-                      });
+          decoration: BoxDecoration(
+            color: colors.btnBg,
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(color: colors.btnOutlinedBorder, width: 1),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            shape: const BeveledRectangleBorder(),
+            child: InkWell(
+                customBorder: const BeveledRectangleBorder(),
+                splashColor: theme.isDarkMode
+                    ? colors.splashColorDark
+                    : colors.splashColorLight,
+                highlightColor: theme.isDarkMode
+                    ? colors.highlightDark
+                    : colors.highlightLight,
+                onTap: () {
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    showModalBottomSheet(
+                        context: context,
+                        useSafeArea: true,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16)),
+                        ),
+                        builder: (BuildContext context) {
+                          return const CreateBasket();
+                        });
+                  });
                 },
-                style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                        color: theme.isDarkMode
-                            ? colors.colorGrey
-                            : colors.colorBlack),
-                    shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(32)))),
-                child: Text("Create Basket",
-                    style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        12,
-                        FontWeight.w600))))
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  child: TextWidget.subText(
+                      text: "Create Basket",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight,
+                      fw: 2),
+                )),
+          ),
+        ),
+        const SizedBox(width: 16),
       ]);
     }
 

@@ -47,7 +47,6 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
               final positions = ref.watch(portfolioProvider);
               final theme = ref.read(themeProvider);
               final marketwatch = ref.watch(marketWatchProvider);
-              final scripInfo = ref.watch(marketWatchProvider);
 
               DepthInputArgs depthArgs = DepthInputArgs(
                   exch: widget.positionList.exch ?? "",
@@ -137,7 +136,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                         ),
                       ),
                       child: Column(
-                        children: <Widget>[
+                        children: [
                           const CustomDragHandler(),
                           Expanded(
                             child: SingleChildScrollView(
@@ -158,12 +157,14 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                           child: InkWell(
                                             customBorder:
                                                 const BeveledRectangleBorder(),
-                                            splashColor:
-                                                Colors.black.withOpacity(0.15),
-                                            highlightColor:
-                                                Colors.black.withOpacity(0.08),
+                                            splashColor: theme.isDarkMode
+                                                ? colors.splashColorDark
+                                                : colors.splashColorLight,
+                                            highlightColor: theme.isDarkMode
+                                                ? colors.highlightDark
+                                                : colors.highlightLight,
                                             onTap: () async {
-                                              await scripInfo
+                                              await marketwatch
                                                   .chngDephBtn("Overview");
                                               marketwatch.scripdepthsize(true);
                                               // Navigator.pop(context);
@@ -271,9 +272,9 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                                       .lossLight
                                                               : theme.isDarkMode
                                                                   ? colors
-                                                                      .successDark
+                                                                      .profitDark
                                                                   : colors
-                                                                      .successLight,
+                                                                      .profitLight,
                                                       theme: false,
                                                     ),
                                                     const SizedBox(height: 4),
