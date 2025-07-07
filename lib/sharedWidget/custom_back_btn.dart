@@ -11,14 +11,30 @@ class CustomBackBtn extends ConsumerWidget {
   @override
   Widget build(BuildContext context,WidgetRef ref) {
     final theme = ref.watch(themeProvider);
-    return InkWell(
-        onTap: () {
-          Navigator.pop(context);
-        },
-        child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 9),
-            child: SvgPicture.asset(assets.backArrow,
-                color:
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack)));
+    return Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: Colors.grey.withOpacity(0.4),
+                  highlightColor: Colors.grey.withOpacity(0.2),
+                  onTap: () {                  
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    width: 44, // Increased touch area
+                    height: 44,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.arrow_back_ios_outlined,
+                      size: 18,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                    ),
+                  ),
+                ),
+              );
   }
 }
