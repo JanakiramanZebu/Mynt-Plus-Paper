@@ -108,10 +108,11 @@ class OrderInputProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  chngOrderType(String val, bool isCoverOrderEnabled, bool isBracketOrderEnabled) {
-    if (val == "CO / BO" && isCoverOrderEnabled) {
+  chngOrderType(
+      String val, bool isCoverOrderEnabled, bool isBracketOrderEnabled) {
+    if (val == "CO - BO" && isCoverOrderEnabled) {
       _ordType = "H";
-    } else if (val == "CO / BO" && isBracketOrderEnabled) {
+    } else if (val == "CO - BO" && isBracketOrderEnabled) {
       _ordType = "B";
     } else {
       _ordType = "F";
@@ -396,42 +397,42 @@ class OrderInputProvider extends DefaultChangeNotifier {
     _disableGTTCond = val;
     notifyListeners();
   }
-  
+
   // Validate GTT order before submission
   Map<String, dynamic> validateGttOrder(bool isOco) {
     bool isValid = true;
     String errorMessage = "";
-    
+
     // Check if value is provided for the condition
     if (val1Ctrl.text.isEmpty) {
       isValid = false;
       errorMessage = "Please enter a value for the condition";
       return {"isValid": isValid, "message": errorMessage};
     }
-    
+
     // Check if quantity is provided
     if (qtyCtrl.text.isEmpty) {
       isValid = false;
       errorMessage = "Please enter quantity";
       return {"isValid": isValid, "message": errorMessage};
     }
-    
+
     // Check if price is provided for Limit orders
-    if ((actPrcType == "Limit" || actPrcType == "SL Limit") && 
+    if ((actPrcType == "Limit" || actPrcType == "SL Limit") &&
         (priceCtrl.text.isEmpty || priceCtrl.text == "0" || priceCtrl.text == "0.0")) {
       isValid = false;
       errorMessage = "Please enter a valid price";
       return {"isValid": isValid, "message": errorMessage};
     }
-    
+
     // Check trigger price for SL orders
-    if ((actPrcType == "SL Limit" || actPrcType == "SL MKT") && 
+    if ((actPrcType == "SL Limit" || actPrcType == "SL MKT") &&
         (trgPrcCtrl.text.isEmpty || trgPrcCtrl.text == "0" || trgPrcCtrl.text == "0.0")) {
       isValid = false;
       errorMessage = "Please enter a valid trigger price";
       return {"isValid": isValid, "message": errorMessage};
     }
-    
+
     // Additional validations for OCO orders
     if (isOco) {
       if (val2Ctrl.text.isEmpty) {
@@ -439,28 +440,28 @@ class OrderInputProvider extends DefaultChangeNotifier {
         errorMessage = "Please enter a value for the OCO condition";
         return {"isValid": isValid, "message": errorMessage};
       }
-      
+
       if (ocoQtyCtrl.text.isEmpty) {
         isValid = false;
         errorMessage = "Please enter OCO quantity";
         return {"isValid": isValid, "message": errorMessage};
       }
-      
-      if ((actOcoPrcType == "Limit" || actOcoPrcType == "SL Limit") && 
+
+      if ((actOcoPrcType == "Limit" || actOcoPrcType == "SL Limit") &&
           (ocoPriceCtrl.text.isEmpty || ocoPriceCtrl.text == "0" || ocoPriceCtrl.text == "0.0")) {
         isValid = false;
         errorMessage = "Please enter a valid OCO price";
         return {"isValid": isValid, "message": errorMessage};
       }
-      
-      if ((actOcoPrcType == "SL Limit" || actOcoPrcType == "SL MKT") && 
+
+      if ((actOcoPrcType == "SL Limit" || actOcoPrcType == "SL MKT") &&
           (ocoTrgPrcCtrl.text.isEmpty || ocoTrgPrcCtrl.text == "0" || ocoTrgPrcCtrl.text == "0.0")) {
         isValid = false;
         errorMessage = "Please enter a valid OCO trigger price";
         return {"isValid": isValid, "message": errorMessage};
       }
     }
-    
+
     return {"isValid": isValid, "message": errorMessage};
   }
 
