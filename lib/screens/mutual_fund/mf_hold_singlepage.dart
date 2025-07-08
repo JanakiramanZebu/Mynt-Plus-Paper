@@ -11,6 +11,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 // import '../../sharedWidget/loader_ui.dart';
@@ -32,7 +33,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
   String _formatValue(String? value) {
     return (value == null || value.isEmpty) ? "0.00" : value;
   }
-  
+
   // Helper method to determine color based on value
   Color _getColorBasedOnValue(String? valueStr) {
     final value = double.tryParse(valueStr ?? "0") ?? 0;
@@ -44,11 +45,11 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
     return Consumer(builder: (context, ref, child) {
       final theme = ref.watch(themeProvider);
       final mfdata = ref.watch(mfProvider);
-      
+
       // Check if data is available
-      final hasData = mfdata.holssinglelist != null && 
-                      mfdata.holssinglelist!.isNotEmpty && 
-                      mfdata.holssinglelist![0] != null;
+      final hasData = mfdata.holssinglelist != null &&
+          mfdata.holssinglelist!.isNotEmpty &&
+          mfdata.holssinglelist![0] != null;
 
       return Scaffold(
           appBar: AppBar(
@@ -82,18 +83,19 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           body: Stack(children: [
             TransparentLoaderScreen(
               isLoading: mfdata.bestmfloader ?? false,
-              child: hasData 
-                ? _buildHoldingDetails(context, theme, mfdata)
-                : const Center(child: Text("No holding data available")),
+              child: hasData
+                  ? _buildHoldingDetails(context, theme, mfdata)
+                  : const Center(child: Text("No holding data available")),
             )
           ]));
     });
   }
 
   // Extracted method to build holding details
-  Widget _buildHoldingDetails(BuildContext context, ThemesProvider theme, MFProvider mfdata) {
+  Widget _buildHoldingDetails(
+      BuildContext context, ThemesProvider theme, MFProvider mfdata) {
     final data = mfdata.holssinglelist![0];
-    
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -119,19 +121,48 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  width: MediaQuery.of(context).size.width * 0.6,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.6,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        data.sCHEMENAME ?? "Unknown Fund",
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: textStyles.scripNameTxtStyle.copyWith(
+                                      TextWidget.titleText(
+                                          align: TextAlign.right,
+                                          text:
+                                              data.sCHEMENAME ?? "Unknown Fund",
                                           color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                        ),
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          maxLines: 2,
+                                          fw: 0),
+                                      const SizedBox(height: 8),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            "₹ ${_formatValue(data.gainOrLoss)} ",
+                                            style: textStyle(
+                                              _getColorBasedOnValue(
+                                                  data.gainOrLoss),
+                                              14,
+                                              FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            "(${(double.tryParse(data.percentage ?? '0') ?? 0).toStringAsFixed(2)}%)",
+                                            style: textStyle(
+                                              _getColorBasedOnValue(
+                                                  data.gainOrLoss),
+                                              14,
+                                              FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -146,82 +177,18 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                   ),
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    "₹ ${_formatValue(data.gainOrLoss)} ",
-                    style: textStyle(
-                      _getColorBasedOnValue(data.gainOrLoss),
-                      14,
-                      FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    "(${(double.tryParse(data.percentage ?? '0') ?? 0).toStringAsFixed(2)}%)",
-                    style: textStyle(
-                      _getColorBasedOnValue(data.gainOrLoss),
-                      14,
-                      FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
             ],
-          ),
-          const SizedBox(height: 2),
-          Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider,
-            thickness: 1.0,
-          ),
-
+          ), 
           const SizedBox(height: 16),
 
-          // Units and Avg Price
-          rowOfInfoData(
-            "Units",
-            "${data.nET ?? '0'}",
-            "Avg Price",
-            "${data.bought ?? '0'}",
-            theme,
-          ),
-          const SizedBox(height: 16),
-
-          // Pledged Units and Current NAV
-          rowOfInfoData(
-            "Pledged Units",
-            "${data.pLEDGEQTY ?? '0'}",
-            "Current NAV",
-            "${data.nav ?? '0'}",
-            theme,
-          ),
-
-          const SizedBox(height: 16),
-
-          // Invested and Current Value
-          rowOfInfoData(
-            "Invested",
-            "₹ ${data.purchase ?? '0'}",
-            "Current",
-            "₹ ${data.current ?? '0'}",
-            theme,
-          ),
-      
-          const SizedBox(height: 16),
-          
-          const Spacer(),
-          
-          // Redeem button
-          SafeArea(
-            child: Row(
+          Row(
               children: [
                 Expanded(
                   flex: 6,
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
+                      
                       onPressed: () {
                         _showBottomSheet(
                           context,
@@ -230,75 +197,215 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                         mfdata.recdemevalu();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        
+                        elevation: 0,
+                        backgroundColor: colors.btnBg,
                         foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                        side: const BorderSide(
-                          color: Color.fromARGB(255, 0, 0, 0),
+                        side:  BorderSide(
+                          
+                          color: colors.btnOutlinedBorder,
                           width: 1,
                         ),
+                         minimumSize: Size(double.infinity, 45), // height: 48
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(5),
                         ),
                       ),
-                      child: const Text(
-                        "Redeem",
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: 
+                      TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text:  "Redeem",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.primaryDark:
+                                                         colors.primaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 2),
+                      
+                        
                     ),
                   ),
                 ),
               ],
             ),
+
+          const SizedBox(height: 24),
+
+          // Units and Avg Price
+          rowOfInfoData(
+            "Units",
+            "${data.nET ?? '0'}",
+            
+            theme,
           ),
+          const SizedBox(height: 12),
+           Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider,
+            thickness: 1.0,
+          ),
+          const SizedBox(height: 12),
+
+          rowOfInfoData(
+             
+            "Avg Price",
+            "${data.bought ?? '0'}",
+            theme,
+          ),
+            const SizedBox(height: 12),
+           Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider,
+            thickness: 1.0,
+          ),
+          const SizedBox(height: 12),
+
+          // Pledged Units and Current NAV
+          rowOfInfoData(
+            "Pledged Units",
+            "${data.pLEDGEQTY ?? '0'}",
+            
+            theme,
+          ),
+            const SizedBox(height: 12),
+           Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider,
+            thickness: 1.0,
+          ),
+          const SizedBox(height: 12),
+
+          rowOfInfoData(
+           
+            "Current NAV",
+            "${data.nav ?? '0'}",
+            theme,
+          ),
+
+            const SizedBox(height: 12),
+           Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider,
+            thickness: 1.0,
+          ),
+          const SizedBox(height: 12),
+
+          // Invested and Current Value
+          rowOfInfoData(
+            "Invested",
+            "₹ ${data.purchase ?? '0'}",
+             
+            theme,
+          ),
+            const SizedBox(height: 12),
+           Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider,
+            thickness: 1.0,
+          ),
+          const SizedBox(height: 12),
+
+           rowOfInfoData(
+            "Invested",
+            "₹ ${data.purchase ?? '0'}",
+            
+            theme,
+          ),
+
+            const SizedBox(height: 12),
+           Divider(
+            color: theme.isDarkMode
+                ? colors.darkColorDivider
+                : colors.colorDivider,
+            thickness: 1.0,
+          ),
+
+          const Spacer(),
+
+          // Redeem button
+          // SafeArea(
+          //   child: Row(
+          //     children: [
+          //       Expanded(
+          //         flex: 6,
+          //         child: SizedBox(
+          //           width: double.infinity,
+          //           child: ElevatedButton(
+          //             onPressed: () {
+          //               _showBottomSheet(
+          //                 context,
+          //                 RedemptionBottomScreenNew(),
+          //               );
+          //               mfdata.recdemevalu();
+          //             },
+          //             style: ElevatedButton.styleFrom(
+          //               backgroundColor: Colors.white,
+          //               foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+          //               side: const BorderSide(
+          //                 color: Color.fromARGB(255, 0, 0, 0),
+          //                 width: 1,
+          //               ),
+          //               shape: RoundedRectangleBorder(
+          //                 borderRadius: BorderRadius.circular(20),
+          //               ),
+          //             ),
+          //             child: const Text(
+          //               "Redeem",
+          //               style: TextStyle(
+          //                 color: Color.fromARGB(255, 0, 0, 0),
+          //                 fontSize: 14,
+          //                 fontWeight: FontWeight.w600,
+          //               ),
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );
   }
 
-  Row rowOfInfoData(String title1, String value1, String title2, String value2,
+  Row rowOfInfoData(String title1, String value1,  
       ThemesProvider theme) {
-    return Row(children: [
-      Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title1,
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
-        const SizedBox(height: 2),
-        Text(value1,
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w500)),
-        const SizedBox(height: 2),
-        Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider)
-      ])),
-      const SizedBox(width: 34),
-      Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title2,
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
-        const SizedBox(height: 2),
-        Text(
-          value2,
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              14,
-              FontWeight.w500),
-        ),
-        const SizedBox(height: 2),
-        Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider)
-      ]))
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: title1,
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+
+       TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: value1,
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+      
+       
+       
     ]);
   }
 

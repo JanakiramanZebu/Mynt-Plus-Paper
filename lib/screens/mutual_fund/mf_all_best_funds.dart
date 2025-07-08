@@ -9,6 +9,7 @@ import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/no_data_found.dart';
@@ -211,16 +212,20 @@ class SaveTaxesScreen extends ConsumerWidget {
                                                           children: [
                                                             SizedBox(
                                                               width: MediaQuery.of(context).size.width * 0.6,
-                                                              child: Text(
-                                                                schemeGroupName,
-                                                                maxLines: 2,
-                                                                overflow: TextOverflow.ellipsis,
-                                                                style: textStyles.scripNameTxtStyle.copyWith(
-                                                                  color: isDarkMode 
-                                                                    ? colors.colorWhite 
-                                                                    : colors.colorBlack,
-                                                                ),
-                                                              ),
+                                                              child: 
+                                                              TextWidget.subText(
+                                                    align: TextAlign.start,
+                                                    text: schemeGroupName,
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                                                              
+                                                             
                                                             ),
                                                           ],
                                                         ),
@@ -230,9 +235,32 @@ class SaveTaxesScreen extends ConsumerWidget {
                                                           child: ListView(
                                                             scrollDirection: Axis.horizontal,
                                                             children: [
-                                                              CustomExchBadge(exch: type),
-                                                              const SizedBox(width: 5),
-                                                              CustomExchBadge(exch: subType),
+                                                              TextWidget.paraText(
+                                  fw: 3,
+                                  text: "${item.type ?? "Unknown"}",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: false,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 5),
+                                  child: TextWidget.paraText(
+                                    fw: 3,
+                                    text: "${item.subType ?? "Unknown"}",
+                                    textOverflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    theme: false,
+                                  ),
+                                  
+                                  
+                                ),
+                                                             
                                                             ],
                                                           ),
                                                         ),
@@ -242,14 +270,17 @@ class SaveTaxesScreen extends ConsumerWidget {
                                                 ],
                                               ),
                                             ),
-                                            Text(
-                                              "$threeYearData%",
-                                              style: textStyle(
-                                                isPositive ? Colors.green : Colors.red,
-                                                14,
-                                                FontWeight.w500,
-                                              ),
-                                            ),
+                                            TextWidget.titleText(
+                                                    align: TextAlign.right,
+                                                    color: isPositive ? Colors.green : Colors.red,
+                                                    text: "$threeYearData%",
+                                                              
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                                             
+                                             
                                           ],
                                         ),
                                         const SizedBox(height: 8),
@@ -299,32 +330,33 @@ class SaveTaxesScreen extends ConsumerWidget {
                     onTap: () => mfData.changetitle(title),
                     child: Padding(
                       padding: const EdgeInsets.only(left: 8),
-                      child: Chip(
-                        label: Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: Text(
-                            title,
-                            style: textStyle(
-                              isSelected
-                                ? colors.colorWhite
-                                : (isDarkMode ? Colors.white : colors.colorBlack),
-                              12,
-                              FontWeight.w500,
+                      child: Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: isSelected
+                                    ? colors.primaryDark
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
                             ),
                           ),
-                        ),
-                        backgroundColor: isSelected
-                          ? (isDarkMode ? const Color(0xFF2A2A2A) : colors.colorBlack)
-                          : (isDarkMode ? Colors.black : colors.colorWhite),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: BorderSide(
-                            color: isDarkMode ? const Color(0xFF2A2A2A) : colors.colorBlack, 
-                            width: 1
-                          ),
-                        ),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: -2),
-                      ),
+                          child: 
+                          TextWidget.subText(
+                            letterSpacing: 0.2,
+                                                    align: TextAlign.start,
+                                                    text: title,
+                                                    color: isSelected
+                                  ? colors.primaryLight
+                                  : Colors.black,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: isSelected? 1 :3),
+                           
+                        )
                     ),
                   );
                 }).toList(),
@@ -339,26 +371,26 @@ class SaveTaxesScreen extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'FUNDS',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w400,
-                      color: isDarkMode ? colors.colorWhite : Colors.black,
-                      letterSpacing: 0.7,
-                    ),
-                  ),
+                  TextWidget.captionText(
+                      align: TextAlign.right,
+                      text: 'FUNDS',
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 3),
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: Text(
-                      '3Y RETURNS',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w400,
-                        color: isDarkMode ? colors.colorWhite : Colors.black,
-                        letterSpacing: 0.7,
-                      ),
-                    ),
+                    child: TextWidget.captionText(
+                        align: TextAlign.right,
+                        text: '3Y RETURNS',
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 3),
                   ),
                 ],
               ),

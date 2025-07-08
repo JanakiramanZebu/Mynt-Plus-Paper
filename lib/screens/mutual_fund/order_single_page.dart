@@ -10,6 +10,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 // import '../../sharedWidget/loader_ui.dart';
@@ -56,7 +57,8 @@ class _mforderdetscreen extends State<mforderdetscreen>
           backgroundColor:
               theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           shadowColor: const Color(0xffECEFF3),
-          title: Text("Order details",
+          title: 
+          Text("Order details",
               style: textStyles.appBarTitleTxt.copyWith(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
@@ -78,13 +80,17 @@ class _mforderdetscreen extends State<mforderdetscreen>
                       thickness: 1.0,
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      "Order Details",
-                      style: textStyle(
-                          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                          16,
-                          FontWeight.w500),
-                    ),
+                   TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: "Order details",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark
+                                                             :  colors.textPrimaryLight 
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
                     const SizedBox(height: 16),
                     _buildDetailsSection(theme, mfdata),
                     const SizedBox(height: 20),
@@ -147,16 +153,17 @@ class _mforderdetscreen extends State<mforderdetscreen>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  mfdata.mforderdet?.data?.schemename ?? "Unknown Scheme",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: textStyles.scripNameTxtStyle.copyWith(
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                  ),
-                                ),
+                                TextWidget.subText(
+                      align: TextAlign.start,
+                      text: mfdata.mforderdet?.data?.schemename ?? "Unknown Scheme",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                                 
                               ],
                             ),
                           ),
@@ -179,15 +186,19 @@ class _mforderdetscreen extends State<mforderdetscreen>
             ),
             Padding(
               padding: const EdgeInsets.only(left: 4.0),
-              child: Text(
-                _getStatusLabel(mfdata.mforderdet?.data?.orderstatus),
-                style: textStyle(
-                    theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                    14,
-                    FontWeight.w600),
-              ),
+              child: 
+              TextWidget.paraText(
+                                                    align: TextAlign.right,
+                                                    text:_getStatusLabel(mfdata.mforderdet?.data?.orderstatus),
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark
+                                                        :  colors.textPrimaryLight 
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+               
             )
           ],
         ),

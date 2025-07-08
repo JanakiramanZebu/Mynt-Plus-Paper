@@ -187,11 +187,11 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(4),
                                         side: orderType == orderTypes[index]
-                                          ? BorderSide(
-                                              color: colors.primaryLight,
-                                              width: 1,
-                                            )
-                                          : BorderSide.none,
+                                            ? BorderSide(
+                                                color: colors.primaryLight,
+                                                width: 1,
+                                              )
+                                            : BorderSide.none,
                                       ),
                                     ),
                                     child: Text(
@@ -204,7 +204,9 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                 : colors.textPrimaryLight,
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
-                                            fw: orderType == orderTypes[index] ? 0 : null)));
+                                            fw: orderType == orderTypes[index]
+                                                ? 0
+                                                : null)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
@@ -233,20 +235,23 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 0),
                                       backgroundColor: !theme.isDarkMode
-                                          ? priceType == priceTypes[index]['type']
+                                          ? priceType ==
+                                                  priceTypes[index]['type']
                                               ? Color(0xffF1F3F8)
                                               : Colors.transparent
-                                          : priceType == priceTypes[index]['type']
+                                          : priceType ==
+                                                  priceTypes[index]['type']
                                               ? colors.colorbluegrey
                                               : Colors.transparent,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(4),
-                                        side: priceType == priceTypes[index]['type']
-                                          ? BorderSide(
-                                              color: colors.primaryLight,
-                                              width: 1,
-                                            )
-                                          : BorderSide.none,
+                                        side: priceType ==
+                                                priceTypes[index]['type']
+                                            ? BorderSide(
+                                                color: colors.primaryLight,
+                                                width: 1,
+                                              )
+                                            : BorderSide.none,
                                       ),
                                     ),
                                     child: Text(priceTypes[index]['type'],
@@ -256,159 +261,174 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                 : colors.textPrimaryLight,
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
-                                            fw: priceType == priceTypes[index]['type'] ? 0 : null)));
+                                            fw: priceType ==
+                                                    priceTypes[index]['type']
+                                                ? 0
+                                                : null)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
                               },
                               itemCount: priceTypes.length))),
-                
+
                   Row(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Expanded(
-      flex: 1,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16, top: 16),
-            child: headerTitleText("Validity", theme),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 16, top: 8),
-            child: SizedBox(
-              height: 38,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  final isSelected = validity == validityTypes[index];
-                  return TextButton(
-                    onPressed: () {
-                      setState(() {
-                        validity = validityTypes[index];
-                      });
-                      FocusScope.of(context).unfocus();
-                    },
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      backgroundColor: !theme.isDarkMode
-                          ? isSelected
-                              ? Color(0xffF1F3F8)
-                              : Colors.transparent
-                          : isSelected
-                              ? colors.colorbluegrey
-                              : Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        side: isSelected
-                          ? BorderSide(
-                              color: colors.primaryLight,
-                              width: 1,
-                            )
-                          : BorderSide.none,
-                      ),
-                    ),
-                    child: Text(
-                      validityTypes[index],
-                      style: TextWidget.textStyle(
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        fontSize: 14,
-                        theme: theme.isDarkMode,
-                        fw: isSelected ? 0 : null,
-                      ),
-                    ),
-                  );
-                },
-                separatorBuilder: (context, index) => const SizedBox(width: 8),
-                itemCount: validityTypes.length,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-    Expanded(
-      flex: 1,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only( top: 16, bottom: 8),
-            child: headerTitleText("Market Protection%", theme),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Container(
-              height: 40,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: CustomTextFormField(
-                      fillColor: theme.isDarkMode
-                          ? colors.darkGrey
-                          : const Color(0xffF1F3F8),
-                      inputFormate: [
-                        FilteringTextInputFormatter.digitsOnly
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          if (value.isNotEmpty) {
-                            int parsed = int.tryParse(value) ?? 1;
-                            if (parsed > 20) {
-                              mktProtCtrl.text = "20";
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(context,
-                                    "Can't enter greater than 20% of Market Protection"),
-                              );
-                            } else if (parsed < 1) {
-                              mktProtCtrl.text = "1";
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                warningMessage(context,
-                                    "can't enter less than 1% of Market Protection"),
-                              );
-                            }
-                          }
-                        });
-                      },
-                      style: TextWidget.textStyle(
-                        color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                        fontSize: 14,
-                        theme: theme.isDarkMode,
-                        
-                      ),
-                      textCtrl: mktProtCtrl,
-                      prefixIcon: Container(
-                        margin: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: theme.isDarkMode
-                              ? const Color(0xff555555)
-                              : colors.colorWhite,
-                        ),
-                        child: SvgPicture.asset(
-                          assets.precentIcon,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorGrey,
-                          fit: BoxFit.scaleDown,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16, top: 16),
+                              child: headerTitleText("Validity", theme),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16, top: 8),
+                              child: SizedBox(
+                                height: 38,
+                                child: ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context, index) {
+                                    final isSelected =
+                                        validity == validityTypes[index];
+                                    return TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          validity = validityTypes[index];
+                                        });
+                                        FocusScope.of(context).unfocus();
+                                      },
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12),
+                                        backgroundColor: !theme.isDarkMode
+                                            ? isSelected
+                                                ? Color(0xffF1F3F8)
+                                                : Colors.transparent
+                                            : isSelected
+                                                ? colors.colorbluegrey
+                                                : Colors.transparent,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                          side: isSelected
+                                              ? BorderSide(
+                                                  color: colors.primaryLight,
+                                                  width: 1,
+                                                )
+                                              : BorderSide.none,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        validityTypes[index],
+                                        style: TextWidget.textStyle(
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          fontSize: 14,
+                                          theme: theme.isDarkMode,
+                                          fw: isSelected ? 0 : null,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(width: 8),
+                                  itemCount: validityTypes.length,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      textAlign: TextAlign.start,
-                    ),
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 16, bottom: 8),
+                              child:
+                                  headerTitleText("Market Protection%", theme),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 16),
+                              child: Container(
+                                height: 40,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: CustomTextFormField(
+                                        fillColor: theme.isDarkMode
+                                            ? colors.darkGrey
+                                            : const Color(0xffF1F3F8),
+                                        inputFormate: [
+                                          FilteringTextInputFormatter.digitsOnly
+                                        ],
+                                        onChanged: (value) {
+                                          setState(() {
+                                            ScaffoldMessenger.of(context)
+                                                .hideCurrentSnackBar();
+                                            if (value.isNotEmpty) {
+                                              int parsed =
+                                                  int.tryParse(value) ?? 1;
+                                              if (parsed > 20) {
+                                                mktProtCtrl.text = "20";
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  warningMessage(context,
+                                                      "Can't enter greater than 20% of Market Protection"),
+                                                );
+                                              } else if (parsed < 1) {
+                                                mktProtCtrl.text = "1";
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  warningMessage(context,
+                                                      "can't enter less than 1% of Market Protection"),
+                                                );
+                                              }
+                                            }
+                                          });
+                                        },
+                                        style: TextWidget.textStyle(
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          fontSize: 14,
+                                          theme: theme.isDarkMode,
+                                        ),
+                                        textCtrl: mktProtCtrl,
+                                        prefixIcon: Container(
+                                          margin: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            color: theme.isDarkMode
+                                                ? const Color(0xff555555)
+                                                : colors.colorWhite,
+                                          ),
+                                          child: SvgPicture.asset(
+                                            assets.precentIcon,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorGrey,
+                                            fit: BoxFit.scaleDown,
+                                          ),
+                                        ),
+                                        textAlign: TextAlign.start,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  ],
-),
 
                   const SizedBox(height: 16),
                   Padding(
@@ -436,7 +456,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             qtyCtrl.text = "1";
                           });
                         }),
-                          TextWidget.subText(
+                    TextWidget.subText(
                       text: 'Minimum Qty',
                       theme: theme.isDarkMode,
                       color: theme.isDarkMode
@@ -446,9 +466,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           : Color(QtyPrefer == OrdQtyPref.mktqty
                               ? 0xff3E4763
                               : 0xff666666),
-                     
                     ),
-                     
                     Radio<OrdQtyPref>(
                         fillColor: MaterialStateProperty.resolveWith<Color>(
                             (Set<MaterialState> states) {
@@ -479,7 +497,6 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                           : Color(QtyPrefer == OrdQtyPref.mktqty
                               ? 0xff3E4763
                               : 0xff666666),
-                     
                     ),
                   ]),
                   if (QtyPrefer == OrdQtyPref.mktlot) ...[
@@ -494,20 +511,20 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       : const Color(0xffF1F3F8),
                                   hintText: qtyCtrl.text,
                                   hintStyle: TextWidget.textStyle(
-                                      color: colors.textSecondaryLight,
-                                      fontSize: 14,
-                                      theme: theme.isDarkMode,
-                                      ),
+                                    color: colors.textSecondaryLight,
+                                    fontSize: 14,
+                                    theme: theme.isDarkMode,
+                                  ),
                                   inputFormate: [
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
                                   style: TextWidget.textStyle(
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fontSize: 14,
-                                      theme: theme.isDarkMode,
-                                      ),
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    fontSize: 14,
+                                    theme: theme.isDarkMode,
+                                  ),
                                   textCtrl: qtyCtrl,
                                   textAlign: TextAlign.start,
                                   onChanged: (value) {
@@ -558,20 +575,23 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 0),
                                       backgroundColor: !theme.isDarkMode
-                                          ? expriceType == expriceTypes[index]['type']
+                                          ? expriceType ==
+                                                  expriceTypes[index]['type']
                                               ? Color(0xffF1F3F8)
                                               : Colors.transparent
-                                          : expriceType == expriceTypes[index]['type']
+                                          : expriceType ==
+                                                  expriceTypes[index]['type']
                                               ? colors.colorbluegrey
                                               : Colors.transparent,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(4),
-                                        side: expriceType == expriceTypes[index]['type']
-                                          ? BorderSide(
-                                              color: colors.primaryLight,
-                                              width: 1,
-                                            )
-                                          : BorderSide.none,
+                                        side: expriceType ==
+                                                expriceTypes[index]['type']
+                                            ? BorderSide(
+                                                color: colors.primaryLight,
+                                                width: 1,
+                                              )
+                                            : BorderSide.none,
                                       ),
                                     ),
                                     child: Text(expriceTypes[index]['type'],
@@ -581,13 +601,15 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                 : colors.textPrimaryLight,
                                             fontSize: 14,
                                             theme: theme.isDarkMode,
-                                            fw: expriceType == expriceTypes[index]['type'] ? 0 : null)));
+                                            fw: expriceType ==
+                                                    expriceTypes[index]['type']
+                                                ? 0
+                                                : null)));
                               },
                               separatorBuilder: (context, index) {
                                 return const SizedBox(width: 8);
                               },
                               itemCount: expriceTypes.length))),
-                  
                 ],
               ),
             ),
@@ -626,7 +648,7 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                     child: TextWidget.subText(
                       text: "Save",
                       theme: false,
-                      color:  colors.colorWhite,
+                      color: colors.colorWhite,
                       fw: 2,
                       align: TextAlign.center,
                     )),

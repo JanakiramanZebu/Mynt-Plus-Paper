@@ -11,6 +11,8 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/loader_ui.dart';
 // import '../../provider/mf_provider.dart';
 import '../../provider/mf_provider.dart';
+import '../../provider/portfolio_provider.dart';
+import '../../res/global_state_text.dart';
 import 'mf_sip_screen.dart';
 import 'mf_watchlist.dart';
 import 'mutual_fund_screen_new.dart';
@@ -26,7 +28,7 @@ class MFExploreScreens extends ConsumerStatefulWidget {
 class _ExploreScreensState extends ConsumerState<MFExploreScreens>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+
   final tablistitems = [
     {
       "imgpath": "assets.exportIcon",
@@ -81,10 +83,9 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 4, 
-      vsync: this, 
-      initialIndex: ref.read(mfProvider).activeTab ?? 0
-    );
+        length: 4,
+        vsync: this,
+        initialIndex: ref.read(mfProvider).activeTab ?? 0);
   }
 
   @override
@@ -98,6 +99,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
     final explore = ref.watch(authProvider);
     final theme = ref.read(themeProvider);
     final mfData = ref.watch(mfProvider);
+    final portfolio = ref.watch(portfolioProvider);
 
     return TransparentLoaderScreen(
       isLoading: explore.loading,
@@ -105,35 +107,66 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // const CustomDragHandler(),
-          Container(
-              width: MediaQuery.of(context).size.width,
-              padding: const EdgeInsets.only(bottom: 0, left: 15, top: 2),
-              decoration: BoxDecoration(
-                  border: Border(
-                      bottom: BorderSide(
-                          color: widget.theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          width: 0),
-                          )),
-              // height: 60,
-              child: TabBar(
-                indicator: const BoxDecoration(),
-                  labelPadding: const EdgeInsets.only(right: 8, bottom: 8),
-                  tabAlignment: TabAlignment.start,
-                  indicatorColor: theme.isDarkMode ? colors.colorBlack :const Color.fromARGB(255, 255, 255, 255),
-                  controller: _tabController,
-                  isScrollable: true,
-                  tabs: List.generate(
-                      tablistitems.length,
-                      (tab) => _buildTab(
-                          tablistitems[tab]['title'].toString(),
-                          theme,
-                          tab,
-                          mfData)))),
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: 40,
+            child: TabBar(
+              onTap: (index) {
+                setState(() {});
+              },
+              tabAlignment: TabAlignment.start,
+              indicatorSize: TabBarIndicatorSize.tab,
+              isScrollable: true,
+              indicatorColor: theme.isDarkMode
+                  ? colors.secondaryDark
+                  : colors.secondaryLight,
+              unselectedLabelColor: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              unselectedLabelStyle: TextWidget.textStyle(
+                fontSize: 14,
+                theme: false,
+                fw: 3,
+              ),
+              labelColor: theme.isDarkMode
+                  ? colors.secondaryDark
+                  : colors.secondaryLight,
+              labelStyle:
+                  TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
+              controller: _tabController,
+              tabs: List.generate(tablistitems.length, (index) {
+                final isSelected = _tabController.index == index;
+
+                final color = isSelected
+                    ? (theme.isDarkMode
+                        ? colors.secondaryDark
+                        : colors.secondaryLight)
+                    : (theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight);
+
+                return Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      TextWidget.subText(
+                        text: tablistitems[index]['title'].toString(),
+                        theme: false,
+                        color: color,
+                        fw: isSelected ? 2 : null,
+                      ),
+                      const SizedBox(width: 5),
+                       
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ),
+
           Expanded(
             child: TabBarView(
-            
               physics: const NeverScrollableScrollPhysics(),
               controller: _tabController,
               children: [
@@ -146,7 +179,6 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
               ],
             ),
           ),
-          
         ],
       ),
     );
@@ -164,12 +196,12 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         backgroundColor: theme.isDarkMode
-          ? tab == mfData.activeTab
-            ? colors.colorbluegrey
-            : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
-          : tab == mfData.activeTab
-            ? const Color(0xff000000)
-            : const Color.fromARGB(255, 255, 255, 255),
+            ? tab == mfData.activeTab
+                ? colors.colorbluegrey
+                : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
+            : tab == mfData.activeTab
+                ? const Color(0xff000000)
+                : const Color.fromARGB(255, 255, 255, 255),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
           side: const BorderSide(
@@ -183,8 +215,8 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
         title,
         style: textStyle(
           theme.isDarkMode
-            ? Color(tab == mfData.activeTab ? 0xff000000 : 0xffffffff)
-            : Color(tab == mfData.activeTab ? 0xffffffff : 0xff000000),
+              ? Color(tab == mfData.activeTab ? 0xff000000 : 0xffffffff)
+              : Color(tab == mfData.activeTab ? 0xffffffff : 0xff000000),
           13,
           FontWeight.w500,
         ),

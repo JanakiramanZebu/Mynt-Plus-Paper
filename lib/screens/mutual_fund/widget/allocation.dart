@@ -6,6 +6,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 
@@ -40,21 +41,29 @@ class MFAllocation extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
-            Text(
-              "Asset allocation and Holdings",
-              style: textStyle(
-                isDarkMode ? colors.colorWhite : colors.colorBlack,
-                18,
-                FontWeight.w600
-              )
-            ),
+            const SizedBox(height: 30),
+             TextWidget.titleText(
+                      align: TextAlign.right,
+                      text:  "Asset allocation and Holdings",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 3),
+            
             const SizedBox(height: 7),
-            Text(
-              "Equity allocation by Sector",
-              style: textStyle(const Color(0xff666666), 16, FontWeight.w600)
-            ),
-            const SizedBox(height: 17),
+                 TextWidget.paraText(
+                      align: TextAlign.right,
+                      text:    "Equity allocation by Sector",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 3),
+             
+            const SizedBox(height: 22),
             
             if (hasSectors) ...[
               ListView.separated(
@@ -81,22 +90,34 @@ class MFAllocation extends ConsumerWidget {
                   onPressed: () {
                     ref.read(showMoreSectorsProvider.notifier).update((state) => !state);
                   },
-                  child: Text(
-                    showMoreSectors ? "Show Less" : "Show More",
-                    style: textStyle(const Color(0xff0037B7), 14, FontWeight.w600),
-                  ),
+                  child: 
+                  TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: showMoreSectors ? "Show Less" : "Show More",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.primaryDark:
+                                                         colors.primaryLight 
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                  
+                  
                 ),
             ],
          
             const SizedBox(height: 28),
-            Text(
-              "Top Stock Holdings",
-              style: textStyle(
-                isDarkMode ? colors.colorWhite : colors.colorBlack,
-                17,
-                FontWeight.w600
-              )
-            ),
+              TextWidget.titleText(
+                      align: TextAlign.right,
+                      text:  "Top Stock Holdings",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 3),
+             
             const SizedBox(height: 10),
             
             if (hasHoldings) ...[
@@ -124,10 +145,19 @@ class MFAllocation extends ConsumerWidget {
                   onPressed: () {
                     ref.read(showMoreHoldingsProvider.notifier).update((state) => !state);
                   },
-                  child: Text(
-                    showMoreHoldings ? "Show Less" : "Show More",
-                    style: textStyle(const Color(0xff0037B7), 14, FontWeight.w600),
-                  ),
+                  child: 
+                  TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: showMoreHoldings ? "Show Less" : "Show More",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.primaryDark:
+                                                         colors.primaryLight 
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                   
                 ),
             ],
           ],
@@ -145,24 +175,33 @@ class MFAllocation extends ConsumerWidget {
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         const SizedBox(height: 25),
         Expanded(
-          child: Text(
-            name,
-            overflow: TextOverflow.ellipsis,
-            style: textStyle(
-              isDarkMode ? colors.colorWhite : colors.colorBlack,
-              14,
-              FontWeight.w500
-            )
-          ),
+          child: 
+          TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text: name,
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+          
+          
         ),
-        Text(
-          "$val%",
-          style: textStyle(
-            isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w500
-          )
-        )
+        TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text: "$val%",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+    
       ]),
       const SizedBox(height: 10),
       LinearPercentIndicator(
