@@ -239,6 +239,7 @@ class FullStat {
   String? tRANSTYPE;
   String? tYPE;
   String? vOUCHERDATE;
+  String? billMargin;
   String? bill;
   String? index;
 
@@ -259,6 +260,7 @@ class FullStat {
       this.tRANSTYPE,
       this.tYPE,
       this.vOUCHERDATE,
+      this.billMargin,
       this.bill,
       this.index});
 
@@ -279,6 +281,7 @@ class FullStat {
     tRANSTYPE = json['TRANS_TYPE'];
     tYPE = json['TYPE'];
     vOUCHERDATE = json['VOUCHERDATE'];
+    billMargin = json['bill_margin'].toString();
     bill = json['bill'];
     index = json['index'].toString();
   }
@@ -301,6 +304,7 @@ class FullStat {
     data['TRANS_TYPE'] = tRANSTYPE;
     data['TYPE'] = tYPE;
     data['VOUCHERDATE'] = vOUCHERDATE;
+    data['bill_margin'] = billMargin;
     data['bill'] = bill;
     data['index'] = index;
     return data;

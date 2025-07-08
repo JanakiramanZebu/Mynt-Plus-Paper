@@ -2095,6 +2095,48 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  void billnotbill(bool value) {
+    billmargin = value;
+
+    if (_ledgerAllDataDummy?.fullStat == null) {
+      // Defensive null check
+      _ledgerAllData?.fullStat = [];
+      notifyListeners();
+      return;
+    }
+
+    List<FullStat> originalList = List.from(_ledgerAllDataDummy!.fullStat!);
+    print("${originalList.length} originalList");
+
+    if (value == true) {
+      // Keep all records (no filter necessary)
+      _ledgerAllData?.fullStat = originalList;
+    } else {
+      _ledgerAllData?.fullStat =
+          originalList.where((o) => o.billMargin == 'No').toList();
+    }
+    double totalCrAmt = 0.0;
+    double totalDrAmt = 0.0;
+
+    for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
+      totalCrAmt += double.tryParse(
+              _ledgerAllData!.fullStat![i].cRAMT?.toString() ?? '0') ??
+          0.0;
+      totalDrAmt += double.tryParse(
+              _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
+          0.0;
+    }
+    _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance; 
+    _ledgerAllData!.closingBalance = originalList[originalList.length - 1].nETAMT ?? '0.00'; 
+
+    _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
+    _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
+    _ledgerAllData!.fullStat?.sort((a, b) {
+      return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
+    });
+    notifyListeners();
+  }
+
   falseloader(String value) {
     if (value == 'ledger') {
       _ledgerloading = false;
@@ -2149,6 +2191,7 @@ class LDProvider extends DefaultChangeNotifier {
   bool isMonthly = true;
 
   bool notsharing = true;
+  bool billmargin = true;
 
   // The selected financial year, e.g., "2024-2025"
   late String selectedFinancialYear;

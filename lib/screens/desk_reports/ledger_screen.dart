@@ -12,6 +12,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
+import '../../sharedWidget/custom_switch_btn.dart';
 import 'bottom_sheets/ledger_filter.dart';
 
 class LedgerScreen extends StatelessWidget {
@@ -409,7 +410,66 @@ class LedgerScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
+Padding(
+                  padding: const EdgeInsets.only(
+                      right: 16.0, left: 16.0, bottom: 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,    
+                          children: [
+                            TextWidget.paraText(
+                                text: "Bill Margin  :",
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                fw: 1),
+                             Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 8.0, bottom: 8.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                          TextWidget.paraText(
+                                text: "Yes",
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                fw: 1),
+                                        const SizedBox(width: 10),
+                        
+                                        CustomSwitch(
+                                            onChanged: (bool value) {
+                                               ledgerprovider
+                                                  .billnotbill(value);
+                                                  print("${value}");
+                                            },
+                                            color: theme.isDarkMode
+                                                ? const Color(0xffB5C0CF)
+                                                    .withOpacity(.15)
+                                                : const Color(0xffF1F3F8),
+                                            value: ledgerprovider.billmargin),
+                                        const SizedBox(width: 10),
+                        
+                                              TextWidget.paraText(
+                                text: "No",
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                fw: 1),
+                                      ],
+                                    ),
+                                  ),
+                          ],
+                        ),
+                      ),
+                       
+                       
+                      
+                      
+                      
+                    ],
+                  ),
+                ),
                 // Padding(
                 //   padding: const EdgeInsets.only(left: 30 , right: 30),
                 //   child: Row(
@@ -668,7 +728,7 @@ class LedgerScreen extends StatelessWidget {
                                               children: [
                                                 TextWidget.subText(
                                                     align: TextAlign.right,
-                                                    text: "CL Bal :   ",
+                                                    text: "CL Bal :   ${ledgerprovider.ledgerAllData!.fullStat![index].billMargin}  ${ledgerprovider.ledgerAllData!.fullStat![index].sortNo}",
                                                     color: Color(0xFF696969),
                                                     textOverflow:
                                                         TextOverflow.ellipsis,

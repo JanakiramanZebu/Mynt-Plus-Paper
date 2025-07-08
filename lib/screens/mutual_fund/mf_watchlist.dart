@@ -6,6 +6,7 @@ import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -53,26 +54,33 @@ class MFWatchlistScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'FUNDS',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w400,
-              color: theme.isDarkMode ? Colors.white: Colors.black,
-              letterSpacing: 0.7,
-            ),
-          ),
+          TextWidget.paraText(
+                                                    align: TextAlign.left,
+                                                    text: 'FUNDS',
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark:
+                                                         colors.textSecondaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+          
+          
           Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: Text(
-              '3Y RETURNS',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w400,
-                color: theme.isDarkMode ? Colors.white: Colors.black,
-                letterSpacing: 0.7,
-              ),
-            ),
+            child:       TextWidget.paraText(
+                                                    align: TextAlign.right,
+                                                    text: '3Y RETURNS',
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark:
+                                                         colors.textSecondaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                                                     
           ),
         ],
       ),
@@ -158,16 +166,18 @@ class MFWatchlistScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          item.schemegroupName ?? "Unknown Scheme",
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: textStyles.scripNameTxtStyle.copyWith(
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                          ),
-                        ),
+                        TextWidget.titleText(
+                                                    align: TextAlign.right,
+                                                    text: item.schemegroupName ?? "Unknown Scheme",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+                         
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
                           child: SizedBox(
@@ -191,14 +201,16 @@ class MFWatchlistScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Text(
-                    _formatReturns(item.tHREEYEARDATA),
-                    style: textStyle(
-                      _getReturnColor(item.tHREEYEARDATA),
-                      14,
-                      FontWeight.w600,
-                    ),
-                  ),
+                  TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: _formatReturns(item.tHREEYEARDATA),
+                                                    color: _getReturnColor(item.tHREEYEARDATA,theme.isDarkMode)
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                  
                 ],
               ),
               Padding(
@@ -224,9 +236,11 @@ class MFWatchlistScreen extends ConsumerWidget {
     return "$returns%";
   }
 
-  Color _getReturnColor(String? returns) {
+  Color _getReturnColor(String? returns , bool isDarkMode) {
     if (returns == null || returns.isEmpty) {
-      return Colors.grey;
+      return    isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight; 
     }
     
     try {
