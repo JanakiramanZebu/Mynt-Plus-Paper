@@ -46,13 +46,22 @@ class NotificationProvider extends DefaultChangeNotifier {
 // Assigning Tab for Notification screen
   tabSize() {
     _notifyTabName = [
-      Tab(
+      const Tab(
         child: Text(
-            "Message (${_brokermsg![0].stat == "Not_Ok" ? "0" : _brokermsg!.length})"),
+            "Message"),
+            // (${_brokermsg![0].stat == "Not_Ok" ? "0" : _brokermsg!.length})"
       ),
-      Tab(
+      const Tab(
           child: Text(
-              "Exchange Message (${_exchangemessage![0].stat == "Not_Ok" ? "0" : _exchangemessage!.length})")),
+              "Exchange Message"),
+
+              // (${_exchangemessage![0].stat == "Not_Ok" ? "0" : _exchangemessage!.length})")
+
+      ),
+
+
+
+
     ];
 
     notifyListeners();

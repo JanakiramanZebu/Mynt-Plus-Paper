@@ -198,15 +198,18 @@ class _ModifyPlaceOrderScreenState
                                         theme.isDarkMode
                                             ? colors.colorWhite
                                             : colors.colorBlack,
-                                        16,
-                                        FontWeight.w600),
+                                        14,
+                                        FontWeight.w400),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1),
                                 if (widget.scripInfo.option!.isNotEmpty)
                                   Text(widget.scripInfo.option!,
-                                      style: textStyles.scripNameTxtStyle
-                                          .copyWith(
-                                              color: const Color(0xff666666)),
+                                      style: textStyle(
+                                          theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          14,
+                                          FontWeight.w400),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1),
                                 if (widget.scripInfo.expDate!.isNotEmpty)
@@ -216,7 +219,7 @@ class _ModifyPlaceOrderScreenState
                                               ? colors.colorWhite
                                               : colors.colorBlack,
                                           14,
-                                          FontWeight.w600)),
+                                          FontWeight.w400)),
                                 CustomExchBadge(
                                     exch: "${widget.scripInfo.exch}"),
                               ]),
@@ -1324,7 +1327,7 @@ class _ModifyPlaceOrderScreenState
                                                           12,
                                                           FontWeight.w500)),
                                                   Text(
-                                                      "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}",
+                                                      "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.marginused}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}" ,
                                                       style: textStyle(
                                                           !theme.isDarkMode
                                                               ? colors.colorBlue
@@ -1340,53 +1343,53 @@ class _ModifyPlaceOrderScreenState
                                                   )
                                                 ])),
                                             const SizedBox(width: 20),
-                                            CustomWidgetButton(
-                                              onPress:
-                                                  internet.connectionStatus ==
-                                                          ConnectivityResult
-                                                              .none
-                                                      ? () {}
-                                                      : () {
-                                                          marginUpdate();
+                                            // CustomWidgetButton(
+                                            //   onPress:
+                                            //       internet.connectionStatus ==
+                                            //               ConnectivityResult
+                                            //                   .none
+                                            //           ? () {}
+                                            //           : () {
+                                            //               marginUpdate();
 
-                                                          showModalBottomSheet(
-                                                              useSafeArea: true,
-                                                              isScrollControlled:
-                                                                  true,
-                                                              shape: const RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius.vertical(
-                                                                          top: Radius.circular(
-                                                                              16))),
-                                                              context: context,
-                                                              builder:
-                                                                  (context) {
-                                                                return const ChargesDetailsBottomsheet();
-                                                              });
-                                                        },
-                                              widget: Row(children: [
-                                                Text("Charges: ",
-                                                    style: textStyle(
-                                                        const Color(0xff666666),
-                                                        12,
-                                                        FontWeight.w500)),
-                                                Text(
-                                                    "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
-                                                    style: textStyle(
-                                                        !theme.isDarkMode
-                                                            ? colors.colorBlue
-                                                            : colors
-                                                                .colorLightBlue,
-                                                        12,
-                                                        FontWeight.w600)),
-                                                Icon(
-                                                  Icons.arrow_drop_down,
-                                                  color: !theme.isDarkMode
-                                                      ? colors.colorBlue
-                                                      : colors.colorLightBlue,
-                                                )
-                                              ]),
-                                            )
+                                            //               showModalBottomSheet(
+                                            //                   useSafeArea: true,
+                                            //                   isScrollControlled:
+                                            //                       true,
+                                            //                   shape: const RoundedRectangleBorder(
+                                            //                       borderRadius:
+                                            //                           BorderRadius.vertical(
+                                            //                               top: Radius.circular(
+                                            //                                   16))),
+                                            //                   context: context,
+                                            //                   builder:
+                                            //                       (context) {
+                                            //                     return const ChargesDetailsBottomsheet();
+                                            //                   });
+                                            //             },
+                                            //   widget: Row(children: [
+                                            //     Text("Charges: ",
+                                            //         style: textStyle(
+                                            //             const Color(0xff666666),
+                                            //             12,
+                                            //             FontWeight.w500)),
+                                            //     Text(
+                                            //         "₹${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                            //         style: textStyle(
+                                            //             !theme.isDarkMode
+                                            //                 ? colors.colorBlue
+                                            //                 : colors
+                                            //                     .colorLightBlue,
+                                            //             12,
+                                            //             FontWeight.w600)),
+                                            //     Icon(
+                                            //       Icons.arrow_drop_down,
+                                            //       color: !theme.isDarkMode
+                                            //           ? colors.colorBlue
+                                            //           : colors.colorLightBlue,
+                                            //     )
+                                            //   ]),
+                                            // )
                                           ]),
                                           IconButton(
                                               onPressed: internet
@@ -1708,11 +1711,11 @@ class _ModifyPlaceOrderScreenState
                                               vertical: 10),
                                           backgroundColor: theme.isDarkMode
                                                       ?  isBuy
-                                                          ? colors.ltpgreen
-                                                          : colors.darkred
+                                                          ? colors.primary
+                                                          : colors.tertiary
                                                       : isBuy
-                                                          ? colors.ltpgreen
-                                                          : colors.darkred
+                                                          ? colors.primary
+                                                          : colors.tertiary
                                           // shape: const StadiumBorder()
                                           ),
                                       child: orderProvide.orderloader

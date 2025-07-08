@@ -55,9 +55,9 @@ class AuthProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
   final Ref ref;
-  final String _version = "1.0.45(109+2)";
+  final String _version = "1.0.86(03)";
   late final String _versiontext =
-      "Version 3.0.2 Build $_version Released on 17 June";
+      "Version 3.0.2 Build $_version Released on 7 July";
   String get versiontext => _versiontext;
 
   //  Text field controller for Login and otp screen
@@ -447,11 +447,12 @@ class AuthProvider extends DefaultChangeNotifier {
     };
   }
 
-  bool? _switchback = false;
-  bool? get switchback => _switchback;
+  bool _switchback = false;
+  bool get switchback => _switchback;
 
   switchbackbutton(bool value) {
     _switchback = value;
+    print("switchback $value");
     notifyListeners();
   }
 
@@ -1548,6 +1549,9 @@ class AuthProvider extends DefaultChangeNotifier {
           // ref.read(mfProvider).fetchBestMF();
 
           // ref.read(mfProvider).fetchMfOrderbook(context);
+          ref.read(fundProvider).fetchPledgeDetails();
+          setmfapicalls(context);
+          ref.read(mfProvider).mfApicallinit(context,0);
           setProfileAPicalls();
           setPrefOrderPrefer(context);
           ref.read(orderProvider).setOrderIp();
@@ -1664,6 +1668,8 @@ class AuthProvider extends DefaultChangeNotifier {
     ref.read(mfProvider).fetchnewMFBestList();
     ref.read(mfProvider).fetchmfallcatnew();
     ref.read(mfProvider).fetchmfNFO(context);
+    // ref.read(mfProvider).fetchMFWatchlist("", "", context, true, "");
+
     // ref.read(mfProvider).fetchmfNFO(context);
   }
 

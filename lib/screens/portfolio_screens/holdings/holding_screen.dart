@@ -140,9 +140,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   // Update holdings data with socket updates - optimized version
   void _updateHoldingsData(Map socketDatas) {
     final holdingProvider = ref.read(portfolioProvider);
-    final holdings = holdingProvider.showSearchHold
-        ? holdingProvider.holdingSearchItem!
-        : holdingProvider.holdingsModel!;
+    final holdings = holdingProvider.holdingsModel!;
 
     if (holdings.isEmpty) return;
 
@@ -334,9 +332,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   // Process initial data without triggering setState during build
   void _processInitialData(Map socketDatas) {
     final holdingProvider = ref.read(portfolioProvider);
-    final holdings = holdingProvider.showSearchHold
-        ? holdingProvider.holdingSearchItem!
-        : holdingProvider.holdingsModel!;
+    final holdings = holdingProvider.holdingsModel!;
 
     if (holdings.isEmpty) return;
 
@@ -491,10 +487,14 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               // Summary section with investment and P&L information
-              _buildSummarySection(),
+              holdingProvider.holdingsModel!.isEmpty
+                  ? const SizedBox.shrink()
+                  : _buildSummarySection(),
 
               // Action buttons section - using cached buttons when possible
-              _getActionButtons(),
+              holdingProvider.holdingsModel!.isEmpty
+                  ? const SizedBox.shrink()
+                  : _getActionButtons(),
               _buildSearchBar(),
               // Search bar (conditional)
 
@@ -510,9 +510,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   // Method to calculate summary values from holdings data
   void _calculateSummaryValues() {
     final holdingProvider = ref.read(portfolioProvider);
-    final holdings = holdingProvider.showSearchHold
-        ? holdingProvider.holdingSearchItem!
-        : holdingProvider.holdingsModel!;
+    final holdings = holdingProvider.holdingsModel!;
 
     if (holdings.isEmpty) {
       _totalPnlHolding = 0.0;
@@ -1064,7 +1062,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
             borderRadius: BorderRadius.circular(5),
           ),
           child: SizedBox(
-            height: 50,
+            height: 40,
             child: TextFormField(
                 autofocus: true,
                 controller: holdingProvider.holdingSearchCtrl,
@@ -1151,13 +1149,13 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                   holdingProvider.holdingSearch(value, context);
 
                   // Clear cached widgets to force rebuild with new data
-                  setState(() {
-                    _cachedSummarySection = null;
-                    _cachedActionButtons = null;
-                    _cachedEmptyState = null;
-                    _cachedActionButtonsKey = null;
-                    _cachedSummaryKey = null;
-                  });
+                  // setState(() {
+                  //   _cachedSummarySection = null;
+                  //   _cachedActionButtons = null;
+                  //   _cachedEmptyState = null;
+                  //   _cachedActionButtonsKey = null;
+                  //   _cachedSummaryKey = null;
+                  // });
                 }),
           ),
         ),

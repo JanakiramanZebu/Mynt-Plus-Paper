@@ -443,7 +443,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
           borderRadius: BorderRadius.circular(5),
         ),
         child: SizedBox(
-          height: 50,
+          height: 40,
           child: TextFormField(
             autofocus: true,
             controller: positionBook.positionSearchCtrl,

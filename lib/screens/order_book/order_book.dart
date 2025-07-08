@@ -726,11 +726,14 @@ class _OrderItemState extends State<_OrderItem> {
                 Expanded(
                   child: TextWidget.subText(
                     text:
-                        "${widget.orderItem.symbol} ${widget.orderItem.expDate} ${widget.orderItem.option ?? ''}",
+                        "${widget.orderItem.symbol?.replaceAll("-EQ", "")} ${widget.orderItem.expDate} ${widget.orderItem.option ?? ''}",
                     theme: widget.theme.isDarkMode,
                     fw: 3,
                     maxLines: 1,
                     textOverflow: TextOverflow.ellipsis,
+                    color: widget.theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
                   ),
                 ),
 
@@ -843,7 +846,7 @@ class _OrderItemState extends State<_OrderItem> {
 
   // Get status text for display (using exact status values)
   String _getStatusText() {
-    return '${(widget.orderItem.status?.toString().toLowerCase() ?? 'unknown')[0].toUpperCase()}${(widget.orderItem.status?.toString().toLowerCase() ?? 'unknown').substring(1)}';
+    return '${(widget.orderItem.status?.toString().toUpperCase() ?? 'unknown')[0].toUpperCase()}${(widget.orderItem.status?.toString().toUpperCase() ?? 'unknown').substring(1)}';
   }
 
   // Get quantity display like "56 / 423"

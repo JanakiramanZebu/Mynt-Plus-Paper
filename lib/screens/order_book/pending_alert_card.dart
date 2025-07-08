@@ -18,6 +18,7 @@ import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/no_data_found.dart';
 import 'filter_alert_pending.dart';
 import '../../provider/order_provider.dart';
+import 'pending_alert_detail_screen.dart';
 
 class PendingAlert extends ConsumerStatefulWidget {
   const PendingAlert({super.key});
@@ -148,142 +149,225 @@ class _PendingAlertState extends ConsumerState<PendingAlert> {
                           itemBuilder: (context, index) {
                             final alert = pendingAlerts[index];
                             return InkWell(
-                              onTap: () async {
-                                Navigator.pushNamed(
-                                    context, Routes.pendingalertdetails,
-                                    arguments: alert);
-                              },
-                              child: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              TextWidget.subText(
-                                                  text:
-                                                      "${alert.tsym} ",
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis),
-                                              Row(
-                                                children: [
-                                                  TextWidget.paraText(
-                                                      text: " LTP: ",
-                                                      theme: false,
-                                                      color: const Color(
-                                                          0xff5E6B7D),
-                                                      fw: 1),
-                                                  TextWidget.subText(
-                                                      text:
-                                                          "₹${alert.ltp ?? alert.close ?? 0.00}",
-                                                      theme: theme.isDarkMode,
-                                                      fw: 0),
-                                                ],
-                                              )
-                                            ]),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              CustomExchBadge(
-                                                  exch:
-                                                      "${alert.exch}"),
-                                              TextWidget.paraText(
-                                                  text:
-                                                      " (${alert.perChange ?? 0.00}%)",
-                                                  theme: false,
-                                                  color: alert.perChange ==
-                                                          null
-                                                      ? colors.ltpgrey
-                                                      : alert.perChange!
-                                                          .startsWith("-")
-                                                      ? colors.darkred
-                                                      : alert.perChange ==
-                                                              "0.00"
-                                                          ? colors.ltpgrey
-                                                          : colors.ltpgreen,
-                                                  fw: 0),
-                                            ]),
-                                        const SizedBox(height: 4),
-                                        Divider(
-                                            color: theme.isDarkMode
-                                                ? colors.darkColorDivider
-                                                : colors.colorDivider),
-                                        const SizedBox(height: 5),
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  TextWidget.paraText(
-                                                      text: "Alert: ",
-                                                      theme: false,
-                                                      color: const Color(
-                                                          0xff5E6B7D),
-                                                      fw: 1),
-                                                  TextWidget.subText(
-                                                      text: alert.aiT ==
-                                                              "LTP_A"
-                                                          ? "LTP Above"
-                                                          : alert.aiT ==
-                                                                  "LTP_B"
-                                                              ? "LTP Below"
+                                onTap: () async {
+                                  showModalBottomSheet(
+                                    isScrollControlled: true,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(16),
+                                        topRight: Radius.circular(16),
+                                      ),
+                                    ),
+                                    isDismissible: true,
+                                    enableDrag: false,
+                                    useSafeArea: true,
+                                    context: context,
+                                    builder: (context) => Container(
+                                        padding: EdgeInsets.only(
+                                          bottom: MediaQuery.of(context)
+                                              .viewInsets
+                                              .bottom,
+                                        ),
+                                        child:
+                                            PendingAlertDetails(alert: alert)),
+                                  );
+                                },
+                                child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                TextWidget.subText(
+                                                    text: "${alert.tsym?.replaceAll("-EQ", "")} ",
+                                                    theme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? colors.textPrimary
+                                                        : colors
+                                                            .textPrimaryLight,
+                                                    fw: 0,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis),
+                                                Row(
+                                                  children: [
+                                                    TextWidget.paraText(
+                                                        text: "LTP ",
+                                                        theme: false,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        fw: 3),
+                                                    TextWidget.paraText(
+                                                        text:
+                                                            "${alert.ltp ?? alert.close ?? 0.00}",
+                                                        theme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        fw: 3),
+                                                  ],
+                                                )
+                                              ]),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                CustomExchBadge(
+                                                    exch: "${alert.exch}"),
+                                                TextWidget.paraText(
+                                                    text:
+                                                        " (${alert.perChange ?? 0.00}%)",
+                                                    theme: false,
+                                                    color: alert.perChange ==
+                                                            null
+                                                        ? theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight
+                                                        : alert.perChange!
+                                                                .startsWith("-")
+                                                            ? theme.isDarkMode
+                                                                ? colors
+                                                                    .lossDark
+                                                                : colors
+                                                                    .lossLight
+                                                            : alert.perChange ==
+                                                                    "0.00"
+                                                                ? theme
+                                                                        .isDarkMode
+                                                                    ? colors
+                                                                        .textSecondaryDark
+                                                                    : colors
+                                                                        .textSecondaryLight
+                                                                : theme
+                                                                        .isDarkMode
+                                                                    ? colors
+                                                                        .profitDark
+                                                                    : colors
+                                                                        .profitLight,
+                                                    fw: 3),
+                                              ]),
+                                          const SizedBox(height: 4),
+                                          Divider(
+                                              color: theme.isDarkMode
+                                                  ? colors.darkColorDivider
+                                                  : colors.colorDivider),
+                                          const SizedBox(height: 5),
+                                          Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    TextWidget.paraText(
+                                                        text: "Alert ",
+                                                        theme: false,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        fw: 3),
+                                                    TextWidget.paraText(
+                                                        text: alert.aiT ==
+                                                                "LTP_A"
+                                                            ? "LTP Above"
+                                                            : alert.aiT ==
+                                                                    "LTP_B"
+                                                                ? "LTP Below"
+                                                                : alert.aiT ==
+                                                                        "CH_PER_A"
+                                                                    ? "Perc.Change Above"
+                                                                    : "Perc.Change below",
+                                                        theme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        fw: 3),
+                                                    Transform.rotate(
+                                                      angle: angleInRadians,
+                                                      child: Icon(
+                                                          alert.aiT == "LTP_A"
+                                                              ? Icons
+                                                                  .arrow_upward
                                                               : alert.aiT ==
-                                                                      "CH_PER_A"
-                                                                  ? "Perc.Change Above"
-                                                                  : "Perc.Change below",
-                                                      theme: theme.isDarkMode,
-                                                      fw: 0),
-                                                  Transform.rotate(
-                                                    angle: angleInRadians,
-                                                    child: Icon(
-                                                        alert.aiT ==
-                                                                "LTP_A"
-                                                            ? Icons
-                                                                .arrow_upward
-                                                            : alert.aiT ==
-                                                                    "LTP_B"
-                                                                ? Icons
-                                                                    .arrow_downward
-                                                                : alert.aiT ==
-                                                                        "CH_PER_A"
-                                                                    ? Icons
-                                                                        .arrow_upward
-                                                                    : Icons
-                                                                        .arrow_downward,
-                                                        size: 18,
-                                                        color: alert.aiT ==
-                                                                "LTP_A"
-                                                            ? colors.ltpgreen
-                                                            : alert.aiT ==
-                                                                    "LTP_B"
-                                                                ? colors.darkred
-                                                                : alert.aiT ==
-                                                                        "CH_PER_A"
-                                                                    ? colors.ltpgreen
-                                                                    : colors.darkred),
+                                                                      "LTP_B"
+                                                                  ? Icons
+                                                                      .arrow_downward
+                                                                  : alert.aiT ==
+                                                                          "CH_PER_A"
+                                                                      ? Icons
+                                                                          .arrow_upward
+                                                                      : Icons
+                                                                          .arrow_downward,
+                                                          size: 18,
+                                                          color: alert.aiT ==
+                                                                  "LTP_A"
+                                                              ? theme.isDarkMode
+                                                                  ? colors
+                                                                      .profitDark
+                                                                  : colors
+                                                                      .profitLight
+                                                              : alert.aiT ==
+                                                                      "LTP_B"
+                                                                  ? theme
+                                                                          .isDarkMode
+                                                                      ? colors
+                                                                          .lossDark
+                                                                      : colors
+                                                                          .lossLight
+                                                                  : alert.aiT ==
+                                                                          "CH_PER_A"
+                                                                      ? theme
+                                                                              .isDarkMode
+                                                                          ? colors
+                                                                              .profitDark
+                                                                          : colors
+                                                                              .profitLight
+                                                                      : theme
+                                                                              .isDarkMode
+                                                                          ? colors
+                                                                              .lossDark
+                                                                          : colors
+                                                                              .lossLight),
                                                     ),
-                                                  Text(alert.aiT ==
-                                                              "CH_PER_A" ||
-                                                          alert.aiT ==
-                                                              "CH_PER_B"
-                                                      ? "%${alert.d}"
-                                                      : "₹${alert.d}"),
-                                                ],
-                                              ),
-                                            ])
-                                      ])));
+                                                    TextWidget.paraText(
+                                                        text: alert.aiT ==
+                                                                    "CH_PER_A" ||
+                                                                alert.aiT ==
+                                                                    "CH_PER_B"
+                                                            ? "%${alert.d}"
+                                                            : "₹${alert.d}",
+                                                        theme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        fw: 3),
+                                                  ],
+                                                ),
+                                              ])
+                                        ])));
                           },
                         )
                     ],

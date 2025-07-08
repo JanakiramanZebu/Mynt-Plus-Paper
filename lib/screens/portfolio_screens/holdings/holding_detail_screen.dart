@@ -602,7 +602,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                     children: [
                                                       TextWidget.headText(
                                                           text:
-                                                              "${_exchTsym.tsym?.toUpperCase() ?? ''} ",
+                                                              "${_exchTsym.tsym?.replaceAll("-EQ", "").toUpperCase() ?? ''} ",
                                                           color: theme
                                                                   .isDarkMode
                                                               ? colors
@@ -953,10 +953,8 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                 //                 (double.parse(
                                 //                         value.sOHQTY.toString())
                                 //                     .toInt()) !=
-                                data(
-                                    "Pledged Qty",
-                                    "${value?.dummvalue != 'null' ? "${value?.dummvalue!} /" : ''} ${(double.parse(value!.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt())}",
-                                    theme),
+                                data("Pledged Qty",
+                                    "${_holdingData.brkcolqty ?? 0}", theme),
                                 // : const SizedBox.shrink(),
                               ]),
                         ], // Close ListView children

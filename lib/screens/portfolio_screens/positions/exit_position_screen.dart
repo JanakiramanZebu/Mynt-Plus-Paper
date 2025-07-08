@@ -199,7 +199,7 @@ class ExitPositionScreen extends ConsumerWidget {
                                       Row(
                                         children: [
                                     TextWidget.subText(
-                                        text: "${position.symbol} ",
+                                        text: "${position.symbol?.replaceAll("-EQ", "")} ",
                                         theme: false,
                                                       color: theme.isDarkMode
                                                           ? colors.colorWhite

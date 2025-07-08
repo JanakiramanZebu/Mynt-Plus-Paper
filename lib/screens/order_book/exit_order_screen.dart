@@ -149,7 +149,7 @@ class ExitOrderScreen extends ConsumerWidget {
                                       children: [
                                         Row(children: [
                                           TextWidget.subText(
-                                              text: "${displayOrdersList[itemIndex].symbol} ",
+                                              text: "${displayOrdersList[itemIndex].symbol?.replaceAll("-EQ", "")} ",
                                               theme: theme.isDarkMode,
                                               color: theme.isDarkMode
                                                   ? colors.colorWhite

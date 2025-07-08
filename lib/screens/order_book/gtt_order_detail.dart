@@ -14,6 +14,7 @@ import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
+import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/scrip_info_btns.dart';
 import '../market_watch/scrip_depth_info.dart';
 
@@ -159,10 +160,10 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                         children: [
                                                           TextWidget.titleText(
                                                               text:
-                                                                  "${displayData.symbol}",
+                                                                  "${displayData.symbol?.replaceAll("-EQ", "")}",
                                                               theme: theme
                                                                   .isDarkMode,
-                                                              fw: 1),
+                                                              fw: 0),
                                                           TextWidget.subText(
                                                               text:
                                                                   " ${displayData.option} ",
@@ -172,7 +173,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                       .colorWhite
                                                                   : colors
                                                                       .colorBlack,
-                                                              fw: 0,
+                                                              fw: 3,
                                                               textOverflow:
                                                                   TextOverflow
                                                                       .ellipsis),
@@ -213,7 +214,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                           .darkred
                                                                       : colors
                                                                           .ltpgreen,
-                                                              fw: 1),
+                                                              fw: 3),
                                                           // TextWidget.paraText(
                                                           //     text:
                                                           //         "  ${displayData.expDate}",
@@ -272,25 +273,25 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                               child: Container(
                                                 height: 40,
                                                 decoration: BoxDecoration(
-                                                  color:
-                                                      const Color(0xffF1F3F8),
+                                                  color: colors.btnBg,
                                                   borderRadius:
                                                       BorderRadius.circular(5),
                                                   border: Border.all(
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorGrey
-                                                        : const Color(
-                                                            0xff0037B7),
+                                                    color: colors
+                                                        .btnOutlinedBorder,
                                                     width: 1,
                                                   ),
                                                 ),
                                                 child: InkWell(
                                                   customBorder:
                                                       const BeveledRectangleBorder(),
-                                                  splashColor: Colors.black
-                                                      .withOpacity(0.15),
-                                                  highlightColor: Colors.black
-                                                      .withOpacity(0.08),
+                                                  splashColor: theme.isDarkMode
+                                                      ? colors.splashColorDark
+                                                      : colors.splashColorLight,
+                                                  highlightColor: theme
+                                                          .isDarkMode
+                                                      ? colors.highlightDark
+                                                      : colors.highlightLight,
                                                   onTap: () async {
                                                     await scripInfo.fetchScripInfo(
                                                         "${displayData.token}",
@@ -313,9 +314,11 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                     child: TextWidget.subText(
                                                         text: "Modify Order",
                                                         theme: theme.isDarkMode,
-                                                        color: const Color(
-                                                            0xff0037B7),
-                                                        fw: 1),
+                                                        color: theme.isDarkMode
+                                                            ? colors.primaryDark
+                                                            : colors
+                                                                .primaryLight,
+                                                        fw: 2),
                                                   ),
                                                 ),
                                               ),
@@ -356,15 +359,8 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                             builder: (BuildContext
                                                                 dialogContext) {
                                                               return AlertDialog(
-                                                                backgroundColor: theme
-                                                                        .isDarkMode
-                                                                    ? const Color
-                                                                        .fromARGB(
-                                                                        255,
-                                                                        18,
-                                                                        18,
-                                                                        18)
-                                                                    : colors
+                                                                backgroundColor:
+                                                                    colors
                                                                         .colorWhite,
                                                                 titleTextStyle:
                                                                     TextWidget.textStyle(
@@ -373,15 +369,17 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                         fontSize:
                                                                             17,
                                                                         fw: 1),
-                                                                contentTextStyle:
-                                                                    TextWidget.textStyle(
-                                                                        color: const Color(
-                                                                            0XFF666666),
-                                                                        fontSize:
-                                                                            14,
-                                                                        fw: 0,
-                                                                        theme:
-                                                                            false),
+                                                                contentTextStyle: TextWidget.textStyle(
+                                                                    color: theme.isDarkMode
+                                                                        ? colors
+                                                                            .textSecondaryDark
+                                                                        : colors
+                                                                            .textSecondaryLight,
+                                                                    fontSize:
+                                                                        14,
+                                                                    fw: 3,
+                                                                    theme:
+                                                                        false),
                                                                 titlePadding:
                                                                     const EdgeInsets
                                                                         .symmetric(
@@ -406,17 +404,53 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                         .symmetric(
                                                                         horizontal:
                                                                             20),
-                                                                title: Row(
+                                                                title: Column(
                                                                   children: [
-                                                                    TextWidget.titleText(
-                                                                        text:
-                                                                            "${displayData.tsym}",
-                                                                        theme: theme
-                                                                            .isDarkMode,
-                                                                        fw: 1),
-                                                                    CustomExchBadge(
-                                                                        exch:
-                                                                            "${displayData.exch}")
+                                                                    Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .spaceBetween,
+                                                                      children: [
+                                                                        Row(
+                                                                          crossAxisAlignment:
+                                                                              CrossAxisAlignment.center,
+                                                                          children: [
+                                                                            TextWidget.subText(
+                                                                                text: "${displayData.tsym?.replaceAll("-EQ", "")}",
+                                                                                theme: theme.isDarkMode,
+                                                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                                                fw: 3),
+                                                                            CustomExchBadge(exch: "${displayData.exch}"),
+                                                                          ],
+                                                                        ),
+                                                                        Row(
+                                                                          children: [
+                                                                            Material(
+                                                                              color: Colors.transparent,
+                                                                              shape: const CircleBorder(),
+                                                                              child: InkWell(
+                                                                                onTap: () async {
+                                                                                  await Future.delayed(const Duration(milliseconds: 150));
+                                                                                  Navigator.pop(context);
+                                                                                },
+                                                                                borderRadius: BorderRadius.circular(20),
+                                                                                splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                                                                                highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+                                                                                child: Padding(
+                                                                                  padding: const EdgeInsets.all(6.0),
+                                                                                  child: Icon(
+                                                                                    Icons.close_rounded,
+                                                                                    size: 22,
+                                                                                    color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    const ListDivider(),
                                                                   ],
                                                                 ),
                                                                 content:
@@ -430,45 +464,24 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                         CrossAxisAlignment
                                                                             .start,
                                                                     children: [
-                                                                      TextWidget.titleText(
+                                                                      TextWidget.subText(
                                                                           text:
                                                                               "Do you want to Cancel this order?",
-                                                                          theme:
-                                                                              theme.isDarkMode,
-                                                                          fw: 0),
+                                                                          theme: theme
+                                                                              .isDarkMode,
+                                                                          color: theme.isDarkMode
+                                                                              ? colors.textSecondaryDark
+                                                                              : colors.textSecondaryLight,
+                                                                          fw: 3),
                                                                     ],
                                                                   ),
                                                                 ),
                                                                 actions: [
-                                                                  TextButton(
-                                                                      onPressed:
-                                                                          () {
-                                                                        Navigator.pop(
-                                                                            dialogContext);
-                                                                      },
-                                                                      child: TextWidget.subText(
-                                                                          text:
-                                                                              "No",
-                                                                          theme:
-                                                                              false,
-                                                                          color: theme.isDarkMode
-                                                                              ? colors.colorLightBlue
-                                                                              : colors.colorBlue,
-                                                                          fw: 0)),
-                                                                  ElevatedButton(
-                                                                      style: ElevatedButton
-                                                                          .styleFrom(
-                                                                              elevation:
-                                                                                  0,
-                                                                              backgroundColor: theme.isDarkMode
-                                                                                  ? colors
-                                                                                      .colorWhite
-                                                                                  : colors
-                                                                                      .colorBlack,
-                                                                              shape:
-                                                                                  RoundedRectangleBorder(
-                                                                                borderRadius: BorderRadius.circular(50),
-                                                                              )),
+                                                                  SizedBox(
+                                                                    width: double
+                                                                        .infinity,
+                                                                    child:
+                                                                        OutlinedButton(
                                                                       onPressed:
                                                                           () async {
                                                                         Navigator.pop(
@@ -477,12 +490,34 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                             "${displayData.alId}",
                                                                             context);
                                                                       },
-                                                                      child: TextWidget.subText(
-                                                                          text:
-                                                                              "Yes",
-                                                                          theme:
-                                                                              theme.isDarkMode,
-                                                                          fw: 0)),
+                                                                      style: OutlinedButton
+                                                                          .styleFrom(
+                                                                        minimumSize: const Size(
+                                                                            0,
+                                                                            40), // width, height
+                                                                        side: BorderSide(
+                                                                            color:
+                                                                                colors.error), // Outline border color
+                                                                        shape:
+                                                                            RoundedRectangleBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(5),
+                                                                        ),
+                                                                        backgroundColor:
+                                                                            Colors.transparent, // Transparent background
+                                                                      ),
+                                                                      child: TextWidget
+                                                                          .subText(
+                                                                        text:
+                                                                            "Cancel",
+                                                                        color: colors
+                                                                            .error,
+                                                                        theme: theme
+                                                                            .isDarkMode,
+                                                                        fw: 0,
+                                                                      ),
+                                                                    ),
+                                                                  ),
                                                                 ],
                                                               );
                                                             },
@@ -492,22 +527,28 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                     child: ref
                                                             .read(orderProvider)
                                                             .loading
-                                                        ? const SizedBox(
+                                                        ? SizedBox(
                                                             width: 18,
                                                             height: 20,
-                                                            child: CircularProgressIndicator(
-                                                                strokeWidth: 2,
-                                                                color: Color(
-                                                                    0xff666666)),
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                              color: colors
+                                                                  .primaryDark,
+                                                            ),
                                                           )
                                                         : TextWidget.subText(
                                                             text:
                                                                 "Cancel Order",
                                                             theme: theme
                                                                 .isDarkMode,
-                                                            color: const Color(
-                                                                0xff0037B7),
-                                                            fw: 1),
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .primaryDark
+                                                                : colors
+                                                                    .primaryLight,
+                                                            fw: 2),
                                                   ),
                                                 ),
                                               ),
@@ -650,8 +691,13 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TextWidget.paraText(
-              text: title, theme: false, color: const Color(0xff666666), fw: 0),
-          TextWidget.subText(text: value, theme: theme.isDarkMode, fw: 0),
+              text: title,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 3),
+          TextWidget.subText(text: value, theme: theme.isDarkMode, fw: 3),
         ],
       ),
       const SizedBox(height: 8),

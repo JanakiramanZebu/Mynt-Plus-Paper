@@ -129,6 +129,20 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
     return Consumer(builder: (context, WidgetRef ref, _) {
       final portfolio = ref.watch(portfolioProvider);
       final theme = ref.read(themeProvider);
+      String countText;
+      if (portfolio.portTab.index == 0) {
+        countText = portfolio.allPostionList.isNotEmpty
+            ? "${portfolio.allPostionList.length}"
+            : "";
+      } else if (portfolio.portTab.index == 1) {
+        final holdings = portfolio.holdingsModel;
+        countText = (holdings != null && holdings.isNotEmpty)
+            ? "${holdings.length}"
+            : "";
+      } else {
+        countText = "";
+      }
+
       return Column(children: [
         Column(
           children: [
@@ -203,12 +217,16 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                               fw: isSelected ? 2 : null,
                             ),
                             const SizedBox(width: 5),
-                            if (index == 0 || index == 1)
+                            if ((index == 0 &&
+                                    portfolio.allPostionList.isNotEmpty) ||
+                                (index == 1 &&
+                                    (portfolio.holdingsModel?.isNotEmpty ??
+                                        false)))
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: colors.btnBg,
+                                  color: ((index == 0 && portfolio.allPostionList.isNotEmpty) || (index == 1 && (portfolio.holdingsModel?.isNotEmpty??false)))? colors.btnBg : null,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: TextWidget.subText(

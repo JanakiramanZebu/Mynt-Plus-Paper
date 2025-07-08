@@ -45,21 +45,21 @@ import 'margin_charges_bottom_sheet.dart';
 import 'order_screen_header.dart';
 import 'package:intl/intl.dart';
 
-class PlaceOrderScreen extends ConsumerStatefulWidget {
+class PlaceOrderScreenA extends ConsumerStatefulWidget {
   final OrderScreenArgs orderArg;
   final ScripInfoModel scripInfo;
   final String isBasket;
-  const PlaceOrderScreen(
+  const PlaceOrderScreenA(
       {super.key,
       required this.scripInfo,
       required this.orderArg,
       required this.isBasket});
 
   @override
-  ConsumerState<PlaceOrderScreen> createState() => _PlaceOrderScreenState();
+  ConsumerState<PlaceOrderScreenA> createState() => _PlaceOrderScreenState();
 }
 
-class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
+class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreenA>
     with TickerProviderStateMixin {
   bool? isBuy;
 //   bool addStoploss = false;
@@ -149,10 +149,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
              "C": "Delivery",
              "I": "Intraday",
              "F": "MTF",
-             "M": "CO / BO"     // map other product codes as needed
+             "M": "CO - BO"     // map other product codes as needed
            }[widget.orderArg.prd] ?? "Delivery"
          : rep                                                    // ② old logic
-             ? {"B": "CO / BO", "H": "CO / BO", "F": "MTF"}[res['prd']] ?? "Delivery"
+             ? {"B": "CO - BO", "H": "CO - BO", "F": "MTF"}[res['prd']] ?? "Delivery"
              : defaultparams
                  ? (["Delivery", "Intraday", "MTF"].contains(userOrderPreference['prd'])
                      ? "Delivery"
@@ -162,7 +162,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
     orderTypes = [
       {"type": "Delivery"},
       {"type": "Intraday"},
-      {"type": "CO / BO"},
+      {"type": "CO - BO"},
       // {"type": "MTF"}
     ];
 

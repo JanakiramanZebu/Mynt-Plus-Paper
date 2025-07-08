@@ -30,8 +30,11 @@ import '../../provider/user_profile_provider.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
+import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/functions.dart';
+import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/loader_ui.dart';
+import '../../sharedWidget/custom_drag_handler.dart';
 import 'Api_key_screen.dart';
 import 'logged_user_bottom_sheet.dart';
 import 'need_help_screen.dart';
@@ -67,12 +70,14 @@ class UserAccountScreen extends ConsumerWidget {
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
 
     final filteredMenu = [
+      {'title': 'Account Balance', 'type': 'balance'},
       {'title': 'Reports'},
       {'title': 'Account'},
       {'title': 'Settings'},
       {'title': 'Refer'},
       {'title': 'Rate Us'},
       {'title': 'Contact'},
+      {'title': 'Notification'},
     ];
 
     return TransparentLoaderScreen(
@@ -81,7 +86,7 @@ class UserAccountScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: 50),
 
-          /// 🔹 Top: Notification & QR Code
+          /// 🔹 Top: QR Code
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -98,25 +103,6 @@ class UserAccountScreen extends ConsumerWidget {
                   ),
                   onPressed: () {
                     Navigator.pushNamed(context, Routes.qrscanner);
-                  },
-                ),
-                IconButton(
-                  splashRadius: 20,
-                  icon: SvgPicture.asset(
-                    assets.notifyIcon, // This is your asset path
-                    height: 20,
-                    width: 20,
-                    color: colors
-                        .colorGrey, // Optional: set color if your SVG supports it
-                  ),
-                  onPressed: () async {
-                    await ref
-                        .read(notificationprovider)
-                        .fetchexchagemsg(context);
-                    await ref
-                        .read(notificationprovider)
-                        .fetchbrokermsg(context);
-                    Navigator.pushNamed(context, Routes.notificationpage);
                   },
                 ),
               ],
@@ -226,20 +212,17 @@ class UserAccountScreen extends ConsumerWidget {
           //    color: colors.fundbuttonBg,
           //                    ),
           // ),
-          const SizedBox(height: 4),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Divider(
-              color: colors.fundbuttonBg, // Optional: customize the color
-              thickness: 1, // Optional: customize the thickness
-            ),
-          ),
+          // const SizedBox(height: 4),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          //   child: Divider(
+          //     color: colors.fundbuttonBg, // Optional: customize the color
+          //     thickness: 1, // Optional: customize the thickness
+          //   ),
+          // ),
 
           /// 🔹 Horizontal Buttons (inline style)
           // _buildHorizontalButtons(context, ref, theme, funds, mf),
-
-          /// 🔹 Account Balance (inline, outlined Add Fund)
-          _buildAccountBalanceSection(context, ref, theme, funds, trancation),
 
           /// 🔹 Menu List
           Expanded(
@@ -247,9 +230,26 @@ class UserAccountScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(top: 0),
               itemCount: filteredMenu.length,
               itemBuilder: (context, index) {
-                final title = filteredMenu[index]['title']!;
+                final item = filteredMenu[index];
+                final title = item['title']!;
+                final type = item['type'];
+
+                // Handle account balance section
+                if (type == 'balance') {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      children: [
+                        ListDivider(),
+                        _buildAccountBalanceSection(
+                            context, ref, theme, funds, trancation),
+                      ],
+                    ),
+                  );
+                }
+
                 return ListTile(
-                  minTileHeight: 47,
+                  minTileHeight: 60,
                   onTap: () async {
                     if ([
                       "Verified P&L",
@@ -261,6 +261,9 @@ class UserAccountScreen extends ConsumerWidget {
                       await funds.fetchHstoken(context);
                     }
                     switch (title) {
+                      case "Account Balance":
+                        // This is not a clickable item, just return
+                        return;
                       case "Account":
                         Navigator.pushNamed(context, Routes.myaccountScreen);
                         break;
@@ -424,30 +427,36 @@ class UserAccountScreen extends ConsumerWidget {
                           },
                         );
                         break;
+                      case "Notification":
+                        await ref
+                            .read(notificationprovider)
+                            .fetchexchagemsg(context);
+                        await ref
+                            .read(notificationprovider)
+                            .fetchbrokermsg(context);
+                        Navigator.pushNamed(context, Routes.notificationpage);
+                        break;
                     }
                   },
                   title: TextWidget.subText(
-                      text: title,
-                      theme: false,
-                      color: !theme.isDarkMode
-                          ? colors.textPrimaryLight
-                          : colors.textPrimaryDark,
-                      fw: 3),
+                    text: title,
+                    theme: false,
+                    color: !theme.isDarkMode
+                        ? colors.textSecondaryLight
+                        : colors.textSecondaryDark,
+                  ),
                   trailing: Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
                     color: !theme.isDarkMode
-                        ? colors.textPrimaryLight
-                        : colors.textPrimaryDark,
+                        ? colors.textSecondaryLight
+                        : colors.textSecondaryDark,
                   ),
                 );
               },
-              separatorBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Divider(
-                  color: colors.fundbuttonBg, // Optional: customize the color
-                  thickness: 1.5, // Optional: customize the thickness
-                ),
+              separatorBuilder: (context, index) => const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: ListDivider(),
               ),
             ),
           ),
@@ -471,47 +480,46 @@ class UserAccountScreen extends ConsumerWidget {
 
   Widget _buildAccountBalanceSection(
       BuildContext context, WidgetRef ref, theme, funds, trancation) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 14, bottom: 0),
-      child: Column(
-        children: [
-          // Divider(
-          //   color: colors.fundbuttonBg, // Optional: customize the color
-          //   thickness: 1, // Optional: customize the thickness
-          // ),
-          Row(
+    return Column(
+      children: [
+        ListTile(
+          minTileHeight: 60,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+          title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               InkWell(
-                // onTap: () async {
-                //   ref.read(indexListProvider).bottomMenu(2, context);
-                //   await Future.delayed(
-                //       const Duration(milliseconds: 2000)); // Delay of 300ms
-                //   Navigator.pushReplacementNamed(context, Routes.homeScreen);
+                onTap: () async {
+                  // Add delay for visual feedback
+                  await Future.delayed(const Duration(milliseconds: 150));
 
-                  
-                  
-                // },
-                child: Column(
+                  ref.read(portfolioProvider).changeTabIndex(3);
+                  ref.read(indexListProvider).bottomMenu(2, context);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextWidget.subText(
-                          text: "Account Balance",
-                          theme: false,
-                          color: !theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          fw: 3),
+                        text: "Account Balance",
+                        theme: false,
+                        color: !theme.isDarkMode
+                            ? colors.textPrimaryLight
+                            : colors.textPrimaryDark,
+                      ),
                       const SizedBox(height: 4),
                       TextWidget.subText(
-                          text: formatIndianCurrency(
-                              funds.fundDetailModel?.avlMrg ?? "0.00"),
-                          theme: false,
-                          color: !theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          fw: 0),
-                    ]),
+                        text: formatIndianCurrency(
+                            funds.fundDetailModel?.avlMrg ?? "0.00"),
+                        theme: false,
+                        color: !theme.isDarkMode
+                            ? colors.textSecondaryLight
+                            : colors.textSecondaryDark,
+                      ),
+                    ],
+                  ),
+                ),
               ),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
@@ -526,41 +534,37 @@ class UserAccountScreen extends ConsumerWidget {
                   ),
                 ),
                 onPressed: () async {
-                  // ref.read(transcationProvider).fetchValidateToken(context);
-                  // Future.delayed(const Duration(milliseconds: 100), () async {
-                  //   await trancation.ip();
-                  //   await trancation.fetchupiIdView(
-                  //       trancation.bankdetails!.dATA![trancation.indexss][1],
-                  //       trancation.bankdetails!.dATA![trancation.indexss][2]);
-                  //   await trancation.fetchcwithdraw(context);
-                  // });
-                  // trancation.changebool(true);
-                  // Navigator.pushNamed(context, Routes.fundscreen,
-                  //     arguments: trancation);
-                  ref.read(portfolioProvider).changeTabIndex(3);
-                  ref.read(indexListProvider).bottomMenu(2, context);
+                  await trancation.fetchValidateToken(context);
+                  Future.delayed(
+                    const Duration(milliseconds: 100),
+                    () async {
+                      await trancation.ip();
+                      await trancation.fetchupiIdView(
+                        trancation.bankdetails!.dATA![trancation.indexss][1],
+                        trancation.bankdetails!.dATA![trancation.indexss][2],
+                      );
+                      await trancation.fetchcwithdraw(context);
+                    },
+                  );
+                  trancation.changebool(true);
+                  Navigator.pushNamed(context, Routes.fundscreen,
+                      arguments: trancation);
                 },
-                child: TextWidget.paraText(
-                    text: "Add Fund",
-                    theme: false,
-                    color: !theme.isDarkMode
-                        ? colors.colorBlue
-                        : colors.colorLightBlue,
-                    fw: 0,
-                    align: TextAlign.center),
+                child: TextWidget.subText(
+                  text: "Add Fund",
+                  theme: false,
+                  color: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
+                  fw: 2,
+                  align: TextAlign.center,
+                ),
               ),
             ],
           ),
-          // Add space between the content and the line
-          const SizedBox(height: 15),
-
-          // Step 2: Add the Divider widget
-          Divider(
-            color: colors.fundbuttonBg, // Optional: customize the color
-            thickness: 1, // Optional: customize the thickness
-          ),
-        ],
-      ),
+        ),
+        // ListDivider(),
+      ],
     );
   }
 
@@ -660,11 +664,28 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         elevation: 0,
-        leading: IconButton(
-          splashRadius: 20,
-          icon: Icon(Icons.arrow_back,
-              color: theme.isDarkMode ? Colors.white : Colors.black),
-          onPressed: () => Navigator.pop(context),
+        leading: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.hardEdge,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            splashColor: Colors.grey.withOpacity(0.4),
+            highlightColor: Colors.grey.withOpacity(0.2),
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Container(
+              width: 20, // Increased touch area
+              height: 20,
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.arrow_back_ios_outlined,
+                size: 18,
+                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              ),
+            ),
+          ),
         ),
         actions: [
           IconButton(
@@ -673,8 +694,7 @@ class SettingsScreen extends ConsumerWidget {
               assets.qrIcon, // This is your asset path
               height: 20,
               width: 20,
-              color: colors
-                  .colorGrey, // Optional: set color if your SVG supports it
+              // Optional: set color if your SVG supports it
             ),
             onPressed: () {
               Navigator.pushNamed(context, Routes.qrscanner);
@@ -701,93 +721,90 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           /// Profile Header
           ///  // showModalBottomSheet(
-                //     context: context,
-                //     isScrollControlled: true,
-                //     isDismissible: true,
-                //     shape: const RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.only(
-                //         topLeft: Radius.circular(10),
-                //         topRight: Radius.circular(10),
-                //       ),
-                //     ),
-                //     builder: (_) =>
-                //         const LoggedUserBottomSheet(initRoute: 'switchAcc'));
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: colors.fundbuttonBg,
-                  child: Text(
-                    userProfile.userDetailModel?.uname
-                            ?.substring(0, 1)
-                            .toUpperCase() ??
-                        "U",
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidget.subText(
-                      text: _truncateProfileName(
-                          userProfile.userDetailModel?.uname ?? ""),
-                      theme: false,
-                      color: !theme.isDarkMode
-                          ? colors.colorBlack
-                          : colors.colorGrey,
-                      fw: 0,
-                    ),
-                    const SizedBox(height: 4),
-                    TextWidget.paraText(
-                      text: userProfile.userDetailModel?.uid ?? "",
-                      theme: false,
-                      color: colors.colorGrey,
-                      fw: 00,
-                    )
-                  ],
-                ),
-                // const Spacer(),
-                // Icon(Icons.arrow_forward_ios,
-                //     size: 16, color: colors.colorGrey)
-              ],
-            ),
-          ),
+          //     context: context,
+          //     isScrollControlled: true,
+          //     isDismissible: true,
+          //     shape: const RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.only(
+          //         topLeft: Radius.circular(10),
+          //         topRight: Radius.circular(10),
+          //       ),
+          //     ),
+          //     builder: (_) =>
+          //         const LoggedUserBottomSheet(initRoute: 'switchAcc'));
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          //   child: Row(
+          //     children: [
+          //       CircleAvatar(
+          //           radius: 24,
+          //           backgroundColor: colors.fundbuttonBg,
+          //           child: TextWidget.titleText(
+          //             text: userProfile.userDetailModel?.uname
+          //                     ?.substring(0, 1)
+          //                     .toUpperCase() ??
+          //                 "U",
+          //             theme: false,
+          //             color: theme.isDarkMode
+          //                 ? colors.textPrimaryDark
+          //                 : colors.textPrimaryLight,
+          //             fw: 2,
+          //           )),
+          //       const SizedBox(width: 12),
+          //       Column(
+          //         crossAxisAlignment: CrossAxisAlignment.start,
+          //         children: [
+          //           TextWidget.subText(
+          //             text: _truncateProfileName(
+          //                 userProfile.userDetailModel?.uname ?? ""),
+          //             theme: false,
+          //             color: theme.isDarkMode
+          //                 ? colors.textPrimaryDark
+          //                 : colors.textPrimaryLight,
+          //             fw: 0,
+          //           ),
+          //           const SizedBox(height: 4),
+          //           TextWidget.paraText(
+          //             text: userProfile.userDetailModel?.uid ?? "",
+          //             theme: false,
+          //             color: colors.textSecondaryLight,
+          //           )
+          //         ],
+          //       ),
+          //       // const Spacer(),
+          //       // Icon(Icons.arrow_forward_ios,
+          //       //     size: 16, color: colors.colorGrey)
+          //     ],
+          //   ),
+          // ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(
-              color: colors.fundbuttonBg, // Optional: customize the color
-              thickness: 1.5, // Optional: customize the thickness
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16),
+          //   child: ListDivider(),
+          // ),
 
-          const SizedBox(height: 12),
+          // const SizedBox(height: 12),
 
           // Settings Section
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: TextWidget.heroText(
+              child: TextWidget.titleText(
                 text: "Settings",
                 theme: false,
-                color:
-                    !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                color: !theme.isDarkMode
+                    ? colors.textPrimaryLight
+                    : colors.textPrimaryDark,
                 fw: 1,
               ),
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(
-              color: colors.fundbuttonBg, // Optional: customize the color
-              thickness: 1.5, // Optional: customize the thickness
-            ),
+            child: ListDivider(),
           ),
           ListView.separated(
             shrinkWrap: true,
@@ -796,20 +813,20 @@ class SettingsScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final item = settingsItems[index];
               return ListTile(
-                minTileHeight: 47,
+                minTileHeight: 60,
                 title: TextWidget.subText(
-                    text: item['title']!,
-                    theme: false,
-                    color: !theme.isDarkMode
-                        ? colors.textPrimaryLight
-                        : colors.textPrimaryDark,
-                    fw: 3),
+                  text: item['title']!,
+                  theme: false,
+                  color: !theme.isDarkMode
+                      ? colors.textSecondaryLight
+                      : colors.textSecondaryDark,
+                ),
                 trailing: Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
                   color: !theme.isDarkMode
-                      ? colors.textPrimaryLight
-                      : colors.textPrimaryDark,
+                      ? colors.textSecondaryLight
+                      : colors.textSecondaryDark,
                 ),
                 onTap: () {
                   // Handle settings navigation
@@ -941,38 +958,32 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(
-              color: colors.fundbuttonBg, // Optional: customize the color
-              thickness: 1.5, // Optional: customize the thickness
-            ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: ListDivider(),
           ),
-          const SizedBox(height: 12),
+          // const SizedBox(height: 16),
 
           // Security Section
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TextWidget.heroText(
-                text: "Security",
-                theme: false,
-                color:
-                    !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                fw: 1,
-              ),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16),
+          //   child: Align(
+          //     alignment: Alignment.centerLeft,
+          //     child: TextWidget.titleText(
+          //       text: "Security",
+          //       theme: false,
+          //       color:
+          //           !theme.isDarkMode ? colors.textPrimaryLight : colors.textPrimaryDark,
+          //       fw: 1,
+          //     ),
+          //   ),
+          // ),
 
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(
-              color: colors.fundbuttonBg, // Optional: customize the color
-              thickness: 1.5, // Optional: customize the thickness
-            ),
-          ),
+          // const SizedBox(height: 16),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16),
+          //   child:ListDivider(),
+          // ),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -980,123 +991,134 @@ class SettingsScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final item = securityItems[index];
               return ListTile(
-                minTileHeight: 47,
+                minTileHeight: 60,
                 title: TextWidget.subText(
-                    text: item['title']!,
-                    theme: false,
-                    color: !theme.isDarkMode
-                        ? colors.textPrimaryLight
-                        : colors.textPrimaryDark,
-                    fw: 3),
+                  text: item['title']!,
+                  theme: false,
+                  color: !theme.isDarkMode
+                      ? colors.textSecondaryLight
+                      : colors.textSecondaryDark,
+                ),
                 trailing: Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
                   color: !theme.isDarkMode
-                      ? colors.textPrimaryLight
-                      : colors.textPrimaryDark,
+                      ? colors.textSecondaryLight
+                      : colors.textSecondaryDark,
                 ),
                 onTap: () async {
                   // Handle security navigation
                   switch (item['title']) {
                     case 'Freeze Account':
-                      showDialog(
+                      showModalBottomSheet(
                         context: context,
+                        isScrollControlled: true,
+                        isDismissible: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10),
+                          ),
+                        ),
                         builder: (BuildContext context) {
-                          return AlertDialog(
-                            backgroundColor: ref.read(themeProvider).isDarkMode
-                                ? const Color.fromARGB(255, 18, 18, 18)
-                                : colors.colorWhite,
-                            titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-                                color: ref.read(themeProvider).isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack),
-                            titlePadding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 12),
-                            shape: const RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(14))),
-                            scrollable: true,
-                            contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 16),
-                            insetPadding:
-                                const EdgeInsets.symmetric(horizontal: 20),
-                            // title: Padding(
-                            //   padding: const EdgeInsets.only(top : 8.0),
-                            //   child: TextWidget.titleText(
-                            //       text: "Freeze Account!",
-                            //       theme: theme.isDarkMode,
-                            //       color : theme.isDarkMode
-                            //           ? colors.textPrimaryDark
-                            //           : colors.textPrimaryLight,
-                            //       fw: 1),
-                            // ),
-
-                            content: Padding(
-                              padding: const EdgeInsets.only(top: 20.0),
-                              child: SizedBox(
-                                  width: MediaQuery.of(context).size.width,
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        TextWidget.titleText(
-                                            text:
-                                                "Freeze Account",
-                                            theme: false,
-                                            color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                            fw: 0),
-                                        const SizedBox(height: 12),
-                                        TextWidget.subText(
-                                            text:
-                                                "Account freeze notice: All open orders will be cancelled due to the freeze. Existing positions will remain open and will not be affected.",
-                                            theme: false,
-                                            color: theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight,
-                                            fw: 3),
-                                        SizedBox(height: 14),
-                                      ])),
+                          return Container(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const CustomDragHandler(),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      TextWidget.titleText(
+                                          text: 'Freeze Account',
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          fw: 1),
+                                      Material(
+                                        color: Colors.transparent,
+                                        shape: const CircleBorder(),
+                                        child: InkWell(
+                                          onTap: () async {
+                                            await Future.delayed(const Duration(
+                                                milliseconds: 150));
+                                            Navigator.of(context).pop();
+                                          },
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          splashColor: theme.isDarkMode
+                                              ? colors.splashColorDark
+                                              : colors.splashColorLight,
+                                          highlightColor: theme.isDarkMode
+                                              ? colors.highlightDark
+                                              : colors.highlightLight,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(6.0),
+                                            child: Icon(
+                                              Icons.close_rounded,
+                                              size: 22,
+                                              color: theme.isDarkMode
+                                                  ? const Color(0xffBDBDBD)
+                                                  : colors.colorGrey,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                ListDivider(),
+                                const SizedBox(height: 16.0),
+                                TextWidget.subText(
+                                  text:
+                                      "Account freeze notice: All open orders will be cancelled due to the freeze. Existing positions will remain open and will not be affected.",
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                ),
+                                const SizedBox(height: 24.0),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    height: 40,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        Navigator.of(context).pop();
+                                        userProfile.fetchFreezeAc(context);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        //  minimumSize: const Size(0, 40),
+                                        elevation: 0,
+                                        backgroundColor: theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(4)),
+                                      ),
+                                      child: TextWidget.subText(
+                                          text: "Freeze",
+                                          theme: false,
+                                          color: colors.colorWhite,
+                                          fw: 2),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 10.0)
+                              ],
                             ),
-                            actions: [
-                              ElevatedButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                style: ElevatedButton.styleFrom(
-                                    elevation: 0,
-                                    backgroundColor: theme.isDarkMode
-                                        ? const Color(0xffF1F3F8)
-                                        : const Color(0xffF1F3F8),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(4))),
-                                child: TextWidget.subText(
-                                    text: "Cancel",
-                                    theme: false,
-                                    color: !theme.isDarkMode
-                                        ? const Color(0xff666666)
-                                        : const Color(0xff666666),
-                                    fw: 0),
-                              ),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  userProfile.fetchFreezeAc(context);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    elevation: 0,
-                                    backgroundColor: theme.isDarkMode
-                                        ? colors.primaryDark
-                                        : colors.primaryLight,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(4))),
-                                child: TextWidget.subText(
-                                    text: "Continue",
-                                    theme: false,
-                                    color: colors.colorWhite,
-                                    fw: 0),
-                              ),
-                            ],
                           );
                         },
                       );
@@ -1141,12 +1163,9 @@ class SettingsScreen extends ConsumerWidget {
                 },
               );
             },
-            separatorBuilder: (context, index) => Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(
-                color: colors.fundbuttonBg, // Optional: customize the color
-                thickness: 1, // Optional: customize the thickness
-              ),
+            separatorBuilder: (context, index) => const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: ListDivider(),
             ),
           ),
 
@@ -1161,7 +1180,6 @@ class SettingsScreen extends ConsumerWidget {
               color: !theme.isDarkMode
                   ? colors.textSecondaryLight
                   : colors.textSecondaryDark,
-              fw: 3,
             ),
           ),
           SizedBox(height: 8.0)
@@ -1452,12 +1470,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         // title: TextWidget.subText(text: "My Accounts", theme: theme.isDarkMode, fw: 1),
         backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         elevation: 0,
-        leading: IconButton(
-          splashRadius: 20,
-          icon: Icon(Icons.arrow_back,
-              color: theme.isDarkMode ? Colors.white : Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: CustomBackBtn(),
         actions: [
           IconButton(
             splashRadius: 20,
@@ -1493,55 +1506,55 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// Profile Header (retained from your original design)
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: colors.fundbuttonBg,
-                  child: Text(
-                    userProfile.userDetailModel?.uname
-                            ?.substring(0, 1)
-                            .toUpperCase() ??
-                        "U",
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidget.subText(
-                      fw: 0,
-                      text: _truncateProfileName(
-                          userProfile.userDetailModel?.uname ?? ""),
-                      theme: false,
-                      color: !theme.isDarkMode
-                          ? colors.colorBlack
-                          : colors.colorGrey,
-                    ),
-                    const SizedBox(height: 6),
-                    TextWidget.paraText(
-                      text: userProfile.userDetailModel?.uid ?? "",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                    )
-                  ],
-                ),
-                // const Spacer(),
-                // Icon(Icons.arrow_forward_ios,
-                //     size: 16, color: colors.colorGrey)
-              ],
-            ),
-            const SizedBox(height: 10),
-            Divider(
-              color: colors.fundbuttonBg, // Optional: customize the color
-              thickness: 1, // Optional: customize the thickness
-            ),
-            const SizedBox(height: 8),
-            TextWidget.heroText(
+            // const SizedBox(height: 10),
+            // Row(
+            //   children: [
+            //     CircleAvatar(
+            //       radius: 24,
+            //       backgroundColor: colors.fundbuttonBg,
+            //       child: Text(
+            //         userProfile.userDetailModel?.uname
+            //                 ?.substring(0, 1)
+            //                 .toUpperCase() ??
+            //             "U",
+            //         style: const TextStyle(color: Colors.black),
+            //       ),
+            //     ),
+            //     const SizedBox(width: 12),
+            //     Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         TextWidget.subText(
+            //           fw: 0,
+            //           text: _truncateProfileName(
+            //               userProfile.userDetailModel?.uname ?? ""),
+            //           theme: false,
+            //           color: !theme.isDarkMode
+            //               ? colors.colorBlack
+            //               : colors.colorGrey,
+            //         ),
+            //         const SizedBox(height: 6),
+            //         TextWidget.paraText(
+            //           text: userProfile.userDetailModel?.uid ?? "",
+            //           theme: false,
+            //           color: theme.isDarkMode
+            //               ? colors.textSecondaryDark
+            //               : colors.textSecondaryLight,
+            //         )
+            //       ],
+            //     ),
+            //     // const Spacer(),
+            //     // Icon(Icons.arrow_forward_ios,
+            //     //     size: 16, color: colors.colorGrey)
+            //   ],
+            // ),
+            // const SizedBox(height: 10),
+            // Divider(
+            //   color: colors.fundbuttonBg, // Optional: customize the color
+            //   thickness: 1, // Optional: customize the thickness
+            // ),
+            // const SizedBox(height: 8),
+            TextWidget.titleText(
               text: "Account",
               theme: false,
               color: theme.isDarkMode
@@ -1550,10 +1563,10 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               fw: 1,
             ),
             const SizedBox(height: 10),
-            Divider(
-              color: colors.fundbuttonBg, // Optional: customize the color
-              thickness: 1, // Optional: customize the thickness
-            ),
+            // Divider(
+            //   color: colors.fundbuttonBg, // Optional: customize the color
+            //   thickness: 1, // Optional: customize the thickness
+            // ),
 
             /// Expandable List View
             Expanded(
@@ -1569,7 +1582,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     onExpansionChanged: (isExpanding) =>
                         _onExpansionChanged(isExpanding, title),
                     tilePadding: const EdgeInsets.symmetric(horizontal: 0),
-                    title: TextWidget.titleText(
+                    title: TextWidget.subText(
                       text: title,
                       theme: false,
                       color: !theme.isDarkMode
@@ -1973,7 +1986,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       text: "Activate DDPI",
                       theme: false,
                       color: colors.colorWhite,
-                      fw: 0),
+                      fw: 2),
                 ),
                 SizedBox(height: 10.0),
               ],
@@ -2283,18 +2296,31 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
-                fw: 0,
               ),
-              IconButton(
-                onPressed: () {
-                  profileDetails.openInWebURL(context, "segment");
-                },
-                icon: Icon(
-                  Icons.edit,
-                  color: theme.isDarkMode
-                      ? colors.colorLightBlue
-                      : colors.colorBlue,
-                  size: 16,
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () async {
+                    // Add delay for visual feedback
+                    await Future.delayed(const Duration(milliseconds: 150));
+
+                    profileDetails.openInWebURL(context, "segment");
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.highlightDark
+                      : colors.highlightLight,
+                  child: const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      color: Color(0xff666666),
+                      size: 20,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -2343,33 +2369,42 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         children: [
           if (clientData?.nomineeName == null ||
               clientData?.nomineeName == "") ...[
-            TextWidget.paraText(
+            TextWidget.subText(
               text: "No nominee details found",
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
               theme: theme.isDarkMode,
             ),
             const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                profileDetails.openInWebURL(context, "nominee");
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                minimumSize: const Size(double.infinity, 40),
-                backgroundColor:
-                    theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(32),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  profileDetails.openInWebURL(context, "nominee");
+                },
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  minimumSize: const Size(double.infinity, 40),
+                  backgroundColor: theme.isDarkMode
+                      ? colors.primaryDark
+                      : colors.primaryLight,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  side: BorderSide(
+                    width: 1,
+                    color: theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack,
+                  ),
                 ),
-                side: BorderSide(
-                  width: 1,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                child: TextWidget.subText(
+                  text: "Add Nominee",
+                  color: colors.colorWhite,
+                  theme: theme.isDarkMode,
+                  fw: 2,
                 ),
-              ),
-              child: TextWidget.subText(
-                text: "Add Nominee",
-                theme: theme.isDarkMode,
-                fw: 1,
               ),
             ),
           ] else ...[
@@ -2425,9 +2460,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             text: "Download various forms and documents",
             theme: theme.isDarkMode,
             color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 0,
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
           ),
           const SizedBox(height: 16),
           Padding(
@@ -2443,12 +2477,12 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       ? colors.primaryDark
                       : colors.primaryLight,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4))),
+                      borderRadius: BorderRadius.circular(5))),
               child: TextWidget.subText(
                   text: "Download Forms",
                   theme: false,
                   color: colors.colorWhite,
-                  fw: 0),
+                  fw: 2),
             ),
           ),
           // ElevatedButton(
@@ -2474,7 +2508,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           //     fw: 1,
           //   ),
           // ),
-          SizedBox(height: 14.0),
+          SizedBox(height: 10.0),
         ],
       ),
     );
@@ -2490,13 +2524,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextWidget.subText(
-            text:
-                "* Closing your account is a permanent and irreversible action",
+            text: "Closing your account is a permanent and irreversible action",
             theme: theme.isDarkMode,
             color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 3,
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
           ),
           const SizedBox(height: 20),
           Padding(
@@ -2517,10 +2549,10 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   text: "Close Account",
                   theme: false,
                   color: colors.colorWhite,
-                  fw: 0),
+                  fw: 2),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
         ],
       ),
     );
@@ -2562,7 +2594,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             color: theme.isDarkMode
                 ? colors.textSecondaryDark
                 : colors.textSecondaryLight,
-            fw: 0,
+           
           ),
           Row(
             children: segments.map<Widget>((segment) {
@@ -2582,8 +2614,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                           ? const Color.fromARGB(255, 9, 163, 17)
                           : colors.colorGrey
                       : isActive
-                          ? const Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
-                          : const Color(0xff666666).withOpacity(.1),
+                          ? colors.primary.withOpacity(.1)
+                          :  colors.textPrimaryLight.withOpacity(.1),
                 ),
                 child: TextWidget.captionText(
                   text: displayName,
@@ -2667,12 +2699,7 @@ class ReportsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         elevation: 0,
-        leading: IconButton(
-          splashRadius: 20,
-          icon: Icon(Icons.arrow_back,
-              color: theme.isDarkMode ? Colors.white : Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const CustomBackBtn(),
         actions: [
           IconButton(
             splashRadius: 20,
@@ -2707,66 +2734,66 @@ class ReportsScreen extends ConsumerWidget {
       body: Column(
         children: [
           /// Profile Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: colors.fundbuttonBg,
-                  child: Text(
-                    userProfile.userDetailModel?.uname
-                            ?.substring(0, 1)
-                            .toUpperCase() ??
-                        "U",
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidget.subText(
-                      text: _truncateProfileName(
-                          userProfile.userDetailModel?.uname ?? ""),
-                      theme: false,
-                      color: !theme.isDarkMode
-                          ? colors.colorBlack
-                          : colors.colorGrey,
-                      fw: 0,
-                    ),
-                    const SizedBox(height: 4),
-                    TextWidget.paraText(
-                      text: userProfile.userDetailModel?.uid ?? "",
-                      theme: false,
-                      color: colors.colorGrey,
-                      fw: 00,
-                    )
-                  ],
-                ),
-                // const Spacer(),
-                // Icon(Icons.arrow_forward_ios,
-                //     size: 16, color: colors.colorGrey)
-              ],
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          //   child: Row(
+          //     children: [
+          //       CircleAvatar(
+          //         radius: 24,
+          //         backgroundColor: colors.fundbuttonBg,
+          //         child: Text(
+          //           userProfile.userDetailModel?.uname
+          //                   ?.substring(0, 1)
+          //                   .toUpperCase() ??
+          //               "U",
+          //           style: const TextStyle(color: Colors.black),
+          //         ),
+          //       ),
+          //       const SizedBox(width: 12),
+          //       Column(
+          //         crossAxisAlignment: CrossAxisAlignment.start,
+          //         children: [
+          //           TextWidget.subText(
+          //             text: _truncateProfileName(
+          //                 userProfile.userDetailModel?.uname ?? ""),
+          //             theme: false,
+          //             color: !theme.isDarkMode
+          //                 ? colors.colorBlack
+          //                 : colors.colorGrey,
+          //             fw: 0,
+          //           ),
+          //           const SizedBox(height: 4),
+          //           TextWidget.paraText(
+          //             text: userProfile.userDetailModel?.uid ?? "",
+          //             theme: false,
+          //             color: colors.colorGrey,
+          //             fw: 00,
+          //           )
+          //         ],
+          //       ),
+          //       // const Spacer(),
+          //       // Icon(Icons.arrow_forward_ios,
+          //       //     size: 16, color: colors.colorGrey)
+          //     ],
+          //   ),
+          // ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(
-              color: colors.fundbuttonBg, // Optional: customize the color
-              thickness: 1, // Optional: customize the thickness
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16),
+          //   child: Divider(
+          //     color: colors.fundbuttonBg, // Optional: customize the color
+          //     thickness: 1, // Optional: customize the thickness
+          //   ),
+          // ),
 
-          const SizedBox(height: 10),
+          // const SizedBox(height: 10),
 
           // Reports Section
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: TextWidget.heroText(
+              child: TextWidget.titleText(
                 text: "Reports",
                 theme: false,
                 color: !theme.isDarkMode
@@ -2778,13 +2805,13 @@ class ReportsScreen extends ConsumerWidget {
           ),
 
           const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(
-              color: colors.fundbuttonBg, // Optional: customize the color
-              thickness: 1.5, // Optional: customize the thickness
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16),
+          //   child: Divider(
+          //     color: colors.fundbuttonBg, // Optional: customize the color
+          //     thickness: 1.5, // Optional: customize the thickness
+          //   ),
+          // ),
           Expanded(
             child: SingleChildScrollView(
               child: ListView.separated(
@@ -2794,20 +2821,20 @@ class ReportsScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final item = reportsItems[index];
                   return ListTile(
-                    minTileHeight: 47,
+                    minTileHeight: 60,
                     title: TextWidget.subText(
-                        text: item['title']!,
-                        theme: false,
-                        color: !theme.isDarkMode
-                            ? colors.textPrimaryLight
-                            : colors.textPrimaryDark,
-                        fw: 3),
+                      text: item['title']!,
+                      theme: false,
+                      color: !theme.isDarkMode
+                          ? colors.textSecondaryLight
+                          : colors.textSecondaryDark,
+                    ),
                     trailing: Icon(
                       Icons.arrow_forward_ios,
                       size: 16,
                       color: !theme.isDarkMode
-                          ? colors.textPrimaryLight
-                          : colors.textPrimaryDark,
+                          ? colors.textSecondaryLight
+                          : colors.textSecondaryDark,
                     ),
                     onTap: () async {
                       // Handle reports navigation - you can add the existing navigation logic here
@@ -2928,10 +2955,7 @@ class ReportsScreen extends ConsumerWidget {
                 },
                 separatorBuilder: (context, index) => Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(
-                    color: colors.fundbuttonBg, // Optional: customize the color
-                    thickness: 1, // Optional: customize the thickness
-                  ),
+                  child: ListDivider(),
                 ),
               ),
             ),
