@@ -210,12 +210,6 @@ class TradeBook extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 12),
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                    color: Color(0xffEEEEEE), width: 1),
-                              ),
-                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -305,7 +299,7 @@ class TradeBook extends ConsumerWidget {
                                                   : theme.isDarkMode
                                                       ? colors.profitDark
                                                       : colors.profitLight,
-                                          fw: 1,
+                                          fw: 0,
                                         ),
 
                                         const SizedBox(width: 8),
@@ -317,7 +311,7 @@ class TradeBook extends ConsumerWidget {
                                           color: theme.isDarkMode
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
-                                          fw: 0,
+                                          fw: 3,
                                         ),
 
                                         const SizedBox(width: 8),
@@ -329,7 +323,7 @@ class TradeBook extends ConsumerWidget {
                                           color: theme.isDarkMode
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
-                                          fw: 0,
+                                          fw: 3,
                                         ),
                                       ],
                                     ),
@@ -404,11 +398,12 @@ class TradeBook extends ConsumerWidget {
                     },
                     itemCount: tradeBook.length,
                     separatorBuilder: (BuildContext context, int index) {
-                      return Container(
-                          color: theme.isDarkMode
-                              ? colors.dividerDark
-                              : colors.dividerLight,
-                          height: 1);
+                      return Divider(
+                        color: theme.isDarkMode
+                            ? colors.dividerDark
+                            : colors.dividerLight,
+                        thickness: 0,
+                      );
                     },
                   )
                 : SingleChildScrollView(
@@ -571,7 +566,7 @@ class TradeBook extends ConsumerWidget {
                                               : theme.isDarkMode
                                                   ? colors.profitDark
                                                   : colors.profitLight,
-                                          fw: 1,
+                                          fw: 0,
                                         ),
 
                                         const SizedBox(width: 8),
@@ -584,7 +579,7 @@ class TradeBook extends ConsumerWidget {
                                           color: theme.isDarkMode
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
-                                          fw: 0,
+                                          fw: 3,
                                         ),
 
                                         const SizedBox(width: 8),
@@ -597,7 +592,7 @@ class TradeBook extends ConsumerWidget {
                                           color: theme.isDarkMode
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
-                                          fw: 0,
+                                          fw: 3,
                                         ),
                                       ],
                                     ),

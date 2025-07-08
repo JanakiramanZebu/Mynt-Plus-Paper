@@ -1,4 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'dart:async';
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -143,6 +145,7 @@ class _WatchListScreen extends State<WatchListScreen>
 
     // Add listener to the page controller to reset scroll state on page change
     _controller.addListener(_handlePageScroll);
+    _tabScrollController.addListener(_handleTabScrollEnd);
 
     // Initialize page controller with saved page index
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -181,6 +184,8 @@ class _WatchListScreen extends State<WatchListScreen>
 
     super.initState();
   }
+
+  Timer? _snapDebounce;
 
   // Ensure all predefined watchlists have their data loaded
   void _ensurePredefinedWatchlistsLoaded() async {
@@ -259,25 +264,28 @@ class _WatchListScreen extends State<WatchListScreen>
           print(
               "Found current watchlist '$currentWLName' at index $targetIndex");
         } else {
-          // Watchlist name not found, fall back to saved index or 0
+          // Watchlist name not found, fall back to 0
+          targetIndex = 0;
           final savedIndex = marketWatch.currentWatchlistPageIndex;
-          targetIndex =
-              (savedIndex >= 0 && savedIndex < marketWatchlist.values!.length)
-                  ? savedIndex
-                  : 0;
+          // targetIndex =
+          //     (savedIndex >= 0 && savedIndex < marketWatchlist.values!.length)
+          //         ? savedIndex
+          //         : 0;
           print(
               "Watchlist '$currentWLName' not found, using index $targetIndex");
         }
       } else {
-        // No watchlist data yet, use saved index
-        final savedIndex = marketWatch.currentWatchlistPageIndex;
-        targetIndex = savedIndex >= 0 ? savedIndex : 0;
-        print("No watchlist data yet, using saved index $targetIndex");
+        // No watchlist data yet, use 0
+        targetIndex = 0;
+        print("No watchlist data yet, using index $targetIndex");
+        // final savedIndex = marketWatch.currentWatchlistPageIndex;
+        // targetIndex = savedIndex >= 0 ? savedIndex : 0;
+        // print("No watchlist data yet, using saved index $targetIndex");
       }
 
       // Update both the UI state and provider state
       _selectedTabIndex = targetIndex;
-      marketWatch.setCurrentWatchlistPageIndex(targetIndex);
+      // marketWatch.setCurrentWatchlistPageIndex(targetIndex);
 
       // Only jump to page if the controller is ready and we have a valid index
       if (_controller.hasClients && targetIndex >= 0) {
@@ -327,6 +335,19 @@ class _WatchListScreen extends State<WatchListScreen>
         _isListScrolled = false;
       });
     }
+  }
+
+  void _handleTabScrollEnd() {
+    if (_snapDebounce?.isActive ?? false) _snapDebounce!.cancel();
+
+    _snapDebounce = Timer(const Duration(milliseconds: 100), () {
+      if (!_tabScrollController.hasClients || _isUserScrolling) return;
+
+      final double offset = _tabScrollController.offset;
+      final int index = (offset + tabWidth / 2) ~/ tabWidth;
+
+      _scrollToSelectedTab(index, force: true);
+    });
   }
 
   @override
@@ -486,9 +507,9 @@ class _WatchListScreen extends State<WatchListScreen>
             });
 
             // Update the provider's saved index to match
-            ref
-                .read(marketWatchProvider)
-                .setCurrentWatchlistPageIndex(correctIndex);
+            // ref
+            //     .read(marketWatchProvider)
+            //     .setCurrentWatchlistPageIndex(correctIndex);
 
             // Jump to the correct page if needed
             if (_controller.hasClients &&
@@ -604,7 +625,9 @@ class _WatchListScreen extends State<WatchListScreen>
                                 Expanded(
                                   child: TextWidget.subText(
                                     text: 'Search & add',
-                                    color: theme.isDarkMode ? colors.textPrimaryDark :  colors.textPrimaryLight,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
                                     theme: theme.isDarkMode,
                                   ),
                                 ),
@@ -687,7 +710,6 @@ class _WatchListScreen extends State<WatchListScreen>
                           color: theme.isDarkMode
                               ? colors.dividerDark
                               : colors.dividerLight,
-                          
                         ),
                       ),
                     ),
@@ -774,7 +796,7 @@ class _WatchListScreen extends State<WatchListScreen>
               });
 
               // Save the current page index to the provider
-              ref.read(marketWatchProvider).setCurrentWatchlistPageIndex(d);
+              // ref.read(marketWatchProvider).setCurrentWatchlistPageIndex(d);
 
               // Get the new watchlist name before unsubscribing
               String newWatchlistName = marketWatchlist!.values![d];
@@ -1023,21 +1045,25 @@ class _WatchListScreen extends State<WatchListScreen>
                 },
                 icon: assets.addCircleIcon),
             TextWidget.subText(
-                text: "No symbol in this watchlist",
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                theme: theme.isDarkMode,
-                ),
+              text: "No symbol in this watchlist",
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+            ),
             const SizedBox(height: 8),
             SizedBox(
               width: 250,
               child: Center(
                 child: TextWidget.paraText(
-                    text:
-                        "Use the search box above to find and add stocks, indices, futures or options. ",
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
-                    align: TextAlign.center,
-                    ),
+                  text:
+                      "Use the search box above to find and add stocks, indices, futures or options. ",
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  theme: theme.isDarkMode,
+                  align: TextAlign.center,
+                ),
               ),
             ),
           ],

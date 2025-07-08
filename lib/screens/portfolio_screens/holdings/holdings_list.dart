@@ -121,7 +121,7 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
 
             // LTP - dynamic, will update from socket
           ]),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           // Exchange badge (static) and price change (dynamic)
           // Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           //   // Static exchange badge - won't rebuild
@@ -318,8 +318,7 @@ class _StaticInvestmentInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final investedValue = double.parse(
-        "${holdingData.invested ?? 0.00}");
+    final investedValue = double.parse("${holdingData.invested ?? 0.00}");
 
     return Consumer(
       builder: (context, ref, _) {

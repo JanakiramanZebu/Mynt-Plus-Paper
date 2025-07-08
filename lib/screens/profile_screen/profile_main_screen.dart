@@ -72,12 +72,12 @@ class UserAccountScreen extends ConsumerWidget {
     final filteredMenu = [
       {'title': 'Account Balance', 'type': 'balance'},
       {'title': 'Reports'},
-      {'title': 'Account'},
+      // {'title': 'Account'},
       {'title': 'Settings'},
+      {'title': 'Notification'},
       {'title': 'Refer'},
       {'title': 'Rate Us'},
       {'title': 'Contact'},
-      {'title': 'Notification'},
     ];
 
     return TransparentLoaderScreen(
@@ -105,25 +105,41 @@ class UserAccountScreen extends ConsumerWidget {
                     Navigator.pushNamed(context, Routes.qrscanner);
                   },
                 ),
-                InkWell(
-                  onTap: () {
-                    showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        isDismissible: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10),
+                Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    splashColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    highlightColor: theme.isDarkMode
+                        ? colors.highlightDark
+                        : colors.highlightLight,
+                    onTap: () {
+                      showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          isDismissible: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                              topRight: Radius.circular(10),
+                            ),
                           ),
-                        ),
-                        builder: (_) => const LoggedUserBottomSheet(
-                            initRoute: 'switchAcc'));
-                  },
-                  child: TextWidget.subText(
-                    text: "switch",
-                    theme: false,
-                    color: colors.secondaryLight,
+                          builder: (_) => const LoggedUserBottomSheet(
+                              initRoute: 'switchAcc'));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SvgPicture.asset(
+                        assets.switch2Icon,
+                        height: 24,
+                        width: 24,
+                        color: colors.colorGrey,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -197,25 +213,31 @@ class UserAccountScreen extends ConsumerWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 TextWidget.heroText(
-                                    text: _truncateProfileName(
-                                        userProfile.userDetailModel?.uname ??
-                                            ""),
+                                    text: _truncateProfileName((userProfile
+                                                .userDetailModel?.uname ??
+                                            "")
+                                        .toLowerCase()
+                                        .split(' ')
+                                        .map((word) => word.isNotEmpty
+                                            ? '${word[0].toUpperCase()}${word.substring(1)}'
+                                            : '')
+                                        .join(' ')),
                                     theme: false,
                                     color: theme.isDarkMode
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     fw: 1),
-                                // SizedBox(width: 8),
-                                // Transform.rotate(
-                                //   angle: 90 * 3.1416 / 180,
-                                //   child: Icon(
-                                //     Icons.arrow_forward_ios,
-                                //     size: 20,
-                                //     color: !theme.isDarkMode
-                                //         ? colors.primaryLight
-                                //         : colors.primaryDark,
-                                //   ),
-                                // ),
+                                SizedBox(width: 8),
+                                Transform.rotate(
+                                  angle: 0 * 3.1416 / 180,
+                                  child: Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 20,
+                                    color: !theme.isDarkMode
+                                        ? colors.textPrimaryLight
+                                        : colors.textPrimaryDark,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -286,9 +308,9 @@ class UserAccountScreen extends ConsumerWidget {
                       case "Account Balance":
                         // This is not a clickable item, just return
                         return;
-                      case "Account":
-                        Navigator.pushNamed(context, Routes.myaccountScreen);
-                        break;
+                      // case "Account":
+                      //   Navigator.pushNamed(context, Routes.myaccountScreen);
+                      //   break;
                       case "Reports":
                         if (reportsprovider.ledgerAllData == null) {
                           await reportsprovider.getCurrentDate('else');
@@ -519,7 +541,7 @@ class UserAccountScreen extends ConsumerWidget {
                   ref.read(indexListProvider).bottomMenu(2, context);
                 },
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -672,14 +694,15 @@ class SettingsScreen extends ConsumerWidget {
 
     final settingsItems = [
       // {'title': 'Theme', 'section': 'Settings'},
-      {'title': 'Order Preference', 'section': 'Settings'},
+      // {'title': 'Order Preference', 'section': 'Security'},
     ];
 
     final securityItems = [
-      {'title': 'Freeze Account', 'section': 'Security'},
       {'title': 'Change Password', 'section': 'Security'},
+      {'title': 'Order Preference', 'section': 'Settings'},
       {'title': 'Generate TOTP', 'section': 'Security'},
       {'title': 'Generate API Key', 'section': 'Security'},
+      {'title': 'Freeze Account', 'section': 'Security'},
     ];
 
     return Scaffold(
@@ -961,9 +984,9 @@ class SettingsScreen extends ConsumerWidget {
                             );
                           });
                       break;
-                    case 'Order Preference':
-                      Navigator.pushNamed(context, Routes.orderPrefer);
-                      break;
+                    // case 'Order Preference':
+                    //   Navigator.pushNamed(context, Routes.orderPrefer);
+                    //   break;
                   }
                 },
               );
@@ -1149,6 +1172,9 @@ class SettingsScreen extends ConsumerWidget {
                       Navigator.pushNamed(context, Routes.changePass,
                           arguments: "Yes");
                       break;
+                    case 'Order Preference':
+                      Navigator.pushNamed(context, Routes.orderPrefer);
+                      break;
                     case 'Generate API Key':
                       showModalBottomSheet(
                           context: context,
@@ -1332,12 +1358,12 @@ class MyAccountScreen extends ConsumerStatefulWidget {
 }
 
 class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
-  late int _expandedIndex;
+  // late int _expandedIndex;
 
   @override
   void initState() {
     super.initState();
-    _expandedIndex = widget.initialIndex; // ← store the target tile
+    // _expandedIndex = widget.initialIndex; // ← store the target tile
   }
 
   String _truncateProfileName(String text, {int maxLength = 18}) {
@@ -1456,6 +1482,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     }
   }
 
+  String? _expandedTitle;
+
   // List of items for the account screen
   final accountItems = [
     {'title': 'Profile'},
@@ -1471,12 +1499,22 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   // This method fetches data lazily when an expansion tile is opened
   void _onExpansionChanged(bool isExpanding, String title) {
     if (isExpanding) {
-      // Fetch data for Profile and Bank when their sections are expanded
-      // This mimics the initState behavior of the original pages
+      // Expand the new tile
+      setState(() {
+        _expandedTitle = title;
+      });
+
+      // Lazy load data if needed
       if (title == 'Profile' || title == 'Bank') {
         ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
       }
-      // Add other data fetching logic for other sections if needed in the future
+    } else {
+      // Prevent collapsing if it's the currently expanded one
+      if (_expandedTitle == title) {
+        setState(() {
+          _expandedTitle = null;
+        });
+      }
     }
   }
 
@@ -1613,17 +1651,29 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       data: Theme.of(context)
                           .copyWith(dividerColor: Colors.transparent),
                       child: ExpansionTile(
-                        // The first item ("Profile") is expanded by default
-                        initiallyExpanded: index == 0,
+                        iconColor: _expandedTitle == title
+                            ? theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight
+                            : theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                        key: ValueKey('${title}_${_expandedTitle == title}'),
+                        initiallyExpanded: _expandedTitle == title,
                         onExpansionChanged: (isExpanding) =>
                             _onExpansionChanged(isExpanding, title),
                         tilePadding: const EdgeInsets.symmetric(horizontal: 0),
                         title: TextWidget.subText(
                           text: title,
                           theme: false,
-                          color: !theme.isDarkMode
-                              ? colors.textPrimaryLight
-                              : colors.textPrimaryDark,
+                          color: _expandedTitle == title
+                              ? theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight
+                              : theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                          fw: _expandedTitle == title ? 0 : 3,
                         ),
                         children: [
                           // Dynamically build the content based on the title
@@ -2424,7 +2474,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               ElevatedButton(
                 onPressed: () async {
                   await Future.delayed(const Duration(milliseconds: 150));
-          
+
                   profileDetails.openInWebURL(context, "formdownload");
                 },
                 style: ElevatedButton.styleFrom(
@@ -2489,24 +2539,24 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           ),
           const SizedBox(height: 10),
           ElevatedButton(
-             onPressed: () async {
+            onPressed: () async {
               await Future.delayed(const Duration(milliseconds: 150));
-          
-               profileDetails.openInWebURL(context, "closure");
-             },
-             style: ElevatedButton.styleFrom(
-                 elevation: 0,
-                 backgroundColor: theme.isDarkMode
-                     ? colors.primaryDark
-                     : colors.primaryLight,
-                 shape: RoundedRectangleBorder(
-                     borderRadius: BorderRadius.circular(4))),
-             child:  TextWidget.subText(
-                     text: "Close Account",
-                     theme: false,
-                     color: colors.colorWhite,
-                     fw: 2),
-           )],
+
+              profileDetails.openInWebURL(context, "closure");
+            },
+            style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor:
+                    theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4))),
+            child: TextWidget.subText(
+                text: "Close Account",
+                theme: false,
+                color: colors.colorWhite,
+                fw: 2),
+          )
+        ],
       ),
     );
   }

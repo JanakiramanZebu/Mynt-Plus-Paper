@@ -725,7 +725,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                                   .primaryDark
                                                               : colors
                                                                   .primaryLight,
-                                                          fw: 1),
+                                                          fw: 0),
                                                 ),
                                               ),
                                             )),
@@ -784,7 +784,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                                     .primaryDark
                                                                 : colors
                                                                     .primaryLight,
-                                                            fw: 1),
+                                                            fw: 0),
                                                   ),
                                                 ),
                                               )))
@@ -828,11 +828,11 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 TextWidget.subText(
-                                                    text: "Pledge/Unpledge",
+                                                    text: "Pledge-Unpledge",
                                                     color: colors
                                                         .btnOutlinedBorder,
                                                     theme: false,
-                                                    fw: 0),
+                                                    fw: 2),
                                               ],
                                             ),
                                           ),
@@ -1331,19 +1331,19 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
-                  fw: 0),
+                  fw: 3),
               TextWidget.subText(
                   text: value,
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 0),
+                  fw: 3),
             ],
           ),
           const SizedBox(height: 8),
           Divider(
-            thickness: 1,
+            thickness: 0,
             color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           )
         ],

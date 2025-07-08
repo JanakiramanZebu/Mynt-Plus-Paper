@@ -318,7 +318,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                             ? colors.primaryDark
                                                             : colors
                                                                 .primaryLight,
-                                                        fw: 2),
+                                                        fw: 0),
                                                   ),
                                                 ),
                                               ),
@@ -330,11 +330,11 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                               height: 40,
                                               decoration: BoxDecoration(
                                                 border: Border.all(
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorGrey
-                                                      : const Color(0xff0037B7),
+                                                  color:
+                                                      colors.btnOutlinedBorder,
+                                                  width: 1,
                                                 ),
-                                                color: const Color(0xffF1F3F8),
+                                                color: colors.btnBg,
                                                 borderRadius:
                                                     BorderRadius.circular(5),
                                               ),
@@ -345,10 +345,13 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                 child: InkWell(
                                                   customBorder:
                                                       const BeveledRectangleBorder(),
-                                                  splashColor: Colors.black
-                                                      .withOpacity(0.15),
-                                                  highlightColor: Colors.black
-                                                      .withOpacity(0.08),
+                                                  splashColor: theme.isDarkMode
+                                                      ? colors.splashColorDark
+                                                      : colors.splashColorLight,
+                                                  highlightColor: theme
+                                                          .isDarkMode
+                                                      ? colors.highlightDark
+                                                      : colors.highlightLight,
                                                   onTap: () async {
                                                     ref
                                                             .read(orderProvider)
@@ -548,7 +551,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                     .primaryDark
                                                                 : colors
                                                                     .primaryLight,
-                                                            fw: 2),
+                                                            fw: 0),
                                                   ),
                                                 ),
                                               ),
