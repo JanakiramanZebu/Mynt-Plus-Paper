@@ -101,6 +101,7 @@ class Routes {
   static const String setAlertScreen = 'setAlertScreen';
 
   static const String placeOrderScreen = 'PlaceOrderScreen';
+  static const String orderConfirmation = 'OrderConfirmation';
   // static const String gttOrderScreen = 'GTTOrderScreen';
   static const String modifyOrder = 'ModifyOrder';
   static const String modifyGtt = 'modifyGtt';

@@ -4245,6 +4245,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreenA>
               discQtyCtrl: discQtyCtrl,
               triggerPriceCtrl: triggerPriceCtrl,
               mktProtCtrl: mktProtCtrl,
+              isBracketOrderEnabled: _isBracketOrderEnabled,
             ),
           );
         }

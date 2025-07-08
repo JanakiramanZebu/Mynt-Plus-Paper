@@ -7,6 +7,7 @@ import 'package:mynt_plus/screens/mutual_fund/cagr_calculator_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_hold_singlepage.dart';
 import 'package:mynt_plus/screens/mutual_fund/mf_sip_details_screen.dart';
 import 'package:mynt_plus/screens/mutual_fund/order_single_page.dart';
+import 'package:mynt_plus/screens/order_screen/order_confirmation_screen.dart';
 import 'package:mynt_plus/screens/profile_screen/app_webview/ipo_webview.dart';
 import '../main.dart'; // Import for FirebaseHelper
 import '../screens/authentication/login/login_banner_screen.dart';
@@ -281,6 +282,14 @@ class AppRoutes {
             orderArg: args['orderArg'],
             scripInfo: args['scripInfo'],
             isBasket: args["isBskt"],
+          ),
+          beginOffset: const Offset(0.0, 1.0),
+        );
+
+      case Routes.orderConfirmation:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => OrderConfirmationScreen(
+            orderData: args['orderData'],
           ),
           beginOffset: const Offset(0.0, 1.0),
         );

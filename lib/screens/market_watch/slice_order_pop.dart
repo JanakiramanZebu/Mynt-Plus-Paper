@@ -31,6 +31,7 @@ class SliceOrderSheet extends StatefulWidget {
   final TextEditingController discQtyCtrl;
   final TextEditingController triggerPriceCtrl;
   final TextEditingController mktProtCtrl;
+  final bool isBracketOrderEnabled;
 
   const SliceOrderSheet({
     super.key,
@@ -49,6 +50,7 @@ class SliceOrderSheet extends StatefulWidget {
     required this.discQtyCtrl,
     required this.triggerPriceCtrl,
     required this.mktProtCtrl,
+    required this.isBracketOrderEnabled,
   });
 
   @override
@@ -137,7 +139,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
                       ),
                     ),
                     if (widget.reminder != 0) _buildReminderSection(theme),
-                    _buildActionButton(theme, orders, orderInput, indexpro,portfoliopro),
+                    _buildActionButton(theme, orders, orderInput,widget.isBracketOrderEnabled, indexpro,portfoliopro),
                     const SizedBox(height: 10),
                   ],
                 ),
@@ -217,11 +219,12 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
   }
 
   Widget _buildActionButton(
-    theme,
-    orders,
-    orderInput,
-    indexpro,
-    portfoliopro,
+    ThemesProvider theme,
+    OrderProvider orders,
+    OrderInputProvider orderInput,
+   bool isBracketOrderEnabled,
+    IndexListProvider indexpro,
+    PortfolioProvider portfoliopro,
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -232,14 +235,14 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
             orders.setOrderloader(true);
             final iterations = widget.quantity >= 20 ? 20 : widget.quantity;
             for (var i = 0; i < iterations; i++) {
-              final placeOrderInput = _buildOrderInput(orderInput);
+              final placeOrderInput = _buildOrderInput(orderInput,isBracketOrderEnabled);
               orders.slicePlaceOrder(context, placeOrderInput);
               // if (orders.placeOrderModel!.emsg ==
               //     "Session Expired :  Invalid Session Key") break;
             }
 
             if (widget.reminder != 0) {
-              final reminderOrder = _buildOrderInput(orderInput,
+              final reminderOrder = _buildOrderInput(orderInput,isBracketOrderEnabled,
                   qtyOverride: widget.reminder.toString());
               orders.slicePlaceOrder(context, reminderOrder);
             }
@@ -256,8 +259,8 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 10),
-          backgroundColor: widget.isBuy ? colors.ltpgreen : colors.darkred,
-          shape: const StadiumBorder(),
+          backgroundColor: widget.isBuy ? colors.primary : colors.tertiary,
+          // shape: const StadiumBorder(),
         ),
         child: orders.orderloader
             ? const SizedBox(
@@ -267,7 +270,7 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
                     strokeWidth: 2, color: Color(0xffffffff)),
               )
             : TextWidget.subText(
-                text: widget.isBuy ? 'Buy Now' : "Sell Now",
+                text: widget.isBuy ? 'Buy' : "Sell",
                 color: const Color(0xffffffff),
                 theme: theme.isDarkMode,
                 fw: 1,
@@ -276,30 +279,31 @@ class _SliceOrderSheetState extends State<SliceOrderSheet> {
     );
   }
 
-  PlaceOrderInput _buildOrderInput(orderInput, {String? qtyOverride}) {
+
+
+  PlaceOrderInput _buildOrderInput(orderInput,bool isBracketOrderEnabled, {String? qtyOverride}) {
     return PlaceOrderInput(
       amo: widget.isAmo ? "Yes" : "",
-      blprc: widget.orderType == "Cover" || widget.orderType == "Bracket"
-          ? widget.stopLossCtrl.text
-          : '',
-      bpprc: widget.orderType == "Bracket" ? widget.targetCtrl.text : '',
+      blprc: widget.orderType == "CO - BO" ? widget.stopLossCtrl.text : '',
+      bpprc: widget.orderType == "CO - BO"  && isBracketOrderEnabled ? widget.targetCtrl.text : '',
       dscqty: widget.discQtyCtrl.text,
       exch: widget.scripInfo.exch!,
       prc: widget.ordPrice,
       prctype: orderInput.prcType,
       prd: orderInput.orderType,
-      qty: qtyOverride ?? "${widget.frezQty}",
+      qty:   qtyOverride ?? "${widget.frezQty}",
       ret: widget.validityType,
       trailprc: '',
       trantype: widget.isBuy ? 'B' : 'S',
       trgprc: widget.priceType == "SL Limit" || widget.priceType == "SL MKT"
-          ? widget.triggerPriceCtrl.text
-          : "",
+          ? widget.triggerPriceCtrl.text : "",
       tsym: widget.scripInfo.tsym!,
       mktProt: widget.priceType == "Market" || widget.priceType == "SL MKT"
-          ? widget.mktProtCtrl.text
-          : '',
+          ? widget.mktProtCtrl.text : '',
       channel: '',
     );
+    // widget.scripInfo.exch == 'MCX'
+    //               ? (int.parse(qtyOverride??"${widget.frezQty}") * int.parse("${widget.scripInfo.ls ?? 0}")).toString()
+    //               :  
   }
 }

@@ -297,7 +297,7 @@ class OrderProvider extends DefaultChangeNotifier {
   changeTabIndex(int index, BuildContext context) {
     // Unfocus any active text fields when switching tabs
     FocusScope.of(context).unfocus();
-    
+
     _selectedTab = index;
     tabSize();
     showOrderSearch(false);
@@ -471,9 +471,7 @@ class OrderProvider extends DefaultChangeNotifier {
   tabSize() {
     _orderTabName = [
       // Tab(text: _allOrder!.isNotEmpty ? "All (${_allOrder!.length})" : "All"),
-      Tab(
-          text:
-              _openOrder!.isNotEmpty ? "Open ${_openOrder!.length}" : "Open"),
+      Tab(text: _openOrder!.isNotEmpty ? "Open ${_openOrder!.length}" : "Open"),
       Tab(
           text: _executedOrder!.isNotEmpty
               ? "Executed ${_executedOrder!.length}"
@@ -489,9 +487,7 @@ class OrderProvider extends DefaultChangeNotifier {
             : "GTT",
       ),
       Tab(
-        text: _bsktList.isNotEmpty
-            ? "Basket ${_bsktList.length}"
-            : "Basket",
+        text: _bsktList.isNotEmpty ? "Basket ${_bsktList.length}" : "Basket",
       ),
       // Tab(
       //   text: (_tradeBook != null && _tradeBook!.isNotEmpty)
@@ -742,9 +738,12 @@ class OrderProvider extends DefaultChangeNotifier {
         } else {
           Navigator.pop(context);
         }
-        ref.read(indexListProvider).bottomMenu(2, context);
-        // Switch to Orders tab in Portfolio screen
-        ref.read(portfolioProvider).changeTabIndex(2);
+
+        // Navigate to order confirmation screen
+        Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
+          'orderData': _placeOrderModel,
+        });
+
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
@@ -1337,7 +1336,7 @@ class OrderProvider extends DefaultChangeNotifier {
     // Determine which lists to sort (both main lists and search results)
     List<OrderBookModel>? mainListToSort;
     List<OrderBookModel>? searchListToSort;
-    
+
     if (_selectedTab == 0) {
       mainListToSort = _openOrder;
       searchListToSort = _orderSearchItem;
@@ -1351,26 +1350,27 @@ class OrderProvider extends DefaultChangeNotifier {
     } else if (_selectedTab == 3) {
       // GTT orders - handle separately since it's a different model type
       _sortGttOrders(sorting);
-      return; 
+      return;
     } else {
       mainListToSort = _allOrder;
       searchListToSort = _orderSearchItem;
     }
-    
+
     // Sort main list if it exists
     if (mainListToSort != null && mainListToSort.isNotEmpty) {
       _applySortingToOrderList(mainListToSort, sorting);
     }
-    
+
     // Sort search results if they exist
     if (searchListToSort != null && searchListToSort.isNotEmpty) {
       _applySortingToOrderList(searchListToSort, sorting);
     }
-    
+
     notifyListeners();
   }
 
-  void _applySortingToOrderList(List<OrderBookModel> listToSort, String sorting) {
+  void _applySortingToOrderList(
+      List<OrderBookModel> listToSort, String sorting) {
     // Sorting logic based on the 'sorting' parameter
     switch (sorting) {
       case "ASC":
@@ -1442,7 +1442,7 @@ class OrderProvider extends DefaultChangeNotifier {
     if (_tradeBook != null && _tradeBook!.isNotEmpty) {
       _applySortingToTradeBookList(_tradeBook!, sorting);
     }
-    
+
     // Sort trade book search results
     if (_tradeBooksearch != null && _tradeBooksearch!.isNotEmpty) {
       _applySortingToTradeBookList(_tradeBooksearch!, sorting);
@@ -1494,15 +1494,19 @@ class OrderProvider extends DefaultChangeNotifier {
         break;
       case "TIMEASC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
+              DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
+              DateTime(1970);
           return aDate.compareTo(bDate);
         });
         break;
       case "TIMEDSC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
+              DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
+              DateTime(1970);
           return bDate.compareTo(aDate);
         });
         break;
@@ -1517,7 +1521,7 @@ class OrderProvider extends DefaultChangeNotifier {
     if (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty) {
       _applySortingToGttOrdersList(_gttOrderBookModel!, sorting);
     }
-    
+
     // Sort GTT orders search results
     if (_gttOrderBookSearch != null && _gttOrderBookSearch!.isNotEmpty) {
       _applySortingToGttOrdersList(_gttOrderBookSearch!, sorting);
@@ -1569,15 +1573,19 @@ class OrderProvider extends DefaultChangeNotifier {
         break;
       case "TIMEASC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
+              DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
+              DateTime(1970);
           return aDate.compareTo(bDate);
         });
         break;
       case "TIMEDSC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
+              DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
+              DateTime(1970);
           return bDate.compareTo(aDate);
         });
         break;

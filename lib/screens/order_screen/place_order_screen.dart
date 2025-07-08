@@ -3877,6 +3877,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                                                                             ),
                                                                           ),
                                                                         ),
+                                                                          const SizedBox(
+                                                                            width:
+                                                                                4),
+                                                                        Text(" ${orderProvide.orderMarginModel!.cash}"),
                                                                         const SizedBox(
                                                                             width:
                                                                                 4),
@@ -5750,6 +5754,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
               discQtyCtrl: discQtyCtrl,
               triggerPriceCtrl: triggerPriceCtrl,
               mktProtCtrl: mktProtCtrl,
+              isBracketOrderEnabled: _isBracketOrderEnabled,
             ),
           );
         }
