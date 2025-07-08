@@ -36,7 +36,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
 
       // Check if order data is null
       final hasData = mfdata.mforderdet?.data != null;
-      
+
       return Scaffold(
         appBar: AppBar(
           elevation: 0,
@@ -57,60 +57,58 @@ class _mforderdetscreen extends State<mforderdetscreen>
           backgroundColor:
               theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
           shadowColor: const Color(0xffECEFF3),
-          title: 
-          Text("Order details",
+          title: Text("Order details",
               style: textStyles.appBarTitleTxt.copyWith(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
                 color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
               )),
         ),
-        body: hasData 
+        body: hasData
             ? Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, 
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildOrderHeader(theme, mfdata),
-                    const SizedBox(height: 2),
-                    Divider(
-                      color: theme.isDarkMode
-                          ? colors.darkColorDivider
-                          : colors.colorDivider,
-                      thickness: 1.0,
-                    ),
-                    const SizedBox(height: 8),
-                   TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: "Order details",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark
-                                                             :  colors.textPrimaryLight 
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
                     const SizedBox(height: 16),
-                    _buildDetailsSection(theme, mfdata),
-                    const SizedBox(height: 20),
                     if (mfdata.mforderdet?.data?.orderstatus != "VALID") ...[
-                      Text(
-                        _getStatusText(mfdata.mforderdet?.data?.orderstatus),
-                        style: textStyle(
-                            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                            16,
-                            FontWeight.w500),
-                      ),
+                      TextWidget.titleText(
+                          align: TextAlign.right,
+                          text: _getStatusText(
+                              mfdata.mforderdet?.data?.orderstatus),
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          fw: 3),
+
                       const SizedBox(height: 8),
-                      Text(
-                        "${mfdata.mforderdet?.data?.orderremarks ?? "No remarks available"}",
-                        style: textStyle(
-                            theme.isDarkMode ? colors.colorWhite : const Color(0xFFF33E4B),
-                            13,
-                            FontWeight.w500),
-                      ),
+                      TextWidget.subText(
+                          align: TextAlign.right,
+                          text: "${mfdata.mforderdet?.data?.orderremarks ?? "No remarks available"}",
+                          color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : const Color(0xFFF33E4B),
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          fw: 3),
+                       
                     ],
+                    
+                    const SizedBox(height: 20),
+                    TextWidget.subText(
+                        align: TextAlign.right,
+                        text: "Order details",
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 3),
+                    const SizedBox(height: 24),
+                    _buildDetailsSection(theme, mfdata),
                     const SizedBox(height: 20),
                     _buildCancelButton(theme, mfdata, context),
                   ],
@@ -129,81 +127,74 @@ class _mforderdetscreen extends State<mforderdetscreen>
   }
 
   Widget _buildOrderHeader(ThemesProvider theme, dynamic mfdata) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-      children: [
-        const SizedBox(width: 0),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.6,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TextWidget.subText(
-                      align: TextAlign.start,
-                      text: mfdata.mforderdet?.data?.schemename ?? "Unknown Scheme",
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      textOverflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                      theme: theme.isDarkMode,
-                      fw: 0),
-                                 
-                              ],
-                            ),
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      const SizedBox(width: 0),
+      Expanded(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.6,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextWidget.subText(
+                                  align: TextAlign.start,
+                                  text: mfdata.mforderdet?.data?.schemename ??
+                                      "Unknown Scheme",
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  theme: theme.isDarkMode,
+                                  fw: 0),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-              ],
-            ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
           ),
         ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            SvgPicture.asset(
-              _getStatusIcon(mfdata.mforderdet?.data?.orderstatus),
-              width: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 4.0),
-              child: 
-              TextWidget.paraText(
-                                                    align: TextAlign.right,
-                                                    text:_getStatusLabel(mfdata.mforderdet?.data?.orderstatus),
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark
-                                                        :  colors.textPrimaryLight 
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-               
-            )
-          ],
-        ),
-      ]
-    );
+      ),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          SvgPicture.asset(
+            _getStatusIcon(mfdata.mforderdet?.data?.orderstatus),
+            width: 20,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0),
+            child: TextWidget.paraText(
+                align: TextAlign.right,
+                text: _getStatusLabel(mfdata.mforderdet?.data?.orderstatus),
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+                fw: 3),
+          )
+        ],
+      ),
+    ]);
   }
 
   String _getStatusIcon(String? status) {
@@ -223,48 +214,95 @@ class _mforderdetscreen extends State<mforderdetscreen>
     return Column(
       children: [
         rowOfInfoData(
-          "Transaction Type", 
-          mfdata.mforderdet?.data?.buysell == "P" ? "Purchase" : "Redemption", 
-          "Order Type",
-          mfdata.mforderdet?.data?.ordertype == "NRM" ? "Lumpsum" : "SIP", 
-          theme
+            "Transaction Type",
+            mfdata.mforderdet?.data?.buysell == "P" ? "Purchase" : "Redemption",
+            theme),
+        const SizedBox(height: 10),
+        Divider(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          thickness: 1.0,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         rowOfInfoData(
-          "Price", 
-          "${mfdata.mforderdet?.data?.amount ?? "0.00"}", 
-          "Units",
-          "${mfdata.mforderdet?.data?.units ?? "0.00"}", 
-          theme
+            "Order Type",
+            mfdata.mforderdet?.data?.ordertype == "NRM" ? "Lumpsum" : "SIP",
+            theme),
+        const SizedBox(height: 10),
+        Divider(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          thickness: 1.0,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         rowOfInfoData(
-          "Date", 
-          "${mfdata.mforderdet?.data?.date ?? "N/A"}", 
-          "Date & Time",
-          "${mfdata.mforderdet?.data?.dateTime ?? "N/A"}", 
-          theme
+            "Price", "${mfdata.mforderdet?.data?.amount ?? "0.00"}", theme),
+        const SizedBox(height: 10),
+        Divider(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          thickness: 1.0,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         rowOfInfoData(
-          "Order No", 
-          "${mfdata.mforderdet?.data?.ordernumber ?? "N/A"}", 
-          "Folio No",
-          "${mfdata.mforderdet?.data?.foliono?.isEmpty ?? true ? "---" : mfdata.mforderdet?.data?.foliono}",
-          theme
+            "Units", "${mfdata.mforderdet?.data?.units ?? "0.00"}", theme),
+        const SizedBox(height: 10),
+        Divider(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          thickness: 1.0,
+        ),
+        const SizedBox(height: 10),
+        rowOfInfoData(
+            "Date", "${mfdata.mforderdet?.data?.date ?? "N/A"}", theme),
+        const SizedBox(height: 10),
+        Divider(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          thickness: 1.0,
+        ),
+        const SizedBox(height: 10),
+        rowOfInfoData("Date & Time",
+            "${mfdata.mforderdet?.data?.dateTime ?? "N/A"}", theme),
+        const SizedBox(height: 10),
+        Divider(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          thickness: 1.0,
+        ),
+        const SizedBox(height: 10),
+        rowOfInfoData("Order No",
+            "${mfdata.mforderdet?.data?.ordernumber ?? "N/A"}", theme),
+        const SizedBox(height: 10),
+        Divider(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          thickness: 1.0,
+        ),
+        const SizedBox(height: 10),
+        rowOfInfoData(
+            "Folio No",
+            "${mfdata.mforderdet?.data?.foliono?.isEmpty ?? true ? "---" : mfdata.mforderdet?.data?.foliono}",
+            theme),
+        const SizedBox(height: 10),
+        Divider(
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          thickness: 1.0,
         ),
       ],
     );
   }
 
-  Widget _buildCancelButton(ThemesProvider theme, dynamic mfdata, BuildContext context) {
+  Widget _buildCancelButton(
+      ThemesProvider theme, dynamic mfdata, BuildContext context) {
     // Check if we should show the cancel button
-    final shouldShowCancel = mfdata.mforderdet?.data?.ordertype == "NRM" && 
-                             mfdata.mforderdet?.data?.buysell == "R" &&
-                             mfdata.mforderdet?.data?.orderstatus == "PENDING";
-    
+    final shouldShowCancel = mfdata.mforderdet?.data?.ordertype == "NRM" &&
+        mfdata.mforderdet?.data?.buysell == "R" &&
+        mfdata.mforderdet?.data?.orderstatus == "PENDING";
+
     if (!shouldShowCancel) return const SizedBox();
-    
+
     return SizedBox(
       width: double.infinity, // Makes the button full width
       child: ElevatedButton(
@@ -274,19 +312,21 @@ class _mforderdetscreen extends State<mforderdetscreen>
               context: context,
               builder: (BuildContext context) {
                 return MfCancelAlert(
-                  mfcancel: mfdata.mforderdet!.data!,
-                  message: "order"
-                );
+                    mfcancel: mfdata.mforderdet!.data!, message: "order");
               },
             );
           }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white, // White background
-          foregroundColor: const Color.fromARGB(255, 0, 0, 0), // Text and icon color
-          side: const BorderSide(color: Color.fromARGB(255, 0, 0, 0), width: 1.5), // Outlined border
+          foregroundColor:
+              const Color.fromARGB(255, 0, 0, 0), // Text and icon color
+          side: const BorderSide(
+              color: Color.fromARGB(255, 0, 0, 0),
+              width: 1.5), // Outlined border
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20), // Optional: rounded corners
+            borderRadius:
+                BorderRadius.circular(20), // Optional: rounded corners
           ),
         ),
         child: const Text(
@@ -301,62 +341,32 @@ class _mforderdetscreen extends State<mforderdetscreen>
     );
   }
 
-  Row rowOfInfoData(String title1, String value1, String title2, String value2,
-      ThemesProvider theme) {
+  Row rowOfInfoData(String title1, String value1, ThemesProvider theme) {
     return Row(children: [
       Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, 
-          children: [
-            Text(
-              title1,
-              style: textStyle(const Color(0xff666666), 12, FontWeight.w500)
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value1,
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w500
-              )
-            ),
-            const SizedBox(height: 2),
-            Divider(
-              color: theme.isDarkMode
-                  ? colors.darkColorDivider
-                  : colors.colorDivider
-            )
-          ]
-        )
-      ),
-      const SizedBox(width: 34),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, 
-          children: [
-            Text(
-              title2,
-              style: textStyle(const Color(0xff666666), 12, FontWeight.w500)
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value2,
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w500
-              ),
-            ),
-            const SizedBox(height: 2),
-            Divider(
-              color: theme.isDarkMode
-                  ? colors.darkColorDivider
-                  : colors.colorDivider
-            )
-          ]
-        )
-      )
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+            TextWidget.subText(
+                align: TextAlign.right,
+                text: title1,
+                color: theme.isDarkMode
+                    ? colors.textPrimary
+                    : colors.textPrimaryLight,
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+                fw: 3),
+            TextWidget.subText(
+                align: TextAlign.right,
+                text: value1,
+                color: theme.isDarkMode
+                    ? colors.textPrimary
+                    : colors.textPrimaryLight,
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+                fw: 3),
+          ])),
     ]);
   }
 }
