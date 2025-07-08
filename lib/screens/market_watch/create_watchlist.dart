@@ -220,9 +220,8 @@ class _CreatewatchListState extends ConsumerState<CreatewatchList> {
                           )
                         : TextWidget.subText(
                             text: "Create",
-                            color: !theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
+                            color: colors.colorWhite
+                               ,
                             theme: theme.isDarkMode,
                             fw: 2,
                            
