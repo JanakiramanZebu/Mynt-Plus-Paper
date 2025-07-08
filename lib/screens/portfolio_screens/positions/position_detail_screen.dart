@@ -459,7 +459,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                                   .primaryDark
                                                               : colors
                                                                   .primaryLight,
-                                                          fw: 1,
+                                                          fw: 2,
                                                         ),
                                                       ),
                                                     ),
@@ -574,7 +574,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                                   .primaryDark
                                                               : colors
                                                                   .primaryLight,
-                                                          fw: 1,
+                                                          fw: 2,
                                                         ),
                                                       ),
                                                     ),
@@ -648,7 +648,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                       TextWidget.subText(
                                                         text:
                                                             "Convert Position",
-                                                        fw: 0,
+                                                        fw: 2,
                                                         color:
                                                             colors.primaryLight,
                                                         theme: false,
@@ -728,7 +728,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                 fw: 3,
                                               )
                                             else
-                                              TextWidget.headText(
+                                              TextWidget.titleText(
                                                 text:
                                                     "${widget.positionList.mTm}",
                                                 color: widget.positionList.mTm!
@@ -738,14 +738,14 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                             "0.00"
                                                         ? colors.ltpgrey
                                                         : colors.ltpgreen,
-                                                fw: 0,
+                                                fw: 3,
                                                 theme: false,
                                               ),
                                           ],
                                         ),
                                         const SizedBox(height: 8),
                                         Divider(
-                                            thickness: 1,
+                                            thickness: 0,
                                             color: theme.isDarkMode
                                                 ? colors.dividerDark
                                                 : colors.dividerLight),
@@ -815,20 +815,20 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
               color: theme.isDarkMode
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
-              fw: 0),
+              fw: 3),
           TextWidget.subText(
               text: value1,
               theme: false,
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
-              fw: 0),
+              fw: 3),
         ],
       ),
       const SizedBox(height: 8),
       Divider(
           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          thickness: 1)
+          thickness: 0)
     ]);
   }
 }

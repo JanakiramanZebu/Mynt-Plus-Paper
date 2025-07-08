@@ -10,6 +10,7 @@ import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/loader_ui.dart';
@@ -75,7 +76,9 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                   child: TabBar(
                     labelPadding: const EdgeInsets.only(right: 0, bottom: 0),
                     tabAlignment: TabAlignment.start,
-                    indicatorColor: const Color.fromARGB(255, 0, 0, 0),
+                    indicatorColor: theme.isDarkMode
+                            ? colors.primaryDark
+                            : colors.primaryLight, 
                     controller: _tabController,
                     isScrollable: true,
                     tabs: List.generate(
@@ -163,15 +166,19 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                         padding: const EdgeInsets.only(right: 1.0),
                         child: SizedBox(
                           width: MediaQuery.of(context).size.width * 0.4,
-                          child: Text(
-                            orderData.schemename ?? "Unknown Fund",
-                            maxLines: 2,
-                            style: textStyles.scripNameTxtStyle.copyWith(
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                            ),
-                          ),
+                          child: 
+                          TextWidget.subText(
+                                                    align: TextAlign.start,
+                                                    text: orderData.schemename ?? "Unknown Fund",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                           
                         ),
                       ),
                     ),
@@ -184,16 +191,18 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 4.0),
-                          child: Text(
-                            _getStatusText(orderData.orderstatus),
-                            style: textStyle(
-                              theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
-                              14,
-                              FontWeight.w600
-                            ),
-                          ),
+                         child:   TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text: _getStatusText(orderData.orderstatus),
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                          
                         ),
                       ],
                     ),
@@ -225,9 +234,18 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                       ),
                     ),
                     const SizedBox(width: 8),
-                    CustomExchBadge(
-                      exch: "${orderData.ordertype == 'NRM' ? 'One-Time' : 'SIP'}",
-                    ),
+                    TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text: "${orderData.ordertype == 'NRM' ? 'One-Time' : 'SIP'}",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark:
+                                                          colors.textSecondaryLight 
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                     
                     const SizedBox(width: 8),
                     Text(
                       orderData.dateTime ?? "-",
@@ -240,14 +258,18 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      _formatAmount(orderData.amount),
-                      style: textStyle(
-                        colors.colorGrey,
-                        12,
-                        FontWeight.w600
-                      ),
-                    ),
+                    TextWidget.paraText(
+                                                    align: TextAlign.right,
+                                                    text:  _formatAmount(orderData.amount),
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark:
+                                                         colors.textSecondaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                    
                   ],
                 ),
               ],
@@ -306,16 +328,25 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                 : const Color.fromARGB(255, 255, 255, 255),
         shape: const StadiumBorder(),
       ),
-      child: Text(
-        tablistitems[tab]['title'].toString(),
-        style: textStyle(
-          theme.isDarkMode
-              ? Color(tab == activeTab ? 0xFFFFFFFF : 0xff5E6B7D)
-              : Color(tab == activeTab ? 0xff000000 : 0xff000000),
-          15,
-          FontWeight.w600,
-        ),
-      ),
+      child: 
+      TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text:  tablistitems[tab]['title'].toString(),
+       
+                                                    color:theme.isDarkMode
+              ? tab == activeTab  
+              ? colors.primaryDark : colors.textSecondaryDark
+              : tab == activeTab
+                ? colors.primaryLight
+                : colors.textSecondaryLight,
+              
+                                                             
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: tab == activeTab ? 1 : 3),
+      
+      
     );
   }
 }

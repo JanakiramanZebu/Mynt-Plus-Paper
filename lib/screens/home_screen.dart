@@ -711,27 +711,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             width: 2))
                     : null),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                useHeight
-                    ? SvgPicture.asset(
-                        iconAsset,
-                        height: height,
-                        color: _getBottomNavColor(theme, isSelected),
-                      )
-                    : SvgPicture.asset(
-                        iconAsset,
-                        color: _getBottomNavColor(theme, isSelected),
-                      ),
-                const SizedBox(height: 8),
+                Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    useHeight
+                        ? SizedBox(
+                            child: SvgPicture.asset(
+                              iconAsset,
+                              height: height,
+                              color: _getBottomNavColor(theme, isSelected),
+                            ),
+                          )
+                        : SvgPicture.asset(
+                            iconAsset,
+                            width: index == 3 ? 22 : null,
+                            color: _getBottomNavColor(theme, isSelected),
+                          ),
+                    SizedBox(height: index == 3 ? 5 : 8),
+                  ],
+                ),
                 Text(
                   label,
                   style: TextWidget.textStyle(
-                      fontSize: 12,
-                      color: _getBottomNavColor(theme, isSelected),
-                      theme: theme.isDarkMode,
-                      fw: isSelected ? 1 : 00),
+                    fontSize: 12,
+                    color: _getBottomNavColor(theme, isSelected),
+                    theme: theme.isDarkMode,
+                    // fw: isSelected ? 1 : 00
+                  ),
                 ),
               ],
             ),
@@ -954,11 +961,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       case 3:
         // Navigate to mutual fund screen
         return const MfmainScreen();
-        // WidgetsBinding.instance.addPostFrameCallback((_) {
-        //   ref.read(indexListProvider).bottomMenu(1, context);
-        //   Navigator.pushNamed(context, Routes.mfmainscreen);
-        // });
-        // return const SizedBox.shrink();
+      // WidgetsBinding.instance.addPostFrameCallback((_) {
+      //   ref.read(indexListProvider).bottomMenu(1, context);
+      //   Navigator.pushNamed(context, Routes.mfmainscreen);
+      // });
+      // return const SizedBox.shrink();
       case 4:
         return const UserAccountScreen();
       default:
@@ -1139,7 +1146,7 @@ class _PortfolioActions extends ConsumerWidget {
       // return _PositionGroupActions();
     } else if (selectedTab == 2) {
       // Orders tab
-      return _OrdersActions();
+      // return _OrdersActions();
     } else if (selectedTab == 3) {
       // Funds tab
       return _FundsWebActions();
@@ -1150,69 +1157,69 @@ class _PortfolioActions extends ConsumerWidget {
 }
 
 // Orders actions
-class _OrdersActions extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Use select to listen only to the selectedTab from order provider
-    final selectedTab = ref.watch(
-        orderProvider.select((orderProvider) => orderProvider.selectedTab));
-    final theme = ref.watch(themeProvider); // Theme is needed here
+// class _OrdersActions extends ConsumerWidget {
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     // Use select to listen only to the selectedTab from order provider
+//     final selectedTab = ref.watch(
+//         orderProvider.select((orderProvider) => orderProvider.selectedTab));
+//     final theme = ref.watch(themeProvider); // Theme is needed here
 
-    if (selectedTab == 4) {
-      // Basket tab
-      return Row(children: [
-        Container(
-          decoration: BoxDecoration(
-            color: colors.btnBg,
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(color: colors.btnOutlinedBorder, width: 1),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            shape: const BeveledRectangleBorder(),
-            child: InkWell(
-                customBorder: const BeveledRectangleBorder(),
-                splashColor: theme.isDarkMode
-                    ? colors.splashColorDark
-                    : colors.splashColorLight,
-                highlightColor: theme.isDarkMode
-                    ? colors.highlightDark
-                    : colors.highlightLight,
-                onTap: () {
-                  Future.delayed(const Duration(milliseconds: 150), () {
-                    showModalBottomSheet(
-                        context: context,
-                        useSafeArea: true,
-                        isScrollControlled: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(16)),
-                        ),
-                        builder: (BuildContext context) {
-                          return const CreateBasket();
-                        });
-                  });
-                },
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                  child: TextWidget.subText(
-                      text: "Create Basket",
-                      theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight,
-                      fw: 2),
-                )),
-          ),
-        ),
-        const SizedBox(width: 16),
-      ]);
-    }
+//     if (selectedTab == 4) {
+//       // Basket tab
+//       return Row(children: [
+//         Container(
+//           decoration: BoxDecoration(
+//             color: colors.btnBg,
+//             borderRadius: BorderRadius.circular(5),
+//             border: Border.all(color: colors.btnOutlinedBorder, width: 1),
+//           ),
+//           child: Material(
+//             color: Colors.transparent,
+//             shape: const BeveledRectangleBorder(),
+//             child: InkWell(
+//                 customBorder: const BeveledRectangleBorder(),
+//                 splashColor: theme.isDarkMode
+//                     ? colors.splashColorDark
+//                     : colors.splashColorLight,
+//                 highlightColor: theme.isDarkMode
+//                     ? colors.highlightDark
+//                     : colors.highlightLight,
+//                 onTap: () {
+//                   Future.delayed(const Duration(milliseconds: 150), () {
+//                     showModalBottomSheet(
+//                         context: context,
+//                         useSafeArea: true,
+//                         isScrollControlled: true,
+//                         shape: const RoundedRectangleBorder(
+//                           borderRadius:
+//                               BorderRadius.vertical(top: Radius.circular(16)),
+//                         ),
+//                         builder: (BuildContext context) {
+//                           return const CreateBasket();
+//                         });
+//                   });
+//                 },
+//                 child: Padding(
+//                   padding:
+//                       const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+//                   child: TextWidget.subText(
+//                       text: "Create Basket",
+//                       theme: theme.isDarkMode,
+//                       color: theme.isDarkMode
+//                           ? colors.primaryDark
+//                           : colors.primaryLight,
+//                       fw: 2),
+//                 )),
+//           ),
+//         ),
+//         const SizedBox(width: 16),
+//       ]);
+//     }
 
-    return SizedBox.shrink();
-  }
-}
+//     return SizedBox.shrink();
+//   }
+// }
 
 // Position group actions
 class PositionGroupActions extends ConsumerWidget {

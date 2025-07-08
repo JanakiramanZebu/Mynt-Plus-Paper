@@ -23,7 +23,7 @@ class MutualFundNewScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20,top : 18),
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(
@@ -171,7 +171,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                     : colors.textPrimaryLight,
                 textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
-                fw: 0),
+                fw: 1),
           ),
           Padding(
             padding: const EdgeInsets.all(0.0),
@@ -202,18 +202,14 @@ class MutualFundNewScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 16, top: 14, bottom: 8),
                   child: TextWidget.titleText(
-                                                    align: TextAlign.right,
-                                                    text: "Categories",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                   
-                    
+                      align: TextAlign.right,
+                      text: "Categories",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 1),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
@@ -301,11 +297,11 @@ class MutualFundNewScreen extends ConsumerWidget {
                       : colors.textPrimaryLight,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
-                  fw: 0),
+                  fw: 1),
             ],
           ),
           const SizedBox(height: 8),
-          TextWidget.subText(
+          TextWidget.paraText(
               align: TextAlign.right,
               text: "Find the right mutual fund across these asset classes",
               color: theme.isDarkMode
@@ -325,8 +321,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                     double screenHeight = MediaQuery.of(context).size.height;
 
                     int crossAxisCount = screenWidth > 600 ? 3 : 2;
-                    double childAspectRatio =
-                        screenWidth / (screenHeight / 2.0);
+                    double childAspectRatio =1.2;
 
                     return Padding(
                       padding: const EdgeInsets.all(0),
@@ -364,6 +359,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                                     );
                                   },
                                   child: Container(
+                                    height: 150,
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 16, horizontal: 16),
                                     decoration: BoxDecoration(
@@ -374,9 +370,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                                     ),
                                     child: Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                          CrossAxisAlignment.start, 
                                       children: [
                                         SvgPicture.asset(
                                           bestMFList[index]['image'] ??
@@ -384,7 +378,10 @@ class MutualFundNewScreen extends ConsumerWidget {
                                           height: 50,
                                           width: 60,
                                         ),
-                                        TextWidget.titleText(
+                                        const SizedBox(
+                                          height: 12,
+                                        ),
+                                        TextWidget.subText(
                                             align: TextAlign.left,
                                             text: bestMFList[index]['title'] ??
                                                 '',
@@ -394,7 +391,10 @@ class MutualFundNewScreen extends ConsumerWidget {
                                             textOverflow: TextOverflow.ellipsis,
                                             theme: theme.isDarkMode,
                                             fw: 0),
-                                        TextWidget.subText(
+                                            const SizedBox(
+                                          height: 12,
+                                        ),
+                                        TextWidget.paraText(
                                             align: TextAlign.left,
                                             text:
                                                 "${bestMFList[index]['subtitle'] ?? ''}",
@@ -472,79 +472,76 @@ class MutualFundNewScreen extends ConsumerWidget {
               height: 40,
             ),
             const SizedBox(height: 8),
-            TextWidget.titleText(
+            TextWidget.subText(
+                align: TextAlign.right,
+                text: title,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+                fw: 0),
+            const SizedBox(height: 8),
+            TextWidget.paraText(
+                align: TextAlign.right,
+                text: description,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                textOverflow: TextOverflow.ellipsis,
+                theme: theme.isDarkMode,
+                fw: 3),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 35, // Match your chip height
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: chips.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final chipText = chips[index]?.toString() ?? "";
+
+                  return TextButton(
+                    onPressed: () async {
+                      mfData.fetchcatdatanew(title, chipText);
+                      mfData.changetitle(chipText);
+                      Navigator.pushNamed(
+                        context,
+                        Routes.mfCategoryList,
+                        arguments: title,
+                      );
+                      FocusScope.of(context).unfocus();
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 0),
+                      backgroundColor: !theme.isDarkMode
+                          ? const Color(0xffF1F3F8)
+                          : colors.colorbluegrey,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        side: BorderSide(
+                          color: colors.primaryLight,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: TextWidget.paraText(
                                                     align: TextAlign.right,
-                                                    text: title,
+                                                    text: chipText,
                                                     color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
+                                                        ?  colors.textPrimaryDark
+                                                             :  colors.textPrimaryLight
+                                                             ,  
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
                                                     fw: 0),
-            
-            const SizedBox(height: 8),
-            TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: description,
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textSecondaryDark:
-                                                         colors.textSecondaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-            
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 34,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: chips.length,
-                itemBuilder: (context, index) {
-                  final chipText = chips[index]?.toString() ?? "";
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: GestureDetector(
-                      onTap: () async {
-                        mfData.fetchcatdatanew(title, chipText);
-                        mfData.changetitle(chipText);
-                        Navigator.pushNamed(context, Routes.mfCategoryList,
-                            arguments: title);
-                      },
-                      child: Chip(
-                        label: Text(
-                          chipText,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: theme.isDarkMode
-                                ? Colors.white
-                                : const Color.fromARGB(255, 0, 0, 0),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        shape: const StadiumBorder(),
-                        backgroundColor: theme.isDarkMode
-                            ? const Color.fromARGB(255, 0, 0, 0)
-                            : Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 2.0, vertical: 2.0),
-                        side: BorderSide(
-                          color: theme.isDarkMode
-                              ? const Color(0xFF2A2A2A)
-                              : const Color(0xFF666666),
-                          width: 1.0,
-                        ),
-                      ),
-                    ),
+                                                     
                   );
                 },
               ),
-            ),
+            )
           ],
         ),
       ),
@@ -593,7 +590,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                           fw: 3),
                     ),
                     const SizedBox(height: 8),
-                    TextWidget.titleText(
+                    TextWidget.subText(
                         align: TextAlign.left,
                         text: "New Fund Offer (NFO)",
                         color: theme.isDarkMode
@@ -612,7 +609,7 @@ class MutualFundNewScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 10),
-            TextWidget.subText(
+            TextWidget.paraText(
                 align: TextAlign.left,
                 text:
                     "A new fund offer (NFO) is the first subscription for any new fund by an investment company.",
@@ -683,19 +680,15 @@ class MutualFundNewScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Center(
-              child: 
-              TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: "SIP Calculator",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textSecondaryDark:
-                                                         colors.textSecondaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                                                   
+              child: TextWidget.paraText(
+                  align: TextAlign.right,
+                  text: "SIP Calculator",
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 3),
             ),
           ],
         ),
@@ -735,19 +728,15 @@ class MutualFundNewScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Center(
-              child:        TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: "CAGR Calculator",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textSecondaryDark:
-                                                         colors.textSecondaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                                                    
-              
+              child: TextWidget.paraText(
+                  align: TextAlign.right,
+                  text: "CAGR Calculator",
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 3),
             ),
           ],
         ),

@@ -6,6 +6,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -63,7 +64,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      
+
                       // Returns column
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -160,7 +161,7 @@ class MfHoldNewScreen extends ConsumerWidget {
 
                     // Get formatted values with null safety
                     final val = item.current ?? '0.00';
-                    
+
                     return Container(
                       padding: const EdgeInsets.all(8),
                       child: InkWell(
@@ -168,7 +169,8 @@ class MfHoldNewScreen extends ConsumerWidget {
                           // Safely handle navigation
                           if (item.iSIN != null) {
                             mfData.fetchmfholdsingpage("${item.iSIN}");
-                            Navigator.pushNamed(context, Routes.mfholdsinlepage);
+                            Navigator.pushNamed(
+                                context, Routes.mfholdsinlepage);
                           }
                         },
                         child: Column(
@@ -180,63 +182,70 @@ class MfHoldNewScreen extends ConsumerWidget {
                               children: [
                                 Expanded(
                                   flex: 6,
-                                  child: Text(
-                                    item.sCHEMENAME ?? "Unknown Fund",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textStyles.scripNameTxtStyle.copyWith(
-                                      color: theme.isDarkMode 
-                                        ? colors.colorWhite 
-                                        : colors.colorBlack,
-                                    ),
-                                  ),
+                                  child: TextWidget.subText(
+                                      align: TextAlign.start,
+                                      text: item.sCHEMENAME ?? "Unknown Fund",
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                      textOverflow: TextOverflow.ellipsis,
+                                      theme: theme.isDarkMode,
+                                      fw: 3),
                                 ),
                                 Row(
                                   children: [
-                                    Text(
-                                      " NAV: ",
-                                      style: textStyle(
-                                        const Color(0xff5E6B7D), 
-                                        13,
-                                        FontWeight.w600,
-                                      ),
-                                    ),
-                                    Text(
-                                      "₹ ${item.nav ?? "0.00"}",
-                                      style: textStyle(
-                                        theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500,
-                                      ),
-                                    ),
+                                    TextWidget.paraText(
+                                        align: TextAlign.start,
+                                        text: " NAV : ",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight, 
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    TextWidget.paraText(
+                                        align: TextAlign.start,
+                                        text: "₹ ${item.nav ?? "0.00"}",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight, 
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
                                   ],
                                 ),
                               ],
-                            ),
-                            
-                            const SizedBox(height: 4),
-                            
+                            ), 
+                            const SizedBox(height: 6),
+
                             // Exchange badge
-                            const Row(
+                            Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                CustomExchBadge(exch: "NSE"),
+                                TextWidget.paraText(
+                                    align: TextAlign.start,
+                                    text: "NSE",
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    textOverflow: TextOverflow.ellipsis,
+                                    theme: theme.isDarkMode,
+                                    fw: 3),
                               ],
                             ),
-                            
+
                             const SizedBox(height: 4),
-                            
-                            Divider(
-                              height: 12,
-                              thickness: 0.4,
-                              color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
-                            ),
-                            
+
+                            // Divider(
+                            //   height: 12,
+                            //   thickness: 0.4,
+                            //   color: theme.isDarkMode
+                            //       ? colors.darkColorDivider
+                            //       : colors.colorDivider,
+                            // ),
+
                             const SizedBox(height: 4),
-                            
+
                             // Units + Gain/Loss
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -244,51 +253,52 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(
-                                      "Units: ",
-                                      style: textStyle(
-                                        const Color(0xff5E6B7D), 
-                                        14,
-                                        FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(
-                                      "${item.nET ?? 0} @ ${item.buyPrice ?? "0.00"}",
-                                      style: textStyle(
-                                        theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500,
-                                      ),
-                                    ),
+                                    TextWidget.paraText(
+                                        align: TextAlign.start,
+                                        text: "Units : ",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    TextWidget.paraText(
+                                        align: TextAlign.start,
+                                        text:
+                                            "${item.nET ?? 0} @ ${item.buyPrice ?? "0.00"}",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
                                   ],
                                 ),
                                 Row(
                                   children: [
-                                    Text(
-                                      "₹${item.gainOrLoss ?? "0.00"}",
-                                      style: textStyle(
-                                        _getColorBasedOnValue(item.gainOrLoss),
-                                        14,
-                                        FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(
-                                      "(${(double.tryParse(item.percentage ?? '') ?? 0.0).toStringAsFixed(2)}%)",
-                                      style: textStyle(
-                                        _getColorBasedOnValue(item.percentage),
-                                        14,
-                                        FontWeight.w500,
-                                      ),
-                                    ),
+                                    TextWidget.paraText(
+                                        align: TextAlign.start,
+                                        text:  "₹${item.gainOrLoss ?? "0.00"}",
+                                        color: _getColorBasedOnValue(item.gainOrLoss),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    TextWidget.paraText(
+                                        align: TextAlign.start,
+                                        text:
+                                             "(${(double.tryParse(item.percentage ?? '') ?? 0.0).toStringAsFixed(2)}%)",
+                                        color: _getColorBasedOnValue(item.percentage),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                     
                                   ],
                                 ),
                               ],
                             ),
-                            
+
                             const SizedBox(height: 8),
-                            
+
                             // Invested + Current
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -296,59 +306,63 @@ class MfHoldNewScreen extends ConsumerWidget {
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(
-                                      "Inv: ₹ ",
-                                      style: textStyle(
-                                        const Color(0xff5E6B7D), 
-                                        14,
-                                        FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(
-                                      "${item.purchase ?? "0.00"}",
-                                      style: textStyle(
-                                        theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500,
-                                      ),
-                                    ),
+                                    TextWidget.paraText(
+                                        align: TextAlign.start,
+                                        text: "Inv: ₹ ",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    TextWidget.paraText(
+                                        align: TextAlign.start,
+                                        text:
+                                            "${item.purchase ?? "0.00"}",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    
                                   ],
                                 ),
                                 Row(
                                   children: [
-                                    Text(
-                                      "Cur: ",
-                                      style: textStyle(
-                                        const Color(0xff5E6B7D), 
-                                        14,
-                                        FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(
-                                      "₹${val}",
-                                      style: textStyle(
-                                        theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                        14,
-                                        FontWeight.w500,
-                                      ),
-                                    ),
+                                    TextWidget.paraText(
+                                        align: TextAlign.start,
+                                        text:  "Cur: ",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    TextWidget.paraText(
+                                        align: TextAlign.start,
+                                        text:
+                                             "₹${val}",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                     
                                   ],
                                 ),
                               ],
                             ),
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             Divider(
                               height: 0,
-                              thickness: 2,
+                              thickness: 1,
                               color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
                             ),
                           ],
                         ),
@@ -362,18 +376,18 @@ class MfHoldNewScreen extends ConsumerWidget {
       ),
     );
   }
-  
+
   // Helper method to check if data is empty or has an error
   bool _isEmptyOrErrorState(MFProvider mfData) {
-    return mfData.mfholdingnew?.stat == "Not Ok" || 
-           mfData.mfholdingnew?.msg == "No Data Found";
+    return mfData.mfholdingnew?.stat == "Not Ok" ||
+        mfData.mfholdingnew?.msg == "No Data Found";
   }
-  
+
   // Helper method to safely format values
   String _formatValue(String? value) {
     return (value == null || value.isEmpty) ? "0.00" : value;
   }
-  
+
   // Helper method to determine color based on value
   Color _getColorBasedOnValue(String? valueStr) {
     final value = double.tryParse(valueStr ?? "0") ?? 0;

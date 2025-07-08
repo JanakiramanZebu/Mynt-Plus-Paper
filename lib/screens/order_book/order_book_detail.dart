@@ -189,7 +189,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                           CrossAxisAlignment
                                                               .center,
                                                       children: [
-                                                        TextWidget.titleText(
+                                                        TextWidget.headText(
                                                             text:
                                                                 "${displayData.symbol?.replaceAll("-EQ", "")}",
                                                             theme: false,
@@ -200,7 +200,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                 : colors
                                                                     .textPrimaryLight,
                                                             fw: 0),
-                                                        TextWidget.subText(
+                                                        TextWidget.headText(
                                                             text:
                                                                 "${displayData.option}",
                                                             theme: false,
@@ -210,7 +210,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                     .textPrimaryDark
                                                                 : colors
                                                                     .textPrimaryLight,
-                                                            fw: 3,
+                                                            fw: 0,
                                                             textOverflow:
                                                                 TextOverflow
                                                                     .ellipsis),
@@ -285,7 +285,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                     .textSecondaryDark
                                                                 : colors
                                                                     .textSecondaryLight,
-                                                            fw: 0),
+                                                            fw: 3),
                                                       ],
                                                     ),
                                                   ],
@@ -380,32 +380,44 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                     curve: Curves.easeInOut,
                                                   );
                                                 },
-                                                child: Center(
-                                                  child: Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      SvgPicture.asset(
-                                                        assets.orderhistoryicon,
-                                                        width: 14,
-                                                        height: 14,
-                                                        color: theme.isDarkMode
-                                                            ? colors.primaryDark
-                                                            : colors
-                                                                .primaryLight,
-                                                      ),
-                                                      const SizedBox(width: 6),
-                                                      TextWidget.subText(
-                                                        text: "Order History",
-                                                        fw: 2,
-                                                        color: theme.isDarkMode
-                                                            ? colors.primaryDark
-                                                            : colors
-                                                                .primaryLight,
-                                                        theme: false,
-                                                      ),
-                                                    ],
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 16,
+                                                      vertical: 5),
+                                                  child: Center(
+                                                    child: Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        SvgPicture.asset(
+                                                          assets
+                                                              .orderhistoryicon,
+                                                          width: 14,
+                                                          height: 14,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .primaryDark
+                                                              : colors
+                                                                  .primaryLight,
+                                                        ),
+                                                        const SizedBox(
+                                                            width: 6),
+                                                        TextWidget.subText(
+                                                          text: "Order History",
+                                                          fw: 0,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .primaryDark
+                                                              : colors
+                                                                  .primaryLight,
+                                                          theme: false,
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -559,11 +571,11 @@ class _OrderDetailsSection extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  color: color,
-                  width: 1,
-                ),
+                borderRadius: BorderRadius.circular(4),
+                // border: Border.all(
+                //   color: color,
+                //   width: 1,
+                // ),
               ),
               child: TextWidget.subText(
                   text:
@@ -650,8 +662,8 @@ class _OrderDetailsSection extends ConsumerWidget {
                 text: value1,
                 theme: false,
                 color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
                 maxLines: null,
                 textOverflow: TextOverflow.visible,
                 softWrap: true,
@@ -662,7 +674,7 @@ class _OrderDetailsSection extends ConsumerWidget {
       const SizedBox(height: 8),
       Divider(
           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          thickness: 1)
+          thickness: 0)
     ]);
   }
 }
@@ -722,7 +734,7 @@ Widget _buildActionButtonsBar(
                   color: theme.isDarkMode
                       ? colors.primaryDark
                       : colors.primaryLight,
-                  fw: 2),
+                  fw: 0),
             ),
           ),
         ),
@@ -751,7 +763,7 @@ Widget _buildActionButtonsBar(
                 theme: false,
                 color:
                     theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                fw: 2),
+                fw: 0),
           ),
         ),
       ),
@@ -793,7 +805,7 @@ Widget _buildRepeatOrderBar(
                       color: theme.isDarkMode
                           ? colors.primaryDark
                           : colors.primaryLight,
-                      fw: 2)),
+                      fw: 0)),
             ),
           ),
         ),

@@ -182,7 +182,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.center,
                                               children: [
-                                                TextWidget.titleText(
+                                                TextWidget.headText(
                                                     text:
                                                         "${displayData.symbol?.replaceAll("-EQ", "") ?? ''}",
                                                     theme: false,
@@ -191,7 +191,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                                         : colors
                                                             .textPrimaryLight,
                                                     fw: 0),
-                                                TextWidget.subText(
+                                                TextWidget.headText(
                                                     text:
                                                         " ${displayData.option ?? ''} ",
                                                     theme: false,
@@ -372,7 +372,9 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
     return TextWidget.paraText(
         text: "$formattedChange ($formattedPercentage%)",
         theme: false,
-        color: textColor,
+        color: theme.isDarkMode
+            ? colors.textSecondaryDark
+            : colors.textSecondaryLight,
         fw: 3);
   }
 
@@ -404,7 +406,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
       const SizedBox(height: 8),
       Divider(
           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-          thickness: 1)
+          thickness: 0)
     ]);
   }
 }

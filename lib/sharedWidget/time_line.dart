@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:timeline_tile/timeline_tile.dart'; 
+import 'package:timeline_tile/timeline_tile.dart';
 import '../../provider/thems.dart';
 import '../models/order_book_model/order_history_model.dart';
+import '../res/global_state_text.dart';
 import '../res/res.dart';
 import 'functions.dart';
 
@@ -69,12 +70,21 @@ class TimeLineWidget extends ConsumerWidget {
             dense: true,
             title: Text(
                 "${orderHistoryData.stIntrn![0].toUpperCase()}${orderHistoryData.stIntrn!.substring(1).toLowerCase().replaceAll("_", " ")}",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
+                style: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 3)),
             subtitle: Text(formatDateTime(value: orderHistoryData.norentm!),
-                style: textStyle(const Color(0xff666666), 10, FontWeight.w500)),
+                style: TextWidget.textStyle(
+                    fontSize: 12,
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryDark,
+                    fw: 3)),
           )),
     );
   }

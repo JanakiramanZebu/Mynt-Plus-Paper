@@ -182,11 +182,11 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                                       : orderBook.gttOrderBookModel ?? []),
                           const BasketList(),
 
-                          SipOrderBook(
-                            sipbook: orderBook.orderSearchCtrl.text.isNotEmpty
-                                ? sipBook.siporderBookSearch
-                                : sipBook.siporderBookModel?.sipDetails,
-                          ),
+                          // SipOrderBook(
+                          //   sipbook: orderBook.orderSearchCtrl.text.isNotEmpty
+                          //       ? sipBook.siporderBookSearch
+                          //       : sipBook.siporderBookModel?.sipDetails,
+                          // ),
                           const PendingAlert(),
                         ]))
                   ]),
@@ -232,15 +232,19 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                   style: TextWidget.textStyle(
                     fontSize: 14,
                     theme: theme.isDarkMode,
-                    color: const Color(0xff000000),
-                    fw: 00,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 3,
                   ),
                   decoration: InputDecoration(
                     hintStyle: TextWidget.textStyle(
                       fontSize: 14,
                       theme: false,
-                      color: const Color(0xff69758F),
-                      fw: 00,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 3,
                     ),
                     border: InputBorder.none,
                     isDense: true,

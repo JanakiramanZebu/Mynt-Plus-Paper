@@ -9,6 +9,7 @@ import '../../models/mf_model/mutual_fundmodel.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -25,7 +26,7 @@ class MFCategoryListScreen extends ConsumerWidget {
 
     // Sort the list based on s3Year in descending order
     final sortedList = mfData.catnewlist?.toList();
-    
+
     if (sortedList != null) {
       sortedList.sort((a, b) {
         final aValue = double.tryParse(a.s3Year ?? '0.00') ?? 0.00;
@@ -74,7 +75,7 @@ class MFCategoryListScreen extends ConsumerWidget {
                       itemBuilder: (BuildContext context, int index) {
                         final item = sortedList?[index];
                         if (item == null) return const SizedBox.shrink();
-                        
+
                         return _buildListItem(context, item, theme, mfData);
                       },
                     ),
@@ -85,7 +86,8 @@ class MFCategoryListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCategoryChips(BuildContext context, WidgetRef ref, ThemesProvider theme, String title, dynamic mfData) {
+  Widget _buildCategoryChips(BuildContext context, WidgetRef ref,
+      ThemesProvider theme, String title, dynamic mfData) {
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
@@ -93,7 +95,7 @@ class MFCategoryListScreen extends ConsumerWidget {
       itemBuilder: (BuildContext context, int index) {
         final categoryData = mfData.mFCategoryTypesStatic;
         if (index >= categoryData.length) return const SizedBox.shrink();
-        
+
         return title == categoryData[index]['title']
             ? buildCategoryCard(
                 chips: categoryData[index]['sub'] ?? [],
@@ -110,7 +112,8 @@ class MFCategoryListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildListItem(BuildContext context, dynamic item, ThemesProvider theme, dynamic mfData) {
+  Widget _buildListItem(BuildContext context, dynamic item,
+      ThemesProvider theme, dynamic mfData) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 0),
       child: InkWell(
@@ -126,9 +129,8 @@ class MFCategoryListScreen extends ConsumerWidget {
               );
             }
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "Error updating watchlist: ${e.toString()}")
-            );
+            ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                context, "Error updating watchlist: ${e.toString()}"));
           }
         },
         onTap: () async {
@@ -136,7 +138,7 @@ class MFCategoryListScreen extends ConsumerWidget {
             mfData.loaderfun();
             if (item.iSIN != null) {
               await mfData.fetchFactSheet(item.iSIN);
-              
+
               if (mfData.factSheetDataModel?.stat != "Not Ok") {
                 Map<String, dynamic> jsonData = item.toJson();
                 MutualFundList bInstance = MutualFundList.fromJson(jsonData);
@@ -147,22 +149,20 @@ class MFCategoryListScreen extends ConsumerWidget {
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  successMessage(context, "No Single Page Data")
-                );
+                    successMessage(context, "No Single Page Data"));
                 final jsondata = MutualFundList.fromJson(item.toJson());
-                Navigator.pushNamed(context, Routes.mforderScreen, arguments: jsondata);
+                Navigator.pushNamed(context, Routes.mforderScreen,
+                    arguments: jsondata);
                 mfData.orderchangetitle("One-time");
                 mfData.chngOrderType("One-time");
               }
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                successMessage(context, "Missing fund information")
-              );
+                  successMessage(context, "Missing fund information"));
             }
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "Error loading fund details: ${e.toString()}")
-            );
+            ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                context, "Error loading fund details: ${e.toString()}"));
           }
         },
         child: Container(
@@ -199,14 +199,16 @@ class MFCategoryListScreen extends ConsumerWidget {
                           children: [
                             SizedBox(
                               width: MediaQuery.of(context).size.width * 0.6,
-                              child: Text(
-                                item.schemeGroupName ?? "Unknown Scheme",
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: textStyles.scripNameTxtStyle.copyWith(
-                                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                ),
-                              ),
+                              child: TextWidget.subText(
+                                  align: TextAlign.start,
+                                  text:
+                                      item.schemeGroupName ?? "Unknown Scheme",
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3),
                             ),
                           ],
                         ),
@@ -217,16 +219,27 @@ class MFCategoryListScreen extends ConsumerWidget {
                             child: ListView(
                               scrollDirection: Axis.horizontal,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 5),
-                                  child: CustomExchBadge(
-                                    exch: item.type ?? "Unknown"
-                                  ),
+                                TextWidget.paraText(
+                                  fw: 3,
+                                  text: "${item.type ?? "Unknown"}",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: false,
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(left: 5),
-                                  child: CustomExchBadge(
-                                    exch: item.subType ?? "Unknown",
+                                  child: TextWidget.paraText(
+                                    fw: 3,
+                                    text: "${item.subType ?? "Unknown"}",
+                                    textOverflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    theme: false,
                                   ),
                                 ),
                               ],
@@ -236,13 +249,13 @@ class MFCategoryListScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Text(
-                    _formatReturns(item.s3Year),
-                    style: textStyle(
-                      _getReturnColor(item.s3Year),
-                      14,
-                      FontWeight.w500,
-                    ),
+                  TextWidget.titleText(
+                    fw: 3,
+                    text: _formatReturns(item.s3Year),
+                    textOverflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    color: _getReturnColor(item.s3Year),
+                    theme: false,
                   ),
                 ],
               ),
@@ -274,7 +287,7 @@ class MFCategoryListScreen extends ConsumerWidget {
     if (returns == null || returns.isEmpty) {
       return Colors.grey;
     }
-    
+
     try {
       final value = double.parse(returns);
       return value >= 0 ? Colors.green : Colors.red;
@@ -295,9 +308,11 @@ class MFCategoryListScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color:themee.isDarkMode ? colors.colorBlack: Colors.white,
+        color: themee.isDarkMode ? colors.colorBlack : Colors.white,
         border: Border.all(
-          color: themee.isDarkMode ? colors.colorBlack: const Color.fromARGB(255, 255, 255, 255),
+          color: themee.isDarkMode
+              ? colors.colorBlack
+              : const Color.fromARGB(255, 255, 255, 255),
           width: 0,
         ),
         borderRadius: BorderRadius.circular(4),
@@ -314,40 +329,41 @@ class MFCategoryListScreen extends ConsumerWidget {
                 itemCount: chips.length,
                 itemBuilder: (context, index) {
                   final chipText = chips[index]?.toString() ?? "";
-                  
+
                   return Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: GestureDetector(
-                      onTap: () async {
-                        mfData.changetitle(chipText);
-                        mfData.fetchcatdatanew(title, chipText);
-                      },
-                      child: Chip(
-                        label: Text(
-                          chipText,
-                          style: textStyle(
-                            chipText == mfData.selctedchip
-                                ? colors.colorWhite
-                                :themee.isDarkMode ? const Color.fromARGB(255, 255, 255, 255) :colors.colorBlack,
-                            12,
-                            FontWeight.w500,
+                        onTap: () async {
+                          mfData.changetitle(chipText);
+                          mfData.fetchcatdatanew(title, chipText);
+                        },
+                        child: Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: chipText == mfData.selctedchip
+                                    ? colors.primaryDark
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                        shape: const StadiumBorder(),
-                        labelPadding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: -2),
-                        backgroundColor: chipText == mfData.selctedchip
-                            ? (themee.isDarkMode ? const Color(0xFF2A2A2A) : colors.colorBlack)
-                            : (themee.isDarkMode ? const Color.fromARGB(255, 0, 0, 0) : colors.colorWhite), 
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12.0, vertical: 4.0),
-                        side: BorderSide(
-                          color:themee.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFF666666),
-                          width: 1.0,
-                        ),
-                      ),
-                    ),
+                          child: 
+                          TextWidget.subText(
+                            letterSpacing: 0.2,
+                                                    align: TextAlign.start,
+                                                    text: chipText,
+                                                    color: chipText == mfData.selctedchip
+                                  ? colors.primaryLight
+                                  : Colors.black,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: themee.isDarkMode,
+                                                    fw: chipText == mfData.selctedchip ? 1 :3),
+                           
+                        )),
                   );
                 },
               ),
@@ -356,31 +372,33 @@ class MFCategoryListScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Container(
-              color: themee.isDarkMode ? const Color(0xFF2A2A2A): const Color(0xFFF1F3F8),
+              color: themee.isDarkMode
+                  ? const Color(0xFF2A2A2A)
+                  : const Color(0xFFF1F3F8),
               padding: const EdgeInsets.all(8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'FUNDS',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w400,
-                      color: themee.isDarkMode ? colors.colorWhite: Colors.black,
-                      letterSpacing: 0.7,
-                    ),
-                  ),
+                  TextWidget.captionText(
+                      align: TextAlign.right,
+                      text: 'FUNDS',
+                      color: themee.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: themee.isDarkMode,
+                      fw: 3),
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: Text(
-                      '3Y RETURNS',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w400,
-                        color:themee.isDarkMode ? colors.colorWhite: Colors.black,
-                        letterSpacing: 0.7,
-                      ),
-                    ),
+                    child: TextWidget.captionText(
+                        align: TextAlign.right,
+                        text: '3Y RETURNS',
+                        color: themee.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: themee.isDarkMode,
+                        fw: 3),
                   ),
                 ],
               ),

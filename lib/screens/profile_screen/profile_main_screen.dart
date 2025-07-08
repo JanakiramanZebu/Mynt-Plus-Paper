@@ -72,12 +72,12 @@ class UserAccountScreen extends ConsumerWidget {
     final filteredMenu = [
       {'title': 'Account Balance', 'type': 'balance'},
       {'title': 'Reports'},
-      {'title': 'Account'},
+      // {'title': 'Account'},
       {'title': 'Settings'},
+      {'title': 'Notification'},
       {'title': 'Refer'},
       {'title': 'Rate Us'},
       {'title': 'Contact'},
-      {'title': 'Notification'},
     ];
 
     return TransparentLoaderScreen(
@@ -104,6 +104,43 @@ class UserAccountScreen extends ConsumerWidget {
                   onPressed: () {
                     Navigator.pushNamed(context, Routes.qrscanner);
                   },
+                ),
+                Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    splashColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    highlightColor: theme.isDarkMode
+                        ? colors.highlightDark
+                        : colors.highlightLight,
+                    onTap: () {
+                      showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          isDismissible: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                              topRight: Radius.circular(10),
+                            ),
+                          ),
+                          builder: (_) => const LoggedUserBottomSheet(
+                              initRoute: 'switchAcc'));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SvgPicture.asset(
+                        assets.switch2Icon,
+                        height: 24,
+                        width: 24,
+                        color: colors.colorGrey,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -147,56 +184,63 @@ class UserAccountScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  InkWell(
-                    // customBorder: const CircleBorder(),
-                    splashColor: Colors.black.withOpacity(0.15),
-                    highlightColor: Colors.black.withOpacity(0.08),
-                    onTap: () {
-                      showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          isDismissible: true,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(10),
-                              topRight: Radius.circular(10),
+                  IntrinsicWidth(
+                    child: Container(
+                      child: Material(
+                        color: Colors.transparent,
+                        // borderRadius: BorderRadius.circular(10),
+                        child: InkWell(
+                          onTap: () async {
+                            // Add delay for visual feedback
+                            await Future.delayed(
+                                const Duration(milliseconds: 150));
+
+                            if (context.mounted) {
+                              Navigator.pushNamed(
+                                  context, Routes.myaccountScreen);
+                            }
+                          },
+                          // borderRadius: BorderRadius.circular(10),
+                          splashColor: theme.isDarkMode
+                              ? colors.splashColorDark
+                              : colors.splashColorLight,
+                          highlightColor: theme.isDarkMode
+                              ? colors.highlightDark
+                              : colors.highlightLight,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                TextWidget.heroText(
+                                    text: _truncateProfileName((userProfile
+                                                .userDetailModel?.uname ??
+                                            "")
+                                        .toLowerCase()
+                                        .split(' ')
+                                        .map((word) => word.isNotEmpty
+                                            ? '${word[0].toUpperCase()}${word.substring(1)}'
+                                            : '')
+                                        .join(' ')),
+                                    theme: false,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    fw: 1),
+                                SizedBox(width: 8),
+                                Transform.rotate(
+                                  angle: 0 * 3.1416 / 180,
+                                  child: Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 20,
+                                    color: !theme.isDarkMode
+                                        ? colors.textPrimaryLight
+                                        : colors.textPrimaryDark,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          builder: (_) => const LoggedUserBottomSheet(
-                              initRoute: 'switchAcc'));
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            TextWidget.heroText(
-                                text: _truncateProfileName(
-                                    userProfile.userDetailModel?.uname ?? ""),
-                                theme: false,
-                                color: !theme.isDarkMode
-                                    ? const Color(0xff141414)
-                                    : colors.colorGrey,
-                                fw: 1),
-                            SizedBox(width: 8),
-                            Transform.rotate(
-                              angle: 90 * 3.1416 / 180,
-                              child: Icon(
-                                Icons.arrow_forward_ios,
-                                size: 20,
-                                color: !theme.isDarkMode
-                                    ? colors.primaryLight
-                                    : colors.primaryDark,
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     ),
@@ -264,9 +308,9 @@ class UserAccountScreen extends ConsumerWidget {
                       case "Account Balance":
                         // This is not a clickable item, just return
                         return;
-                      case "Account":
-                        Navigator.pushNamed(context, Routes.myaccountScreen);
-                        break;
+                      // case "Account":
+                      //   Navigator.pushNamed(context, Routes.myaccountScreen);
+                      //   break;
                       case "Reports":
                         if (reportsprovider.ledgerAllData == null) {
                           await reportsprovider.getCurrentDate('else');
@@ -497,7 +541,7 @@ class UserAccountScreen extends ConsumerWidget {
                   ref.read(indexListProvider).bottomMenu(2, context);
                 },
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -650,20 +694,24 @@ class SettingsScreen extends ConsumerWidget {
 
     final settingsItems = [
       // {'title': 'Theme', 'section': 'Settings'},
-      {'title': 'Order Preference', 'section': 'Settings'},
+      // {'title': 'Order Preference', 'section': 'Security'},
     ];
 
     final securityItems = [
-      {'title': 'Freeze Account', 'section': 'Security'},
       {'title': 'Change Password', 'section': 'Security'},
+      {'title': 'Order Preference', 'section': 'Settings'},
       {'title': 'Generate TOTP', 'section': 'Security'},
       {'title': 'Generate API Key', 'section': 'Security'},
+      {'title': 'Freeze Account', 'section': 'Security'},
     ];
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         elevation: 0,
+        centerTitle: false,
+        leadingWidth: 48,
+        titleSpacing: 0,
         leading: Material(
           color: Colors.transparent,
           shape: const CircleBorder(),
@@ -676,8 +724,8 @@ class SettingsScreen extends ConsumerWidget {
               Navigator.pop(context);
             },
             child: Container(
-              width: 20, // Increased touch area
-              height: 20,
+              width: 44, // Increased touch area
+              height: 44,
               alignment: Alignment.center,
               child: Icon(
                 Icons.arrow_back_ios_outlined,
@@ -687,35 +735,43 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
         ),
-        actions: [
-          IconButton(
-            splashRadius: 20,
-            icon: SvgPicture.asset(
-              assets.qrIcon, // This is your asset path
-              height: 20,
-              width: 20,
-              // Optional: set color if your SVG supports it
-            ),
-            onPressed: () {
-              Navigator.pushNamed(context, Routes.qrscanner);
-            },
-          ),
-          IconButton(
-            splashRadius: 20,
-            icon: SvgPicture.asset(
-              assets.notifyIcon, // This is your asset path
-              height: 20,
-              width: 20,
-              color: colors
-                  .colorGrey, // Optional: set color if your SVG supports it
-            ),
-            onPressed: () async {
-              await ref.read(notificationprovider).fetchexchagemsg(context);
-              await ref.read(notificationprovider).fetchbrokermsg(context);
-              Navigator.pushNamed(context, Routes.notificationpage);
-            },
-          ),
-        ],
+        title: TextWidget.titleText(
+          text: "Settings",
+          theme: false,
+          color: !theme.isDarkMode
+              ? colors.textPrimaryLight
+              : colors.textPrimaryDark,
+          fw: 1,
+        ),
+        // actions: [
+        //   IconButton(
+        //     splashRadius: 20,
+        //     icon: SvgPicture.asset(
+        //       assets.qrIcon, // This is your asset path
+        //       height: 20,
+        //       width: 20,
+        //       // Optional: set color if your SVG supports it
+        //     ),
+        //     onPressed: () {
+        //       Navigator.pushNamed(context, Routes.qrscanner);
+        //     },
+        //   ),
+        //   IconButton(
+        //     splashRadius: 20,
+        //     icon: SvgPicture.asset(
+        //       assets.notifyIcon, // This is your asset path
+        //       height: 20,
+        //       width: 20,
+        //       color: colors
+        //           .colorGrey, // Optional: set color if your SVG supports it
+        //     ),
+        //     onPressed: () async {
+        //       await ref.read(notificationprovider).fetchexchagemsg(context);
+        //       await ref.read(notificationprovider).fetchbrokermsg(context);
+        //       Navigator.pushNamed(context, Routes.notificationpage);
+        //     },
+        //   ),
+        // ],
       ),
       body: Column(
         children: [
@@ -786,26 +842,12 @@ class SettingsScreen extends ConsumerWidget {
           // const SizedBox(height: 12),
 
           // Settings Section
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TextWidget.titleText(
-                text: "Settings",
-                theme: false,
-                color: !theme.isDarkMode
-                    ? colors.textPrimaryLight
-                    : colors.textPrimaryDark,
-                fw: 1,
-              ),
-            ),
-          ),
 
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ListDivider(),
-          ),
+          // const SizedBox(height: 16),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16),
+          //   child: ListDivider(),
+          // ),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -942,9 +984,9 @@ class SettingsScreen extends ConsumerWidget {
                             );
                           });
                       break;
-                    case 'Order Preference':
-                      Navigator.pushNamed(context, Routes.orderPrefer);
-                      break;
+                    // case 'Order Preference':
+                    //   Navigator.pushNamed(context, Routes.orderPrefer);
+                    //   break;
                   }
                 },
               );
@@ -952,8 +994,9 @@ class SettingsScreen extends ConsumerWidget {
             separatorBuilder: (context, index) => Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               child: Divider(
-                color: colors.fundbuttonBg, // Optional: customize the color
-                thickness: 1, // Optional: customize the thickness
+                color:
+                    theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                thickness: 1,
               ),
             ),
           ),
@@ -1128,6 +1171,9 @@ class SettingsScreen extends ConsumerWidget {
                           "${pref.clientId}";
                       Navigator.pushNamed(context, Routes.changePass,
                           arguments: "Yes");
+                      break;
+                    case 'Order Preference':
+                      Navigator.pushNamed(context, Routes.orderPrefer);
                       break;
                     case 'Generate API Key':
                       showModalBottomSheet(
@@ -1312,12 +1358,12 @@ class MyAccountScreen extends ConsumerStatefulWidget {
 }
 
 class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
-  late int _expandedIndex;
+  // late int _expandedIndex;
 
   @override
   void initState() {
     super.initState();
-    _expandedIndex = widget.initialIndex; // ← store the target tile
+    // _expandedIndex = widget.initialIndex; // ← store the target tile
   }
 
   String _truncateProfileName(String text, {int maxLength = 18}) {
@@ -1436,6 +1482,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     }
   }
 
+  String? _expandedTitle;
+
   // List of items for the account screen
   final accountItems = [
     {'title': 'Profile'},
@@ -1451,12 +1499,22 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   // This method fetches data lazily when an expansion tile is opened
   void _onExpansionChanged(bool isExpanding, String title) {
     if (isExpanding) {
-      // Fetch data for Profile and Bank when their sections are expanded
-      // This mimics the initState behavior of the original pages
+      // Expand the new tile
+      setState(() {
+        _expandedTitle = title;
+      });
+
+      // Lazy load data if needed
       if (title == 'Profile' || title == 'Bank') {
         ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
       }
-      // Add other data fetching logic for other sections if needed in the future
+    } else {
+      // Prevent collapsing if it's the currently expanded one
+      if (_expandedTitle == title) {
+        setState(() {
+          _expandedTitle = null;
+        });
+      }
     }
   }
 
@@ -1470,35 +1528,46 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         // title: TextWidget.subText(text: "My Accounts", theme: theme.isDarkMode, fw: 1),
         backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         elevation: 0,
+        centerTitle: false,
+        leadingWidth: 48,
+        titleSpacing: 0,
         leading: CustomBackBtn(),
-        actions: [
-          IconButton(
-            splashRadius: 20,
-            icon: SvgPicture.asset(
-              assets.qrIcon, // This is your asset path
-              height: 20,
-              width: 20,
-              color: colors
-                  .colorGrey, // Optional: set color if your SVG supports it
-            ),
-            onPressed: () => Navigator.pushNamed(context, Routes.qrscanner),
-          ),
-          IconButton(
-            splashRadius: 20,
-            icon: SvgPicture.asset(
-              assets.notifyIcon, // This is your asset path
-              height: 20,
-              width: 20,
-              color: colors
-                  .colorGrey, // Optional: set color if your SVG supports it
-            ),
-            onPressed: () async {
-              await ref.read(notificationprovider).fetchexchagemsg(context);
-              await ref.read(notificationprovider).fetchbrokermsg(context);
-              Navigator.pushNamed(context, Routes.notificationpage);
-            },
-          ),
-        ],
+        title: TextWidget.titleText(
+          text: "Account",
+          theme: false,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          fw: 1,
+        ),
+        // actions: [
+        //   IconButton(
+        //     splashRadius: 20,
+        //     icon: SvgPicture.asset(
+        //       assets.qrIcon, // This is your asset path
+        //       height: 20,
+        //       width: 20,
+        //       color: colors
+        //           .colorGrey, // Optional: set color if your SVG supports it
+        //     ),
+        //     onPressed: () => Navigator.pushNamed(context, Routes.qrscanner),
+        //   ),
+        //   IconButton(
+        //     splashRadius: 20,
+        //     icon: SvgPicture.asset(
+        //       assets.notifyIcon, // This is your asset path
+        //       height: 20,
+        //       width: 20,
+        //       color: colors
+        //           .colorGrey, // Optional: set color if your SVG supports it
+        //     ),
+        //     onPressed: () async {
+        //       await ref.read(notificationprovider).fetchexchagemsg(context);
+        //       await ref.read(notificationprovider).fetchbrokermsg(context);
+        //       Navigator.pushNamed(context, Routes.notificationpage);
+        //     },
+        //   ),
+        // ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1554,15 +1623,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             //   thickness: 1, // Optional: customize the thickness
             // ),
             // const SizedBox(height: 8),
-            TextWidget.titleText(
-              text: "Account",
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              fw: 1,
-            ),
-            const SizedBox(height: 10),
+
+            // const SizedBox(height: 10),
             // Divider(
             //   color: colors.fundbuttonBg, // Optional: customize the color
             //   thickness: 1, // Optional: customize the thickness
@@ -1576,24 +1638,49 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   final item = accountItems[index];
                   final title = item['title']!;
 
-                  return ExpansionTile(
-                    // The first item ("Profile") is expanded by default
-                    initiallyExpanded: index == 0,
-                    onExpansionChanged: (isExpanding) =>
-                        _onExpansionChanged(isExpanding, title),
-                    tilePadding: const EdgeInsets.symmetric(horizontal: 0),
-                    title: TextWidget.subText(
-                      text: title,
-                      theme: false,
-                      color: !theme.isDarkMode
-                          ? colors.textPrimaryLight
-                          : colors.textPrimaryDark,
-                      fw: 0,
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      dividerColor: theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider,
+                      dividerTheme: const DividerThemeData(
+                        thickness: 0,
+                      ),
                     ),
-                    children: [
-                      // Dynamically build the content based on the title
-                      _buildExpansionContent(title, ref, theme),
-                    ],
+                    child: Theme(
+                      data: Theme.of(context)
+                          .copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        iconColor: _expandedTitle == title
+                            ? theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight
+                            : theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                        key: ValueKey('${title}_${_expandedTitle == title}'),
+                        initiallyExpanded: _expandedTitle == title,
+                        onExpansionChanged: (isExpanding) =>
+                            _onExpansionChanged(isExpanding, title),
+                        tilePadding: const EdgeInsets.symmetric(horizontal: 0),
+                        title: TextWidget.subText(
+                          text: title,
+                          theme: false,
+                          color: _expandedTitle == title
+                              ? theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight
+                              : theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                          fw: _expandedTitle == title ? 0 : 3,
+                        ),
+                        children: [
+                          // Dynamically build the content based on the title
+                          _buildExpansionContent(title, ref, theme),
+                        ],
+                      ),
+                    ),
                   );
                 },
                 separatorBuilder: (context, index) => const SizedBox(height: 0),
@@ -1660,17 +1747,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     //   return const Center(child: CircularProgressIndicator());
     // }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0, right: 12.0, left: 12.0),
-      child: Column(
-        children: [
-          _buildDetailRow("Name", clientData?.panName ?? "N/A", theme),
-          _buildDetailRow("Email", clientData?.cLIENTIDMAIL ?? "N/A", theme),
-          _buildDetailRow("Mobile", clientData?.mOBILENO ?? "N/A", theme),
-          _buildDetailRow("PAN", clientData?.pANNO ?? "N/A", theme),
-          _buildDetailRow("DP ID", clientData?.cLIENTDPCODE ?? "N/A", theme),
-        ],
-      ),
+    return Column(
+      children: [
+        _buildDetailRow("Name", clientData?.panName ?? "N/A", theme),
+        _buildDetailRow("Email", clientData?.cLIENTIDMAIL ?? "N/A", theme),
+        _buildDetailRow("Mobile", clientData?.mOBILENO ?? "N/A", theme),
+        _buildDetailRow("PAN", clientData?.pANNO ?? "N/A", theme),
+        // _buildDetailRow("DP ID", clientData?.cLIENTDPCODE ?? "N/A", theme),
+      ],
     );
   }
 
@@ -1692,28 +1776,45 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 TextWidget.subText(
                   text: "Bank Accounts Linked",
                   theme: theme.isDarkMode,
-                  fw: 0,
-                ),
-                SizedBox(height: 4),
-                TextWidget.paraText(
-                  text: "View bank details and add new banks.",
-                  theme: theme.isDarkMode,
                   color: theme.isDarkMode
-                      ? colors.textSecondaryDark
-                      : colors.textSecondaryLight,
-                  fw: 3,
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 1,
                 ),
-                SizedBox(height: 10),
+                // SizedBox(height: 4),
+                // TextWidget.paraText(
+                //   text: "View bank details and add new banks.",
+                //   theme: theme.isDarkMode,
+                //   color: theme.isDarkMode
+                //       ? colors.textSecondaryDark
+                //       : colors.textSecondaryLight,
+                // ),
+                // SizedBox(height: 10),
               ],
             ),
-            IconButton(
-              onPressed: () {
-                profileDetails.openInWebURL(context, "manbank");
-              },
-              icon: Icon(
-                Icons.add_circle_outline,
-                color:
-                    theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () async {
+                  // Add delay for visual feedback
+                  await Future.delayed(const Duration(milliseconds: 150));
+
+                  profileDetails.openInWebURL(context, "manbank");
+                },
+                borderRadius: BorderRadius.circular(20),
+                splashColor: theme.isDarkMode
+                    ? colors.splashColorDark
+                    : colors.splashColorLight,
+                highlightColor: theme.isDarkMode
+                    ? colors.highlightDark
+                    : colors.highlightLight,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(
+                    Icons.add_circle_outline,
+                    color: colors.secondary,
+                  ),
+                ),
               ),
             ),
           ],
@@ -1726,18 +1827,16 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             child: TextWidget.paraText(
               text: "No bank accounts found.",
               theme: theme.isDarkMode,
+              color: colors.textSecondaryLight,
             ),
           )
         else
           ...bankData.map((bank) {
             return Card(
-              margin:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5.0),
-                side:
-                    const BorderSide(color: Color.fromARGB(255, 214, 214, 214)),
+                side: BorderSide(color: colors.colorDivider),
               ),
               elevation: 0,
               child: Padding(
@@ -1781,52 +1880,78 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                       color: theme.isDarkMode
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
-                                      fw: 0,
                                     ),
                                   ),
-                                  SizedBox(height: 25.0),
-                                  if (bank.defaultAc == "Yes")
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: theme.isDarkMode
-                                            ? colors.colorGrey
-                                            : colors.darkGrey,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: TextWidget.captionText(
-                                        text: 'PRIMARY',
-                                        theme: theme.isDarkMode,
-                                        fw: 1,
-                                      ),
-                                    ),
+                                  // SizedBox(height: 25.0),
                                 ],
                               ),
                               TextWidget.paraText(
                                 text:
                                     'A/C No: ${profileDetails.formateDataToDisplay(bank.bankAcNo ?? "", 2, 4)}',
                                 theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
                               ),
                               SizedBox(height: 5.0),
                               TextWidget.paraText(
                                 text: 'IFSC: ${bank.iFSCCode ?? "N/A"}',
                                 theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
                               ),
                             ],
                           ),
                         ),
-                        IconButton(
-                          onPressed: () {
-                            profileDetails.openInWebURL(context, "manbank");
-                          },
-                          icon: Icon(
-                            Icons.edit,
-                            color: theme.isDarkMode
-                                ? colors.colorLightBlue
-                                : colors.colorBlue,
-                            size: 16,
-                          ),
+
+                        Column(
+                          children: [
+                            if (bank.defaultAc == "Yes")
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight,
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: TextWidget.captionText(
+                                    text: 'PRIMARY',
+                                    theme: theme.isDarkMode,
+                                    color: colors.colorWhite),
+                              ),
+                            SizedBox(height: 4),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () async {
+                                  // Add delay for visual feedback
+                                  await Future.delayed(
+                                      const Duration(milliseconds: 150));
+
+                                  profileDetails.openInWebURL(
+                                      context, "manbank");
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                splashColor: theme.isDarkMode
+                                    ? colors.splashColorDark
+                                    : colors.splashColorLight,
+                                highlightColor: theme.isDarkMode
+                                    ? colors.highlightDark
+                                    : colors.highlightLight,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Icon(
+                                    Icons.edit_outlined,
+                                    color: Color(0xff666666),
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -1845,154 +1970,138 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     final theme = ref.watch(themeProvider);
     bool DDPIActive = profileprovider.clientAllDetails.clientData!.dDPI == 'Y';
     bool POAActive = profileprovider.clientAllDetails.clientData!.pOA == 'Y';
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Card(
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            elevation: 0,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextWidget.subText(
-                          text: "Demat (CDSL)",
-                          theme: theme.isDarkMode,
-                          fw: 0,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight),
-                      Row(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 3),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(2),
-                              color: theme.isDarkMode
-                                  ? DDPIActive
-                                      ? const Color.fromARGB(255, 9, 163, 17)
-                                      : colors.colorGrey
-                                  : DDPIActive
-                                      ? Color.fromARGB(255, 9, 255, 0)
-                                          .withOpacity(.1)
-                                      : const Color(0xff666666).withOpacity(.1),
-                            ),
-                            child: Text("DDPI",
-                                overflow: TextOverflow.ellipsis,
-                                // maxLines: 1,
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? const Color(0xffFFFFFF)
-                                        : const Color(0xff666666),
-                                    12,
-                                    FontWeight.w600)),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 3),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(2),
-                              color: theme.isDarkMode
-                                  ? POAActive
-                                      ? const Color.fromARGB(255, 9, 163, 17)
-                                      : colors.colorGrey
-                                  : POAActive
-                                      ? Color.fromARGB(255, 9, 255, 0)
-                                          .withOpacity(.1)
-                                      : const Color(0xff666666).withOpacity(.1),
-                            ),
-                            child: Text("POA",
-                                overflow: TextOverflow.ellipsis,
-                                // maxLines: 1,
-                                style: textStyle(
-                                    theme.isDarkMode
-                                        ? const Color(0xffFFFFFF)
-                                        : const Color(0xff666666),
-                                    12,
-                                    FontWeight.w600)),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Card(
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          elevation: 0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Flexible(
-                      child: UserInfoColumn(
-                          label: "DP ID",
-                          value: profileprovider
-                                  .clientAllDetails.clientData?.cLIENTDPCODE!
-                                  .substring(0, 8) ??
-                              "",
-                          theme: theme),
-                    ),
-                    Flexible(
-                      child: UserInfoColumn(
-                          label: "BO ID",
-                          value: profileprovider
-                                  .clientAllDetails.clientData?.cLIENTDPCODE!
-                                  .substring(8) ??
-                              "",
-                          theme: theme),
+                    TextWidget.subText(
+                        text: "CDSL",
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight),
+                    Row(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: DDPIActive ? colors.primaryLight : null,
+                            border: !DDPIActive
+                                ? Border(
+                                    bottom: BorderSide(
+                                      color: colors.error,
+                                      width: 1,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          child: TextWidget.subText(
+                            text: "DDPI",
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            color:
+                                DDPIActive ? colors.colorWhite : colors.error,
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: POAActive ? colors.primaryLight : null,
+                            border: !POAActive
+                                ? Border(
+                                    bottom: BorderSide(
+                                      color: colors.error,
+                                      width: 1,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          child: TextWidget.subText(
+                            text: "POA",
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            color: POAActive ? colors.colorWhite : colors.error,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                UserInfoColumn(
-                  label: "DP Name",
-                  value:
+              ),
+              Column(
+                children: [
+                  _buildDataWidget(
+                      "DP ID",
+                      profileprovider.clientAllDetails.clientData?.cLIENTDPCODE!
+                              .substring(0, 8) ??
+                          "",
+                      theme),
+                  _buildDataWidget(
+                      "BO ID",
+                      profileprovider.clientAllDetails.clientData?.cLIENTDPCODE!
+                              .substring(8) ??
+                          "",
+                      theme),
+                  _buildDataWidget(
+                      "DP NAME",
                       profileprovider.clientAllDetails.clientData?.dPNAME ?? "",
-                  theme: theme,
-                  expandable: true,
-                ),
-              ],
-            ),
+                      theme),
+                ],
+              ),
+            ],
           ),
-          if (!DDPIActive && !POAActive)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextWidget.paraText(
-                    text: "Do you want to sell your stocks without CDSL T-Pin",
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    fw: 0),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () async {
-                    profileprovider.openInWebURL(context, "deposltory");
-                  },
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4))),
-                  child: TextWidget.subText(
-                      text: "Activate DDPI",
-                      theme: false,
-                      color: colors.colorWhite,
-                      fw: 2),
-                ),
-                SizedBox(height: 10.0),
-              ],
-            ),
-        ],
-      ),
+        ),
+        if (!DDPIActive && !POAActive)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextWidget.paraText(
+                text: "Do you want to sell your stocks without CDSL T-Pin",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () async {
+                  profileprovider.openInWebURL(context, "deposltory");
+                },
+                style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: theme.isDarkMode
+                        ? colors.primaryDark
+                        : colors.primaryLight,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4))),
+                child: TextWidget.subText(
+                    text: "Activate DDPI",
+                    theme: false,
+                    color: colors.colorWhite,
+                    fw: 2),
+              ),
+              SizedBox(height: 10.0),
+            ],
+          ),
+      ],
     );
   }
 
@@ -2010,45 +2119,73 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // Status badges
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            _buildStatusChip("DDPI", DDPIActive, theme),
-            const SizedBox(width: 8),
-            _buildStatusChip("POA", POAActive, theme),
-          ],
-        ),
-        const SizedBox(height: 16),
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.end,
+        //   children: [
+        //     _buildStatusChip("DDPI", DDPIActive, theme),
+        //     const SizedBox(width: 8),
+        //     _buildStatusChip("POA", POAActive, theme),
+        //   ],
+        // ),
+        // const SizedBox(height: 16),
 
-        if (!DDPIActive && !POAActive)
+        if (!DDPIActive && !POAActive) ...[
           TextWidget.subText(
             text:
                 "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
             theme: theme.isDarkMode,
-            fw: 1,
-            color: colors.kColorRedText,
-          )
-        else if (mtfCl && mtfClAuto) ...[
+            color: colors.error,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: null,
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: colors.textDisabled,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+              side: BorderSide(
+                width: 1,
+                color: theme.isDarkMode
+                    ? colors.textDisabled.withOpacity(0.5)
+                    : colors.textDisabled.withOpacity(0.3),
+              ),
+            ),
+            child: TextWidget.subText(
+              text: "Enable MTF",
+              theme: theme.isDarkMode,
+              fw: 2,
+              color: theme.isDarkMode
+                  ? colors.textDisabled.withOpacity(0.7)
+                  : colors.textDisabled.withOpacity(0.5),
+            ),
+          ),
+        ] else if (mtfCl && mtfClAuto) ...[
           TextWidget.subText(
             text:
                 "You have activated the Margin Trading Facility (MTF) on your account",
             theme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
           ),
           const SizedBox(height: 16),
           Chip(
             label: TextWidget.subText(
               text: 'MTF Enabled',
               theme: theme.isDarkMode,
-              fw: 1,
+              color: colors.colorWhite,
             ),
-            backgroundColor: theme.isDarkMode
-                ? const Color.fromARGB(255, 9, 163, 17)
-                : const Color.fromARGB(255, 9, 255, 0).withOpacity(.1),
+            backgroundColor: colors.primaryLight,
           ),
         ] else if (DDPIActive || POAActive) ...[
           TextWidget.subText(
             text:
                 "Would you like to activate Margin Trading Facility (MTF) on your account",
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
             theme: theme.isDarkMode,
           ),
           const SizedBox(height: 16),
@@ -2059,219 +2196,79 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             style: ElevatedButton.styleFrom(
               elevation: 0,
               backgroundColor:
-                  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(32),
-              ),
-              side: BorderSide(
-                width: 1,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                borderRadius: BorderRadius.circular(5),
               ),
             ),
             child: TextWidget.subText(
               text: "Enable MTF",
               theme: theme.isDarkMode,
-              fw: 1,
+              fw: 2,
+              color: colors.colorWhite,
             ),
           ),
-        ],
-
-        Card(
-          elevation: 0,
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 3),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2),
-                            color: theme.isDarkMode
-                                ? DDPIActive
-                                    ? const Color.fromARGB(255, 9, 163, 17)
-                                    : colors.colorGrey
-                                : DDPIActive
-                                    ? Color.fromARGB(255, 9, 255, 0)
-                                        .withOpacity(.1)
-                                    : const Color(0xff666666).withOpacity(.1),
-                          ),
-                          child: Text("DDPI",
-                              overflow: TextOverflow.ellipsis,
-                              // maxLines: 1,
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? const Color(0xffFFFFFF)
-                                      : const Color(0xff666666),
-                                  12,
-                                  FontWeight.w600)),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 3),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2),
-                            color: theme.isDarkMode
-                                ? POAActive
-                                    ? const Color.fromARGB(255, 9, 163, 17)
-                                    : colors.colorGrey
-                                : POAActive
-                                    ? Color.fromARGB(255, 9, 255, 0)
-                                        .withOpacity(.1)
-                                    : const Color(0xff666666).withOpacity(.1),
-                          ),
-                          child: Text("POA",
-                              overflow: TextOverflow.ellipsis,
-                              // maxLines: 1,
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? const Color(0xffFFFFFF)
-                                      : const Color(0xff666666),
-                                  12,
-                                  FontWeight.w600)),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                if (!DDPIActive && !POAActive)
+        ] else ...[
+          if ((profileDetails.clientAllDetails.clientData!.mTFCl == 'N' &&
+                  profileDetails.clientAllDetails.clientData!.mTFClAuto ==
+                      'N') &&
+              (profileDetails.clientAllDetails.clientData!.dDPI == 'Y' ||
+                  profileDetails.clientAllDetails.clientData!.pOA == "Y"))
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.subText(
+                    text:
+                        "Would you like to activate Margin Trading Facility (MTF) on your account ",
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(top: 16.0),
-                    child: TextWidget.subText(
-                        text:
-                            "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
-                        theme: theme.isDarkMode,
-                        fw: 0,
-                        color: colors.kColorRedText),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: TextWidget.subText(
-                      text: "Enable DDPI under Depository tab.",
-                      theme: theme.isDarkMode,
-                      fw: 0,
-                      color: colors.kColorRedText),
-                ),
-                if ((mtfCl && mtfClAuto)) ...[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // const SizedBox(height: 16,),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16.0),
-                        child: TextWidget.subText(
-                          text:
-                              "You have activated the Margin Trading Facility (MTF) on your account ",
-                          theme: theme.isDarkMode,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        //  if (Platform.isAndroid) {
+                        //           await ref.read(fundProvider).fetchHstoken(context);
+                        //             Navigator.pushNamed(
+                        //                 context, Routes.profileWebViewApp,
+                        //                 arguments: "mtf");
+
+                        //         } else {
+                        profileDetails.openInWebURL(context, "mtf");
+                        // }
+
+                        // await ref.read(fundProvider).fetchHstoken(context);
+                        // Navigator.pushNamed(context, Routes.profileWebViewApp,
+                        //     arguments: "mtf");
+                        //  profileDetails.openInWebURL(context,"mtf");
+                      },
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: theme.isDarkMode
+                            ? colors.colorBlack
+                            : colors.colorWhite,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        side: BorderSide(
+                          width: 1,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
                         ),
                       ),
-                      Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16.0),
-                            child: Chip(
-                              label: TextWidget.subText(
-                                  text: 'MTF Enabled',
-                                  theme: theme.isDarkMode,
-                                  fw: 1),
-                              // labelPadding:EdgeInsets.symmetric(horizontal: 8,vertical: 5),
-                              backgroundColor: theme.isDarkMode
-                                  ? mtfCl && mtfClAuto
-                                      ? const Color.fromARGB(255, 9, 163, 17)
-                                      : colors.colorGrey
-                                  : mtfCl && mtfClAuto
-                                      ? Color.fromARGB(255, 9, 255, 0)
-                                          .withOpacity(.1)
-                                      : const Color(0xff666666).withOpacity(
-                                          .1), // Color(0xffecf8f1),
-                              shape: RoundedRectangleBorder(
-                                side: BorderSide(
-                                  color: theme.isDarkMode
-                                      ? colors.colorBlack
-                                      : colors.colorWhite, // Color(0xffc1e7ba),
-                                ),
-                                borderRadius: BorderRadius.circular(32),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-                if ((profileDetails.clientAllDetails.clientData!.mTFCl == 'N' &&
-                        profileDetails.clientAllDetails.clientData!.mTFClAuto ==
-                            'N') &&
-                    (profileDetails.clientAllDetails.clientData!.dDPI == 'Y' ||
-                        profileDetails.clientAllDetails.clientData!.pOA == "Y"))
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextWidget.subText(
-                          text:
-                              "Would you like to activate Margin Trading Facility (MTF) on your account ",
-                          theme: theme.isDarkMode,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16.0),
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              //  if (Platform.isAndroid) {
-                              //           await ref.read(fundProvider).fetchHstoken(context);
-                              //             Navigator.pushNamed(
-                              //                 context, Routes.profileWebViewApp,
-                              //                 arguments: "mtf");
-
-                              //         } else {
-                              profileDetails.openInWebURL(context, "mtf");
-                              // }
-
-                              // await ref.read(fundProvider).fetchHstoken(context);
-                              // Navigator.pushNamed(context, Routes.profileWebViewApp,
-                              //     arguments: "mtf");
-                              //  profileDetails.openInWebURL(context,"mtf");
-                            },
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: theme.isDarkMode
-                                  ? colors.colorBlack
-                                  : colors.colorWhite,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(32),
-                              ),
-                              side: BorderSide(
-                                width: 1,
-                                color: theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                              ),
-                            ),
-                            child: TextWidget.subText(
-                                text: "Enable MTF",
-                                theme: theme.isDarkMode,
-                                fw: 1),
-                          ),
-                        ),
-                      ],
+                      child: TextWidget.subText(
+                          text: "Enable MTF", theme: theme.isDarkMode, fw: 2),
                     ),
                   ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
+        ],
       ]),
     );
   }
@@ -2366,6 +2363,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           if (clientData?.nomineeName == null ||
               clientData?.nomineeName == "") ...[
@@ -2377,35 +2375,28 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               theme: theme.isDarkMode,
             ),
             const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  profileDetails.openInWebURL(context, "nominee");
-                },
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  minimumSize: const Size(double.infinity, 40),
-                  backgroundColor: theme.isDarkMode
-                      ? colors.primaryDark
-                      : colors.primaryLight,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  side: BorderSide(
-                    width: 1,
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    await Future.delayed(const Duration(milliseconds: 150));
+                    profileDetails.openInWebURL(context, "nominee");
+                  },
+                  style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4))),
+                  child: TextWidget.subText(
+                    text: "Add Nominee",
+                    color: colors.colorWhite,
+                    theme: theme.isDarkMode,
+                    fw: 2,
                   ),
                 ),
-                child: TextWidget.subText(
-                  text: "Add Nominee",
-                  color: colors.colorWhite,
-                  theme: theme.isDarkMode,
-                  fw: 2,
-                ),
-              ),
+              ],
             ),
           ] else ...[
             Row(
@@ -2419,16 +2410,30 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
                 ),
-                IconButton(
-                  onPressed: () {
-                    profileDetails.openInWebURL(context, "nominee");
-                  },
-                  icon: Icon(
-                    Icons.edit,
-                    color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    size: 16,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {
+                      // Add delay for visual feedback
+                      await Future.delayed(const Duration(milliseconds: 150));
+
+                      profileDetails.openInWebURL(context, "nominee");
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    splashColor: theme.isDarkMode
+                        ? Colors.white.withOpacity(0.15)
+                        : Colors.black.withOpacity(0.15),
+                    highlightColor: theme.isDarkMode
+                        ? Colors.white.withOpacity(0.08)
+                        : Colors.black.withOpacity(0.08),
+                    child: const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Icon(
+                        Icons.edit_outlined,
+                        color: Color(0xff666666),
+                        size: 20,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -2439,8 +2444,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             _buildDetailRow("Nominee Relation",
                 clientData?.nomineeRelation ?? "N/A", theme),
             if (clientData?.nomineeDOB != null)
-              _buildDetailRow(
-                  "Nominee DOB", _formatDate(clientData!.nomineeDOB!), theme),
+              _buildDetailRow("Nominee DOB",
+                  formatNomineeDOB(clientData!.nomineeDOB!), theme),
           ],
         ],
       ),
@@ -2463,27 +2468,29 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 ? colors.textSecondaryDark
                 : colors.textSecondaryLight,
           ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ElevatedButton(
-              onPressed: () {
-                profileDetails.openInWebURL(context, "formdownload");
-              },
-              style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  minimumSize: const Size(double.infinity, 40),
-                  backgroundColor: theme.isDarkMode
-                      ? colors.primaryDark
-                      : colors.primaryLight,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5))),
-              child: TextWidget.subText(
-                  text: "Download Forms",
-                  theme: false,
-                  color: colors.colorWhite,
-                  fw: 2),
-            ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  await Future.delayed(const Duration(milliseconds: 150));
+
+                  profileDetails.openInWebURL(context, "formdownload");
+                },
+                style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    backgroundColor: theme.isDarkMode
+                        ? colors.primaryDark
+                        : colors.primaryLight,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4))),
+                child: TextWidget.subText(
+                    text: "Download Forms",
+                    theme: false,
+                    color: colors.colorWhite,
+                    fw: 2),
+              ),
+            ],
           ),
           // ElevatedButton(
           //   onPressed: () {
@@ -2530,29 +2537,25 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 ? colors.textSecondaryDark
                 : colors.textSecondaryLight,
           ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ElevatedButton(
-              onPressed: () {
-                profileDetails.openInWebURL(context, "closure");
-              },
-              style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  minimumSize: const Size(double.infinity, 40),
-                  backgroundColor: theme.isDarkMode
-                      ? colors.primaryDark
-                      : colors.primaryLight,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4))),
-              child: TextWidget.subText(
-                  text: "Close Account",
-                  theme: false,
-                  color: colors.colorWhite,
-                  fw: 2),
-            ),
-          ),
           const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () async {
+              await Future.delayed(const Duration(milliseconds: 150));
+
+              profileDetails.openInWebURL(context, "closure");
+            },
+            style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor:
+                    theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4))),
+            child: TextWidget.subText(
+                text: "Close Account",
+                theme: false,
+                color: colors.colorWhite,
+                fw: 2),
+          )
         ],
       ),
     );
@@ -2566,67 +2569,74 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         borderRadius: BorderRadius.circular(4),
         color: theme.isDarkMode
             ? isActive
-                ? const Color.fromARGB(255, 9, 163, 17)
-                : colors.colorGrey
+                ? colors.primaryDark
+                : colors.btnBg
             : isActive
-                ? const Color.fromARGB(255, 9, 255, 0).withOpacity(.1)
-                : const Color(0xff666666).withOpacity(.1),
+                ? colors.primaryLight
+                : colors.btnBg,
       ),
-      child: TextWidget.captionText(
-        text: label,
-        theme: theme.isDarkMode,
-        fw: 1,
-      ),
+      child: TextWidget.paraText(
+          text: label,
+          theme: theme.isDarkMode,
+          color: isActive ? colors.colorWhite : colors.colorBlack),
     );
   }
 
   /// Helper method to build segment rows
   Widget _buildSegmentRow(
       String label, Iterable segments, ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          TextWidget.paraText(
-            text: label,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
-           
-          ),
-          Row(
-            children: segments.map<Widget>((segment) {
-              bool isActive = segment.aCTIVEINACTIVE == "A";
-              String displayName =
-                  ['CD_BSE', 'CD_NSE'].contains(segment.cOMPANYCODE)
-                      ? segment.cOMPANYCODE.split("_")[1]
-                      : segment.cOMPANYCODE.split("_")[0];
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextWidget.subText(
+              text: label,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+            ),
+            Row(
+              children: segments.map<Widget>((segment) {
+                bool isActive = segment.aCTIVEINACTIVE == "A";
+                String displayName =
+                    ['CD_BSE', 'CD_NSE'].contains(segment.cOMPANYCODE)
+                        ? segment.cOMPANYCODE.split("_")[1]
+                        : segment.cOMPANYCODE.split("_")[0];
 
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  color: theme.isDarkMode
-                      ? isActive
-                          ? const Color.fromARGB(255, 9, 163, 17)
-                          : colors.colorGrey
-                      : isActive
-                          ? colors.primary.withOpacity(.1)
-                          :  colors.textPrimaryLight.withOpacity(.1),
-                ),
-                child: TextWidget.captionText(
-                  text: displayName,
-                  theme: theme.isDarkMode,
-                  fw: 1,
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    color: isActive ? colors.primaryLight : null,
+                    border: !isActive
+                        ? Border(
+                            bottom: BorderSide(
+                              color: colors.error,
+                              width: 1,
+                            ),
+                          )
+                        : null,
+                  ),
+                  child: TextWidget.subText(
+                      text: displayName,
+                      theme: theme.isDarkMode,
+                      color: isActive ? colors.colorWhite : colors.error),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Divider(
+          thickness: 1,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
+      ],
     );
   }
 
@@ -2638,32 +2648,85 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         : dateString;
   }
 
-  /// Helper for consistent styling of profile detail rows
+  /// Helper for consistent styling of profile detail rows (using data widget from holding_detail_screen)
   Widget _buildDetailRow(String label, String value, ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          TextWidget.paraText(
-            text: label,
-            color: theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
-            theme: theme.isDarkMode,
-            fw: 3,
-          ),
-          TextWidget.paraText(
-            text: value,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            theme: theme.isDarkMode,
-            fw: 0,
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextWidget.subText(
+              text: label,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+            ),
+            TextWidget.subText(
+              text: value,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Divider(
+          thickness: 0,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
+      ],
     );
+  }
+
+  /// Helper method to build data widget (same as data() from holding_detail_screen)
+  Widget _buildDataWidget(String label, String value, ThemesProvider theme) {
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextWidget.subText(
+              text: label,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+            ),
+            SizedBox(
+              width: 250,
+              child: TextWidget.subText(
+                text: value,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                align: TextAlign.right,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Divider(
+          thickness: 1,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
+      ],
+    );
+  }
+
+  /// Formats nominee DOB from 'October, 07 1983 00:00:00 +0530' to '07/10/1983'
+  String formatNomineeDOB(String rawDate) {
+    try {
+      DateTime date = DateFormat("MMMM, dd yyyy HH:mm:ss Z").parse(rawDate);
+      return DateFormat('dd/MM/yyyy').format(date);
+    } catch (e) {
+      return rawDate;
+    }
   }
 }
 
@@ -2697,39 +2760,19 @@ class ReportsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
         elevation: 0,
+        centerTitle: false,
+        leadingWidth: 48,
+        titleSpacing: 0,
         leading: const CustomBackBtn(),
-        actions: [
-          IconButton(
-            splashRadius: 20,
-            icon: SvgPicture.asset(
-              assets.qrIcon, // This is your asset path
-              height: 20,
-              width: 20,
-              color: colors
-                  .colorGrey, // Optional: set color if your SVG supports it
-            ),
-            onPressed: () {
-              Navigator.pushNamed(context, Routes.qrscanner);
-            },
-          ),
-          IconButton(
-            splashRadius: 20,
-            icon: SvgPicture.asset(
-              assets.notifyIcon, // This is your asset path
-              height: 20,
-              width: 20,
-              color: colors
-                  .colorGrey, // Optional: set color if your SVG supports it
-            ),
-            onPressed: () async {
-              await ref.read(notificationprovider).fetchexchagemsg(context);
-              await ref.read(notificationprovider).fetchbrokermsg(context);
-              Navigator.pushNamed(context, Routes.notificationpage);
-            },
-          ),
-        ],
+        title: TextWidget.titleText(
+          text: "Reports",
+          theme: false,
+          color: !theme.isDarkMode
+              ? colors.textPrimaryLight
+              : colors.textPrimaryDark,
+          fw: 1,
+        ),
       ),
       body: Column(
         children: [
@@ -2789,22 +2832,8 @@ class ReportsScreen extends ConsumerWidget {
           // const SizedBox(height: 10),
 
           // Reports Section
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TextWidget.titleText(
-                text: "Reports",
-                theme: false,
-                color: !theme.isDarkMode
-                    ? colors.textPrimaryLight
-                    : colors.textPrimaryDark,
-                fw: 1,
-              ),
-            ),
-          ),
 
-          const SizedBox(height: 10),
+          // const SizedBox(height: 10),
           // Padding(
           //   padding: const EdgeInsets.symmetric(horizontal: 16),
           //   child: Divider(
@@ -3116,36 +3145,34 @@ class UserInfoColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextWidget.paraText(
-            text: label.toUpperCase(),
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
-            fw: 3,
-          ),
-          TextFormField(
-            initialValue: value,
-            readOnly: true,
-            maxLines: expandable ? 4 : 1,
-            minLines: 1,
-            decoration: InputDecoration(
-              enabled: editable ? true : false,
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextWidget.subText(
+              text: label.toUpperCase(),
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
             ),
-            style: TextStyle(
-              overflow: TextOverflow.ellipsis,
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
+            TextWidget.subText(
+              text: value,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Divider(
+          thickness: 1,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
+      ],
     );
   }
 }

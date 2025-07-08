@@ -306,141 +306,172 @@ class _SecureFundState extends ConsumerState<SecureFund> {
     );
   }
 
- Widget _buildAvailableCashContent(funds, theme) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 18),
-    child: Column(
-      children: [
-        if (funds.listOfCredits.isNotEmpty) ...[
-          ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: funds.listOfCredits.length,
-              itemBuilder: (BuildContext context, int index) {
-                final isCollateral = funds.listOfCredits[index]["name"] == "Collateral";
-                
-                return Column(
+  Widget _buildAvailableCashContent(funds, theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          if (funds.listOfCredits.isNotEmpty) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Main row - make it tappable if it's collateral
-                    InkWell(
-                      onTap: isCollateral ? () {
-                        setState(() {
-                          isCollateralExpanded = !isCollateralExpanded;
-                        });
-                      } : null,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                TextWidget.subText(
-                                    text: "${funds.listOfCredits[index]["name"]}",
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    fw: 3),
-                                // Add expand/collapse icon for collateral
-                                if (isCollateral) ...[
-                                  const SizedBox(width: 8),
-                                  Icon(
-                                    isCollateralExpanded
-                                        ? Icons.keyboard_arrow_up
-                                        : Icons.keyboard_arrow_down,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    size: 20,
-                                  ),
-                                ]
-                              ],
-                            ),
-                            TextWidget.subText(
-                                text: getFormatter(
-                                    value: double.parse(
-                                        "${funds.listOfCredits[index]["value"]}"),
-                                    v4d: false,
-                                    noDecimal: false),
-                                theme: false,
-                                color: theme.isDarkMode
-                                    ? colors.textPrimaryDark
-                                    : colors.textPrimaryLight,
-                                fw: 3),
-                          ]
-                        ),
-                      ),
-                    ),
-                    
-                    // Expanded content for collateral
-                    if (isCollateral && isCollateralExpanded)
-                      Container(
-                        padding: const EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                TextWidget.subText(
-                                  text: "Cash Equivalent",
-                                  theme: false,
-                                  color: theme.isDarkMode 
-                                      ? colors.textSecondaryDark 
-                                      : colors.textSecondaryLight,
-                                  fw: 3,
-                                ),
-                                TextWidget.subText(
-                                  text: "₹${getFormatter(value: double.parse("${funds.pledgeAndUnpledgeModel?.cashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
-                                  theme: false,
-                                  color: theme.isDarkMode 
-                                      ? colors.textPrimaryDark 
-                                      : colors.textPrimaryLight,
-                                  fw: 3,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                TextWidget.subText(
-                                  text: "Non-Cash",
-                                  theme: false,
-                                  color: theme.isDarkMode 
-                                      ? colors.textSecondaryDark 
-                                      : colors.textSecondaryLight,
-                                  fw: 3,
-                                ),
-                                TextWidget.subText(
-                                  text: "₹${getFormatter(value: double.parse("${funds.pledgeAndUnpledgeModel?.noncashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
-                                  theme: false,
-                                  color: theme.isDarkMode 
-                                      ? colors.textPrimaryDark 
-                                      : colors.textPrimaryLight,
-                                  fw: 3,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                    TextWidget.subText(
+                        text: "${funds.listOfCredits[0]["name"]}",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        fw: 3),
+                    TextWidget.subText(
+                        text: getFormatter(
+                            value: double.parse(
+                                "${funds.listOfCredits[0]["value"]}"),
+                            v4d: false,
+                            noDecimal: false),
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 3),
                   ],
-                );
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                return Divider(
-                  height: 1,
-                  color: colors.colorDivider.withOpacity(0.5),
-                );
-              }),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(
+                    height: 1,
+                    color: colors.colorDivider.withOpacity(0.5),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextWidget.subText(
+                      text: "Col - Cash Equivalent",
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 3,
+                    ),
+                    TextWidget.subText(
+                      text:
+                          "${getFormatter(value: double.parse("${funds.pledgeAndUnpledgeModel?.cashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 3,
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(
+                    height: 1,
+                    color: colors.colorDivider.withOpacity(0.5),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextWidget.subText(
+                      text: "Col -Non-Cash",
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 3,
+                    ),
+                    TextWidget.subText(
+                      text:
+                          "${getFormatter(value: double.parse("${funds.pledgeAndUnpledgeModel?.noncashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 3,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ],
+          // if () ...[
+          //   ListView.separated(
+          //       shrinkWrap: true,
+          //       physics: const NeverScrollableScrollPhysics(),
+          //       itemCount: funds.listOfCredits.length,
+          //       itemBuilder: (BuildContext context, int index) {
+          //         final isCollateral =
+          //             funds.listOfCredits[index]["name"] == "Collateral";
+
+          //         return Column(
+          //           children: [
+
+          //             // Main row - make it tappable if it's collateral
+          //             InkWell(
+          //               onTap: isCollateral
+          //                   ? () {
+          //                       setState(() {
+          //                         isCollateralExpanded = !isCollateralExpanded;
+          //                       });
+          //                     }
+          //                   : null,
+          //               child: Container(
+          //                 padding: const EdgeInsets.symmetric(vertical: 12),
+          //                 child: Row(
+          //                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //                     children: [
+          //                       Row(
+          //                         children: [
+
+          //                           // Add expand/collapse icon for collateral
+          //                           // if (isCollateral) ...[
+          //                           //   const SizedBox(width: 8),
+          //                           //   Icon(
+          //                           //     isCollateralExpanded
+          //                           //         ? Icons.keyboard_arrow_up
+          //                           //         : Icons.keyboard_arrow_down,
+          //                           //     color: theme.isDarkMode
+          //                           //         ? colors.textSecondaryDark
+          //                           //         : colors.textSecondaryLight,
+          //                           //     size: 20,
+          //                           //   ),
+          //                           // ]
+          //                         ],
+          //                       ),
+
+          //                     ]),
+          //               ),
+          //             ),
+
+          //             // Expanded content for collateral
+          //             // if (isCollateral && isCollateralExpanded)
+          //             //   Container(
+          //             //     padding: const EdgeInsets.only(
+          //             //         left: 16.0, top: 8.0, bottom: 8.0),
+          //             //     child:
+          //             //   ),
+          //           ],
+          //         );
+          //       },
+          //       separatorBuilder: (BuildContext context, int index) {
+          // return Divider(
+          //   height: 1,
+          //   color: colors.colorDivider.withOpacity(0.5),
+          // );
+          //       }),
           const SizedBox(height: 12),
-        ]
-      ],
-    ),
-  );
-}
+          // ]
+        ],
+      ),
+    );
+  }
 
   Widget _buildMarginUsedContent(funds, theme) {
     return Container(

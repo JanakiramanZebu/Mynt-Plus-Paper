@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/order_book_model/gtt_order_book.dart';
@@ -14,6 +15,7 @@ import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/no_data_found.dart';
+import '../../utils/no_emoji_inputformatter.dart';
 import 'filter_gtt_bottom_sheet.dart';
 import 'gtt_order_detail.dart';
 
@@ -27,128 +29,330 @@ class GttOrderBook extends ConsumerWidget {
     final theme = ref.read(themeProvider);
 
     return Column(children: [
-      if (gttOrderBook.length > 1)
-        Container(
-            decoration: BoxDecoration(
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                border: Border(
-                    bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? colors.darkGrey
-                            : const Color(0xffF1F3F8),
-                        width: 6))),
-            child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 16, right: 2, top: 8, bottom: 8),
-                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  Row(children: [
-                    InkWell(
-                        onTap: () async {
-                          FocusScope.of(context).unfocus();
-                          showModalBottomSheet(
-                              useSafeArea: true,
-                              isScrollControlled: true,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(16))),
-                              context: context,
-                              builder: (context) {
-                                return const OrderbooGTTkFilterBottomSheet();
-                              });
-                        },
-                        child: Padding(
-                            padding: const EdgeInsets.only(right: 12),
-                            child: SvgPicture.asset(assets.filterLines,
-                                color: const Color(0xff333333)))),
-                    InkWell(
-                        onTap: () {
-                          order.showGTTOrderSearch(true);
-                        },
-                        child: Padding(
-                            padding: const EdgeInsets.only(right: 12, left: 10),
-                            child: SvgPicture.asset(assets.searchIcon,
-                                width: 19, color: const Color(0xff333333))))
-                  ])
-                ]))),
-      if (order.showGttOrderSearch)
-        Container(
-          height: 62,
-          padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-          decoration: BoxDecoration(
-              border: Border(
-                  bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? colors.darkGrey
-                          : const Color(0xffF1F3F8),
-                      width: 6))),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [UpperCaseTextFormatter()],
-                  controller: order.orderGttSearchCtrl,
-                  style: TextWidget.textStyle(
-                      color: const Color(0xff000000),
-                      fontSize: 16,
-                      fw: 1,
-                      theme: false),
-                  decoration: InputDecoration(
-                      fillColor: const Color(0xffF1F3F8),
-                      filled: true,
-                      hintStyle: TextWidget.textStyle(
-                          color: const Color(0xff69758F),
-                          fontSize: 14,
-                          fw: 0,
-                          theme: false),
-                      prefixIconColor: const Color(0xff586279),
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: SvgPicture.asset(assets.searchIcon,
-                            color: const Color(0xff586279),
-                            fit: BoxFit.contain,
-                            width: 20),
-                      ),
-                      suffixIcon: InkWell(
-                        onTap: () async {
-                          order.clearGttOrderSearch();
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: SvgPicture.asset(assets.removeIcon,
-                              fit: BoxFit.scaleDown, width: 20),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide.none,
-                          borderRadius: BorderRadius.circular(20)),
-                      disabledBorder: InputBorder.none,
-                      focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide.none,
-                          borderRadius: BorderRadius.circular(20)),
-                      hintText: "Search Scrip Name",
-                      contentPadding: const EdgeInsets.only(top: 20),
-                      border: OutlineInputBorder(
-                          borderSide: BorderSide.none,
-                          borderRadius: BorderRadius.circular(20))),
-                  onChanged: (value) async {
-                    order.orderGttSearch(value, context);
-                  },
-                ),
-              ),
-              TextButton(
-                  onPressed: () {
-                    order.showGTTOrderSearch(false);
-                    order.clearGttOrderSearch();
-                  },
-                  child: TextWidget.subText(
-                      text: "Close",
-                      theme: false,
-                      color: colors.colorBlue,
-                      fw: 0))
-            ],
-          ),
-        ),
+      // if (gttOrderBook.length > 1)
+      //   order.showGttOrderSearch
+      //       ? Container(
+      //           padding:
+      //               const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      //           decoration: BoxDecoration(
+      //             borderRadius: BorderRadius.circular(5),
+      //           ),
+      //           child: SizedBox(
+      //             height: 40,
+      //             child: TextFormField(
+      //                 autofocus: true,
+      //                 controller: order.orderGttSearchCtrl,
+      //                 style: TextWidget.textStyle(
+      //                     fontSize: 14, theme: theme.isDarkMode, fw: 1),
+      //                 keyboardType: TextInputType.text,
+      //                 textCapitalization: TextCapitalization.characters,
+      //                 inputFormatters: [
+      //                   UpperCaseTextFormatter(),
+      //                   NoEmojiInputFormatter(),
+      //                   FilteringTextInputFormatter.deny(
+      //                       RegExp('[π£•₹€℅™∆√¶/.,]'))
+      //                 ],
+      //                 decoration: InputDecoration(
+      //                     hintText: "Search",
+      //                     hintStyle: TextWidget.textStyle(
+      //                         fontSize: 14,
+      //                         theme: theme.isDarkMode,
+      //                         fw: 0,
+      //                         color: colors.textSecondaryLight),
+      //                     fillColor: colors.searchBg,
+      //                     filled: true,
+      //                     prefixIcon: Padding(
+      //                       padding: const EdgeInsets.all(8.0),
+      //                       child: SvgPicture.asset(assets.searchIcon,
+      //                           color: colors.textPrimaryLight,
+      //                           fit: BoxFit.scaleDown,
+      //                           width: 20),
+      //                     ),
+      //                     suffixIcon: Material(
+      //                       color: Colors.transparent,
+      //                       shape: const CircleBorder(),
+      //                       clipBehavior: Clip.hardEdge,
+      //                       child: InkWell(
+      //                         customBorder: const CircleBorder(),
+      //                         splashColor: theme.isDarkMode
+      //                             ? colors.splashColorDark
+      //                             : colors.splashColorLight,
+      //                         highlightColor: theme.isDarkMode
+      //                             ? colors.highlightDark
+      //                             : colors.highlightLight,
+      //                         onTap: () async {
+      //                           Future.delayed(
+      //                               const Duration(milliseconds: 150), () {
+      //                             order.clearGttOrderSearch();
+      //                             if (order.orderGttSearchCtrl.text.isEmpty) {
+      //                               order.showGTTOrderSearch(false);
+      //                             }
+      //                             // Clear cached widgets when search is cleared
+      //                             order.clearGttOrderSearch();
+      //                           });
+      //                         },
+      //                         child: SvgPicture.asset(assets.removeIcon,
+      //                             fit: BoxFit.scaleDown, width: 20),
+      //                       ),
+      //                     ),
+      //                     enabledBorder: OutlineInputBorder(
+      //                         borderSide: BorderSide.none,
+      //                         borderRadius: BorderRadius.circular(20)),
+      //                     disabledBorder: InputBorder.none,
+      //                     focusedBorder: OutlineInputBorder(
+      //                         borderSide: BorderSide.none,
+      //                         borderRadius: BorderRadius.circular(20)),
+      //                     contentPadding: const EdgeInsets.symmetric(
+      //                         horizontal: 5, vertical: 5),
+      //                     border: OutlineInputBorder(
+      //                         borderSide: BorderSide.none,
+      //                         borderRadius: BorderRadius.circular(20))),
+      //                 onChanged: (value) {
+      //                   // Enable search mode when user starts typing
+      //                   if (value.isNotEmpty) {
+      //                     order.showGTTOrderSearch(true);
+      //                   } else {
+      //                     // Disable search mode when field is empty
+      //                     order.showGTTOrderSearch(false);
+      //                   }
+
+      //                   // Perform the search
+      //                   order.orderGttSearch(value, context);
+
+      //                   // Clear cached widgets to force rebuild with new data
+      //                   // setState(() {
+      //                   //   _cachedSummarySection = null;
+      //                   //   _cachedActionButtons = null;
+      //                   //   _cachedEmptyState = null;
+      //                   //   _cachedActionButtonsKey = null;
+      //                   //   _cachedSummaryKey = null;
+      //                   // });
+      //                 }),
+      //           ),
+      //         )
+      //       : Padding(
+      //           padding: const EdgeInsets.only(
+      //               left: 16, right: 16, top: 5, bottom: 8),
+      //           child: Column(
+      //             children: [
+      //               SizedBox(
+      //                 height: 40,
+      //                 child: Container(
+      //                   padding: const EdgeInsets.symmetric(horizontal: 5),
+      //                   decoration: BoxDecoration(
+      //                     color: colors.searchBg,
+      //                     borderRadius: BorderRadius.circular(5),
+      //                   ),
+      //                   child: Row(
+      //                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //                     children: [
+      //                       Padding(
+      //                         padding: const EdgeInsets.only(right: 10),
+      //                         child: Row(
+      //                           children: [
+      //                             Material(
+      //                               color: Colors.transparent,
+      //                               shape: const CircleBorder(),
+      //                               clipBehavior: Clip.hardEdge,
+      //                               child: InkWell(
+      //                                 customBorder: const CircleBorder(),
+      //                                 splashColor: theme.isDarkMode
+      //                                     ? colors.splashColorDark
+      //                                     : colors.splashColorLight,
+      //                                 highlightColor: theme.isDarkMode
+      //                                     ? colors.highlightDark
+      //                                     : colors.highlightLight,
+      //                                 onTap: () {
+      //                                   Future.delayed(
+      //                                       const Duration(milliseconds: 150),
+      //                                       () async {
+      //                                     order.showGTTOrderSearch(true);
+      //                                   });
+      //                                 },
+      //                                 child: Padding(
+      //                                   padding: const EdgeInsets.all(8.0),
+      //                                   child: SvgPicture.asset(
+      //                                     assets.searchIcon,
+      //                                     color: colors.textPrimaryLight,
+      //                                     width: 20,
+      //                                     fit: BoxFit.scaleDown,
+      //                                   ),
+      //                                 ),
+      //                               ),
+      //                             ),
+      //                             Material(
+      //                               color: Colors.transparent,
+      //                               shape: const CircleBorder(),
+      //                               clipBehavior: Clip.hardEdge,
+      //                               child: InkWell(
+      //                                 customBorder: const CircleBorder(),
+      //                                 splashColor: theme.isDarkMode
+      //                                     ? colors.splashColorDark
+      //                                     : colors.splashColorLight,
+      //                                 highlightColor: theme.isDarkMode
+      //                                     ? colors.highlightDark
+      //                                     : colors.highlightLight,
+      //                                 onTap: () async {
+      //                                   Future.delayed(
+      //                                       const Duration(milliseconds: 150),
+      //                                       () async {
+      //                                     await showModalBottomSheet(
+      //                                         useSafeArea: true,
+      //                                         isScrollControlled: true,
+      //                                         shape:
+      //                                             const RoundedRectangleBorder(
+      //                                                 borderRadius:
+      //                                                     BorderRadius.vertical(
+      //                                                         top: Radius
+      //                                                             .circular(
+      //                                                                 16))),
+      //                                         context: context,
+      //                                         builder: (context) {
+      //                                           return const OrderbooGTTkFilterBottomSheet();
+      //                                         });
+      //                                   });
+      //                                 },
+      //                                 child: Padding(
+      //                                   padding: const EdgeInsets.all(8.0),
+      //                                   child: SvgPicture.asset(
+      //                                     assets.filterLinesDark,
+      //                                     width: 18,
+      //                                     color: colors.textPrimaryLight,
+      //                                     fit: BoxFit.scaleDown,
+      //                                   ),
+      //                                 ),
+      //                               ),
+      //                             ),
+      //                           ],
+      //                         ),
+      //                       ),
+      //                     ],
+      //                   ),
+      //                 ),
+      //               ),
+      //             ],
+      //           )),
+      // Container(
+      //     decoration: BoxDecoration(
+      //         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      //         border: Border(
+      //             bottom: BorderSide(
+      //                 color: theme.isDarkMode
+      //                     ? colors.darkGrey
+      //                     : const Color(0xffF1F3F8),
+      //                 width: 6))),
+      //     child: Padding(
+      //         padding:
+      //             const EdgeInsets.only(left: 16, right: 2, top: 8, bottom: 8),
+      //         child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+      //           Row(children: [
+      //             InkWell(
+      //                 onTap: () async {
+      //                   FocusScope.of(context).unfocus();
+      //                   showModalBottomSheet(
+      //                       useSafeArea: true,
+      //                       isScrollControlled: true,
+      //                       shape: const RoundedRectangleBorder(
+      //                           borderRadius: BorderRadius.vertical(
+      //                               top: Radius.circular(16))),
+      //                       context: context,
+      //                       builder: (context) {
+      //                         return const OrderbooGTTkFilterBottomSheet();
+      //                       });
+      //                 },
+      //                 child: Padding(
+      //                     padding: const EdgeInsets.only(right: 12),
+      //                     child: SvgPicture.asset(assets.filterLines,
+      //                         color: const Color(0xff333333)))),
+      //             InkWell(
+      //                 onTap: () {
+      //                   order.showGTTOrderSearch(true);
+      //                 },
+      //                 child: Padding(
+      //                     padding: const EdgeInsets.only(right: 12, left: 10),
+      //                     child: SvgPicture.asset(assets.searchIcon,
+      //                         width: 19, color: const Color(0xff333333))))
+      //           ])
+      //         ]))),
+      // if ()
+      //   Container(
+      //     height: 62,
+      //     padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+      //     decoration: BoxDecoration(
+      //         border: Border(
+      //             bottom: BorderSide(
+      //                 color: theme.isDarkMode
+      //                     ? colors.darkGrey
+      //                     : const Color(0xffF1F3F8),
+      //                 width: 6))),
+      //     child: Row(
+      //       children: [
+      //         Expanded(
+      //           child: TextFormField(
+      //             textCapitalization: TextCapitalization.characters,
+      //             inputFormatters: [UpperCaseTextFormatter()],
+      //             controller: order.orderGttSearchCtrl,
+      //             style: TextWidget.textStyle(
+      //                 color: const Color(0xff000000),
+      //                 fontSize: 16,
+      //                 fw: 1,
+      //                 theme: false),
+      //             decoration: InputDecoration(
+      //                 fillColor: const Color(0xffF1F3F8),
+      //                 filled: true,
+      //                 hintStyle: TextWidget.textStyle(
+      //                     color: const Color(0xff69758F),
+      //                     fontSize: 14,
+      //                     fw: 0,
+      //                     theme: false),
+      //                 prefixIconColor: const Color(0xff586279),
+      //                 prefixIcon: Padding(
+      //                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      //                   child: SvgPicture.asset(assets.searchIcon,
+      //                       color: const Color(0xff586279),
+      //                       fit: BoxFit.contain,
+      //                       width: 20),
+      //                 ),
+      //                 suffixIcon: InkWell(
+      //                   onTap: () async {
+      //                     order.clearGttOrderSearch();
+      //                   },
+      //                   child: Padding(
+      //                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      //                     child: SvgPicture.asset(assets.removeIcon,
+      //                         fit: BoxFit.scaleDown, width: 20),
+      //                   ),
+      //                 ),
+      //                 enabledBorder: OutlineInputBorder(
+      //                     borderSide: BorderSide.none,
+      //                     borderRadius: BorderRadius.circular(20)),
+      //                 disabledBorder: InputBorder.none,
+      //                 focusedBorder: OutlineInputBorder(
+      //                     borderSide: BorderSide.none,
+      //                     borderRadius: BorderRadius.circular(20)),
+      //                 hintText: "Search Scrip Name",
+      //                 contentPadding: const EdgeInsets.only(top: 20),
+      //                 border: OutlineInputBorder(
+      //                     borderSide: BorderSide.none,
+      //                     borderRadius: BorderRadius.circular(20))),
+      //             onChanged: (value) async {
+      //               order.orderGttSearch(value, context);
+      //             },
+      //           ),
+      //         ),
+      //         TextButton(
+      //             onPressed: () {
+      //               order.showGTTOrderSearch(false);
+      //               order.clearGttOrderSearch();
+      //             },
+      //             child: TextWidget.subText(
+      //                 text: "Close",
+      //                 theme: false,
+      //                 color: colors.colorBlue,
+      //                 fw: 0))
+      //       ],
+      //     ),
+      //   ),
       Expanded(
         child: StreamBuilder<Map>(
           stream: ref.watch(websocketProvider).socketDataStream,
@@ -341,7 +545,7 @@ class GttOrderBook extends ConsumerWidget {
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
+                                      horizontal: 16, vertical: 5),
                                   child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -372,7 +576,7 @@ class GttOrderBook extends ConsumerWidget {
                                                         ? colors.textPrimaryDark
                                                         : colors
                                                             .textPrimaryLight,
-                                                    fw: 0,
+                                                    fw: 3,
                                                     textOverflow:
                                                         TextOverflow.ellipsis),
                                               ]),
@@ -420,35 +624,35 @@ class GttOrderBook extends ConsumerWidget {
                                                                   : colors
                                                                       .textSecondaryLight
                                                                       .withOpacity(0.1),
-                                                      border: Border.all(
-                                                          color: gttOrderBook[
-                                                                          index]
-                                                                      .gttOrderCurrentStatus
-                                                                      ?.toUpperCase() ==
-                                                                  "CANCELLED"
-                                                              ? theme.isDarkMode
-                                                                  ? colors
-                                                                      .lossDark
-                                                                  : colors
-                                                                      .lossLight
-                                                              : gttOrderBook[index]
-                                                                          .gttOrderCurrentStatus
-                                                                          ?.toUpperCase() ==
-                                                                      "PENDING"
-                                                                  ? colors
-                                                                      .pending
-                                                                  : gttOrderBook[index]
-                                                                              .gttOrderCurrentStatus
-                                                                              ?.toUpperCase() ==
-                                                                          "COMPLETED"
-                                                                      ? theme
-                                                                              .isDarkMode
-                                                                          ? colors
-                                                                              .profitDark
-                                                                          : colors
-                                                                              .profitLight
-                                                                      : colors
-                                                                          .textSecondaryLight),
+                                                      // border: Border.all(
+                                                      //     color: gttOrderBook[
+                                                      //                     index]
+                                                      //                 .gttOrderCurrentStatus
+                                                      //                 ?.toUpperCase() ==
+                                                      //             "CANCELLED"
+                                                      //         ? theme.isDarkMode
+                                                      //             ? colors
+                                                      //                 .lossDark
+                                                      //             : colors
+                                                      //                 .lossLight
+                                                      //         : gttOrderBook[index]
+                                                      //                     .gttOrderCurrentStatus
+                                                      //                     ?.toUpperCase() ==
+                                                      //                 "PENDING"
+                                                      //             ? colors
+                                                      //                 .pending
+                                                      //             : gttOrderBook[index]
+                                                      //                         .gttOrderCurrentStatus
+                                                      //                         ?.toUpperCase() ==
+                                                      //                     "COMPLETED"
+                                                      //                 ? theme
+                                                      //                         .isDarkMode
+                                                      //                     ? colors
+                                                      //                         .profitDark
+                                                      //                     : colors
+                                                      //                         .profitLight
+                                                      //                 : colors
+                                                      //                     .textSecondaryLight),
                                                     ),
                                                     child: TextWidget.paraText(
                                                         text: gttOrderBook[
@@ -499,9 +703,16 @@ class GttOrderBook extends ConsumerWidget {
                                             children: [
                                               Row(
                                                 children: [
-                                                  CustomExchBadge(
-                                                      exch:
-                                                          "${gttOrderBook[index].exch}"),
+                                                  TextWidget.paraText(
+                                                      text:
+                                                          "${gttOrderBook[index].exch}",
+                                                      theme: false,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
+                                                      fw: 3),
                                                 ],
                                               ),
                                               Row(
@@ -678,12 +889,6 @@ class GttOrderBook extends ConsumerWidget {
                                               ])
                                             ]),
                                         const SizedBox(height: 8),
-                                        Divider(
-                                            color: theme.isDarkMode
-                                                ? colors.dividerDark
-                                                : colors.dividerLight,
-                                            height: 1),
-                                        const SizedBox(height: 8),
                                       ]),
                                 )
 
@@ -693,11 +898,11 @@ class GttOrderBook extends ConsumerWidget {
                           },
                           itemCount: gttOrderBook.length,
                           separatorBuilder: (BuildContext context, int index) {
-                            return Container(
+                            return Divider(
                                 color: theme.isDarkMode
                                     ? colors.dividerDark
                                     : colors.dividerLight,
-                                height: 1);
+                                thickness: 0);
                           },
                         )
                       : const SizedBox(height: 500, child: NoDataFound()),

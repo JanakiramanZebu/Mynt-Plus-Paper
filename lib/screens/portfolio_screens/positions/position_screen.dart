@@ -393,13 +393,17 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                               funds.optionZ(context);
                             });
                           },
-                          child: TextWidget.paraText(
-                            text: "OptionZ",
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.secondaryDark
-                                : colors.secondaryLight,
-                            fw: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            child: TextWidget.paraText(
+                              text: "OptionZ",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.secondaryDark
+                                  : colors.secondaryLight,
+                              fw: 2,
+                            ),
                           ),
                         ),
                       ),
@@ -556,9 +560,8 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         // Return divider for odd indices
         if (idx.isOdd) {
           return Container(
-              color: theme.isDarkMode
-                  ? colors.colorBlack
-                  : const Color(0xffECEDEE),
+              color:
+                  theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
               height: 1);
         }
 
@@ -896,7 +899,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               _buildHeaderRow(theme, containerColor),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               _buildQuantityRow(
                   qty, pnlValue, pnlColor, positions.isNetPnl, avgPrice, theme),
               const SizedBox(height: 8),
@@ -936,7 +939,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
                   : colors.textPrimaryLight,
               textOverflow: TextOverflow.ellipsis,
               fw: 3),
-          TextWidget.titleText(
+          TextWidget.subText(
               text: "${widget.position.option} ",
               theme: theme.isDarkMode,
               color: theme.isDarkMode

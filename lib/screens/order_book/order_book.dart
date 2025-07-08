@@ -521,9 +521,10 @@ class _OrderBookState extends ConsumerState<OrderBook> {
       },
       itemCount: items.length,
       separatorBuilder: (BuildContext context, int index) {
-        return Container(
-            color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-            height: 1);
+        return Divider(
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          thickness: 0,
+        );
       },
     );
   }
@@ -710,11 +711,6 @@ class _OrderItemState extends State<_OrderItem> {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Color(0xffEEEEEE), width: 1),
-          ),
-        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -742,8 +738,8 @@ class _OrderItemState extends State<_OrderItem> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    border: Border.all(color: _getStatusColor()),
-                    borderRadius: BorderRadius.circular(5),
+                    // border: Border.all(color: _getStatusColor()),
+                    borderRadius: BorderRadius.circular(4),
                     color: _getStatusColor().withOpacity(0.1),
                   ),
                   child: TextWidget.paraText(
@@ -802,7 +798,7 @@ class _OrderItemState extends State<_OrderItem> {
                           : widget.theme.isDarkMode
                               ? colors.primaryDark
                               : colors.primaryLight,
-                      fw: 1,
+                      fw: 0,
                     ),
                     const SizedBox(width: 8),
                     TextWidget.paraText(

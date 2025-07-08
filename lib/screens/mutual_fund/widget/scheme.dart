@@ -4,6 +4,7 @@ import 'package:readmore/readmore.dart';
 import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 
@@ -38,15 +39,18 @@ class MFSchemeInfo extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const SizedBox(height: 30),
-            Text(
-              "Fund Manager",
-              style: textStyle(
-                isDarkMode ? colors.colorWhite : colors.colorBlack,
-                18,
-                FontWeight.w600
-              )
-            ),
+            const SizedBox(height: 10),
+            TextWidget.titleText(
+                      align: TextAlign.right,
+                      text:"Fund Manager",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 3),
+            const SizedBox(height: 15),
+             
             Container(
               margin: const EdgeInsets.symmetric(vertical: 10),
               padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
@@ -73,35 +77,44 @@ class MFSchemeInfo extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text(
-                          factSheetData.fundManager ?? "N/A",
-                          style: textStyle(
-                            isDarkMode ? colors.colorWhite : colors.colorBlack,
-                            16,
-                            FontWeight.w500
-                          )
-                        ),
+                        TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text:  factSheetData.fundManager ?? "N/A",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark
+                                                        :  colors.textPrimaryLight,  
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                         
                         const SizedBox(height: 5),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              factSheetData.managerDesignation?.isEmpty == true ? "----" : factSheetData.managerDesignation ?? "----",
-                              style: textStyle(
-                                isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                12,
-                                FontWeight.w500
-                              )
-                            ),
+                             TextWidget.paraText(
+                                                    align: TextAlign.right,
+                                                    text:  factSheetData.managerDesignation?.isEmpty == true ? "----" : factSheetData.managerDesignation ?? "----",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark
+                                                        :  colors.textSecondaryLight, 
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                             
                             const SizedBox(height: 2),
-                            Text(
-                              "₹${aum.toStringAsFixed(2)} Cr",
-                              style: textStyle(
-                                isDarkMode ? colors.colorWhite : colors.colorBlack,
-                                14,
-                                FontWeight.w500,
-                              ),
-                            ),
+                            TextWidget.paraText(
+                                                    align: TextAlign.right,
+                                                    text:  "₹${aum.toStringAsFixed(2)} Cr",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark
+                                                        :  colors.textSecondaryLight, 
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                             
                           ],
                         ),
                         const SizedBox(height: 2),
@@ -109,22 +122,27 @@ class MFSchemeInfo extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "${factSheetData.managerTotalExperience?.isEmpty == true ? "N/A" : factSheetData.managerTotalExperience} experience",
-                              style: textStyle(
-                                const Color(0xff999999), 
-                                14,
-                                FontWeight.w500
-                              )
-                            ),
-                            Text(
-                              "$fundsManaged funds managed",
-                              style: textStyle(
-                                const Color(0xff999999), 
-                                12, 
-                                FontWeight.w500
-                              ),
-                            ),
+                             TextWidget.paraText(
+                                                    align: TextAlign.right,
+                                                    text:  "${factSheetData.managerTotalExperience?.isEmpty == true ? "N/A" : factSheetData.managerTotalExperience} experience",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark
+                                                        :  colors.textSecondaryLight, 
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                             TextWidget.paraText(
+                                                    align: TextAlign.right,
+                                                    text: "$fundsManaged funds managed",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark
+                                                        :  colors.textSecondaryLight, 
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                             
                           ],
                         ),
                       ],
@@ -136,21 +154,24 @@ class MFSchemeInfo extends ConsumerWidget {
             const SizedBox(height: 8),
             
             if(hasManagerDescription) ...[
-              Text(
-                "Manager Description",
-                style: textStyle(
-                  isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w500
-                )
-              ),
+                  TextWidget.titleText(
+                      align: TextAlign.right,
+                      text: "Manager Description",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 3),
+               
               const SizedBox(height: 8),
+
               ReadMoreText(
                 factSheetData.managerDetailedDescription ?? "",
                 style: textStyle(
                   isDarkMode ? colors.colorWhite : const Color(0xff666666), 
-                  13, 
-                  FontWeight.w500
+                  12, 
+                  FontWeight.w400
                 ).copyWith(height: 1.5),
                 textAlign: TextAlign.left,
                 trimLines: 3,
@@ -161,7 +182,7 @@ class MFSchemeInfo extends ConsumerWidget {
                 trimCollapsedText: 'Read more',
                 trimExpandedText: ' Read less'
               ),
-              const SizedBox(height: 47),
+              const SizedBox(height: 80),
             ] else
               const SizedBox(height: 47),
           ],

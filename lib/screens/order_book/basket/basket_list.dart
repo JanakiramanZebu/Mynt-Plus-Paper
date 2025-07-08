@@ -15,6 +15,7 @@ import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/no_data_found.dart';
+import 'create_basket.dart';
 
 class BasketList extends ConsumerWidget {
   const BasketList({super.key});
@@ -27,177 +28,237 @@ class BasketList extends ConsumerWidget {
 
     return basket.bsktList.isEmpty
         ? const NoDataFound()
-        : ListView.separated(
-            shrinkWrap: true,
-            itemCount: basket.bsktList.length,
-            itemBuilder: (BuildContext context, int index) {
-              return ListTile(
-                  onLongPress: () {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (BuildContext context) {
-                        return StatefulBuilder(
-                          builder: (BuildContext context,
-                              StateSetter setDialogState) {
-                            return AlertDialog(
-                              backgroundColor: theme.isDarkMode
-                                  ? const Color.fromARGB(255, 18, 18, 18)
-                                  : colors.colorWhite,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(16))),
-                              scrollable: true,
-                              actionsPadding: const EdgeInsets.only(
-                                  left: 16, right: 16, bottom: 14, top: 10),
-                              contentPadding: EdgeInsets.zero,
-                              insetPadding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              titlePadding: const EdgeInsets.only(
-                                  left: 16, right: 8, top: 0, bottom: 0),
-                              title: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    TextWidget.titleText(
-                                        text: "Delete Basket",
-                                        theme: theme.isDarkMode,
-                                        fw: 1),
-                                    InkWell(
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                      },
-                                      borderRadius: BorderRadius.circular(
-                                          32), // Makes the ripple circular
-                                      splashColor: theme.isDarkMode
-                                          ? Colors.white.withOpacity(0.2)
-                                          : Colors.black.withOpacity(0.1),
-                                      highlightColor: Colors
-                                          .transparent, // Optional: remove highlight if not needed
-                                      customBorder:
-                                          const CircleBorder(), // Ensures ripple is circular
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(
-                                            8.0), // Ensures enough space for ripple
-                                        child: Icon(
-                                          Icons.close_rounded,
-                                          size: 22,
-                                          color: theme.isDarkMode
-                                              ? const Color(0xffBDBDBD)
-                                              : colors.colorGrey,
-                                        ),
-                                      ),
-                                    )
-                                  ]),
-                              content: SizedBox(
-                                  width: MediaQuery.of(context).size.width,
-                                  child: Column(children: [
-                                    const ListDivider(),
-                                    const SizedBox(height: 14),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
-                                      child: TextWidget.subText(
-                                          text:
-                                              "Are you sure you want to delete this basket ${basket.bsktList[index]['bsketName'].toString().toUpperCase()} ?",
-                                          theme: theme.isDarkMode,
-                                          fw: 0),
+        : Column(
+            children: [
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colors.btnBg,
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                            color: colors.btnOutlinedBorder, width: 1),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        shape: const BeveledRectangleBorder(),
+                        child: InkWell(
+                            customBorder: const BeveledRectangleBorder(),
+                            splashColor: theme.isDarkMode
+                                ? colors.splashColorDark
+                                : colors.splashColorLight,
+                            highlightColor: theme.isDarkMode
+                                ? colors.highlightDark
+                                : colors.highlightLight,
+                            onTap: () {
+                              Future.delayed(const Duration(milliseconds: 150),
+                                  () {
+                                showModalBottomSheet(
+                                    context: context,
+                                    useSafeArea: true,
+                                    isScrollControlled: true,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(16)),
                                     ),
-                                  ])),
-                              actions: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: OutlinedButton(
-                                        onPressed: (_isDeleting)
-                                            ? null
-                                            : () async {
-                                                setDialogState(() {
-                                                  _isDeleting = true;
-                                                });
-                                                await basket
-                                                    .removeBasket(index);
-                                                Navigator.pop(context);
-
-                                                if (context.mounted) {
-                                                  setDialogState(() {
-                                                    _isDeleting = false;
-                                                  });
-                                                }
-                                              },
-                                        style: OutlinedButton.styleFrom(
-                                          minimumSize: const Size(
-                                              0, 40), // width, height
-                                          side: BorderSide(
-                                              color: colors
-                                                  .darkred), // Outline border color
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5),
+                                    builder: (BuildContext context) {
+                                      return const CreateBasket();
+                                    });
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 5),
+                              child: TextWidget.subText(
+                                  text: "Create Basket",
+                                  theme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight,
+                                  fw: 0),
+                            )),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ListView.separated(
+                shrinkWrap: true,
+                itemCount: basket.bsktList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                      onLongPress: () {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return StatefulBuilder(
+                              builder: (BuildContext context,
+                                  StateSetter setDialogState) {
+                                return AlertDialog(
+                                  backgroundColor: theme.isDarkMode
+                                      ? const Color.fromARGB(255, 18, 18, 18)
+                                      : colors.colorWhite,
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(16))),
+                                  scrollable: true,
+                                  actionsPadding: const EdgeInsets.only(
+                                      left: 16, right: 16, bottom: 14, top: 10),
+                                  contentPadding: EdgeInsets.zero,
+                                  insetPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  titlePadding: const EdgeInsets.only(
+                                      left: 16, right: 8, top: 0, bottom: 0),
+                                  title: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        TextWidget.titleText(
+                                            text: "Delete Basket",
+                                            theme: theme.isDarkMode,
+                                            fw: 1),
+                                        InkWell(
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                          },
+                                          borderRadius: BorderRadius.circular(
+                                              32), // Makes the ripple circular
+                                          splashColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(0.2)
+                                              : Colors.black.withOpacity(0.1),
+                                          highlightColor: Colors
+                                              .transparent, // Optional: remove highlight if not needed
+                                          customBorder:
+                                              const CircleBorder(), // Ensures ripple is circular
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(
+                                                8.0), // Ensures enough space for ripple
+                                            child: Icon(
+                                              Icons.close_rounded,
+                                              size: 22,
+                                              color: theme.isDarkMode
+                                                  ? const Color(0xffBDBDBD)
+                                                  : colors.colorGrey,
+                                            ),
                                           ),
-                                          backgroundColor: Colors
-                                              .transparent, // Transparent background
+                                        )
+                                      ]),
+                                  content: SizedBox(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: Column(children: [
+                                        const ListDivider(),
+                                        const SizedBox(height: 14),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16),
+                                          child: TextWidget.subText(
+                                              text:
+                                                  "Are you sure you want to delete this basket ${basket.bsktList[index]['bsketName'].toString().toUpperCase()} ?",
+                                              theme: theme.isDarkMode,
+                                              fw: 0),
                                         ),
-                                        child: (_isDeleting)
-                                            ? const SizedBox(
-                                                width: 18,
-                                                height: 20,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                        strokeWidth: 2,
-                                                        color:
-                                                            Color(0xff666666)),
-                                              )
-                                            : TextWidget.subText(
-                                                text: "Delete",
-                                                color: colors.kColorRedText,
-                                                theme: theme.isDarkMode,
-                                                fw: 0),
-                                      ),
+                                      ])),
+                                  actions: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton(
+                                            onPressed: (_isDeleting)
+                                                ? null
+                                                : () async {
+                                                    setDialogState(() {
+                                                      _isDeleting = true;
+                                                    });
+                                                    await basket
+                                                        .removeBasket(index);
+                                                    Navigator.pop(context);
+
+                                                    if (context.mounted) {
+                                                      setDialogState(() {
+                                                        _isDeleting = false;
+                                                      });
+                                                    }
+                                                  },
+                                            style: OutlinedButton.styleFrom(
+                                              minimumSize: const Size(
+                                                  0, 40), // width, height
+                                              side: BorderSide(
+                                                  color: colors
+                                                      .darkred), // Outline border color
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                              backgroundColor: Colors
+                                                  .transparent, // Transparent background
+                                            ),
+                                            child: (_isDeleting)
+                                                ? const SizedBox(
+                                                    width: 18,
+                                                    height: 20,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            color: Color(
+                                                                0xff666666)),
+                                                  )
+                                                : TextWidget.subText(
+                                                    text: "Delete",
+                                                    color: colors.kColorRedText,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 0),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
-                                ),
-                              ],
+                                );
+                              },
                             );
                           },
                         );
                       },
-                    );
-                  },
-                  onTap: () async {
-                    await basket.fetchBasketMargin();
-                    basket.chngBsktName(
-                        basket.bsktList[index]['bsketName'], context);
-                  },
-                  dense: true,
-                  trailing: TextWidget.paraText(
-                      text:
-                          "${basket.bsktList[index]['curLength']} / ${basket.bsktList[index]['max']}",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      fw: 3),
-                  title: TextWidget.subText(
-                      text:
-                          "Basket name: ${basket.bsktList[index]['bsketName']}",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      fw: 3),
-                  subtitle: TextWidget.paraText(
-                      text:
-                          "Created on: ${basket.bsktList[index]['createdDate']}",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      fw: 3));
-            },
-            separatorBuilder: (BuildContext context, int index) {
-              return const ListDivider();
-            },
+                      onTap: () async {
+                        await basket.fetchBasketMargin();
+                        basket.chngBsktName(
+                            basket.bsktList[index]['bsketName'], context);
+                      },
+                      dense: true,
+                      trailing: TextWidget.paraText(
+                          text:
+                              "${basket.bsktList[index]['curLength']} / ${basket.bsktList[index]['max']}",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          fw: 3),
+                      title: TextWidget.subText(
+                          text:
+                              "Basket name: ${basket.bsktList[index]['bsketName']}",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          fw: 3),
+                      subtitle: TextWidget.paraText(
+                          text:
+                              "Created on: ${basket.bsktList[index]['createdDate']}",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          fw: 3));
+                },
+                separatorBuilder: (BuildContext context, int index) {
+                  return const ListDivider();
+                },
+              ),
+            ],
           );
   }
 }

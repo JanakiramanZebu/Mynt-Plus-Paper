@@ -495,11 +495,11 @@ class OrderProvider extends DefaultChangeNotifier {
       //       : "Trade Book",
       // ),
 
-      Tab(
-        text: (_siporderBookModel?.sipDetails?.isNotEmpty ?? false)
-            ? "SIP ${_siporderBookModel!.sipDetails!.length}"
-            : "SIP",
-      ),
+      // Tab(
+      //   text: (_siporderBookModel?.sipDetails?.isNotEmpty ?? false)
+      //       ? "SIP ${_siporderBookModel!.sipDetails!.length}"
+      //       : "SIP",
+      // ),
       const Tab(
         text: ("Alerts"),
         // ref.read(marketWatchProvider).alertPendingModel != null &&

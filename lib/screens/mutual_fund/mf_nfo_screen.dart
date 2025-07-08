@@ -9,6 +9,7 @@ import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../routes/route_names.dart';
+import '../../res/global_state_text.dart';
 import '../../sharedWidget/loader_ui.dart';
 
 class MFNFOScreen extends ConsumerWidget {
@@ -144,19 +145,24 @@ class MFNFOScreen extends ConsumerWidget {
                                                     .size
                                                     .width *
                                                 0.65,
-                                            child: Text(
-                                              nfoItem.fSchemeName ??
+                                            child: 
+                                            
+                                            
+                                            TextWidget.subText(
+                                                    align: TextAlign.start,
+                                                    text: nfoItem.fSchemeName ??
                                                   "Unknown Fund",
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: textStyles
-                                                  .scripNameTxtStyle
-                                                  .copyWith(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                              ),
-                                            ),
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                        maxLines: 2,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                                                    
+                                                    
                                           ),
                                         ],
                                       ),
@@ -165,29 +171,38 @@ class MFNFOScreen extends ConsumerWidget {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(
-                                            "Open ${_formatDate(nfoItem.startDate)}",
-                                            style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              12,
-                                              FontWeight.w400,
-                                            ),
-                                          ),
+                                           TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text: "Open ${_formatDate(nfoItem.startDate)}",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark
+                                                        :  colors.textSecondaryLight 
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                        maxLines: 2,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                                           
                                           Padding(
                                             padding: const EdgeInsets.only(
                                                 right: 8.0),
-                                            child: Text(
-                                              "Closing ${_formatDate(nfoItem.endDate)}",
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w400,
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : Colors.black,
-                                              ),
-                                            ),
+                                            child:TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text:  "Closing ${_formatDate(nfoItem.endDate)}",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark
+                                                        :  colors.textSecondaryLight 
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                        maxLines: 2,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                                           
+                                            
+                                            
+                                              
                                           ),
                                         ],
                                       ),

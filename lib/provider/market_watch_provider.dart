@@ -652,8 +652,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         useSafeArea: true,
         isDismissible: true,
         enableDrag: true,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+         shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+        ),
         context: context,
         builder: (context) => Container(
             padding: EdgeInsets.only(
@@ -3636,7 +3640,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _setAlertModel =
           await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
-      ref.read(orderProvider).changeTabIndex(6, context);
+      ref.read(orderProvider).changeTabIndex(5, context);
 
       if (_setAlertModel!.stat! == "OI created") {
         // Fetch updated alert list
@@ -3652,9 +3656,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // Close the alert creation screens
         Navigator.pop(context);
         Navigator.pop(context);
+        Navigator.pop(context);
 
         // Navigate to the Alert tab after closing the alert creation screens
-        ref.read(orderProvider).changeTabIndex(6, context);
+        ref.read(indexListProvider).bottomMenu(2, context);
+        ref.read(portfolioProvider).portTab.animateTo(2);
+        ref.read(orderProvider).changeTabIndex(5, context);
       } else if (_setAlertModel!.stat! == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
       }

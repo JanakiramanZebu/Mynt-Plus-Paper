@@ -623,7 +623,8 @@ class _PositionScreen extends State<PositionScreen>
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           TextWidget.subText(
-                                              text: "${val.tsym?.replaceAll("-EQ", "")}",
+                                              text:
+                                                  "${val.tsym?.replaceAll("-EQ", "")}",
                                               color: theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,
@@ -725,9 +726,10 @@ class _PositionScreen extends State<PositionScreen>
                                     Padding(
                                       padding: const EdgeInsets.only(top: 2.0),
                                       child: Divider(
-                                        color: const Color.fromARGB(
-                                            255, 212, 212, 212),
-                                        thickness: 0.5,
+                                        color: theme.isDarkMode
+                                            ? colors.dividerDark
+                                            : colors.dividerLight,
+                                        thickness: 0,
                                       ),
                                     ),
                                     Padding(
@@ -742,7 +744,10 @@ class _PositionScreen extends State<PositionScreen>
                                               TextWidget.subText(
                                                   align: TextAlign.right,
                                                   text: "Buy Qty : ",
-                                                  color: Color(0xFF696969),
+                                                  color: theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                      : colors
+                                                          .textSecondaryLight,
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,

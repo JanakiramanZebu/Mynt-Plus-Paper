@@ -6,6 +6,7 @@ import '../../../models/mf_model/mf_nav_graph_model.dart';
 import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 
@@ -19,243 +20,267 @@ class MFOverview extends ConsumerWidget {
     final mfProvide = ref.watch(mfProvider);
     final navGraph = mfProvide.navGraph;
     final factSheetData = mfProvide.factSheetDataModel?.data;
-    
+
     // Early return if essential data is missing
     if (factSheetData == null) {
       return const SizedBox();
     }
-    
+
     final isDarkMode = theme.isDarkMode;
-    
+
     // Create tooltip behavior for chart
     final interactiveTooltip = InteractiveTooltip(
       enable: true,
       format: 'Nav : point.y',
       borderColor: colors.colorBlue,
-      textStyle: const TextStyle(color: Colors.white), 
+      textStyle: const TextStyle(color: Colors.white),
     );
-    
+
     // Safely create data source
-    final List<NavGraphData> dataSource = mfProvide.singleloader == true ? [] : (navGraph?.data?.toList() ?? []);
-    
+    final List<NavGraphData> dataSource =
+        mfProvide.singleloader == true ? [] : (navGraph?.data?.toList() ?? []);
+
     return Container(
-      color: isDarkMode ? Colors.black : Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            // NAV Chart
-            Container(
-              margin: const EdgeInsets.only(top: 14, bottom: 12),
-              height: 320,
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                color: isDarkMode ? colors.colorBlack : Colors.white, 
-                border: Border.all(
-                  color: isDarkMode ? colors.colorBlack : Colors.transparent, 
+        color: isDarkMode ? Colors.black : Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              // NAV Chart
+              Container(
+                margin: const EdgeInsets.only(top: 14, bottom: 12),
+                height: 320,
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  color: isDarkMode ? colors.colorBlack : Colors.white,
+                  border: Border.all(
+                    color: isDarkMode ? colors.colorBlack : Colors.transparent,
+                  ),
+                ),
+                child: SfCartesianChart(
+                  margin: const EdgeInsets.symmetric(horizontal: 0),
+                  backgroundColor:
+                      isDarkMode ? colors.colorBlack : Colors.white,
+                  borderWidth: 0,
+                  plotAreaBorderWidth: 0,
+                  primaryXAxis: CategoryAxis(
+                    isVisible: false,
+                    labelStyle: textStyle(
+                      isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      10,
+                      FontWeight.w500,
+                    ),
+                    majorGridLines: const MajorGridLines(width: 0),
+                    axisLine: const AxisLine(width: 0),
+                  ),
+                  primaryYAxis: NumericAxis(
+                    isVisible: false,
+                    majorGridLines: const MajorGridLines(width: 0),
+                  ),
+                  trackballBehavior: TrackballBehavior(
+                    enable: true,
+                    activationMode: ActivationMode.singleTap,
+                    tooltipSettings: interactiveTooltip,
+                    tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
+                  ),
+                  series: <CartesianSeries<NavGraphData, String>>[
+                    AreaSeries<NavGraphData, String>(
+                      name: "Historical NAV",
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          isDarkMode
+                              ? colors.colorBlack
+                              : Colors.white.withOpacity(1),
+                          isDarkMode
+                              ? colors.colorBlack
+                              : Colors.white.withOpacity(1),
+                          isDarkMode
+                              ? colors.colorBlack
+                              : Colors.white.withOpacity(1),
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                      isVisibleInLegend: false,
+                      enableTooltip: true,
+                      borderColor: colors.colorBlue,
+                      borderWidth: 2,
+                      dataSource: dataSource,
+                      xValueMapper: (NavGraphData data, _) {
+                        if (data.navDate == null) return "";
+                        return data.navDate!.length > 14
+                            ? data.navDate!
+                                .substring(0, data.navDate!.length - 14)
+                            : data.navDate!;
+                      },
+                      yValueMapper: (NavGraphData data, _) => data.nav,
+                    ),
+                  ],
                 ),
               ),
-              child: SfCartesianChart(
-                margin: const EdgeInsets.symmetric(horizontal: 0),
-                backgroundColor: isDarkMode ? colors.colorBlack : Colors.white, 
-                borderWidth: 0, 
-                plotAreaBorderWidth: 0,
-                primaryXAxis: CategoryAxis(
-                  isVisible: false,
-                  labelStyle: textStyle(
-                    isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    10,
-                    FontWeight.w500,
+
+              const SizedBox(height: 22),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.titleText(
+                      align: TextAlign.right,
+                      text: "Trailing Returns (%)",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 3),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const SizedBox(width: 0),
+                  Icon(
+                    Icons.circle,
+                    size: 16,
+                    color: colors.ltpgreen,
                   ),
-                  majorGridLines: const MajorGridLines(width: 0),
-                  axisLine: const AxisLine(width: 0), 
-                ),
-                primaryYAxis: NumericAxis(
-                  isVisible: false,
-                  majorGridLines: const MajorGridLines(width: 0),
-                ),
-                trackballBehavior: TrackballBehavior(
-                  enable: true,
-                  activationMode: ActivationMode.singleTap, 
-                  tooltipSettings: interactiveTooltip,
-                  tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
-                ),
-                series: <CartesianSeries<NavGraphData, String>>[
-                  AreaSeries<NavGraphData, String>(
-                    name: "Historical NAV",
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        isDarkMode ? colors.colorBlack : Colors.white.withOpacity(1),
-                        isDarkMode ? colors.colorBlack : Colors.white.withOpacity(1),
-                        isDarkMode ? colors.colorBlack : Colors.white.withOpacity(1),
-                      ],
-                      stops: const [0.0, 0.5, 1.0],
-                    ),
-                    isVisibleInLegend: false, 
-                    enableTooltip: true,
-                    borderColor: colors.colorBlue,
-                    borderWidth: 2,
-                    dataSource: dataSource,
-                    xValueMapper: (NavGraphData data, _) {
-                      if (data.navDate == null) return "";
-                      return data.navDate!.length > 14 
-                          ? data.navDate!.substring(0, data.navDate!.length - 14)
-                          : data.navDate!;
-                    },
-                    yValueMapper: (NavGraphData data, _) => data.nav,
+                  SizedBox(
+                    width: 10,
+                  ),
+                  TextWidget.paraText(
+                      align: TextAlign.start,
+                      text: "Benchmark",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 3),
+                  Expanded(
+                    child: TextWidget.paraText(
+                        align: TextAlign.start,
+                        text: "  (${factSheetData.benchmark ?? ""})",
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 3),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 25),
 
-            const SizedBox(height: 22),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Trailing Returns (%)",
-                  style: textStyle(
-                    isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    17,
-                    FontWeight.w600
-                  )
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                const SizedBox(width: 0),
-                Icon(
-                  Icons.circle,
-                  size: 16,
-                  color: colors.ltpgreen,
-                ),
-                Text(
-                  " Benchmark",
-                  style: textStyle(
-                    isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    13,
-                    FontWeight.w500,
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    "  (${factSheetData.benchmark ?? ""})",
-                    style: textStyle(
-                      isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      13,
-                      FontWeight.w500,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 25),
-            
-            // Returns Grid
-            if (mfProvide.mfReturnsGridview.isNotEmpty)
-              GridView.count(
-                padding: EdgeInsets.zero,
-                crossAxisCount: 3,
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 14,
-                childAspectRatio: 1.3,
-                children: List.generate(mfProvide.mfReturnsGridview.length, (index) {
-                  final item = mfProvide.mfReturnsGridview[index];
-                  final value = item['value']?.toString() ?? "0";
-                  final isNegative = value.startsWith("-");
-                  final returnValue = item['return']?.toString() ?? "0";
-                  final isReturnNegative = returnValue.startsWith("-");
-                  
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: isDarkMode 
-                          ? const Color(0xFF2A2A2A) 
-                          : Color(isNegative ? 0xffFFFCFB : 0xffFBFFFA),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xff999999), width: .2)
-                    ),
-                    child: Stack(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "$value%",
-                                  style: textStyle(
-                                    isNegative ? colors.darkred : colors.ltpgreen,
-                                    16,
-                                    FontWeight.w600
-                                  )
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  item['durName']?.toString() ?? "",
-                                  style: textStyle(
-                                    isDarkMode ? colors.colorWhite : const Color(0xff666666),
-                                    12,
-                                    FontWeight.w500
-                                  )
-                                ),
-                                const SizedBox(height: 3),
-                              ],
+              // Returns Grid
+              if (mfProvide.mfReturnsGridview.isNotEmpty)
+                GridView.count(
+                  padding: EdgeInsets.zero,
+                  crossAxisCount: 3,
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: 1.3,
+                  children: List.generate(mfProvide.mfReturnsGridview.length,
+                      (index) {
+                    final item = mfProvide.mfReturnsGridview[index];
+                    final value = item['value']?.toString() ?? "0";
+                    final isNegative = value.startsWith("-");
+                    final returnValue = item['return']?.toString() ?? "0";
+                    final isReturnNegative = returnValue.startsWith("-");
+
+                    return Container(
+                      decoration: BoxDecoration(
+                          color: isDarkMode
+                              ? const Color(0xFF2A2A2A)
+                              : Color(isNegative ? 0xffFFFCFB : 0xffFBFFFA),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: const Color(0xff999999), width: .2)),
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 6, horizontal: 8),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const SizedBox(height: 8),
+
+                                  TextWidget.subText(
+                                      align: TextAlign.start,
+                                      text: "$value%",
+                                      color: isNegative
+                                          ? colors.darkred
+                                          : colors.ltpgreen,
+                                      textOverflow: TextOverflow.ellipsis,
+                                      theme: theme.isDarkMode,
+                                      fw: 3),
+                                  const SizedBox(height: 3),
+                                  TextWidget.paraText(
+                                      align: TextAlign.start,
+                                      text: item['durName']?.toString() ?? "",
+                                      color: isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
+                                      textOverflow: TextOverflow.ellipsis,
+                                      theme: theme.isDarkMode,
+                                      fw: 3),
+                                  const SizedBox(height: 3),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          left: 0,
-                          child: Container(
-                            alignment: Alignment.center,
-                            width: MediaQuery.of(context).size.width,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Color(isReturnNegative ? 0xffFF1717 : 0xff43A833),
-                              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10))
-                            ),
-                            child: Text(
-                              "$returnValue%",
-                              style: textStyle(colors.colorWhite, 14, FontWeight.w500)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            left: 0,
+                            child: Container(
+                              alignment: Alignment.center,
+                              width: MediaQuery.of(context).size.width,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                  color: Color(isReturnNegative
+                                      ? 0xffFF1717
+                                      : 0xff43A833),
+                                  borderRadius: const BorderRadius.vertical(
+                                      bottom: Radius.circular(10))),
+                              child: 
+                              TextWidget.paraText(
+                                      align: TextAlign.start,
+                                      text: "$returnValue%",
+                                      color:   colors.textPrimaryDark,
+                                      textOverflow: TextOverflow.ellipsis,
+                                      theme: theme.isDarkMode,
+                                      fw: 1),
+                                     
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              )
-            else
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Text(
-                    "No returns data available",
-                    style: textStyle(
-                      isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      14,
-                      FontWeight.w500
+                        ],
+                      ),
+                    );
+                  }),
+                )
+              else
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Text(
+                      "No returns data available",
+                      style: textStyle(
+                          isDarkMode ? colors.colorWhite : colors.colorBlack,
+                          14,
+                          FontWeight.w500),
                     ),
                   ),
                 ),
-              ),
-          ],
-        ),
-      )
-    );
+            ],
+          ),
+        ));
   }
 
   Row rowOfInfoData(String title1, String value1, String title2, String value2,

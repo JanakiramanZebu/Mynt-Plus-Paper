@@ -54,7 +54,7 @@ class MFWatchlistScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          TextWidget.paraText(
+          TextWidget.captionText(
                                                     align: TextAlign.left,
                                                     text: 'FUNDS',
                                                     color: theme.isDarkMode
@@ -69,7 +69,7 @@ class MFWatchlistScreen extends ConsumerWidget {
           
           Padding(
             padding: const EdgeInsets.only(right: 8),
-            child:       TextWidget.paraText(
+            child:       TextWidget.captionText(
                                                     align: TextAlign.right,
                                                     text: '3Y RETURNS',
                                                     color: theme.isDarkMode
@@ -166,7 +166,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextWidget.titleText(
+                        TextWidget.subText(
                                                     align: TextAlign.right,
                                                     text: item.schemegroupName ?? "Unknown Scheme",
                                                     color: theme.isDarkMode
@@ -176,7 +176,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
+                                                    fw: 3),
                          
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
@@ -185,14 +185,30 @@ class MFWatchlistScreen extends ConsumerWidget {
                             child: ListView(
                               scrollDirection: Axis.horizontal,
                               children: [
-                                CustomExchBadge(
-                                  exch: item.type ?? "Unknown"
+                                TextWidget.paraText(
+                                  fw: 3,
+                                  text: "${item.type ?? "Unknown"}",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: false,
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(left: 5),
-                                  child: CustomExchBadge(
-                                    exch: item.schemeType ?? "Unknown",
+                                  child: TextWidget.paraText(
+                                    fw: 3,
+                                    text: "${item.schemeType ?? "Unknown"}",
+                                    textOverflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    theme: false,
                                   ),
+                                  
+                                  
                                 ),
                               ],
                             ),
@@ -201,7 +217,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  TextWidget.subText(
+                  TextWidget.titleText(
                                                     align: TextAlign.right,
                                                     text: _formatReturns(item.tHREEYEARDATA),
                                                     color: _getReturnColor(item.tHREEYEARDATA,theme.isDarkMode)

@@ -10,6 +10,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     hide Consumer, ConsumerWidget;
 import '../../../provider/fund_provider.dart';
+import '../../../provider/index_list_provider.dart';
 import '../../../provider/ledger_provider copy.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -623,7 +624,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                           : theme.isDarkMode
                                               ? colors.successDark
                                               : colors.successLight,
-                                      fw: 3),
+                                      fw: 0),
                                   const SizedBox(width: 4),
                                   TextWidget.subText(
                                       text:
@@ -666,7 +667,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                       : theme.isDarkMode
                                           ? colors.successDark
                                           : colors.successLight,
-                                  fw: 3),
+                                  fw: 0),
                               const SizedBox(width: 4),
                               TextWidget.headText(
                                   text:
@@ -703,7 +704,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     : colors.textSecondaryLight,
                                 fw: 3),
                             const SizedBox(height: 4),
-                            TextWidget.titleText(
+                            TextWidget.subText(
                                 text:
                                     "${getFormatter(value: _invest, v4d: false, noDecimal: false)}",
                                 theme: theme.isDarkMode,
@@ -724,7 +725,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     : colors.textSecondaryLight,
                                 fw: 3),
                             const SizedBox(height: 4),
-                            TextWidget.titleText(
+                            TextWidget.subText(
                                 text:
                                     "${getFormatter(value: _totalCurrentVal, v4d: false, noDecimal: false)}",
                                 theme: theme.isDarkMode,
@@ -934,7 +935,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                       color: theme.isDarkMode
                                           ? colors.secondaryDark
                                           : colors.secondaryLight,
-                                      fw: 3,
+                                      fw: 2,
                                     ),
                                   ),
                                 ),
@@ -973,7 +974,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     color: theme.isDarkMode
                                         ? colors.secondaryDark
                                         : colors.secondaryLight,
-                                    fw: 3,
+                                    fw: 2,
                                   ),
                                 ),
                               ),
@@ -993,6 +994,9 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 onTap: () async {
                                   Future.delayed(Duration(milliseconds: 150),
                                       () async {
+                                    await ref
+                                        .read(indexListProvider)
+                                        .bottomMenu(3, context);
                                     await mf.mfApicallinit(context, 2);
                                   });
                                 },
@@ -1005,7 +1009,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     color: theme.isDarkMode
                                         ? colors.secondaryDark
                                         : colors.secondaryLight,
-                                    fw: 3,
+                                    fw: 2,
                                   ),
                                 ),
                               ),

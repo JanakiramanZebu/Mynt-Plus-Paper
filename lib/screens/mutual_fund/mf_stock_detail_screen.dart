@@ -11,6 +11,7 @@ import '../../models/mf_model/mutual_fundmodel.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -116,8 +117,23 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       child: Row(
         children: [
           Expanded(
-            child: ElevatedButton(
-              onPressed: () async {
+            child: 
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 24),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: 46,
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                        backgroundColor: theme.isDarkMode
+                            ? colors.primaryDark
+                            : colors.primaryLight,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        )),
+                    onPressed: () async {
                 final isin = widget.mfStockData.iSIN;
                 final schemeCode = widget.mfStockData.schemeCode;
                 
@@ -130,25 +146,38 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                 mfData.orderpagetite("SDS");
                 mfData.chngOrderType("One-time");
               },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                backgroundColor: theme.isDarkMode ? colors.colorbluegrey : colors.colorBlack,
-                shape: const StadiumBorder(),
-              ),
-              child: Text(
-                "One-time",
-                style: textStyle(
-                  theme.isDarkMode ? colors.colorBlack : const Color(0xffffffff),
-                  14,
-                  FontWeight.w600
-                )
-              ),
-            ),
+                    child: TextWidget.subText(
+                      text:  "One-time",
+                      theme: false,
+                      color: colors.colorWhite,
+                      fw: 2,
+                      align: TextAlign.center,
+                    )),
+              ))
+            
+            
+            
+             
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: ElevatedButton(
-              onPressed: () async {
+            child: 
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 24),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: 46,
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                        backgroundColor: theme.isDarkMode
+                            ? colors.primaryDark
+                            : colors.primaryLight,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        )),
+                    onPressed: () async {
                 final isin = widget.mfStockData.iSIN;
                 final schemeCode = widget.mfStockData.schemeCode;
                 
@@ -161,21 +190,20 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                 mfData.chngOrderType("SIP");
                 mfData.orderpagetite("SDS");
               },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                backgroundColor: theme.isDarkMode ? colors.colorbluegrey : colors.colorBlack,
-                shape: const StadiumBorder(),
-              ),
-              child: Text(
-                "SIP",
-                style: textStyle(
-                  theme.isDarkMode ? colors.colorBlack : const Color(0xffffffff),
-                  14,
-                  FontWeight.w600
-                )
-              ),
-            ),
+                    child: TextWidget.subText(
+                      text:  "SIP",
+                      theme: false,
+                      color: colors.colorWhite,
+                      fw: 2,
+                      align: TextAlign.center,
+                    )),
+              ))
+            
+            
+            
+             
           ),
+           
         ],
       ),
     );
@@ -281,27 +309,51 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                _formatFundName(mfData),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  17,
-                  FontWeight.w600,
-                ),
-              ),
+              TextWidget.titleText(
+                                                    align: TextAlign.start,
+                                                    text: _formatFundName(mfData),
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 1),
+              
               const SizedBox(height: 8),
               SizedBox(
                 height: 18,
                 child: ListView(
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
-                  children: [
-                    const SizedBox(width: 5),
-                    CustomExchBadge(exch: widget.mfStockData.type ?? "Unknown"),
-                    const SizedBox(width: 5),
-                    CustomExchBadge(exch: widget.mfStockData.subtype ?? "Unknown"),
+                  children: [ 
+                    TextWidget.paraText(
+                                  fw: 3,
+                                  text: widget.mfStockData.type ?? "Unknown",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: false,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 5),
+                                  child: TextWidget.paraText(
+                                    fw: 3,
+                                    text: widget.mfStockData.subtype ?? "Unknown",
+                                    textOverflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                    theme: false,
+                                  ),
+                                  
+                                  
+                                ),
+                    
                   ],
                 ),
               ),
@@ -337,19 +389,35 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 7),
-        Text(
-          title,
-          style: textStyle(const Color(0xff999999), 12, FontWeight.w500),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          value,
-          style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w600
-          ),
-        ),
+        TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: title,
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark
+                                                             :  
+                                                             
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+         
+        const SizedBox(height: 6),
+        TextWidget.paraText(
+                                                    align: TextAlign.right,
+                                                    text: value,
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark
+                                                             :  
+                                                             
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+         
       ],
     );
   }
