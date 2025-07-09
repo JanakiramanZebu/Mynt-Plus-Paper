@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../locator/locator.dart';
 import '../../locator/preference.dart';
 import '../../provider/auth_provider.dart';
+import '../../provider/fund_provider.dart';
 import '../../provider/index_list_provider.dart';
 import '../../provider/ledger_provider.dart';
 import '../../provider/mf_provider.dart';
@@ -294,10 +295,15 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                           final acc = otherAccounts[idx];
                           return InkWell(
                             onTap: () async {
-                              mf.loaderfun();
-                              portfolio.clearAllportfolio();
-                              orders.clearAllorders();
-                              ledgerprovider.setterfornullallSwitch = null;
+                              // Navigator.pop(context);
+                              // await Future.delayed(
+                              //     const Duration(milliseconds: 500));
+                              userProfile.profileloaderfun(true);
+                              // portfolio.clearAllportfolio();
+                              // orders.clearAllorders();
+                              // ledgerprovider.setterfornullallSwitch = null;
+                              ref.read(fundProvider).clearFunds();
+
                               userProfile.clearUserData();
 
                               final websocket = ref.read(websocketProvider);
@@ -320,9 +326,9 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                   );
 
                               websocket.changeconnectioncount();
-                              Future.delayed(const Duration(seconds: 2), () {
-                                mf.loaderfunfalse();
-                              });
+                              // Future.delayed(const Duration(seconds: 2), () {
+                              // userProfile.profileloaderfun(false);
+                              // });
                             },
                             child: Container(
                               padding: const EdgeInsets.only(
@@ -382,13 +388,14 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                     color: Colors.transparent,
                                     child: InkWell(
                                       onTap: () async {
-                                        // Add delay for visual feedback
-                                        await Future.delayed(
-                                            const Duration(milliseconds: 150));
-
-                                        if (context.mounted) {
+                                        final originalIndex = loggedUser
+                                            .loggedMobile
+                                            .indexWhere((element) =>
+                                                element.clientId ==
+                                                acc.clientId);
+                                        if (originalIndex != -1) {
                                           loggedUser.removeUsers(
-                                              acc, idx, context);
+                                              acc, originalIndex, context);
                                         }
                                       },
                                       borderRadius: BorderRadius.circular(5),

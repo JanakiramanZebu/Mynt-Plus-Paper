@@ -87,8 +87,6 @@ class FundProvider extends DefaultChangeNotifier {
 
   String get bankname => _bankname;
 
- 
-
   List<BankData>? _bankData = [];
   List<BankData>? get bankData => _bankData;
 
@@ -108,6 +106,13 @@ class FundProvider extends DefaultChangeNotifier {
 
   chngPayName(String val) {
     _paymentName = val;
+    notifyListeners();
+  }
+
+  clearFunds() {
+    _fundDetailModel = null;
+    _listOfCredits = [];
+    _listOfUsedMrgn = [];
     notifyListeners();
   }
 
@@ -172,7 +177,8 @@ class FundProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       log("Failed to fetch Profile Data:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "API HS Token", "Error": "$e"});
       notifyListeners();
@@ -302,7 +308,10 @@ class FundProvider extends DefaultChangeNotifier {
       return _fundDetailModel;
     } catch (e) {
       print(e);
-      ref.read(indexListProvider).logError.add({"type": "API Funds", "Error": "$e"});
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "API Funds", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
@@ -381,10 +390,10 @@ class FundProvider extends DefaultChangeNotifier {
     try {
       _isLoadingPledgeDetails = true;
       notifyListeners();
-      
+
       _pledgeAndUnpledgeModel = await api.getPledgeDetails();
       print("Pledge Details => ${_pledgeAndUnpledgeModel!.bOID}");
-      
+
       _isLoadingPledgeDetails = false;
       notifyListeners();
     } catch (e) {

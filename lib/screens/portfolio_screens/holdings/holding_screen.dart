@@ -997,7 +997,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                     await ref
                                         .read(indexListProvider)
                                         .bottomMenu(3, context);
-                                    await mf.mfApicallinit(context, 2);
+                                    mf.mfExTabchange(2);
                                   });
                                 },
                                 child: Padding(

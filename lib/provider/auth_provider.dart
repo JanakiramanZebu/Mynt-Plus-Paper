@@ -42,7 +42,7 @@ import 'fund_provider.dart';
 import 'index_list_provider.dart';
 // import 'iop_provider.dart';
 import 'iop_provider.dart';
-import 'ledger_provider copy.dart';
+import 'ledger_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
@@ -146,11 +146,15 @@ class AuthProvider extends DefaultChangeNotifier {
               width: MediaQuery.of(context).size.width,
               child: ElevatedButton(
                   onPressed: () async {
-                    _loggedMobile.removeAt(i);
-                    notifyListeners();
-                    final List<String> jsonList =
-                        _loggedMobile.map((obj) => obj.toJson()).toList();
-                    pref.setLoggedClientList(jsonList);
+                    // Safety checks
+                    if (i >= 0 && i < _loggedMobile.length) {
+                      _loggedMobile.removeAt(i);
+                      notifyListeners();
+                      final List<String> jsonList =
+                          _loggedMobile.map((obj) => obj.toJson()).toList();
+                      pref.setLoggedClientList(jsonList);
+                    }
+                    Navigator.pop(context);
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
@@ -1551,7 +1555,7 @@ class AuthProvider extends DefaultChangeNotifier {
           // ref.read(mfProvider).fetchMfOrderbook(context);
           ref.read(fundProvider).fetchPledgeDetails();
           setmfapicalls(context);
-          ref.read(mfProvider).mfApicallinit(context,0);
+          ref.read(mfProvider).mfApicallinit(context, 0);
           setProfileAPicalls();
           setPrefOrderPrefer(context);
           ref.read(orderProvider).setOrderIp();
@@ -1613,6 +1617,9 @@ class AuthProvider extends DefaultChangeNotifier {
       _handleNetworkFailure(context, "Error connecting to server");
     } finally {
       initLaod(false);
+      if (s == "switchAc") {
+        ref.read(userProfileProvider).profileloaderfun(false);
+      }
     }
   }
 

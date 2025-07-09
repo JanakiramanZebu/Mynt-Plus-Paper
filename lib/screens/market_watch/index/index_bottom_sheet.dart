@@ -18,13 +18,9 @@ import '../../../sharedWidget/list_divider.dart';
 
 class IndexBottomSheet extends ConsumerStatefulWidget {
   final dynamic defaultIndex;
-  final bool src;
   final int indexPosition;
   const IndexBottomSheet(
-      {super.key,
-      required this.defaultIndex,
-      required this.src,
-      required this.indexPosition});
+      {super.key, required this.defaultIndex, required this.indexPosition});
 
   @override
   ConsumerState<IndexBottomSheet> createState() => _IndexBottomSheetState();
@@ -114,7 +110,8 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                               final isSelected = _currentPageIndex == index;
 
                               return Container(
-                                width: 95.0, // Fixed width to match watchlist tabs
+                                width:
+                                    95.0, // Fixed width to match watchlist tabs
                                 child: Material(
                                   color: Colors.transparent,
                                   child: InkWell(
@@ -138,13 +135,13 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                               horizontal: 10, vertical: 6),
                                           child: TextWidget.subText(
                                             text: exchange,
-                                            color:isSelected
-                            ? theme.isDarkMode
-                                ? colors.secondaryDark
-                                : colors.secondaryLight
+                                            color: isSelected
+                                                ? theme.isDarkMode
+                                                    ? colors.secondaryDark
+                                                    : colors.secondaryLight
                                                 : theme.isDarkMode
-                                                    ?  colors.textSecondaryDark
-                                                    :  colors.textSecondaryLight,
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
                                             textOverflow: TextOverflow.ellipsis,
                                             maxLines: 1,
                                             theme: theme.isDarkMode,
@@ -157,7 +154,9 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                               const Duration(milliseconds: 250),
                                           curve: Curves.easeInOut,
                                           height: 2,
-                                          width: isSelected ? 77 : 0, // Width = tab width - 18 (like watchlist)
+                                          width: isSelected
+                                              ? 77
+                                              : 0, // Width = tab width - 18 (like watchlist)
                                           margin: const EdgeInsets.only(top: 1),
                                           decoration: BoxDecoration(
                                             color: colors.colorBlue,
@@ -194,17 +193,22 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                           children: [
                             SvgPicture.asset(
                               assets.dInfo,
-                              color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
+                              color: theme.isDarkMode
+                                  ? colors.secondaryDark
+                                  : colors.secondaryLight,
                             ),
                             TextWidget.paraText(
-                                text: " Long press to add to Slot ${widget.indexPosition + 1}",
-                                color: theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight,
-                                theme: theme.isDarkMode,
-                                ),
+                              text:
+                                  " Long press to add to Slot ${widget.indexPosition + 1}",
+                              color: theme.isDarkMode
+                                  ? colors.secondaryDark
+                                  : colors.secondaryLight,
+                              theme: theme.isDarkMode,
+                            ),
                           ],
                         ),
                       ),
-                      
+
                       // Scrollable list content
                       Expanded(
                         child: PageView.builder(
@@ -220,16 +224,21 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                           },
                           itemBuilder: (context, pageIndex) {
                             return indexProvide.isLoad
-                                ? const Center(child: CircularProgressIndicator())
+                                ? const Center(
+                                    child: CircularProgressIndicator())
                                 : indexProvide.indValuesList.isNotEmpty
                                     ? ListView.builder(
                                         shrinkWrap: false,
                                         controller: controller,
                                         physics: const BouncingScrollPhysics(
-                                            parent: AlwaysScrollableScrollPhysics()),
+                                            parent:
+                                                AlwaysScrollableScrollPhysics()),
                                         itemCount:
-                                            indexProvide.indValuesList.length * 2 - 1,
-                                        itemBuilder: (BuildContext context, idx) {
+                                            indexProvide.indValuesList.length *
+                                                    2 -
+                                                1,
+                                        itemBuilder:
+                                            (BuildContext context, idx) {
                                           // For odd indices, show divider
                                           if (idx.isOdd) {
                                             return const ListDivider();
@@ -244,7 +253,8 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                           bool ischeck = indexProvide
                                               .defaultIndexList!.indValues!
                                               .any((element) =>
-                                                  element.token == itemData.token);
+                                                  element.token ==
+                                                  itemData.token);
 
                                           return IndexListItemWithStream(
                                             key: ValueKey(
@@ -253,7 +263,6 @@ class _IndexBottomSheetState extends ConsumerState<IndexBottomSheet> {
                                             indexProvider: indexProvide,
                                             marketWatch: marketWatch,
                                             ischeck: ischeck,
-                                            src: widget.src,
                                             isDarkMode: theme.isDarkMode,
                                             indexPosition: widget.indexPosition,
                                           );
@@ -285,7 +294,6 @@ class IndexListItemWithStream extends StatefulWidget {
   final dynamic indexProvider;
   final dynamic marketWatch;
   final bool ischeck;
-  final bool src;
   final bool isDarkMode;
   final int indexPosition;
 
@@ -295,7 +303,6 @@ class IndexListItemWithStream extends StatefulWidget {
       required this.indexProvider,
       required this.marketWatch,
       required this.ischeck,
-      required this.src,
       required this.isDarkMode,
       required this.indexPosition})
       : super(key: key);
@@ -499,22 +506,25 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => _handleTap(context),
-      onLongPress: !widget.src ? () async {
+      onLongPress: () async {
         if (widget.ischeck) {
           Fluttertoast.showToast(
             msg: "Scrip Already Exist!!",
             backgroundColor: Colors.amber,
           );
         } else {
-          await widget.indexProvider.changeIndex(widget.itemData, context, widget.indexPosition);
+          await widget.indexProvider
+              .changeIndex(widget.itemData, context, widget.indexPosition);
           Navigator.of(context).pop();
         }
-      } : null,
+      },
       child: Container(
         padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
-        color: widget.ischeck 
-          ? (widget.isDarkMode ? colors.colorWhite.withOpacity(0.05) : colors.colorBlack.withOpacity(0.05))
-          : Colors.transparent,
+        color: widget.ischeck
+            ? (widget.isDarkMode
+                ? colors.colorWhite.withOpacity(0.05)
+                : colors.colorBlack.withOpacity(0.05))
+            : Colors.transparent,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -537,7 +547,6 @@ class _IndexListItemWithStreamState extends State<IndexListItemWithStream> {
               isDarkMode: widget.isDarkMode,
             ),
 
-           
             // if (!widget.src)
             //   RepaintBoundary(
             //     child: _ActionButton(
@@ -627,7 +636,8 @@ class _StaticIndexContent extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextWidget.textStyle(
               fontSize: 14,
-              color : isDarkMode ?  colors.textPrimaryDark : colors.textPrimaryLight,
+              color:
+                  isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: false,
               // fw: 0,
             ),
@@ -686,7 +696,7 @@ class _DynamicPriceContent extends StatelessWidget {
           (value.toString() == "0.00" || percentValue.toString() == "0.00")) {
         _colorCache[key] = colors.textSecondaryLight;
       } else {
-        _colorCache[key] =  colors.successLight;
+        _colorCache[key] = colors.successLight;
       }
     }
     return _colorCache[key]!;
@@ -696,10 +706,15 @@ class _DynamicPriceContent extends StatelessWidget {
   Widget build(BuildContext context) {
     // Pre-calculate all styles at once to avoid repeated calculations
     final priceStyle = _getCachedStyle(
-        isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, 12, );
+      isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+      12,
+    );
 
     final changeColor = _getCachedChangeColor(ch, chp);
-    final changeStyle = _getCachedStyle(changeColor, 16, );
+    final changeStyle = _getCachedStyle(
+      changeColor,
+      16,
+    );
 
     // Create the price text once with proper formatting
     final String formattedChange =
@@ -712,7 +727,7 @@ class _DynamicPriceContent extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 5),
-            child: Text("$ltp", style:changeStyle ),
+            child: Text("$ltp", style: changeStyle),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 5),

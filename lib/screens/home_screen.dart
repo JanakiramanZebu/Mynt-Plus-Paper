@@ -368,6 +368,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     // Reload essential data based on selected tab
     switch (selectedTab) {
+      // case 0: // Mutual Fund
+      //   // ref.read(mfProvider).mfExTabchange(2);
+      //   break;
       case 1: // Watchlist
         ref.read(marketWatchProvider).fetchMWList(context, false);
         break;
@@ -596,7 +599,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               // color: theme.isDarkMode
               //     ? const Color(0xFF1A1A1A)
               //     : const Color(0xFFF1F3F8),
-              child: const DefaultIndexList(src: false),
+              child: const DefaultIndexList(src: true),
             );
           }));
     }
@@ -643,8 +646,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   // Bottom navigation
   Widget buildBottomNav(int selectedTab, ThemesProvider theme) {
-    final uid = ref.watch(userProfileProvider.select(
-        (userProfile) => userProfile.userDetailModel?.uid?.toString() ?? ""));
+    Preferences pref = Preferences();
+
+    final uid = pref.clientId!;
     return BottomAppBar(
       height: 64,
       shadowColor:
@@ -653,8 +657,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          // _buildBottomNavItem(
-          //     0, assets.geometry, "Dashboard", selectedTab, theme),
+          // _buildBottomNavItem(0, assets.home, "Home", selectedTab, theme),
           _buildBottomNavItem(
               1, assets.watchlistIcon, "Watchlists", selectedTab, theme),
           _buildBottomNavItem(
@@ -702,7 +705,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             }
           },
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 7),
+            margin: const EdgeInsets.symmetric(horizontal: 0),
             decoration: BoxDecoration(
                 border: isSelected
                     ? Border(
@@ -716,7 +719,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               children: [
                 Column(
                   children: [
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     useHeight
                         ? SizedBox(
                             child: SvgPicture.asset(
@@ -727,10 +730,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           )
                         : SvgPicture.asset(
                             iconAsset,
-                            width: index == 3 ? 22 : null,
+                            // width: index == 0 ? 20 : null,
                             color: _getBottomNavColor(theme, isSelected),
                           ),
-                    SizedBox(height: index == 3 ? 5 : 8),
+                    SizedBox(height: index == 3 ? 6 : 8),
                   ],
                 ),
                 Text(
@@ -739,8 +742,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     fontSize: 12,
                     color: _getBottomNavColor(theme, isSelected),
                     theme: theme.isDarkMode,
+
                     // fw: isSelected ? 1 : 00
                   ),
+                  textAlign: TextAlign.center,
+                  // softWrap: true,
+                  // maxLines: 1,
+                  // overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -762,21 +770,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   // Bottom nav handlers
-  // void _handleDashboardTap() {
-  //   final indexProvide = ref.read(indexListProvider);
-  //   final portfolio = ref.read(portfolioProvider);
-  //   final marketWatchList = ref.read(marketWatchProvider);
-  //   final orderProviderRef = ref.read(orderProvider);
+  void _handleDashboardTap() {
+    final indexProvide = ref.read(indexListProvider);
+    final portfolio = ref.read(portfolioProvider);
+    final marketWatchList = ref.read(marketWatchProvider);
+    final orderProviderRef = ref.read(orderProvider);
 
-  //   indexProvide.bottomMenu(0, context);
-  //   portfolio.cancelTimer();
+    indexProvide.bottomMenu(0, context);
+    portfolio.cancelTimer();
 
-  //   // Unsubscribe from real-time data for other tabs
-  //   marketWatchList.requestMWScrip(context: context, isSubscribe: false);
-  //   portfolio.requestWSHoldings(context: context, isSubscribe: false);
-  //   orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
-  //   portfolio.requestWSPosition(context: context, isSubscribe: false);
-  // }
+    // Unsubscribe from real-time data for other tabs
+    marketWatchList.requestMWScrip(context: context, isSubscribe: false);
+    portfolio.requestWSHoldings(context: context, isSubscribe: false);
+    orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
+    portfolio.requestWSPosition(context: context, isSubscribe: false);
+  }
 
   void _handleWatchlistTap() async {
     final indexProvide = ref.read(indexListProvider);

@@ -40,7 +40,7 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
-
+    final theme = ref.watch(themeProvider);
     // Watch the indexListProvider to rebuild when the default index list changes
     final indexProvider = ref.watch(indexListProvider);
 
@@ -48,7 +48,6 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
     if (indexValues == null || indexValues.isEmpty) {
       return const SizedBox.shrink();
     }
-
 
     // Calculate pages (2 items per page)
     final totalItems = indexValues.length;
@@ -63,106 +62,144 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
     final indexKey =
         ValueKey(indexValues.map((i) => "${i.exch}|${i.token}").join("-"));
 
-    return Container(
-      key: indexKey, // Add key here to force rebuild when indices change
-      margin: const EdgeInsets.only(top: 10),
-      padding: EdgeInsets.only(
-          left: widget.src ? 0 : 12, right: widget.src ? 0 : 12),
-      height: widget.src ? 56 : 55,
-      child: RepaintBoundary(
-        child: PageView.builder(
-          controller: PageController(
-          viewportFraction: 1.0, // Show one page at a time
-          initialPage: 0,
-        ),
-          // shrinkWrap: true,
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          itemCount: totalPages,
-          // separatorBuilder: (context, index) => Container(
-          //   width: 0,
-          //   height: double.infinity,
-          //   margin: const EdgeInsets.symmetric(vertical: 8),
-          //   color: ref.watch(themeProvider).isDarkMode
-          //       ? const Color(0xFF2A2A2A)
-          //       : const Color(0xFFE0E0E0),
-          // ),
-          itemBuilder: (BuildContext context, int index) {
-            final indexItem = indexValues[index];
+    return widget.src
+        ? Container(
+            key: indexKey, // Add key here to force rebuild when indices change
+            margin: const EdgeInsets.only(top: 10),
+            padding: const EdgeInsets.only(left: 12, right: 12),
+            height: 55,
+            child: RepaintBoundary(
+              child: PageView.builder(
+                controller: PageController(
+                  viewportFraction: 1.0, // Show one page at a time
+                  initialPage: 0,
+                ),
+                // shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: totalPages,
+                // separatorBuilder: (context, index) => Container(
+                //   width: 0,
+                //   height: double.infinity,
+                //   margin: const EdgeInsets.symmetric(vertical: 8),
+                //   color: ref.watch(themeProvider).isDarkMode
+                //       ? const Color(0xFF2A2A2A)
+                //       : const Color(0xFFE0E0E0),
+                // ),
+                itemBuilder: (BuildContext context, int index) {
+                  final indexItem = indexValues[index];
 
-            // Create a key for efficient widget reuse
-            final key = ValueKey('index-${indexItem.token}-${indexItem.exch}');
+                  // Create a key for efficient widget reuse
+                  final key =
+                      ValueKey('index-${indexItem.token}-${indexItem.exch}');
 
-            return _buildPageContent(
-            indexValues, 
-            index, 
-            itemsPerPage, 
-            itemWidth
+                  return _buildPageContent(
+                      indexValues, index, itemsPerPage, itemWidth);
+                },
+              ),
+            ),
+          )
+        : Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            height: 80,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: List.generate(3, (i) {
+                // Defensive: fallback if less than 3 indices
+                if (i >= indexValues.length)
+                  return const Expanded(child: SizedBox());
+                final item = indexValues[i];
+                return Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextWidget.subText(
+                        text: item.idxname ?? "",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                      ),
+                      const SizedBox(height: 3),
+                      _LivePriceWidget(
+                        key: ValueKey('price_${item.token ?? ""}'),
+                        token: item.token?.toString() ?? "",
+                        initialLtp: (item.ltp == null || item.ltp == "null")
+                            ? "0.00"
+                            : item.ltp?.toString() ?? "0.00",
+                        initialChange:
+                            (item.change == null || item.change == "null")
+                                ? "0.00"
+                                : item.change?.toString() ?? "0.00",
+                        initialPerChange:
+                            (item.perChange == null || item.perChange == "null")
+                                ? "0.00"
+                                : item.perChange?.toString() ?? "0.00",
+                        isDarkMode: theme.isDarkMode,
+                        src: false,
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
           );
-          },
-        ),
-      ),
-    );
   }
 
   Widget _buildPageContent(
-  List<dynamic> indexValues,
-  int pageIndex,
-  int itemsPerPage,
-  double itemWidth,
-) {
-  final startIndex = pageIndex * itemsPerPage;
-  final endIndex = (startIndex + itemsPerPage).clamp(0, indexValues.length);
-  
-  return Row(
-    children: [
-      for (int i = startIndex; i < endIndex; i++)
-        Expanded(
-          child: Container(
-            margin: EdgeInsets.only(
-              right: i < endIndex - 1 ? 1 : 0, // Add separator between items
-            ),
-            // decoration: BoxDecoration(
-            //   border: i < endIndex - 1 
-            //     ? Border(
-            //         right: BorderSide(
-            //           width: 1,
-            //           color: ref.watch(themeProvider).isDarkMode
-            //               ? const Color(0xFF2A2A2A)
-            //               : const Color(0xFFE0E0E0),
-            //         ),
-            //       )
-            //     : null,
-            // ),
-            child: OptimizedIndexItem(
-              key: ValueKey('index-${indexValues[i].token}-${indexValues[i].exch}'),
-              indexItem: indexValues[i],
-              src: widget.src,
-              itemWidth: itemWidth,
-            ),
+    List<dynamic> indexValues,
+    int pageIndex,
+    int itemsPerPage,
+    double itemWidth,
+  ) {
+    final startIndex = pageIndex * itemsPerPage;
+    final endIndex = (startIndex + itemsPerPage).clamp(0, indexValues.length);
+
+    return Row(
+      children: [
+        for (int i = startIndex; i < endIndex; i++)
+          Expanded(
+            child: Container(
+                margin: EdgeInsets.only(
+                  right:
+                      i < endIndex - 1 ? 1 : 0, // Add separator between items
+                ),
+                // decoration: BoxDecoration(
+                //   border: i < endIndex - 1
+                //     ? Border(
+                //         right: BorderSide(
+                //           width: 1,
+                //           color: ref.watch(themeProvider).isDarkMode
+                //               ? const Color(0xFF2A2A2A)
+                //               : const Color(0xFFE0E0E0),
+                //         ),
+                //       )
+                //     : null,
+                // ),
+                child: OptimizedIndexItem(
+                  key: ValueKey(
+                      'index-${indexValues[i].token}-${indexValues[i].exch}'),
+                  indexItem: indexValues[i],
+                  itemWidth: itemWidth,
+                )),
           ),
-        ),
-      // Fill remaining space if odd number of items on last page
-      if (endIndex - startIndex < itemsPerPage)
-        const Expanded(child: SizedBox()),
-    ],
-  );
+        // Fill remaining space if odd number of items on last page
+        if (endIndex - startIndex < itemsPerPage)
+          const Expanded(child: SizedBox()),
+      ],
+    );
+  }
 }
-}
-
-
-
 
 // A completely static wrapper to prevent rebuilds
 class OptimizedIndexItem extends ConsumerWidget {
   final dynamic indexItem;
-  final bool src;
   final double itemWidth;
 
   const OptimizedIndexItem({
     Key? key,
     required this.indexItem,
-    required this.src,
     required this.itemWidth,
   }) : super(key: key);
 
@@ -199,7 +236,6 @@ class OptimizedIndexItem extends ConsumerWidget {
               color: theme.isDarkMode ? Colors.black : Colors.white,
             ),
             width: itemWidth,
-            
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -210,7 +246,6 @@ class OptimizedIndexItem extends ConsumerWidget {
                       child: _StaticIndexName(
                         name: indexItem.idxname?.toUpperCase() ?? "",
                         isDarkMode: theme.isDarkMode,
-                        isSrc: src,
                       ),
                     ),
                     // Text(
@@ -239,7 +274,7 @@ class OptimizedIndexItem extends ConsumerWidget {
                       ? "0.00"
                       : indexItem.perChange,
                   isDarkMode: theme.isDarkMode,
-                  isSrc: src,
+                  src: true,
                 ),
               ],
             ),
@@ -249,7 +284,6 @@ class OptimizedIndexItem extends ConsumerWidget {
     );
   }
 
-  // Handle tap on index item
   Future<void> _handleTap(BuildContext context, dynamic marketWatch,
       String? token, String? exch) async {
     try {
@@ -308,7 +342,6 @@ class OptimizedIndexItem extends ConsumerWidget {
             ),
             builder: (_) => IndexBottomSheet(
                   defaultIndex: indexItem,
-                  src: src,
                   indexPosition: indexPosition, // Pass the index position
                 ));
 
@@ -329,7 +362,7 @@ class _LivePriceWidget extends StatefulWidget {
   final String initialChange;
   final String initialPerChange;
   final bool isDarkMode;
-  final bool isSrc;
+  final bool src;
 
   const _LivePriceWidget({
     Key? key,
@@ -338,7 +371,7 @@ class _LivePriceWidget extends StatefulWidget {
     required this.initialChange,
     required this.initialPerChange,
     required this.isDarkMode,
-    required this.isSrc,
+    required this.src,
   }) : super(key: key);
 
   @override
@@ -470,57 +503,117 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
     // Calculate styling values
     final changeColor = _getChangeColor(_change, _perChange);
 
-    return RepaintBoundary(
-      child: widget.isSrc
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const SizedBox(height: 24),
-                Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  Text("₹$_ltp",
-                      style: _getTextStyle(
-                          widget.isDarkMode
-                              ? const Color(0xffE5E5E5)
-                              : widget.isSrc
-                                  ? const Color(0xff666666)
-                                  : const Color(0xff000000),
-                          15,
-                          1)),
-                  const SizedBox(width: 4),
-                  Text("$_change ", style: _getTextStyle(changeColor, 12, 3)),
-                  Text("($_perChange%)",
-                      style: _getTextStyle(changeColor, 12, 3))
-                ]),
-              ],
-            )
-          : Row(
-              
+    return widget.src
+        ? RepaintBoundary(
+            child:
+                //      Column(
+                //   crossAxisAlignment: CrossAxisAlignment.end,
+                //   children: [
+                //     const SizedBox(height: 24),
+                //     Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                //       Text("₹$_ltp",
+                //           style: _getTextStyle(
+                //               widget.isDarkMode
+                //                   ? const Color(0xffE5E5E5)
+                //                   : const Color(0xff000000),
+                //               15,
+                //               1)),
+                //       const SizedBox(width: 4),
+                //       Text("$_change ", style: _getTextStyle(changeColor, 12, 3)),
+                //       Text("($_perChange%)", style: _getTextStyle(changeColor, 12, 3))
+                //     ]),
+                //   ],
+                // )
+                Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   "$_ltp  ",
-                  style: _getTextStyle(changeColor, 16, ),
+                  style: _getTextStyle(
+                    changeColor,
+                    16,
+                  ),
                 ),
                 Row(
                   children: [
                     Text("$_change ",
                         style: _getTextStyle(
-                         widget.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
-                            12,
-                            )),
+                          widget.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          12,
+                        )),
                     const SizedBox(
                       width: 4,
                     ),
                     Text("($_perChange%)",
                         style: _getTextStyle(
-                            widget.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
-                            12,
-                            )),
+                          widget.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          12,
+                        )),
                   ],
                 )
               ],
             ),
-    );
+          )
+        : RepaintBoundary(
+            child:
+                //      Column(
+                //   crossAxisAlignment: CrossAxisAlignment.end,
+                //   children: [
+                //     const SizedBox(height: 24),
+                //     Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                //       Text("₹$_ltp",
+                //           style: _getTextStyle(
+                //               widget.isDarkMode
+                //                   ? const Color(0xffE5E5E5)
+                //                   : const Color(0xff000000),
+                //               15,
+                //               1)),
+                //       const SizedBox(width: 4),
+                //       Text("$_change ", style: _getTextStyle(changeColor, 12, 3)),
+                //       Text("($_perChange%)", style: _getTextStyle(changeColor, 12, 3))
+                //     ]),
+                //   ],
+                // )
+                Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "$_ltp  ",
+                  style: _getTextStyle(
+                    changeColor,
+                    16,
+                    3,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    Text("$_change ",
+                        style: _getTextStyle(
+                          widget.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          12,
+                        )),
+                    const SizedBox(
+                      width: 3,
+                    ),
+                    Text("($_perChange%)",
+                        style: _getTextStyle(
+                          widget.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          12,
+                        )),
+                  ],
+                )
+              ],
+            ),
+          );
   }
 
   // Cache for text styles
@@ -557,7 +650,6 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
 class _StaticIndexName extends StatelessWidget {
   final String name;
   final bool isDarkMode;
-  final bool isSrc;
 
   // Cache for text styles to avoid recreation
   static final Map<String, TextStyle> _styleCache = {};
@@ -566,7 +658,6 @@ class _StaticIndexName extends StatelessWidget {
     Key? key,
     required this.name,
     required this.isDarkMode,
-    required this.isSrc,
   }) : super(key: key);
 
   // Get cached text style
@@ -575,7 +666,7 @@ class _StaticIndexName extends StatelessWidget {
     if (!_styleCache.containsKey(key)) {
       _styleCache[key] = TextWidget.textStyle(
           fontSize: 14,
-          color: isDarkMode ? colors.textPrimaryDark  : colors.textPrimaryLight ,
+          color: isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
           theme: false);
     }
     return _styleCache[key]!;

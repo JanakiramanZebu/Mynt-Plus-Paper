@@ -93,7 +93,7 @@ class UserAccountScreen extends ConsumerWidget {
     ];
 
     return TransparentLoaderScreen(
-      isLoading: mf.bestmfloader!,
+      isLoading: userProfile.profileloader,
       child: Column(
         children: [
           const SizedBox(height: 50),
@@ -186,7 +186,7 @@ class UserAccountScreen extends ConsumerWidget {
                           text: userProfile.userDetailModel?.uname
                                   ?.substring(0, 1)
                                   .toUpperCase() ??
-                              "U",
+                              "",
                           theme: false,
                           color: theme.isDarkMode
                               ? colors.colorWhite
@@ -243,13 +243,17 @@ class UserAccountScreen extends ConsumerWidget {
                                 const SizedBox(width: 8),
                                 Transform.rotate(
                                   angle: 0 * 3.1416 / 180,
-                                  child: Icon(
-                                    Icons.arrow_forward_ios,
-                                    size: 20,
-                                    color: !theme.isDarkMode
-                                        ? colors.textPrimaryLight
-                                        : colors.textPrimaryDark,
-                                  ),
+                                  child: userProfile.userDetailModel?.uname
+                                              ?.isNotEmpty ??
+                                          false
+                                      ? Icon(
+                                          Icons.arrow_forward_ios,
+                                          size: 20,
+                                          color: !theme.isDarkMode
+                                              ? colors.textPrimaryLight
+                                              : colors.textPrimaryDark,
+                                        )
+                                      : SizedBox.shrink(),
                                 ),
                               ],
                             ),

@@ -162,6 +162,15 @@ class StocksProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  late TabController exploreTab;
+  List<Tab> _exploreTabName = [
+    const Tab(text: "Positions"),
+    const Tab(text: "Holdings"),
+    const Tab(text: "Orders"),
+    const Tab(text: "Funds")
+  ];
+  List<Tab> get exploreTabName => _exploreTabName;
+
   final List<String> _finacialType = ["Income", "Balance sheet", "Cashflow"];
 
   List<String> get finacialType => _finacialType;
