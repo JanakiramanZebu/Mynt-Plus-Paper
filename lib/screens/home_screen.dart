@@ -12,11 +12,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../locator/constant.dart';
 import '../locator/preference.dart';
 import '../models/marketwatch_model/market_watch_scrip_model.dart';
+import '../provider/api_key_provider.dart';
 import '../provider/auth_provider.dart';
 import '../provider/fund_provider.dart';
 import '../provider/index_list_provider.dart';
 import '../provider/market_watch_provider.dart';
 import '../provider/network_state_provider.dart';
+import '../provider/notification_provider.dart';
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
 import '../provider/thems.dart';
@@ -881,6 +883,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         authProviderRef.setIposAPicalls();
         // mf
         authProviderRef.setmfapicalls(context);
+
+          await ref.read(userProfileProvider).fetchsetting();
+          await ref.read(apikeyprovider).fetchapikey(context);
+          await ref.read(notificationprovider).fetchexchagemsg(context);
+          await ref.read(notificationprovider).fetchbrokermsg(context);
 
         //// reports/////
         if (reportsprovider.ledgerAllData == null) {

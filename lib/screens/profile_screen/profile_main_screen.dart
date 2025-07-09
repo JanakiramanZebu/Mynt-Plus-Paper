@@ -48,6 +48,18 @@ class UserAccountScreen extends ConsumerWidget {
         : text;
   }
 
+  // Helper method to prevent double-tap issues
+  bool _canTap() {
+    final now = DateTime.now();
+    if (now.difference(_lastTapTime).inMilliseconds < 500) {
+      return false;
+    }
+    _lastTapTime = now;
+    return true;
+  }
+
+  static DateTime _lastTapTime = DateTime.now();
+
   String formatIndianCurrency(String amount) {
     final formatter = NumberFormat.currency(
       locale: "en_IN",
@@ -90,21 +102,9 @@ class UserAccountScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                IconButton(
-                  splashRadius: 20,
-                  icon: SvgPicture.asset(
-                    assets.qrIcon, // This is your asset path
-                    height: 20,
-                    width: 20,
-                    color: colors
-                        .colorGrey, // Optional: set color if your SVG supports it
-                  ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, Routes.qrscanner);
-                  },
-                ),
+                
                 Material(
                   color: Colors.transparent,
                   shape: const CircleBorder(),
@@ -141,6 +141,19 @@ class UserAccountScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
+                ),
+                IconButton(
+                  splashRadius: 20,
+                  icon: SvgPicture.asset(
+                    assets.qrIcon, // This is your asset path
+                    height: 20,
+                    width: 20,
+                    color: colors
+                        .colorGrey, // Optional: set color if your SVG supports it
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, Routes.qrscanner);
+                  },
                 ),
               ],
             ),
@@ -227,7 +240,7 @@ class UserAccountScreen extends ConsumerWidget {
                                         ? colors.textPrimaryDark
                                         : colors.textPrimaryLight,
                                     fw: 1),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Transform.rotate(
                                   angle: 0 * 3.1416 / 180,
                                   child: Icon(
@@ -295,6 +308,9 @@ class UserAccountScreen extends ConsumerWidget {
                 return ListTile(
                   minTileHeight: 60,
                   onTap: () async {
+                    // Prevent double-tap issues
+                    // if (!_canTap()) return;
+
                     if ([
                       "Verified P&L",
                       "Corporate Action",
@@ -406,8 +422,7 @@ class UserAccountScreen extends ConsumerWidget {
                         );
                         break;
                       case "Settings":
-                        await ref.read(userProfileProvider).fetchsetting();
-                        await ref.read(apikeyprovider).fetchapikey(context);
+                      
                         await Navigator.push(
                           context,
                           PageRouteBuilder(
@@ -471,13 +486,7 @@ class UserAccountScreen extends ConsumerWidget {
                           },
                         );
                         break;
-                      case "Notification":
-                        await ref
-                            .read(notificationprovider)
-                            .fetchexchagemsg(context);
-                        await ref
-                            .read(notificationprovider)
-                            .fetchbrokermsg(context);
+                      case "Notification":                       
                         Navigator.pushNamed(context, Routes.notificationpage);
                         break;
                     }
@@ -578,6 +587,9 @@ class UserAccountScreen extends ConsumerWidget {
                   ),
                 ),
                 onPressed: () async {
+                  // Prevent double-tap issues
+                  if (!_canTap()) return;
+                  
                   await trancation.fetchValidateToken(context);
                   Future.delayed(
                     const Duration(milliseconds: 100),

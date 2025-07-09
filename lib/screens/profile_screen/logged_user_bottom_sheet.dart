@@ -67,312 +67,362 @@ class LoggedUserBottomSheet extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const CustomDragHandler(),
-              SizedBox(
-                height: 8.0,
-              ),
+
               Padding(
-                padding: const EdgeInsets.only(left: 14.0, bottom: 10),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 child: TextWidget.titleText(
                   text: "Manage Accounts",
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 0,
+                  fw: 1,
                 ),
               ),
-              SizedBox(
-                height: 8.0,
-              ),
-              SizedBox(
-                height: 8.0,
-              ),
+
               Divider(
-                height: 1,
-                thickness: 1,
                 color: theme.isDarkMode
                     ? colors.darkColorDivider
                     : colors.colorDivider,
+                height: 0,
               ),
 
-              // --- Current Account Card ---
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                child: Card(
-                  color: colors.fundbuttonBg,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 18),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: colors.colorWhite,
-                          child: Text(
-                            activeAccount.userName.isNotEmpty
-                                ? activeAccount.userName[0].toUpperCase()
-                                : 'U',
-                            style: TextStyle(
-                                color: colors.colorBlack,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextWidget.titleText(
-                                text: activeAccount.userName,
-                                theme: false,
-                                color: theme.isDarkMode
-                                    ? colors.textPrimaryDark
-                                    : colors.textPrimaryLight,
-                                fw: 0,
-                              ),
-                              const SizedBox(height: 6),
-                              TextWidget.paraText(
-                                text: activeAccount.clientId,
-                                theme: false,
-                                color: !theme.isDarkMode
-                                    ? colors.textSecondaryLight
-                                    : colors.textSecondaryDark,
-                                fw: 3,
-                              ),
-                            ],
-                          ),
-                        ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: colors.fundbuttonBg,
-                            side: BorderSide(
-                              color: theme.isDarkMode
-                                  ? colors.colorLightBlue
-                                  : colors.colorBlue,
+              // --- Current Account ListView ---
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: 1,
+                separatorBuilder: (context, idx) => const ListDivider(),
+                itemBuilder: (context, idx) {
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.only(
+                          left: 16, right: 16, top: 16, bottom: 16),
+                      color: theme.isDarkMode
+                          ? colors.colorWhite.withOpacity(0.05)
+                          : colors.colorBlack.withOpacity(0.05),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Left side with avatar and text
+                          Expanded(
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: theme.isDarkMode
+                                      ? colors.colorBlue
+                                      : colors.colorBlue,
+                                  child: TextWidget.titleText(
+                                    text: activeAccount.userName.isNotEmpty
+                                        ? activeAccount.userName[0]
+                                            .toUpperCase()
+                                        : 'U',
+                                    theme: false,
+                                    color: colors.colorWhite,
+                                    fw: 1,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      TextWidget.subText(
+                                        text: activeAccount.userName,
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
+                                        fw: 0,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      TextWidget.paraText(
+                                        text: activeAccount.clientId,
+                                        theme: false,
+                                        color: !theme.isDarkMode
+                                            ? colors.textSecondaryLight
+                                            : colors.textSecondaryDark,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
                           ),
-                          onPressed: () async {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  backgroundColor: ref
-                                          .read(themeProvider)
-                                          .isDarkMode
-                                      ? const Color.fromARGB(255, 18, 18, 18)
-                                      : colors.colorWhite,
-                                  titleTextStyle: textStyles.appBarTitleTxt
-                                      .copyWith(
-                                          color:
-                                              ref.read(themeProvider).isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack),
-                                  contentTextStyle: textStyles.menuTxt,
-                                  titlePadding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 12),
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(14))),
-                                  scrollable: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 14),
-                                  insetPadding: const EdgeInsets.symmetric(
-                                      horizontal: 40),
-                                  title: TextWidget.titleText(
-                                      text: "Confirmation",
-                                      theme: theme.isDarkMode,
-                                      fw: 0),
-                                  content: SizedBox(
-                                      width: MediaQuery.of(context).size.width,
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            TextWidget.titleText(
-                                                text:
-                                                    "Are you sure you want to logout?",
-                                                theme: theme.isDarkMode,
-                                                fw: 0),
-                                          ])),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () =>
-                                            Navigator.of(context).pop(),
-                                        child: TextWidget.subText(
-                                            text: "No",
-                                            theme: false,
-                                            color: theme.isDarkMode
-                                                ? colors.colorLightBlue
-                                                : colors.colorBlue,
-                                            fw: 0)),
-                                    ElevatedButton(
-                                        onPressed: () async {
-                                          ref
-                                              .read(authProvider)
-                                              .fetchLogout(context);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            backgroundColor: theme.isDarkMode
-                                                ? colors.colorbluegrey
-                                                : colors.colorBlack,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(50),
-                                            )),
-                                        child: TextWidget.subText(
-                                            text: "Yes",
-                                            theme: false,
-                                            color: !theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            fw: 0)),
-                                  ],
-                                );
+
+                          // Right side with logout button
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () async {
+                                // Add delay for visual feedback
+                                await Future.delayed(
+                                    const Duration(milliseconds: 150));
+
+                                if (context.mounted) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        backgroundColor:
+                                            ref.read(themeProvider).isDarkMode
+                                                ? const Color.fromARGB(
+                                                    255, 18, 18, 18)
+                                                : colors.colorWhite,
+                                        titleTextStyle:
+                                            textStyles.appBarTitleTxt.copyWith(
+                                                color: ref
+                                                        .read(themeProvider)
+                                                        .isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack),
+                                        contentTextStyle: textStyles.menuTxt,
+                                        titlePadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 14, vertical: 12),
+                                        shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(14))),
+                                        scrollable: true,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 14),
+                                        insetPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 40),
+                                        title: TextWidget.titleText(
+                                            text: "Confirmation",
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                        content: SizedBox(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  TextWidget.titleText(
+                                                      text:
+                                                          "Are you sure you want to logout?",
+                                                      theme: theme.isDarkMode,
+                                                      fw: 0),
+                                                ])),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context).pop(),
+                                              child: TextWidget.subText(
+                                                  text: "No",
+                                                  theme: false,
+                                                  color: theme.isDarkMode
+                                                      ? colors.colorLightBlue
+                                                      : colors.colorBlue,
+                                                  fw: 0)),
+                                          ElevatedButton(
+                                              onPressed: () async {
+                                                ref
+                                                    .read(authProvider)
+                                                    .fetchLogout(context);
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                  elevation: 0,
+                                                  backgroundColor:
+                                                      theme.isDarkMode
+                                                          ? colors.colorbluegrey
+                                                          : colors.colorBlack,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            50),
+                                                  )),
+                                              child: TextWidget.subText(
+                                                  text: "Yes",
+                                                  theme: false,
+                                                  color: !theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  fw: 0)),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }
                               },
-                            );
-                          },
-                          child: TextWidget.subText(
-                              text: "Log Out",
-                              theme: false,
-                              color: !theme.isDarkMode
-                                  ? colors.colorBlue
-                                  : colors.colorLightBlue,
-                              fw: 0,
-                              align: TextAlign.center),
-                        )
-                      ],
+                              borderRadius: BorderRadius.circular(5),
+                              splashColor: theme.isDarkMode
+                                  ? colors.splashColorDark
+                                  : colors.splashColorLight,
+                              highlightColor: theme.isDarkMode
+                                  ? colors.highlightDark
+                                  : colors.highlightLight,
+                              child: Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: TextWidget.paraText(
+                                    text: "Log Out",
+                                    theme: false,
+                                    color: theme.isDarkMode
+                                        ? colors.secondaryDark
+                                        : colors.secondaryLight,
+                                    align: TextAlign.center),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
+
+              const ListDivider(),
 
               // --- Other Accounts List ---
-              if (otherAccounts.isNotEmpty)
-                Expanded(
-                  child: ListView.separated(
-                    controller: controller,
-                    shrinkWrap: true,
-                    itemCount: otherAccounts.length,
-                    separatorBuilder: (context, idx) => const ListDivider(),
-                    itemBuilder: (context, idx) {
-                      final acc = otherAccounts[idx];
-                      return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: colors.fundbuttonBg,
-                            child: Text(
-                              acc.userName.isNotEmpty
-                                  ? acc.userName[0].toUpperCase()
-                                  : 'U',
-                              style: TextStyle(
-                                  color: colors.colorBlack,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          onTap: () async {
-                            mf.loaderfun();
-                            portfolio.clearAllportfolio();
-                            orders.clearAllorders();
-                            ledgerprovider.setterfornullallSwitch = null;
-                            userProfile.clearUserData();
+              Expanded(
+                child: otherAccounts.isNotEmpty
+                    ? ListView.separated(
+                        controller: controller,
+                        shrinkWrap: true,
+                        itemCount: otherAccounts.length,
+                        separatorBuilder: (context, idx) => const ListDivider(),
+                        itemBuilder: (context, idx) {
+                          final acc = otherAccounts[idx];
+                          return InkWell(
+                            onTap: () async {
+                              mf.loaderfun();
+                              portfolio.clearAllportfolio();
+                              orders.clearAllorders();
+                              ledgerprovider.setterfornullallSwitch = null;
+                              userProfile.clearUserData();
 
-                            final websocket = ref.read(websocketProvider);
-                            websocket.closeSocket(true);
+                              final websocket = ref.read(websocketProvider);
+                              websocket.closeSocket(true);
 
-                            pref.setClientId(acc.clientId);
-                            pref.setClientMob(acc.mobile);
-                            pref.setClientSession(acc.sesstion);
-                            pref.setClientName(acc.userName);
-                            pref.setImei(acc.imei);
-                            pref.setMobileLogin(true);
+                              pref.setClientId(acc.clientId);
+                              pref.setClientMob(acc.mobile);
+                              pref.setClientSession(acc.sesstion);
+                              pref.setClientName(acc.userName);
+                              pref.setImei(acc.imei);
+                              pref.setMobileLogin(true);
 
-                            await ref.read(authProvider).fetchMobileLogin(
-                                  context,
-                                  "",
-                                  acc.clientId,
-                                  "switchAc",
-                                  acc.imei,
-                                  true,
-                                );
+                              await ref.read(authProvider).fetchMobileLogin(
+                                    context,
+                                    "",
+                                    acc.clientId,
+                                    "switchAc",
+                                    acc.imei,
+                                    true,
+                                  );
 
-                            websocket.changeconnectioncount();
-                            Future.delayed(const Duration(seconds: 2), () {
-                              mf.loaderfunfalse();
-                            });
-                          },
-                          dense: true,
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 14),
-                          title: TextWidget.subText(
-                            text: acc.userName,
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 0,
-                          ),
-                          subtitle: TextWidget.paraText(
-                            text: acc.clientId,
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            fw: 3,
-                          ),
-                          trailing: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: colors.fundbuttonBg,
-                              side: BorderSide(
-                                color: theme.isDarkMode
-                                    ? colors.kColorLightRed
-                                    : colors.kColorRedButton,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            onPressed: () async {
-                              loggedUser.removeUsers(acc, idx, context);
+                              websocket.changeconnectioncount();
+                              Future.delayed(const Duration(seconds: 2), () {
+                                mf.loaderfunfalse();
+                              });
                             },
-                            child: TextWidget.paraText(
-                                text: "Remove",
-                                theme: false,
-                                color: !theme.isDarkMode
-                                    ? colors.kColorRedButton
-                                    : colors.kColorLightRed,
-                                fw: 0,
-                                align: TextAlign.center),
-                          )
+                            child: Container(
+                              padding: const EdgeInsets.only(
+                                  left: 16, right: 16, top: 16, bottom: 16),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Left side with avatar and text
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          backgroundColor: colors.fundbuttonBg,
+                                          child: TextWidget.titleText(
+                                            text: acc.userName.isNotEmpty
+                                                ? acc.userName[0].toUpperCase()
+                                                : 'U',
+                                            theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                            fw: 1,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              TextWidget.subText(
+                                                text: acc.userName,
+                                                theme: false,
+                                                color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
+                                                fw: 0,
+                                              ),
+                                              const SizedBox(height: 4),
+                                              TextWidget.paraText(
+                                                text: acc.clientId,
+                                                theme: false,
+                                                color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
 
-                          // InkWell(
-                          //   onTap: () {
-                          //     loggedUser.removeUsers(acc, idx, context);
-                          //   },
-                          //   child: TextWidget.subText(
-                          //     text: "Remove",
-                          //     theme: false,
-                          //     color: theme.isDarkMode
-                          //         ? colors.kColorLightRed
-                          //         : colors.kColorRedButton,
-                          //     fw: 1,
-                          //   ),
-                          // ),
+                                  // Right side with remove button
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () async {
+                                        // Add delay for visual feedback
+                                        await Future.delayed(
+                                            const Duration(milliseconds: 150));
+
+                                        if (context.mounted) {
+                                          loggedUser.removeUsers(
+                                              acc, idx, context);
+                                        }
+                                      },
+                                      borderRadius: BorderRadius.circular(5),
+                                      splashColor: theme.isDarkMode
+                                          ? colors.splashColorDark
+                                          : colors.splashColorLight,
+                                      highlightColor: theme.isDarkMode
+                                          ? colors.highlightDark
+                                          : colors.highlightLight,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(5),
+                                        child: TextWidget.paraText(
+                                            text: "Remove",
+                                            theme: false,
+                                            color: !theme.isDarkMode
+                                                ? colors.errorLight
+                                                : colors.errorDark,
+                                            align: TextAlign.center),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
-                    },
-                  ),
-                ),
+                        },
+                      )
+                    : const SizedBox.shrink(),
+              ),
 
               // --- Add Account Button ---
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 5),
                 child: OutlinedButton(
                   onPressed: () {
                     ref.read(orderProvider).clearAllorders();
@@ -411,7 +461,6 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                   },
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(
-                      width: 1.4,
                       color: theme.isDarkMode
                           ? colors.primaryDark
                           : colors.primaryLight,
@@ -424,26 +473,26 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SvgPicture.asset(
-                        assets.addCircleIcon,
-                        color: theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight,
-                      ),
-                      const SizedBox(width: 8),
+                      // SvgPicture.asset(
+                      //   assets.addCircleIcon,
+                      //   color: theme.isDarkMode
+                      //       ? colors.primaryDark
+                      //       : colors.primaryLight,
+                      // ),
+                      // const SizedBox(width: 8),
                       TextWidget.subText(
                         text: "Add account",
                         theme: false,
                         color: theme.isDarkMode
                             ? colors.primaryDark
                             : colors.primaryLight,
-                        fw: 0,
+                        fw: 2,
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
             ],
           ),
         );
