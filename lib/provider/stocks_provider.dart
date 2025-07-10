@@ -164,10 +164,11 @@ class StocksProvider extends DefaultChangeNotifier {
 
   late TabController exploreTab;
   List<Tab> _exploreTabName = [
-    const Tab(text: "Positions"),
-    const Tab(text: "Holdings"),
-    const Tab(text: "Orders"),
-    const Tab(text: "Funds")
+    const Tab(text: "Stocks"),
+    const Tab(text: "F&O"),
+    const Tab(text: "Mutual Fund"),
+    const Tab(text: "Bonds"),
+    const Tab(text: "IPOs"),
   ];
   List<Tab> get exploreTabName => _exploreTabName;
 
