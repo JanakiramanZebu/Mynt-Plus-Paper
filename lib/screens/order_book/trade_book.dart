@@ -264,15 +264,15 @@ class TradeBook extends ConsumerWidget {
                                           fw: 3,
                                         ),
                                       ),
-                                      TextWidget.paraText(
-                                        text:
-                                            "LTP ${tradeBook[index].ltp ?? '0.00'}",
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                            : colors.textSecondaryLight,
-                                        fw: 3,
-                                      ),
+                                      // TextWidget.paraText(
+                                      //   text:
+                                      //       " ${tradeBook[index] ?? '0.00'}",
+                                      //   theme: false,
+                                      //   color: theme.isDarkMode
+                                      //       ? colors.textSecondaryDark
+                                      //       : colors.textSecondaryLight,
+                                      //   fw: 3,
+                                      // ),
                                     ],
                                   ),
 
@@ -330,7 +330,7 @@ class TradeBook extends ConsumerWidget {
                                       ),
                                       TextWidget.paraText(
                                         text:
-                                            "${tradeBook[index].prc ?? '0.00'}",
+                                            "${tradeBook[index].avgprc ?? '0.00'}",
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
