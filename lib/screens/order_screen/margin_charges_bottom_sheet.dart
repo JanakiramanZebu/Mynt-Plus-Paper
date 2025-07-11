@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../provider/order_provider.dart';
 import '../../provider/thems.dart';
@@ -21,6 +22,8 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final orderMargin = ref.watch(orderProvider).orderMarginModel;
       final orderBrokerage = ref.watch(orderProvider).getBrokerageModel;
+      final clientFundDetail = ref.watch(fundProvider).fundDetailModel;
+
 
       final theme = ref.watch(themeProvider);
       return Container(
@@ -58,82 +61,59 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 15),
                     child: Column(children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Cash",
-                              style: textStyle(
-                                  !theme.isDarkMode
-                                      ? colors.colorBlack
-                                      : colors.colorWhite,
-                                  14,
-                                  FontWeight.w500)),
-                          Text("${orderMargin!.cash}",
-                              style: textStyle(
-                                  !theme.isDarkMode
-                                      ? colors.colorBlack
-                                      : colors.colorWhite,
-                                  14,
-                                  FontWeight.w500))
-                        ],
-                      ),
-                      Divider(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Margin used",
-                              style: textStyle(
-                                  !theme.isDarkMode
-                                      ? colors.colorBlack
-                                      : colors.colorWhite,
-                                  14,
-                                  FontWeight.w500)),
-                          Text("${orderMargin.marginused}",
-                              style: textStyle( 
-                                      orderMargin.remarks ==
-                                              "Insufficient Balance"
-                                          ? colors.darkred
-                                          : 
-                                  !theme.isDarkMode
-                                      ? colors.colorBlack
-                                      : colors.colorWhite,
-                                  14,
-                                  FontWeight.w500))
-                        ],
-                      ),
-                      Divider(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Margin used previous",
-                              style: textStyle(
-                                  !theme.isDarkMode
-                                      ? colors.colorBlack
-                                      : colors.colorWhite,
-                                  14,
-                                  FontWeight.w500)),
-                          Text("${orderMargin.marginusedprev}",
-                              style: textStyle(
-                                  !theme.isDarkMode
-                                      ? colors.colorBlack
-                                      : colors.colorWhite,
-                                  14,
-                                  FontWeight.w500))
-                        ],
-                      ),
-                      Divider(
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
-                          height: 20),
+                    
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //   children: [
+                      //     Text("Margin used",
+                      //         style: textStyle(
+                      //             !theme.isDarkMode
+                      //                 ? colors.colorBlack
+                      //                 : colors.colorWhite,
+                      //             14,
+                      //             FontWeight.w500)),
+                      //     Text("${orderMargin.marginused}",
+                      //         style: textStyle( 
+                      //                 orderMargin.remarks ==
+                      //                         "Insufficient Balance"
+                      //                     ? colors.darkred
+                      //                     : 
+                      //             !theme.isDarkMode
+                      //                 ? colors.colorBlack
+                      //                 : colors.colorWhite,
+                      //             14,
+                      //             FontWeight.w500))
+                      //   ],
+                      // ),
+                      // Divider(
+                      //     color: theme.isDarkMode
+                      //         ? colors.darkColorDivider
+                      //         : colors.colorDivider,
+                      //     height: 20),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //   children: [
+                      //     Text("Margin used previous",
+                      //         style: textStyle(
+                      //             !theme.isDarkMode
+                      //                 ? colors.colorBlack
+                      //                 : colors.colorWhite,
+                      //             14,
+                      //             FontWeight.w500)),
+                      //     Text("${orderMargin.marginusedprev}",
+                      //         style: textStyle(
+                      //             !theme.isDarkMode
+                      //                 ? colors.colorBlack
+                      //                 : colors.colorWhite,
+                      //             14,
+                      //             FontWeight.w500))
+                      //   ],
+                      // ),
+                      // Divider(
+                      //     color: theme.isDarkMode
+                      //         ? colors.darkColorDivider
+                      //         : colors.colorDivider,
+                      //     height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -144,7 +124,7 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                       : colors.colorWhite,
                                   14,
                                   FontWeight.w500)),
-                          Text("${orderMargin.ordermargin}",
+                          Text("${orderMargin?.ordermargin??0.00}",
                               style: textStyle(
                                   !theme.isDarkMode
                                       ? colors.colorBlack
@@ -153,7 +133,34 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                   FontWeight.w500))
                         ],
                       ),
-                      if (orderMargin.remarks != null) ...[
+                       Divider(
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider,
+                          height: 20),
+
+                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Available Margin",
+                              style: textStyle(
+                                  !theme.isDarkMode
+                                      ? colors.colorBlack
+                                      : colors.colorWhite,
+                                  14,
+                                  FontWeight.w500)),
+                          Text("${clientFundDetail?.avlMrg??0.00}",
+                              style: textStyle(
+                                  !theme.isDarkMode
+                                      ? colors.colorBlack
+                                      : colors.colorWhite,
+                                  14,
+                                  FontWeight.w500))
+                        ],
+                      ),
+                     
+
+                      if (orderMargin?.remarks != null) ...[
                         Divider(
                             color: theme.isDarkMode
                                 ? colors.darkColorDivider
@@ -169,9 +176,9 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                           : colors.colorWhite,
                                       14,
                                       FontWeight.w500)),
-                              Text("${orderMargin.remarks}",
+                              Text(orderMargin?.remarks??'',
                                   style: textStyle(
-                                      orderMargin.remarks ==
+                                      orderMargin?.remarks ==
                                               "Insufficient Balance"
                                           ? colors.darkred
                                           : colors.ltpgreen,

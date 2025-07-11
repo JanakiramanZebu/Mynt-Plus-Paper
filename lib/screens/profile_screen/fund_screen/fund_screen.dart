@@ -63,23 +63,20 @@ class _FundScreenState extends ConsumerState<FundScreen> {
           child: Scaffold(
             appBar: AppBar(
               centerTitle: false,
-              leadingWidth: 41,
+              leadingWidth: 46,
               titleSpacing: 6,
-              leading: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Icon(
-                      Icons.arrow_back_ios,
-                      color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                      size: 22,
-                    ),
+              leading: InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SvgPicture.asset(
+                    assets.backArrow,
+                    color: theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack,
+                    width: 20,
                   ),
                 ),
               ),

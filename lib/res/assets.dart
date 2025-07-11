@@ -35,6 +35,7 @@ class Assets {
   final String ckeckedboxIcon = "assets/icon/checked_box.svg";
   final String sortbyIcon = "assets/icon/sortby.svg";
   final String geometry = "assets/icon/bottomBarIcon/geometry.svg";
+  final String home = "assets/icon/bottomBarIcon/dashboard_icon.svg";
   final String appbarbookmark = 'assets/icon/appbarIcon/appbarbookmark.svg';
 
   final String openEye = "assets/icon/open_eye.svg";

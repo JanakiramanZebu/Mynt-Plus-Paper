@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../provider/index_list_provider.dart';
 import '../../../../../provider/stocks_provider.dart';
+import '../../../../../provider/thems.dart';
+import '../../../../../res/global_state_text.dart';
+import '../../../../../res/res.dart';
 import '../../../../../routes/route_names.dart';
 import '../../../../market_watch/index/index_screen.dart';
 // import 'top_indices_list_card.dart';
@@ -46,30 +49,35 @@ class _TopIndicesState extends State<TopIndices> {
   @override
   Widget build(context) {
     return Consumer(builder: (context, ref, child) {
+      final theme = ref.watch(themeProvider);
       // final indices = ref.watch(indexListProvider);
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text("Top Indices",
-                  style: GoogleFonts.inter(
-                      textStyle: textStyle(
-                          const Color(0xff000000), 16, FontWeight.w600))),
-              TextButton(
-                  onPressed: () async {
-                    await ref.read(indexListProvider).fetchAllIndex();
-                    await ref.read(stocksProvide).getGlobalIndices();
-                    Navigator.pushNamed(context, Routes.allIndex);
-                  },
-                  child: Text('See all',
-                      style: GoogleFonts.inter(
-                          color: const Color(0xff0037B7),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600)))
+              TextWidget.titleText(
+                text: "Indices",
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                fw: 1,
+              ),
+              // TextButton(
+              //     onPressed: () async {
+              //       await ref.read(indexListProvider).fetchAllIndex();
+              //       await ref.read(stocksProvide).getGlobalIndices();
+              //       Navigator.pushNamed(context, Routes.allIndex);
+              //     },
+              //     child: Text('See all',
+              //         style: GoogleFonts.inter(
+              //             color: const Color(0xff0037B7),
+              //             fontSize: 14,
+              //             fontWeight: FontWeight.w600)))
             ]),
-            DefaultIndexList(src: true)
+            DefaultIndexList(src: false)
             // SizedBox(
             //   height: 90,
             //   child: ListView.separated(

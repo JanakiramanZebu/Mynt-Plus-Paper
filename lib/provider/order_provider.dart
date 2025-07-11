@@ -219,8 +219,7 @@ class OrderProvider extends DefaultChangeNotifier {
     for (var i = 0; i < (_openOrder?.length ?? 0); i++) {
       if (index == i) {
         if (_openOrder?[i] != null) {
-          _openOrder![i].isExitSelection =
-              !(_openOrder![i].isExitSelection ?? false);
+          _openOrder![i].isExitSelection = !(_openOrder![i].isExitSelection ?? false);
         }
         if (_openOrder![i].isExitSelection!) {
           _exitOrderQty = _exitOrderQty + 1;
@@ -410,8 +409,7 @@ class OrderProvider extends DefaultChangeNotifier {
       if (symbolsToSubscribe.isNotEmpty) {
         input = symbolsToSubscribe.join("#");
         print("Subscribing to new basket scripts: $input");
-        ref.read(websocketProvider).establishConnection(
-            channelInput: input, task: "t", context: context);
+        ref.read(websocketProvider).establishConnection(channelInput: input, task: "t", context: context);
       }
 
       // Update basket with latest values from socket data
@@ -472,19 +470,12 @@ class OrderProvider extends DefaultChangeNotifier {
     _orderTabName = [
       // Tab(text: _allOrder!.isNotEmpty ? "All (${_allOrder!.length})" : "All"),
       Tab(text: _openOrder!.isNotEmpty ? "Open ${_openOrder!.length}" : "Open"),
+      Tab(text: _executedOrder!.isNotEmpty ? "Executed ${_executedOrder!.length}" : "Executed"),
       Tab(
-          text: _executedOrder!.isNotEmpty
-              ? "Executed ${_executedOrder!.length}"
-              : "Executed"),
-      Tab(
-        text: (_tradeBook != null && _tradeBook!.isNotEmpty)
-            ? "Trade ${_tradeBook!.length}"
-            : "Trade",
+        text: (_tradeBook != null && _tradeBook!.isNotEmpty) ? "Trade ${_tradeBook!.length}" : "Trade",
       ),
       Tab(
-        text: (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty)
-            ? "GTT ${_gttOrderBookModel!.length}"
-            : "GTT",
+        text: (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty) ? "GTT ${_gttOrderBookModel!.length}" : "GTT",
       ),
       Tab(
         text: _bsktList.isNotEmpty ? "Basket ${_bsktList.length}" : "Basket",
@@ -579,44 +570,26 @@ class OrderProvider extends DefaultChangeNotifier {
     if (value.isNotEmpty) {
       switch (_selectedTab) {
         case 0: // Open Orders
-          _orderSearchItem = _openOrder!
-              .where((element) =>
-                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
-              .toList();
+          _orderSearchItem = _openOrder!.where((element) => element.tsym!.toUpperCase().contains(value.toUpperCase())).toList();
           break;
         case 1: // Executed Orders
-          _orderSearchItem = _executedOrder!
-              .where((element) =>
-                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
-              .toList();
+          _orderSearchItem = _executedOrder!.where((element) => element.tsym!.toUpperCase().contains(value.toUpperCase())).toList();
           break;
         case 2: // Trade Book
-          _tradeBooksearch = _tradeBook!
-              .where((element) =>
-                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
-              .toList();
+          _tradeBooksearch = _tradeBook!.where((element) => element.tsym!.toUpperCase().contains(value.toUpperCase())).toList();
           break;
         case 3: // GTT Orders
-          _gttOrderBookSearch = _gttOrderBookModel!
-              .where((element) =>
-                  element.tsym!.toUpperCase().contains(value.toUpperCase()))
-              .toList();
+          _gttOrderBookSearch = _gttOrderBookModel!.where((element) => element.tsym!.toUpperCase().contains(value.toUpperCase())).toList();
           break;
         case 4: // Basket Orders - Search not applicable
           break;
         case 5: // SIP Orders
-          _siporderBookSearch = _siporderBookModel!.sipDetails!
-              .where((element) =>
-                  element.sipName!.toUpperCase().contains(value.toUpperCase()))
-              .toList();
+          _siporderBookSearch = _siporderBookModel!.sipDetails!.where((element) => element.sipName!.toUpperCase().contains(value.toUpperCase())).toList();
           break;
         case 6: // Alerts
           final alertProvider = ref.read(marketWatchProvider);
           if (alertProvider.alertPendingModel != null) {
-            final searchResult = alertProvider.alertPendingModel!
-                .where((element) =>
-                    element.tsym!.toUpperCase().contains(value.toUpperCase()))
-                .toList();
+            final searchResult = alertProvider.alertPendingModel!.where((element) => element.tsym!.toUpperCase().contains(value.toUpperCase())).toList();
             alertProvider.setAlertPendingSearch(searchResult);
           }
           break;
@@ -630,14 +603,11 @@ class OrderProvider extends DefaultChangeNotifier {
       _showSearchOrder = true;
       _orderSearchItem = [];
       _orderSearchItem = _allOrder!
-          .where((element) =>
-              element.tsym!.toLowerCase().contains(value.toLowerCase()) ||
-              (element.symbol?.toLowerCase().contains(value.toLowerCase()) ??
-                  false))
+          .where(
+              (element) => element.tsym!.toLowerCase().contains(value.toLowerCase()) || (element.symbol?.toLowerCase().contains(value.toLowerCase()) ?? false))
           .toList();
       if (_orderSearchItem!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, 'No Data Found'));
       }
     } else {
       _orderSearchItem = [];
@@ -649,13 +619,9 @@ class OrderProvider extends DefaultChangeNotifier {
   orderGttSearch(String value, BuildContext context) {
     if (value.length > 1) {
       _gttOrderBookSearch = [];
-      _gttOrderBookSearch = _gttOrderBookModel!
-          .where((element) =>
-              element.tsym!.toUpperCase().contains(value.toUpperCase()))
-          .toList();
+      _gttOrderBookSearch = _gttOrderBookModel!.where((element) => element.tsym!.toUpperCase().contains(value.toUpperCase())).toList();
       if (_gttOrderBookSearch!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, 'No Data Found'));
       }
     } else {
       _gttOrderBookSearch = [];
@@ -667,13 +633,9 @@ class OrderProvider extends DefaultChangeNotifier {
   orderSipSearch(String value, BuildContext context) {
     if (value.length > 1) {
       _siporderBookSearch = [];
-      _siporderBookSearch = _siporderBookModel!.sipDetails!
-          .where((element) =>
-              element.sipName!.toUpperCase().contains(value.toUpperCase()))
-          .toList();
+      _siporderBookSearch = _siporderBookModel!.sipDetails!.where((element) => element.sipName!.toUpperCase().contains(value.toUpperCase())).toList();
       if (_siporderBookSearch!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, 'No Data Found'));
       }
     } else {
       _siporderBookSearch = [];
@@ -685,13 +647,9 @@ class OrderProvider extends DefaultChangeNotifier {
   orderTradeBookSearch(String value, BuildContext context) {
     if (value.length > 1) {
       _tradeBooksearch = [];
-      _tradeBooksearch = _tradeBook!
-          .where((element) =>
-              element.tsym!.toUpperCase().contains(value.toUpperCase()))
-          .toList();
+      _tradeBooksearch = _tradeBook!.where((element) => element.tsym!.toUpperCase().contains(value.toUpperCase())).toList();
       if (_tradeBooksearch!.isEmpty) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(warningMessage(context, 'No Data Found'));
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, 'No Data Found'));
       }
     } else {
       _tradeBooksearch = [];
@@ -700,12 +658,10 @@ class OrderProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  Future fetchPlaceOrder(BuildContext context, PlaceOrderInput placeOrderInput,
-      bool isExit) async {
+  Future fetchPlaceOrder(BuildContext context, PlaceOrderInput placeOrderInput, bool isExit) async {
     try {
-      placeOrderInput.channel = defaultTargetPlatform == TargetPlatform.android
-          ? '${ref.read(authProvider).deviceInfo["brand"]}'
-          : "${ref.read(authProvider).deviceInfo["model"]}";
+      placeOrderInput.channel =
+          defaultTargetPlatform == TargetPlatform.android ? '${ref.read(authProvider).deviceInfo["brand"]}' : "${ref.read(authProvider).deviceInfo["model"]}";
 
       _placeOrderModel = await api.getPlaceOrder(placeOrderInput, _ip);
 
@@ -717,10 +673,10 @@ class OrderProvider extends DefaultChangeNotifier {
         //     ConstantName.sessCheck = true;
         //     for (var element in _orderBookModel!) {
         //       if (element.norenordno == _placeOrderModel!.norenordno) {
-        ScaffoldMessenger.of(context).showSnackBar(successMessage(
-            context, "Order placed successfully."
-            // "Your ${element.trantype == "B" ? "buy" : "sell"} order ${element.norenordno} for ${element.tsym} in ${element.exch} is ${element.status}"
-            ));
+        // ScaffoldMessenger.of(context).showSnackBar(successMessage(
+        //     context, "Order placed successfully."
+        //     // "Your ${element.trantype == "B" ? "buy" : "sell"} order ${element.norenordno} for ${element.tsym} in ${element.exch} is ${element.status}"
+        //     ));
         // }
         //     }
         notifyListeners();
@@ -741,43 +697,37 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // Navigate to order confirmation screen
         Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
-          'orderData': _placeOrderModel,
+          'orderData': [_placeOrderModel!],
         });
 
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
-        if (_placeOrderModel!.emsg ==
-                "Session Expired :  Invalid Session Key" &&
-            _placeOrderModel!.stat == "Not_Ok") {
+        if (_placeOrderModel!.emsg == "Session Expired :  Invalid Session Key" && _placeOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, "${_placeOrderModel!.emsg}"));
+          ScaffoldMessenger.of(context).showSnackBar(successMessage(context, "${_placeOrderModel!.emsg}"));
         }
       }
 
       return _placeOrderModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Place Order", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Place Order", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
 
-  Future slicePlaceOrder(
-      BuildContext context, PlaceOrderInput placeOrderInput) async {
+  List<PlaceOrderModel> _sliceOrderResults = [];
+  List<PlaceOrderModel> get sliceOrderResults => _sliceOrderResults;
+
+  Future slicePlaceOrder(BuildContext context, PlaceOrderInput placeOrderInput) async {
     try {
-      placeOrderInput.channel = defaultTargetPlatform == TargetPlatform.android
-          ? '${ref.read(authProvider).deviceInfo["brand"]}'
-          : "${ref.read(authProvider).deviceInfo["model"]}";
+      placeOrderInput.channel =
+          defaultTargetPlatform == TargetPlatform.android ? '${ref.read(authProvider).deviceInfo["brand"]}' : "${ref.read(authProvider).deviceInfo["model"]}";
 
       _placeOrderModel = await api.getPlaceOrder(placeOrderInput, _ip);
 
-      if (_placeOrderModel!.emsg == "Session Expired :  Invalid Session Key" &&
-          _placeOrderModel!.stat == "Not_Ok") {
+      if (_placeOrderModel!.emsg == "Session Expired :  Invalid Session Key" && _placeOrderModel!.stat == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
@@ -785,11 +735,89 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _placeOrderModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Place Slice  Order", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Place Slice  Order", "Error": "$e"});
       notifyListeners();
+    }
+  }
+
+  // New function to handle multiple slice orders and navigate to confirmation
+  Future<void> slicePlaceOrderWithConfirmation(BuildContext context, List<PlaceOrderInput> placeOrderInputs, int quantity, int reminder) async {
+    try {
+      _sliceOrderResults.clear();
+      List<Future<PlaceOrderModel?>> orderFutures = [];
+
+      // Create futures for all slice orders
+      final iterations = quantity >= 20 ? 20 : quantity;
+
+      for (var i = 0; i < iterations; i++) {
+        orderFutures.add(_placeSliceOrderInternal(placeOrderInputs[0]));
+      }
+
+      // Add reminder order future if needed
+      if (reminder != 0 && placeOrderInputs.length > 1) {
+        orderFutures.add(_placeSliceOrderInternal(placeOrderInputs[1]));
+      }
+
+      // Wait for all orders to complete
+      final results = await Future.wait(orderFutures);
+
+      // Process results
+      bool hasSessionExpired = false;
+      for (final result in results) {
+        if (result != null) {
+          if (result.emsg == "Session Expired :  Invalid Session Key") {
+            hasSessionExpired = true;
+            break;
+          }
+          if (result.stat == "Ok") {
+            _sliceOrderResults.add(result);
+          } 
+        }
+      }
+      // Handle session expiry
+      if (hasSessionExpired) {
+        ref.read(authProvider).ifSessionExpired(context);
+      }
+
+      // Show results
+      if (_sliceOrderResults.isNotEmpty) {
+        // Update order book
+        fetchOrderBook(context, true);
+
+        // Navigate to order confirmation screen with all sliced orders
+          if (context.mounted) {
+            Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
+              'orderData': _sliceOrderResults,
+            });
+          } 
+        notifyListeners();
+      } else {
+       
+        // Show error if no orders were successful
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Failed to place orders. Please try again."));
+        }
+      }
+    } catch (e) {
+      ref.read(indexListProvider).logError.add({"type": "API Slice Order Confirmation", "Error": "$e"});
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Error placing orders: ${e.toString()}"));
+      }
+      notifyListeners();
+    }
+  }
+
+  // Helper function for placing individual slice orders
+  Future<PlaceOrderModel?> _placeSliceOrderInternal(PlaceOrderInput placeOrderInput) async {
+    try {
+      placeOrderInput.channel =
+          defaultTargetPlatform == TargetPlatform.android ? '${ref.read(authProvider).deviceInfo["brand"]}' : "${ref.read(authProvider).deviceInfo["model"]}";
+
+      final result = await api.getPlaceOrder(placeOrderInput, _ip);
+      return result;
+    } catch (e) {
+      print("Error placing slice order: $e");
+      return null;
     }
   }
 
@@ -827,9 +855,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
               element.symbol = splitVal[0];
               element.expDate = "${splitVal[1]} ${splitVal[2]}";
-              element.option = splitVal.length > 4
-                  ? "${splitVal[3]} ${splitVal[4]}"
-                  : splitVal[3];
+              element.option = splitVal.length > 4 ? "${splitVal[3]} ${splitVal[4]}" : splitVal[3];
             } else {
               Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
@@ -838,10 +864,7 @@ class OrderProvider extends DefaultChangeNotifier {
               element.option = "${spilitSymbol["option"]}";
             }
             if (element.stat == "Ok") {
-              if (element.status == "REJECTED" ||
-                  element.status == "CANCELED" ||
-                  element.status == "COMPLETE" ||
-                  element.status == "INVALID_STATUS_TYPE") {
+              if (element.status == "REJECTED" || element.status == "CANCELED" || element.status == "COMPLETE" || element.status == "INVALID_STATUS_TYPE") {
                 _executedOrder!.add(element);
               } else {
                 _openOrder!.add(element);
@@ -862,19 +885,14 @@ class OrderProvider extends DefaultChangeNotifier {
           }
           tabSize();
         } else {
-          if (_orderBookModel![0].emsg ==
-                  "Session Expired :  Invalid Session Key" &&
-              _orderBookModel![0].stat == "Not_Ok") {
+          if (_orderBookModel![0].emsg == "Session Expired :  Invalid Session Key" && _orderBookModel![0].stat == "Not_Ok") {
             ref.read(authProvider).ifSessionExpired(context);
           }
         }
       }
       return _orderBookModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Order Book", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Order Book", "Error": "$e"});
       notifyListeners();
       print(e);
     } finally {
@@ -907,9 +925,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
               element.symbol = splitVal[0];
               element.expDate = "${splitVal[1]} ${splitVal[2]}";
-              element.option = splitVal.length > 4
-                  ? "${splitVal[3]} ${splitVal[4]}"
-                  : splitVal[3];
+              element.option = splitVal.length > 4 ? "${splitVal[3]} ${splitVal[4]}" : splitVal[3];
             } else {
               Map spilitSymbol = spilitTsym(value: "${element.tsym}");
 
@@ -919,8 +935,7 @@ class OrderProvider extends DefaultChangeNotifier {
             }
           }
         }
-        if (_tradeBook![0].emsg == "Session Expired :  Invalid Session Key" &&
-            _tradeBook![0].stat == "Not_Ok") {
+        if (_tradeBook![0].emsg == "Session Expired :  Invalid Session Key" && _tradeBook![0].stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         }
         if (_tradeBook![0].stat == "Not_Ok") {
@@ -933,10 +948,7 @@ class OrderProvider extends DefaultChangeNotifier {
       return _tradeBook;
     } catch (e) {
       print("Trade book $e");
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Trade Book", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Trade Book", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
@@ -970,9 +982,7 @@ class OrderProvider extends DefaultChangeNotifier {
           }
           _gttOrderBookModel!.sort((a, b) => b.ordDate!.compareTo(a.ordDate!));
         }
-        if (_gttOrderBookModel![0].emsg ==
-                "Session Expired :  Invalid Session Key" &&
-            _gttOrderBookModel![0].stat == "Not_Ok") {
+        if (_gttOrderBookModel![0].emsg == "Session Expired :  Invalid Session Key" && _gttOrderBookModel![0].stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         }
 
@@ -985,10 +995,7 @@ class OrderProvider extends DefaultChangeNotifier {
       return _gttOrderBookModel;
     } catch (e) {
       print("GTT Order book $e");
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API GTT Order Book", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API GTT Order Book", "Error": "$e"});
     } finally {
       notifyListeners();
     }
@@ -998,9 +1005,7 @@ class OrderProvider extends DefaultChangeNotifier {
     try {
       _orderHistoryModel = await api.getOrderHistory(orderNum);
       print("${_orderHistoryModel[0].stat}");
-      if (_orderHistoryModel[0].stat == "Not_Ok" &&
-          _orderHistoryModel[0].emsg ==
-              "Session Expired :  Invalid Session Key") {
+      if (_orderHistoryModel[0].stat == "Not_Ok" && _orderHistoryModel[0].emsg == "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
@@ -1010,10 +1015,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _orderHistoryModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Single Order His", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Single Order His", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
@@ -1022,15 +1024,9 @@ class OrderProvider extends DefaultChangeNotifier {
     if (Value.length > 1) {
       _orderBookSearchItem = [];
       Fluttertoast.cancel();
-      _orderBookSearchItem = _executedOrder!
-          .where((element) => element.tsym!.toLowerCase().contains(Value))
-          .toList();
+      _orderBookSearchItem = _executedOrder!.where((element) => element.tsym!.toLowerCase().contains(Value)).toList();
       if (_orderBookSearchItem.isEmpty) {
-        Fluttertoast.showToast(
-            msg: "No Data Found",
-            backgroundColor: Colors.red,
-            textColor: Colors.white,
-            fontSize: 16.0);
+        Fluttertoast.showToast(msg: "No Data Found", backgroundColor: Colors.red, textColor: Colors.white, fontSize: 16.0);
         print("searchList");
       }
     } else {
@@ -1042,10 +1038,8 @@ class OrderProvider extends DefaultChangeNotifier {
   exitOrders(context) async {
     for (var element in _openOrder!) {
       if (element.isExitSelection!) {
-        if ((element.sPrdtAli == "BO" || element.sPrdtAli == "CO") &&
-            element.snonum != null) {
-          await fetchExitSNOOrd(element.snonum.toString(),
-              element.prd.toString(), context, false);
+        if ((element.sPrdtAli == "BO" || element.sPrdtAli == "CO") && element.snonum != null) {
+          await fetchExitSNOOrd(element.snonum.toString(), element.prd.toString(), context, false);
         } else {
           await fetchOrderCancel(element.norenordno.toString(), context, false);
         }
@@ -1065,8 +1059,7 @@ class OrderProvider extends DefaultChangeNotifier {
           ConstantName.sessCheck = true;
           await fetchOrderBook(context, true);
           Navigator.pop(context);
-          ScaffoldMessenger.of(context)
-              .showSnackBar(successMessage(context, 'Order Cancelled'));
+          ScaffoldMessenger.of(context).showSnackBar(successMessage(context, 'Order Cancelled'));
 
           Navigator.pop(context);
         }
@@ -1076,26 +1069,20 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _cancelOrderModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Order Canl", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Order Canl", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
 
-  Future fetchExitSNOOrd(
-      String snoOrdNum, String prd, context, bool loop) async {
+  Future fetchExitSNOOrd(String snoOrdNum, String prd, context, bool loop) async {
     try {
       _cancelOrderModel = await api.getExitSNOOrder(snoOrdNum, prd);
-      if (_cancelOrderModel!.stat == "Ok" &&
-          _cancelOrderModel!.dmsg == "success") {
+      if (_cancelOrderModel!.stat == "Ok" && _cancelOrderModel!.dmsg == "success") {
         if (loop) {
           ConstantName.sessCheck = true;
           await fetchOrderBook(context, true);
           Navigator.pop(context);
-          ScaffoldMessenger.of(context)
-              .showSnackBar(successMessage(context, 'Order Exited'));
+          ScaffoldMessenger.of(context).showSnackBar(successMessage(context, 'Order Exited'));
           Navigator.pop(context);
         }
       } else {
@@ -1104,10 +1091,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _cancelOrderModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Order Canl", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Order Canl", "Error": "$e"});
       notifyListeners();
     }
   }
@@ -1118,26 +1102,31 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_modifyOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         await fetchOrderBook(context, true);
+        PlaceOrderModel modifyOrderData = PlaceOrderModel(
+          norenordno: _modifyOrderModel!.result, // Order number from modify result
+          requestTime: _modifyOrderModel!.requestTime,
+          stat: _modifyOrderModel!.stat,
+        );
+        modifyOrderData.emsg = _modifyOrderModel!.emsg;
 
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, 'Order Modified'));
-        Navigator.pop(context);
+        // ScaffoldMessenger.of(context)
+        //     .showSnackBar(successMessage(context, 'Order Modified'));
+        // Navigator.pop(context);
+
+        Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
+          'orderData': [modifyOrderData],
+        });
       } else {
-        if (_modifyOrderModel!.emsg ==
-            "Session Expired :  Invalid Session Key") {
+        if (_modifyOrderModel!.emsg == "Session Expired :  Invalid Session Key") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-              successMessage(context, '${_modifyOrderModel!.emsg}'));
+          ScaffoldMessenger.of(context).showSnackBar(successMessage(context, '${_modifyOrderModel!.emsg}'));
         }
       }
       notifyListeners();
       return _modifyOrderModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Modify Order", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Modify Order", "Error": "$e"});
       notifyListeners();
       print(e);
     } finally {}
@@ -1146,8 +1135,7 @@ class OrderProvider extends DefaultChangeNotifier {
   Future fetchOrderMargin(OrderMarginInput input, BuildContext context) async {
     try {
       _orderMarginModel = await api.getOrderMargin(input);
-      if (_orderMarginModel!.emsg == "Session Expired :  Invalid Session Key" &&
-          _orderMarginModel!.stat == "Not_Ok") {
+      if (_orderMarginModel!.emsg == "Session Expired :  Invalid Session Key" && _orderMarginModel!.stat == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
@@ -1156,10 +1144,7 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _orderMarginModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Order Margin", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Order Margin", "Error": "$e"});
       notifyListeners();
       print(e);
     } finally {}
@@ -1168,9 +1153,7 @@ class OrderProvider extends DefaultChangeNotifier {
   Future fetchGetBrokerage(BrokerageInput input, BuildContext context) async {
     try {
       _getBrokerageModel = await api.getBrokerage(input);
-      if (_getBrokerageModel!.emsg ==
-              "Session Expired :  Invalid Session Key" &&
-          _getBrokerageModel!.stat == "Not_Ok") {
+      if (_getBrokerageModel!.emsg == "Session Expired :  Invalid Session Key" && _getBrokerageModel!.stat == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);
       } else {
         ConstantName.sessCheck = true;
@@ -1179,27 +1162,19 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _getBrokerageModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Brokerage", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Brokerage", "Error": "$e"});
       notifyListeners();
       print(e);
     } finally {}
   }
 
-  requestWSOrderBook(
-      {required bool isSubscribe, required BuildContext context}) {
+  requestWSOrderBook({required bool isSubscribe, required BuildContext context}) {
     try {
       toggleLoadingOn(true);
       String input = "";
       if (_orderBookModel != null) {
-        if (_orderBookModel!.isNotEmpty &&
-            _orderBookModel![0].stat != "Not_Ok") {
-          input = _orderBookModel!
-              .map((e) => "${e.exch}|${e.token}")
-              .toSet()
-              .join("#");
+        if (_orderBookModel!.isNotEmpty && _orderBookModel![0].stat != "Not_Ok") {
+          input = _orderBookModel!.map((e) => "${e.exch}|${e.token}").toSet().join("#");
           print("Regular orders input: $input");
         }
       }
@@ -1210,16 +1185,12 @@ class OrderProvider extends DefaultChangeNotifier {
         print("GTT Orders count: ${_gttOrderBookModel!.length}");
         print("Subscribe mode: ${isSubscribe ? 'SUBSCRIBE' : 'UNSUBSCRIBE'}");
 
-        final gttTokens = _gttOrderBookModel!
-            .map((e) => "${e.exch}|${e.token}")
-            .toSet()
-            .join("#");
+        final gttTokens = _gttOrderBookModel!.map((e) => "${e.exch}|${e.token}").toSet().join("#");
 
         // Debug: Print first 3 GTT order details
         for (int i = 0; i < _gttOrderBookModel!.length && i < 3; i++) {
           final gtt = _gttOrderBookModel![i];
-          print(
-              "  GTT $i: ${gtt.tsym} (${gtt.exch}|${gtt.token}) - Current LTP: ${gtt.ltp ?? 'null'}");
+          print("  GTT $i: ${gtt.tsym} (${gtt.exch}|${gtt.token}) - Current LTP: ${gtt.ltp ?? 'null'}");
         }
 
         if (input.isNotEmpty) {
@@ -1229,16 +1200,12 @@ class OrderProvider extends DefaultChangeNotifier {
         }
 
         print("Total subscription input length: ${input.length}");
-        print(
-            "First 100 chars: ${input.substring(0, input.length > 100 ? 100 : input.length)}");
+        print("First 100 chars: ${input.substring(0, input.length > 100 ? 100 : input.length)}");
         print("=====================================");
       }
 
       if (input.isNotEmpty) {
-        ref.read(websocketProvider).establishConnection(
-            channelInput: input,
-            task: isSubscribe ? "t" : "u",
-            context: context);
+        ref.read(websocketProvider).establishConnection(channelInput: input, task: isSubscribe ? "t" : "u", context: context);
       } else {
         print("🚨 No input to subscribe to in requestWSOrderBook");
       }
@@ -1256,13 +1223,11 @@ class OrderProvider extends DefaultChangeNotifier {
       _tradeBook!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
     } else if (sorting == "LTPDSC") {
       _tradeBook!.sort((a, b) {
-        return double.parse(b.prc ?? "0.00")
-            .compareTo(double.parse(a.prc ?? "0.00"));
+        return double.parse(b.prc ?? "0.00").compareTo(double.parse(a.prc ?? "0.00"));
       });
     } else if (sorting == "LTPASC") {
       _tradeBook!.sort((a, b) {
-        return double.parse(a.prc ?? "0.00")
-            .compareTo(double.parse(b.prc ?? "0.00"));
+        return double.parse(a.prc ?? "0.00").compareTo(double.parse(b.prc ?? "0.00"));
       });
     } else if (sorting == "BUY") {
       _tradeBook!.sort((a, b) => a.trantype!.compareTo(b.trantype!));
@@ -1291,23 +1256,19 @@ class OrderProvider extends DefaultChangeNotifier {
       _gttOrderBookModel!.sort((a, b) => b.tsym!.compareTo(a.tsym!));
     } else if (sorting == "LTPDSC") {
       _gttOrderBookModel!.sort((a, b) {
-        return double.parse(b.ltp ?? "0.00")
-            .compareTo(double.parse(a.ltp ?? "0.00"));
+        return double.parse(b.ltp ?? "0.00").compareTo(double.parse(a.ltp ?? "0.00"));
       });
     } else if (sorting == "LTPASC") {
       _gttOrderBookModel!.sort((a, b) {
-        return double.parse(a.ltp ?? "0.00")
-            .compareTo(double.parse(b.ltp ?? "0.00"));
+        return double.parse(a.ltp ?? "0.00").compareTo(double.parse(b.ltp ?? "0.00"));
       });
     } else if (sorting == "QTYDSC") {
       _gttOrderBookModel!.sort((a, b) {
-        return int.parse("${b.qty ?? "0"}")
-            .compareTo(int.parse("${a.qty ?? "0"}"));
+        return int.parse("${b.qty ?? "0"}").compareTo(int.parse("${a.qty ?? "0"}"));
       });
     } else if (sorting == "QTYASC") {
       _gttOrderBookModel!.sort((a, b) {
-        return int.parse("${a.qty ?? "0"}")
-            .compareTo(int.parse("${b.qty ?? "0"}"));
+        return int.parse("${a.qty ?? "0"}").compareTo(int.parse("${b.qty ?? "0"}"));
       });
     } else if (sorting == "PRODUCTASC") {
       _gttOrderBookModel!.sort((a, b) => a.prd!.compareTo(b.prd!));
@@ -1369,8 +1330,7 @@ class OrderProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  void _applySortingToOrderList(
-      List<OrderBookModel> listToSort, String sorting) {
+  void _applySortingToOrderList(List<OrderBookModel> listToSort, String sorting) {
     // Sorting logic based on the 'sorting' parameter
     switch (sorting) {
       case "ASC":
@@ -1415,19 +1375,15 @@ class OrderProvider extends DefaultChangeNotifier {
         break;
       case "TIMEASC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
-              DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
-              DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
           return aDate.compareTo(bDate);
         });
         break;
       case "TIMEDSC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
-              DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
-              DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
           return bDate.compareTo(aDate);
         });
         break;
@@ -1494,19 +1450,15 @@ class OrderProvider extends DefaultChangeNotifier {
         break;
       case "TIMEASC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
-              DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
-              DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
           return aDate.compareTo(bDate);
         });
         break;
       case "TIMEDSC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
-              DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
-              DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
           return bDate.compareTo(aDate);
         });
         break;
@@ -1573,19 +1525,15 @@ class OrderProvider extends DefaultChangeNotifier {
         break;
       case "TIMEASC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
-              DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
-              DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
           return aDate.compareTo(bDate);
         });
         break;
       case "TIMEDSC":
         listToSort.sort((a, b) {
-          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ??
-              DateTime(1970);
-          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ??
-              DateTime(1970);
+          final aDate = DateTime.tryParse(formatToDateTime(a.norentm ?? '')) ?? DateTime(1970);
+          final bDate = DateTime.tryParse(formatToDateTime(b.norentm ?? '')) ?? DateTime(1970);
           return bDate.compareTo(aDate);
         });
         break;
@@ -1611,18 +1559,13 @@ class OrderProvider extends DefaultChangeNotifier {
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
-        if (_placeGttOrderModel!.emsg ==
-                "Session Expired :  Invalid Session Key" &&
-            _placeGttOrderModel!.stat == "Not_Ok") {
+        if (_placeGttOrderModel!.emsg == "Session Expired :  Invalid Session Key" && _placeGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API GTT Order ", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API GTT Order ", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
@@ -1633,8 +1576,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
         ConstantName.sessCheck = true;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "Modified Order"));
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(context, "Modified Order"));
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
@@ -1643,18 +1585,13 @@ class OrderProvider extends DefaultChangeNotifier {
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
-        if (_modifyGttOrderModel!.emsg ==
-                "Session Expired :  Invalid Session Key" &&
-            _modifyGttOrderModel!.stat == "Not_Ok") {
+        if (_modifyGttOrderModel!.emsg == "Session Expired :  Invalid Session Key" && _modifyGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Modify GTT Order ", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Modify GTT Order ", "Error": "$e"});
       notifyListeners();
     }
   }
@@ -1668,28 +1605,21 @@ class OrderProvider extends DefaultChangeNotifier {
         ConstantName.sessCheck = true;
 
         // Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "GTT Order Cancelled Successfully"));
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(context, "GTT Order Cancelled Successfully"));
         Navigator.pop(context);
       } else {
-        if (_placeGttOrderModel!.emsg ==
-                "Session Expired :  Invalid Session Key" &&
-            _placeGttOrderModel!.stat == "Not_Ok") {
+        if (_placeGttOrderModel!.emsg == "Session Expired :  Invalid Session Key" && _placeGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
       //  Navigator.pop(context);
       if (_placeGttOrderModel!.stat == "Invalid Oi") {
         await fetchGTTOrderBook(context, "");
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "Provided GTT Order is not found"));
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, "Provided GTT Order is not found"));
         Navigator.pop(context);
       }
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API GTT Order  CANCEL", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API GTT Order  CANCEL", "Error": "$e"});
     } finally {
       await fetchGTTOrderBook(context, "");
       toggleLoadingOn(false);
@@ -1711,17 +1641,12 @@ class OrderProvider extends DefaultChangeNotifier {
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
-        if (_placeGttOrderModel!.emsg ==
-                "Session Expired :  Invalid Session Key" &&
-            _placeGttOrderModel!.stat == "Not_Ok") {
+        if (_placeGttOrderModel!.emsg == "Session Expired :  Invalid Session Key" && _placeGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API OCO Order ", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API OCO Order ", "Error": "$e"});
     } finally {
       notifyListeners();
     }
@@ -1733,8 +1658,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (_modifyGttOrderModel!.stat == "OI replaced") {
         ConstantName.sessCheck = true;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "Modified Order"));
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(context, "Modified Order"));
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
@@ -1743,18 +1667,13 @@ class OrderProvider extends DefaultChangeNotifier {
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
-        if (_modifyGttOrderModel!.emsg ==
-                "Session Expired :  Invalid Session Key" &&
-            _modifyGttOrderModel!.stat == "Not_Ok") {
+        if (_modifyGttOrderModel!.emsg == "Session Expired :  Invalid Session Key" && _modifyGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Modify OCO Order ", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Modify OCO Order ", "Error": "$e"});
       notifyListeners();
     }
   }
@@ -1764,12 +1683,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
     getBasketName();
 
-    _bsktList.add({
-      "bsketName": val,
-      "createdDate": curDate,
-      "max": '20',
-      "curLength": '0'
-    });
+    _bsktList.add({"bsketName": val, "createdDate": curDate, "max": '20', "curLength": '0'});
     await pref.setBasketList(jsonEncode(_bsktList));
 
     getBasketName();
@@ -1829,9 +1743,7 @@ class OrderProvider extends DefaultChangeNotifier {
           if (i > 0) {
             basket.add({
               "exch": '${_bsktScripList[i]["exch"]}',
-              "tsym": '${_bsktScripList[i]["tsym"]}'.contains("&")
-                  ? '${_bsktScripList[i]["tsym"]}'.replaceAll("&", "%26")
-                  : '${_bsktScripList[i]["tsym"]}',
+              "tsym": '${_bsktScripList[i]["tsym"]}'.contains("&") ? '${_bsktScripList[i]["tsym"]}'.replaceAll("&", "%26") : '${_bsktScripList[i]["tsym"]}',
               "qty": '${_bsktScripList[i]["qty"]}',
               "prc": '${_bsktScripList[i]["prc"]}',
               "prd": '${_bsktScripList[i]["prd"]}',
@@ -1874,11 +1786,9 @@ class OrderProvider extends DefaultChangeNotifier {
         fetchSipOrderHistory(context);
         tabSize();
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "Order is Placed Sucessfully"));
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(context, "Order is Placed Sucessfully"));
         notifyListeners();
-      } else if (_sipPlaceOrder!.emsg ==
-          "Session Expired :  Invalid Session Key") {
+      } else if (_sipPlaceOrder!.emsg == "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
       }
 
@@ -1891,8 +1801,7 @@ class OrderProvider extends DefaultChangeNotifier {
     }
   }
 
-  fetchModifySipOrder(
-      BuildContext context, ModifySipInput modifysipinput) async {
+  fetchModifySipOrder(BuildContext context, ModifySipInput modifysipinput) async {
     try {
       toggleLoadingOn(true);
       _modifySipModel = await api.getmodifysiporder(modifysipinput);
@@ -1900,23 +1809,17 @@ class OrderProvider extends DefaultChangeNotifier {
         Navigator.pop(context);
         Navigator.pop(context);
         fetchSipOrderHistory(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "Order is Modified Sucessfully"));
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(context, "Order is Modified Sucessfully"));
       }
       if (_modifySipModel!.reqStatus == "NOT_OK") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_modifySipModel!.rejreason}"));
-      } else if (_modifySipModel!.emsg ==
-          "Session Expired :  Invalid Session Key") {
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(context, "${_modifySipModel!.rejreason}"));
+      } else if (_modifySipModel!.emsg == "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
       return _modifySipModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "MODIFYSIP API", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "MODIFYSIP API", "Error": "$e"});
       notifyListeners();
     } finally {
       toggleLoadingOn(false);
@@ -1925,30 +1828,24 @@ class OrderProvider extends DefaultChangeNotifier {
 
   filterSipOrder(String sorting) {
     if (sorting == "ASC") {
-      _siporderBookModel!.sipDetails!
-          .sort((a, b) => a.sipName!.compareTo(b.sipName!));
+      _siporderBookModel!.sipDetails!.sort((a, b) => a.sipName!.compareTo(b.sipName!));
     } else if (sorting == "DSC") {
-      _siporderBookModel!.sipDetails!
-          .sort((a, b) => b.sipName!.compareTo(a.sipName!));
+      _siporderBookModel!.sipDetails!.sort((a, b) => b.sipName!.compareTo(a.sipName!));
     } else if (sorting == "LTPASC") {
       _siporderBookModel!.sipDetails!.sort((a, b) {
-        return double.parse(a.scrips![0].ltp ?? "0.00")
-            .compareTo(double.parse(b.scrips![0].ltp ?? "0.00"));
+        return double.parse(a.scrips![0].ltp ?? "0.00").compareTo(double.parse(b.scrips![0].ltp ?? "0.00"));
       });
     } else if (sorting == "LTPDSC") {
       _siporderBookModel!.sipDetails!.sort((a, b) {
-        return double.parse(b.scrips![0].ltp ?? "0.00")
-            .compareTo(double.parse(a.scrips![0].ltp ?? "0.00"));
+        return double.parse(b.scrips![0].ltp ?? "0.00").compareTo(double.parse(a.scrips![0].ltp ?? "0.00"));
       });
     } else if (sorting == "PRECHANGASC") {
       _siporderBookModel!.sipDetails!.sort((a, b) {
-        return double.parse(a.scrips![0].perChange ?? "0.00")
-            .compareTo(double.parse(b.scrips![0].perChange ?? "0.00"));
+        return double.parse(a.scrips![0].perChange ?? "0.00").compareTo(double.parse(b.scrips![0].perChange ?? "0.00"));
       });
     } else if (sorting == "PRECHANGDSC") {
       _siporderBookModel!.sipDetails!.sort((a, b) {
-        return double.parse(b.scrips![0].perChange ?? "0.00")
-            .compareTo(double.parse(a.scrips![0].perChange ?? "0.00"));
+        return double.parse(b.scrips![0].perChange ?? "0.00").compareTo(double.parse(a.scrips![0].perChange ?? "0.00"));
       });
     } else if (sorting == "DATEASC") {
       _siporderBookModel!.sipDetails!.sort((a, b) {
@@ -1974,51 +1871,33 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_siporderBookModel != null) {
         if (_siporderBookModel!.sipDetails != null) {
           ConstantName.sessCheck = true;
-          for (var main = 0;
-              main < _siporderBookModel!.sipDetails!.length;
-              main++) {
-            for (var i = 0;
-                i < _siporderBookModel!.sipDetails![main].scrips!.length;
-                i++) {
-              ltpArgs.add({
-                "exch":
-                    "${_siporderBookModel!.sipDetails![main].scrips![i].exch}",
-                "token":
-                    "${_siporderBookModel!.sipDetails![main].scrips![i].token}"
-              });
+          for (var main = 0; main < _siporderBookModel!.sipDetails!.length; main++) {
+            for (var i = 0; i < _siporderBookModel!.sipDetails![main].scrips!.length; i++) {
+              ltpArgs.add(
+                  {"exch": "${_siporderBookModel!.sipDetails![main].scrips![i].exch}", "token": "${_siporderBookModel!.sipDetails![main].scrips![i].token}"});
             }
           }
           final response = await api.getLTP(ltpArgs);
           Map res = jsonDecode(response.body);
 
-          for (var main = 0;
-              main < _siporderBookModel!.sipDetails!.length;
-              main++) {
-            for (var i = 0;
-                i < _siporderBookModel!.sipDetails![main].scrips!.length;
-                i++) {
-              if (_siporderBookModel!.sipDetails![main].scrips![i].token
-                      .toString() ==
+          for (var main = 0; main < _siporderBookModel!.sipDetails!.length; main++) {
+            for (var i = 0; i < _siporderBookModel!.sipDetails![main].scrips!.length; i++) {
+              if (_siporderBookModel!.sipDetails![main].scrips![i].token.toString() ==
                   "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]['token']}") {
-                _siporderBookModel!.sipDetails![main].scrips![i].ltp =
-                    "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["lp"]}";
-                _siporderBookModel!.sipDetails![main].scrips![i].close =
-                    "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["close"]}";
+                _siporderBookModel!.sipDetails![main].scrips![i].ltp = "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["lp"]}";
+                _siporderBookModel!.sipDetails![main].scrips![i].close = "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["close"]}";
 
                 _siporderBookModel!.sipDetails![main].scrips![i].perChange =
                     "${res["data"]["${_siporderBookModel!.sipDetails![main].scrips![i].token}"]["change"]}";
-                _siporderBookModel!
-                    .sipDetails![main].scrips![i].change = (double.parse(
+                _siporderBookModel!.sipDetails![main].scrips![i].change = (double.parse(
                             "${_siporderBookModel!.sipDetails![main].scrips![i].ltp == "0" ? _siporderBookModel!.sipDetails![main].scrips![i].close : _siporderBookModel!.sipDetails![main].scrips![i].ltp}") -
-                        double.parse(
-                            "${_siporderBookModel!.sipDetails![main].scrips![i].close}"))
+                        double.parse("${_siporderBookModel!.sipDetails![main].scrips![i].close}"))
                     .toStringAsFixed(2);
               }
             }
           }
         } else {
-          if (_siporderBookModel!.emsg ==
-              "Session Expired :  Invalid Session Key") {
+          if (_siporderBookModel!.emsg == "Session Expired :  Invalid Session Key") {
             ref.read(authProvider).ifSessionExpired(context);
           }
         }
@@ -2026,10 +1905,7 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       return _siporderBookModel;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "SIP ORDER HISTORY API", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "SIP ORDER HISTORY API", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
@@ -2042,19 +1918,14 @@ class OrderProvider extends DefaultChangeNotifier {
         tabSize();
         Navigator.pop(context);
         Navigator.pop(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(successMessage(context, "Order Sucessfully Cancled"));
-      } else if (cancleSipOrder!.emsg ==
-          "Session Expired :  Invalid Session Key") {
+        ScaffoldMessenger.of(context).showSnackBar(successMessage(context, "Order Sucessfully Cancled"));
+      } else if (cancleSipOrder!.emsg == "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
       }
       notifyListeners();
       return _cancleSipOrder;
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "SIP CANCEL API", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "SIP CANCEL API", "Error": "$e"});
       notifyListeners();
     } finally {}
   }
@@ -2068,9 +1939,7 @@ class OrderProvider extends DefaultChangeNotifier {
             bpprc: element['bpprc'],
             dscqty: element['dscqty'],
             exch: element['exch'],
-            prc: element['mktProt'].toString().isNotEmpty
-                ? element['lp']
-                : element['prc'],
+            prc: element['mktProt'].toString().isNotEmpty ? element['lp'] : element['prc'],
             prctype: element['prctype'],
             prd: element['prd'],
             qty: element['qty'],
@@ -2086,9 +1955,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
         _placeOrderModel = await api.getPlaceOrder(placeOrderInput, _ip);
 
-        if (_placeOrderModel!.emsg ==
-                "Session Expired :  Invalid Session Key" &&
-            _placeOrderModel!.stat == "Not_Ok") {
+        if (_placeOrderModel!.emsg == "Session Expired :  Invalid Session Key" && _placeOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
           break;
         } else {
@@ -2102,19 +1969,14 @@ class OrderProvider extends DefaultChangeNotifier {
       ref.read(indexListProvider).bottomMenu(2, context);
 
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-          successMessage(context, "Basket Order Sucessfully Placed"));
+      ScaffoldMessenger.of(context).showSnackBar(successMessage(context, "Basket Order Sucessfully Placed"));
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API Place Slice  Order", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API Place Slice  Order", "Error": "$e"});
       notifyListeners();
     }
   }
 
-  Future fetchPlaceGTTOrder(
-      PlaceGTTOrderInput placeGttOrderInput, BuildContext context) async {
+  Future fetchPlaceGTTOrder(PlaceGTTOrderInput placeGttOrderInput, BuildContext context) async {
     try {
       _placeGttOrderModel = await api.placeGTTOrderAPI(placeGttOrderInput);
 
@@ -2128,18 +1990,13 @@ class OrderProvider extends DefaultChangeNotifier {
         HapticFeedback.heavyImpact();
         SystemSound.play(SystemSoundType.click);
       } else {
-        if (_placeGttOrderModel!.emsg ==
-                "Session Expired :  Invalid Session Key" &&
-            _placeGttOrderModel!.stat == "Not_Ok") {
+        if (_placeGttOrderModel!.emsg == "Session Expired :  Invalid Session Key" && _placeGttOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         }
       }
       notifyListeners();
     } catch (e) {
-      ref
-          .read(indexListProvider)
-          .logError
-          .add({"type": "API GTT Order ", "Error": "$e"});
+      ref.read(indexListProvider).logError.add({"type": "API GTT Order ", "Error": "$e"});
       notifyListeners();
     } finally {}
   }

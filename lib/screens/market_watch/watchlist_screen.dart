@@ -109,6 +109,7 @@ class _WatchListScreen extends State<WatchListScreen>
     with AutomaticKeepAliveClientMixin {
   final PageController _controller = PageController(initialPage: 0);
   final ScrollController _tabScrollController = ScrollController();
+  late PageController _tabPageController; // New controller for tab pages
   late SwipeActionController swipecontroller;
   bool _isDisposed = false;
   bool _tappedwatch = false;
@@ -142,6 +143,9 @@ class _WatchListScreen extends State<WatchListScreen>
         setState(() {});
       }
     });
+
+    // Initialize tab page controller
+    _tabPageController = PageController(initialPage: 0);
 
     // Add listener to the page controller to reset scroll state on page change
     _controller.addListener(_handlePageScroll);
@@ -356,6 +360,7 @@ class _WatchListScreen extends State<WatchListScreen>
     _controller.removeListener(_handlePageScroll);
     _controller.dispose();
     _tabScrollController.dispose();
+    _tabPageController.dispose();
     swipecontroller.dispose();
     _searchController.dispose();
     super.dispose();
@@ -392,6 +397,26 @@ class _WatchListScreen extends State<WatchListScreen>
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic, // More pronounced animation curve
     );
+  }
+
+  // New method to scroll to the correct page when selected tab changes
+  void _scrollToSelectedTabPage(int selectedIndex) {
+    if (_isDisposed) return;
+
+    // Calculate which page contains the selected tab
+    final tabsPerPage = 3;
+    final selectedTabPage = (selectedIndex / tabsPerPage).floor();
+
+    // Get the current PageController and scroll to the correct page
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_isDisposed) {
+        // Find the PageView controller and animate to the correct page
+        // We need to rebuild the widget to update the PageController
+        setState(() {
+          // This will trigger a rebuild with the new initialPage
+        });
+      }
+    });
   }
 
   // Method to add visual emphasis to active tab
@@ -891,119 +916,188 @@ class _WatchListScreen extends State<WatchListScreen>
       return const SizedBox.shrink();
     }
 
-    return ListView.builder(
-      controller: _tabScrollController,
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 0),
-      itemCount: marketWatchlist.values.length,
-      itemBuilder: (context, index) {
-        final name = marketWatchlist.values[index];
-        final isSelected = index == _selectedTabIndex;
+    // Calculate pages (3 tabs per page)
+    final totalTabs = marketWatchlist.values.length;
+    final tabsPerPage = 3;
+    final totalPages = (totalTabs / tabsPerPage).ceil();
 
-        // Debug print to check if selection is working
-        if (isSelected) {
-          print(
-              "Tab $index ($name) is selected, _selectedTabIndex: $_selectedTabIndex");
+    // Calculate which page contains the selected tab
+    final selectedTabPage = (_selectedTabIndex / tabsPerPage).floor();
+
+    // Update the tab page controller to show the correct page
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_isDisposed && _tabPageController.hasClients) {
+        final currentPage = _tabPageController.page?.round() ?? 0;
+        if (currentPage != selectedTabPage) {
+          _tabPageController.animateToPage(
+            selectedTabPage,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
         }
+      }
+    });
 
-        // Fixed width container to define the tab size
-        return Container(
-          width: tabWidth,
-          margin: const EdgeInsets.only(right: 0),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              // borderRadius: BorderRadius.circular(6),
-              splashColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.05),
-              highlightColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(0.01)
-                  : Colors.black.withOpacity(0.01),
-              onTapDown: (_) {
-                // Provide haptic feedback for tab tap
-                HapticFeedback.lightImpact();
-              },
-              onTap: () async {
-                // Add delay for visual feedback
-                await Future.delayed(const Duration(milliseconds: 150));
-                // Only handle tap if it's actually a different tab
-                if (index == _selectedTabIndex) {
-                  return; // Don't do anything if tapping the already selected tab
-                }
+    return Container(
+      height: 40,
+      child: PageView.builder(
+        controller: _tabPageController,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: totalPages,
+        onPageChanged: (pageIndex) {
+          // Optional: Handle page change if needed
+        },
+        itemBuilder: (BuildContext context, int pageIndex) {
+          return _buildTabPageContent(
+            marketWatchlist.values,
+            pageIndex,
+            tabsPerPage,
+            theme,
+            ref,
+          );
+        },
+      ),
+    );
+  }
 
-                // First immediately scroll to center the tapped tab (force it since user tapped)
-                _scrollToSelectedTab(index, force: true);
-
-                final marketWatch = ref.read(marketWatchProvider);
-
-                // Force immediate UI update by updating selected tab index
-                setState(() {
-                  _selectedTabIndex = index;
-                  _currentWatchlist = name;
-                });
-
-                // Use jumpToPage for instant navigation to prevent active color traveling
-                _controller.jumpToPage(index);
-
-                // Then update data after the UI has responded
-                await marketWatch.requestMWScrip(
-                    context: context, isSubscribe: false);
-
-                if (name == "My Stocks" ||
-                    name == "Nifty50" ||
-                    name == "Niftybank" ||
-                    name == "Sensex") {
-                  await marketWatch.changeWlName(name, "Yes");
-                } else {
-                  await marketWatch.changeWlName(name, "No");
-                }
-
-                await marketWatch.changeWLScrip(name, context);
-
-                // Subscribe to data for all watchlist types
-                await marketWatch.requestMWScrip(
-                    context: context, isSubscribe: true);
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    alignment: Alignment.center,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    child: TextWidget.subText(
-                        text: _formatTabName(name),
-                        color: isSelected
-                            ? theme.isDarkMode
-                                ? colors.secondaryDark
-                                : colors.secondaryLight
-                            : colors.textSecondaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        theme: theme.isDarkMode,
-                        fw: isSelected ? 2 : null),
-                  ),
-                  // Animated underline indicator
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeInOut,
-                    height: 2,
-                    width: isSelected ? tabWidth - 18 : 0,
-                    margin: const EdgeInsets.only(top: 1),
-                    decoration: BoxDecoration(
-                      color: colors.colorBlue,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ],
+  Widget _buildTabPageContent(
+    List<dynamic> tabValues,
+    int pageIndex,
+    int tabsPerPage,
+    ThemesProvider theme,
+    WidgetRef ref,
+  ) {
+    final startIndex = pageIndex * tabsPerPage;
+    final endIndex = (startIndex + tabsPerPage).clamp(0, tabValues.length);
+    
+    return Row(
+      children: [
+        for (int i = startIndex; i < endIndex; i++)
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.only(
+                right: i < endIndex - 1 ? 1 : 0, // Add separator between tabs
+              ),
+              child: _buildTabItem(
+                tabValues[i],
+                i,
+                theme,
+                ref,
               ),
             ),
           ),
-        );
-      },
+        // Fill remaining space if fewer than 3 tabs on last page
+        if (endIndex - startIndex < tabsPerPage)
+          for (int j = 0; j < tabsPerPage - (endIndex - startIndex); j++)
+            const Expanded(child: SizedBox()),
+      ],
+    );
+  }
+
+  Widget _buildTabItem(
+    String name,
+    int index,
+    ThemesProvider theme,
+    WidgetRef ref,
+  ) {
+    final isSelected = index == _selectedTabIndex;
+
+    // Debug print to check if selection is working
+    if (isSelected) {
+      print(
+          "Tab $index ($name) is selected, _selectedTabIndex: $_selectedTabIndex");
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        splashColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.05)
+            : Colors.black.withOpacity(0.05),
+        highlightColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.01)
+            : Colors.black.withOpacity(0.01),
+        onTapDown: (_) {
+          // Provide haptic feedback for tab tap
+          HapticFeedback.lightImpact();
+        },
+        onTap: () async {
+          // Add delay for visual feedback
+          await Future.delayed(const Duration(milliseconds: 150));
+          // Only handle tap if it's actually a different tab
+          if (index == _selectedTabIndex) {
+            return; // Don't do anything if tapping the already selected tab
+          }
+
+          // First immediately scroll to center the tapped tab (force it since user tapped)
+          _scrollToSelectedTab(index, force: true);
+
+          final marketWatch = ref.read(marketWatchProvider);
+
+          // Force immediate UI update by updating selected tab index
+          setState(() {
+            _selectedTabIndex = index;
+            _currentWatchlist = name;
+          });
+
+          // Use jumpToPage for instant navigation to prevent active color traveling
+          _controller.jumpToPage(index);
+
+          // Then update data after the UI has responded
+          await marketWatch.requestMWScrip(
+              context: context, isSubscribe: false);
+
+          if (name == "My Stocks" ||
+              name == "Nifty50" ||
+              name == "Niftybank" ||
+              name == "Sensex") {
+            await marketWatch.changeWlName(name, "Yes");
+          } else {
+            await marketWatch.changeWlName(name, "No");
+          }
+
+          await marketWatch.changeWLScrip(name, context);
+
+          // Subscribe to data for all watchlist types
+          await marketWatch.requestMWScrip(
+              context: context, isSubscribe: true);
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: double.infinity,
+              alignment: Alignment.center,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: TextWidget.subText(
+                  text: _formatTabName(name),
+                  color: isSelected
+                      ? theme.isDarkMode
+                          ? colors.secondaryDark
+                          : colors.secondaryLight
+                      : colors.textSecondaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  theme: theme.isDarkMode,
+                  fw: isSelected ? 2 : null),
+            ),
+            // Animated underline indicator
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              height: 2,
+              width: isSelected ? (MediaQuery.of(context).size.width / 3) - 18 : 0,
+              margin: const EdgeInsets.only(top: 1),
+              decoration: BoxDecoration(
+                color: colors.colorBlue,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

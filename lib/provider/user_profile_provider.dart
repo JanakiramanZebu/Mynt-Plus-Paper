@@ -187,6 +187,16 @@ class UserProfileProvider extends DefaultChangeNotifier {
     _userloader = value;
     notifyListeners();
   }
+
+  bool _profileloader = false;
+  bool get profileloader => _profileloader;
+
+  profileloaderfun(bool value) {
+    _profileloader = value;
+    print("profileloader: $value");
+    notifyListeners();
+  }
+
 // Fetching data from the api and stored in a variable
 
   Future fetchUserDetail(BuildContext context) async {

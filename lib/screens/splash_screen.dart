@@ -41,7 +41,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Color(0xffE5EBEC),
+        backgroundColor: Colors.white,
         body: Stack(children: [
           CircularLoaderImage(),
           if (ref.read(networkStateProvider).connectionStatus ==
@@ -79,9 +79,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 context, Routes.loginScreenBanner, (route) => false);
       } else {
         pref.setMobileLogin(true);
-        await ref
-            .read(authProvider)
-            .fetchMobileLogin(context, "", pref.clientId!, "", pref.imei!, true);
+        await ref.read(authProvider).fetchMobileLogin(
+            context, "", pref.clientId!, "", pref.imei!, true);
       }
     } catch (e) {
       ScaffoldMessenger.of(context)

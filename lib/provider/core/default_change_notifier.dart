@@ -18,6 +18,7 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
   //we only activate loader on mode during that period.
 
   void toggleLoadingOn(bool on) {
+    print("toggleLoadingOn: $on");
     loading = on;
     notifyListeners();
   }

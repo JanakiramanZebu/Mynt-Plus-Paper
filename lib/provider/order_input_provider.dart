@@ -25,10 +25,10 @@ class OrderInputProvider extends DefaultChangeNotifier {
   TextEditingController targetCtrl = TextEditingController();
   TextEditingController trailingTickCtrl = TextEditingController();
 
-  String _orderName = "Regular";
+  String _orderName = "Delivery";
   String get orderName => _orderName;
 
-  final List _orderNames = ["Regular", "Cover", "Bracket"];
+  final List _orderNames = ["Delivery", "Intraday", "CO - BO"];
   List get orderNames => _orderNames;
 
   String _priceName = "Limit";
@@ -134,7 +134,7 @@ class OrderInputProvider extends DefaultChangeNotifier {
         data.sPrdtAli == "CNC" ||
         data.sPrdtAli == "NRML"||
         data.sPrdtAli == "MTF") {
-      _orderName = "Regular";
+      _orderName = "Delivery";
       if (data.prd == "C") {
         _ordType = "C";
         _investType = InvestType.delivery;
@@ -151,9 +151,9 @@ class OrderInputProvider extends DefaultChangeNotifier {
         _investType = InvestType.carryForward;
       }
     } else if (data.sPrdtAli == "CO") {
-      _orderName = "Cover";
+      _orderName = "CO - BO";
     } else {
-      _orderName = "Bracket";
+      _orderName = "CO - BO";
     }
 
     if (data.prctyp == "LMT") {

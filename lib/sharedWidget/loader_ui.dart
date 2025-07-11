@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class TransparentLoaderScreen extends StatelessWidget {
+import '../provider/user_profile_provider.dart';
+import '../res/res.dart';
+
+class TransparentLoaderScreen extends ConsumerWidget {
   final bool isLoading;
   final Widget child;
 
@@ -12,14 +16,16 @@ class TransparentLoaderScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Stack(
       children: [
         child,
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: Colors.black.withOpacity(0.5),
+              color: ref.watch(userProfileProvider).profileloader
+                  ? colors.colorWhite
+                  : Colors.black.withOpacity(0.5),
               child: Center(
                 child: Stack(
                   alignment: Alignment.center,
