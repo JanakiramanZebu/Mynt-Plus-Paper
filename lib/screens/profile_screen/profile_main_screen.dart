@@ -104,7 +104,6 @@ class UserAccountScreen extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                
                 Material(
                   color: Colors.transparent,
                   shape: const CircleBorder(),
@@ -426,7 +425,6 @@ class UserAccountScreen extends ConsumerWidget {
                         );
                         break;
                       case "Settings":
-                      
                         await Navigator.push(
                           context,
                           PageRouteBuilder(
@@ -490,7 +488,7 @@ class UserAccountScreen extends ConsumerWidget {
                           },
                         );
                         break;
-                      case "Notification":                       
+                      case "Notification":
                         Navigator.pushNamed(context, Routes.notificationpage);
                         break;
                     }
@@ -593,7 +591,7 @@ class UserAccountScreen extends ConsumerWidget {
                 onPressed: () async {
                   // Prevent double-tap issues
                   if (!_canTap()) return;
-                  
+
                   await trancation.fetchValidateToken(context);
                   Future.delayed(
                     const Duration(milliseconds: 100),

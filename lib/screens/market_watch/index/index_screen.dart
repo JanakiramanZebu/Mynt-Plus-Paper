@@ -43,6 +43,7 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
     final theme = ref.watch(themeProvider);
     // Watch the indexListProvider to rebuild when the default index list changes
     final indexProvider = ref.watch(indexListProvider);
+    final marketWatch = ref.read(marketWatchProvider);
 
     final indexValues = indexProvider.defaultIndexList?.indValues;
     if (indexValues == null || indexValues.isEmpty) {
@@ -102,44 +103,62 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
         : Container(
             margin: const EdgeInsets.only(bottom: 10),
             height: 80,
+            width: MediaQuery.of(context).size.width * 0.90,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(3, (i) {
-                // Defensive: fallback if less than 3 indices
                 if (i >= indexValues.length)
                   return const Expanded(child: SizedBox());
                 final item = indexValues[i];
-                return Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextWidget.subText(
-                        text: item.idxname ?? "",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                      ),
-                      const SizedBox(height: 3),
-                      _LivePriceWidget(
-                        key: ValueKey('price_${item.token ?? ""}'),
-                        token: item.token?.toString() ?? "",
-                        initialLtp: (item.ltp == null || item.ltp == "null")
-                            ? "0.00"
-                            : item.ltp?.toString() ?? "0.00",
-                        initialChange:
-                            (item.change == null || item.change == "null")
-                                ? "0.00"
-                                : item.change?.toString() ?? "0.00",
-                        initialPerChange:
-                            (item.perChange == null || item.perChange == "null")
-                                ? "0.00"
-                                : item.perChange?.toString() ?? "0.00",
-                        isDarkMode: theme.isDarkMode,
-                        src: false,
-                      ),
-                    ],
+                return Material(
+                  color: Colors.transparent,
+                  shape: const RoundedRectangleBorder(),
+                  child: InkWell(
+                    customBorder: const RoundedRectangleBorder(),
+                    splashColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    highlightColor: theme.isDarkMode
+                        ? colors.highlightDark
+                        : colors.highlightLight,
+                    onTap: () {
+                      _handleTap(
+                          context,
+                          marketWatch,
+                          item.token?.toString() ?? "",
+                          item.exch?.toString() ?? "");
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextWidget.subText(
+                          text: item.idxname ?? "",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                        ),
+                        const SizedBox(height: 4),
+                        _LivePriceWidget(
+                          key: ValueKey('price_${item.token ?? ""}'),
+                          token: item.token?.toString() ?? "",
+                          initialLtp: (item.ltp == null || item.ltp == "null")
+                              ? "0.00"
+                              : item.ltp?.toString() ?? "0.00",
+                          initialChange:
+                              (item.change == null || item.change == "null")
+                                  ? "0.00"
+                                  : item.change?.toString() ?? "0.00",
+                          initialPerChange: (item.perChange == null ||
+                                  item.perChange == "null")
+                              ? "0.00"
+                              : item.perChange?.toString() ?? "0.00",
+                          isDarkMode: theme.isDarkMode,
+                          src: false,
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }),
@@ -189,6 +208,38 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
           const Expanded(child: SizedBox()),
       ],
     );
+  }
+
+  Future<void> _handleTap(BuildContext context, dynamic marketWatch,
+      String? token, String? exch) async {
+    try {
+      // First, safely fetch the quote data
+      await marketWatch.fetchScripQuoteIndex(token ?? "", exch ?? "", context);
+
+      final quots = marketWatch.getQuotes;
+
+      // Make sure we have valid quote data before proceeding
+      if (quots == null) {
+        return;
+      }
+
+      // Create DepthInputArgs with null safety
+      DepthInputArgs depthArgs = DepthInputArgs(
+          exch: quots.exch?.toString() ?? "",
+          token: quots.token?.toString() ?? "",
+          tsym: quots.tsym?.toString() ?? "",
+          instname: quots.instname?.toString() ?? "",
+          symbol: quots.symbol?.toString() ?? "",
+          expDate: quots.expDate?.toString() ?? "",
+          option: quots.option?.toString() ?? "");
+
+      // Call depth APIs with the safely constructed arguments
+      if (depthArgs.token.isNotEmpty && depthArgs.exch.isNotEmpty) {
+        await marketWatch.calldepthApis(context, depthArgs, "");
+      }
+    } catch (e) {
+      debugPrint("Error in index tap: $e");
+    }
   }
 }
 

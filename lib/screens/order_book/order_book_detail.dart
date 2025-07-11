@@ -683,6 +683,34 @@ class _OrderDetailsSection extends ConsumerWidget {
 Widget _buildActionButtonsBar(
     BuildContext context, ThemesProvider theme, WidgetRef ref, orderBookData) {
   return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+    Expanded(
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: const Color(0xffF1F3F8),
+          borderRadius: BorderRadius.circular(5),
+          border: Border.all(
+            color:
+                theme.isDarkMode ? colors.colorGrey : const Color(0xff0037B7),
+            width: 1,
+          ),
+        ),
+        child: InkWell(
+          onTap: () async {
+            await _navigateToModifyOrder(context, ref, orderBookData);
+          },
+          child: Center(
+            child: TextWidget.subText(
+                text: "Modify",
+                theme: false,
+                color:
+                    theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                fw: 0),
+          ),
+        ),
+      ),
+    ),
+    const SizedBox(width: 16),
     if ((orderBookData.sPrdtAli == "BO" || orderBookData.sPrdtAli == "CO") &&
         orderBookData.snonum != null) ...[
       Expanded(
@@ -729,7 +757,7 @@ Widget _buildActionButtonsBar(
             },
             child: Center(
               child: TextWidget.subText(
-                  text: "Cancel Order",
+                  text: "Cancel",
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.primaryDark
@@ -740,34 +768,6 @@ Widget _buildActionButtonsBar(
         ),
       ),
     ],
-    const SizedBox(width: 16),
-    Expanded(
-      child: Container(
-        height: 40,
-        decoration: BoxDecoration(
-          color: const Color(0xffF1F3F8),
-          borderRadius: BorderRadius.circular(5),
-          border: Border.all(
-            color:
-                theme.isDarkMode ? colors.colorGrey : const Color(0xff0037B7),
-            width: 1,
-          ),
-        ),
-        child: InkWell(
-          onTap: () async {
-            await _navigateToModifyOrder(context, ref, orderBookData);
-          },
-          child: Center(
-            child: TextWidget.subText(
-                text: "Modify Order",
-                theme: false,
-                color:
-                    theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                fw: 0),
-          ),
-        ),
-      ),
-    ),
   ]);
 }
 

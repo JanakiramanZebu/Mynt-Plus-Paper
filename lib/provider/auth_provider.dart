@@ -46,6 +46,7 @@ import 'ledger_provider.dart';
 import 'market_watch_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
+import 'stocks_provider.dart';
 import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
 
@@ -1489,33 +1490,6 @@ class AuthProvider extends DefaultChangeNotifier {
           // Fetch watchlist data with proper initialization
           await ref.read(marketWatchProvider).fetchMWList(context, false);
 
-          // Load the watchlist using the saved page index
-          int savedIndex =
-              ref.read(marketWatchProvider).currentWatchlistPageIndex;
-          if (savedIndex >= 0 &&
-              ref.read(marketWatchProvider).marketWatchlist != null &&
-              savedIndex <
-                  ref
-                      .read(marketWatchProvider)
-                      .marketWatchlist!
-                      .values!
-                      .length) {
-            String watchlistName = ref
-                .read(marketWatchProvider)
-                .marketWatchlist!
-                .values![savedIndex];
-            // Set the watchlist name
-            ref.read(marketWatchProvider).changeWlName(
-                watchlistName,
-                ["My Stocks", "Nifty50", "Niftybank", "Sensex"]
-                        .contains(watchlistName)
-                    ? "Yes"
-                    : "No");
-            // Load the scrips for this watchlist
-            await ref
-                .read(marketWatchProvider)
-                .changeWLScrip(watchlistName, context);
-          }
           ref.read(portfolioProvider).clearAllportfolio();
           ref.read(orderProvider).clearAllorders();
           ref.read(ledgerProvider).setterfornullallSwitch = null;
@@ -1523,6 +1497,7 @@ class AuthProvider extends DefaultChangeNotifier {
           // initLaod(false);
           ref.read(orderProvider).fetchOrderBook(context, false);
           ref.read(portfolioProvider).fetchPositionBook(context, false);
+          ref.read(portfolioProvider).fetchHoldings(context, "");
           ref.read(orderProvider).fetchTradeBook(context);
           ref.read(orderProvider).fetchGTTOrderBook(context, "initLoad");
           ref.read(transcationProvider).fetchcwithdraw(context);
@@ -1531,6 +1506,7 @@ class AuthProvider extends DefaultChangeNotifier {
           ref.read(userProfileProvider).fetchUserDetail(context);
           ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
           ref.read(transcationProvider).fetchc(context);
+          ref.read(ipoProvide).getDashboardIpos();
 
           // FirebaseAnalytics.instance.setUserId(id: pref.clientId);
           // // IPOs
@@ -1617,9 +1593,7 @@ class AuthProvider extends DefaultChangeNotifier {
       _handleNetworkFailure(context, "Error connecting to server");
     } finally {
       initLaod(false);
-      if (s == "switchAc") {
-        ref.read(userProfileProvider).profileloaderfun(false);
-      }
+      ref.read(userProfileProvider).profileloaderfun(false);
     }
   }
 

@@ -214,7 +214,7 @@ class SubCategorySettings {
   bool? allowCutOff;
   bool? allowUpi;
   String? caCode;
-  String? discountPrice;
+  // double? discountPrice;
   String? discountType;
   String? maxQuantity;
   String? maxUpiLimit;
@@ -226,7 +226,7 @@ class SubCategorySettings {
       {this.allowCutOff,
       this.allowUpi,
       this.caCode,
-      this.discountPrice,
+      // this.discountPrice,
       this.discountType,
       this.maxQuantity,
       this.maxUpiLimit,
@@ -238,7 +238,7 @@ class SubCategorySettings {
     allowCutOff = json['allowCutOff'];
     allowUpi = json['allowUpi'];
     caCode = json['caCode'];
-    discountPrice = json['discountPrice'];
+    // discountPrice = json['discountPrice'];
     discountType = json['discountType'];
     maxQuantity = json['maxQuantity']?.toString();
     maxUpiLimit = json['maxUpiLimit']?.toString();
@@ -252,7 +252,7 @@ class SubCategorySettings {
     data['allowCutOff'] = this.allowCutOff;
     data['allowUpi'] = this.allowUpi;
     data['caCode'] = this.caCode;
-    data['discountPrice'] = this.discountPrice;
+    // data['discountPrice'] = this.discountPrice;
     data['discountType'] = this.discountType;
     data['maxQuantity'] = this.maxQuantity;
     data['maxUpiLimit'] = this.maxUpiLimit;

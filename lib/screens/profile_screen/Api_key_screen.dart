@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
@@ -28,7 +29,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final apikeys = ref.read(apikeyprovider);
+    final apikeys = ref.watch(apikeyprovider);
 
     // final screenheight = MediaQuery.of(context).size.height;
     return SingleChildScrollView(
@@ -231,13 +232,42 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                 children: [
                                   Expanded(
                                     child: TextWidget.paraText(
-                                      text: "${apikeys.apikeyres!.apikey}",
+                                      text: apikeys.hidePass
+                                          ? "•" *
+                                              apikeys.apikeyres!.apikey!.length
+                                          : "${apikeys.apikeyres!.apikey}",
                                       theme: false,
                                       color: theme.isDarkMode
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
-                                      
                                       textOverflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Material(
+                                    color: Colors.transparent,
+                                    shape: const CircleBorder(),
+                                    clipBehavior: Clip.hardEdge,
+                                    child: InkWell(
+                                      customBorder: const CircleBorder(),
+                                      splashColor: theme.isDarkMode
+                                          ? colors.splashColorDark
+                                          : colors.splashColorLight,
+                                      highlightColor: theme.isDarkMode
+                                          ? colors.highlightDark
+                                          : colors.highlightLight,
+                                      onTap: () {
+                                        apikeys.hiddenPass();
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4.0),
+                                        child: SvgPicture.asset(
+                                          apikeys.hidePass
+                                              ? "assets/icon/eye-off.svg"
+                                              : "assets/icon/eye.svg",
+                                          color: colors.iconColor,
+                                          width: 18,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   Material(

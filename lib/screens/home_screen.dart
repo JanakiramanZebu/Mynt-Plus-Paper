@@ -770,11 +770,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   // Bottom nav handlers
-  void _handleDashboardTap() {
+  _handleDashboardTap() async {
     final indexProvide = ref.read(indexListProvider);
     final portfolio = ref.read(portfolioProvider);
     final marketWatchList = ref.read(marketWatchProvider);
     final orderProviderRef = ref.read(orderProvider);
+    final fundProviderRef = ref.read(fundProvider);
 
     indexProvide.bottomMenu(0, context);
     portfolio.cancelTimer();
@@ -784,6 +785,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     portfolio.requestWSHoldings(context: context, isSubscribe: false);
     orderProviderRef.requestWSOrderBook(context: context, isSubscribe: false);
     portfolio.requestWSPosition(context: context, isSubscribe: false);
+
+    // Fetch data in the background without blocking UI transition
+    Future.microtask(() {
+      if (mounted) {
+        // Portfolio data
+        portfolio.fetchHoldings(context, "");
+        portfolio.fetchPositionBook(context, false);
+
+        // Funds data
+        fundProviderRef.fetchFunds(context);
+      }
+    });
   }
 
   void _handleWatchlistTap() async {

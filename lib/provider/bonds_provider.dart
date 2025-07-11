@@ -94,15 +94,22 @@ class BondsProvider extends DefaultChangeNotifier {
   TextEditingController get bondscommonsearchcontroller =>
       _bondscommonsearchcontroller;
 
-  final List _bondsCommonSearchList = [];
-  List get bondsCommonSearchList => _bondsCommonSearchList;
-
   clearCommonBondsSearch() {
     _bondscommonsearchcontroller.text = "";
   }
 
+  List<BondsList> _bondsCommonSearchList = [];
+  List<BondsList> get bondsCommonSearchList => _bondsCommonSearchList;
+
   searchCommonBonds(String SearchBond, BuildContext context) {
-    print("searchCommomBonds ::  $SearchBond");
+    _bondsCommonSearchList = [];
+    if (SearchBond.isNotEmpty) {
+      _bondsCommonSearchList = _bondsList!
+          .where((element) =>
+              element.symbol!.toUpperCase().contains(SearchBond.toUpperCase()))
+          .toList();
+    }
+    notifyListeners();
   }
 
 // bonds.ledgerBalModel!.total

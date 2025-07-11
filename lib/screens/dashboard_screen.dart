@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/screens/ipo/ipo_main_screen.dart';
 import '../../../res/res.dart';
 import '../../provider/thems.dart';
+import '../provider/portfolio_provider.dart';
 import '../provider/stocks_provider.dart';
 import '../res/global_state_text.dart';
 import '../sharedWidget/custom_text_form_field.dart';
 import '../utils/no_emoji_inputformatter.dart';
+import 'bonds/bonds_main_screen.dart';
 import 'stocks/explore/stocks/stock_screens.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -46,8 +49,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     super.dispose();
   }
 
-  TextEditingController searchController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
@@ -78,7 +79,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   child: SizedBox(
                     height: 40,
                     child: TextFormField(
-                      controller: searchController,
+                      controller: stocks.searchController,
                       style: TextWidget.textStyle(
                         fontSize: 14,
                         theme: theme.isDarkMode,
@@ -111,31 +112,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                 fit: BoxFit.scaleDown,
                                 width: 20),
                           ),
-                          suffixIcon: Material(
-                            color: Colors.transparent,
-                            shape: const CircleBorder(),
-                            clipBehavior: Clip.hardEdge,
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              splashColor: theme.isDarkMode
-                                  ? colors.splashColorDark
-                                  : colors.splashColorLight,
-                              highlightColor: theme.isDarkMode
-                                  ? colors.highlightDark
-                                  : colors.highlightLight,
-                              onTap: () async {
-                                // Future.delayed(const Duration(milliseconds: 150), () {
-                                searchController.clear();
-                                FocusScope.of(context).unfocus();
-                                //   if (positionBook.positionSearchCtrl.text.isEmpty) {
-                                //     positionBook.showPositionSearch(false);
-                                //   }
-                                // });
-                              },
-                              child: SvgPicture.asset(assets.removeIcon,
-                                  fit: BoxFit.scaleDown, width: 20),
-                            ),
-                          ),
+                          suffixIcon: stocks.searchController.text.isNotEmpty
+                              ? Material(
+                                  color: Colors.transparent,
+                                  shape: const CircleBorder(),
+                                  clipBehavior: Clip.hardEdge,
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+                                    splashColor: theme.isDarkMode
+                                        ? colors.splashColorDark
+                                        : colors.splashColorLight,
+                                    highlightColor: theme.isDarkMode
+                                        ? colors.highlightDark
+                                        : colors.highlightLight,
+                                    onTap: () async {
+                                      // Future.delayed(const Duration(milliseconds: 150), () {
+                                      stocks.searchController.clear();
+                                      FocusScope.of(context).unfocus();
+                                      //   if (positionBook.positionSearchCtrl.text.isEmpty) {
+                                      //     positionBook.showPositionSearch(false);
+                                      //   }
+                                      // });
+                                    },
+                                    child: SvgPicture.asset(assets.removeIcon,
+                                        fit: BoxFit.scaleDown, width: 20),
+                                  ),
+                                )
+                              : null,
                           enabledBorder: OutlineInputBorder(
                               borderSide: BorderSide.none,
                               borderRadius: BorderRadius.circular(20)),
@@ -149,6 +152,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                               borderSide: BorderSide.none,
                               borderRadius: BorderRadius.circular(20))),
                       onChanged: (value) {
+                        stocks.globalsearch(value);
+                        stocks.searchdashboard(value, context);
                         // if (value.isNotEmpty) {
                         //   // positionBook.showPositionSearch(false);
                         // } else {
@@ -192,90 +197,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                 labelStyle:
                     TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
                 controller: _tabController,
-                tabs: List.generate(stocks.exploreTabName.length, (index) {
-                  return AnimatedBuilder(
-                    animation: _tabController.animation!,
-                    builder: (context, child) {
-                      final isSelected = _tabController.index == index;
-                      final animationValue = _tabController.animation!.value;
-                      final isTransitioning =
-                          (animationValue - index).abs() < 1;
-
-                      final color = isTransitioning
-                          ? Color.lerp(
-                              theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              theme.isDarkMode
-                                  ? colors.secondaryDark
-                                  : colors.secondaryLight,
-                              1 - (animationValue - index).abs())
-                          : isSelected
-                              ? theme.isDarkMode
-                                  ? colors.secondaryDark
-                                  : colors.secondaryLight
-                              : theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight;
-
-                      return Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            TextWidget.subText(
-                              text: stocks.exploreTabName[index].text ?? "",
-                              theme: false,
-                              color: color,
-                              fw: isSelected ? 2 : null,
-                            ),
-                            // const SizedBox(width: 5),
-                            // if ((index == 0 &&
-                            //         portfolio
-                            //             .allPostionList.isNotEmpty) ||
-                            //     (index == 1 &&
-                            //         (portfolio
-                            //                 .holdingsModel?.isNotEmpty ??
-                            //             false)))
-                            //   Container(
-                            //     padding: const EdgeInsets.symmetric(
-                            //         horizontal: 6, vertical: 2),
-                            //     decoration: BoxDecoration(
-                            //       color: ((index == 0 &&
-                            //                   portfolio.allPostionList
-                            //                       .isNotEmpty) ||
-                            //               (index == 1 &&
-                            //                   (portfolio.holdingsModel
-                            //                           ?.isNotEmpty ??
-                            //                       false)))
-                            //           ? colors.btnBg
-                            //           : null,
-                            //       borderRadius: BorderRadius.circular(4),
-                            //     ),
-                            //     child: TextWidget.subText(
-                            //       text: index == 0
-                            //           ? (portfolio
-                            //                   .allPostionList.isNotEmpty
-                            //               ? "${portfolio.allPostionList.length}"
-                            //               : "")
-                            //           : index == 1
-                            //               ? (portfolio.holdingsModel
-                            //                           ?.isNotEmpty ??
-                            //                       false
-                            //                   ? "${portfolio.holdingsModel!.length}"
-                            //                   : "")
-                            //               : "",
-                            //       theme: false,
-                            //       color: color,
-                            //       fw: isSelected ? 2 : null,
-                            //     ),
-                            //   ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                }),
+                tabs: stocks.exploreTabName,
               ),
             ),
           ),
@@ -284,9 +206,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
           controller: _tabController,
           children: const [
             StockScreen(),
-            Center(child: Text('Holdings')),
-            Center(child: Text('Orders')),
-            Center(child: Text('Funds')),
+            BondsScreen(),
+            IPOScreen(initialTabIndex: 0),
           ],
         ),
       );

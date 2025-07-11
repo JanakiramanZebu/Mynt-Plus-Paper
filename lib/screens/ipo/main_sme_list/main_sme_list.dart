@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/screens/ipo/preclose_ipo/preclose_ipo_screen.dart';
@@ -28,12 +29,15 @@ class MainSmeListCard extends StatelessWidget {
       final theme = ref.watch(themeProvider);
       final devHeight = MediaQuery.of(context).size.height;
 
-      List<dynamic> openIpos = mainstreamipo.mainsme
+      // Get filtered IPOs based on search
+      List<dynamic> filteredIpos = _getFilteredIPOs(ipos, mainstreamipo);
+
+      List<dynamic> openIpos = filteredIpos
           .where((ipo) =>
               ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) == "Open")
           .toList();
 
-      List<dynamic> preOpenIpos = mainstreamipo.mainsme
+      List<dynamic> preOpenIpos = filteredIpos
           .where((ipo) =>
               ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) ==
               "Pre-open")
@@ -55,38 +59,55 @@ class MainSmeListCard extends StatelessWidget {
         );
       }
 
-      return SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (openIpos.isNotEmpty) ...[
-              _IPOListSection(
-                ipos: openIpos,
-                ipoProvider: ipos,
-                upiProvider: upi,
-                theme: theme,
-                isPreOpen: false,
+      return Column(
+        children: [
+          // _SearchField(ipoProvider: ipos, theme: theme),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (openIpos.isNotEmpty) ...[
+                    _IPOListSection(
+                      ipos: openIpos,
+                      ipoProvider: ipos,
+                      upiProvider: upi,
+                      theme: theme,
+                      isPreOpen: false,
+                    ),
+                    _buildDivider(theme),
+                  ],
+                  if (preOpenIpos.isNotEmpty) ...[
+                    _IPOListSection(
+                      ipos: preOpenIpos,
+                      ipoProvider: ipos,
+                      upiProvider: upi,
+                      theme: theme,
+                      isPreOpen: true,
+                    ),
+                    _buildDivider(theme),
+                  ],
+                  if (ipos.ipoPreClose!.msg.isNotEmpty) ...[
+                    const ClosedIPOScreen(),
+                  ],
+                  const SizedBox(height: 24),
+                ],
               ),
-              _buildDivider(theme),
-            ],
-            if (preOpenIpos.isNotEmpty) ...[
-              _IPOListSection(
-                ipos: preOpenIpos,
-                ipoProvider: ipos,
-                upiProvider: upi,
-                theme: theme,
-                isPreOpen: true,
-              ),
-              _buildDivider(theme),
-            ],
-            if (ipos.ipoPreClose!.msg.isNotEmpty) ...[
-              const ClosedIPOScreen(),
-            ],
-            const SizedBox(height: 24),
-          ],
-        ),
+            ),
+          ),
+        ],
       );
     });
+  }
+
+  List<dynamic> _getFilteredIPOs(IPOProvider ipos, IPOProvider mainstreamipo) {
+    // If there's a search query, use the common search results
+    if (ipos.ipocommonsearchcontroller.text.isNotEmpty &&
+        ipos.ipoCommonSearchList.isNotEmpty) {
+      return ipos.ipoCommonSearchList;
+    }
+    // Otherwise, use the original mainsme list
+    return mainstreamipo.mainsme;
   }
 
   Widget _buildDivider(ThemesProvider theme) {
@@ -101,6 +122,99 @@ class MainSmeListCard extends StatelessWidget {
       fontWeight: fWeight,
       color: color,
       fontSize: fontSize,
+    );
+  }
+}
+
+class _SearchField extends StatelessWidget {
+  final IPOProvider ipoProvider;
+  final ThemesProvider theme;
+
+  const _SearchField({
+    required this.ipoProvider,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16.0),
+      child: TextFormField(
+        controller: ipoProvider.ipocommonsearchcontroller,
+        style: MainSmeListCard.textStyle(
+          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          14,
+          FontWeight.w500,
+        ),
+        decoration: InputDecoration(
+          fillColor:
+              theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+          filled: true,
+          hintStyle: MainSmeListCard.textStyle(
+            const Color(0xff69758F),
+            14,
+            FontWeight.w500,
+          ),
+          prefixIconColor: const Color(0xff586279),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: SvgPicture.asset(
+              assets.searchIcon,
+              color: const Color(0xff586279),
+              fit: BoxFit.contain,
+              width: 20,
+            ),
+          ),
+          suffixIcon: _ClearButton(ipoProvider: ipoProvider),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          disabledBorder: InputBorder.none,
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          hintText: "Search IPO",
+          contentPadding: const EdgeInsets.only(top: 20),
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        onChanged: (value) async {
+          ipoProvider.searchCommonIpo(value, context);
+        },
+      ),
+    );
+  }
+}
+
+class _ClearButton extends StatelessWidget {
+  final IPOProvider ipoProvider;
+
+  const _ClearButton({required this.ipoProvider});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: ipoProvider.ipocommonsearchcontroller,
+      builder: (context, value, child) {
+        return value.text.isNotEmpty
+            ? InkWell(
+                onTap: () => ipoProvider.clearCommonIpoSearch(),
+                borderRadius: BorderRadius.circular(50),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: SvgPicture.asset(
+                    assets.removeIcon,
+                    fit: BoxFit.scaleDown,
+                    width: 20,
+                  ),
+                ),
+              )
+            : const SizedBox.shrink();
+      },
     );
   }
 }

@@ -29,53 +29,22 @@ class _IPOmainScreenState extends State<IPOScreen> {
     return Consumer(
       builder: (context, WidgetRef ref, _) {
         final theme = ref.watch(themeProvider);
-        
+
         return Scaffold(
-          appBar: _buildAppBar(context, theme),
-          body: IpoExploreScreens(theme: theme, initialTabIndex: widget.initialTabIndex),
+          body: IpoExploreScreens(
+              theme: theme, initialTabIndex: widget.initialTabIndex),
         );
       },
     );
   }
 
-  AppBar _buildAppBar(BuildContext context, ThemesProvider theme) {
-    return AppBar(
-      leading: _BackButton(theme: theme),
-      elevation: 0,
-      centerTitle: false,
-      titleSpacing: -8,
-      shadowColor: const Color(0xffECEFF3),
-      title: _SearchBarSection(theme: theme),
-    );
-  }
-
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+  static TextStyle _textStyle(
+      Color color, double fontSize, FontWeight fWeight) {
     return GoogleFonts.inter(
       textStyle: TextStyle(
         fontWeight: fWeight,
         color: color,
         fontSize: fontSize,
-      ),
-    );
-  }
-}
-
-class _BackButton extends StatelessWidget {
-  final ThemesProvider theme;
-
-  const _BackButton({required this.theme});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: InkWell(
-        onTap: () => Navigator.pop(context),
-        child: Icon(
-          Icons.arrow_back_ios,
-          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          size: 22,
-        ),
       ),
     );
   }

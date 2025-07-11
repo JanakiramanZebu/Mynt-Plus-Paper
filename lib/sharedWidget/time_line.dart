@@ -83,7 +83,7 @@ class TimeLineWidget extends ConsumerWidget {
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? colors.textSecondaryDark
-                        : colors.textSecondaryDark,
+                        : colors.textSecondaryLight,
                     fw: 3)),
           )),
     );

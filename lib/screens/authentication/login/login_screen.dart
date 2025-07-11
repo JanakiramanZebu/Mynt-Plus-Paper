@@ -130,7 +130,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ref.read(websocketProvider).changeconnectioncount();
 
         // Navigate to profile tab
-                      ref.read(indexListProvider).bottomMenu(4, context);
+        ref.read(indexListProvider).bottomMenu(4, context);
 
         // Wait for a short time to ensure data is loaded
         await Future.delayed(const Duration(milliseconds: 200));
@@ -208,8 +208,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       clipBehavior: Clip.hardEdge,
                       child: InkWell(
                           customBorder: const CircleBorder(),
-                          splashColor: Colors.black.withOpacity(0.15),
-                          highlightColor: Colors.black.withOpacity(0.08),
+                          splashColor: theme.isDarkMode
+                              ? colors.splashColorDark
+                              : colors.splashColorLight,
+                          highlightColor: theme.isDarkMode
+                              ? colors.highlightDark
+                              : colors.highlightLight,
                           onTap: () async {
                             await _handleBackNavigation(
                                 context, pref, auth, userProfile, ref);
@@ -642,8 +646,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               (auth.loginMethCtrl.text
                                                       .isEmpty ||
                                                   auth.passCtrl.text.isEmpty)
-                                          ? theme.isDarkMode ?  const Color(0xFF002A8F).withOpacity(0.5) : colors.primaryLight.withOpacity(0.3)
-                                          : theme.isDarkMode ?  colors.primaryDark : colors.primaryLight,
+                                          ? theme.isDarkMode
+                                              ? const Color(0xFF002A8F)
+                                                  .withOpacity(0.5)
+                                              : colors.primaryLight
+                                                  .withOpacity(0.3)
+                                          : theme.isDarkMode
+                                              ? colors.primaryDark
+                                              : colors.primaryLight,
                                       side: BorderSide.none,
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 13),
@@ -658,7 +668,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           width: 18,
                                           height: 20,
                                           child: CircularProgressIndicator(
-                                              strokeWidth: 2, 
+                                              strokeWidth: 2,
                                               color: colors.colorWhite),
                                         )
                                       : TextWidget.titleText(
@@ -666,10 +676,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           theme: false,
                                           color: !theme.isDarkMode
                                               ? auth.isDisableBtn
-                                                  ? const Color(0xffFFFFFF).withOpacity(0.5)
+                                                  ? const Color(0xffFFFFFF)
+                                                      .withOpacity(0.5)
                                                   : const Color(0xffFFFFFF)
                                               : auth.isDisableBtn
-                                                  ? const Color(0xffFFFFFF).withOpacity(0.5)
+                                                  ? const Color(0xffFFFFFF)
+                                                      .withOpacity(0.5)
                                                   : const Color(0xffFFFFFF),
                                           fw: 2),
                                 ),
@@ -719,7 +731,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 child: TextWidget.subText(
                                                     text: "Switch account",
                                                     theme: false,
-                                                   color:  theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
                                                     fw: 3),
                                               ),
                                             ),
@@ -752,7 +768,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             child: TextWidget.subText(
                                                 text: "Forgot password?",
                                                 theme: false,
-                                               color:  theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
+                                                color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
                                                 fw: 3),
                                           )),
                                     ),

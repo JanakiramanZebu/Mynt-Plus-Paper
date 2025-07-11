@@ -118,7 +118,9 @@ class _searchScripList extends State<SearchScripList> {
                           style: TextWidget.textStyle(
                             fontSize: 14,
                             theme: theme.isDarkMode,
-                            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
                           ),
                         ),
                         if (scrip.option != null)
@@ -126,7 +128,9 @@ class _searchScripList extends State<SearchScripList> {
                             "${scrip.option}",
                             style: TextWidget.textStyle(
                               fontSize: 14,
-                              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
                               theme: theme.isDarkMode,
                             ),
                           )
@@ -147,7 +151,9 @@ class _searchScripList extends State<SearchScripList> {
                             if (scrip.expDate != null)
                               TextWidget.paraText(
                                 text: " ${scrip.expDate}",
-                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
                                 theme: theme.isDarkMode,
                               ),
                             if (scrip.expDate == "" && scrip.cname != null)
@@ -155,7 +161,9 @@ class _searchScripList extends State<SearchScripList> {
                                 child: TextWidget.paraText(
                                   text: "${scrip.cname}",
                                   textOverflow: TextOverflow.ellipsis,
-                                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
                                   theme: theme.isDarkMode,
                                 ),
                               ),
@@ -180,11 +188,9 @@ class _searchScripList extends State<SearchScripList> {
                               splashColor: Colors.grey.withOpacity(0.3),
                               highlightColor: Colors.grey.withOpacity(0.2),
                               onTap: () async {
-                                final currentIndex =
-                                    searchScrip.currentWatchlistPageIndex;
-
                                 if (searchScrip.isAdded![index]) {
-                                  await searchScrip.isActiveAddBtn(false, index);
+                                  await searchScrip.isActiveAddBtn(
+                                      false, index);
                                   await searchScrip.addDelMarketScrip(
                                     widget.wlName,
                                     "${scrip.exch}|${scrip.token}",
@@ -231,11 +237,6 @@ class _searchScripList extends State<SearchScripList> {
                                   } catch (e) {
                                     print("Error applying sort: $e");
                                   }
-                                }
-
-                                if (currentIndex >= 0) {
-                                  searchScrip
-                                      .setCurrentWatchlistPageIndex(currentIndex);
                                 }
                               },
                               child: Padding(

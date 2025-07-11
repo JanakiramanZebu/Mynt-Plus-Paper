@@ -21,11 +21,13 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
   static const double _searchBarHeight = 45.0;
   static const double _searchBarBorderRadius = 25.0;
   static const double _searchBarFontSize = 14.0;
-  
+
   @override
   void initState() {
     super.initState();
-    ref.read(bondsProvider).fetchAllBonds();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(bondsProvider).fetchAllBonds();
+    });
   }
 
   @override
@@ -33,103 +35,8 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
     final theme = ref.watch(themeProvider);
 
     return Scaffold(
-      appBar: _buildAppBar(context, theme),
+      // appBar: _buildAppBar(context, theme),
       body: BondsExploreScreens(theme: theme),
-    );
-  }
-  
-  AppBar _buildAppBar(BuildContext context, ThemesProvider theme) {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      elevation: 0,
-      centerTitle: false,
-      titleSpacing: -8,
-      leading: _buildBackButton(context, theme),
-      title: _buildSearchBar(context, theme),
-    );
-  }
-  
-  Widget _buildBackButton(BuildContext context, ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: InkWell(
-        onTap: () => Navigator.pop(context),
-        child: Icon(
-          Icons.arrow_back_ios,
-          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          size: _iconSize,
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildSearchBar(BuildContext context, ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 24),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              height: _searchBarHeight,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(_searchBarBorderRadius),
-              ),
-              child: SearchBar(
-                onTap: () {
-                  FocusScope.of(context).requestFocus(FocusNode());
-                  Navigator.pushNamed(context, Routes.bondssearchScreen);
-                },
-                hintText: "Search Bonds",
-                hintStyle: WidgetStateProperty.all(
-                  const TextStyle(
-                    color: Color(0xff69758F),
-                    fontSize: _searchBarFontSize,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                backgroundColor: WidgetStateProperty.all(
-                  theme.isDarkMode
-                    ? colors.darkGrey
-                    : const Color(0xffF1F3F8)
-                ),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                    side: BorderSide.none,
-                  ),
-                ),
-                textStyle: WidgetStateProperty.all(
-                  textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    _searchBarFontSize,
-                    FontWeight.w500
-                  ),
-                ),
-                elevation: WidgetStateProperty.all(0),
-                leading: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: SvgPicture.asset(
-                    assets.searchIcon,
-                    color: const Color(0xff586279),
-                    fit: BoxFit.contain,
-                    width: 20
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
-    return GoogleFonts.inter(
-      textStyle: TextStyle(
-        fontWeight: fWeight,
-        color: color,
-        fontSize: fontSize
-      ),
     );
   }
 }

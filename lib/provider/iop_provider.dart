@@ -1370,7 +1370,7 @@ class IPOProvider extends DefaultChangeNotifier {
         _upivalid = false;
         Navigator.pop(context);
         Navigator.pop(context);
-        Navigator.pushNamed(context, Routes.ipo, arguments: 2); 
+        Navigator.pushNamed(context, Routes.ipo, arguments: 2);
       } else {
         _upivalid = true;
         _upierror = "Invalid UPI ID";

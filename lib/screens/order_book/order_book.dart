@@ -761,7 +761,7 @@ class _OrderItemState extends State<_OrderItem> {
                 Expanded(
                   child: TextWidget.paraText(
                     text:
-                        "${widget.orderItem.exch} - ${widget.orderItem.prctyp} - ${formatDateTime(value: widget.orderItem.norentm!).substring(12, 21)}",
+                        "${widget.orderItem.exch} - ${widget.orderItem.sPrdtAli} - ${widget.orderItem.prctyp} - ${formatDateTime(value: widget.orderItem.norentm!).substring(12, 21)}",
                     theme: false,
                     color: widget.theme.isDarkMode
                         ? colors.textSecondaryDark

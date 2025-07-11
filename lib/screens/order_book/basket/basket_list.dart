@@ -26,67 +26,65 @@ class BasketList extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
     bool _isDeleting = false;
 
-    return basket.bsktList.isEmpty
-        ? const NoDataFound()
-        : Column(
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: colors.btnBg,
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                            color: colors.btnOutlinedBorder, width: 1),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        shape: const BeveledRectangleBorder(),
-                        child: InkWell(
-                            customBorder: const BeveledRectangleBorder(),
-                            splashColor: theme.isDarkMode
-                                ? colors.splashColorDark
-                                : colors.splashColorLight,
-                            highlightColor: theme.isDarkMode
-                                ? colors.highlightDark
-                                : colors.highlightLight,
-                            onTap: () {
-                              Future.delayed(const Duration(milliseconds: 150),
-                                  () {
-                                showModalBottomSheet(
-                                    context: context,
-                                    useSafeArea: true,
-                                    isScrollControlled: true,
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16)),
-                                    ),
-                                    builder: (BuildContext context) {
-                                      return const CreateBasket();
-                                    });
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.btnBg,
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(color: colors.btnOutlinedBorder, width: 1),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  shape: const BeveledRectangleBorder(),
+                  child: InkWell(
+                      customBorder: const BeveledRectangleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.highlightDark
+                          : colors.highlightLight,
+                      onTap: () {
+                        Future.delayed(const Duration(milliseconds: 150), () {
+                          showModalBottomSheet(
+                              context: context,
+                              useSafeArea: true,
+                              isScrollControlled: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16)),
+                              ),
+                              builder: (BuildContext context) {
+                                return const CreateBasket();
                               });
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 5),
-                              child: TextWidget.subText(
-                                  text: "Create Basket",
-                                  theme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? colors.primaryDark
-                                      : colors.primaryLight,
-                                  fw: 0),
-                            )),
-                      ),
-                    ),
-                  ],
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 5),
+                        child: TextWidget.subText(
+                            text: "Create Basket",
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            fw: 0),
+                      )),
                 ),
               ),
-              ListView.separated(
+            ],
+          ),
+        ),
+        basket.bsktList.isEmpty
+            ? SizedBox(height: 440, child: const NoDataFound())
+            : ListView.separated(
                 shrinkWrap: true,
                 itemCount: basket.bsktList.length,
                 itemBuilder: (BuildContext context, int index) {
@@ -258,8 +256,8 @@ class BasketList extends ConsumerWidget {
                   return const ListDivider();
                 },
               ),
-            ],
-          );
+      ],
+    );
   }
 }
 

@@ -18,7 +18,9 @@ import '../models/indices/global_indices_model.dart';
 import '../models/news_model.dart';
 import '../models/explore_model/stocks_model/action_trade_model.dart';
 import '../models/explore_model/stocks_model/toplist_stocks.dart';
+import 'bonds_provider.dart';
 import 'core/default_change_notifier.dart';
+import 'iop_provider.dart';
 
 final stocksProvide = ChangeNotifierProvider((ref) => StocksProvider(ref));
 
@@ -152,6 +154,34 @@ class StocksProvider extends DefaultChangeNotifier {
   GetAdIndicesModel? _getAdIndicesModel;
   GetAdIndicesModel? get getAdIndicesModel => _getAdIndicesModel;
 
+  final TextEditingController _searchController = TextEditingController();
+  TextEditingController get searchController => _searchController;
+
+  globalsearch(String value) {
+    _searchController.text = value;
+    notifyListeners();
+  }
+
+  searchdashboard(String value, BuildContext context) {
+    // _searchController.clear();
+
+    if (value.isNotEmpty) {
+      switch (exploreIndex) {
+        case 0:
+          break;
+        case 1:
+          ref.read(bondsProvider).searchCommonBonds(value, context);
+          break;
+        case 2:
+          ref.read(ipoProvide).searchCommonIpo(value, context);
+
+          // ref.read(stocksProvide).searchCommonStocks(value, context);
+          break;
+      }
+    }
+    notifyListeners();
+  }
+
   showMoreFunRatio() {
     _moreFunRatio = !_moreFunRatio;
     notifyListeners();
@@ -163,10 +193,8 @@ class StocksProvider extends DefaultChangeNotifier {
   }
 
   late TabController exploreTab;
-  List<Tab> _exploreTabName = [
+  final List<Tab> _exploreTabName = [
     const Tab(text: "Stocks"),
-    const Tab(text: "F&O"),
-    const Tab(text: "Mutual Fund"),
     const Tab(text: "Bonds"),
     const Tab(text: "IPOs"),
   ];
@@ -929,7 +957,7 @@ class StocksProvider extends DefaultChangeNotifier {
       }
     } catch (e) {}
 
-    // notifyListeners();
+    notifyListeners();
   }
 
   fetchStockMonitor(String exch, String bskt, String cont) async {

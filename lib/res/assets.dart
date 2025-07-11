@@ -119,6 +119,7 @@ class Assets {
   final String wealthDef = "assets/img/wealth_def.png";
   final String alphady = "assets/img/alpha_dynamic.png";
   final String hdfcpng = "assets/img/hdfc.png";
+  final String optionZdash = "assets/icon/dashboard/OptionZ_img.png";
   ////top indices index image///
   final String bselogo = 'assets/img/bselogo.png';
   final String nselogo = "assets/img/nselogo.png";
@@ -194,6 +195,10 @@ class Assets {
   // Explore
   final String sectors = "assets/explore/sector.svg";
   final String thematic = "assets/explore/thematic.svg";
+  final String gttdashboard = "assets/icon/dashboard/gtt_dash.svg";
+  final String sipdashboard = "assets/icon/dashboard/sip_dash.svg";
+  final String basketdashboard = "assets/icon/dashboard/basket_dash.svg";
+  final String alertdashboard = "assets/icon/dashboard/alert_dash.svg";
 
   // Bonds
   final String govtBond = "assets/icon/bonds/gov_bonds.svg";

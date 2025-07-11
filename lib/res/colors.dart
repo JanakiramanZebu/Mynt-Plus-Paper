@@ -26,6 +26,8 @@ class AppColors {
   final textSecondary = const Color(0xFF4A4A4A);
   final textSecondaryLight = const Color(0xFF4A4A4A);
   final textDisabled = const Color(0xFFBDBDBD);
+  final textTertiary = const Color(0xFF434343);
+  final textTertiaryLight = const Color(0xFF434343);
 
 // Dark theme text colors
   final textPrimaryDark = const Color(0xFFFFFFFF);

@@ -208,193 +208,165 @@ class TradeBook extends ConsumerWidget {
                             //     arguments: tradeBook[index]);
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Row 1: Symbol + Expiry | Order Number
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    // SYMBOL + EXPIRY + OPTION
-                                    Expanded(
-                                      child: TextWidget.subText(
-                                        text:
-                                            "${tradeBook[index].symbol} ${tradeBook[index].expDate} ${tradeBook[index].option ?? ''}",
-                                        theme: theme.isDarkMode,
-                                        fw: 3,
-                                        maxLines: 1,
-                                        textOverflow: TextOverflow.ellipsis,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Row 1: Symbol + Expiry | Order Number
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // SYMBOL + EXPIRY + OPTION
+                                      Expanded(
+                                        child: TextWidget.subText(
+                                          text:
+                                              "${tradeBook[index].symbol} ${tradeBook[index].expDate} ${tradeBook[index].option ?? ''}",
+                                          theme: theme.isDarkMode,
+                                          fw: 3,
+                                          maxLines: 1,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                        ),
                                       ),
-                                    ),
 
-                                    // Order Number
-                                    TextWidget.subText(
-                                      text:
-                                          "Order ${tradeBook[index].norenordno ?? ''}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                      fw: 3,
-                                    ),
-                                  ],
-                                ),
+                                      // Order Number
+                                      // TextWidget.subText(
+                                      //   text:
+                                      //       "Order ${tradeBook[index].norenordno ?? ''}",
+                                      //   theme: false,
+                                      //   color: theme.isDarkMode
+                                      //       ? colors.textSecondaryDark
+                                      //       : colors.textSecondaryLight,
+                                      //   fw: 3,
+                                      // ),
+                                    ],
+                                  ),
 
-                                const SizedBox(height: 8),
+                                  const SizedBox(height: 8),
 
-                                // Row 2: Exchange - Time | Fill ID
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: TextWidget.paraText(
+                                  // Row 2: Exchange - Time | Fill ID
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: TextWidget.paraText(
+                                          text:
+                                              "${tradeBook[index].exch} - ${tradeBook[index].prctyp ?? ''} - ${tradeBook[index].sPrdtAli} - ${formatDateTime(value: tradeBook[index].norentm!).substring(12, 21)}",
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          fw: 3,
+                                        ),
+                                      ),
+                                      TextWidget.paraText(
                                         text:
-                                            "${tradeBook[index].exch} - ${formatDateTime(value: tradeBook[index].norentm!).substring(12, 21)}",
+                                            "LTP ${tradeBook[index].ltp ?? '0.00'}",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
                                         fw: 3,
                                       ),
-                                    ),
-                                    TextWidget.paraText(
-                                      text:
-                                          "Fill ID ${tradeBook[index].flid ?? ''}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                      fw: 3,
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
 
-                                const SizedBox(height: 8),
+                                  const SizedBox(height: 8),
 
-                                // Row 3: BUY/SELL + Product + Price Type | Avg Price
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        // BUY/SELL Badge
-                                        TextWidget.paraText(
-                                          text: tradeBook[index].trantype == "S"
-                                              ? "SELL"
-                                              : "BUY",
-                                          theme: false,
-                                          color:
-                                              tradeBook[index].trantype == "S"
-                                                  ? theme.isDarkMode
-                                                      ? colors.lossDark
-                                                      : colors.lossLight
-                                                  : theme.isDarkMode
-                                                      ? colors.profitDark
-                                                      : colors.profitLight,
-                                          fw: 0,
-                                        ),
+                                  // Row 3: BUY/SELL + Product + Price Type | Avg Price
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          // BUY/SELL Badge
+                                          TextWidget.paraText(
+                                            text:
+                                                tradeBook[index].trantype == "S"
+                                                    ? "SELL"
+                                                    : "BUY",
+                                            theme: false,
+                                            color:
+                                                tradeBook[index].trantype == "S"
+                                                    ? theme.isDarkMode
+                                                        ? colors.lossDark
+                                                        : colors.lossLight
+                                                    : theme.isDarkMode
+                                                        ? colors.profitDark
+                                                        : colors.profitLight,
+                                            fw: 0,
+                                          ),
 
-                                        const SizedBox(width: 8),
+                                          const SizedBox(width: 8),
+                                          TextWidget.paraText(
+                                            text:
+                                                "${((int.tryParse(tradeBook[index].flqty.toString()) ?? 0) / (tradeBook[index].exch == 'MCX' ? (int.tryParse(tradeBook[index].ls.toString()) ?? 1) : 1)).toInt()}",
+                                            color: theme.isDarkMode
+                                                ? colors.textSecondaryDark
+                                                : colors.textSecondaryLight,
+                                            theme: theme.isDarkMode,
+                                            fw: 3,
+                                          ),
+                                          // Product Badge
 
-                                        // Product Badge
-                                        TextWidget.paraText(
-                                          text: "${tradeBook[index].sPrdtAli}",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          fw: 3,
-                                        ),
+                                          // const SizedBox(width: 8),
 
-                                        const SizedBox(width: 8),
+                                          // // Price Type Badge
+                                          // TextWidget.paraText(
+                                          //   text: "${tradeBook[index].prctyp}",
+                                          //   theme: false,
+                                          //   color: theme.isDarkMode
+                                          //       ? colors.textSecondaryDark
+                                          //       : colors.textSecondaryLight,
+                                          //   fw: 3,
+                                          // ),
+                                        ],
+                                      ),
+                                      TextWidget.paraText(
+                                        text:
+                                            "${tradeBook[index].prc ?? '0.00'}",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        theme: theme.isDarkMode,
+                                        fw: 3,
+                                      ),
+                                      // Avg Price
+                                      // TextWidget.paraText(
+                                      //   text:
+                                      //       "${tradeBook[index].avgprc ?? '0.00'}",
+                                      //   color: theme.isDarkMode
+                                      //       ? colors.textSecondaryDark
+                                      //       : colors.textSecondaryLight,
+                                      //   theme: theme.isDarkMode,
+                                      //   fw: 3,
+                                      // ),
+                                    ],
+                                  ),
 
-                                        // Price Type Badge
-                                        TextWidget.paraText(
-                                          text: "${tradeBook[index].prctyp}",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          fw: 3,
-                                        ),
-                                      ],
-                                    ),
+                                  // Row 4: Fill Qty | Price
 
-                                    // Avg Price
-                                    TextWidget.paraText(
-                                      text:
-                                          "${tradeBook[index].avgprc ?? '0.00'}",
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                      theme: theme.isDarkMode,
-                                      fw: 3,
-                                    ),
-                                  ],
-                                ),
+                                  // Row(
+                                  //   children: [
+                                  //     TextWidget.paraText(
+                                  //       text: "Price ",
+                                  //       theme: false,
+                                  //       color: theme.isDarkMode
+                                  //           ? colors.textSecondaryDark
+                                  //           : colors.textSecondaryLight,
+                                  //       fw: 3,
+                                  //     ),
 
-                                const SizedBox(height: 8),
-
-                                // Row 4: Fill Qty | Price
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        TextWidget.paraText(
-                                          text: "Qty ",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          fw: 3,
-                                        ),
-                                        TextWidget.paraText(
-                                          text:
-                                              "${((int.tryParse(tradeBook[index].flqty.toString()) ?? 0) / (tradeBook[index].exch == 'MCX' ? (int.tryParse(tradeBook[index].ls.toString()) ?? 1) : 1)).toInt()}",
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          theme: theme.isDarkMode,
-                                          fw: 3,
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        TextWidget.paraText(
-                                          text: "Price ",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          fw: 3,
-                                        ),
-                                        TextWidget.paraText(
-                                          text:
-                                              "${tradeBook[index].prc ?? '0.00'}",
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          theme: theme.isDarkMode,
-                                          fw: 3,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ));
+                                  //   ],
+                                  // ),
+                                ],
+                              )));
                     },
                     itemCount: tradeBook.length,
                     separatorBuilder: (BuildContext context, int index) {
@@ -486,7 +458,7 @@ class TradeBook extends ConsumerWidget {
                                     Expanded(
                                       child: TextWidget.subText(
                                         text:
-                                            "${order.tradeBooksearch![index].symbol} ${order.tradeBooksearch![index].expDate} ${order.tradeBooksearch![index].option ?? ''}",
+                                            "${tradeBook[index].symbol} ${tradeBook[index].expDate} ${tradeBook[index].option ?? ''}",
                                         theme: theme.isDarkMode,
                                         fw: 3,
                                         maxLines: 1,
@@ -498,15 +470,15 @@ class TradeBook extends ConsumerWidget {
                                     ),
 
                                     // Order Number
-                                    TextWidget.paraText(
-                                      text:
-                                          "Order: ${order.tradeBooksearch![index].norenordno ?? ''}",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                      fw: 3,
-                                    ),
+                                    // TextWidget.subText(
+                                    //   text:
+                                    //       "Order ${tradeBook[index].norenordno ?? ''}",
+                                    //   theme: false,
+                                    //   color: theme.isDarkMode
+                                    //       ? colors.textSecondaryDark
+                                    //       : colors.textSecondaryLight,
+                                    //   fw: 3,
+                                    // ),
                                   ],
                                 ),
 
@@ -520,7 +492,7 @@ class TradeBook extends ConsumerWidget {
                                     Expanded(
                                       child: TextWidget.paraText(
                                         text:
-                                            "${order.tradeBooksearch![index].exch} - ${formatDateTime(value: order.tradeBooksearch![index].norentm!).substring(12, 21)}",
+                                            "${tradeBook[index].exch} - ${tradeBook[index].prctyp ?? ''} - ${tradeBook[index].sPrdtAli} - ${formatDateTime(value: tradeBook[index].norentm!).substring(12, 21)}",
                                         theme: false,
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
@@ -530,7 +502,7 @@ class TradeBook extends ConsumerWidget {
                                     ),
                                     TextWidget.paraText(
                                       text:
-                                          "Fill ID: ${order.tradeBooksearch![index].flid ?? ''}",
+                                          "LTP ${tradeBook[index].ltp ?? '0.00'}",
                                       theme: false,
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
@@ -551,116 +523,82 @@ class TradeBook extends ConsumerWidget {
                                       children: [
                                         // BUY/SELL Badge
                                         TextWidget.paraText(
-                                          text: order.tradeBooksearch![index]
-                                                      .trantype ==
-                                                  "S"
+                                          text: tradeBook[index].trantype == "S"
                                               ? "SELL"
                                               : "BUY",
                                           theme: false,
-                                          color: order.tradeBooksearch![index]
-                                                      .trantype ==
-                                                  "S"
-                                              ? theme.isDarkMode
-                                                  ? colors.lossDark
-                                                  : colors.lossLight
-                                              : theme.isDarkMode
-                                                  ? colors.profitDark
-                                                  : colors.profitLight,
+                                          color:
+                                              tradeBook[index].trantype == "S"
+                                                  ? theme.isDarkMode
+                                                      ? colors.lossDark
+                                                      : colors.lossLight
+                                                  : theme.isDarkMode
+                                                      ? colors.profitDark
+                                                      : colors.profitLight,
                                           fw: 0,
                                         ),
 
                                         const SizedBox(width: 8),
-
+                                        TextWidget.paraText(
+                                          text:
+                                              "${((int.tryParse(tradeBook[index].flqty.toString()) ?? 0) / (tradeBook[index].exch == 'MCX' ? (int.tryParse(tradeBook[index].ls.toString()) ?? 1) : 1)).toInt()}",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 3,
+                                        ),
                                         // Product Badge
-                                        TextWidget.paraText(
-                                          text:
-                                              "${order.tradeBooksearch![index].sPrdtAli}",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          fw: 3,
-                                        ),
 
-                                        const SizedBox(width: 8),
+                                        // const SizedBox(width: 8),
 
-                                        // Price Type Badge
-                                        TextWidget.paraText(
-                                          text:
-                                              "${order.tradeBooksearch![index].prctyp}",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          fw: 3,
-                                        ),
+                                        // // Price Type Badge
+                                        // TextWidget.paraText(
+                                        //   text: "${tradeBook[index].prctyp}",
+                                        //   theme: false,
+                                        //   color: theme.isDarkMode
+                                        //       ? colors.textSecondaryDark
+                                        //       : colors.textSecondaryLight,
+                                        //   fw: 3,
+                                        // ),
                                       ],
                                     ),
-
-                                    // Avg Price
                                     TextWidget.paraText(
-                                      text:
-                                          "${order.tradeBooksearch![index].avgprc ?? '0.00'}",
+                                      text: "${tradeBook[index].prc ?? '0.00'}",
                                       color: theme.isDarkMode
                                           ? colors.textSecondaryDark
                                           : colors.textSecondaryLight,
                                       theme: theme.isDarkMode,
                                       fw: 3,
                                     ),
+                                    // Avg Price
+                                    // TextWidget.paraText(
+                                    //   text:
+                                    //       "${tradeBook[index].avgprc ?? '0.00'}",
+                                    //   color: theme.isDarkMode
+                                    //       ? colors.textSecondaryDark
+                                    //       : colors.textSecondaryLight,
+                                    //   theme: theme.isDarkMode,
+                                    //   fw: 3,
+                                    // ),
                                   ],
                                 ),
-
-                                const SizedBox(height: 8),
 
                                 // Row 4: Fill Qty | Price
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        TextWidget.paraText(
-                                          text: "Qty: ",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          fw: 3,
-                                        ),
-                                        TextWidget.paraText(
-                                          text:
-                                              "${order.tradeBooksearch![index].flqty ?? 0}",
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          theme: theme.isDarkMode,
-                                          fw: 3,
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        TextWidget.paraText(
-                                          text: "Price: ",
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          fw: 3,
-                                        ),
-                                        TextWidget.paraText(
-                                          text:
-                                              "${order.tradeBooksearch![index].prc ?? '0.00'}",
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                          theme: theme.isDarkMode,
-                                          fw: 3,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+
+                                // Row(
+                                //   children: [
+                                //     TextWidget.paraText(
+                                //       text: "Price ",
+                                //       theme: false,
+                                //       color: theme.isDarkMode
+                                //           ? colors.textSecondaryDark
+                                //           : colors.textSecondaryLight,
+                                //       fw: 3,
+                                //     ),
+
+                                //   ],
+                                // ),
                               ],
                             ),
                           ));

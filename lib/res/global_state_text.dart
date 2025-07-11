@@ -108,6 +108,7 @@ class TextWidget {
     TextAlign? align,
     TextOverflow? textOverflow,
     double? letterSpacing,
+    double? lineHeight,
     bool? softWrap,
   }) {
     return Text(
@@ -136,6 +137,7 @@ class TextWidget {
                               ? FontWeight.w400
                               : FontWeight.normal,
           letterSpacing: letterSpacing ?? 0.5,
+          height: lineHeight,
         ),
       ),
     );

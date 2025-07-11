@@ -547,7 +547,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
 
     if (itemsToDisplay.isEmpty) {
       return const Center(
-        child: SizedBox(height: 500, child: NoDataFound()),
+        child: SizedBox(height: 600, child: NoDataFound()),
       );
     }
 

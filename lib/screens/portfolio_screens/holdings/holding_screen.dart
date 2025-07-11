@@ -459,6 +459,10 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
         return const Center(child: CircularProgressIndicator());
       }
 
+      if (holdingProvider.holdingsModel!.isEmpty) {
+        return const Center(child: const NoDataFound());
+      }
+
       return RefreshIndicator(
         onRefresh: () async {
           // Unfocus keyboard when refreshing
