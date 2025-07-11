@@ -2748,7 +2748,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                                 ])),
 
                                                 const SizedBox(width: 16),
-                                            Row(
+                                                   Row(
                                                       children: [
                                                         Text("Avl Mrg : ", style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
                                                         // const SizedBox(width: 4),
@@ -3726,10 +3726,10 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   },
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 16, FontWeight.w600),
-                  prefixIcon: Container(
-                      margin: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                      child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown)),
+                  // prefixIcon: Container(
+                  //     margin: const EdgeInsets.all(12),
+                  //     decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                  //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown)),
                   textCtrl: triggerPriceCtrl,
                   textAlign: TextAlign.start)),
           // const SizedBox(height: 8),
@@ -3770,11 +3770,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   hintStyle: textStyle(const Color(0xff666666), 15, FontWeight.w400),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 16, FontWeight.w600),
-                  prefixIcon: Container(
-                    margin: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                    child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
-                  ),
+                  // prefixIcon: Container(
+                  //   margin: const EdgeInsets.all(12),
+                  //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                  //   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
+                  // ),
                   textCtrl: targetCtrl,
                   textAlign: TextAlign.start)),
           const SizedBox(height: 10)
@@ -3812,11 +3812,11 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                   hintStyle: textStyle(const Color(0xff666666), 15, FontWeight.w400),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 16, FontWeight.w600),
-                  prefixIcon: Container(
-                    margin: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                    child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
-                  ),
+                  // prefixIcon: Container(
+                  //   margin: const EdgeInsets.all(12),
+                  //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
+                  //   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
+                  // ),
                   textCtrl: stopLossCtrl,
                   textAlign: TextAlign.start))
         ],
