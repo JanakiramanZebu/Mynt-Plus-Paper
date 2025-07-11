@@ -14,15 +14,59 @@ import '../../routes/route_names.dart';
 import '../../sharedWidget/snack_bar.dart';
 import 'bottom_sheets/pledge_details.dart';
 import 'bottom_sheets/pledge_list.dart';
+import 'pledge_and_unpledge/pledge_filter_screen.dart';
+import 'tax_pnl_screens/charges_value_screen.dart';
+import 'tax_pnl_screens/pnl_value_screen.dart';
+import 'tax_pnl_screens/turnover_value_screen.dart';
 
-class PledgenUnpledge extends StatelessWidget {
+class PledgenUnpledge extends StatefulWidget {
   final String ddd;
   const PledgenUnpledge({super.key, required this.ddd});
+
+  @override
+  State<PledgenUnpledge> createState() => _PledgenUnpledgeState();
+}
+
+class _PledgenUnpledgeState extends State<PledgenUnpledge>
+    with SingleTickerProviderStateMixin {
+  late TabController tabController;
+  int activeTab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    tabController = TabController(length: 3, vsync: this, initialIndex: 0);
+    // tabController.animation!.addListener(_onTabChanged);
+    
+  }
+
+  void _onTabChanged(index) {
+    final newIndex = index;
+    if (activeTab != newIndex) {
+      setState(() {
+        activeTab = newIndex;
+      });
+    }
+    print("${activeTab}pledgevavavavava");
+  }
+
+
+  
+  @override
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
+    List<Tab> orderTabName = [
+      Tab(text: "Pledge"),
+      Tab(text: " Unpledge"),
+      Tab(text: "Non-Approved"),
+    ];
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.watch(themeProvider);
       var cashstat = 0.0;
@@ -132,19 +176,19 @@ class PledgenUnpledge extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.heroText(
-                  text: "Pledge and Unpledge",
+                  text: "Pledge",
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
                   fw: 1),
-              IconButton(
-                  onPressed: () async {
-                    await ledgerprovider.fetchunpledgehistory(context);
-                    ledgerprovider.fetchpledgehistory(context);
-                    ledgerprovider.taxpnlExTabchange(0);
-                    Navigator.pushNamed(context, Routes.pledgehistorymainscreen,
-                        arguments: "DDDDD");
-                  },
-                  icon: const Icon(Icons.history))
+              // IconButton(
+              //     onPressed: () async {
+              //       await ledgerprovider.fetchunpledgehistory(context);
+              //       ledgerprovider.fetchpledgehistory(context);
+              //       ledgerprovider.taxpnlExTabchange(0);
+              //       Navigator.pushNamed(context, Routes.pledgehistorymainscreen,
+              //           arguments: "DDDDD");
+              //     },
+              //     icon: const Icon(Icons.history))
             ],
           ),
 
@@ -170,79 +214,210 @@ class PledgenUnpledge extends StatelessWidget {
                     //       "Financial activities through debits and credits ",
                     //       style: textStyle(colors.colorBlack, 14, FontWeight.w600),
                     //     )),
-                    Container(
-                      width: screenWidth,
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? const Color(0xffB5C0CF).withOpacity(.15)
-                                : const Color(0xffF1F3F8)),
-                        child: Column(
+                    // Container(
+                    //   width: screenWidth,
+                    //   child: Container(
+                    //     decoration: BoxDecoration(
+                    //         color: theme.isDarkMode
+                    //             ? const Color(0xffB5C0CF).withOpacity(.15)
+                    //             : const Color(0xffF1F3F8)),
+                    //     child: Column(
+                    //       children: [
+                    //         Padding(
+                    //           padding: const EdgeInsets.all(16.0),
+                    //           child: Row(
+                    //             mainAxisAlignment:
+                    //                 MainAxisAlignment.spaceBetween,
+                    //             children: [
+                    //               headingstat(
+                    //                   "Total value",
+                    //                   '${ledgerprovider.pledgeandunpledge?.stocksValue ?? 0}',
+                    //                   theme,
+                    //                   "left"),
+                    //               headingstat(
+                    //                   "Est/Ava Mrg",
+                    //                   "${ledgerprovider.pledgeandunpledge?.estTotalAvailable ?? 0} / ${ledgerprovider.pledgeandunpledge?.marginTotalAvailable ?? 0} ",
+                    //                   theme,
+                    //                   "right"),
+                    //             ],
+                    //           ),
+                    //         ),
+                    //         Padding(
+                    //           padding: const EdgeInsets.only(
+                    //               left: 16.0, right: 16.0, bottom: 16.0),
+                    //           child: Row(
+                    //             mainAxisAlignment:
+                    //                 MainAxisAlignment.spaceBetween,
+                    //             children: [
+                    //               headingstat(
+                    //                   "Cash Equivalent ",
+                    //                   "${ledgerprovider.pledgeandunpledge?.cashEquivalent ?? 0}",
+                    //                   theme,
+                    //                   "left"),
+                    //               headingstat(
+                    //                   "Total/Pledged",
+                    //                   "${ledgerprovider.pledgeandunpledge?.noOfStocks ?? 0} / ${displaypledgedvalue.length}",
+                    //                   theme,
+                    //                   "right"),
+                    //             ],
+                    //           ),
+                    //         ),
+                    //         Padding(
+                    //           padding: const EdgeInsets.only(
+                    //               left: 16.0, right: 16.0, bottom: 16.0),
+                    //           child: Row(
+                    //             mainAxisAlignment:
+                    //                 MainAxisAlignment.spaceBetween,
+                    //             children: [
+                    //               headingstat(
+                    //                   "Cash Equivalent ",
+                    //                   "${ledgerprovider.pledgeandunpledge?.noncashEquivalent ?? 0}",
+                    //                   theme,
+                    //                   "left"),
+                    //               headingstat(
+                    //                   "Non-approved",
+                    //                   '${ledgerprovider.pledgeandunpledge?.noOfNonApprovedStocks ?? 0}',
+                    //                   theme,
+                    //                   "right"),
+                    //             ],
+                    //           ),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Column(
+                            children: [
+                              TextWidget.subText(
+                                  text: 'Est Margin',
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3),
+                              SizedBox(height: 5),
+                              TextWidget.headText(
+                                  text:
+                                      "${ledgerprovider.pledgeandunpledge?.estTotalAvailable ?? 0}",
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textPrimaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 0),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    RepaintBoundary(
+        child: Padding(
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 22),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 40,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                      color: colors.searchBg,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: Row(
+                            children: [
+                              Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                clipBehavior: Clip.hardEdge,
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  splashColor: theme.isDarkMode
+                                      ? colors.splashColorDark
+                                      : colors.splashColorLight,
+                                  highlightColor: theme.isDarkMode
+                                      ? colors.highlightDark
+                                      : colors.highlightLight,
+                                  onTap: () {
+                                    Future.delayed(
+                                        const Duration(milliseconds: 150),
+                                        () async {
+                                        
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: SvgPicture.asset(
+                                      assets.searchIcon,
+                                      color: colors.textPrimaryLight,
+                                      width: 20,
+                                      fit: BoxFit.scaleDown,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                               
+                                 
+                            ],
+                          ),
+                        ),
+                        Row(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  headingstat(
-                                      "Total value",
-                                      '${ledgerprovider.pledgeandunpledge?.stocksValue ?? 0}',
-                                      theme,
-                                      "left"),
-                                  headingstat(
-                                      "Est/Ava Mrg",
-                                      " ${ledgerprovider.pledgeandunpledge?.marginTotalAvailable ?? 0} / ${ledgerprovider.pledgeandunpledge?.estTotalAvailable ?? 0}",
-                                      theme,
-                                      "right"),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 16.0, right: 16.0, bottom: 16.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  headingstat(
-                                      "Cash Equivalent ",
-                                      "${ledgerprovider.pledgeandunpledge?.cashEquivalent ?? 0}",
-                                      theme,
-                                      "left"),
-                                  headingstat(
-                                      "Total/Pledged",
-                                      "${ledgerprovider.pledgeandunpledge?.noOfStocks ?? 0} / ${displaypledgedvalue.length}",
-                                      theme,
-                                      "right"),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 16.0, right: 16.0, bottom: 16.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  headingstat(
-                                      "Cash Equivalent ",
-                                      "${ledgerprovider.pledgeandunpledge?.noncashEquivalent ?? 0}",
-                                      theme,
-                                      "left"),
-                                  headingstat(
-                                      "Non-approved",
-                                      '${ledgerprovider.pledgeandunpledge?.noOfNonApprovedStocks ?? 0}',
-                                      theme,
-                                      "right"),
-                                ],
+                            // if (hasHoldings && showEdis)
+                               
+                             
+                            Material(
+                              color: Colors.transparent,
+                              shape: const RoundedRectangleBorder(),
+                              clipBehavior: Clip.hardEdge,
+                              child: InkWell(
+                                customBorder: const RoundedRectangleBorder(),
+                                splashColor: theme.isDarkMode
+                                    ? colors.splashColorDark
+                                    : colors.splashColorLight,
+                                highlightColor: theme.isDarkMode
+                                    ? colors.highlightDark
+                                    : colors.highlightLight,
+                                onTap: () async {
+                                   ledgerprovider.fetchunpledgehistory(context);
+                                  ledgerprovider.fetchpledgehistory(context);
+                                  ledgerprovider.taxpnlExTabchange(0);
+                                  Navigator.pushNamed(context, Routes.pledgehistorymainscreen,
+                                      arguments: "DDDDD");
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  child: TextWidget.paraText(
+                                    text: "History",
+                                    theme: false,
+                                    color: theme.isDarkMode
+                                        ? colors.secondaryDark
+                                        : colors.secondaryLight,
+                                    fw: 2,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
-                        ),
-                      ),
+                        )
+                      ],
                     ),
-
+                  ),
+                ),
+              ],
+            ))),
                     // Padding(
                     //   padding: const EdgeInsets.only(
                     //     top: 2.0,
@@ -347,736 +522,90 @@ class PledgenUnpledge extends StatelessWidget {
                     //     ],
                     //   ),
                     // ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      height: 35,
+                      // decoration: BoxDecoration(
+                      //   border: Border(
+                      //     bottom: BorderSide(
+                      //       color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                      //       width: 1,
+                      //     ),
+                      //   ),
+                      // ),
+                      child: TabBar(
+                        onTap: (int index) {
+                          print("Tab tapped: $index");
+                          activeTab = index;
+                          // Do something on tap
+                        },
+                        controller: tabController,
+                        tabAlignment: TabAlignment.start,
+                        isScrollable: true,
+                        indicatorSize: TabBarIndicatorSize.label,
+                        indicatorColor:
+                            colors.colorWhite, // hide default underline
+                        indicator: BoxDecoration(
+                          // pill-shaped highlight[4]
+                          color: const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(6),
+                          // border: Border.all(
+                          //   color: theme.isDarkMode
+                          //       ? colors.darkColorDivider
+                          //       : colors.colorDivider,
+                          // ),
+                        ),
+                        // labelColor: theme.isDarkMode
+                        //     ? colors.colorLightBlue
+                        //     : colors.colorBlue,
+                        unselectedLabelColor: const Color(0XFF777777),
+                        labelStyle: TextWidget.textStyle(
+                            fontSize: 14, theme: false, fw: 1),
+                        unselectedLabelStyle: TextWidget.textStyle(
+                            fontSize: 14,
+                            theme: false,
+                            fw: 0,
+                            letterSpacing: -0.28),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
 
-                    ledgerprovider.pledgeandunpledge == null ||
-                            ledgerprovider.pledgeandunpledge?.data == null
-                        // Handle the null or empty case
-                        ? Center(
+                        // build the "Open 4" badge and the rest of the tabs
+                        tabs: orderTabName.map((tabString) {
+                          /// If the value looks like "Open 4", split it once on the space
+
+                          final title = tabString.text.toString(); // "Open"
+
+                          return Tab(
                             child: Padding(
-                            padding: EdgeInsets.only(top: 60),
-                            child: NoDataFound(),
-                          ))
-                        : Expanded(
-                            child: SingleChildScrollView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 16.0),
-                                child: ListView.separated(
-                                  physics: ScrollPhysics(),
-                                  itemCount: ledgerprovider
-                                          .pledgeandunpledge?.data?.length ??
-                                      0,
-                                  shrinkWrap: true,
-                                  itemBuilder: (context, index) {
-                                    final value = ledgerprovider
-                                        .pledgeandunpledge!.data![index];
-                                    return Column(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 16.0, top: 8.0),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  SizedBox(
-                                                    width: screenWidth * 0.55,
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        TextWidget.subText(
-                                                            align:
-                                                                TextAlign.start,
-                                                            text: value
-                                                                    .nSESYMBOL ??
-                                                                '-',
-                                                            textOverflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            theme: theme
-                                                                .isDarkMode,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .colorWhite
-                                                                : colors
-                                                                    .colorBlack,
-                                                            fw: 1),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 8.0),
-                                                    child: Row(
-                                                      children: [
-                                                        value.status == "Not_ok"
-                                                            ? Container(
-                                                                margin:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        right:
-                                                                            4),
-                                                                padding: const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        6,
-                                                                    vertical:
-                                                                        3),
-                                                                decoration: BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(
-                                                                                2),
-                                                                    color: const Color
-                                                                            .fromARGB(
-                                                                            255,
-                                                                            236,
-                                                                            214,
-                                                                            214)
-                                                                        .withOpacity(
-                                                                            .3)),
-                                                                child: Text(
-                                                                    "Non-Approved",
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    maxLines: 1,
-                                                                    style: textStyle(
-                                                                        const Color
-                                                                            .fromARGB(
-                                                                            255,
-                                                                            255,
-                                                                            60,
-                                                                            60),
-                                                                        10,
-                                                                        FontWeight
-                                                                            .w500)),
-                                                              )
-                                                            : SizedBox(),
-                                                        ((((value.cashEqColl!
-                                                                                    .foCashEq !=
-                                                                                null
-                                                                            ? value.cashEqColl!.foCashEq ==
-                                                                                'True'
-                                                                            : true) &&
-                                                                        (value.cashEqColl!.cdCashEq !=
-                                                                                null
-                                                                            ? value.cashEqColl!.cdCashEq ==
-                                                                                'True'
-                                                                            : true) &&
-                                                                        (value.cashEqColl!.comCashEq !=
-                                                                                null
-                                                                            ? value.cashEqColl!.comCashEq ==
-                                                                                'True'
-                                                                            : true)) &&
-                                                                    value.cOLQTY !=
-                                                                        '0.000') ||
-                                                                (((value.cashEqColl!.foCashEq !=
-                                                                                null
-                                                                            ? value.cashEqColl!.foCashEq ==
-                                                                                'False'
-                                                                            : true) &&
-                                                                        (value.cashEqColl!.cdCashEq != null
-                                                                            ? value.cashEqColl!.cdCashEq ==
-                                                                                'False'
-                                                                            : true) &&
-                                                                        (value.cashEqColl!.comCashEq !=
-                                                                                null
-                                                                            ? value.cashEqColl!.comCashEq ==
-                                                                                'False'
-                                                                            : true)) &&
-                                                                    value.cOLQTY !=
-                                                                        '0.000'))
-                                                            ? Container(
-                                                                margin:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        right:
-                                                                            4),
-                                                                padding: const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        6,
-                                                                    vertical:
-                                                                        3),
-                                                                decoration: BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            10),
-                                                                    color: value.cRnc ==
-                                                                            'noncash'
-                                                                        ? const Color(
-                                                                            0xff007B7B)
-                                                                        : const Color(
-                                                                            0xff2069BB)),
-                                                                child: Text(
-                                                                    ((value.cashEqColl!.foCashEq != null ? value.cashEqColl!.foCashEq == 'True' : true) &&
-                                                                            (value.cashEqColl!.cdCashEq != null
-                                                                                ? value.cashEqColl!.cdCashEq ==
-                                                                                    'True'
-                                                                                : true) &&
-                                                                            (value.cashEqColl!.comCashEq != null
-                                                                                ? value.cashEqColl!.comCashEq ==
-                                                                                    'True'
-                                                                                : true))
-                                                                        ? 'Cash'
-                                                                        : 'Non Cash',
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    maxLines: 1,
-                                                                    style: textStyle(
-                                                                        const Color
-                                                                            .fromARGB(
-                                                                            255,
-                                                                            255,
-                                                                            255,
-                                                                            255),
-                                                                        10,
-                                                                        FontWeight
-                                                                            .w500)),
-                                                              )
-                                                            : SizedBox(),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              value.initiated == "0" &&
-                                                      value.status == 'Ok' &&
-                                                      (double.parse(value.nSOHQTY.toString())
-                                                                  .toInt()) +
-                                                              (double.parse(value
-                                                                      .sOHQTY
-                                                                      .toString())
-                                                                  .toInt()) !=
-                                                          0
-                                                  ? InkWell(
-                                                      onTap: () {
-                                                        print(
-                                                            "${ledgerprovider.pledgeorunpledge} fdaedfaefwef");
-                                                        if (ledgerprovider
-                                                                .pledgeorunpledge !=
-                                                            'unpledge') {
-                                                          print(double.parse(value
-                                                                  .initiated
-                                                                  .toString())
-                                                              .toInt());
-                                                          if (double.parse(value
-                                                                      .initiated
-                                                                      .toString())
-                                                                  .toInt() ==
-                                                              0) {
-                                                            ledgerprovider
-                                                                    .screenclickedpledge =
-                                                                'pledge';
-                                                            String val =
-                                                                "${double.parse(value.nSOHQTY.toString()).toInt() + double.parse(value.sOHQTY.toString()).toInt()}";
-                                                            String val2 =
-                                                                "${value.dummvalue != 'null' ? double.parse(value.dummvalue.toString()).toInt() : "null"}";
-                                                            ledgerprovider
-                                                                .setselectnetpledge(
-                                                                    val2 == 'null'
-                                                                        ? val
-                                                                        : val2,
-                                                                    val2 == 'null'
-                                                                        ? val
-                                                                        : val2);
-                                                            _showBottomSheet(
-                                                                context,
-                                                                PledgeDeytails(
-                                                                  data: index,
-                                                                ));
-                                                          } else {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                              warningMessage(
-                                                                  context,
-                                                                  '${value.initiated} Qty is processing'),
-                                                            );
-                                                          }
-                                                        } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                            warningMessage(
-                                                                context,
-                                                                'Unpledged initiated so can\'t pledge'),
-                                                          );
-                                                        }
-                                                        // ledgerprovider
-                                                        //     .changesegval("");
-                                                      },
-                                                      child: Container(
-                                                        margin: const EdgeInsets
-                                                            .only(right: 16),
-                                                        decoration: BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        6),
-                                                            color: value.dummvalue ==
-                                                                    'null'
-                                                                ? const Color
-                                                                    .fromARGB(
-                                                                    255,
-                                                                    211,
-                                                                    225,
-                                                                    255)
-                                                                : const Color(
-                                                                    0xffF6EFD9)),
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: TextWidget
-                                                              .subText(
-                                                            text:
-                                                                "${value.dummvalue != 'null' ? "${value.dummvalue!} /" : ''} ${(double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt())} +",
-                                                            textOverflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            theme: theme
-                                                                .isDarkMode,
-                                                            color: value.dummvalue ==
-                                                                    'null'
-                                                                ? const Color(
-                                                                    0xff2F6AD9)
-                                                                : const Color(
-                                                                    0xffFFC107),
-                                                            fw: 1,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    )
-                                                  : int.tryParse(value.initiated
-                                                                  .toString()) !=
-                                                              0 &&
-                                                          value.status ==
-                                                              'Ok' &&
-                                                          (double.parse(value.nSOHQTY.toString())
-                                                                      .toInt()) +
-                                                                  (double.parse(
-                                                                          value.sOHQTY.toString())
-                                                                      .toInt()) !=
-                                                              0
-                                                      ? Container(
-                                                          margin:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  right: 16),
-                                                          decoration: BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          6),
-                                                              color: const Color
-                                                                  .fromARGB(
-                                                                  255,
-                                                                  216,
-                                                                  226,
-                                                                  248)),
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: TextWidget
-                                                                .subText(
-                                                              text:
-                                                                  "${(double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt())} / ${value.initiated} +",
-                                                              textOverflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              theme: theme
-                                                                  .isDarkMode,
-                                                              color: const Color
-                                                                  .fromARGB(
-                                                                  255,
-                                                                  162,
-                                                                  191,
-                                                                  247),
-                                                              fw: 1,
-                                                            ),
-                                                          ),
-                                                        )
-                                                      : SizedBox(),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 2.0),
-                                          child: Divider(
-                                            color: const Color.fromARGB(
-                                                255, 212, 212, 212),
-                                            thickness: 0.5,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 16.0, right: 16.0),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  TextWidget.subText(
-                                                      text: "Qty :  ",
-                                                      color: Color(0xFF696969),
-                                                      textOverflow:
-                                                          TextOverflow.ellipsis,
-                                                      theme: theme.isDarkMode,
-                                                      fw: 0),
-                                                  TextWidget.subText(
-                                                      text:
-                                                          "${double.parse(value.nET.toString()).toInt()}",
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      textOverflow:
-                                                          TextOverflow.ellipsis,
-                                                      theme: theme.isDarkMode,
-                                                      fw: 1),
-
-                                                  //         Text(
-                                                  // " (${value.tRADEDATE})",
-                                                  // style: textStyle(
-                                                  //     theme.isDarkMode
-                                                  //         ? colors.colorWhite
-                                                  //         : colors.colorBlack,
-                                                  //     12,
-                                                  //     FontWeight.w600)),
-                                                ],
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      TextWidget.subText(
-                                                          text: "Value : ",
-                                                          color:
-                                                              Color(0xFF696969),
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 0),
-                                                      TextWidget.subText(
-                                                          text: value.aMOUNT !=
-                                                                  null
-                                                              ? double.parse(value
-                                                                      .aMOUNT
-                                                                      .toString())
-                                                                  .toStringAsFixed(
-                                                                      2)
-                                                              : "0.0",
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 1),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 16.0,
-                                              right: 16.0,
-                                              top: 8.0),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      TextWidget.subText(
-                                                          text: (double.parse(value
-                                                                          .cOLQTY
-                                                                          .toString())
-                                                                      .toInt()) ==
-                                                                  0
-                                                              ? 'Est : '
-                                                              : "Mrg : ",
-                                                          color:
-                                                              Color(0xFF696969),
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 0),
-                                                      TextWidget.subText(
-                                                          text: (double.parse(value
-                                                                          .cOLQTY
-                                                                          .toString())
-                                                                      .toInt()) ==
-                                                                  0
-                                                              ? value.estimated !=
-                                                                      null
-                                                                  ? "${double.parse(value.estimated.toString()).toStringAsFixed(2)} "
-                                                                  : "0.0"
-                                                              : value.margin !=
-                                                                      null
-                                                                  ? "${double.parse(value.margin.toString()).toStringAsFixed(2)} "
-                                                                  : "0.0",
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 1),
-                                                      TextWidget.captionText(
-                                                          text: value.estimated !=
-                                                                  null
-                                                              ? "(${double.parse(value.estPercentage.toString()).toInt()}%)"
-                                                              : "0.0",
-                                                          color: theme.isDarkMode
-                                                              ? colors
-                                                                  .colorWhite
-                                                              : colors
-                                                                  .colorBlack,
-                                                          textOverflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          fw: 0),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                              (double.parse(value.cOLQTY
-                                                              .toString())
-                                                          .toInt()) !=
-                                                      0
-                                                  ? Row(
-                                                      children: [
-                                                        TextWidget.subText(
-                                                            text:
-                                                                "Pledged Qty : ",
-                                                            color: Color(
-                                                                0xFF696969),
-                                                            textOverflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            theme: theme
-                                                                .isDarkMode,
-                                                            fw: 0),
-                                                        (double.parse(value
-                                                                        .cOLQTY
-                                                                        .toString())
-                                                                    .toInt()) !=
-                                                                0
-                                                            ? InkWell(
-                                                                onTap: () {
-                                                                  print(
-                                                                      "${ledgerprovider.pledgeorunpledge} fdaedfaefwef");
-                                                                  if (value.deleteselected !=
-                                                                          'selected' &&
-                                                                      value.unPlegeQty ==
-                                                                          '') {
-                                                                    if (ledgerprovider
-                                                                            .pledgeorunpledge !=
-                                                                        'pledge') {
-                                                                      ledgerprovider
-                                                                              .screenclickedpledge =
-                                                                          'unpledge';
-                                                                      String
-                                                                          val =
-                                                                          "${double.parse(value.cOLQTY.toString()).toInt()}";
-                                                                      String
-                                                                          val2 =
-                                                                          "${value.dummunpledgevalue != 'null' ? double.parse(value.dummunpledgevalue.toString()).toInt() : "null"}";
-                                                                      ledgerprovider.setselectnetpledge(
-                                                                          val2 == 'null'
-                                                                              ? val
-                                                                              : val2,
-                                                                          val2 == 'null'
-                                                                              ? val
-                                                                              : val2);
-                                                                      _showBottomSheet(
-                                                                          context,
-                                                                          PledgeDeytails(
-                                                                            data:
-                                                                                index,
-                                                                          ));
-                                                                      // ledgerprovider
-                                                                      //     .setselectnetpledge(
-                                                                      //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
-                                                                      //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
-                                                                    } else {
-                                                                      ScaffoldMessenger.of(
-                                                                              context)
-                                                                          .showSnackBar(
-                                                                        warningMessage(
-                                                                            context,
-                                                                            'Pledged initiated so can\'t unpledge'),
-                                                                      );
-                                                                    }
-                                                                  } else {
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(
-                                                                      warningMessage(
-                                                                          context,
-                                                                          'Already pledged cant edit'),
-                                                                    );
-                                                                  }
-
-                                                                  print(
-                                                                      "value.cOLQTY.toString() ${value.cOLQTY.toString()}");
-                                                                },
-                                                                child:
-                                                                    Container(
-                                                                  decoration: BoxDecoration(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              6),
-                                                                      color: value.dummunpledgevalue !=
-                                                                                  'null' ||
-                                                                              value.deleteselected ==
-                                                                                  'selected'
-                                                                          ? const Color(
-                                                                              0xffF6EFD9)
-                                                                          : const Color
-                                                                              .fromARGB(
-                                                                              255,
-                                                                              255,
-                                                                              196,
-                                                                              196)),
-                                                                  child:
-                                                                      Padding(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(
-                                                                            8.0),
-                                                                    child: TextWidget
-                                                                        .paraText(
-                                                                      text:
-                                                                          "${(value.unPlegeQty != "0" && value.unPlegeQty != "") ? "${value.unPlegeQty! + " /"} " : value.dummunpledgevalue != 'null' ? "${value.dummunpledgevalue!} /" : ''} ${(double.parse(value.cOLQTY.toString()).toInt())} -",
-                                                                      textOverflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                      theme: theme
-                                                                          .isDarkMode,
-                                                                      color: value.dummunpledgevalue !=
-                                                                                  'null' ||
-                                                                              value.deleteselected ==
-                                                                                  'selected'
-                                                                          ? const Color(
-                                                                              0xffFFC107)
-                                                                          : const Color
-                                                                              .fromARGB(
-                                                                              255,
-                                                                              255,
-                                                                              97,
-                                                                              97),
-                                                                      fw: 1,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              )
-                                                            : Text("-"),
-                                                        if ((value.unPlegeQty !=
-                                                                "0" &&
-                                                            value.unPlegeQty !=
-                                                                ""))
-                                                          InkWell(
-                                                            onTap: () {
-                                                              ledgerprovider
-                                                                  .unpledgedeletereqfun(
-                                                                      context,
-                                                                      value.iSIN
-                                                                          .toString(),
-                                                                      index);
-                                                            },
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      left:
-                                                                          8.0),
-                                                              child: SvgPicture
-                                                                  .asset(assets
-                                                                      .cancelledIcon),
-                                                            ),
-                                                          )
-                                                        // TextWidget.subText(
-                                                        //     text:
-                                                        //         "${(double.parse(value.cOLQTY.toString()).toInt()) > 0 ? (double.parse(value.cOLQTY.toString()).toInt()) : ''} ",
-                                                        //     color: theme.isDarkMode
-                                                        //         ? colors.colorWhite
-                                                        //         : colors.colorBlack,
-                                                        //     textOverflow:
-                                                        //         TextOverflow.ellipsis,
-                                                        //     theme: theme.isDarkMode,
-                                                        //     fw: 1),
-
-                                                        //         Text(
-                                                        // " (${value.tRADEDATE})",
-                                                        // style: textStyle(
-                                                        //     theme.isDarkMode
-                                                        //         ? colors.colorWhite
-                                                        //         : colors.colorBlack,
-                                                        //     12,
-                                                        //     FontWeight.w600)),
-                                                      ],
-                                                    )
-                                                  : SizedBox(),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                  separatorBuilder:
-                                      (BuildContext context, int index) {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                        top: 2.0,
-                                        bottom: 0.0,
-                                      ),
-                                      child: Divider(
-                                        color: theme.isDarkMode
-                                            ? const Color(0xffB5C0CF)
-                                                .withOpacity(.15)
-                                            : const Color(0xffF1F3F8),
-                                        thickness: 7.0,
-                                      ),
-                                    );
-                                  },
-                                ),
+                              padding: const EdgeInsets.only(
+                                  left: 10, right: 10, top: 0, bottom: 0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextWidget.paraText(
+                                      text:
+                                          "${title}",
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                      fw: 3),
+                                ],
                               ),
                             ),
-                          ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Expanded(
+                        child: TabBarView(controller: tabController, children: [
+                      PledgeFilter(activetabe: '0'),
+                      PledgeFilter(activetabe: '1'),
+                      PledgeFilter(activetabe: '2'),
+                      // OrderBook(orderBook: orderBook.allOrder!),
+                    ])),
+
                     if (ledgerprovider.listforpledge.length > 0)
                       Container(
                         height: screenheight * 0.07,
@@ -1223,6 +752,510 @@ class PledgenUnpledge extends StatelessWidget {
         ),
       );
     });
+  }
+
+  _mainpage(
+      LDProvider ledgerprovider, ThemesProvider theme, BuildContext context) {
+    return ledgerprovider.pledgeandunpledge == null ||
+            ledgerprovider.pledgeandunpledge?.data == null
+        // Handle the null or empty case
+        ? Center(
+            child: Padding(
+            padding: EdgeInsets.only(top: 60),
+            child: NoDataFound(),
+          ))
+        : Expanded(
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: ListView.separated(
+                  physics: ScrollPhysics(),
+                  itemCount:
+                      ledgerprovider.pledgeandunpledge?.data?.length ?? 0,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    final value =
+                        ledgerprovider.pledgeandunpledge!.data![index];
+
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16.0, top: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.55,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        TextWidget.subText(
+                                            align: TextAlign.start,
+                                            text: value.nSESYMBOL ?? '-',
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            fw: 3),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Row(
+                                      children: [
+                                        value.status == "Not_ok"
+                                            ? Container(
+                                                margin: const EdgeInsets.only(
+                                                    right: 4),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 3),
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            2),
+                                                    color: const Color.fromARGB(
+                                                            255, 236, 214, 214)
+                                                        .withOpacity(.3)),
+                                                child: Text("Non-Approved",
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: textStyle(
+                                                        const Color.fromARGB(
+                                                            255, 255, 60, 60),
+                                                        10,
+                                                        FontWeight.w500)),
+                                              )
+                                            : SizedBox(),
+                                        ((((value.cashEqColl!.foCashEq != null
+                                                            ? value.cashEqColl!
+                                                                    .foCashEq ==
+                                                                'True'
+                                                            : true) &&
+                                                        (value.cashEqColl!.cdCashEq != null
+                                                            ? value.cashEqColl!
+                                                                    .cdCashEq ==
+                                                                'True'
+                                                            : true) &&
+                                                        (value.cashEqColl!.comCashEq !=
+                                                                null
+                                                            ? value.cashEqColl!
+                                                                    .comCashEq ==
+                                                                'True'
+                                                            : true)) &&
+                                                    value.cOLQTY != '0.000') ||
+                                                (((value.cashEqColl!.foCashEq !=
+                                                                null
+                                                            ? value.cashEqColl!
+                                                                    .foCashEq ==
+                                                                'False'
+                                                            : true) &&
+                                                        (value.cashEqColl!.cdCashEq != null
+                                                            ? value.cashEqColl!
+                                                                    .cdCashEq ==
+                                                                'False'
+                                                            : true) &&
+                                                        (value.cashEqColl!
+                                                                    .comCashEq !=
+                                                                null
+                                                            ? value.cashEqColl!
+                                                                    .comCashEq ==
+                                                                'False'
+                                                            : true)) &&
+                                                    value.cOLQTY != '0.000'))
+                                            ? Container(
+                                                margin: const EdgeInsets.only(
+                                                    right: 4),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 3),
+                                                decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius
+                                                        .circular(10),
+                                                    color:
+                                                        value.cRnc == 'noncash'
+                                                            ? const Color(
+                                                                0xff007B7B)
+                                                            : const Color(
+                                                                0xff2069BB)),
+                                                child: Text(
+                                                    ((value.cashEqColl!
+                                                                        .foCashEq !=
+                                                                    null
+                                                                ? value.cashEqColl!
+                                                                        .foCashEq ==
+                                                                    'True'
+                                                                : true) &&
+                                                            (value.cashEqColl!.cdCashEq != null
+                                                                ? value.cashEqColl!.cdCashEq ==
+                                                                    'True'
+                                                                : true) &&
+                                                            (value.cashEqColl!.comCashEq != null
+                                                                ? value.cashEqColl!.comCashEq ==
+                                                                    'True'
+                                                                : true))
+                                                        ? 'Cash'
+                                                        : 'Non Cash',
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: textStyle(
+                                                        const Color.fromARGB(
+                                                            255, 255, 255, 255),
+                                                        10,
+                                                        FontWeight.w500)),
+                                              )
+                                            : SizedBox(),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              value.initiated == "0" &&
+                                      value.status == 'Ok' &&
+                                      (double.parse(value.nSOHQTY.toString())
+                                                  .toInt()) +
+                                              (double.parse(
+                                                      value.sOHQTY.toString())
+                                                  .toInt()) !=
+                                          0
+                                  ? InkWell(
+                                      onTap: () {
+                                        print(
+                                            "${ledgerprovider.pledgeorunpledge} fdaedfaefwef");
+                                        if (ledgerprovider.pledgeorunpledge !=
+                                            'unpledge') {
+                                          print(double.parse(
+                                                  value.initiated.toString())
+                                              .toInt());
+                                          if (double.parse(value.initiated
+                                                      .toString())
+                                                  .toInt() ==
+                                              0) {
+                                            ledgerprovider.screenclickedpledge =
+                                                'pledge';
+                                            String val =
+                                                "${double.parse(value.nSOHQTY.toString()).toInt() + double.parse(value.sOHQTY.toString()).toInt()}";
+                                            String val2 =
+                                                "${value.dummvalue != 'null' ? double.parse(value.dummvalue.toString()).toInt() : "null"}";
+                                            ledgerprovider.setselectnetpledge(
+                                                val2 == 'null' ? val : val2,
+                                                val2 == 'null' ? val : val2);
+                                            _showBottomSheet(
+                                                context,
+                                                PledgeDeytails(
+                                                  data: index,
+                                                ));
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              warningMessage(context,
+                                                  '${value.initiated} Qty is processing'),
+                                            );
+                                          }
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            warningMessage(context,
+                                                'Unpledged initiated so can\'t pledge'),
+                                          );
+                                        }
+                                        // ledgerprovider
+                                        //     .changesegval("");
+                                      },
+                                      child: Container(
+                                        margin:
+                                            const EdgeInsets.only(right: 16),
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                            color: const Color.fromARGB(
+                                                255, 255, 255, 255)),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: TextWidget.titleText(
+                                            text:
+                                                "${value.dummvalue != 'null' ? "${value.dummvalue!} /" : ''} ${(double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt())} +",
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            color: value.dummvalue == 'null'
+                                                ? const Color(0xff2F6AD9)
+                                                : const Color(0xffFFC107),
+                                            fw: 3,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : int.tryParse(value.initiated.toString()) !=
+                                              0 &&
+                                          value.status == 'Ok' &&
+                                          (double.parse(value.nSOHQTY
+                                                          .toString())
+                                                      .toInt()) +
+                                                  (double.parse(value.sOHQTY
+                                                          .toString())
+                                                      .toInt()) !=
+                                              0
+                                      ? Container(
+                                          margin:
+                                              const EdgeInsets.only(right: 16),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              color: const Color.fromARGB(
+                                                  255, 216, 226, 248)),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: TextWidget.subText(
+                                              text:
+                                                  "${(double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt())} / ${value.initiated} +",
+                                              textOverflow:
+                                                  TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                              color: const Color.fromARGB(
+                                                  255, 162, 191, 247),
+                                              fw: 1,
+                                            ),
+                                          ),
+                                        )
+                                      : SizedBox(),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 16.0, right: 16.0, top: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Row(
+                                    children: [
+                                      TextWidget.paraText(
+                                          text: (double.parse(value.cOLQTY
+                                                          .toString())
+                                                      .toInt()) ==
+                                                  0
+                                              ? 'Est : '
+                                              : "Mrg : ",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          fw: 3),
+                                      TextWidget.paraText(
+                                          text: (double.parse(value.cOLQTY
+                                                          .toString())
+                                                      .toInt()) ==
+                                                  0
+                                              ? value.estimated != null
+                                                  ? "${double.parse(value.estimated.toString()).toStringAsFixed(2)} "
+                                                  : "0.0"
+                                              : value.margin != null
+                                                  ? "${double.parse(value.margin.toString()).toStringAsFixed(2)} "
+                                                  : "0.0",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          fw: 3),
+                                      TextWidget.paraText(
+                                          text: value.estimated != null
+                                              ? "(${double.parse(value.estPercentage.toString()).toInt()}%)"
+                                              : "0.0",
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          textOverflow: TextOverflow.ellipsis,
+                                          theme: theme.isDarkMode,
+                                          fw: 3),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              (double.parse(value.cOLQTY.toString()).toInt()) !=
+                                      0
+                                  ? Row(
+                                      children: [
+                                        TextWidget.subText(
+                                            text: "Pledged Qty : ",
+                                            color: Color(0xFF696969),
+                                            textOverflow: TextOverflow.ellipsis,
+                                            theme: theme.isDarkMode,
+                                            fw: 0),
+                                        (double.parse(value.cOLQTY.toString())
+                                                    .toInt()) !=
+                                                0
+                                            ? InkWell(
+                                                onTap: () {
+                                                  print(
+                                                      "${ledgerprovider.pledgeorunpledge} fdaedfaefwef");
+                                                  if (value.deleteselected !=
+                                                          'selected' &&
+                                                      value.unPlegeQty == '') {
+                                                    if (ledgerprovider
+                                                            .pledgeorunpledge !=
+                                                        'pledge') {
+                                                      ledgerprovider
+                                                              .screenclickedpledge =
+                                                          'unpledge';
+                                                      String val =
+                                                          "${double.parse(value.cOLQTY.toString()).toInt()}";
+                                                      String val2 =
+                                                          "${value.dummunpledgevalue != 'null' ? double.parse(value.dummunpledgevalue.toString()).toInt() : "null"}";
+                                                      ledgerprovider
+                                                          .setselectnetpledge(
+                                                              val2 == 'null'
+                                                                  ? val
+                                                                  : val2,
+                                                              val2 == 'null'
+                                                                  ? val
+                                                                  : val2);
+                                                      _showBottomSheet(
+                                                          context,
+                                                          PledgeDeytails(
+                                                            data: index,
+                                                          ));
+                                                      // ledgerprovider
+                                                      //     .setselectnetpledge(
+                                                      //         "${(double.parse(value.cOLQTY.toString()).toInt())}",
+                                                      //         "${(double.parse(value.cOLQTY.toString()).toInt())}");
+                                                    } else {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        warningMessage(context,
+                                                            'Pledged initiated so can\'t unpledge'),
+                                                      );
+                                                    }
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      warningMessage(context,
+                                                          'Already pledged cant edit'),
+                                                    );
+                                                  }
+
+                                                  print(
+                                                      "value.cOLQTY.toString() ${value.cOLQTY.toString()}");
+                                                },
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              6),
+                                                      color: value.dummunpledgevalue !=
+                                                                  'null' ||
+                                                              value.deleteselected ==
+                                                                  'selected'
+                                                          ? const Color(
+                                                              0xffF6EFD9)
+                                                          : const Color
+                                                              .fromARGB(255,
+                                                              255, 196, 196)),
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: TextWidget.paraText(
+                                                      text:
+                                                          "${(value.unPlegeQty != "0" && value.unPlegeQty != "") ? "${value.unPlegeQty! + " /"} " : value.dummunpledgevalue != 'null' ? "${value.dummunpledgevalue!} /" : ''} ${(double.parse(value.cOLQTY.toString()).toInt())} -",
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      color: value.dummunpledgevalue !=
+                                                                  'null' ||
+                                                              value.deleteselected ==
+                                                                  'selected'
+                                                          ? const Color(
+                                                              0xffFFC107)
+                                                          : const Color
+                                                              .fromARGB(
+                                                              255, 255, 97, 97),
+                                                      fw: 1,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : Text("-"),
+                                        if ((value.unPlegeQty != "0" &&
+                                            value.unPlegeQty != ""))
+                                          InkWell(
+                                            onTap: () {
+                                              ledgerprovider
+                                                  .unpledgedeletereqfun(
+                                                      context,
+                                                      value.iSIN.toString(),
+                                                      index);
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 8.0),
+                                              child: SvgPicture.asset(
+                                                  assets.cancelledIcon),
+                                            ),
+                                          )
+                                        // TextWidget.subText(
+                                        //     text:
+                                        //         "${(double.parse(value.cOLQTY.toString()).toInt()) > 0 ? (double.parse(value.cOLQTY.toString()).toInt()) : ''} ",
+                                        //     color: theme.isDarkMode
+                                        //         ? colors.colorWhite
+                                        //         : colors.colorBlack,
+                                        //     textOverflow:
+                                        //         TextOverflow.ellipsis,
+                                        //     theme: theme.isDarkMode,
+                                        //     fw: 1),
+
+                                        //         Text(
+                                        // " (${value.tRADEDATE})",
+                                        // style: textStyle(
+                                        //     theme.isDarkMode
+                                        //         ? colors.colorWhite
+                                        //         : colors.colorBlack,
+                                        //     12,
+                                        //     FontWeight.w600)),
+                                      ],
+                                    )
+                                  : SizedBox(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        top: 6.0,
+                        bottom: 0.0,
+                      ),
+                      child: Divider(
+                        color: theme.isDarkMode
+                            ? const Color(0xffB5C0CF).withOpacity(.15)
+                            : const Color(0xffF1F3F8),
+                        thickness: 1.0,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
   }
 
   void _showBottomSheet(BuildContext context, Widget bottomSheet) {

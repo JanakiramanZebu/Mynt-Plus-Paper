@@ -10,7 +10,7 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 
 class PledgeDeytails extends StatefulWidget {
-  final int data;
+  final dynamic data;
   const PledgeDeytails({super.key, required this.data});
 
   @override
@@ -44,20 +44,25 @@ class _PledgeDeytails extends State<PledgeDeytails> {
       String? selectedValue;
       print(
           "$selectedValue selectedValueselectedValueselectedValueselectedValue");
-
+      //     if (ledgerdata.pledgeandunpledge!.data!.isNotEmpty) {
+      //       for (var i = 0; i < ledgerdata.pledgeandunpledge!.data!.length; i++) {
+      //         final val = ledgerdata.pledgeandunpledge!.data![i];
+      //       if (val.nSESYMBOL == ) {}}
+      //     }
+      
       int netValue = ledgerdata.screenpledge == 'pledge'
-          ? (ledgerdata.pledgeandunpledge!.data![widget.data].nET is String)
+          ? (widget.data.nET is String)
               ? double.parse(
-                      ledgerdata.pledgeandunpledge!.data![widget.data].nET!)
+                      widget.data.nET!)
                   .toInt()
-              : (ledgerdata.pledgeandunpledge!.data![widget.data].cOLQTY
+              : (widget.data.cOLQTY
                       as double)
                   .toInt()
-          : (ledgerdata.pledgeandunpledge!.data![widget.data].cOLQTY is String)
+          : (widget.data.cOLQTY is String)
               ? double.parse(
-                      ledgerdata.pledgeandunpledge!.data![widget.data].cOLQTY!)
+                      widget.data.cOLQTY!)
                   .toInt()
-              : (ledgerdata.pledgeandunpledge!.data![widget.data].cOLQTY
+              : (widget.data.cOLQTY
                       as double)
                   .toInt();
       List<DropdownItem> dropdownItems = [];
@@ -69,7 +74,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
       };
 
       final eligibleSegments =
-          ledgerdata.pledgeandunpledge!.data![widget.data].eligibleSegments!;
+          widget.data.eligibleSegments!;
       final companyCodes = ledgerdata.segresponse['company_code'];
 
       for (final segment in eligibleSegments) {
@@ -237,12 +242,16 @@ class _PledgeDeytails extends State<PledgeDeytails> {
               Padding(
                 padding:
                     const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 8.0),
-                child: TextWidget.heroText(
+                child: TextWidget.titleText(
                     text: ledgerdata.screenpledge == 'pledge'
                         ? "Pledge Details"
                         : "Unpledge Details",
                     textOverflow: TextOverflow.ellipsis,
                     theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    
                     fw: 1),
               ),
               Padding(
@@ -267,34 +276,46 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                       children: [
                         Row(
                           children: [
-                            TextWidget.subText(
+                            TextWidget.paraText(
                                 text: 'Symbol : ',
-                                color: Color(0xFF696969),
+                                color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
-                                fw: 0),
-                            TextWidget.subText(
-                                text: ledgerdata.pledgeandunpledge!
-                                    .data![widget.data].nSESYMBOL
+                                
+                                fw: 3),
+                            TextWidget.paraText(
+                                text: widget.data.nSESYMBOL
                                     .toString(),
+                                       color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
-                                fw: 1),
+                                fw: 3),
                           ],
                         ),
                         Row(
                           children: [
-                            TextWidget.subText(
+                            TextWidget.paraText(
                                 text: 'Total Qty : ',
-                                color: Color(0xFF696969),
+                                  color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
-                                fw: 0),
-                            TextWidget.subText(
+                                
+                                fw: 3),
+                            TextWidget.paraText(
                                 text: netValue.toString(),
+                                   color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
-                                fw: 1),
+                                fw: 3),
                           ],
                         ),
                       ],
@@ -306,22 +327,23 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                         children: [
                           Row(
                             children: [
-                              TextWidget.subText(
+                              TextWidget.paraText(
                                   text: 'Mar / Est : ',
-                                  color: Color(0xFF696969),
+                                     color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 0),
-                              TextWidget.subText(
+                                  fw: 3),
+                              TextWidget.paraText(
                                   text:
-                                      "${double.tryParse(ledgerdata.pledgeandunpledge!.data![widget.data].estimated.toString())!.toStringAsFixed(2)} (${ledgerdata.pledgeandunpledge!.data![widget.data].estPercentage}%)",
+                                      "${double.tryParse(widget.data.estimated.toString())!.toStringAsFixed(2)} (${widget.data.estPercentage}%)",
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 1),
+                                  fw: 3),
                             ],
                           ),
-                          if ((double.tryParse(ledgerdata.pledgeandunpledge!
-                                          .data![widget.data].cOLQTY
+                          if ((double.tryParse(widget.data.cOLQTY
                                           .toString())!
                                       .toInt() >
                                   0) &&
@@ -336,7 +358,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     fw: 0),
                                 TextWidget.subText(
                                     text:
-                                        "${double.tryParse(ledgerdata.pledgeandunpledge!.data![widget.data].cOLQTY.toString())!.toInt()} ",
+                                        "${double.tryParse(widget.data.cOLQTY.toString())!.toInt()} ",
                                     textOverflow: TextOverflow.ellipsis,
                                     theme: theme.isDarkMode,
                                     fw: 1),
@@ -354,12 +376,12 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidget.paraText(
+                    TextWidget.subText(
                         text:
                             "${ledgerdata.screenpledge == 'pledge' ? 'Pledge' : 'Unpledge'} Qty up to ${netValue.toString()}",
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
-                        fw: 0),
+                        fw: 3),
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Container(
@@ -390,9 +412,9 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                 netValue = 0;
                                 ledgerdata.screenpledge == 'pledge'
                                     ? ledgerdata.setselectnetpledge(value,
-                                        "${(double.parse(ledgerdata.pledgeandunpledge!.data![widget.data].nSOHQTY.toString()).toInt()) + (double.parse(ledgerdata.pledgeandunpledge!.data![widget.data].sOHQTY.toString()).toInt())}")
+                                        "${(double.parse(widget.data.nSOHQTY.toString()).toInt()) + (double.parse(widget.data.sOHQTY.toString()).toInt())}")
                                     : ledgerdata.setselectnetpledge(value,
-                                        "${(double.parse(ledgerdata.pledgeandunpledge!.data![widget.data].cOLQTY.toString()).toInt()) + (double.parse(ledgerdata.pledgeandunpledge!.data![widget.data].sOHQTY.toString()).toInt())}");
+                                        "${(double.parse(widget.data.cOLQTY.toString()).toInt()) + (double.parse(widget.data.sOHQTY.toString()).toInt())}");
                               })),
                     ),
                     Padding(
@@ -413,21 +435,36 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(6),
                                 color: const Color(0xffFCEFD4)),
-                            child: Text(
-                                "Note: Please ensure that you submit separate pledge requests for MTF and other segments (FO, CD, and Commodities). Combining pledges for MTF and other segments is not permitted. However, combining pledges for FO, CD, and Commodities segments is allowed.",
-                                style: textStyle(
-                                    colors.colorBlack, 11, FontWeight.w500)),
+                            child:
+                            
+                              TextWidget.paraText(
+                                    text:
+                                        "Note: Please ensure that you submit separate pledge requests for MTF and other segments (FO, CD, and Commodities). Combining pledges for MTF and other segments is not permitted. However, combining pledges for FO, CD, and Commodities segments is allowed.",
+                                    textOverflow: TextOverflow.ellipsis,
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                                    maxLines: 7,
+                                    fw: 3),
+                                    
+                             
+                                
+                             
                           )
                         : SizedBox(),
                     ledgerdata.screenpledge == 'pledge'
                         ? Padding(
                             padding: const EdgeInsets.only(top: 8.0),
-                            child: TextWidget.paraText(
+                            child: TextWidget.subText(
                                 text:
                                     "Which segment do you want to pledge the stocks",
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
-                                fw: 0),
+                               color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                                fw: 3),
                           )
                         : SizedBox(),
                     ledgerdata.screenpledge == 'pledge'
@@ -481,11 +518,9 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     ),
                                   );
                                 }).toList(),
-                                value: ledgerdata.pledgeandunpledge!
-                                            .data![widget.data].segmentselect !=
+                                value: widget.data.segmentselect !=
                                         "null"
-                                    ? ledgerdata.pledgeandunpledge!
-                                        .data![widget.data].segmentselect
+                                    ? widget.data.segmentselect
                                     : selectedValue,
                                 onChanged: (value) {
                                   ledgerdata.changesegval(
@@ -532,9 +567,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                                 false)) ||
                                         (ledgerdata.screenpledge == 'pledge' &&
                                             (ledgerdata.pledgesubtn == false ||
-                                                ledgerdata
-                                                        .pledgeandunpledge!
-                                                        .data![widget.data]
+                                                widget.data
                                                         .segmentselect
                                                         .toString() ==
                                                     "null")))
@@ -546,9 +579,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     borderRadius: BorderRadius.circular(50))),
                             onPressed: () {
                               if ((ledgerdata.screenpledge == 'pledge' &&
-                                      (ledgerdata
-                                                  .pledgeandunpledge!
-                                                  .data![widget.data]
+                                      (widget.data
                                                   .segmentselect !=
                                               'null' &&
                                           ledgerdata.pledgesubtn != false)) ||
@@ -560,31 +591,24 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                       ledgerdata.selectnetpledge.text,
                                       "pledge");
                                   ledgerdata.changesegval(
-                                      ledgerdata.pledgeandunpledge!
-                                          .data![widget.data].segmentselect
+                                      widget.data.segmentselect
                                           .toString(),
                                       widget.data);
                                   ledgerdata.listforpledgefunction(
                                       context,
                                       ledgerdata.segmentvalue,
-                                      ledgerdata.pledgeandunpledge!
-                                          .data![widget.data].nSESYMBOL
+                                      widget.data.nSESYMBOL
                                           .toString(),
-                                      ledgerdata.pledgeandunpledge!
-                                          .data![widget.data].iSIN
+                                      widget.data.iSIN
                                           .toString(),
-                                      ledgerdata.pledgeandunpledge!
-                                          .data![widget.data].aMOUNT
+                                      widget.data.aMOUNT
                                           .toString(),
                                       ledgerdata.selectnetpledge.text,
-                                      ledgerdata.pledgeandunpledge!
-                                          .data![widget.data].nET
+                                      widget.data.nET
                                           .toString(),
                                       "pledge",
                                       widget.data);
-                                  ledgerdata.changesegvaldummy(ledgerdata
-                                      .pledgeandunpledge!
-                                      .data![widget.data]
+                                  ledgerdata.changesegvaldummy(widget.data
                                       .segmentselect
                                       .toString());
                                 } else {
@@ -595,18 +619,14 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                   ledgerdata.listforpledgefunction(
                                       context,
                                       ledgerdata.segmentvalue,
-                                      ledgerdata.pledgeandunpledge!
-                                          .data![widget.data].nSESYMBOL
+                                      widget.data.nSESYMBOL
                                           .toString(),
-                                      ledgerdata.pledgeandunpledge!
-                                          .data![widget.data].iSIN
+                                      widget.data.iSIN
                                           .toString(),
-                                      ledgerdata.pledgeandunpledge!
-                                          .data![widget.data].aMOUNT
+                                      widget.data.aMOUNT
                                           .toString(),
                                       ledgerdata.selectnetpledge.text,
-                                      ledgerdata.pledgeandunpledge!
-                                          .data![widget.data].nET
+                                      widget.data.nET
                                           .toString(),
                                       "unpledge",
                                       widget.data);

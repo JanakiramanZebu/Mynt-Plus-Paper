@@ -226,7 +226,8 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                                     theme,
                                     tab,
                                     () {},
-                                    ledgerprovider)))),
+                                    ledgerprovider)))
+                                    ),  
                   ),
 
                   Expanded(

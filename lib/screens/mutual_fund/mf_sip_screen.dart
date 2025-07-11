@@ -7,6 +7,7 @@ import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../provider/fund_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
@@ -107,17 +108,22 @@ class MFSipdetScreen extends ConsumerWidget {
                                     padding: const EdgeInsets.only(left: 0),
                                     child: SizedBox(
                                       width: MediaQuery.of(context).size.width * 0.7,
-                                      child: Text(
-                                        item.schemeName ?? "Unknown Scheme",
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: textStyles.scripNameTxtStyle.copyWith(
-                                          color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                        ),
+                                      child: TextWidget.subText(
+                                                    align: TextAlign.start,
+                                                    text: item.schemeName ?? "Unknown Scheme",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    maxLines: 2,
+                                                    fw: 3),
+                                      
+                                       
                                       ),
-                                    ),
+                                   
                                   ),
                                   const Spacer(),
                                   SvgPicture.asset(
@@ -127,41 +133,83 @@ class MFSipdetScreen extends ConsumerWidget {
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.only(left: 4.0),
-                                    child: Text(
-                                      item.liveCancel == "LIVE" ? "Live" : "Cancel",
-                                      style: textStyle(
-                                          theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          14,
-                                          FontWeight.w500),
-                                    ),
+                                    child: 
+                                    TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text:  item.liveCancel == "LIVE" ? "Live" : "Cancel",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    maxLines: 2,
+                                                    fw: 3),
+                                    
+                                    
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  CustomExchBadge(
-                                    exch: item.frequencyType ?? "Unknown",
-                                  ),
+                                   TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text:  item.frequencyType ?? "Unknown",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    maxLines: 2,
+                                                    fw: 3),
+                                 
                                   const SizedBox(width: 5),
-                                  CustomExchBadge(
-                                    exch: item.dateTime ?? "Unknown Date",
-                                  ),
+                                     TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text:  item.dateTime ?? "Unknown Date",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    maxLines: 2,
+                                                    fw: 3),
+                                  
                                   const SizedBox(width: 5),
                                   if (item.liveCancel == "LIVE" && item.nextSipDate != null) 
-                                    CustomExchBadge(
-                                      exch: "Due Date : ${item.nextSipDate}",
-                                    ),
+                                   TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text:  "Due Date : ${item.nextSipDate}",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    maxLines: 2,
+                                                    fw: 3),
+                                     
                                   const Spacer(),
-                                  Text(
-                                    item.amount ?? 'N/A',
-                                    style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500),
-                                    textAlign: TextAlign.center,
-                                  ),
+                                   TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text:  item.amount ?? 'N/A',
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    maxLines: 2,
+                                                    fw: 3),
+                                  
                                 ],
                               ),
                             ],

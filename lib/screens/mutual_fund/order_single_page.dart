@@ -71,33 +71,9 @@ class _mforderdetscreen extends State<mforderdetscreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildOrderHeader(theme, mfdata),
-                    const SizedBox(height: 16),
-                    if (mfdata.mforderdet?.data?.orderstatus != "VALID") ...[
-                      TextWidget.titleText(
-                          align: TextAlign.right,
-                          text: _getStatusText(
-                              mfdata.mforderdet?.data?.orderstatus),
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          textOverflow: TextOverflow.ellipsis,
-                          theme: theme.isDarkMode,
-                          fw: 3),
-
-                      const SizedBox(height: 8),
-                      TextWidget.subText(
-                          align: TextAlign.right,
-                          text: "${mfdata.mforderdet?.data?.orderremarks ?? "No remarks available"}",
-                          color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : const Color(0xFFF33E4B),
-                          textOverflow: TextOverflow.ellipsis,
-                          theme: theme.isDarkMode,
-                          fw: 3),
-                       
-                    ],
+                    const SizedBox(height: 18),
+                    _buildCancelButton(theme, mfdata, context),
                     
-                    const SizedBox(height: 20),
                     TextWidget.subText(
                         align: TextAlign.right,
                         text: "Order details",
@@ -110,7 +86,30 @@ class _mforderdetscreen extends State<mforderdetscreen>
                     const SizedBox(height: 24),
                     _buildDetailsSection(theme, mfdata),
                     const SizedBox(height: 20),
-                    _buildCancelButton(theme, mfdata, context),
+                    if (mfdata.mforderdet?.data?.orderstatus != "VALID") ...[
+                      TextWidget.subText(
+                          align: TextAlign.start,
+                          text: _getStatusText(
+                              mfdata.mforderdet?.data?.orderstatus),
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          fw: 3),
+                      const SizedBox(height: 8),
+                      TextWidget.subText(
+                          align: TextAlign.start,
+                          text:
+                              "${mfdata.mforderdet?.data?.orderremarks ?? "No remarks available"}",
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : const Color(0xFFF33E4B),
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          maxLines: 3,
+                          fw: 3),
+                    ],
                   ],
                 ),
               )
@@ -303,39 +302,44 @@ class _mforderdetscreen extends State<mforderdetscreen>
 
     if (!shouldShowCancel) return const SizedBox();
 
-    return SizedBox(
-      width: double.infinity, // Makes the button full width
-      child: ElevatedButton(
-        onPressed: () async {
-          if (mfdata.mforderdet?.data != null) {
-            await showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return MfCancelAlert(
-                    mfcancel: mfdata.mforderdet!.data!, message: "order");
-              },
-            );
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white, // White background
-          foregroundColor:
-              const Color.fromARGB(255, 0, 0, 0), // Text and icon color
-          side: const BorderSide(
-              color: Color.fromARGB(255, 0, 0, 0),
-              width: 1.5), // Outlined border
-          shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(20), // Optional: rounded corners
+    return Padding(
+      padding: const EdgeInsets.only(bottom :20.0),
+      child: SizedBox(
+        height: 45,
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () async {
+            if (mfdata.mforderdet?.data != null) {
+              await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return MfCancelAlert(
+                      mfcancel: mfdata.mforderdet!.data!, message: "order");
+                },
+              );
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            backgroundColor: colors.btnBg,
+            foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+            side: BorderSide(
+              color: colors.btnOutlinedBorder,
+              width: 1,
+            ),
+            minimumSize: Size(double.infinity, 45), // height: 48
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5),
+            ),
           ),
-        ),
-        child: const Text(
-          "Cancel Order",
-          style: TextStyle(
-            color: Color.fromARGB(255, 0, 0, 0),
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          child: TextWidget.subText(
+              align: TextAlign.right,
+              text: "Cancel Order",
+              color:
+                  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 2),
         ),
       ),
     );

@@ -112,6 +112,11 @@ class LDProvider extends DefaultChangeNotifier {
 
   PledgeAndUnpledgeModel? _pledgeandunpledge;
   PledgeAndUnpledgeModel? get pledgeandunpledge => _pledgeandunpledge;
+  
+
+
+  PledgeAndUnpledgeModel? _pledgedataonly;
+  PledgeAndUnpledgeModel? get pledgedataonly => _pledgedataonly;
 
   CAEventsModel? _caeventalldata;
   CAEventsModel? get caeventalldata => _caeventalldata;
@@ -1438,15 +1443,41 @@ class LDProvider extends DefaultChangeNotifier {
       // );
     }
   }
+  refreshforfilterdata(){
+    if (_pledgeandunpledge!.data != null && _pledgeandunpledge!.data!.isNotEmpty)  {
+        for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
+          final value = _pledgeandunpledge!.data![i];
+          print("${value.initiated == "0" &&
+                                                      value.status == 'Ok' &&
+                                                      (double.parse(value.nSOHQTY.toString())
+                                                                  .toInt()) +
+                                                              (double.parse(value
+                                                                      .sOHQTY
+                                                                      .toString())
+                                                                  .toInt()) !=
+                                                          0}pledgevavavavava");
+            if (value.initiated == "0" &&
+                                                      value.status == 'Ok' &&
+                                                      (double.parse(value.nSOHQTY.toString())
+                                                                  .toInt()) +
+                                                              (double.parse(value
+                                                                      .sOHQTY
+                                                                      .toString())
+                                                                  .toInt()) !=
+                                                          0) {
 
+              print("pledgevavavavava");
+            } 
+        }
+      }
+  }
   Future fetchpledgeandunpledge(BuildContext context) async {
     try {
       _pledgeloader = true;
       notifyListeners();
-      _pledgeandunpledge = await api.getpledgeandunpledge();
+      _pledgeandunpledge = await api.getpledgeandunpledge(); 
       _pledgesegmentcheck = await api.getsegforpledge();
-      _listforpledge = [];
-
+      _listforpledge = []; 
       if (_pledgesegmentcheck?.str != null) {}
       _segresponse =
           jsonDecode(decryptionFunction(_pledgesegmentcheck!.str.toString()));
@@ -1457,13 +1488,13 @@ class LDProvider extends DefaultChangeNotifier {
       // }
       // _tradebookfilterarray = dummy.toSet().toList();
       // print(_tradebookfilterarray);
+      refreshforfilterdata(); 
       _filterval = SingingCharacter.all;
       _pledgeloader = false;
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-      _pledgeloader = false;
-
+      _pledgeloader = false; 
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
@@ -2650,8 +2681,9 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  void changesegval(String seg, int index) {
-    _pledgeandunpledge!.data![index].segmentselect = seg;
+  void changesegval(String seg, dynamic index) {
+
+    index.segmentselect = seg;
 
     _segmentvalue = seg;
     notifyListeners();
@@ -2667,12 +2699,12 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  void dummypledgeval(int share, String net, String type) {
+  void dummypledgeval(dynamic share, String net, String type) {
     if (type == 'pledge') {
-      pledgeandunpledge!.data![share].dummvalue = net;
+      share.dummvalue = net;
       _pledgeorunpledge = 'pledge';
     } else {
-      pledgeandunpledge!.data![share].dummunpledgevalue = net;
+      share.dummunpledgevalue = net;
       _pledgeorunpledge = 'unpledge';
     }
     notifyListeners();
@@ -2760,11 +2792,11 @@ class LDProvider extends DefaultChangeNotifier {
       String qty,
       String net,
       String type,
-      int index) {
+      dynamic index) {
     print("object");
     bool found = false;
     if (type == 'pledge') {
-      _pledgeandunpledge!.data![index].segmentselect = seg;
+      index.segmentselect = seg;
 
       for (var i = 0; i < _listforpledge.length; i++) {
         if (_listforpledge[i]['isin'] == isin) {

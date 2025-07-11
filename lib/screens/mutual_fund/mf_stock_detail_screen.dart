@@ -113,13 +113,13 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
   Widget _buildBottomActionButtons(BuildContext context, dynamic theme, dynamic mfData) {
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric( vertical: 8 , horizontal: 14.0),
       child: Row(
         children: [
           Expanded(
             child: 
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 10,  ),
               child: SizedBox(
                 width: MediaQuery.of(context).size.width,
                 height: 46,
@@ -163,7 +163,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
           Expanded(
             child: 
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 10,  ),
               child: SizedBox(
                 width: MediaQuery.of(context).size.width,
                 height: 46,

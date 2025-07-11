@@ -10,6 +10,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/loader_ui.dart';
@@ -69,70 +70,90 @@ class _mfSipdetScren extends State<mfSipdetScren>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildHeaderSection(mfdata, theme),
-                          const SizedBox(height: 2),
-                          Divider(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
-                            thickness: 1.0,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "SIP Details",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w500),
-                          ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20), 
+                          TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: "SIP Details",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                           SizedBox(height: 25),
                           // Safely handle potential null values
                           if (mfdata.mfsinglepageres?.invList != null && 
                               mfdata.mfsinglepageres!.invList!.isNotEmpty)
                             rowOfInfoData(
                               "SIP Register Date",
                               "${mfdata.mfsinglepageres!.invList![0]["sipregndate"] ?? ""}",
+                              
+                              theme),
+
+                          const SizedBox(height: 10),
+                            Divider(
+                            color: theme.isDarkMode
+                                ? colors.darkColorDivider
+                                : colors.colorDivider,
+                            thickness: 1.0,
+                          ),
+                          const SizedBox(height: 10),
+
+                             rowOfInfoData(
+                            
                               "Amount",
                               "${mfdata.mfsinglepageres!.installmentAmount ?? "0.00"}",
                               theme),
-                          const SizedBox(height: 16),
-                          Text(
-                            "SIP Status",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                16,
-                                FontWeight.w500),
-                          ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 25),
+                            TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text:   "SIP Status",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                          
+
+                                                    const SizedBox(height: 15),
+
                           // Safely build the timeline list
                           _buildTimelineList(mfdata),
                           
                           if ((mfdata.mfsinglepageres?.nextInstallmentDate ?? "").isEmpty) ...[
                             const SizedBox(height: 16),
-                            Text(
-                              "Rejected Reason",
-                              style: textStyle(
-                                  theme.isDarkMode
-                                      ? colors.colorWhite
-                                      : colors.colorBlack,
-                                  16,
-                                  FontWeight.w500),
-                            ),
+                             TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text:   "Rejected Reason",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                           
                             const SizedBox(height: 8),
                             if (mfdata.mfsinglepageres?.invList != null && 
                                 mfdata.mfsinglepageres!.invList!.isNotEmpty)
-                              Text(
-                                "${mfdata.mfsinglepageres!.invList![0]["orderremarks"] ?? "No reason provided"}",
-                                style: textStyle(
-                                    theme.isDarkMode
+                                  TextWidget.paraText(
+                                                    align: TextAlign.start,
+                                                    text:    "${mfdata.mfsinglepageres!.invList![0]["orderremarks"] ?? "No reason provided"}",
+                                                    color:  theme.isDarkMode
                                         ? colors.colorWhite
                                         : const Color(0xFFF33E4B),
-                                    13,
-                                    FontWeight.w500),
-                              ),
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    maxLines: 3,
+                                                    fw: 3),
+                              
                           ],
                           const SizedBox(height: 20),
                           if (mfdata.mfsinglepageres?.liveCancel == "LIVE") 
@@ -167,16 +188,20 @@ class _mfSipdetScren extends State<mfSipdetScren>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  mfdata.mfsinglepageres?.schemename ?? "Unknown Scheme",
+                                TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text:  mfdata.mfsinglepageres?.schemename ?? "Unknown Scheme",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
                                   maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: textStyles.scripNameTxtStyle.copyWith(
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorBlack,
-                                  ),
-                                ),
+
+                                                    fw: 0),
+                                
                               ],
                             ),
                           ),
@@ -187,9 +212,20 @@ class _mfSipdetScren extends State<mfSipdetScren>
                               scrollDirection: Axis.horizontal,
                               children: [
                                 if ((mfdata.mfsinglepageres?.nextInstallmentDate ?? "").isNotEmpty) ...[
-                                  CustomExchBadge(
-                                    exch: "Next Due Date : ${mfdata.mfsinglepageres?.nextInstallmentDate ?? ""}"),
-                                  const SizedBox(width: 5),
+                                  TextWidget.titleText(
+                                                    align: TextAlign.right,
+                                                    text:  "Next Due Date : ${mfdata.mfsinglepageres?.nextInstallmentDate ?? ""}",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                  maxLines: 2,
+
+                                                    fw: 3),
+                                  
                                 ],
                                 Container(
                                   decoration: BoxDecoration(
@@ -225,15 +261,18 @@ class _mfSipdetScren extends State<mfSipdetScren>
             ),
           )
         ),
-        Text(
-          mfdata.mfsinglepageres?.installmentAmount ?? "0.00",
-          style: textStyle(
-              theme.isDarkMode
-                  ? colors.colorWhite
-                  : colors.colorBlack,
-              14,
-              FontWeight.w500),
-        ),
+        TextWidget.titleText(
+                                                    align: TextAlign.right,
+                                                    text: mfdata.mfsinglepageres?.installmentAmount ?? "0.00",
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textSecondaryDark:
+                                                         colors.textSecondaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+        
         const SizedBox(width: 12),
       ]
     );
@@ -311,46 +350,35 @@ class _mfSipdetScren extends State<mfSipdetScren>
     );
   }
 
-  Row rowOfInfoData(String title1, String value1, String title2, String value2,
+  Row rowOfInfoData(String title1, String value1,  
       ThemesProvider theme) {
-    return Row(children: [
-      Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title1,
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
-        const SizedBox(height: 2),
-        Text(value1,
-            style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w500)),
-        const SizedBox(height: 2),
-        Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider)
-      ])),
-      const SizedBox(width: 34),
-      Expanded(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title2,
-            style: textStyle(const Color(0xff666666), 12, FontWeight.w500)),
-        const SizedBox(height: 2),
-        Text(
-          value2,
-          style: textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              14,
-              FontWeight.w500),
-        ),
-        const SizedBox(height: 2),
-        Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider)
-      ]))
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: title1,
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                                                    TextWidget.subText(
+                                                    align: TextAlign.right,
+                                                    text: value1,
+                                                    color: theme.isDarkMode
+                                                        ?  colors.textPrimaryDark:
+                                                         colors.textPrimaryLight
+                                                             ,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+      
+ 
     ]);
   }
 }
