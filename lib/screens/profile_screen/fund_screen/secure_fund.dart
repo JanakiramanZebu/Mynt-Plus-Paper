@@ -307,6 +307,15 @@ class _SecureFundState extends ConsumerState<SecureFund> {
   }
 
   Widget _buildAvailableCashContent(funds, theme) {
+    // Only sublist if there is more than one item
+    final filteredCredits = funds.listOfCredits.length > 1
+        ? funds.listOfCredits
+            .sublist(1)
+            .where((item) =>
+                item["name"] != "Collateral" &&
+                item["name"] != "Opening Balance")
+            .toList()
+        : [];
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -343,7 +352,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Divider(
                     height: 1,
-                    color: colors.colorDivider.withOpacity(0.5),
+                    color: colors.colorDivider,
                   ),
                 ),
                 Row(
@@ -372,7 +381,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Divider(
                     height: 1,
-                    color: colors.colorDivider.withOpacity(0.5),
+                    color: colors.colorDivider,
                   ),
                 ),
                 Row(
@@ -397,53 +406,61 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                     ),
                   ],
                 ),
-                SizedBox(height: funds.listOfCredits.length > 1 ? 20 : 12),
+                filteredCredits.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(
+                          height: 1,
+                          color: colors.colorDivider,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ],
             ),
-            ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: funds.listOfCredits.length - 1,
-                itemBuilder: (BuildContext context, int index) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextWidget.subText(
-                          text: "${funds.listOfCredits[index + 1]["name"]}",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          fw: 3),
-                      TextWidget.subText(
-                          text: getFormatter(
-                              value: double.parse(
-                                  "${funds.listOfCredits[index + 1]["value"]}"),
-                              v4d: false,
-                              noDecimal: false),
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fw: 3),
-
-                      // Expanded content for collateral
-                      // if (isCollateral && isCollateralExpanded)
-                      //   Container(
-                      //     padding: const EdgeInsets.only(
-                      //         left: 16.0, top: 8.0, bottom: 8.0),
-                      //     child:
-                      //   ),
-                    ],
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return Divider(
-                    height: 1,
-                    color: colors.colorDivider.withOpacity(0.5),
-                  );
-                }),
-            const SizedBox(height: 12),
+            if (filteredCredits.isNotEmpty)
+              ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredCredits.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextWidget.subText(
+                            text: "${filteredCredits[index]["name"]}",
+                            theme: false,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            fw: 3),
+                        TextWidget.subText(
+                            text: getFormatter(
+                                value: double.parse(
+                                    "${filteredCredits[index]["value"]}"),
+                                v4d: false,
+                                noDecimal: false),
+                            theme: false,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            fw: 3),
+                      ],
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) {
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Divider(
+                            height: 1,
+                            color: colors.colorDivider,
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+            SizedBox(height: 14),
           ],
         ],
       ),

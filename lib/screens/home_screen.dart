@@ -892,10 +892,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         // mf
         authProviderRef.setmfapicalls(context);
 
-          await ref.read(userProfileProvider).fetchsetting();
-          await ref.read(apikeyprovider).fetchapikey(context);
-          await ref.read(notificationprovider).fetchexchagemsg(context);
-          await ref.read(notificationprovider).fetchbrokermsg(context);
+        await ref.read(userProfileProvider).fetchsetting();
+        await ref.read(apikeyprovider).fetchapikey(context);
+        await ref.read(notificationprovider).fetchexchagemsg(context);
+        await ref.read(notificationprovider).fetchbrokermsg(context);
 
         //// reports/////
         if (reportsprovider.ledgerAllData == null) {
