@@ -130,6 +130,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                       const CustomDragHandler(),
                       Expanded(
                         child: SingleChildScrollView(
+                          controller: scrollController,
                           child: Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 16.0),
@@ -302,11 +303,11 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                     "${displayData.flqty != null && displayData.flprc != null ? (double.parse(displayData.flqty!) * double.parse(displayData.flprc!)) : 0.00}",
                                     theme),
                                 const SizedBox(height: 8),
-                                rowOfInfoData("Filled Qty",
-                                    displayData.flid ?? "-", theme),
-                                const SizedBox(height: 8),
                                 rowOfInfoData("Fill Id",
-                                    "${displayData.flqty ?? ''}", theme),
+                                    "${displayData.flid ?? ''}", theme),
+                                const SizedBox(height: 8),
+                                rowOfInfoData("Filled Qty",
+                                    displayData.flqty ?? "-", theme),
                                 const SizedBox(height: 8),
                                 rowOfInfoData("Validity",
                                     "${displayData.ret ?? ''}", theme),
