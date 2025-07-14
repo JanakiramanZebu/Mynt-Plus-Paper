@@ -89,13 +89,13 @@ class _UPIIDPaymentCancelAlertState extends ConsumerState<UPIIDPaymentCancelAler
                   Container(
                     padding: const EdgeInsets.only(top: 10, bottom: 5),
                     alignment: Alignment.center,
-                    child: TextWidget.titleText(
+                    child: TextWidget.subText(
                         text: 'Awaiting UPI conformation',
                         theme: false,
                         color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                        fw: 1),
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                        ),
                   ),
                   SizedBox(
                       width: MediaQuery.of(context).size.width,
@@ -107,32 +107,35 @@ class _UPIIDPaymentCancelAlertState extends ConsumerState<UPIIDPaymentCancelAler
                         TextWidget.subText(
                             text: 'This will take a few seconds.',
                             theme: false,
-                            color: colors.colorGrey,
-                            fw: 0),
+                            color:  colors.textPrimaryLight,
+                            ),
                       ])),
                   const SizedBox(
                     height: 10,
                   ),
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: ElevatedButton(
-                          onPressed: _triggerButtonAction,
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: theme.isDarkMode
-                                ? colors.colorbluegrey
-                                : colors.colorBlack,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: ElevatedButton(
+                            onPressed: _triggerButtonAction,
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                             minimumSize: const Size(0, 40),
+                              backgroundColor: theme.isDarkMode
+                            ? colors.primaryDark
+                            : colors.primaryLight,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
                             ),
-                          ),
-                          child: TextWidget.subText(
-                              text: "Cancel Transaction",
-                              theme: false,
-                              color: !theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                              fw: 0))),
+                            child: TextWidget.subText(
+                                text: "Cancel Transaction",
+                                theme: false,
+                                color: colors.colorWhite
+                                          ,
+                                fw: 2))),
+                  ),
                   SizedBox(
                     height: 10,
                   )

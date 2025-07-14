@@ -116,6 +116,9 @@ import '../provider/version_provider.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../screens/mutual_fund/sip_calculator_screen.dart';
+import '../screens/profile_screen/fund_screen/withdraw/withdraw_screen.dart';
+import '../provider/transcation_provider.dart';
+import '../provider/thems.dart';
 
 String? currentRouteName;
 
@@ -860,6 +863,23 @@ class AppRoutes {
         return _createRoute(
           pageBuilder: (_, __, ___) => const ProfileDetailsBank(),
           beginOffset: const Offset(0.0, 1.0),
+        );
+
+      case Routes.withdrawscreen:
+        final trancation = args as TranctionProvider;
+        return MaterialPageRoute(
+          builder: (context) => Consumer(
+            builder: (context, ref, _) {
+              final theme = ref.read(themeProvider);
+              final fund = ref.watch(transcationProvider);
+              return WithdrawScreen(
+                withdarw: trancation,
+                foucs: FocusNode(),
+                theme: theme,
+                segment: fund.textValue, // Change as needed or pass via args if needed
+              );
+            },
+          ),
         );
 
       default:

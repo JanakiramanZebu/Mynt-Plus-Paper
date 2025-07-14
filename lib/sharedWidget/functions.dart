@@ -411,15 +411,21 @@ String capitalizeFirstLetter(String text) {
 
 String formatDateTimepaymet({required String value}) {
   String formatedDate = '';
-  if (value.isNotEmpty) {
-    final inputDatetimeString = value;
-    final inputFormat = DateFormat("yyyy:MM:dd HH:mm:ss");
-    final inputDatetime = inputFormat.parse(inputDatetimeString);
-    // Format the datetime in the desired format
-    final outputFormat = DateFormat("dd MMM yyyy, hh:mm a");
-    final formattedDatetime = outputFormat.format(inputDatetime);
-    formatedDate = formattedDatetime;
-    // print("Formatted Datetime: $formattedDatetime");
+  // Check if value is valid before trying to parse
+  if (value.isNotEmpty && value != "NA" && value != "null" && value != "NULL") {
+    try {
+      final inputDatetimeString = value;
+      final inputFormat = DateFormat("yyyy:MM:dd HH:mm:ss");
+      final inputDatetime = inputFormat.parse(inputDatetimeString);
+      // Format the datetime in the desired format
+      final outputFormat = DateFormat("dd MMM yyyy, hh:mm a");
+      final formattedDatetime = outputFormat.format(inputDatetime);
+      formatedDate = formattedDatetime;
+      // print("Formatted Datetime: $formattedDatetime");
+    } catch (e) {
+      // If parsing fails, return empty string or default message
+      formatedDate = "";
+    }
   }
   return formatedDate;
 }

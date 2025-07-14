@@ -36,7 +36,7 @@ mixin TranscationApi on ApiCore {
   }
 
   Future<HdfcPaymentModel> getUPIIDPayment(
-      String upiId, String clientId, String accno) async {
+      String upiId, String clientId, String accno, String bankName) async {
     try {
       final uri = Uri.parse(apiLinks.verifyUPI);
       final res = await apiClient.post(uri,
@@ -44,8 +44,15 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode(
               {"VPA": upiId, "clientID": clientId, "bank_acc": accno}));
       final json = jsonDecode(res.body);
+      print("bankName123:: $bankName");
       // log("getUPIIDPayment => ${res.body}");
       final hdfcbankpayment = HdfcPaymentModel.fromJson(json);
+      try {
+        await updateUpiId(accno, upiId, bankName);
+      } catch (updateError) {
+        print("updateUpiId failed but continuing flow: $updateError");
+      }
+
       return hdfcbankpayment;
     } catch (e) {
       rethrow;
@@ -198,7 +205,7 @@ mixin TranscationApi on ApiCore {
         return DecryptClientCheck.fromJson(json);
       } else {
         final decryptedData = decryptionFunction(json["str"]);
-       // log("client Data------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+        // log("client Data------------ ${jsonDecode(jsonEncode(decryptedData))}}");
         return DecryptClientCheck.fromJson(jsonDecode(decryptedData));
       }
     } catch (e) {
@@ -240,7 +247,7 @@ mixin TranscationApi on ApiCore {
           body: jsonEncode({"code": encryptedPayload}));
       final json = jsonDecode(res.body);
       final decryptedData = decryptionFunction(json["str"]);
-     // log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
+      // log("getbankDetails------------ ${jsonDecode(jsonEncode(decryptedData))}}");
       return BankDetails.fromJson(jsonDecode(decryptedData));
     } catch (e) {
       rethrow;
@@ -255,6 +262,10 @@ mixin TranscationApi on ApiCore {
       "client_id": prefs.clientId,
     });
     String encryptedPayload = encryptionFunction(payload);
+    final decre = decryptionFunction(
+        "mVMBKEzQyO1npWs7mdLchfJKFRBwM3at30m6tjToqhuUThQLEh1QVlMB+cYpTC4WTbvUhaTlJL3MAj+HYF1kf78LDUHH7PZIvYVWiqcET24KgqfbukuqEXsqWk1kt7FfzNJt/1OUoHNpKLKmhdSHyIyISAHf8K0U7L2D80TmaSY=");
+
+    print("deryptedresp:: $decre");
     try {
       final uri = Uri.parse(apiLinks.fundUpiIdView);
       final res = await apiClient.post(uri,
@@ -271,6 +282,36 @@ mixin TranscationApi on ApiCore {
       //  log("getUpiId ---> $myList");
 
       return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<ViewUpiIdModel>> updateUpiId(
+      String accountnumber, String upiid, String bankName) async {
+    String payload = jsonEncode({
+      "account_number": accountnumber,
+      "bank_name": bankName,
+      "client_id": prefs.clientId,
+      "upi_id": upiid
+    });
+    String encryptedPayload = encryptionFunction(payload);
+    final decre = decryptionFunction(
+        "mVMBKEzQyO1npWs7mdLchfJKFRBwM3at30m6tjToqhuUThQLEh1QVlMB+cYpTC4WTbvUhaTlJL3MAj+HYF1kf78LDUHH7PZIvYVWiqcET24KgqfbukuqEXsqWk1kt7FfzNJt/1OUoHNpKLKmhdSHyIyISAHf8K0U7L2D80TmaSY=");
+
+    print("deryptedresp:: $bankName");
+    try {
+      final uri = Uri.parse(apiLinks.upiIdUpdate);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({"string": encryptedPayload}));
+      final json = jsonDecode(res.body);
+
+      final decryptedData = decryptionFunction(json["str"]);
+      List<dynamic> myList = jsonDecode(decryptedData);
+      print("decryptedData:: $decryptedData");
+
+      return decryptedData;
     } catch (e) {
       rethrow;
     }

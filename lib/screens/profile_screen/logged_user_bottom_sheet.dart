@@ -211,8 +211,11 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                                   TextWidget.titleText(
                                                       text:
                                                           "Are you sure you want to logout?",
+                                                          color: theme.isDarkMode
+                                                              ? colors.textPrimaryDark
+                                                              : colors.textPrimaryLight,
                                                       theme: theme.isDarkMode,
-                                                      fw: 0),
+                                                      fw: 1,)
                                                 ])),
                                         actions: [
                                           TextButton(

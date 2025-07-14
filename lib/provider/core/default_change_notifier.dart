@@ -5,6 +5,7 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
   bool isLoad = true;
   bool fundisLoad = false;
   bool _disposed = false;
+  bool fundLoading = false;
 
   /// Flag indicating if this notifier has been disposed
   bool get disposed => _disposed;
@@ -28,9 +29,16 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
     isLoad = on;
     notifyListeners();
   }
-
+ 
   void togglefundLoadingOn(bool on) {
     fundisLoad = on;
+    print("togglefundLoadingOn: $on");
+    notifyListeners();
+  }
+
+  void togglefundLoading(bool on) {
+    fundLoading = on;
+    print("togglefundLoading: $on");
     notifyListeners();
   }
 

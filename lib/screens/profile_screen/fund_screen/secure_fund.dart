@@ -106,22 +106,9 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                                   ? colors.primaryDark
                                   : colors.primaryLight,
                             ),
-                            onPressed: () async {
-                              await trancation.fetchValidateToken(context);
-                              Future.delayed(
-                                const Duration(milliseconds: 100),
-                                () async {
-                                  await trancation.ip();
-                                  await trancation.fetchupiIdView(
-                                    trancation.bankdetails!
-                                        .dATA![trancation.indexss][1],
-                                    trancation.bankdetails!
-                                        .dATA![trancation.indexss][2],
-                                  );
-                                  await trancation.fetchcwithdraw(context);
-                                },
-                              );
-                              trancation.changebool(true);
+                            onPressed: ()  {
+                             
+                              // trancation.changebool(true);
                               Navigator.pushNamed(context, Routes.fundscreen,
                                   arguments: trancation);
                             },
@@ -168,7 +155,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                                 },
                               );
                               trancation.changebool(false);
-                              Navigator.pushNamed(context, Routes.fundscreen,
+                              Navigator.pushNamed(context, Routes.withdrawscreen,
                                   arguments: trancation);
                             },
                             child: Text(

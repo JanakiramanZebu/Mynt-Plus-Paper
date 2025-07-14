@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -16,9 +17,14 @@ import '../../../../provider/transcation_provider.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/custom_switch_btn.dart';
 import '../../../../sharedWidget/fund_function.dart';
+import '../../../provider/fund_provider.dart';
 import '../../../res/global_state_text.dart';
+import '../../../sharedWidget/custom_back_btn.dart';
+import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/loader_ui.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
+import '../../../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
+import '../../../models/fund_model_testing_copy/secured_client_data_model.dart';
 import 'ios_fund_screen/ios_no_upi_apps_ui.dart';
 import 'ios_fund_screen/ios_upi_apps_bottomsheet.dart';
 import 'razorpay/razorpay_failed_ui.dart';
@@ -42,6 +48,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       checkIosAvailableApps();
     }
+
+    // Set default segment to Equity after a short delay to ensure data is loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setDefaultSegment(ref.read(transcationProvider));
+    });
   }
 
   bool _isDisposedIos = false;
@@ -52,37 +63,345 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     super.dispose();
   }
 
+  Future<void> _handleAndroidUpiPayment(
+      BuildContext context, TranctionProvider fund) async {
+    // Reset bottom sheet state when starting a new payment process
+    fund.resetBottomSheetState();
+    
+    await fund.fetchValidateToken(context);
+    fund.focusNode.unfocus();
+    await fund.fetchUPIPaymet(
+      context,
+      "${fund.amount.text}.00",
+      fund.multipleAccno,
+      fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0],
+      fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][2],
+    );
+
+    await fund.fetchUpiPaymentstatus(
+      context,
+      "${fund.hdfcdirectpayment?.data?.orderNumber}",
+      "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
+    );
+  }
+
+  Future<void> _handleIosUpiPayment(BuildContext context,
+      TranctionProvider fund, dynamic availableApps, dynamic theme) async {
+    // Reset bottom sheet state when starting a new payment process
+    fund.resetBottomSheetState();
+    
+    if (availableApps.isEmpty) {
+      showModalBottomSheet(
+          enableDrag: false,
+          useSafeArea: true,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          backgroundColor: const Color(0xffffffff),
+          context: context,
+          builder: (context) {
+            return IosNOUpiAppsSheet(theme: theme);
+          });
+    } else {
+      fund.focusNode.unfocus();
+
+      await fund.fetchUPIPaymet(
+        context,
+        "${fund.amount.text}.00",
+        fund.multipleAccno,
+        fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0],
+        fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][2],
+      );
+
+      await fund.fetchUpiPaymentstatus(
+        context,
+        "${fund.hdfcdirectpayment?.data?.orderNumber}",
+        "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
+      );
+
+      showModalBottomSheet(
+          enableDrag: false,
+          useSafeArea: true,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          backgroundColor: const Color(0xffffffff),
+          context: context,
+          builder: (context) {
+            return UpiAppsBottomSheet(upiapps: availableApps, theme: theme);
+          });
+    }
+  }
+
+  _showUpiIdForm(BuildContext context, TranctionProvider fund, dynamic theme,
+      dynamic colors) {
+    // Reset loading state and clear errors when opening the sheet
+    fund.togglefundLoading(false);
+    fund.clearerror();
+    
+    // This should show a dialog or navigate to a new screen with the UPI ID form
+    showModalBottomSheet(
+        enableDrag: false,
+        useSafeArea: true,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        backgroundColor: const Color(0xffffffff),
+        context: context,
+        builder: (context) {
+          return Consumer(
+            builder: (context, ref, child) {
+              final fund = ref.watch(transcationProvider);
+              // Check if context is still mounted before building
+              if (!context.mounted) return const SizedBox.shrink();
+              return _buildUpiIdForm(fund, theme, colors, context, null);
+            },
+          );
+        }).then((_) {
+      // Reset loading state when sheet is dismissed
+      fund.togglefundLoading(false);
+    });
+  }
+
+  Widget _buildUpiIdForm(TranctionProvider fund, dynamic theme, dynamic colors,
+      BuildContext context, StateSetter? setState) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16.0,
+        right: 16.0,
+        top: 0,
+        bottom: 16.0 +
+            MediaQuery.of(context).viewInsets.bottom, // Add keyboard padding
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const CustomDragHandler(),
+             Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: TextWidget.titleText(
+                  text: "UPI ID",
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  theme: theme.isDarkMode,
+                  fw: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Divider(
+          color: theme.isDarkMode
+              ? colors.darkColorDivider
+              : colors.colorDivider,
+          height: 0,
+        ),
+                const SizedBox(height: 16),
+                          TextFormField(
+                controller: fund.upiid,
+                style: theme.isDarkMode
+                    ? TextWidget.textStyle(
+                        fontSize: 14, theme: false, color: colors.colorWhite)
+                    : TextWidget.textStyle(
+                        fontSize: 14, theme: false, color: colors.colorBlack),
+                inputFormatters: [
+                  NoEmojiInputFormatter(),
+                  FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/,.]')),
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                ],
+                decoration: InputDecoration(
+                  hintText: "example: username@upi",
+                  hintStyle: TextWidget.textStyle(
+                      fontSize: 14, theme: false, color: colors.colorGrey),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: colors.colorBlue),
+                      borderRadius: BorderRadius.circular(5)),
+                  disabledBorder: InputBorder.none,
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(5)),
+                  border: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(5)),
+                  fillColor: theme.isDarkMode
+                      ? colors.darkGrey
+                      : const Color(0xffF1F3F8),
+                  filled: true,
+                ),
+              onChanged: (value) {
+                fund.upiidOnchange(value);
+                fund.validateUPI(value);
+              },
+            ),
+            if (fund.upiiderror != null && fund.upiiderror!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 5),
+                child: TextWidget.paraText(
+                    text: "${fund.upiiderror}",
+                    theme: false,
+                    color: colors.darkred,
+                    fw: 0,
+                    align: TextAlign.left),
+              ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    minimumSize: const Size(0, 40),
+                    backgroundColor: theme.isDarkMode
+                        ? colors.primaryDark
+                        : colors.primaryLight,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)),
+                  ),
+                  onPressed: () async {
+                    // Validate and show errors if any
+                    fund.upiidOnchange(fund.upiid.text);
+                    fund.validateUPI(fund.upiid.text);
+                   
+                    
+                    // Only proceed if validation passes
+                    if (fund.upiiderror == null || fund.upiiderror!.isEmpty) {
+                      await _handleUpiIdPayment(context, fund);
+                    }
+                  },
+                  child: fund.fundLoading
+                      ?  SizedBox(
+                          width: 18,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: colors.colorWhite),
+                        )
+                      : TextWidget.subText(
+                          text: "Pay Via UPI ID",
+                          theme: false,
+                          color: colors.colorWhite,
+                          fw: 2,
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
+  Future<void> _handleUpiIdPayment(
+      BuildContext context, TranctionProvider fund) async {
+    // Reset bottom sheet state when starting a new payment process
+    fund.resetBottomSheetState();
+    
+    try {
+      await fund.fetcUPIIDPayment(
+          context,
+          fund.upiid.text,
+          fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0],
+          fund.bankdetails!.dATA![fund.indexss][2]);
+          
+
+      // Check if UPI ID validation was successful
+      if (fund.upiiderror != null && fund.upiiderror!.isNotEmpty) {
+        return; // Stop if there's an error
+      }
+      await fund.fetchHdfctranction(
+        context,
+        fund.upiid.text,
+        int.parse(fund.amount.text),
+        fund.accno,
+        fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][0],
+      );
+
+      if (fund.hdfcpaymentdata!.data!.verifiedVPAStatus1 == "Available" ||
+          fund.hdfcpaymentdata!.data!.verifiedVPAStatus2 == "Available") {
+            Navigator.pop(context);
+           fund.focusNode.unfocus();
+
+           
+        showModalBottomSheet(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            backgroundColor: const Color(0xffffffff),
+            isDismissible: false,
+            enableDrag: false,
+            showDragHandle: false,
+            useSafeArea: false,
+            isScrollControlled: true,
+            context: context,
+            builder: (BuildContext context) {
+              return PopScope(
+                  canPop: true,
+                  onPopInvokedWithResult: (didPop, result) {
+                    if (didPop) return;
+                  },
+                  child: const UPIIDPaymentCancelAlert());
+            });
+
+        await fund.fetchHdfcpaymetstatus(
+            context,
+            '${fund.hdfctranction!.data!.orderNumber}',
+            '${fund.hdfctranction!.data!.upiTransactionNo}');
+      }
+    } catch (e) {
+      // Ensure loading state is reset on any error
+      fund.togglefundLoading(false);
+      rethrow;
+    }
+  }
+
+  Future<void> _handleRazorpayPayment(
+      BuildContext context, TranctionProvider fund) async {
+    // Reset bottom sheet state when starting a new payment process
+    fund.resetBottomSheetState();
+    
+    Razorpay razorpay = Razorpay();
+    await fund.fetchrazorpay(
+      context,
+      int.parse(fund.amount.text).toString(),
+      fund.accno,
+      fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss][2],
+      fund.ifsc,
+      razorpay,
+    );
+    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
+    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
         final theme = ref.watch(themeProvider);
         final fund = ref.watch(transcationProvider);
+        final funds = ref.watch(fundProvider);
         return TransparentLoaderScreen(
-          isLoading: fund.loading,
+          isLoading: fund.loading && (fund.bankdetails == null || fund.decryptclientcheck == null),
           child: Scaffold(
             appBar: AppBar(
               centerTitle: false,
-              leadingWidth: 46,
+              leadingWidth: 48,
               titleSpacing: 6,
-              leading: InkWell(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SvgPicture.asset(
-                    assets.backArrow,
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                    width: 20,
-                  ),
-                ),
-              ),
+              leading: CustomBackBtn(),
               elevation: .2,
               title: TextWidget.titleText(
-                text: 'Funds',
+                text: 'Add Fund',
                 theme: theme.isDarkMode,
                 fw: 1,
               ),
@@ -105,1048 +424,504 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 10),
-                        child: TextWidget.subText(
-                            text: "Choose type",
-                            theme: !theme.isDarkMode,
-                            fw: 1)),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16, top: 10),
-                      child: Row(
-                        children: [
-                          TextWidget.subText(
-                            text: 'Deposit Money',
-                            theme: false,
-                            color: fund.enable
-                                ? theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : const Color(0xff000000)
-                                : Colors.grey,
-                            fw: 1,
-                          ),
-                          const SizedBox(
-                            width: 16,
-                          ),
-                          CustomSwitch(
-                            value: fund.enable,
-                            onChanged: (bool val) async {
-                              fund.withdrawamount.clear();
-                              setState(() {
-                                fund.changebool(val);
-                              });
-                            },
-                          ),
-                          const SizedBox(
-                            width: 16,
-                          ),
-                          TextWidget.subText(
-                            text: 'Withdraw Money',
-                            theme: false,
-                            color: fund.enable == false
-                                ? theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack
-                                : colors.colorGrey,
-                            fw: 1,
-                          ),
-                        ],
-                      ),
-                    ),
-                    fund.enable == true
-                        ? Column(
+                    // Padding(
+                    //     padding: const EdgeInsets.only(left: 16, top: 10),
+                    //     child: TextWidget.subText(
+                    //         text: "Choose type",
+                    //         theme: !theme.isDarkMode,
+                    //         fw: 1)),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(left: 16, top: 10),
+                    //   child: Row(
+                    //     children: [
+                    //       TextWidget.subText(
+                    //         text: 'Deposit Money',
+                    //         theme: false,
+                    //         color: fund.enable
+                    //             ? theme.isDarkMode
+                    //                 ? colors.colorWhite
+                    //                 : const Color(0xff000000)
+                    //             : Colors.grey,
+                    //         fw: 1,
+                    //       ),
+                    //       const SizedBox(
+                    //         width: 16,
+                    //       ),
+                    //       CustomSwitch(
+                    //         value: fund.enable,
+                    //         onChanged: (bool val) async {
+                    //           fund.withdrawamount.clear();
+                    //           setState(() {
+                    //             fund.changebool(val);
+                    //           });
+                    //         },
+                    //       ),
+                    //       const SizedBox(
+                    //         width: 16,
+                    //       ),
+                    //       TextWidget.subText(
+                    //         text: 'Withdraw Money',
+                    //         theme: false,
+                    //         color: fund.enable == false
+                    //             ? theme.isDarkMode
+                    //                 ? colors.colorWhite
+                    //                 : colors.colorBlack
+                    //             : colors.colorGrey,
+                    //         fw: 1,
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    // fund.enable == true
+                    //     ? 
+                        
+                        Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 0, vertical: 0),
-                                child: TextFormField(
-                                  focusNode: fund.focusNode,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
-                                  ],
-                                  keyboardType: TextInputType.number,
-                                  style: TextWidget.textStyle(
+                                    horizontal: 16, vertical: 16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    TextWidget.subText(
+                                      text:
+                                          "Available Bal (${formatIndianCurrency(funds.fundDetailModel?.avlMrg ?? "0.00")}) ",
                                       theme: theme.isDarkMode,
-                                      fontSize: 35,
-                                      fw: 1),
-                                  controller: fund.amount,
-                                  onChanged: (value) {
-                                    fund.textFiledonChange(value);
-                                  },
-                                  decoration: InputDecoration(
-                                    enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        borderRadius:
-                                            BorderRadius.circular(30)),
-                                    disabledBorder: InputBorder.none,
-                                    focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        borderRadius:
-                                            BorderRadius.circular(30)),
-                                    border: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        borderRadius:
-                                            BorderRadius.circular(30)),
-                                    fillColor: Colors.transparent,
-                                    filled: true,
-                                    hintText: "0",
-                                    hintStyle: TextWidget.textStyle(
-                                        theme: false,
-                                        color: colors.colorGrey,
-                                        fontSize: 40,
-                                        fw: 1),
-                                    labelStyle: TextWidget.textStyle(
-                                        theme: theme.isDarkMode,
-                                        fontSize: 40,
-                                        fw: 1),
-                                    prefixIcon: Container(
-                                        margin: const EdgeInsets.all(6),
-                                        child: SvgPicture.asset(
-                                          assets.ruppeIcon,
-                                          fit: BoxFit.contain,
-                                          color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorGrey,
-                                          width: 10,
-                                          height: 8,
-                                        )),
-                                  ),
+                                      color: colors.textPrimaryLight,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    TextFormField(
+                                      focusNode: fund.focusNode,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly
+                                      ],
+                                      keyboardType: TextInputType.number,
+                                      style: TextWidget.textStyle(
+                                          theme: theme.isDarkMode,
+                                          fontSize: 25,
+                                          fw: 1),
+                                      controller: fund.amount,
+                                      onChanged: (value) {
+                                        fund.textFiledonChange(value);
+                                      },
+                                      decoration: InputDecoration(
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 8),
+                                        enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: colors.colorBlue),
+                                            borderRadius:
+                                                BorderRadius.circular(5)),
+                                        disabledBorder: InputBorder.none,
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide.none,
+                                            borderRadius:
+                                                BorderRadius.circular(5)),
+                                        border: OutlineInputBorder(
+                                            borderSide: BorderSide.none,
+                                            borderRadius:
+                                                BorderRadius.circular(5)),
+                                        fillColor: theme.isDarkMode
+                                            ? colors.darkGrey
+                                            : const Color(0xffF1F3F8),
+                                        filled: true,
+                                        hintText: "0",
+                                        hintStyle: TextWidget.textStyle(
+                                            theme: false,
+                                            color: colors.colorGrey,
+                                            fontSize: 25,
+                                            fw: 1),
+                                        labelStyle: TextWidget.textStyle(
+                                            theme: theme.isDarkMode,
+                                            fontSize: 25,
+                                            fw: 1),
+                                        prefixIcon: Padding(
+                                          padding: const EdgeInsets.all(12.0),
+                                          child: SvgPicture.asset(
+                                            assets.ruppeIcon,                                              
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.textSecondaryLight,                                                                                         
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
+
                               Padding(
                                   padding: const EdgeInsets.only(
                                     left: 16,
                                   ),
-                                  child: fund.amount.text.isEmpty
-                                      ? TextWidget.subText(
-                                          text: "Enter the amount",
+                                  child: fund.amount.text.isEmpty ||
+                                          fund.intValue < 50
+                                      ? TextWidget.captionText(
+                                          text: fund.funderror,
                                           theme: false,
-                                          color: colors.colorGrey,
-                                          fw: 0)
-                                      : fund.amount.text.isEmpty ||
-                                              fund.intValue < 50
-                                          ? TextWidget.subText(
-                                              text: fund.funderror,
+                                          color: colors.darkred,
+                                        )
+                                      : fund.intValue > 5000000
+                                          ? TextWidget.captionText(
+                                              text: fund.maxfunderror,
                                               theme: false,
                                               color: colors.darkred,
-                                              fw: 0)
-                                          : fund.intValue > 5000000
-                                              ? TextWidget.subText(
-                                                  text: fund.maxfunderror,
-                                                  theme: false,
-                                                  color: colors.darkred,
-                                                  fw: 0)
-                                              : TextWidget.subText(
-                                                  text:
-                                                      "${fund.textResult}only",
-                                                  theme: false,
-                                                  color: colors.colorGrey,
-                                                  fw: 0)),
+                                            )
+                                          : const SizedBox.shrink()),
+                              // Padding(
+                              //     padding: const EdgeInsets.only(
+                              //       left: 16,
+                              //     ),
+                              //     child: fund.amount.text.isEmpty
+                              //         ? TextWidget.subText(
+                              //             text: "Enter the amount",
+                              //             theme: false,
+                              //             color: colors.colorGrey,
+                              //             fw: 0)
+                              //         : fund.amount.text.isEmpty ||
+                              //                 fund.intValue < 50
+                              //             ? TextWidget.subText(
+                              //                 text: fund.funderror,
+                              //                 theme: false,
+                              //                 color: colors.darkred,
+                              //                 fw: 0)
+                              //             : fund.intValue > 5000000
+                              //                 ? TextWidget.subText(
+                              //                     text: fund.maxfunderror,
+                              //                     theme: false,
+                              //                     color: colors.darkred,
+                              //                     fw: 0)
+                              //                 : TextWidget.subText(
+                              //                     text:
+                              //                         "${fund.textResult}only",
+                              //                     theme: false,
+                              //                     color: colors.colorGrey,
+                              //                     fw: 0)),
                               const SizedBox(
-                                height: 10,
+                                height: 16,
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 16,
+                              // Padding(
+                              //   padding: const EdgeInsets.only(
+                              //     left: 16,
+                              //   ),
+                              //   child: headerTitleText(
+                              //     "Segment",
+                              //   ),
+                              // ),
+
+                              // type selection section
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                height: 35,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildSegmentTab(
+                                        "Equity",
+                                        fund.textValue == "NSE_CASH",
+                                        () => _selectSegment("NSE_CASH", fund),
+                                        theme,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildSegmentTab(
+                                        "F&O",
+                                        fund.textValue == "NSE_FNO",
+                                        () => _selectSegment("NSE_FNO", fund),
+                                        theme,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _buildSegmentTab(
+                                        "Commodity",
+                                        fund.textValue == "MCX",
+                                        () => _selectSegment("MCX", fund),
+                                        theme,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                child: headerTitleText(
-                                  "Segment",
-                                ),
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  _showBottomSheet(fund, theme);
-                                },
-                                child: Container(
-                                    decoration: BoxDecoration(
-                                        color: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : const Color(0xffF1F3F8),
-                                        borderRadius:
-                                            BorderRadius.circular(30)),
-                                    width: MediaQuery.of(context).size.width,
-                                    height: 44,
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 16),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        TextWidget.titleText(
-                                            text: fund.textValue,
-                                            theme: theme.isDarkMode,
-                                            fw: 1),
-                                        SvgPicture.asset(assets.downArrow)
-                                      ],
-                                    )),
-                              ),
+                              const SizedBox(height: 16),
+                              // Old bank account UI (commented out)
+                              // Padding(
+                              //     padding: const EdgeInsets.only(
+                              //       left: 16,
+                              //     ),
+                              //     child: TextWidget.subText(
+                              //         text: "Bank account",
+                              //         theme: false,
+                              //         fw: 0,
+                              //         color: colors.colorGrey)),
+                              // GestureDetector(
+                              //   onTap: () {
+                              //     fund.focusNode.unfocus();
+                              // showBottomSheetbank(fund, theme);
+                              //   },
+                              //   child: Container(
+                              //       decoration: BoxDecoration(
+                              //           color: theme.isDarkMode
+                              //               ? colors.darkGrey
+                              //               : const Color(0xffF1F3F8),
+                              //           borderRadius:
+                              //               BorderRadius.circular(30)),
+                              //       width: MediaQuery.of(context).size.width,
+                              //       height: 44,
+                              //       margin: const EdgeInsets.symmetric(
+                              //           horizontal: 16, vertical: 16),
+                              //       padding: const EdgeInsets.symmetric(
+                              //           horizontal: 16, vertical: 10),
+                              //       child: Row(
+                              //         mainAxisAlignment:
+                              //             MainAxisAlignment.spaceBetween,
+                              //         children: [
+                              //           Expanded(
+                              //             child: TextWidget.titleText(
+                              //                 text: fund.initbank,
+                              //                 theme: theme.isDarkMode,
+                              //                 fw: 1,
+                              //                 textOverflow:
+                              //                     TextOverflow.ellipsis),
+                              //           ),
+                              //           SvgPicture.asset(assets.downArrow)
+                              //         ],
+                              //       )),
+                              // ),
+
                               Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 16,
-                                  ),
-                                  child: TextWidget.subText(
-                                      text: "Bank account",
-                                      theme: false,
-                                      fw: 0,
-                                      color: colors.colorGrey)),
-                              GestureDetector(
-                                onTap: () {
-                                  fund.focusNode.unfocus();
-                                  showBottomSheetbank(fund, theme);
-                                },
-                                child: Container(
-                                    decoration: BoxDecoration(
-                                        color: theme.isDarkMode
-                                            ? colors.darkGrey
-                                            : const Color(0xffF1F3F8),
-                                        borderRadius:
-                                            BorderRadius.circular(30)),
-                                    width: MediaQuery.of(context).size.width,
-                                    height: 44,
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 16),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                child: Column(
+                                  children: [
+                                    Column(
                                       children: [
-                                        Expanded(
-                                          child: TextWidget.titleText(
-                                              text: fund.initbank,
-                                              theme: theme.isDarkMode,
-                                              fw: 1,
-                                              textOverflow:
-                                                  TextOverflow.ellipsis),
+                                        const ListDivider(),
+                                        InkWell(
+                                          onTap: () async {
+                                             await Future.delayed(
+                                                    const Duration(
+                                                        milliseconds: 150));
+                                                fund.focusNode.unfocus();
+                                                showBottomSheetbank(
+                                                    fund, theme);
+                                          },
+                                          child: ListTile(
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                            ),
+                                            // minVerticalPadding: 16,
+                                            title: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 4),
+                                              child: TextWidget.subText(
+                                                text: fund.bankdetails!.dATA![0]
+                                                    [1],
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                              ),
+                                            ),
+                                            subtitle: Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 4),
+                                              child: TextWidget.paraText(
+                                                text:
+                                                    hideAccountNumber(fund.accno),
+                                                theme: theme.isDarkMode,
+                                                color: colors.colorGrey,
+                                              ),
+                                            ),
+                                            trailing: Material(
+                                              color: Colors.transparent,
+                                              shape: const CircleBorder(),
+                                              clipBehavior: Clip.hardEdge,
+                                              child: InkWell(
+                                                customBorder:
+                                                    const CircleBorder(),
+                                                splashColor: theme.isDarkMode
+                                                    ? colors.splashColorDark
+                                                    : colors.splashColorLight,
+                                                highlightColor: theme.isDarkMode
+                                                    ? colors.highlightDark
+                                                    : colors.highlightLight,
+                                                onTap: () async {
+                                                  // Add delay for visual feedback
+
+                                                  await Future.delayed(
+                                                    const Duration(
+                                                        milliseconds: 150));
+                                                fund.focusNode.unfocus();
+                                                showBottomSheetbank(
+                                                    fund, theme);
+                                                 
+                                                },
+                                                child: Container(
+                                                  height: 32,
+                                                  width: 32,
+                                                  child: Center(
+                                                    child: const Icon(
+                                                        Icons.more_vert,
+                                                        size: 22,
+                                                        color: Color(0xFF888888)),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                        SvgPicture.asset(assets.downArrow)
+                                        const ListDivider(),
                                       ],
-                                    )),
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(height: 16),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                 ),
+
+                                // Payment method
+
                                 child: TextWidget.subText(
-                                    text: "Payment method",
-                                    theme: false,
-                                    color: colors.colorGrey,
-                                    fw: 0),
+                                  text: "Payment method",
+                                  theme: false,
+                                  color: colors.textPrimaryLight,
+                                ),
                               ),
                               const SizedBox(
-                                height: 10,
+                                height: 16,
                               ),
-                              ListView.builder(
+                              ListView.separated(
                                 padding: const EdgeInsets.all(0),
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: fund.defaultUpiapps.length,
+                                separatorBuilder: (context, index) =>
+                                    const ListDivider(),
                                 itemBuilder: (context, index) {
                                   bool shouldDisable = fund.intValue > 100000;
-
                                   bool isDisabled = shouldDisable &&
                                       (index == 0 || index == 1);
-                                  return InkWell(
-                                    onTap: isDisabled
-                                        ? null
-                                        : () {
-                                            setState(() {
-                                              fund.changeIndex(index);
 
-                                              fund.focusNode.unfocus();
-                                            });
-                                          },
-                                    child: Container(
-                                        margin: const EdgeInsets.all(10),
-                                        padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            border: Border.all(
-                                              color: theme.isDarkMode
-                                                  ? fund.selectedindex == index
-                                                      ? colors.colorWhite
-                                                      : colors.darkGrey
-                                                  : fund.selectedindex == index
-                                                      ? colors.colorBlack
-                                                      : colors.darkGrey,
-                                            )),
-                                        child: Column(
-                                          children: [
-                                            Row(
-                                              children: [
-                                                SvgPicture.asset(
-                                                  '${fund.defaultUpiapps[index]['image']}',
-                                                ),
-                                                const SizedBox(
-                                                  width: 20,
-                                                ),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Row(
-                                                            children: [
-                                                              TextWidget.titleText(
-                                                                  text:
-                                                                      '${fund.defaultUpiapps[index]['name']}',
-                                                                  theme: theme
-                                                                      .isDarkMode,
-                                                                  fw: 1),
-                                                              Container(
-                                                                decoration: BoxDecoration(
-                                                                    color: const Color(
-                                                                        0xffe3f2fd),
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            10)),
-                                                                padding: const EdgeInsets
-                                                                    .symmetric(
-                                                                    vertical: 1,
-                                                                    horizontal:
-                                                                        5),
-                                                                margin: const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        4),
-                                                                child: TextWidget.paraText(
-                                                                    text:
-                                                                        "free",
-                                                                    theme:
-                                                                        false,
-                                                                    color: const Color(
-                                                                        0xff0037B7),
-                                                                    fw: 0),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          fund.selectedindex ==
-                                                                          0 &&
-                                                                      fund.defaultUpiapps[index]
-                                                                              [
-                                                                              'name'] ==
-                                                                          'UPI APPS' ||
-                                                                  fund.selectedindex ==
-                                                                          1 &&
-                                                                      fund.defaultUpiapps[index]
-                                                                              [
-                                                                              'name'] ==
-                                                                          'UPI ID' ||
-                                                                  fund.selectedindex ==
-                                                                          2 &&
-                                                                      fund.defaultUpiapps[index]
-                                                                              [
-                                                                              'name'] ==
-                                                                          'NET BANKING'
-                                                              ? Row(
-                                                                  children: [
-                                                                    TextWidget.titleText(
-                                                                        text:
-                                                                            '₹',
-                                                                        theme: theme
-                                                                            .isDarkMode,
-                                                                        fw: 1),
-                                                                    TextWidget.titleText(
-                                                                        text: fund.amount.text.isEmpty
-                                                                            ? "0.00"
-                                                                            : fund
-                                                                                .amount.text,
-                                                                        theme: theme
-                                                                            .isDarkMode,
-                                                                        fw: 1),
-                                                                  ],
-                                                                )
-                                                              : Container()
-                                                        ],
-                                                      ),
-                                                      const SizedBox(
-                                                        height: 5,
-                                                      ),
-                                                      Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Row(
-                                                            children: [
-                                                              TextWidget
-                                                                  .paraText(
-                                                                text:
-                                                                    'Max Limit:',
-                                                                theme: false,
-                                                                color: colors
-                                                                    .colorGrey,
-                                                                fw: 0,
-                                                              ),
-                                                              TextWidget
-                                                                  .paraText(
-                                                                text:
-                                                                    '₹${fund.defaultUpiapps[index]['limit']}',
-                                                                theme: theme
-                                                                    .isDarkMode,
-                                                                fw: 0,
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(
-                                              height: fund.selectedindex == 1 &&
-                                                      fund.defaultUpiapps[index]
-                                                              ['name'] ==
-                                                          'UPI ID'
-                                                  ? 10
-                                                  : 0,
-                                            ),
-                                            if (index == 0 &&
-                                                fund.selectedindex == 0) ...[
-                                              const SizedBox(
-                                                height: 10,
+                                  return Column(
+                                    children: [
+                                      if (index == 0) const ListDivider(),
+                                      InkWell(
+                                        onTap: () {
+                                          if (index == 0) {
+                                            if (fund.amount.text.isEmpty ||
+                                                fund.intValue < 50) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(warningMessage(
+                                                      context,
+                                                      "Min amount ₹50"));
+                                            } else {
+                                              if (defaultTargetPlatform ==
+                                                  TargetPlatform.android) {
+                                                _handleAndroidUpiPayment(
+                                                    context, fund);
+                                              } else {
+                                                _handleIosUpiPayment(context,
+                                                    fund, availableApps, theme);
+                                              }
+                                            }
+                                          } else if (index == 1) {
+                                            if (fund.amount.text.isEmpty ||
+                                                fund.intValue < 50) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(warningMessage(
+                                                      context,
+                                                      "Min amount ₹50"));
+                                            } else {
+                                              _showUpiIdForm(
+                                                  context, fund, theme, colors);
+                                            }
+                                          } else if (index == 2) {
+                                            if (fund.amount.text.isEmpty ||
+                                                fund.intValue < 50 
+                                               ) {
+                                              if (fund.intValue > 5000000) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(warningMessage(
+                                                        context,
+                                                        "Max amount ₹5,000,000"));
+                                              } else {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                        warningMessage(context,
+                                                            "Min amount ₹50"));
+                                              }
+                                            } else {
+                                              _handleRazorpayPayment(
+                                                  context, fund);
+                                            }
+                                          }
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 24),
+                                          child: Row(
+                                            children: [
+                                              SvgPicture.asset(
+                                                '${fund.defaultUpiapps[index]['image']}',
                                               ),
-                                              Column(
-                                                children: [
-                                                  SizedBox(
-                                                      height: fund.selectedindex ==
-                                                                  1 &&
-                                                              fund.defaultUpiapps[
-                                                                          index]
-                                                                      [
-                                                                      'name'] ==
-                                                                  'NET BANKING'
-                                                          ? 10
-                                                          : 0),
-                                                  SizedBox(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    child: ElevatedButton(
-                                                      style: ElevatedButton
-                                                          .styleFrom(
-                                                              elevation: 0,
-                                                              backgroundColor: fund
-                                                                          .amount
-                                                                          .text
-                                                                          .isEmpty ||
-                                                                      fund.intValue <
-                                                                          50
-                                                                  ? colors
-                                                                      .darkGrey
-                                                                  : theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .colorbluegrey
-                                                                      : colors
-                                                                          .colorBlack,
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      vertical:
-                                                                          13),
-                                                              shape:
-                                                                  RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            30),
-                                                              )),
-                                                      onPressed: fund
-                                                                  .amount
-                                                                  .text
-                                                                  .isEmpty ||
-                                                              fund.intValue < 50
-                                                          ? () {
-                                                              ScaffoldMessenger
-                                                                      .of(
-                                                                          context)
-                                                                  .showSnackBar(
-                                                                      warningMessage(
-                                                                          context,
-                                                                          "Min amount ₹50"));
-                                                            }
-                                                          : defaultTargetPlatform ==
-                                                                  TargetPlatform
-                                                                      .android
-                                                              ? () async {
-                                                                  await fund
-                                                                      .fetchValidateToken(
-                                                                          context);
-                                                                  fund.focusNode
-                                                                      .unfocus();
-                                                                  await fund
-                                                                      .fetchUPIPaymet(
-                                                                    context,
-                                                                    "${fund.amount.text}.00",
-                                                                    fund.multipleAccno,
-                                                                    fund
-                                                                        .decryptclientcheck!
-                                                                        .clientCheck!
-                                                                        .dATA![fund.indexss][0],
-                                                                    fund
-                                                                        .decryptclientcheck!
-                                                                        .clientCheck!
-                                                                        .dATA![fund.indexss][2],
-                                                                  );
-
-                                                                  await fund
-                                                                      .fetchUpiPaymentstatus(
-                                                                    context,
-                                                                    "${fund.hdfcdirectpayment?.data?.orderNumber}",
-                                                                    "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
-                                                                  );
-                                                                }
-                                                              : () async {
-                                                                  if (availableApps
-                                                                      .isEmpty) {
-                                                                    showModalBottomSheet(
-                                                                        enableDrag:
-                                                                            false,
-                                                                        useSafeArea:
-                                                                            true,
-                                                                        isScrollControlled:
-                                                                            true,
-                                                                        shape: const RoundedRectangleBorder(
-                                                                            borderRadius: BorderRadius.vertical(
-                                                                                top: Radius.circular(
-                                                                                    16))),
-                                                                        backgroundColor:
-                                                                            const Color(
-                                                                                0xffffffff),
-                                                                        context:
-                                                                            context,
-                                                                        builder:
-                                                                            (context) {
-                                                                          return IosNOUpiAppsSheet(
-                                                                              theme: theme);
-                                                                        });
-                                                                  } else {
-                                                                    fund.focusNode
-                                                                        .unfocus();
-
-                                                                    await fund
-                                                                        .fetchUPIPaymet(
-                                                                      context,
-                                                                      "${fund.amount.text}.00",
-                                                                      fund.multipleAccno,
-                                                                      fund
-                                                                          .decryptclientcheck!
-                                                                          .clientCheck!
-                                                                          .dATA![fund.indexss][0],
-                                                                      fund
-                                                                          .decryptclientcheck!
-                                                                          .clientCheck!
-                                                                          .dATA![fund.indexss][2],
-                                                                    );
-
-                                                                    await fund
-                                                                        .fetchUpiPaymentstatus(
-                                                                      context,
-                                                                      "${fund.hdfcdirectpayment?.data?.orderNumber}",
-                                                                      "${fund.hdfcdirectpayment?.data?.upiTransactionNo}",
-                                                                    );
-                                                                    showModalBottomSheet(
-                                                                        enableDrag:
-                                                                            false,
-                                                                        useSafeArea:
-                                                                            true,
-                                                                        isScrollControlled:
-                                                                            true,
-                                                                        shape: const RoundedRectangleBorder(
-                                                                            borderRadius: BorderRadius.vertical(
-                                                                                top: Radius.circular(
-                                                                                    16))),
-                                                                        backgroundColor:
-                                                                            const Color(
-                                                                                0xffffffff),
-                                                                        context:
-                                                                            context,
-                                                                        builder:
-                                                                            (context) {
-                                                                          return UpiAppsBottomSheet(
-                                                                              upiapps: availableApps,
-                                                                              theme: theme);
-                                                                        });
-                                                                  }
-                                                                },
-                                                      child: fund.fundisLoad
-                                                          ? const SizedBox(
-                                                              width: 18,
-                                                              height: 20,
-                                                              child: CircularProgressIndicator(
-                                                                  strokeWidth:
-                                                                      2,
-                                                                  color: Color(
-                                                                      0xff666666)),
-                                                            )
-                                                          : TextWidget.subText(
-                                                              text:
-                                                                  "PAY VIA UPI APPS",
-                                                              theme: false,
-                                                              color: fund
-                                                                          .amount
-                                                                          .text
-                                                                          .isEmpty ||
-                                                                      fund.intValue <
-                                                                          50
-                                                                  ? colors
-                                                                      .colorGrey
-                                                                  : theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .colorBlack
-                                                                      : colors
-                                                                          .colorWhite,
-                                                              fw: 0,
-                                                            ),
-                                                    ),
-                                                  )
-                                                ],
-                                              ),
-                                            ],
-                                            if (index == 1 &&
-                                                fund.selectedindex == 1) ...[
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  TextFormField(
-                                                    controller: fund.upiid,
-                                                    style: theme.isDarkMode
-                                                        ? TextWidget.textStyle(
-                                                            fontSize: 14,
-                                                            theme: false,
-                                                            color: colors
-                                                                .colorWhite)
-                                                        : TextWidget.textStyle(
-                                                            fontSize: 14,
-                                                            theme: false,
-                                                            color: colors
-                                                                .colorBlack),
-                                                    inputFormatters: [
-                                                      NoEmojiInputFormatter(),
-                                                      FilteringTextInputFormatter
-                                                          .deny(RegExp(
-                                                              '[π£•₹€℅™∆√¶/,.]')),
-                                                      FilteringTextInputFormatter
-                                                          .deny(RegExp(r'\s')),
-                                                    ],
-                                                    decoration: InputDecoration(
-                                                      hintText:
-                                                          "example: username@upi",
-                                                      hintStyle:
-                                                          TextWidget.textStyle(
-                                                              fontSize: 14,
-                                                              theme: false,
-                                                              color: colors
-                                                                  .colorGrey),
-                                                      contentPadding:
-                                                          const EdgeInsets
-                                                              .symmetric(
-                                                              vertical: 8,
-                                                              horizontal: 10),
-                                                      enabledBorder:
-                                                          OutlineInputBorder(
-                                                              borderSide:
-                                                                  BorderSide
-                                                                      .none,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          30)),
-                                                      disabledBorder:
-                                                          InputBorder.none,
-                                                      focusedBorder:
-                                                          OutlineInputBorder(
-                                                              borderSide:
-                                                                  BorderSide
-                                                                      .none,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          30)),
-                                                      border:
-                                                          OutlineInputBorder(
-                                                              borderSide:
-                                                                  BorderSide
-                                                                      .none,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          30)),
-                                                      fillColor:
-                                                          theme.isDarkMode
-                                                              ? colors.darkGrey
-                                                              : const Color(
-                                                                  0xffF1F3F8),
-                                                      filled: true,
-                                                    ),
-                                                    onChanged: (value) {
-                                                      fund.upiidOnchange(value);
-                                                      fund.validateUPI(value);
-                                                    },
-                                                  ),
-                                                  fund.upiiderror == null
-                                                      ? Container()
-                                                      : Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .only(top: 5),
-                                                          child: TextWidget.paraText(
-                                                              text:
-                                                                  "${fund.upiiderror}",
-                                                              theme: false,
-                                                              color: colors
-                                                                  .darkred,
-                                                              fw: 0,
-                                                              align: TextAlign
-                                                                  .left),
+                                              const SizedBox(width: 20),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        TextWidget.paraText(
+                                                          text:
+                                                              '${fund.defaultUpiapps[index]['name']}',
+                                                          theme:
+                                                              theme.isDarkMode,
+                                                          color: colors
+                                                              .textPrimaryLight,
                                                         ),
-                                                  SizedBox(
-                                                      height: fund.selectedindex ==
-                                                                  1 &&
-                                                              fund.defaultUpiapps[
-                                                                          index]
-                                                                      [
-                                                                      'name'] ==
-                                                                  'UPI ID'
-                                                          ? 10
-                                                          : 0),
-                                                  SizedBox(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    child: ElevatedButton(
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                                elevation: 0,
-                                                                backgroundColor: fund.upiiderror == 'Please enter a UPI ID' ||
-                                                                        fund.upiiderror ==
-                                                                            'Please enter a valid UPI ID' ||
-                                                                        fund
-                                                                            .upiid
-                                                                            .text
-                                                                            .isEmpty ||
-                                                                        fund
-                                                                            .amount
-                                                                            .text
-                                                                            .isEmpty ||
-                                                                        fund.intValue <
-                                                                            50
-                                                                    ? colors
-                                                                        .darkGrey
-                                                                    : theme
-                                                                            .isDarkMode
-                                                                        ? colors
-                                                                            .colorbluegrey
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                padding:
-                                                                    const EdgeInsets.symmetric(
-                                                                        vertical:
-                                                                            13),
-                                                                shape:
-                                                                    RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              30),
-                                                                )),
-                                                        onPressed:
-                                                            fund.upiiderror == 'Please enter a UPI ID' ||
-                                                                    fund.upiiderror ==
-                                                                        'Please enter a valid UPI ID' ||
-                                                                    fund
-                                                                        .upiid
-                                                                        .text
-                                                                        .isEmpty ||
-                                                                    fund
-                                                                        .amount
-                                                                        .text
-                                                                        .isEmpty ||
-                                                                    fund.intValue <
-                                                                        50
-                                                                ? () {
-                                                                    ScaffoldMessenger.of(
-                                                                            context)
-                                                                        .showSnackBar(warningMessage(
-                                                                            context,
-                                                                            "Min amount ₹50"));
-                                                                  }
-                                                                : () async {
-                                                                    await fund.fetcUPIIDPayment(
-                                                                        context,
-                                                                        fund.upiid
-                                                                            .text,
-                                                                        fund.decryptclientcheck!.clientCheck!.dATA![fund.indexss]
-                                                                            [0],
-                                                                        fund.bankdetails!.dATA![fund.indexss]
-                                                                            [
-                                                                            2]);
-                                                                    await fund
-                                                                        .fetchHdfctranction(
-                                                                      context,
-                                                                      fund.upiid
-                                                                          .text,
-                                                                      int.parse(fund
-                                                                          .amount
-                                                                          .text),
-                                                                      fund.accno,
-                                                                      fund
-                                                                          .decryptclientcheck!
-                                                                          .clientCheck!
-                                                                          .dATA![fund.indexss][0],
-                                                                    );
-                                                                    if (fund.hdfcpaymentdata!.data!.verifiedVPAStatus1 ==
-                                                                            "Available" ||
-                                                                        fund.hdfcpaymentdata!.data!.verifiedVPAStatus2 ==
-                                                                            "Available") {
-                                                                      showModalBottomSheet(
-                                                                          shape: const RoundedRectangleBorder(
-                                                                              borderRadius: BorderRadius.vertical(
-                                                                                  top: Radius.circular(
-                                                                                      16))),
-                                                                          backgroundColor: const Color(
-                                                                              0xffffffff),
-                                                                          isDismissible:
-                                                                              false,
-                                                                          enableDrag:
-                                                                              false,
-                                                                          showDragHandle:
-                                                                              false,
-                                                                          useSafeArea:
-                                                                              false,
-                                                                          isScrollControlled:
-                                                                              true,
-                                                                          context:
-                                                                              context,
-                                                                          builder:
-                                                                              (BuildContext context) {
-                                                                            return PopScope(
-                                                                                canPop: true, // Allows default back navigation
-                                                                                onPopInvokedWithResult: (didPop, result) {
-                                                                                  if (didPop) return; // If system handled back, do nothing
-                                                                                },
-                                                                                child: const UPIIDPaymentCancelAlert());
-                                                                          });
-
-                                                                      await fund.fetchHdfcpaymetstatus(
-                                                                          context,
-                                                                          '${fund.hdfctranction!.data!.orderNumber}',
-                                                                          '${fund.hdfctranction!.data!.upiTransactionNo}');
-                                                                    }
-                                                                  },
-                                                        child: fund.fundisLoad
-                                                            ? const SizedBox(
-                                                                width: 18,
-                                                                height: 20,
-                                                                child: CircularProgressIndicator(
-                                                                    strokeWidth:
-                                                                        2,
-                                                                    color: Color(
-                                                                        0xff666666)),
-                                                              )
-                                                            : TextWidget
-                                                                .subText(
-                                                                text:
-                                                                    "PAY VIA UPI ID",
-                                                                theme: false,
-                                                                color: fund.upiiderror == 'Please enter a UPI ID' ||
-                                                                        fund.upiiderror ==
-                                                                            'Please enter a valid UPI ID' ||
-                                                                        fund
-                                                                            .upiid
-                                                                            .text
-                                                                            .isEmpty ||
-                                                                        fund
-                                                                            .amount
-                                                                            .text
-                                                                            .isEmpty ||
-                                                                        fund.intValue <
-                                                                            50
-                                                                    ? colors
-                                                                        .colorGrey
-                                                                    : theme
-                                                                            .isDarkMode
-                                                                        ? colors
-                                                                            .colorBlack
-                                                                        : colors
-                                                                            .colorWhite,
-                                                                fw: 0,
-                                                              )),
-                                                  )
-                                                ],
+                                                        SvgPicture.asset(
+                                                          assets.leftArrow,
+                                                          width: 16,
+                                                          height: 16,
+                                                          color: Colors.grey,
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ],
-                                            if (index == 2 &&
-                                                fund.selectedindex == 2) ...[
-                                              const SizedBox(
-                                                height: 10,
-                                              ),
-                                              Column(
-                                                children: [
-                                                  SizedBox(
-                                                      height: fund.selectedindex ==
-                                                                  1 &&
-                                                              fund.defaultUpiapps[
-                                                                          index]
-                                                                      [
-                                                                      'name'] ==
-                                                                  'NET BANKING'
-                                                          ? 10
-                                                          : 0),
-                                                  SizedBox(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    child: ElevatedButton(
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                                elevation: 0,
-                                                                backgroundColor: fund
-                                                                            .amount
-                                                                            .text
-                                                                            .isEmpty ||
-                                                                        fund.intValue <
-                                                                            50 ||
-                                                                        fund.intValue >
-                                                                            5000000
-                                                                    ? colors
-                                                                        .darkGrey
-                                                                    : theme
-                                                                            .isDarkMode
-                                                                        ? colors
-                                                                            .colorbluegrey
-                                                                        : colors
-                                                                            .colorBlack,
-                                                                padding:
-                                                                    const EdgeInsets.symmetric(
-                                                                        vertical:
-                                                                            13),
-                                                                shape:
-                                                                    RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              30),
-                                                                )),
-                                                        onPressed: fund
-                                                                    .amount
-                                                                    .text
-                                                                    .isEmpty ||
-                                                                fund.intValue <
-                                                                    50 ||
-                                                                fund.intValue >
-                                                                    5000000
-                                                            ? () {
-                                                                if (fund.intValue >
-                                                                    5000000) {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Max amount ₹5,000,000"));
-                                                                } else {
-                                                                  ScaffoldMessenger.of(
-                                                                          context)
-                                                                      .showSnackBar(warningMessage(
-                                                                          context,
-                                                                          "Min amount ₹50"));
-                                                                }
-                                                              }
-                                                            : () async {
-                                                                Razorpay
-                                                                    razorpay =
-                                                                    Razorpay();
-                                                                await fund
-                                                                    .fetchrazorpay(
-                                                                  context,
-                                                                  int.parse(fund
-                                                                          .amount
-                                                                          .text)
-                                                                      .toString(),
-                                                                  fund.accno,
-                                                                  fund
-                                                                      .decryptclientcheck!
-                                                                      .clientCheck!
-                                                                      .dATA![fund.indexss][2],
-                                                                  fund.ifsc,
-                                                                  razorpay,
-                                                                );
-                                                                razorpay.on(
-                                                                    Razorpay
-                                                                        .EVENT_PAYMENT_ERROR,
-                                                                    handlePaymentErrorResponse);
-                                                                razorpay.on(
-                                                                    Razorpay
-                                                                        .EVENT_PAYMENT_SUCCESS,
-                                                                    handlePaymentSuccessResponse);
-                                                              },
-                                                        child: fund.fundisLoad
-                                                            ? const SizedBox(
-                                                                width: 18,
-                                                                height: 20,
-                                                                child: CircularProgressIndicator(
-                                                                    strokeWidth:
-                                                                        2,
-                                                                    color: Color(
-                                                                        0xff666666)),
-                                                              )
-                                                            : TextWidget.subText(
-                                                                text:
-                                                                    "PAY VIA NET BANKING",
-                                                                theme: false,
-                                                                color: fund
-                                                                            .amount
-                                                                            .text
-                                                                            .isEmpty ||
-                                                                        fund.intValue <
-                                                                            50 ||
-                                                                        fund.intValue >
-                                                                            5000000
-                                                                    ? colors
-                                                                        .colorGrey
-                                                                    : theme
-                                                                            .isDarkMode
-                                                                        ? colors
-                                                                            .colorBlack
-                                                                        : colors
-                                                                            .colorWhite,
-                                                                fw: 0,
-                                                              )),
-                                                  )
-                                                ],
-                                              ),
-                                            ]
-                                          ],
-                                        )),
+                                          ),
+                                        ),
+                                      ),
+                                      if (index ==
+                                          fund.defaultUpiapps.length - 1)
+                                        const ListDivider(),
+                                    ],
                                   );
                                 },
                               ),
                             ],
                           )
-                        : WithdrawScreen(
-                            segment: fund.textValue,
-                            withdarw: fund,
-                            foucs: fund.focusNode,
-                            theme: theme,
-                          )
+                        // : WithdrawScreen(
+                        //     segment: fund.textValue,
+                        //     withdarw: fund,
+                        //     foucs: fund.focusNode,
+                        //     theme: theme,
+                        //   )
                   ],
                 ),
               ),
@@ -1157,55 +932,82 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     );
   }
 
-  Widget headerTitleText(String text) {
-    return TextWidget.subText(
-        text: text, theme: false, color: colors.colorGrey, fw: 0);
+  String formatIndianCurrency(String amount) {
+    final formatter = NumberFormat.currency(
+      locale: "en_IN",
+      symbol: '', // Or '₹'
+      decimalDigits: 2, // Always show 2 decimals
+    );
+    return formatter.format(double.tryParse(amount) ?? 0.0);
   }
 
-  Widget contantTitleText(String text) {
-    return TextWidget.titleText(
-      text: text,
-      theme: false,
-      fw: 1,
+  // Old chip-style segment selection UI
+  // Widget _buildSegmentChip(String label, bool isSelected, VoidCallback onTap, ThemesProvider theme) {
+  //   return GestureDetector(
+  //     onTap: onTap,
+  //     child: Container(
+  //       height: 44,
+  //       decoration: BoxDecoration(
+  //         color: isSelected
+  //             ? (theme.isDarkMode ? colors.colorWhite : colors.colorBlack)
+  //             : (theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8)),
+  //         borderRadius: BorderRadius.circular(22),
+  //         border: Border.all(
+  //           color: isSelected
+  //               ? (theme.isDarkMode ? colors.colorWhite : colors.colorBlack)
+  //               : (theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8)),
+  //           width: 1,
+  //         ),
+  //       ),
+  //       child: Center(
+  //         child: TextWidget.subText(
+  //           text: label,
+  //           theme: theme.isDarkMode,
+  //           color: isSelected
+  //               ? (theme.isDarkMode ? colors.colorBlack : colors.colorWhite)
+  //               : (theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
+  //           fw: isSelected ? 2 : 1,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  Widget _buildSegmentTab(
+      String label, bool isSelected, VoidCallback onTap, ThemesProvider theme) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xffF1F3F8) : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: TextWidget.paraText(
+              text: label,
+              theme: false,
+              color: isSelected
+                  ? (theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight)
+                  : const Color(0XFF777777),
+              fw: isSelected ? 0 : null,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  final List<Map<String, dynamic>> upiApptest = [
-    {
-      'icon': assets.biggpay,
-      'name': 'Google Pay',
-      'url': 'gpay://',
-      'value': '0'
-    },
-    {
-      'icon': assets.bigphnpay,
-      'name': 'PhonePe',
-      'url': 'phonepe://',
-      'value': '1'
-    },
-    {'icon': assets.bigpaytm, 'name': 'Paytm', 'url': 'paytm://', 'value': '2'},
-  ];
-
-  List<Map<String, dynamic>> availableApps = [];
-
-  Future<void> checkIosAvailableApps() async {
-    List<Map<String, dynamic>> tempList = [];
-
-    for (var app in upiApptest) {
-      bool isInstalled = await canLaunch(app['url']!);
-      if (isInstalled) {
-        tempList.add(app);
-      }
+  void _selectSegment(String segmentCode, TranctionProvider fund) {
+    // Find the index of the segment in the companyCode array
+    if (fund.decryptclientcheck?.companyCode != null) {
+      final index = fund.decryptclientcheck!.companyCode!.indexOf(segmentCode);
+      fund.segmentselection(index);
+      print(" funddd index: $index");
     }
-    if (!_isDisposedIos) {
-      setState(() {
-        availableApps = tempList;
-      });
-    }
-
-    setState(() {
-      availableApps = tempList;
-    });
   }
 
   _showBottomSheet(TranctionProvider fund, ThemesProvider theme) {
@@ -1286,6 +1088,64 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     );
   }
 
+  // Set default segment to Equity (NSE_CASH) when screen initializes
+  void _setDefaultSegment(TranctionProvider fund) {
+    if (fund.textValue.isEmpty || fund.textValue != "NSE_CASH") {
+      _selectSegment("NSE_CASH", fund);
+    }
+  }
+
+  Widget headerTitleText(String text) {
+    return TextWidget.subText(
+        text: text, theme: false, color: colors.colorGrey, fw: 0);
+  }
+
+  Widget contantTitleText(String text) {
+    return TextWidget.titleText(
+      text: text,
+      theme: false,
+      fw: 1,
+    );
+  }
+
+  final List<Map<String, dynamic>> upiApptest = [
+    {
+      'icon': assets.biggpay,
+      'name': 'Google Pay',
+      'url': 'gpay://',
+      'value': '0'
+    },
+    {
+      'icon': assets.bigphnpay,
+      'name': 'PhonePe',
+      'url': 'phonepe://',
+      'value': '1'
+    },
+    {'icon': assets.bigpaytm, 'name': 'Paytm', 'url': 'paytm://', 'value': '2'},
+  ];
+
+  List<Map<String, dynamic>> availableApps = [];
+
+  Future<void> checkIosAvailableApps() async {
+    List<Map<String, dynamic>> tempList = [];
+
+    for (var app in upiApptest) {
+      bool isInstalled = await canLaunch(app['url']!);
+      if (isInstalled) {
+        tempList.add(app);
+      }
+    }
+    if (!_isDisposedIos) {
+      setState(() {
+        availableApps = tempList;
+      });
+    }
+
+    setState(() {
+      availableApps = tempList;
+    });
+  }
+
   showBottomSheetbank(TranctionProvider fund, ThemesProvider theme) {
     showModalBottomSheet(
       enableDrag: false,
@@ -1317,8 +1177,8 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 child: TextWidget.subText(
                   text: 'Choose an bank:',
                   theme: false,
-                  color: colors.colorGrey,
-                  fw: 0,
+                  color: colors.textPrimaryLight,
+                 
                 ),
               ),
               ListView.builder(
@@ -1343,7 +1203,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                         text:
                             '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
                         theme: theme.isDarkMode,
-                        fw: 1,
+                        
                       ),
                     ),
                   );
