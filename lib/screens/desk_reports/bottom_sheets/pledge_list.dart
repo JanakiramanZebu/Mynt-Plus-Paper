@@ -102,13 +102,13 @@ class _PledgeList extends State<PledgeList> {
                             text: "Pledge Details",
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 1),
+                            fw: 0),
                       ),
                       Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 6.0,
+                        thickness: 1.0,
                       ),
                       Expanded(
                         child: SingleChildScrollView(
@@ -135,9 +135,9 @@ class _PledgeList extends State<PledgeList> {
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
                                               color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              fw: 0),
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                              fw: 3),
                                           TextWidget.subText(
                                               align: TextAlign.start,
                                               text: "${value['symbol'] ?? '-'}",
@@ -145,9 +145,9 @@ class _PledgeList extends State<PledgeList> {
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
                                               color: theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              fw: 1),
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
+                                              fw: 3),
                                         ]),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
@@ -161,10 +161,10 @@ class _PledgeList extends State<PledgeList> {
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                fw: 0),
+                                                 color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                                fw: 3),
                                             TextWidget.subText(
                                                 align: TextAlign.start,
                                                 text:
@@ -172,10 +172,10 @@ class _PledgeList extends State<PledgeList> {
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                fw: 1),
+                                               color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
+                                                fw: 3),
                                           ]),
                                     ),
                                     Padding(
@@ -190,10 +190,10 @@ class _PledgeList extends State<PledgeList> {
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                fw: 0),
+                                                 color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                                fw: 3),
                                             TextWidget.subText(
                                                 align: TextAlign.start,
                                                 text:
@@ -202,9 +202,9 @@ class _PledgeList extends State<PledgeList> {
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
                                                 color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                fw: 1),
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
+                                                fw: 3),
                                           ]),
                                     ),
                                   ],
@@ -214,15 +214,15 @@ class _PledgeList extends State<PledgeList> {
                                   (BuildContext context, int index) {
                                 return Padding(
                                   padding: const EdgeInsets.only(
-                                    top: 2.0,
-                                    bottom: 0.0,
+                                    top: 6.0,
+                                    bottom: 6.0,
                                   ),
                                   child: Divider(
                                     color: theme.isDarkMode
                                         ? const Color(0xffB5C0CF)
                                             .withOpacity(.15)
                                         : const Color(0xffF1F3F8),
-                                    thickness: 7.0,
+                                    thickness: 1.0,
                                   ),
                                 );
                               },
@@ -256,15 +256,20 @@ class _PledgeList extends State<PledgeList> {
                           height: 35,
                           width: screenWidth * 0.43,
                           margin: const EdgeInsets.only(right: 12, top: 15),
-                          child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
+                          child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                                color: theme.isDarkMode
+                                                    ? colors.primaryDark
+                                                    : colors.primaryLight,
+                                              ),
                                   elevation: 0,
-                                  shadowColor: Colors.transparent,
-                                  backgroundColor: theme.isDarkMode
-                                      ? colors.colorbluegrey
-                                      : colors.colorBlack,
+                                                                                shadowColor: Colors.transparent,
+
+                                  
+                                       
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(50))),
+                                      borderRadius: BorderRadius.circular(5))),
                               onPressed: () {
                                 Navigator.pop(context);
                                 // ledgerprovider.screenclickedpledge = '';
@@ -273,8 +278,8 @@ class _PledgeList extends State<PledgeList> {
                                   textAlign: TextAlign.center,
                                   style: textStyle(
                                       !theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
+                                          ? colors.primaryLight
+                                          : colors.primaryDark,
                                       12,
                                       FontWeight.w500)))),
                     ),
@@ -288,11 +293,11 @@ class _PledgeList extends State<PledgeList> {
                               style: ElevatedButton.styleFrom(
                                   elevation: 0,
                                   shadowColor: Colors.transparent,
-                                  backgroundColor: theme.isDarkMode
-                                      ? colors.colorbluegrey
-                                      : colors.colorBlack,
+                                  backgroundColor:  !theme.isDarkMode
+                                              ? colors.primaryLight
+                                              : colors.primaryDark,
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(50))),
+                                      borderRadius: BorderRadius.circular(5))),
                               onPressed: () async {
                                 // Give UI time to update before navigation
 

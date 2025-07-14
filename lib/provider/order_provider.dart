@@ -723,7 +723,7 @@ class OrderProvider extends DefaultChangeNotifier {
         //     ));
         // }
         //     }
-        notifyListeners();
+        // notifyListeners();
         //   } else {
         //     if (_orderBookModel![0].emsg ==
         //             "Session Expired :  Invalid Session Key" &&
@@ -733,11 +733,13 @@ class OrderProvider extends DefaultChangeNotifier {
         //   }
         // }
 
-        if (!isExit) {
-          Navigator.pop(context);
-        } else {
-          Navigator.pop(context);
-        }
+        // if (!isExit) {
+        //   Navigator.pop(context);
+        // } else {
+          
+        // }
+
+        Navigator.pop(context);
 
         // Navigate to order confirmation screen
         Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
@@ -763,8 +765,15 @@ class OrderProvider extends DefaultChangeNotifier {
           .read(indexListProvider)
           .logError
           .add({"type": "API Place Order", "Error": "$e"});
+          
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                warningMessage(context, "Error on placing order"));
+      }
+      
+    } finally {
       notifyListeners();
-    } finally {}
+    }
   }
 
   List<PlaceOrderModel> _sliceOrderResults = [];
@@ -844,13 +853,15 @@ class OrderProvider extends DefaultChangeNotifier {
         // Update order book
         fetchOrderBook(context, true);
 
+          Navigator.pop(context);
+          Navigator.pop(context);
+
         // Navigate to order confirmation screen with all sliced orders
         if (context.mounted) {
           Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
             'orderData': _sliceOrderResults,
           });
         }
-        notifyListeners();
       } else {
         // Show error if no orders were successful
         if (context.mounted) {
@@ -867,6 +878,8 @@ class OrderProvider extends DefaultChangeNotifier {
         ScaffoldMessenger.of(context).showSnackBar(
             warningMessage(context, "Error placing orders: ${e.toString()}"));
       }
+      // notifyListeners();
+    } finally {
       notifyListeners();
     }
   }

@@ -160,7 +160,7 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                       ),
                      
 
-                      if (orderMargin?.remarks != null) ...[
+                      if (orderMargin?.remarks != null && orderMargin?.remarks == "Insufficient Balance") ...[
                         Divider(
                             color: theme.isDarkMode
                                 ? colors.darkColorDivider
@@ -224,9 +224,7 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                     : colors.colorWhite,
                                 16,
                                 FontWeight.w500)),
-                        SizedBox(
-                          height: 10,
-                        ),
+                        const SizedBox(height: 10,),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
                           child: ElevatedButton(

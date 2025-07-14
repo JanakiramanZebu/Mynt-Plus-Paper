@@ -434,9 +434,9 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                       ),
                       // Tab section starts here
                       bottom: PreferredSize(
-                          preferredSize: Size.fromHeight(widget.orderArg.exchange == "NCOM" ? 10 : 50),
+                          preferredSize: const Size.fromHeight(50), // widget.orderArg.exchange == "NCOM" ? 10 : 
                           child: Column(children: [
-                            if (widget.orderArg.exchange != "NCOM") ...[
+                            // if (widget.orderArg.exchange != "NCOM") ...[
                               Container(
                                   height: 46,
                                   // decoration: BoxDecoration(
@@ -546,7 +546,7 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen> with Ticker
                                         );
                                       },
                                       itemCount: orderTypes.length))
-                            ]
+                            // ]
                           ]))),
                   body: Stack(children: [
                     SingleChildScrollView(

@@ -73,7 +73,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
             // leading: const CustomBackBtn(),
             elevation: 0.2,
             title: TextWidget.heroText(
-                text: "Pledge Report Details",
+                text: "Pledge Report Details" ,
                 textOverflow: TextOverflow.ellipsis,
                 theme: theme.isDarkMode,
                 fw: 1),
@@ -434,11 +434,11 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                             color: theme.isDarkMode
                                                 ? colors.colorWhite
                                                 : colors.colorBlack,
-                                            fw: 1),
+                                            fw: 3),
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               right: 16.0),
-                                          child: TextWidget.subText(
+                                          child: TextWidget.paraText(
                                               align: TextAlign.start,
                                               text: "${val.quantity}",
                                               textOverflow:
@@ -447,7 +447,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                               color: theme.isDarkMode
                                                   ? colors.colorWhite
                                                   : colors.colorBlack,
-                                              fw: 1),
+                                              fw: 3),
                                         ),
                                       ],
                                     ),
@@ -469,14 +469,14 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            TextWidget.subText(
+                                            TextWidget.paraText(
                                                 text: "Req ID :  ",
                                                 color: Color(0xFF696969),
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
-                                            TextWidget.subText(
+                                                fw: 3),
+                                            TextWidget.paraText(
                                                 text: "${val.isinreqid}",
                                                 color: theme.isDarkMode
                                                     ? colors.colorWhite
@@ -484,7 +484,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 1),
+                                                fw: 3),
 
                                             //         Text(
                                             // " (${value.tRADEDATE})",
@@ -500,14 +500,14 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                           children: [
                                             Row(
                                               children: [
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     text: "Res ID : ",
                                                     color: Color(0xFF696969),
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
+                                                    fw: 3),
+                                                TextWidget.paraText(
                                                     text: "${val.isinresid}",
                                                     color: theme.isDarkMode
                                                         ? colors.colorWhite
@@ -515,7 +515,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 1),
+                                                    fw: 3),
                                               ],
                                             ),
                                           ],
@@ -675,7 +675,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
             color: Color(0xFF696969),
             textOverflow: TextOverflow.ellipsis,
             theme: theme.isDarkMode,
-            fw: 0),
+            fw: 3),
         // Text(
         //   "Opening Balance",
         //   style: textStyle(Color(0xFF696969), 14,
@@ -687,7 +687,7 @@ class PledgenUnpledgeResponse extends StatelessWidget {
               text: "${value}",
               textOverflow: TextOverflow.ellipsis,
               theme: theme.isDarkMode,
-              fw: 1),
+              fw: 3),
         ),
       ],
     );
