@@ -124,21 +124,61 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
                                     : colors.colorDivider,
                                 width: 0.4))),
                     // height: 60,
-                    child: TabBar(
-                        labelPadding:
-                            const EdgeInsets.only(right: 16, bottom: 0),
-                        tabAlignment: TabAlignment.start,
-                        indicatorColor: Colors.transparent,
-                        controller: _tabController,
-                        isScrollable: true,
-                        tabs: List.generate(
-                            tablistitems.length,
-                            (tab) => tabConstruce(
-                                tablistitems[tab]['title'].toString(),
-                                theme,
-                                tab,
-                                () {},
-                                ledgerprovider)))),
+                    child: 
+                    TabBar(
+              onTap: (index) {
+                setState(() {});
+              },
+              tabAlignment: TabAlignment.start,
+              indicatorSize: TabBarIndicatorSize.tab,
+              isScrollable: true,
+              indicatorColor: theme.isDarkMode
+                  ? colors.secondaryDark
+                  : colors.secondaryLight,
+              unselectedLabelColor: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              unselectedLabelStyle: TextWidget.textStyle(
+                fontSize: 14,
+                theme: false,
+                fw: 3,
+              ),
+              labelColor: theme.isDarkMode
+                  ? colors.secondaryDark
+                  : colors.secondaryLight,
+              labelStyle:
+                  TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
+              controller: _tabController,
+              tabs: List.generate(tablistitems.length, (index) {
+                final isSelected = _tabController.index == index;
+
+                final color = isSelected
+                    ? (theme.isDarkMode
+                        ? colors.secondaryDark
+                        : colors.secondaryLight)
+                    : (theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight);
+
+                return Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      TextWidget.subText(
+                        text: tablistitems[index]['title'].toString(),
+                        theme: false,
+                        color: color,
+                        fw: isSelected ? 2 : null,
+                      ),
+                      const SizedBox(width: 5),
+                       
+                    ],
+                  ),
+                );
+              }),
+            ),
+                    ),
               ),
 
               Expanded(
@@ -182,7 +222,7 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
             ledgerprovider.taxpnlExTabchange(tab);
           });
           _tabController.animateTo(tab);
-          print("object act tab $tab");
+           
         },
         style: ElevatedButton.styleFrom(
             elevation: 0,
@@ -190,13 +230,7 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
                 color: Color.fromARGB(255, 0, 0, 0),
                 width: 1), // Border color & width
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            backgroundColor: theme.isDarkMode
-                ? tab == ledgerprovider.activeTabTaxPnl
-                    ? colors.colorbluegrey
-                    : const Color(0xffB5C0CF).withOpacity(.15)
-                : tab == ledgerprovider.activeTabTaxPnl
-                    ? const Color(0xff000000)
-                    : Color.fromARGB(0, 241, 243, 248),
+            backgroundColor:   const Color(0xffB5C0CF).withOpacity(.15) ,
             shape: const StadiumBorder()),
         child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -206,12 +240,8 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
               Text(title,
                   style: textStyle(
                       theme.isDarkMode
-                          ? Color(tab == ledgerprovider.activeTabTaxPnl
-                              ? 0xff000000
-                              : 0xffffffff)
-                          : Color(tab == ledgerprovider.activeTabTaxPnl
-                              ? 0xffffffff
-                              : 0xff000000),
+                          ?  tab == ledgerprovider.activeTabTaxPnl ? colors.textPrimaryDark
+                          : colors.colorBlack :  tab == ledgerprovider.activeTabTaxPnl ? colors.textPrimaryLight : colors.colorBlack ,
                       12,
                       FontWeight.w500))
             ]));

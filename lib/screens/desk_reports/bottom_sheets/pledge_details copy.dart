@@ -271,7 +271,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                 : "Unpledge Details",
                             textOverflow: TextOverflow.ellipsis,
                             theme: theme.isDarkMode,
-                            fw: 1),
+                            fw: 0),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(

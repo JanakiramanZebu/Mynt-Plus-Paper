@@ -32,12 +32,22 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
   late TabController tabController;
   int activeTab = 0;
 
+  // Search functionality variables
+  bool isSearching = false;
+  TextEditingController searchController = TextEditingController();
+  FocusNode searchFocusNode = FocusNode();
+  String searchQuery = '';
+
   @override
   void initState() {
     super.initState();
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     // tabController.animation!.addListener(_onTabChanged);
-    
+
+    // Add listener to search controller to update UI when text changes
+    searchController.addListener(() {
+      setState(() {});
+    });
   }
 
   void _onTabChanged(index) {
@@ -50,11 +60,31 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
     print("${activeTab}pledgevavavavava");
   }
 
+  void _toggleSearch() {
+    setState(() {
+      isSearching = !isSearching;
+      if (isSearching) {
+        searchFocusNode.requestFocus();
+      } else {
+        searchController.clear();
+        searchQuery = '';
+        searchFocusNode.unfocus();
+      }
+    });
+  }
 
-  
+  void _onSearchChanged(String value) {
+    setState(() {
+      searchQuery = value.toLowerCase();
+    });
+    print("Search value: $value");
+  }
+
   @override
   void dispose() {
     tabController.dispose();
+    searchController.dispose();
+    searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -198,13 +228,13 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
           //   },
           //   child: Icon(Icons.ios_share)),
         ),
-        body: RefreshIndicator(
-          onRefresh: _refresh,
-          child: Stack(
-            children: [
-              TransparentLoaderScreen(
-                isLoading: ledgerprovider.pledgeloader,
-                child: Column(
+        body: TransparentLoaderScreen(
+          isLoading: ledgerprovider.pledgeloader,
+          child: RefreshIndicator(
+            onRefresh: _refresh,
+            child: Stack(
+              children: [
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Text("${ddd}")
@@ -317,107 +347,263 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                       ),
                     ),
                     RepaintBoundary(
-        child: Padding(
-            padding:
-                const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 22),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 40,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                    decoration: BoxDecoration(
-                      color: colors.searchBg,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 10),
-                          child: Row(
-                            children: [
-                              Material(
-                                color: Colors.transparent,
-                                shape: const CircleBorder(),
-                                clipBehavior: Clip.hardEdge,
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  splashColor: theme.isDarkMode
-                                      ? colors.splashColorDark
-                                      : colors.splashColorLight,
-                                  highlightColor: theme.isDarkMode
-                                      ? colors.highlightDark
-                                      : colors.highlightLight,
-                                  onTap: () {
-                                    Future.delayed(
-                                        const Duration(milliseconds: 150),
-                                        () async {
-                                        
-                                    });
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: SvgPicture.asset(
-                                      assets.searchIcon,
-                                      color: colors.textPrimaryLight,
-                                      width: 20,
-                                      fit: BoxFit.scaleDown,
+                        child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16, right: 16, top: 10, bottom: 22),
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  height: 40,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 5),
+                                    decoration: BoxDecoration(
+                                      color: colors.searchBg,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 10),
+                                            child: Row(
+                                              children: [
+                                                if (!isSearching)
+                                                  Material(
+                                                    color: Colors.transparent,
+                                                    shape: const CircleBorder(),
+                                                    clipBehavior: Clip.hardEdge,
+                                                    child: InkWell(
+                                                      customBorder:
+                                                          const CircleBorder(),
+                                                      splashColor: theme
+                                                              .isDarkMode
+                                                          ? colors
+                                                              .splashColorDark
+                                                          : colors
+                                                              .splashColorLight,
+                                                      highlightColor: theme
+                                                              .isDarkMode
+                                                          ? colors.highlightDark
+                                                          : colors
+                                                              .highlightLight,
+                                                      onTap: () {
+                                                        Future.delayed(
+                                                            const Duration(
+                                                                milliseconds:
+                                                                    150),
+                                                            () async {
+                                                          _toggleSearch();
+                                                        });
+                                                      },
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: SvgPicture.asset(
+                                                          assets.searchIcon,
+                                                          color: colors
+                                                              .textPrimaryLight,
+                                                          width: 20,
+                                                          fit: BoxFit.scaleDown,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                if (isSearching)
+                                                  Expanded(
+                                                    child: Row(
+                                                      children: [
+                                                        Material(
+                                                          color: Colors
+                                                              .transparent,
+                                                          shape:
+                                                              const CircleBorder(),
+                                                          clipBehavior:
+                                                              Clip.hardEdge,
+                                                          child: InkWell(
+                                                            customBorder:
+                                                                const CircleBorder(),
+                                                            splashColor: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .splashColorDark
+                                                                : colors
+                                                                    .splashColorLight,
+                                                            highlightColor: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .highlightDark
+                                                                : colors
+                                                                    .highlightLight,
+                                                            onTap:
+                                                                _toggleSearch,
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: Icon(
+                                                                Icons
+                                                                    .arrow_back,
+                                                                color: colors
+                                                                    .textPrimaryLight,
+                                                                size: 20,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Expanded(
+                                                          child: TextField(
+                                                            controller:
+                                                                searchController,
+                                                            focusNode:
+                                                                searchFocusNode,
+                                                            onChanged:
+                                                                _onSearchChanged,
+                                                            style: TextStyle(
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .textPrimaryDark
+                                                                  : colors
+                                                                      .textPrimaryLight,
+                                                              fontSize: 14,
+                                                            ),
+                                                            decoration:
+                                                                InputDecoration(
+                                                              hintText:
+                                                                  'Search...',
+                                                              hintStyle:
+                                                                  TextStyle(
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .textSecondaryDark
+                                                                    : colors
+                                                                        .textSecondaryLight,
+                                                                fontSize: 14,
+                                                              ),
+                                                              border:
+                                                                  InputBorder
+                                                                      .none,
+                                                              contentPadding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                horizontal: 8,
+                                                                vertical: 12,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        if (searchController
+                                                            .text.isNotEmpty)
+                                                          Material(
+                                                            color: Colors
+                                                                .transparent,
+                                                            shape:
+                                                                const CircleBorder(),
+                                                            clipBehavior:
+                                                                Clip.hardEdge,
+                                                            child: InkWell(
+                                                              customBorder:
+                                                                  const CircleBorder(),
+                                                              splashColor: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .splashColorDark
+                                                                  : colors
+                                                                      .splashColorLight,
+                                                              highlightColor: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .highlightDark
+                                                                  : colors
+                                                                      .highlightLight,
+                                                              onTap: () {
+                                                                searchController
+                                                                    .clear();
+                                                                _onSearchChanged(
+                                                                    '');
+                                                              },
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        8.0),
+                                                                child: Icon(
+                                                                  Icons.clear,
+                                                                  color: colors
+                                                                      .textPrimaryLight,
+                                                                  size: 16,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Row(
+                                          children: [
+                                            // if (hasHoldings && showEdis)
+
+                                            Material(
+                                              color: Colors.transparent,
+                                              shape:
+                                                  const RoundedRectangleBorder(),
+                                              clipBehavior: Clip.hardEdge,
+                                              child: InkWell(
+                                                customBorder:
+                                                    const RoundedRectangleBorder(),
+                                                splashColor: theme.isDarkMode
+                                                    ? colors.splashColorDark
+                                                    : colors.splashColorLight,
+                                                highlightColor: theme.isDarkMode
+                                                    ? colors.highlightDark
+                                                    : colors.highlightLight,
+                                                onTap: () async {
+                                                  ledgerprovider
+                                                      .fetchunpledgehistory(
+                                                          context);
+                                                  ledgerprovider
+                                                      .fetchpledgehistory(
+                                                          context);
+                                                  ledgerprovider
+                                                      .taxpnlExTabchange(0);
+                                                  Navigator.pushNamed(
+                                                      context,
+                                                      Routes
+                                                          .pledgehistorymainscreen,
+                                                      arguments: "DDDDD");
+                                                },
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 5),
+                                                  child: TextWidget.paraText(
+                                                    text: "History",
+                                                    theme: false,
+                                                    color: theme.isDarkMode
+                                                        ? colors.secondaryDark
+                                                        : colors.secondaryLight,
+                                                    fw: 2,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ),
-                               
-                                 
-                            ],
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            // if (hasHoldings && showEdis)
-                               
-                             
-                            Material(
-                              color: Colors.transparent,
-                              shape: const RoundedRectangleBorder(),
-                              clipBehavior: Clip.hardEdge,
-                              child: InkWell(
-                                customBorder: const RoundedRectangleBorder(),
-                                splashColor: theme.isDarkMode
-                                    ? colors.splashColorDark
-                                    : colors.splashColorLight,
-                                highlightColor: theme.isDarkMode
-                                    ? colors.highlightDark
-                                    : colors.highlightLight,
-                                onTap: () async {
-                                   ledgerprovider.fetchunpledgehistory(context);
-                                  ledgerprovider.fetchpledgehistory(context);
-                                  ledgerprovider.taxpnlExTabchange(0);
-                                  Navigator.pushNamed(context, Routes.pledgehistorymainscreen,
-                                      arguments: "DDDDD");
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
-                                  child: TextWidget.paraText(
-                                    text: "History",
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.secondaryDark
-                                        : colors.secondaryLight,
-                                    fw: 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ))),
+                              ],
+                            ))),
                     // Padding(
                     //   padding: const EdgeInsets.only(
                     //     top: 2.0,
@@ -583,8 +769,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   TextWidget.paraText(
-                                      text:
-                                          "${title}",
+                                      text: "${title}",
                                       theme: false,
                                       color: theme.isDarkMode
                                           ? colors.textPrimaryDark
@@ -600,9 +785,9 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                     SizedBox(height: 10),
                     Expanded(
                         child: TabBarView(controller: tabController, children: [
-                      PledgeFilter(activetabe: '0'),
-                      PledgeFilter(activetabe: '1'),
-                      PledgeFilter(activetabe: '2'),
+                      PledgeFilter(activetabe: '0', searchQuery: searchQuery),
+                      PledgeFilter(activetabe: '1', searchQuery: searchQuery),
+                      PledgeFilter(activetabe: '2', searchQuery: searchQuery),
                       // OrderBook(orderBook: orderBook.allOrder!),
                     ])),
 
@@ -616,138 +801,144 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                       ),
                   ],
                 ),
-              ),
-              if (ledgerprovider.listforpledge.length > 0)
-                Positioned(
-                  bottom: 1,
-                  left: 1,
-                  right: 1,
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 16.0),
-                            child: TextWidget.subText(
-                                text:
-                                    "You ${ledgerprovider.listforpledge.length} Script For ${ledgerprovider.pledgeoruppledgedelete == 'unpledgedelete' ? 'Delete' : ledgerprovider.screenpledge == 'pledge' ? "Pledge" : "Unpledge"}",
-                                textOverflow: TextOverflow.ellipsis,
-                                theme: theme.isDarkMode,
-                                fw: 1),
-                          ),
-                          Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 12.0),
-                                child: Container(
-                                    height: 35,
-                                    width: 75,
-                                    margin: const EdgeInsets.only(
-                                        right: 12, top: 15),
-                                    child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            shadowColor: Colors.transparent,
-                                            backgroundColor: theme.isDarkMode
-                                                ? colors.colorbluegrey
-                                                : colors.colorBlack,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(50))),
-                                        onPressed: () {
-                                          ledgerprovider.cancelpledgetotal(
-                                              ledgerprovider.screenpledge);
-                                          ledgerprovider.changesegvaldummy('');
-                                          // ledgerprovider.screenclickedpledge = '';
-                                        },
-                                        child: Text("Cancel",
-                                            textAlign: TextAlign.center,
-                                            style: textStyle(
-                                                !theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                12,
-                                                FontWeight.w500)))),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 12.0),
-                                child: Container(
-                                    height: 35,
-                                    width: 75,
-                                    margin: const EdgeInsets.only(
-                                        right: 12, top: 15),
-                                    child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            shadowColor: Colors.transparent,
-                                            backgroundColor: theme.isDarkMode
-                                                ? colors.colorbluegrey
-                                                : colors.colorBlack,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(50))),
-                                        onPressed: () {
-                                          ledgerprovider.changesegvaldummy('');
-                                          print(
-                                              "${ledgerprovider.pledgeoruppledgedelete} ${ledgerprovider.pledgeorunpledge == 'unpledge'} loakdsdejkvh ");
-                                          if (ledgerprovider
-                                                  .pledgeoruppledgedelete ==
-                                              'unpledgedelete') {
-                                            print("loakdsdejkvh");
-                                            ledgerprovider.unpldgedeletefun(
-                                                context,
-                                                ledgerprovider
-                                                    .pledgeandunpledge!
-                                                    .cLIENTCODE
-                                                    .toString(),
-                                                ledgerprovider.listforpledge);
-                                          } else {
+                if (ledgerprovider.listforpledge.length > 0)
+                  Positioned(
+                    bottom: 1,
+                    left: 1,
+                    right: 1,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16.0),
+                              child: TextWidget.subText(
+                                  text:
+                                      "You ${ledgerprovider.listforpledge.length} Script For ${ledgerprovider.pledgeoruppledgedelete == 'unpledgedelete' ? 'Delete' : ledgerprovider.screenpledge == 'pledge' ? "Pledge" : "Unpledge"}",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3),
+                            ),
+                            Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12.0),
+                                  child: Container(
+                                      height: 35,
+                                      width: 75,
+                                      margin: const EdgeInsets.only(
+                                          right: 12, top: 15),
+                                      child: OutlinedButton(
+                                          style: OutlinedButton.styleFrom(
+                                              side: BorderSide(
+                                                color: theme.isDarkMode
+                                                    ? colors.primaryDark
+                                                    : colors.primaryLight,
+                                              ),
+                                              elevation: 0,
+                                              shadowColor: Colors.transparent,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5))),
+                                          onPressed: () {
+                                            ledgerprovider.cancelpledgetotal(
+                                                ledgerprovider.screenpledge);
+                                            ledgerprovider
+                                                .changesegvaldummy('');
+                                            // ledgerprovider.screenclickedpledge = '';
+                                          },
+                                          child: Text("Cancel",
+                                              textAlign: TextAlign.center,
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.primaryDark
+                                                      : colors.primaryLight,
+                                                  12,
+                                                  FontWeight.w500)))),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12.0),
+                                  child: Container(
+                                      height: 35,
+                                      width: 75,
+                                      margin: const EdgeInsets.only(
+                                          right: 12, top: 15),
+                                      child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                              elevation: 0,
+                                              shadowColor: Colors.transparent,
+                                              backgroundColor: theme.isDarkMode
+                                                  ? colors.primaryDark
+                                                  : colors.primaryLight,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5))),
+                                          onPressed: () {
+                                            ledgerprovider
+                                                .changesegvaldummy('');
+                                            print(
+                                                "${ledgerprovider.pledgeoruppledgedelete} ${ledgerprovider.pledgeorunpledge == 'unpledge'} loakdsdejkvh ");
                                             if (ledgerprovider
-                                                    .pledgeorunpledge ==
-                                                'unpledge') {
-                                              ledgerprovider
-                                                  .sendunpledgerequest(
-                                                      context,
-                                                      ledgerprovider
-                                                          .pledgeandunpledge!
-                                                          .cLIENTCODE
-                                                          .toString(),
-                                                      ledgerprovider
-                                                          .pledgeandunpledge!
-                                                          .bOID
-                                                          .toString(),
-                                                      ledgerprovider
-                                                          .pledgeandunpledge!
-                                                          .cLIENTNAME
-                                                          .toString(),
-                                                      ledgerprovider
-                                                          .listforpledge);
-                                            } else if (ledgerprovider
-                                                    .pledgeorunpledge ==
-                                                'pledge') {
-                                              _showBottomSheet(
-                                                  context, PledgeList());
+                                                    .pledgeoruppledgedelete ==
+                                                'unpledgedelete') {
+                                              print("loakdsdejkvh");
+                                              ledgerprovider.unpldgedeletefun(
+                                                  context,
+                                                  ledgerprovider
+                                                      .pledgeandunpledge!
+                                                      .cLIENTCODE
+                                                      .toString(),
+                                                  ledgerprovider.listforpledge);
+                                            } else {
+                                              if (ledgerprovider
+                                                      .pledgeorunpledge ==
+                                                  'unpledge') {
+                                                ledgerprovider
+                                                    .sendunpledgerequest(
+                                                        context,
+                                                        ledgerprovider
+                                                            .pledgeandunpledge!
+                                                            .cLIENTCODE
+                                                            .toString(),
+                                                        ledgerprovider
+                                                            .pledgeandunpledge!
+                                                            .bOID
+                                                            .toString(),
+                                                        ledgerprovider
+                                                            .pledgeandunpledge!
+                                                            .cLIENTNAME
+                                                            .toString(),
+                                                        ledgerprovider
+                                                            .listforpledge);
+                                              } else if (ledgerprovider
+                                                      .pledgeorunpledge ==
+                                                  'pledge') {
+                                                _showBottomSheet(
+                                                    context, PledgeList());
+                                              }
                                             }
-                                          }
-                                        },
-                                        child: Text("Submit",
-                                            textAlign: TextAlign.center,
-                                            style: textStyle(
-                                                !theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                12,
-                                                FontWeight.w500)))),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
+                                          },
+                                          child: Text("Submit",
+                                              textAlign: TextAlign.center,
+                                              style: textStyle(
+                                                  !theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  12,
+                                                  FontWeight.w500)))),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       );
