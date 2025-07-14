@@ -146,8 +146,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
 
                     // Search section if enabled
                     // if (positionBook.showSearchPosition)
-                    if (positionBook.postionBookModel!.isNotEmpty &&
-                        widget.listofPosition.length > 1) ...[
+                    if (positionBook.postionBookModel!.isNotEmpty) ...[
                       _buildSearchSection(context, theme, positionBook, funds),
                       _buildSearchBar(),
                     ],
@@ -595,8 +594,8 @@ class _PositionHeaderSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if (positionBook.postionBookModel!.isNotEmpty &&
-            listofPosition.length > 1) ...[
+        // &&  listofPosition.length > 1
+        if (positionBook.postionBookModel!.isNotEmpty) ...[
           Center(
             child: _PnLDisplay(
               isNetPnl: positionBook.isNetPnl,
@@ -891,7 +890,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
 
       return Container(
         color: netQtyZero
-            ? colors.listItembg.withOpacity(0.2)
+            ? colors.colorBlack.withOpacity(0.05)
             : colors.textSecondaryDark,
         padding: const EdgeInsets.all(16),
         child: Column(

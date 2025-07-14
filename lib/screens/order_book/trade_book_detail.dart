@@ -283,10 +283,10 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                         : "Sell",
                                     theme),
                                 const SizedBox(height: 8),
-
-                                rowOfInfoData("Price Type",
-                                    "${displayData.prctyp ?? ''}", theme),
+                                rowOfInfoData("Filled Qty",
+                                    displayData.flqty ?? "-", theme),
                                 const SizedBox(height: 8),
+
                                 rowOfInfoData(
                                     "Price",
                                     displayData.avgprc != null &&
@@ -303,18 +303,28 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                     "${displayData.flqty != null && displayData.flprc != null ? (double.parse(displayData.flqty!) * double.parse(displayData.flprc!)) : 0.00}",
                                     theme),
                                 const SizedBox(height: 8),
-                                rowOfInfoData("Fill Id",
-                                    "${displayData.flid ?? ''}", theme),
-                                const SizedBox(height: 8),
-                                rowOfInfoData("Filled Qty",
-                                    displayData.flqty ?? "-", theme),
-                                const SizedBox(height: 8),
+
+                                rowOfInfoData2(
+                                    "Product",
+                                    "Type",
+                                    displayData.sPrdtAli ?? '',
+                                    displayData.prctyp ?? '',
+                                    theme),
+
+                                // rowOfInfoData("Price Type",
+                                //     "${displayData.prctyp ?? ''}", theme),
+                                // const SizedBox(height: 8),
                                 rowOfInfoData("Validity",
                                     "${displayData.ret ?? ''}", theme),
                                 const SizedBox(height: 8),
-                                rowOfInfoData("Product",
-                                    "${displayData.sPrdtAli ?? ''}", theme),
+
+                                rowOfInfoData("Fill Id",
+                                    "${displayData.flid ?? ''}", theme),
                                 const SizedBox(height: 8),
+
+                                // rowOfInfoData("Product",
+                                //     "${displayData.sPrdtAli ?? ''}", theme),
+                                // const SizedBox(height: 8),
                                 rowOfInfoData("Order Id",
                                     "${displayData.norenordno ?? ''}", theme),
                                 const SizedBox(height: 8),
@@ -409,5 +419,45 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           thickness: 0)
     ]);
+  }
+
+  Widget rowOfInfoData2(
+    String title1,
+    String title2,
+    String value1,
+    String value2,
+    ThemesProvider theme,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextWidget.subText(
+              text: '$title1 / $title2',
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 3,
+            ),
+            TextWidget.subText(
+              text: '$value1 / $value2',
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+              fw: 3,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Divider(
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          thickness: 0,
+        ),
+      ],
+    );
   }
 }

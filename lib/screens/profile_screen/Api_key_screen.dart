@@ -264,8 +264,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                           apikeys.hidePass
                                               ? "assets/icon/eye-off.svg"
                                               : "assets/icon/eye.svg",
-                                          color: colors.iconColor,
-                                          width: 18,
+                                          width: 20,
                                         ),
                                       ),
                                     ),
