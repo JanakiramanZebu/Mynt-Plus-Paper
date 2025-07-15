@@ -30,17 +30,11 @@ import 'scrip_filter_bottom_sheet.dart';
 import 'watchlist_card.dart';
 import 'watchlists_bottom_sheet.dart';
 
-/// ---------------------------------------------------------------------------
-/// Mock class ­(only for local dev / tests – keep as-is)
-/// ---------------------------------------------------------------------------
 class MockMarketWatchlist {
   final List<String> values;
   MockMarketWatchlist({required this.values});
 }
 
-/// ---------------------------------------------------------------------------
-/// Sliver header that holds the horizontal tabs
-/// ---------------------------------------------------------------------------
 class _SliverTabsDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
   final double height;
@@ -83,9 +77,6 @@ class _SliverTabsDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
-/// ---------------------------------------------------------------------------
-/// Watch-list main screen
-/// ---------------------------------------------------------------------------
 class WatchListScreen extends StatefulWidget {
   const WatchListScreen({super.key});
 
@@ -95,12 +86,10 @@ class WatchListScreen extends StatefulWidget {
 
 class _WatchListScreenState extends State<WatchListScreen>
     with AutomaticKeepAliveClientMixin {
-  /* ------------------------------ controllers ----------------------------- */
   final ScrollController _tabScrollController = ScrollController();
   late final SwipeActionController _swipeController;
-  late final PageController _pageController;
+  final PageController _pageController = PageController(initialPage: 0);
 
-  /* ------------------------------- internal ------------------------------- */
   final TextEditingController _searchController = TextEditingController();
   final double _tabWidth = 95.0;
   final List<String> _lastTabNames = [];
@@ -114,9 +103,6 @@ class _WatchListScreenState extends State<WatchListScreen>
   @override
   bool get wantKeepAlive => true;
 
-  /* ------------------------------------------------------------------------ */
-  /*                                lifecycle                                */
-  /* ------------------------------------------------------------------------ */
   @override
   void initState() {
     super.initState();
@@ -131,14 +117,17 @@ class _WatchListScreenState extends State<WatchListScreen>
           (changed, selected, currentCount) => _safeSetState(() {}),
     );
 
-    _pageController = PageController(initialPage: 0);
     _tabScrollController.addListener(_handleTabScroll);
 
-    // Use post-frame callback to avoid provider modification during build
+    // Initialize immediately with stored data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_isDisposed) {
-        _initializeWatchlists();
-      }
+    if (!_isDisposed) {
+    _initializeWithStoredData();
+
+    }});
+    // Load additional data in background
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensurePredefinedWatchlistsLoaded();
     });
   }
 
@@ -153,45 +142,40 @@ class _WatchListScreenState extends State<WatchListScreen>
     super.dispose();
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                             initialization                               */
-  /* ------------------------------------------------------------------------ */
-  Future<void> _initializeWatchlists() async {
-    if (_isDisposed) return;
+  /// Initialize immediately with existing data - no loader needed
+void _initializeWithStoredData() {
+  if (_isDisposed || !mounted) return;
 
-    try {
-      await _ensurePredefinedWatchlistsLoaded();
-      
-      // Initialize page controller after data is loaded
-      if (!_isDisposed) {
-        final marketWatch = ProviderScope.containerOf(context).read(marketWatchProvider);
-        final watchList = marketWatch.marketWatchlist;
-        
-        if (watchList?.values != null) {
-          final currentIndex = watchList!.values!.indexOf(marketWatch.wlName);
-          if (currentIndex != -1) {
-            _currentPageIndex = currentIndex;
-            if (_pageController.hasClients) {
-              _pageController.jumpToPage(currentIndex);
-            }
-            _scrollToSelectedTab(currentIndex, force: true);
-          }
-        }
-        
-        _safeSetState(() {});
-      }
-    } catch (e) {
-      debugPrint('Error initializing watchlists: $e');
+  final marketWatch = ProviderScope.containerOf(context).read(marketWatchProvider);
+  final watchList = marketWatch.marketWatchlist;
+  
+  // Get the correct index for current watchlist
+  int initialPageIndex = 0;
+  if (watchList?.values != null) {
+    final currentIndex = watchList!.values!.indexOf(marketWatch.wlName);
+    if (currentIndex != -1) {
+      initialPageIndex = currentIndex;
     }
   }
+  
+  // Update current page index and jump to correct page
+  _currentPageIndex = initialPageIndex;
+  if (_pageController.hasClients && initialPageIndex > 0) {
+    _pageController.jumpToPage(initialPageIndex);
+  }
+  
+  // Set tab scroll position
+  _scrollToSelectedTab(initialPageIndex, force: true);
+  
+  // Load additional data in background
+  _ensurePredefinedWatchlistsLoaded();
+  
+  _safeSetState(() {});
+}
 
-  /* ------------------------------------------------------------------------ */
-  /*                             scroll management                            */
-  /* ------------------------------------------------------------------------ */
   void _handleTabScroll() {
     if (_isDisposed) return;
 
-    // user started / stopped scrolling
     if (_tabScrollController.position.isScrollingNotifier.value) {
       _isUserScrolling = true;
     } else {
@@ -200,7 +184,6 @@ class _WatchListScreenState extends State<WatchListScreen>
       });
     }
 
-    // repaint header for fading/shadow if needed
     if (!_tabScrollController.position.isScrollingNotifier.value) {
       _safeSetState(() {});
     }
@@ -238,9 +221,7 @@ class _WatchListScreenState extends State<WatchListScreen>
     });
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                           data initialisation                            */
-  /* ------------------------------------------------------------------------ */
+  /// Background loading - doesn't block UI
   Future<void> _ensurePredefinedWatchlistsLoaded() async {
     if (_isDisposed) return;
 
@@ -252,13 +233,11 @@ class _WatchListScreenState extends State<WatchListScreen>
 
       const predefined = ['Nifty50', 'Niftybank', 'Sensex', 'My Stocks'];
 
-      // make sure current predefined list has data
       if (predefined.contains(current) && marketWatch.scrips.isEmpty) {
         await marketWatch.fetchMWScrip(current, context);
         await marketWatch.changeWLScrip(current, context);
       }
 
-      // warm-up the others
       for (final name in predefined) {
         if (name == current) continue;
         final cached = marketWatch.marketWatchScripData[name];
@@ -267,20 +246,12 @@ class _WatchListScreenState extends State<WatchListScreen>
         }
       }
 
-      // Use post-frame callback to avoid provider modification during build
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!_isDisposed) {
-          await marketWatch.requestMWScrip(context: context, isSubscribe: true);
-        }
-      });
+      await marketWatch.requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
       debugPrint('Error preloading watchlists: $e');
     }
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                           page change handling                           */
-  /* ------------------------------------------------------------------------ */
   Future<void> _handlePageChanged(int pageIndex, WidgetRef ref) async {
     if (_isDisposed) return;
 
@@ -291,51 +262,36 @@ class _WatchListScreenState extends State<WatchListScreen>
 
     final newWatchlistName = watchList.values![pageIndex];
     
-    // Update current page index immediately
     _currentPageIndex = pageIndex;
-    
-    // Scroll tab to center
     _scrollToSelectedTab(pageIndex, force: true);
 
     try {
-      // Unsubscribe from current watchlist
       await marketWatch.requestMWScrip(context: context, isSubscribe: false);
 
-      // Change to new watchlist
       const predefined = ['My Stocks', 'Nifty50', 'Niftybank', 'Sensex'];
       final isPredefined = predefined.contains(newWatchlistName);
       
       await marketWatch.changeWlName(newWatchlistName, isPredefined ? 'Yes' : 'No');
       await marketWatch.changeWLScrip(newWatchlistName, context);
       
-      // Subscribe to new watchlist
       await marketWatch.requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
       debugPrint('Error changing watchlist: $e');
     }
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                           tab tap handling                               */
-  /* ------------------------------------------------------------------------ */
   Future<void> _handleTabTap(String name, int index, WidgetRef ref) async {
     if (_currentPageIndex == index) return;
 
-    // Update current page index immediately
     _currentPageIndex = index;
     
-    // Jump to page immediately for responsive UI
     if (_pageController.hasClients) {
       _pageController.jumpToPage(index);
     }
 
-    // Handle the actual data change
     await _handlePageChanged(index, ref);
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                                  build                                   */
-  /* ------------------------------------------------------------------------ */
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -347,7 +303,6 @@ class _WatchListScreenState extends State<WatchListScreen>
       final sortBy = ref.watch(marketWatchProvider.select((p) => p.sortByWL));
       final theme = ref.watch(themeProvider);
 
-      /* ---------- keep tab centred when the *list* itself changes ---------- */
       final names = watchList?.values?.cast<String>() ?? [];
       if (!_listsEqual(names, _lastTabNames)) {
         _lastTabNames
@@ -358,11 +313,9 @@ class _WatchListScreenState extends State<WatchListScreen>
         );
       }
 
-      /* ---------- auto-scroll when the selected list name changes ---------- */
       if (_lastWatchlistName != wlName) {
         _lastWatchlistName = wlName;
         
-        // Update current page index when watchlist name changes
         final currentIndex = names.indexOf(wlName);
         if (currentIndex != -1 && _currentPageIndex != currentIndex) {
           _currentPageIndex = currentIndex;
@@ -389,39 +342,52 @@ class _WatchListScreenState extends State<WatchListScreen>
     });
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                            PageView builder                              */
-  /* ------------------------------------------------------------------------ */
   Widget _buildPageView(WidgetRef ref, ThemesProvider theme, dynamic watchList, String sortBy) {
+    // Show immediately even if watchList is null initially
     if (watchList?.values == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const SizedBox.shrink(); // No loader, just empty space
     }
 
     return PageView.builder(
       controller: _pageController,
       itemCount: watchList.values.length,
       onPageChanged: (index) {
-        // Only handle page change if it's different from current
         if (index != _currentPageIndex) {
           _handlePageChanged(index, ref);
         }
       },
       itemBuilder: (context, index) {
         final pageName = watchList.values[index];
-        final marketWatch = ref.read(marketWatchProvider);
         
-        // Get scrips for this specific page
-        final List pageScrips = (pageName == marketWatch.wlName)
-            ? marketWatch.scrips
-            : jsonDecode(marketWatch.marketWatchScripData[pageName] ?? '[]');
-
         return KeyedSubtree(
-          key: ValueKey(pageName),
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await marketWatch.fetchMWScrip(pageName, context);
+          key: ValueKey('${pageName}_$index'),
+          child: Consumer(
+            builder: (context, ref, _) {
+              final marketWatch = ref.watch(marketWatchProvider);
+              
+              // Get data immediately - no async waiting
+              List pageScrips = [];
+              if (index == _currentPageIndex && pageName == marketWatch.wlName) {
+                pageScrips = marketWatch.scrips;
+              } else {
+                final cachedData = marketWatch.marketWatchScripData[pageName];
+                if (cachedData != null) {
+                  try {
+                    pageScrips = jsonDecode(cachedData);
+                  } catch (e) {
+                    debugPrint('Error parsing cached data for $pageName: $e');
+                    pageScrips = [];
+                  }
+                }
+              }
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await marketWatch.fetchMWScrip(pageName, context);
+                },
+                child: _buildPageContent(ref, theme, pageName, pageScrips, sortBy),
+              );
             },
-            child: _buildPageContent(ref, theme, pageName, pageScrips, sortBy),
           ),
         );
       },
@@ -440,9 +406,6 @@ class _WatchListScreenState extends State<WatchListScreen>
     return _buildWatchlistView(scrips, sortBy);
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                               UI helpers                                 */
-  /* ------------------------------------------------------------------------ */
   SliverToBoxAdapter _buildSearchBar(
     WidgetRef ref,
     ThemesProvider theme,
@@ -461,13 +424,11 @@ class _WatchListScreenState extends State<WatchListScreen>
           ),
           child: Row(
             children: [
-              /* ------------------------------ search ----------------------------- */
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
                     final mw = ref.read(marketWatchProvider);
-                    // Use post-frame callback to avoid provider modification during build
                     WidgetsBinding.instance.addPostFrameCallback((_) async {
                       await mw.requestMWScrip(context: context, isSubscribe: false);
                     });
@@ -495,8 +456,6 @@ class _WatchListScreenState extends State<WatchListScreen>
                   ),
                 ),
               ),
-
-              /* ------------------------------ filter ----------------------------- */
               if (isPreDef != 'Yes' && scripLen > 1)
                 Padding(
                   padding: const EdgeInsets.only(right: 6),
@@ -569,7 +528,6 @@ class _WatchListScreenState extends State<WatchListScreen>
           ),
           child: Row(
             children: [
-              /* ------------------------------- menu ------------------------------ */
               Padding(
                 padding: const EdgeInsets.only(left: 8, right: 4),
                 child: Material(
@@ -616,8 +574,6 @@ class _WatchListScreenState extends State<WatchListScreen>
                   ),
                 ),
               ),
-
-              /* ----------------------------- tab list ---------------------------- */
               Expanded(
                 child: _buildWatchlistTabs(ref, wlName, watchList, theme),
               ),
@@ -664,7 +620,6 @@ class _WatchListScreenState extends State<WatchListScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    /* ------------------------------ label ----------------------------- */
                     Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.symmetric(
@@ -682,8 +637,6 @@ class _WatchListScreenState extends State<WatchListScreen>
                         fw: selected ? 2 : null,
                       ),
                     ),
-
-                    /* ------------------------------ bar ------------------------------- */
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 250),
                       curve: Curves.easeInOut,
@@ -716,7 +669,6 @@ class _WatchListScreenState extends State<WatchListScreen>
               label: 'Add Symbol',
               icon: assets.addCircleIcon,
               onPress: () {
-                // Use post-frame callback to avoid provider modification during build
                 WidgetsBinding.instance.addPostFrameCallback((_) async {
                   await mw.requestMWScrip(context: context, isSubscribe: false);
                 });
@@ -765,9 +717,6 @@ class _WatchListScreenState extends State<WatchListScreen>
     );
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                             small utilities                              */
-  /* ------------------------------------------------------------------------ */
   String _formatTabName(String v) {
     if (v == 'My Stocks') return 'Holdings';
     if (v == 'Nifty50') return 'Nifty 50';
