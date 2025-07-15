@@ -1007,6 +1007,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
       final index = fund.decryptclientcheck!.companyCode!.indexOf(segmentCode);
       fund.segmentselection(index);
       print(" funddd index: $index");
+      print(" codes: ${fund.decryptclientcheck!.companyCode![index]}");
     }
   }
 

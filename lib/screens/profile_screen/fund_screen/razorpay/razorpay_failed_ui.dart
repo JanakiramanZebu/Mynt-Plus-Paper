@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../provider/thems.dart';
-//import '../../../../provider/transcation_provider.dart';
+import '../../../../provider/transcation_provider.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
@@ -137,6 +137,8 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
                           ),
                         ),
                         onPressed: () {
+                          // Clear the amount text field
+                          ref.read(transcationProvider).amount.clear();
                           Navigator.pop(context);
                           FocusScope.of(context).unfocus();
                         },

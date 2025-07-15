@@ -852,11 +852,16 @@ class TranctionProvider extends DefaultChangeNotifier {
       _paymentWithdraw = await api.getpayemntwithdraw(ip, amount, segment);
       if (_paymentWithdraw!.msg == "Sucess") {
         ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'Payment Withdraw Sucessfully'));
+            successMessage(context, 'Withdrawal request sent successfully'));
+        withdrawamount.clear();
         fetchPaymentWithDrawStatus(context);
+      } else {
+        print("Withdrawal failed with message: ${_paymentWithdraw!.msg}");
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, 'Withdrawal failed: ${_paymentWithdraw!.msg}'));
       }
     } catch (e) {
-      //log("Failed to Payment withdraw:: ${e.toString()}");
+      print("Withdrawal error: ${e.toString()}");
       ref.read(indexListProvider)
           .logError
           .add({"type": "fetchPaymentWithDraw", "Error": "$e"});
