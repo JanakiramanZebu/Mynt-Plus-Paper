@@ -816,11 +816,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     await marketWatchList.requestMWScrip(context: context, isSubscribe: true);
 
     // Load any additional watchlist data in the background
-    Future.microtask(() {
-      if (mounted) {
-        marketWatchList.fetchMWList(context, false);
-      }
-    });
+    // Future.microtask(() {
+    //   if (mounted) {
+    //     marketWatchList.fetchMWList(context, false);
+    //   }
+    // });
   }
 
   void _handlePortfolioTap() async {

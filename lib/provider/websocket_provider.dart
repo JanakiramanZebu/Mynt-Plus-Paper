@@ -85,25 +85,35 @@ class WebSocketProvider extends ChangeNotifier {
 
   void changeretryscreen(bool value) {
     _retryScreen = value;
-    notifyListeners();
+    // Use post-frame callback to avoid modifying provider during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void changeconnectioncount() {
     _connectionCount = 0;
-    notifyListeners();
+    // Use post-frame callback to avoid modifying provider during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void resetConnectionCount() {
     _connectionCount = 0;
     _reconnectionSuccess = true;
 
-    // Notify immediately to update UI
-    notifyListeners();
+    // Use post-frame callback to avoid modifying provider during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
 
     // Reset reconnection success flag after a delay to allow UI to update
     Future.delayed(const Duration(seconds: 1), () {
       _reconnectionSuccess = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     });
   }
 
@@ -138,8 +148,8 @@ class WebSocketProvider extends ChangeNotifier {
     _reconnectBackoff = null;
 
     if (mounted) {
-      // CRITICAL FIX: Schedule notification for the next microtask to avoid conflict with widget lifecycle
-      Future.microtask(() {
+      // Use post-frame callback to avoid modifying provider during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         notifyListeners();
       });
     }
@@ -155,7 +165,10 @@ class WebSocketProvider extends ChangeNotifier {
       _stopPingTimer();
     }
 
-    notifyListeners();
+    // Use post-frame callback to avoid modifying provider during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void _startSubscriptionTimer(String key, BuildContext context) {
@@ -352,7 +365,10 @@ class WebSocketProvider extends ChangeNotifier {
         _failedPingCount = 0;
       }
 
-      notifyListeners();
+      // Use post-frame callback to avoid modifying provider during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     } catch (e) {
       // Log parsing errors for debugging
       log("WebSocket message parsing error: $e");
@@ -643,7 +659,10 @@ class WebSocketProvider extends ChangeNotifier {
     if (!_reconnecting) {
       _connectionCount++;
 
-      notifyListeners(); // Notify to update UI with new connection count
+      // Use post-frame callback to avoid modifying provider during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners(); // Notify to update UI with new connection count
+      });
     }
 
     closeSocket(true);
@@ -653,14 +672,20 @@ class WebSocketProvider extends ChangeNotifier {
     }
 
     if (_connectionCount < _maxReconnectAttempts) {
-      reconnect(context);
+      // Use post-frame callback to avoid provider modification during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        reconnect(context);
+      });
     }
   }
 
   void _handleConnectionError(dynamic error, BuildContext context) {
     if (!_reconnecting) {
       _connectionCount++;
-      notifyListeners(); // Notify to update UI with new connection count
+      // Use post-frame callback to avoid modifying provider during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners(); // Notify to update UI with new connection count
+      });
     }
 
     closeSocket(true);
@@ -670,7 +695,10 @@ class WebSocketProvider extends ChangeNotifier {
     }
 
     if (_connectionCount < _maxReconnectAttempts) {
-      reconnect(context);
+      // Use post-frame callback to avoid provider modification during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        reconnect(context);
+      });
     }
   }
 
@@ -703,7 +731,10 @@ class WebSocketProvider extends ChangeNotifier {
       } else {
         // Reset reconnecting flag if no network is available
         _reconnecting = false;
-        notifyListeners();
+        // Use post-frame callback to avoid modifying provider during build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
       }
     }
   }
@@ -752,13 +783,19 @@ class WebSocketProvider extends ChangeNotifier {
         // Reset reconnecting flag after attempt, regardless of success
         // The actual connection state is tracked by _wsConnected
         _reconnecting = false;
-        notifyListeners();
+        // Use post-frame callback to avoid modifying provider during build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
       });
-    } else {
-      // Reset reconnecting flag if no network is available
-      _reconnecting = false;
-      notifyListeners();
-    }
+          } else {
+        // Reset reconnecting flag if no network is available
+        _reconnecting = false;
+        // Use post-frame callback to avoid modifying provider during build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
+      }
   }
 
   @override
