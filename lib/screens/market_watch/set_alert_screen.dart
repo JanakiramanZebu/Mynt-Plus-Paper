@@ -92,14 +92,15 @@ class _SetAlertState extends State<SetAlert> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 16),                    
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextWidget.subText(text: 'Type', theme: theme.isDarkMode, fw: 0),
+                              TextWidget.subText(
+                                  text: 'Type', theme: theme.isDarkMode, fw: 0),
                               const SizedBox(height: 8),
                               SizedBox(
                                 height: 44,
@@ -107,34 +108,44 @@ class _SetAlertState extends State<SetAlert> {
                                   child: DropdownButton2(
                                     dropdownStyleData: DropdownStyleData(
                                         decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                             color: !theme.isDarkMode
                                                 ? colors.colorWhite
-                                                : const Color.fromARGB(255, 16, 16, 16))),
+                                                : const Color.fromARGB(
+                                                    255, 16, 16, 16))),
                                     buttonStyleData: ButtonStyleData(
                                         height: 44,
                                         decoration: BoxDecoration(
                                             color: theme.isDarkMode
                                                 ? colors.darkGrey
                                                 : const Color(0xffF1F3F8),
-                                            border: Border.all(color: colors.colorBlue),
-                                            borderRadius: const BorderRadius.all(Radius.circular(5)))),
+                                            border: Border.all(
+                                                color: colors.colorBlue),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                    Radius.circular(5)))),
                                     isExpanded: true,
                                     style: TextWidget.textStyle(
-                                        fontSize: 14, theme: theme.isDarkMode, fw: 0),
+                                        fontSize: 14,
+                                        theme: theme.isDarkMode,
+                                        fw: 0),
                                     hint: TextWidget.subText(
                                         text: alertTypeVal,
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0),
                                     items: alertType
-                                        .map((String item) => DropdownMenuItem<String>(
+                                        .map((String item) =>
+                                            DropdownMenuItem<String>(
                                               value: item,
                                               child: Padding(
-                                                padding: const EdgeInsets.only(left: 8),
+                                                padding: const EdgeInsets.only(
+                                                    left: 8),
                                                 child: TextWidget.subText(
                                                     text: item,
-                                                    textOverflow: TextOverflow.ellipsis,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
                                                     fw: 0),
                                               ),
@@ -159,7 +170,10 @@ class _SetAlertState extends State<SetAlert> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextWidget.subText(text: 'Alert me', theme: theme.isDarkMode, fw: 0),
+                              TextWidget.subText(
+                                  text: 'Alert me',
+                                  theme: theme.isDarkMode,
+                                  fw: 0),
                               const SizedBox(height: 8),
                               SizedBox(
                                 height: 44,
@@ -167,34 +181,44 @@ class _SetAlertState extends State<SetAlert> {
                                   child: DropdownButton2<String>(
                                     dropdownStyleData: DropdownStyleData(
                                         decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                             color: !theme.isDarkMode
                                                 ? colors.colorWhite
-                                                : const Color.fromARGB(255, 16, 16, 16))),
+                                                : const Color.fromARGB(
+                                                    255, 16, 16, 16))),
                                     buttonStyleData: ButtonStyleData(
                                         height: 44,
                                         decoration: BoxDecoration(
                                             color: theme.isDarkMode
                                                 ? colors.darkGrey
                                                 : const Color(0xffF1F3F8),
-                                            border: Border.all(color: colors.colorBlue),
-                                            borderRadius: const BorderRadius.all(Radius.circular(5)))),
+                                            border: Border.all(
+                                                color: colors.colorBlue),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                    Radius.circular(5)))),
                                     isExpanded: true,
                                     style: TextWidget.textStyle(
-                                        fontSize: 14, theme: theme.isDarkMode, fw: 0),
+                                        fontSize: 14,
+                                        theme: theme.isDarkMode,
+                                        fw: 0),
                                     hint: TextWidget.subText(
                                         text: alertValue,
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0),
                                     items: alterItems
-                                        .map((String item) => DropdownMenuItem<String>(
+                                        .map((String item) =>
+                                            DropdownMenuItem<String>(
                                               value: item,
                                               child: Padding(
-                                                padding: const EdgeInsets.only(left: 8),
+                                                padding: const EdgeInsets.only(
+                                                    left: 8),
                                                 child: TextWidget.subText(
                                                     text: item,
-                                                    textOverflow: TextOverflow.ellipsis,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
                                                     fw: 0),
                                               ),
@@ -217,7 +241,8 @@ class _SetAlertState extends State<SetAlert> {
                     ),
                     const SizedBox(height: 16),
                     // ENTER VALUE FIELD
-                    TextWidget.subText(text: 'Enter Value', theme: theme.isDarkMode, fw: 0),
+                    TextWidget.subText(
+                        text: 'Enter Value', theme: theme.isDarkMode, fw: 0),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 44,
@@ -245,7 +270,8 @@ class _SetAlertState extends State<SetAlert> {
                             fontSize: 14, theme: theme.isDarkMode, fw: 0),
                         textCtrl: valueCtrl,
                         textAlign: TextAlign.start,
-                        prefixIcon: SvgPicture.asset(assets.ruppeIcon, fit: BoxFit.scaleDown),
+                        prefixIcon: SvgPicture.asset(assets.ruppeIcon,
+                            fit: BoxFit.scaleDown),
                       ),
                     ),
                     if (errorText.isNotEmpty) ...[
@@ -257,7 +283,8 @@ class _SetAlertState extends State<SetAlert> {
                     ],
                     const SizedBox(height: 16),
                     // REMARK FIELD
-                    TextWidget.subText(text: 'Remark', theme: theme.isDarkMode, fw: 0),
+                    TextWidget.subText(
+                        text: 'Remark', theme: theme.isDarkMode, fw: 0),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 70,
@@ -267,10 +294,10 @@ class _SetAlertState extends State<SetAlert> {
                             : const Color(0xffF1F3F8),
                         hintText: "Remark",
                         hintStyle: TextWidget.textStyle(
-                            fontSize: 16,
-                            color: const Color(0xff666666),
-                            theme: theme.isDarkMode,
-                            ),
+                          fontSize: 16,
+                          color: const Color(0xff666666),
+                          theme: theme.isDarkMode,
+                        ),
                         style: TextWidget.textStyle(
                             fontSize: 14, theme: theme.isDarkMode, fw: 0),
                         textCtrl: remark,
@@ -302,163 +329,49 @@ class _SetAlertState extends State<SetAlert> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(5)),
                 ),
-                onPressed: (errorText.isNotEmpty || valueCtrl.text.isEmpty)
-                    ? null // Disable the button when there's an error or empty value
-                    : () {
-                        setState(() {
-                          if (valueCtrl.text == "0") {
-                            errorText = "Value cannot be 0";
-                          } else {
-                            errorText = "";
-                            showDialog(
-                              barrierDismissible: false,
-                              context: context,
-                              builder: (BuildContext context) {
-                                return StatefulBuilder(builder:
-                                    (BuildContext context,
-                                        StateSetter setDialogState) {
-                                  return AlertDialog(
-                                    backgroundColor: theme.isDarkMode
-                                        ? const Color.fromARGB(
-                                            255, 18, 18, 18)
-                                        : colors.colorWhite,
-                                    titleTextStyle: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        theme: theme.isDarkMode,
-                                        fw: 1),
-
-                                    contentTextStyle: TextWidget.textStyle(
-                                        fontSize: 12,
-                                        theme: theme.isDarkMode,
-                                        fw: 0),
-                                    titlePadding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 12),
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(14))),
-                                    scrollable: true,
-                                    contentPadding:
-                                        const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                    ),
-                                    insetPadding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    // ignore: prefer_const_constructors
-                                    title: TextWidget.subText(
-                                        text: "Confirmation Alert",
-                                        theme: theme.isDarkMode,
-                                        fw: 2),
-
-                                    content: SizedBox(
-                                      width:
-                                          MediaQuery.of(context).size.width,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          TextWidget.subText(
-                                              text:
-                                                  "Alert me when $alertTypeVal of ${widget.wlvalue.tsym} is $alertValue ${valueCtrl.text}",
-                                              theme: theme.isDarkMode,
-                                              fw: 0),
-                                        ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context),
-                                        child: TextWidget.paraText(
-                                            text: "Cancel",
-                                            color: theme.isDarkMode
-                                                ? colors.colorLightBlue
-                                                : colors.colorBlue,
-                                            theme: theme.isDarkMode,
-                                            fw: 2),
-                                      ),
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            backgroundColor: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(50),
-                                            )),
-                                        onPressed: _handlesetalert
-                                            ? null
-                                            : () async {
-                                                setDialogState(() {
-                                                  _handlesetalert = true;
-                                                });
-                                                try {
-                                                  await ref
-                                                      .read(
-                                                          marketWatchProvider)
-                                                      .fetchSetAlert(
-                                                          widget.wlvalue.exch,
-                                                          widget.wlvalue.tsym,
-                                                          valueCtrl.text,
-                                                          alertValue ==
-                                                                      "Above" &&
-                                                                  alertTypeVal ==
-                                                                      "LTP"
-                                                              ? "LTP_A"
-                                                              : alertValue ==
-                                                                          "Below" &&
-                                                                      alertTypeVal ==
-                                                                          "LTP"
-                                                                  ? "LTP_B"
-                                                                  /*: alertValue == "Above" &&
+                onPressed: _handlesetalert &&
+                        (errorText.isNotEmpty || valueCtrl.text.isEmpty)
+                    ? null
+                    : () async {
+                        if (valueCtrl.text == "0") {
+                          errorText = "Value cannot be 0";
+                        } else {
+                          errorText = "";
+                          setState(() {
+                            _handlesetalert = true;
+                          });
+                          try {
+                            await ref.read(marketWatchProvider).fetchSetAlert(
+                                widget.wlvalue.exch,
+                                widget.wlvalue.tsym,
+                                valueCtrl.text,
+                                alertValue == "Above" && alertTypeVal == "LTP"
+                                    ? "LTP_A"
+                                    : alertValue == "Below" &&
+                                            alertTypeVal == "LTP"
+                                        ? "LTP_B"
+                                        /*: alertValue == "Above" &&
                                                                             alertTypeVal ==
                                                                                 "Perc.Change"
                                                                     ? "CH_PER_A"
                                                                     : "CH_PER_B"*/
-                                                                  : "LTP_B",
-                                                          context,
-                                                          scripInfo
-                                                              .alertPendingModel!
-                                                              .length,
-                                                          "${widget.depthdata.lp}",
-                                                          remark.text);
-                                                } finally {
-                                                  if (mounted) {
-                                                    setDialogState(() {
-                                                      _handlesetalert = false;
-                                                    });
-                                                  }
-                                                }
-                                              },
-                                        child: _handlesetalert ||
-                                                scripInfo.loading
-                                            ? const SizedBox(
-                                                width: 18,
-                                                height: 20,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                        strokeWidth: 2,
-                                                        color: Color(
-                                                            0xff666666)),
-                                              )
-                                            : TextWidget.subText(
-                                                text: "Ok",
-                                                color: !theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                theme: theme.isDarkMode,
-                                                fw: 2),
-                                      )
-                                    ],
-                                  );
-                                });
-                              },
-                            );
+                                        : "LTP_B",
+                                context,
+                                scripInfo.alertPendingModel!.length,
+                                "${widget.depthdata.lp}",
+                                remark.text);
+                          } finally {
+                            if (mounted) {
+                              setState(() {
+                                _handlesetalert = false;
+                              });
+                            }
                           }
-                        });
+                        }
+                        ;
                       },
                 child: TextWidget.subText(
-                    text: 'Set alert',                      
+                    text: 'Set alert',
                     color: colors.colorWhite,
                     theme: theme.isDarkMode,
                     fw: 2),

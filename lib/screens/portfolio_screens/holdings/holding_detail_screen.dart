@@ -556,26 +556,9 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                       await Future.delayed(
                                           const Duration(milliseconds: 150));
 
-                                      await scripInfo.chngDephBtn("Overview");
-                                      scripInfo.scripdepthsize(true);
-                                      showModalBottomSheet(
-                                          barrierColor:
-                                              Colors.black.withOpacity(0.3),
-                                          isScrollControlled: true,
-                                          useSafeArea: true,
-                                          isDismissible: true,
-                                          shape: const RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                      top:
-                                                          Radius.circular(16))),
-                                          backgroundColor: Colors.transparent,
-                                          context: context,
-                                          builder: (context) =>
-                                              ScripDepthInfoWithHoldingConfig(
-                                                  wlValue: depthArgs,
-                                                  isBasket: '',
-                                                  isFromHolding: true));
+                                      await scripInfo.scripdepthsize(true);
+                                      await scripInfo.calldepthApis(
+                                          context, depthArgs, "");
                                     },
                                     splashColor: theme.isDarkMode
                                         ? Colors.white.withOpacity(0.15)
@@ -602,7 +585,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                     children: [
                                                       TextWidget.headText(
                                                           text:
-                                                              "${_exchTsym.tsym?.replaceAll("-EQ", "").toUpperCase() ?? ''} ",
+                                                              "${_exchTsym.tsym?.replaceAll("-EQ", "").toUpperCase() ?? ''} ${_exchTsym.expDate ?? ''} ${_exchTsym.option ?? ''} ${_exchTsym.exch ?? ''}",
                                                           color: theme
                                                                   .isDarkMode
                                                               ? colors
@@ -883,7 +866,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                 SizedBox(height: 4),
                                                 TextWidget.subText(
                                                     text:
-                                                        " (${_exchTsym.pNlChng})%",
+                                                        " (${_exchTsym.pNlChng}%)",
                                                     theme: false,
                                                     color: theme.isDarkMode
                                                         ? colors.textPrimaryDark
@@ -923,7 +906,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                     "Product",
                                     _holdingData.sPrdtAli != "null"
                                         ? "${_holdingData.sPrdtAli}"
-                                        : "CNC",
+                                        : "",
                                     theme),
                                 data(
                                     "Invested",
@@ -1326,19 +1309,19 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextWidget.subText(
-                  text: name,
-                  theme: false,
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark
-                      : colors.textSecondaryLight,
-                  ),
+                text: name,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+              ),
               TextWidget.subText(
-                  text: value,
-                  theme: false,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  ),
+                text: value,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+              ),
             ],
           ),
           const SizedBox(height: 8),

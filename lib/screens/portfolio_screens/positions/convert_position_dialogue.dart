@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../models/portfolio_model/position_convertion_model.dart';
 import '../../../provider/portfolio_provider.dart';
@@ -51,91 +52,104 @@ class _ConvertPositionDialogueState
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     return AlertDialog(
-      backgroundColor: theme.isDarkMode
-          ? const Color.fromARGB(255, 18, 18, 18)
-          : colors.colorWhite,
+      backgroundColor: colors.colorWhite,
+      titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16))),
+          borderRadius: BorderRadius.all(Radius.circular(8))),
       scrollable: true,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 12,
+      ),
       actionsPadding:
-          const EdgeInsets.only(left: 16, right: 16, bottom: 14, top: 3),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-      titlePadding: const EdgeInsets.only(left: 16),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+      title: Column(
         children: [
-          TextWidget.titleText(
-              text: 'Position Convertion',
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              fw: 1),
-          IconButton(
-              splashRadius: 20,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Icon(Icons.close_rounded,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.iconColor))
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TextWidget.subText(
+                text:
+                    "${widget.convertPosition.symbol} ${widget.convertPosition.option} ${widget.convertPosition.exch}",
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                fw: 3,
+                textOverflow: TextOverflow.ellipsis,
+              ),
+              Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  onTap: () async {
+                    await Future.delayed(const Duration(milliseconds: 150));
+                    Navigator.pop(context);
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 22,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
         ],
       ),
       content: SizedBox(
         width: MediaQuery.of(context).size.width,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const ListDivider(),
+            TextWidget.subText(
+                text: "Order Type",
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 3),
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextWidget.titleText(
-                    text: "${widget.convertPosition.symbol} ",
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    fw: 3,
-                    textOverflow: TextOverflow.ellipsis,
-                    align: TextAlign.center),
-                TextWidget.titleText(
-                    text: "${widget.convertPosition.option}  ",
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    fw: 3,
-                    textOverflow: TextOverflow.ellipsis,
-                    align: TextAlign.center),
-                CustomExchBadge(exch: "${widget.convertPosition.exch}")
-              ],
-            ),
-            const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   decoration: BoxDecoration(
                       color: colors.btnBg,
                       borderRadius: BorderRadius.circular(5)),
                   child: TextWidget.subText(
                       text: "${widget.convertPosition.sPrdtAli}",
                       theme: false,
-                      color: theme.isDarkMode
-                          ? colors.colorWhite
-                          : colors.colorBlack,
-                      fw: 1),
+                      color: colors.textSecondaryLight,
+                      fw: 0),
                 ),
-                const Icon(Icons.double_arrow_sharp),
+                SvgPicture.asset(
+                  assets.rightarrow,
+                  width: 20,
+                  height: 20,
+                ),
                 Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 24),
                     decoration: BoxDecoration(
-                        color: colors.btnBg,
+                        color: colors.btnOutlinedBorder,
                         borderRadius: BorderRadius.circular(5)),
                     child: TextWidget.subText(
                         text: widget.convertPosition.sPrdtAli == "MIS" &&
@@ -148,123 +162,90 @@ class _ConvertPositionDialogueState
                                     ? "MIS"
                                     : "MIS",
                         theme: false,
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        fw: 1)),
+                        color: colors.colorWhite,
+                        fw: 0)),
               ],
             ),
-            const SizedBox(height: 6),
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    const SizedBox(height: 8),
-                    TextWidget.subText(
-                        text: "Max Quantity",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        fw: 0),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                        height: 44,
-                        child: TextFormField(
-                          readOnly: true,
-                          style: TextWidget.textStyle(
-                              fontSize: 16,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              theme: false,
-                              fw: 3),
-                          controller: maxQty,
-                          textAlign: TextAlign.center,
-                          decoration: InputDecoration(
-                            fillColor: colors.btnBg,
-                            filled: true,
-                            border: const OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 5),
+            const SizedBox(height: 20),
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              TextWidget.subText(
+                  text: "Quantity (${widget.convertPosition.ls})",
+                  theme: false,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 0),
+              const SizedBox(height: 10),
+              SizedBox(
+                  height: 40,
+                  child: TextFormField(
+                      decoration: InputDecoration(
+                        fillColor: colors.btnBg,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5),
+                          borderSide: BorderSide(
+                            color: colors.primaryDark,
+                            width: 1,
                           ),
-                        ))
-                  ])),
-              const SizedBox(width: 32),
-              Expanded(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    const SizedBox(height: 8),
-                    TextWidget.subText(
-                        text: "Quantity",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        fw: 0),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                        height: 44,
-                        child: TextFormField(
-                            decoration: InputDecoration(
-                              fillColor: colors.btnBg,
-                              filled: true,
-                              border: const OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 5),
-                            ),
-                            controller: qty,
-                            textAlign: TextAlign.center,
-                            style: TextWidget.textStyle(
-                                fontSize: 16,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                theme: false,
-                                fw: 3),
-                            onChanged: (value) {
-                              if (value.isNotEmpty) {
-                                int number = int.tryParse(qty.text) ?? 0;
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 5),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5),
+                          borderSide: BorderSide(
+                            color: colors.primaryDark,
+                            width: 1,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5),
+                          borderSide: BorderSide(
+                            color: colors.primaryDark,
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      controller: qty,
+                      textAlign: TextAlign.center,
+                      style: TextWidget.textStyle(
+                          fontSize: 16,
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          theme: false,
+                          fw: 0),
+                      onChanged: (value) {
+                        if (value.isNotEmpty) {
+                          int number = int.tryParse(qty.text) ?? 0;
 
-                                if (number > 999999) {
-                                  qty.text = qty.text
-                                      .substring(0, 6); // Restrict max value
-                                }
+                          if (number > 999999) {
+                            qty.text =
+                                qty.text.substring(0, 6); // Restrict max value
+                          }
 
-                                String newValue =
-                                    value.replaceAll(RegExp(r'[^0-9]'), '');
-                                if (newValue != value) {
-                                  qty.text = newValue;
-                                  qty.selection = TextSelection.fromPosition(
-                                    TextPosition(offset: newValue.length),
-                                  );
-                                }
-                              }
-                            })),
-                  ]))
+                          String newValue =
+                              value.replaceAll(RegExp(r'[^0-9]'), '');
+                          if (newValue != value) {
+                            qty.text = newValue;
+                            qty.selection = TextSelection.fromPosition(
+                              TextPosition(offset: newValue.length),
+                            );
+                          }
+                        }
+                      })),
             ]),
-            const SizedBox(height: 12)
           ],
         ),
       ),
       actions: [
         SizedBox(
-          width: MediaQuery.of(context).size.width,
+          width: double.infinity,
           child: Container(
             height: 40,
             decoration: BoxDecoration(
-              color: colors.btnBg,
+              color: colors.primaryDark,
               borderRadius: BorderRadius.circular(5),
-              border: Border.all(
-                color: colors.btnOutlinedBorder,
-                width: 1,
-              ),
             ),
             child: Material(
               color: Colors.transparent,
@@ -323,13 +304,13 @@ class _ConvertPositionDialogueState
                   }
                 },
                 child: Center(
-                  child: TextWidget.subText(
-                    text: "Convert",
+                  child: TextWidget.titleText(
+                    text: "Convert Position",
                     theme: false,
                     color: theme.isDarkMode
-                        ? colors.primaryDark
-                        : colors.primaryLight,
-                    fw: 1,
+                        ? colors.colorBlack
+                        : colors.colorWhite,
+                    fw: 0,
                   ),
                 ),
               ),

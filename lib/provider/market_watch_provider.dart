@@ -646,13 +646,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         symbol: '${flow ? raw['symbol'] : raw.symbol}',
         expDate: '${flow ? raw['expDate'] : raw.expDate}',
         option: '${flow ? raw['option'] : raw.option}');
-    scripdepthsize(false);
     showModalBottomSheet(
         isScrollControlled: true,
         useSafeArea: true,
         isDismissible: true,
         enableDrag: true,
-         shape: const RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
@@ -3654,7 +3653,6 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             successMessage(context, "Alert created successfully"));
 
         // Close the alert creation screens
-        Navigator.pop(context);
         Navigator.pop(context);
         Navigator.pop(context);
 
