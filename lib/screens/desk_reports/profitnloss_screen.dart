@@ -131,226 +131,231 @@ class PnlScreen extends StatelessWidget {
                   children: [
                     Container(
                       width: screenWidth,
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? const Color(0xffB5C0CF).withOpacity(.15)
-                                : const Color(0xffF1F3F8)),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      TextWidget.subText(
-                                          text: ledgerprovider.filterval
-                                                      .toString() ==
-                                                  'SingingCharacter.all'
-                                              ? 'Net Notional'
-                                              : ledgerprovider.filterval
-                                                          .toString() ==
-                                                      'SingingCharacter.eq'
-                                                  ? 'Equity'
-                                                  : ledgerprovider.filterval
-                                                              .toString() ==
-                                                          'SingingCharacter.fno'
-                                                      ? 'FNO'
-                                                      : ledgerprovider.filterval
-                                                                  .toString() ==
-                                                              'SingingCharacter.com'
-                                                          ? 'Commodity'
-                                                          : ledgerprovider
-                                                                      .filterval
-                                                                      .toString() ==
-                                                                  'SingingCharacter.cur'
-                                                              ? 'Currency'
-                                                              : "-".toString(),
-                                          color: Color(0xFF696969),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    TextWidget.paraText(
+                                        text: ledgerprovider.filterval
+                                                    .toString() ==
+                                                'SingingCharacter.all'
+                                            ? 'Net Notional'
+                                            : ledgerprovider.filterval
+                                                        .toString() ==
+                                                    'SingingCharacter.eq'
+                                                ? 'Equity'
+                                                : ledgerprovider.filterval
+                                                            .toString() ==
+                                                        'SingingCharacter.fno'
+                                                    ? 'FNO'
+                                                    : ledgerprovider.filterval
+                                                                .toString() ==
+                                                            'SingingCharacter.com'
+                                                        ? 'Commodity'
+                                                        : ledgerprovider
+                                                                    .filterval
+                                                                    .toString() ==
+                                                                'SingingCharacter.cur'
+                                                            ? 'Currency'
+                                                            : "-".toString(),
+                                        color: Color(0xFF696969),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(top: 8.0),
+                                      child: TextWidget.subText(
+                                          text:
+                                              "${allnotional.toStringAsFixed(2)}",
+                                          color: allnotional > 0
+                                              ? Colors.green
+                                              : allnotional < 0
+                                                  ? Colors.red
+                                                  : Colors.black,
                                           textOverflow: TextOverflow.ellipsis,
                                           theme: theme.isDarkMode,
                                           fw: 0),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: TextWidget.titleText(
-                                            text:
-                                                "${allnotional.toStringAsFixed(2)}",
-                                            color: allnotional > 0
-                                                ? Colors.green
-                                                : allnotional < 0
-                                                    ? Colors.red
-                                                    : Colors.black,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            fw: 1),
-                                      )
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      TextWidget.subText(
-                                          text: "Charges and Taxes",
-                                          color: Color(0xFF696969),
-                                          textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
-                                          fw: 0),
-                                      ledgerprovider.reportsloadingforcharges ==
-                                              true
-                                          ? Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 8.0),
-                                              child: SpinKitThreeBounce(
-                                                color: Colors.grey,
-                                                size: 24,
-                                              ),
-                                            )
-                                          : Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 8.0),
-                                              child: TextWidget.titleText(
-                                                  text:
-                                                      "₹ ${ledgerprovider.pnlAllData == null || ledgerprovider.pnlAllData!.expenseAmt == 'null' ? '0.00' : double.parse(ledgerprovider.pnlAllData!.expenseAmt!).toStringAsFixed(2)}",
-                                                  color: Colors.red,
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1),
-                                            )
-                                    ],
-                                  ),
-                                  // Column(
-                                  //   crossAxisAlignment: CrossAxisAlignment.end,
-                                  //   children: [
-                                  //     Text(
-                                  //       "Equity",
-                                  //       textAlign: TextAlign.right,
-                                  //       style: textStyle(Color(0xFF696969), 14,
-                                  //           FontWeight.w500),
-                                  //     ),
-                                  //     Padding(
-                                  //       padding: const EdgeInsets.only(top: 8.0),
-                                  //       child: Text(
-                                  //         "${eqnotional.toStringAsFixed(2)}",
-                                  //         style: textStyle(
-                                  //             Colors.red, 16, FontWeight.w600),
-                                  //       ),
-                                  //     )
-                                  //   ],
-                                  // ),
-                                ],
-                              ),
+                                    )
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    TextWidget.paraText(
+                                        text: "Charges and Taxes",
+                                        color: Color(0xFF696969),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    ledgerprovider.reportsloadingforcharges ==
+                                            true
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 8.0),
+                                            child: SpinKitThreeBounce(
+                                              color: Colors.grey,
+                                              size: 24,
+                                            ),
+                                          )
+                                        : Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 8.0),
+                                            child: TextWidget.subText(
+                                                text:
+                                                    "₹ ${ledgerprovider.pnlAllData == null || ledgerprovider.pnlAllData!.expenseAmt == 'null' ? '0.00' : double.parse(ledgerprovider.pnlAllData!.expenseAmt!).toStringAsFixed(2)}",
+                                                color: Colors.red,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                          )
+                                  ],
+                                ),
+                                // Column(
+                                //   crossAxisAlignment: CrossAxisAlignment.end,
+                                //   children: [
+                                //     Text(
+                                //       "Equity",
+                                //       textAlign: TextAlign.right,
+                                //       style: textStyle(Color(0xFF696969), 14,
+                                //           FontWeight.w500),
+                                //     ),
+                                //     Padding(
+                                //       padding: const EdgeInsets.only(top: 8.0),
+                                //       child: Text(
+                                //         "${eqnotional.toStringAsFixed(2)}",
+                                //         style: textStyle(
+                                //             Colors.red, 16, FontWeight.w600),
+                                //       ),
+                                //     )
+                                //   ],
+                                // ),
+                              ],
                             ),
-                            // Padding(
-                            //   padding: const EdgeInsets.only(
-                            //       left: 18.0,
-                            //       right: 18.0,
-                            //       top: 4.0,
-                            //       bottom: 18.0),
-                            //   child: Row(
-                            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            //     children: [
-                            //       Column(
-                            //         crossAxisAlignment: CrossAxisAlignment.start,
-                            //         children: [
-                            //           Text(
-                            //             "FNO",
-                            //             style: textStyle(Color(0xFF696969), 14,
-                            //                 FontWeight.w500),
-                            //           ),
-                            //           Padding(
-                            //             padding: const EdgeInsets.only(top: 8.0),
-                            //             child: Text(
-                            //               "${fnonotional.toStringAsFixed(2)}",
-                            //               textAlign: TextAlign.right,
-                            //               style: textStyle(colors.colorBlack, 16,
-                            //                   FontWeight.w600),
-                            //             ),
-                            //           )
-                            //         ],
-                            //       ),
-                            //       Column(
-                            //         crossAxisAlignment: CrossAxisAlignment.end,
-                            //         children: [
-                            //           Text(
-                            //             "Commodity",
-                            //             textAlign: TextAlign.right,
-                            //             style: textStyle(Color(0xFF696969), 14,
-                            //                 FontWeight.w500),
-                            //           ),
-                            //           Padding(
-                            //             padding: const EdgeInsets.only(top: 8.0),
-                            //             child: Text(
-                            //               "${comnotional.toStringAsFixed(2)}",
-                            //               textAlign: TextAlign.right,
-                            //               style: textStyle(
-                            //                   Colors.green, 16, FontWeight.w600),
-                            //             ),
-                            //           )
-                            //         ],
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
-                            // Padding(
-                            //   padding: const EdgeInsets.only(
-                            //       left: 18.0,
-                            //       right: 18.0,
-                            //       top: 4.0,
-                            //       bottom: 18.0),
-                            //   child: Row(
-                            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            //     children: [
-                            //       Column(
-                            //         crossAxisAlignment: CrossAxisAlignment.start,
-                            //         children: [
-                            //           Text(
-                            //             "Currency",
-                            //             style: textStyle(Color(0xFF696969), 14,
-                            //                 FontWeight.w500),
-                            //           ),
-                            //           Padding(
-                            //             padding: const EdgeInsets.only(top: 8.0),
-                            //             child: Text(
-                            //               "${curnotional.toStringAsFixed(2)}",
-                            //               textAlign: TextAlign.right,
-                            //               style: textStyle(colors.colorBlack, 16,
-                            //                   FontWeight.w600),
-                            //             ),
-                            //           )
-                            //         ],
-                            //       ),
-                            //       Column(
-                            //         crossAxisAlignment: CrossAxisAlignment.end,
-                            //         children: [
-                            //           Text(
-                            //             "Charges and Taxes",
-                            //             textAlign: TextAlign.right,
-                            //             style: textStyle(Color(0xFF696969), 14,
-                            //                 FontWeight.w500),
-                            //           ),
-                            //           Padding(
-                            //             padding: const EdgeInsets.only(top: 8.0),
-                            //             child: Text(
-                            //               "${ledgerprovider.pnlAllData?.expenseAmt  }",
-                            //               textAlign: TextAlign.right,
-                            //               style: textStyle(
-                            //                   Colors.green, 16, FontWeight.w600),
-                            //             ),
-                            //           )
-                            //         ],
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
-                          ],
-                        ),
+                          ),
+                                          Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: 2.0,
+                  ),
+                  child: Divider(
+                    color: theme.isDarkMode
+                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                        : const Color(0xffF1F3F8),
+                    thickness: 1.0,
+                  ),
+                ),
+                          // Padding(
+                          //   padding: const EdgeInsets.only(
+                          //       left: 18.0,
+                          //       right: 18.0,
+                          //       top: 4.0,
+                          //       bottom: 18.0),
+                          //   child: Row(
+                          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //     children: [
+                          //       Column(
+                          //         crossAxisAlignment: CrossAxisAlignment.start,
+                          //         children: [
+                          //           Text(
+                          //             "FNO",
+                          //             style: textStyle(Color(0xFF696969), 14,
+                          //                 FontWeight.w500),
+                          //           ),
+                          //           Padding(
+                          //             padding: const EdgeInsets.only(top: 8.0),
+                          //             child: Text(
+                          //               "${fnonotional.toStringAsFixed(2)}",
+                          //               textAlign: TextAlign.right,
+                          //               style: textStyle(colors.colorBlack, 16,
+                          //                   FontWeight.w600),
+                          //             ),
+                          //           )
+                          //         ],
+                          //       ),
+                          //       Column(
+                          //         crossAxisAlignment: CrossAxisAlignment.end,
+                          //         children: [
+                          //           Text(
+                          //             "Commodity",
+                          //             textAlign: TextAlign.right,
+                          //             style: textStyle(Color(0xFF696969), 14,
+                          //                 FontWeight.w500),
+                          //           ),
+                          //           Padding(
+                          //             padding: const EdgeInsets.only(top: 8.0),
+                          //             child: Text(
+                          //               "${comnotional.toStringAsFixed(2)}",
+                          //               textAlign: TextAlign.right,
+                          //               style: textStyle(
+                          //                   Colors.green, 16, FontWeight.w600),
+                          //             ),
+                          //           )
+                          //         ],
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
+                          // Padding(
+                          //   padding: const EdgeInsets.only(
+                          //       left: 18.0,
+                          //       right: 18.0,
+                          //       top: 4.0,
+                          //       bottom: 18.0),
+                          //   child: Row(
+                          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //     children: [
+                          //       Column(
+                          //         crossAxisAlignment: CrossAxisAlignment.start,
+                          //         children: [
+                          //           Text(
+                          //             "Currency",
+                          //             style: textStyle(Color(0xFF696969), 14,
+                          //                 FontWeight.w500),
+                          //           ),
+                          //           Padding(
+                          //             padding: const EdgeInsets.only(top: 8.0),
+                          //             child: Text(
+                          //               "${curnotional.toStringAsFixed(2)}",
+                          //               textAlign: TextAlign.right,
+                          //               style: textStyle(colors.colorBlack, 16,
+                          //                   FontWeight.w600),
+                          //             ),
+                          //           )
+                          //         ],
+                          //       ),
+                          //       Column(
+                          //         crossAxisAlignment: CrossAxisAlignment.end,
+                          //         children: [
+                          //           Text(
+                          //             "Charges and Taxes",
+                          //             textAlign: TextAlign.right,
+                          //             style: textStyle(Color(0xFF696969), 14,
+                          //                 FontWeight.w500),
+                          //           ),
+                          //           Padding(
+                          //             padding: const EdgeInsets.only(top: 8.0),
+                          //             child: Text(
+                          //               "${ledgerprovider.pnlAllData?.expenseAmt  }",
+                          //               textAlign: TextAlign.right,
+                          //               style: textStyle(
+                          //                   Colors.green, 16, FontWeight.w600),
+                          //             ),
+                          //           )
+                          //         ],
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
+                        ],
                       ),
                     ),
 
@@ -407,13 +412,11 @@ class PnlScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Start Date",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)),
+                               TextWidget.paraText(
+                                  text: "Start Date",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3), 
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 6),
                                 alignment: Alignment.centerLeft,
@@ -446,13 +449,11 @@ class PnlScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("End Date",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)),
+                               TextWidget.paraText(
+                                  text: "End Date",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3),
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 6),
                                 alignment: Alignment.centerLeft,
@@ -484,13 +485,13 @@ class PnlScreen extends StatelessWidget {
                             child: OutlinedButton(
                                 style: OutlinedButton.styleFrom(
                                     side: BorderSide(
-                                      color: !theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.colorWhite,
+                                        color: theme.isDarkMode
+                                          ? colors.primaryDark
+                                          : colors.primaryLight,
                                     ),
                                     shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(
-                                            Radius.circular(32)))),
+                                            Radius.circular(5)))),
                                 onPressed: () async {
                                   ledgerprovider.fetchpnldata(
                                       context,
@@ -500,9 +501,9 @@ class PnlScreen extends StatelessWidget {
                                 },
                                 child: Text("Get",
                                     style: textStyle(
-                                        !theme.isDarkMode
-                                            ? colors.colorBlack
-                                            : colors.colorWhite,
+                                         theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight,
                                         12,
                                         FontWeight.w600)))),
                       ),
@@ -634,9 +635,15 @@ class PnlScreen extends StatelessWidget {
                             : checkval == true
                                 ? assets.checkedbox
                                 : assets.checkbox)),
-                    Text("With opening balance ",
-                        style: textStyle(
-                            const Color(0xff666666), 14, FontWeight.w500)),
+                                 TextWidget.paraText(
+                                  text:"With opening balance ",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                                  fw: 3),
+                     
                   ]),
                 ),
                 Padding(
@@ -647,7 +654,7 @@ class PnlScreen extends StatelessWidget {
                     color: theme.isDarkMode
                         ? const Color(0xffB5C0CF).withOpacity(.15)
                         : const Color(0xffF1F3F8),
-                    thickness: 7.0,
+                    thickness: 1.0,
                   ),
                 ),
 
@@ -808,7 +815,7 @@ class PnlScreen extends StatelessWidget {
                                               SizedBox(
                                                 width: screenWidth *
                                                     0.65, // Ensures text takes the available width
-                                                child: TextWidget.subText(
+                                                child: TextWidget.paraText(
                                                     text:
                                                         "${pnldata.sCRIPSYMBOL}",
                                                     color: theme.isDarkMode
@@ -822,7 +829,7 @@ class PnlScreen extends StatelessWidget {
 
                                                     maxLines:
                                                         2, // Limits text to 2 lines, change as needed
-                                                    fw: 0),
+                                                    fw: 3),
                                               ),
                                               TextWidget.subText(
                                                   text:
@@ -957,15 +964,14 @@ class PnlScreen extends StatelessWidget {
                             separatorBuilder:
                                 (BuildContext context, int index) {
                               return Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 2.0,
-                                  bottom: 8.0,
+                                padding: const EdgeInsets.only( 
+                                  bottom: 4.0,
                                 ),
                                 child: Divider(
                                   color: theme.isDarkMode
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
-                                  thickness: 7.0,
+                                  thickness: 1.0,
                                 ),
                               );
                             },

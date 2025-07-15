@@ -178,14 +178,14 @@ class _TaxCharges extends State<TaxCharges> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              TextWidget.subText(
+                              TextWidget.paraText(
                                   text: "Equity",
                                   color: theme.isDarkMode
                                       ? colors.colorWhite
                                       : colors.colorBlack,
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 0),
+                                  fw: 3),
                               ledgerprovider.reportsloadingforcharges == true
                                   ? CircularProgressIndicator()
                                   : TextWidget.subText(
@@ -194,7 +194,7 @@ class _TaxCharges extends State<TaxCharges> {
                                       color: Colors.red,
                                       textOverflow: TextOverflow.ellipsis,
                                       theme: theme.isDarkMode,
-                                      fw: 0),
+                                      fw: 3),
                             ],
                           ),
                         ],
@@ -202,13 +202,13 @@ class _TaxCharges extends State<TaxCharges> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -224,13 +224,13 @@ class _TaxCharges extends State<TaxCharges> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -245,13 +245,13 @@ class _TaxCharges extends State<TaxCharges> {
                             : "0.00"),
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -903,13 +903,13 @@ class _TaxCharges extends State<TaxCharges> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.subText(
+              TextWidget.paraText(
                   text: "${heading}",
                   color:
                       theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
-                  fw: 0),
+                  fw: 3),
               TextWidget.subText(
                   text: "${value ?? 0}",
                   color: (double.parse(value)) == 0.0
@@ -919,7 +919,7 @@ class _TaxCharges extends State<TaxCharges> {
                       : Colors.red,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
-                  fw: 1),
+                  fw: 3),
             ],
           ),
         ],

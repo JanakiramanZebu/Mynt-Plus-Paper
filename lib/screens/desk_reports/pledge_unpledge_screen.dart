@@ -95,7 +95,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
     List<Tab> orderTabName = [
       Tab(text: "Pledge"),
       Tab(text: " Unpledge"),
-      Tab(text: "Non-Approved"),
+      Tab(text: "Un-Approved"),
     ];
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.watch(themeProvider);
@@ -1017,7 +1017,7 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                     color: const Color.fromARGB(
                                                             255, 236, 214, 214)
                                                         .withOpacity(.3)),
-                                                child: Text("Non-Approved",
+                                                child: Text("Un-Approved",
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     maxLines: 1,
