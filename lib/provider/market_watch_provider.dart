@@ -1246,7 +1246,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           }
         }
 
-        if (_wlName.isEmpty) {
+        if (_wlName.isEmpty || !_marketWatchlist!.values!.contains(_wlName)) {
           _wlName = _marketWatchlist!.values!.first;
         }
 
