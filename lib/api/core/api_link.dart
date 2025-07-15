@@ -241,6 +241,7 @@ class ApiLinks {
   String get withdraw => 'https://fundapi.mynt.in/withdraw/payout';
   String get paymentwithdraw => 'https://fundapi.mynt.in/withdraw/payment';
   String get withdrawstatus => 'https://fundapi.mynt.in/withdraw/status';
+  String get upiIdUpdate => 'https://fundapi.mynt.in/withdraw/upi_id_update';
 
   String fundvalidatetoken = "https://rekycbe.mynt.in/autho/validate_session";
 

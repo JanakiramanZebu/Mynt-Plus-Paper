@@ -27,6 +27,8 @@ class _UpiAppsBottomSheetState extends ConsumerState<UpiAppsBottomSheet> {
   void initState() {
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       ref.read(transcationProvider).hdfcUPIStatus?.data?.status ==
+                  "FAILED" ||
+              ref.read(transcationProvider).hdfcUPIStatus?.data?.status ==
                   "REJECTED" ||
               ref.read(transcationProvider).hdfcUPIStatus?.data?.status ==
                   "SUCCESS"

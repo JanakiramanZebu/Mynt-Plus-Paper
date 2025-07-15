@@ -1331,14 +1331,14 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark
                       : colors.textSecondaryLight,
-                  fw: 3),
+                  ),
               TextWidget.subText(
                   text: value,
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.textPrimaryDark
                       : colors.textPrimaryLight,
-                  fw: 3),
+                  ),
             ],
           ),
           const SizedBox(height: 8),

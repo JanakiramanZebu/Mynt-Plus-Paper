@@ -1,7 +1,7 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'dart:async';
-
 import 'dart:convert';
+
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -24,38 +24,32 @@ import '../../sharedWidget/custom_text_btn.dart';
 import '../../sharedWidget/functions.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/snack_bar.dart';
-import 'my_stocks/stocks_screen.dart';
-import 'watchlist_card.dart';
 import 'index/index_screen.dart';
+import 'my_stocks/stocks_screen.dart';
 import 'scrip_filter_bottom_sheet.dart';
+import 'watchlist_card.dart';
 import 'watchlists_bottom_sheet.dart';
 
-// Mock class to temporarily hold watchlist data with predefined lists included
 class MockMarketWatchlist {
   final List<String> values;
-
   MockMarketWatchlist({required this.values});
 }
 
-// Custom delegate for persistent tabs header
 class _SliverTabsDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
   final double height;
-  final int selectedTabIndex;
-  final List<String>? watchlistNames; // Add watchlist names to track changes
+  final String selectedWatchlistName;
+  final List<String>? watchlistNames;
 
   _SliverTabsDelegate({
     required this.child,
     required this.height,
-    required this.selectedTabIndex,
+    required this.selectedWatchlistName,
     this.watchlistNames,
   });
 
   @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return child;
-  }
+  Widget build(BuildContext ctx, double shrink, bool overlaps) => child;
 
   @override
   double get maxExtent => height;
@@ -64,35 +58,20 @@ class _SliverTabsDelegate extends SliverPersistentHeaderDelegate {
   double get minExtent => height;
 
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    // Rebuild when the selected tab index changes OR when watchlist data changes
-    if (oldDelegate is _SliverTabsDelegate) {
-      // Check if selected tab changed
-      bool selectedTabChanged =
-          selectedTabIndex != oldDelegate.selectedTabIndex;
-
-      // Check if watchlist data changed (create/update/delete)
-      bool watchlistDataChanged = false;
-      if (watchlistNames != null && oldDelegate.watchlistNames != null) {
-        // Compare lists - check length and content
-        watchlistDataChanged =
-            watchlistNames!.length != oldDelegate.watchlistNames!.length ||
-                !_listsEqual(watchlistNames!, oldDelegate.watchlistNames!);
-      } else if (watchlistNames != oldDelegate.watchlistNames) {
-        // One is null, the other isn't
-        watchlistDataChanged = true;
-      }
-
-      return selectedTabChanged || watchlistDataChanged;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate old) {
+    if (old is _SliverTabsDelegate) {
+      final listChanged = !_listsEqual(watchlistNames, old.watchlistNames);
+      final nameChanged = selectedWatchlistName != old.selectedWatchlistName;
+      return listChanged || nameChanged;
     }
     return true;
   }
 
-  // Helper method to compare two lists
-  bool _listsEqual(List<String> list1, List<String> list2) {
-    if (list1.length != list2.length) return false;
-    for (int i = 0; i < list1.length; i++) {
-      if (list1[i] != list2[i]) return false;
+  bool _listsEqual(List<String>? a, List<String>? b) {
+    if (a == null || b == null) return a == b;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
     }
     return true;
   }
@@ -102,1027 +81,584 @@ class WatchListScreen extends StatefulWidget {
   const WatchListScreen({super.key});
 
   @override
-  State<WatchListScreen> createState() => _WatchListScreen();
+  State<WatchListScreen> createState() => _WatchListScreenState();
 }
 
-class _WatchListScreen extends State<WatchListScreen>
+class _WatchListScreenState extends State<WatchListScreen>
     with AutomaticKeepAliveClientMixin {
-  final PageController _controller = PageController(initialPage: 0);
   final ScrollController _tabScrollController = ScrollController();
-  late PageController _tabPageController; // New controller for tab pages
-  late SwipeActionController swipecontroller;
-  bool _isDisposed = false;
-  bool _tappedwatch = false;
-  String _currentWatchlist = "";
-  bool _isPageControllerInitialized = false;
-  final TextEditingController _searchController = TextEditingController();
-  int _selectedTabIndex =
-      0; // Track selected tab index locally for immediate UI updates
-  int _lastWatchlistCount =
-      0; // Track watchlist count to detect CRUD operations
-  bool _isListScrolled = false; // Track if content is scrolled
-  bool _isUserScrolling = false; // Track if user is manually scrolling tabs
-  DateTime _lastUserScrollTime =
-      DateTime.now(); // Track when user last scrolled
+  late final SwipeActionController _swipeController;
+  final PageController _pageController = PageController(initialPage: 0);
 
-  // Simple fixed width for each tab for reliable calculations
-  final double tabWidth = 95.0; // Adjusted width to fit abbreviated names
+  final TextEditingController _searchController = TextEditingController();
+  final double _tabWidth = 95.0;
+  final List<String> _lastTabNames = [];
+
+  Timer? _scrollDebounce;
+  String _lastWatchlistName = '';
+  int _currentPageIndex = 0;
+  bool _isUserScrolling = false;
+  bool _isDisposed = false;
 
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
+    super.initState();
+
     FirebaseAnalytics.instance.logScreenView(
       screenName: 'Watchlist screen',
       screenClass: 'WatchList_screen',
     );
-    swipecontroller = SwipeActionController(selectedIndexPathsChangeCallback:
-        (changedIndexPaths, selected, currentCount) {
-      if (!_isDisposed) {
-        setState(() {});
-      }
-    });
 
-    // Initialize tab page controller
-    _tabPageController = PageController(initialPage: 0);
+    _swipeController = SwipeActionController(
+      selectedIndexPathsChangeCallback:
+          (changed, selected, currentCount) => _safeSetState(() {}),
+    );
 
-    // Add listener to the page controller to reset scroll state on page change
-    _controller.addListener(_handlePageScroll);
-    _tabScrollController.addListener(_handleTabScrollEnd);
+    _tabScrollController.addListener(_handleTabScroll);
 
-    // Initialize page controller with saved page index
+    // Initialize immediately with stored data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_isDisposed) {
-        // Try to initialize immediately if we have data
-        _initializePageController();
+    if (!_isDisposed) {
+    _initializeWithStoredData();
 
-        // Ensure predefined watchlists are loaded properly
-        _ensurePredefinedWatchlistsLoaded();
-      }
-    });
-
-    // Add listener to scroll controller to track user scrolling
-    _tabScrollController.addListener(() {
-      if (_isDisposed) return;
-
-      // Check if user is actively scrolling
-      if (_tabScrollController.position.isScrollingNotifier.value) {
-        // User is scrolling - mark as user-initiated scrolling
-        _isUserScrolling = true;
-        _lastUserScrollTime = DateTime.now();
-      } else {
-        // Scrolling ended - wait a bit before allowing auto-scroll again
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (!_isDisposed) {
-            _isUserScrolling = false;
-          }
-        });
-      }
-
-      // Force rebuild when scrolling ends to ensure correct tab highlighting
-      if (!_tabScrollController.position.isScrollingNotifier.value) {
-        setState(() {});
-      }
-    });
-
-    super.initState();
-  }
-
-  Timer? _snapDebounce;
-
-  // Ensure all predefined watchlists have their data loaded
-  void _ensurePredefinedWatchlistsLoaded() async {
-    if (_isDisposed) return;
-
-    try {
-      final marketWatch =
-          ProviderScope.containerOf(context).read(marketWatchProvider);
-      final currentWatchlist = marketWatch.wlName;
-
-      print(
-          "Ensuring predefined watchlists are loaded. Current watchlist: $currentWatchlist");
-
-      // Make sure we have the predefined watchlist data first
-      await marketWatch.fetchPreDefMWScrip(context);
-
-      // Force refresh predefined watchlists
-      final predefinedLists = ["Nifty50", "Niftybank", "Sensex", "My Stocks"];
-
-      // Check if the current watchlist is predefined and needs data
-      bool isCurrentPredefined = predefinedLists.contains(currentWatchlist);
-      if (isCurrentPredefined) {
-        print("Current watchlist is predefined: $currentWatchlist");
-
-        // Check if we need to refresh the current predefined watchlist
-        if (marketWatch.scrips.isEmpty) {
-          print(
-              "Current predefined watchlist has no data, fetching data for: $currentWatchlist");
-          await marketWatch.fetchMWScrip(currentWatchlist, context);
-          await marketWatch.changeWLScrip(currentWatchlist, context);
-        }
-      }
-
-      // Preload other predefined watchlists in the background
-      for (final listName in predefinedLists) {
-        // Only load if not the current watchlist (which should be loaded already)
-        if (listName != currentWatchlist) {
-          // Only load if we don't have cached data
-          if (!marketWatch.marketWatchScripData.containsKey(listName) ||
-              (marketWatch.marketWatchScripData.containsKey(listName) &&
-                  jsonDecode(marketWatch.marketWatchScripData[listName])
-                      .isEmpty)) {
-            print("Preloading data for watchlist: $listName");
-            await marketWatch.fetchMWScrip(listName, context);
-          } else {
-            print("Skipping preload for $listName - already has cached data");
-          }
-        }
-      }
-
-      // Make sure we re-subscribe to the current watchlist after preloading
-      await marketWatch.requestMWScrip(context: context, isSubscribe: true);
-    } catch (e) {
-      print("Error preloading watchlists: $e");
-    }
-  }
-
-  // Method to initialize page controller with saved index
-  void _initializePageController() {
-    if (_isDisposed || _isPageControllerInitialized) return;
-
-    try {
-      // Get the current state from the provider
-      final marketWatch =
-          ProviderScope.containerOf(context).read(marketWatchProvider);
-      final currentWLName = marketWatch.wlName;
-      final marketWatchlist = marketWatch.marketWatchlist;
-
-      // If we have watchlist data, find the correct index based on current wlName
-      int targetIndex = 0;
-      if (marketWatchlist?.values != null && currentWLName.isNotEmpty) {
-        final foundIndex = marketWatchlist!.values!.indexOf(currentWLName);
-        if (foundIndex != -1) {
-          // Found the watchlist by name - use this index
-          targetIndex = foundIndex;
-          print(
-              "Found current watchlist '$currentWLName' at index $targetIndex");
-        } else {
-          // Watchlist name not found, fall back to 0
-          targetIndex = 0;
-          final savedIndex = marketWatch.currentWatchlistPageIndex;
-          // targetIndex =
-          //     (savedIndex >= 0 && savedIndex < marketWatchlist.values!.length)
-          //         ? savedIndex
-          //         : 0;
-          print(
-              "Watchlist '$currentWLName' not found, using index $targetIndex");
-        }
-      } else {
-        // No watchlist data yet, use 0
-        targetIndex = 0;
-        print("No watchlist data yet, using index $targetIndex");
-        // final savedIndex = marketWatch.currentWatchlistPageIndex;
-        // targetIndex = savedIndex >= 0 ? savedIndex : 0;
-        // print("No watchlist data yet, using saved index $targetIndex");
-      }
-
-      // Update both the UI state and provider state
-      _selectedTabIndex = targetIndex;
-      // marketWatch.setCurrentWatchlistPageIndex(targetIndex);
-
-      // Only jump to page if the controller is ready and we have a valid index
-      if (_controller.hasClients && targetIndex >= 0) {
-        _controller.jumpToPage(targetIndex);
-        _isPageControllerInitialized = true;
-        print(
-            "Initialized page controller to index $targetIndex for watchlist '$currentWLName'");
-
-        // If this is a predefined watchlist, ensure it has data
-        if (marketWatchlist?.values != null &&
-            targetIndex < marketWatchlist!.values!.length) {
-          final targetWatchlistName = marketWatchlist.values![targetIndex];
-          if (targetWatchlistName == "Nifty50" ||
-              targetWatchlistName == "Niftybank" ||
-              targetWatchlistName == "Sensex") {
-            // For predefined lists, ensure data is available
-            WidgetsBinding.instance.addPostFrameCallback((_) async {
-              if (!_isDisposed) {
-                print(
-                    "Ensuring data for predefined watchlist: $targetWatchlistName");
-                await marketWatch.fetchMWScrip(targetWatchlistName, context);
-                await marketWatch.changeWLScrip(targetWatchlistName, context);
-                await marketWatch.requestMWScrip(
-                    context: context, isSubscribe: true);
-              }
-            });
-          }
-        }
-      }
-    } catch (e) {
-      print("Error initializing page controller: $e");
-      // Fallback to default state
-      _selectedTabIndex = 0;
-      if (_controller.hasClients) {
-        _controller.jumpToPage(0);
-        _isPageControllerInitialized = true;
-      }
-    }
-  }
-
-  // Method to handle page controller scroll events
-  void _handlePageScroll() {
-    // Reset elevation when page changes
-    if (_controller.page?.round() != _controller.page && _isListScrolled) {
-      // We're in between pages (during animation), reset elevation
-      setState(() {
-        _isListScrolled = false;
-      });
-    }
-  }
-
-  void _handleTabScrollEnd() {
-    if (_snapDebounce?.isActive ?? false) _snapDebounce!.cancel();
-
-    _snapDebounce = Timer(const Duration(milliseconds: 100), () {
-      if (!_tabScrollController.hasClients || _isUserScrolling) return;
-
-      final double offset = _tabScrollController.offset;
-      final int index = (offset + tabWidth / 2) ~/ tabWidth;
-
-      _scrollToSelectedTab(index, force: true);
+    }});
+    // Load additional data in background
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensurePredefinedWatchlistsLoaded();
     });
   }
 
   @override
   void dispose() {
     _isDisposed = true;
-    _controller.removeListener(_handlePageScroll);
-    _controller.dispose();
+    _scrollDebounce?.cancel();
     _tabScrollController.dispose();
-    _tabPageController.dispose();
-    swipecontroller.dispose();
+    _pageController.dispose();
+    _swipeController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  // Enhanced tab scrolling to ensure selected tab is always clearly visible
+  /// Initialize immediately with existing data - no loader needed
+void _initializeWithStoredData() {
+  if (_isDisposed || !mounted) return;
+
+  final marketWatch = ProviderScope.containerOf(context).read(marketWatchProvider);
+  final watchList = marketWatch.marketWatchlist;
+  
+  // Get the correct index for current watchlist
+  int initialPageIndex = 0;
+  if (watchList?.values != null) {
+    final currentIndex = watchList!.values!.indexOf(marketWatch.wlName);
+    if (currentIndex != -1) {
+      initialPageIndex = currentIndex;
+    }
+  }
+  
+  // Update current page index and jump to correct page
+  _currentPageIndex = initialPageIndex;
+  if (_pageController.hasClients && initialPageIndex > 0) {
+    _pageController.jumpToPage(initialPageIndex);
+  }
+  
+  // Set tab scroll position
+  _scrollToSelectedTab(initialPageIndex, force: true);
+  
+  // Load additional data in background
+  _ensurePredefinedWatchlistsLoaded();
+  
+  _safeSetState(() {});
+}
+
+  void _handleTabScroll() {
+    if (_isDisposed) return;
+
+    if (_tabScrollController.position.isScrollingNotifier.value) {
+      _isUserScrolling = true;
+    } else {
+      Future.delayed(const Duration(milliseconds: 400), () {
+        if (!_isDisposed) _isUserScrolling = false;
+      });
+    }
+
+    if (!_tabScrollController.position.isScrollingNotifier.value) {
+      _safeSetState(() {});
+    }
+  }
+
   void _scrollToSelectedTab(int index, {bool force = false}) {
     if (!_tabScrollController.hasClients || _isDisposed) return;
-
-    // Don't auto-scroll if user is manually scrolling tabs (unless forced)
     if (!force && _isUserScrolling) return;
 
-    // Don't auto-scroll if user scrolled tabs recently (unless forced)
-    // But reduce the timeout to 1 second for better responsiveness
-    if (!force && DateTime.now().difference(_lastUserScrollTime).inSeconds < 1)
-      return;
+    final viewW = _tabScrollController.position.viewportDimension;
+    final max = _tabScrollController.position.maxScrollExtent;
 
-    // Get the viewport width
-    final double viewportWidth =
-        _tabScrollController.position.viewportDimension;
+    final target = (index * _tabWidth) - (viewW / 2) + (_tabWidth / 2);
+    final offset = target.clamp(0.0, max);
 
-    // Calculate the ideal position - center the tab in the viewport
-    // We want the tab to be in the center of the visible area
-    final double targetOffset =
-        (index * tabWidth) - (viewportWidth / 2) + (tabWidth / 2);
+    if ((_tabScrollController.offset - offset).abs() < 1.0) return;
 
-    // Clamp the value to valid scroll range
-    final double scrollTo =
-        targetOffset.clamp(0.0, _tabScrollController.position.maxScrollExtent);
-
-    // Always scroll, even if tab is partially visible, to ensure it's centered
     _tabScrollController.animateTo(
-      scrollTo,
+      offset,
       duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic, // More pronounced animation curve
+      curve: Curves.easeOutCubic,
     );
   }
 
-  // New method to scroll to the correct page when selected tab changes
-  void _scrollToSelectedTabPage(int selectedIndex) {
-    if (_isDisposed) return;
+  void _scrollToWatchlistTab(WidgetRef ref, String wlName) {
+    final list = ref.read(marketWatchProvider.select((p) => p.marketWatchlist))?.values;
+    if (list == null) return;
 
-    // Calculate which page contains the selected tab
-    final tabsPerPage = 3;
-    final selectedTabPage = (selectedIndex / tabsPerPage).floor();
+    final idx = list.indexOf(wlName);
+    if (idx == -1) return;
 
-    // Get the current PageController and scroll to the correct page
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_isDisposed) {
-        // Find the PageView controller and animate to the correct page
-        // We need to rebuild the widget to update the PageController
-        setState(() {
-          // This will trigger a rebuild with the new initialPage
-        });
-      }
+    _scrollDebounce?.cancel();
+    _scrollDebounce = Timer(const Duration(milliseconds: 50), () {
+      if (!_isDisposed) _scrollToSelectedTab(idx, force: true);
     });
   }
 
-  // Method to add visual emphasis to active tab
-  void _highlightActiveTab(WidgetRef ref, String wlName) {
-    final marketWatchlist =
-        ref.read(marketWatchProvider.select((p) => p.marketWatchlist));
-    if (marketWatchlist?.values != null) {
-      int selectedIndex = marketWatchlist!.values!.indexOf(wlName);
-      if (selectedIndex != -1) {
-        // Schedule this after the build is complete
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_isDisposed && _tabScrollController.hasClients) {
-            _scrollToSelectedTab(
-                selectedIndex); // Don't force, respect user scrolling
+  /// Background loading - doesn't block UI
+  Future<void> _ensurePredefinedWatchlistsLoaded() async {
+    if (_isDisposed) return;
 
-            // Force refresh for predefined watchlists when they become active
-            if (wlName == "Nifty50" ||
-                wlName == "Niftybank" ||
-                wlName == "Sensex") {
-              final marketWatch = ref.read(marketWatchProvider);
-              final scrips = marketWatch.scrips;
+    try {
+      final marketWatch = ProviderScope.containerOf(context).read(marketWatchProvider);
+      final current = marketWatch.wlName;
 
-              // Only refresh if there's no data
-              if (scrips.isEmpty) {
-                print("Forcing data refresh for empty watchlist: $wlName");
-                marketWatch.fetchMWScrip(wlName, context).then((_) {
-                  // Re-subscribe after fetching fresh data
-                  marketWatch.requestMWScrip(
-                      context: context, isSubscribe: true);
-                });
-              }
-            }
-          }
-        });
+      await marketWatch.fetchPreDefMWScrip(context);
+
+      const predefined = ['Nifty50', 'Niftybank', 'Sensex', 'My Stocks'];
+
+      if (predefined.contains(current) && marketWatch.scrips.isEmpty) {
+        await marketWatch.fetchMWScrip(current, context);
+        await marketWatch.changeWLScrip(current, context);
       }
+
+      for (final name in predefined) {
+        if (name == current) continue;
+        final cached = marketWatch.marketWatchScripData[name];
+        if (cached == null || jsonDecode(cached).isEmpty) {
+          await marketWatch.fetchMWScrip(name, context);
+        }
+      }
+
+      await marketWatch.requestMWScrip(context: context, isSubscribe: true);
+    } catch (e) {
+      debugPrint('Error preloading watchlists: $e');
     }
+  }
+
+  Future<void> _handlePageChanged(int pageIndex, WidgetRef ref) async {
+    if (_isDisposed) return;
+
+    final marketWatch = ref.read(marketWatchProvider);
+    final watchList = marketWatch.marketWatchlist;
+    
+    if (watchList?.values == null || pageIndex >= watchList!.values!.length) return;
+
+    final newWatchlistName = watchList.values![pageIndex];
+    
+    _currentPageIndex = pageIndex;
+    _scrollToSelectedTab(pageIndex, force: true);
+
+    try {
+      await marketWatch.requestMWScrip(context: context, isSubscribe: false);
+
+      const predefined = ['My Stocks', 'Nifty50', 'Niftybank', 'Sensex'];
+      final isPredefined = predefined.contains(newWatchlistName);
+      
+      await marketWatch.changeWlName(newWatchlistName, isPredefined ? 'Yes' : 'No');
+      await marketWatch.changeWLScrip(newWatchlistName, context);
+      
+      await marketWatch.requestMWScrip(context: context, isSubscribe: true);
+    } catch (e) {
+      debugPrint('Error changing watchlist: $e');
+    }
+  }
+
+  Future<void> _handleTabTap(String name, int index, WidgetRef ref) async {
+    if (_currentPageIndex == index) return;
+
+    _currentPageIndex = index;
+    
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(index);
+    }
+
+    await _handlePageChanged(index, ref);
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
 
-    return Consumer(builder: (context, WidgetRef ref, _) {
-      // Use select to watch only specific properties instead of the entire provider
+    return Consumer(builder: (ctx, ref, _) {
       final wlName = ref.watch(marketWatchProvider.select((p) => p.wlName));
-      final originalMarketWatchlist =
-          ref.watch(marketWatchProvider.select((p) => p.marketWatchlist));
-      final scrips = ref.watch(marketWatchProvider.select((p) => p.scrips));
-      final isPreDefWLs =
-          ref.watch(marketWatchProvider.select((p) => p.isPreDefWLs));
-      final scripsLength =
-          ref.watch(marketWatchProvider.select((p) => p.scrips.length));
-
+      final watchList = ref.watch(marketWatchProvider.select((p) => p.marketWatchlist));
+      final isPreDef = ref.watch(marketWatchProvider.select((p) => p.isPreDefWLs));
       final sortBy = ref.watch(marketWatchProvider.select((p) => p.sortByWL));
       final theme = ref.watch(themeProvider);
 
-      // Use the original marketWatchlist data as-is
-      final marketWatchlist = originalMarketWatchlist;
-
-      // Ensure page controller is initialized when watchlist data becomes available
-      // This is especially important when returning to the screen
-      if (!_isPageControllerInitialized && marketWatchlist?.values != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_isDisposed) {
-            _initializePageController();
-          }
-        });
+      final names = watchList?.values?.cast<String>() ?? [];
+      if (!_listsEqual(names, _lastTabNames)) {
+        _lastTabNames
+          ..clear()
+          ..addAll(names);
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _scrollToWatchlistTab(ref, wlName),
+        );
       }
 
-      // Check if watchlist changed to reduce rebuilds when only prices change
-      bool watchlistChanged = _currentWatchlist != wlName;
-      if (watchlistChanged) {
-        _currentWatchlist = wlName;
-      }
-
-      // Enhanced synchronization: Always ensure tab selection matches the current wlName
-      // This is crucial when returning to the screen
-      bool needsIndexSync = false;
-      int correctIndex = _selectedTabIndex;
-
-      if (marketWatchlist?.values != null &&
-          marketWatchlist!.values!.isNotEmpty) {
-        // Find the correct index for the current watchlist name
-        final wlNameIndex = marketWatchlist.values!.indexOf(wlName);
-
-        if (wlNameIndex != -1) {
-          // Found the watchlist - check if our selected index matches
-          if (_selectedTabIndex != wlNameIndex) {
-            correctIndex = wlNameIndex;
-            needsIndexSync = true;
-            print(
-                "Syncing tab: current index $_selectedTabIndex -> correct index $wlNameIndex for watchlist '$wlName'");
-          }
-        } else {
-          // Current watchlist not found in list - this might happen during initialization
-          print(
-              "Warning: Current watchlist '$wlName' not found in watchlist values: ${marketWatchlist.values}");
-          // Keep the current index but clamp it to valid range
-          correctIndex =
-              _selectedTabIndex.clamp(0, marketWatchlist.values!.length - 1);
-          if (correctIndex != _selectedTabIndex) {
-            needsIndexSync = true;
+      if (_lastWatchlistName != wlName) {
+        _lastWatchlistName = wlName;
+        
+        final currentIndex = names.indexOf(wlName);
+        if (currentIndex != -1 && _currentPageIndex != currentIndex) {
+          _currentPageIndex = currentIndex;
+          if (_pageController.hasClients) {
+            _pageController.jumpToPage(currentIndex);
           }
         }
-      }
-
-      // Apply the synchronization if needed
-      if (needsIndexSync) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_isDisposed) {
-            setState(() {
-              _selectedTabIndex = correctIndex;
-            });
-
-            // Update the provider's saved index to match
-            // ref
-            //     .read(marketWatchProvider)
-            //     .setCurrentWatchlistPageIndex(correctIndex);
-
-            // Jump to the correct page if needed
-            if (_controller.hasClients &&
-                _controller.page?.round() != correctIndex) {
-              _controller.jumpToPage(correctIndex);
-            }
-
-            // Scroll to highlight the correct tab
-            _scrollToSelectedTab(correctIndex, force: true);
-          }
-        });
-      }
-
-      // Always sync the selected tab index with the provider's current watchlist
-      // This handles cases where watchlists are created/edited/deleted
-      bool watchlistCountChanged = false;
-      if (marketWatchlist?.values != null) {
-        final watchlistCount = marketWatchlist!.values!.length;
-
-        // Detect CRUD operations by checking if watchlist count changed
-        // BUT exclude the change from adding predefined lists (which increases count by 4)
-        watchlistCountChanged =
-            _lastWatchlistCount != 0 && _lastWatchlistCount != watchlistCount;
-
-        // Check if this is just predefined lists being added (count increased by exactly 4)
-        bool isPredefinedAddition = (_lastWatchlistCount > 0) &&
-            (watchlistCount == _lastWatchlistCount + 4) &&
-            marketWatchlist!.values!.contains("My Stocks") &&
-            marketWatchlist!.values!.contains("Nifty50") &&
-            marketWatchlist!.values!.contains("Niftybank") &&
-            marketWatchlist!.values!.contains("Sensex");
-
-        _lastWatchlistCount = watchlistCount;
-
-        // If watchlist count changed but it's NOT just predefined lists being added, then it's a real CRUD operation
-        if (watchlistCountChanged && !isPredefinedAddition) {
-          print(
-              "DEBUG UI: Real CRUD operation detected, refreshing watchlist data...");
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            if (!_isDisposed) {
-              try {
-                final marketWatch = ref.read(marketWatchProvider);
-                print(
-                    "Watchlist count changed, refreshing complete watchlist data...");
-
-                // Refresh predefined watchlists to ensure they're included
-                await marketWatch.fetchPreDefMWScrip(context);
-
-                // Also refresh the current watchlist data
-                await marketWatch.fetchMWScrip(marketWatch.wlName, context);
-              } catch (e) {
-                print("Error refreshing watchlist data after CRUD: $e");
-              }
-            }
-          });
-        } else if (isPredefinedAddition) {
-          print(
-              "DEBUG UI: Predefined lists addition detected, no additional refresh needed");
-        }
-      }
-
-      // Only auto-highlight tab if user isn't manually scrolling tabs
-      if (!_isUserScrolling &&
-          DateTime.now().difference(_lastUserScrollTime).inSeconds >= 1) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_isDisposed) {
-            _highlightActiveTab(ref, wlName);
-          }
-        });
+        
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _scrollToWatchlistTab(ref, wlName),
+        );
       }
 
       return SafeArea(
         child: NestedScrollView(
-          // Remove conditional physics to ensure consistent scrolling
           physics: const AlwaysScrollableScrollPhysics(),
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return [
-              // Search bar that scrolls away normally
-              SliverToBoxAdapter(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colors.searchBg,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Row(
-                      children: [
-                        // Search tappable area
-                        Expanded(
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onTap: () {
-                              final marketWatch = ref.read(marketWatchProvider);
-                              marketWatch.requestMWScrip(
-                                  context: context, isSubscribe: false);
-                              Navigator.pushNamed(context, Routes.searchScrip,
-                                  arguments: wlName);
-                            },
-                            child: Row(
-                              children: [
-                                // Search icon
-                                const SizedBox(width: 12),
-                                SvgPicture.asset(
-                                  assets.searchIcon,
-                                  width: 18,
-                                  height: 18,
-                                ),
-                                const SizedBox(width: 8),
-                                // Search text
-                                Expanded(
-                                  child: TextWidget.subText(
-                                    text: 'Search & add',
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    theme: theme.isDarkMode,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // Suffix: Filter button
-                        if (isPreDefWLs != "Yes" && scripsLength > 1)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: Material(
-                              color: Colors.transparent,
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                splashColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.15)
-                                    : Colors.black.withOpacity(0.15),
-                                highlightColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.08)
-                                    : Colors.black.withOpacity(0.08),
-                                onTap: () async {
-                                  // Add delay for visual feedback
-                                  await Future.delayed(
-                                      const Duration(milliseconds: 150));
-
-                                  FocusScope.of(context).unfocus();
-                                  showModalBottomSheet(
-                                    useSafeArea: true,
-                                    isScrollControlled: true,
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16)),
-                                    ),
-                                    context: context,
-                                    builder: (context) =>
-                                        const ScripFilterBottomSheet(),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: SvgPicture.asset(
-                                    assets.searchFilter,
-                                    width: 16,
-                                    height: 16,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Pinned tabs section
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _SliverTabsDelegate(
-                  height: 40,
-                  selectedTabIndex:
-                      _selectedTabIndex, // Pass the selected index to force rebuilds
-                  watchlistNames: marketWatchlist?.values?.cast<
-                      String>(), // Pass watchlist names to detect changes
-                  child: Container(
-                    padding: const EdgeInsets.only(top: 6),
-                    decoration: BoxDecoration(
-                      color: theme.isDarkMode
-                          ? colors.colorBlack
-                          : colors.colorWhite,
-                      // tab bottom border
-                      border: Border(
-                        bottom: BorderSide(
-                          color: theme.isDarkMode
-                              ? colors.dividerDark
-                              : colors.dividerLight,
-                        ),
-                      ),
-                    ),
-                    child: Container(
-                      height: 40,
-                      child: Row(
-                        children: [
-                          // Menu icon at the start of tabs
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8, right: 4),
-                            child: Material(
-                              color: Colors.transparent,
-                              shape: const CircleBorder(),
-                              clipBehavior: Clip.hardEdge,
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                splashColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.15)
-                                    : Colors.black.withOpacity(0.15),
-                                highlightColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.08)
-                                    : Colors.black.withOpacity(0.08),
-                                onTap: () async {
-                                  // Add delay for visual feedback
-                                  await Future.delayed(
-                                      const Duration(milliseconds: 150));
-
-                                  showModalBottomSheet(
-                                    useSafeArea: true,
-                                    isScrollControlled: true,
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16)),
-                                    ),
-                                    context: context,
-                                    builder: (context) => WatchlistsBottomSheet(
-                                        currentWLName: wlName),
-                                  );
-                                },
-                                child: Container(
-                                  height: 32,
-                                  width: 32,
-                                  child: Center(
-                                    child: SvgPicture.asset(
-                                      assets.hamMenu,
-                                      width: 20,
-                                      height: 20,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          // Watchlist tabs
-                          Expanded(
-                            child: _buildWatchlistTabs(
-                                ref, wlName, marketWatchlist),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ];
-          },
-          body: PageView.builder(
-            itemCount: marketWatchlist?.values?.length ?? 0,
-            scrollDirection: Axis.horizontal,
-            controller: _controller,
-            onPageChanged: (int d) async {
-              // Immediately update selected tab index for instant UI feedback
-
-              // Force scroll to the new active tab since user swiped to change watchlist
-              _scrollToSelectedTab(d, force: true);
-
-              setState(() {
-                _tappedwatch = true;
-                _selectedTabIndex = d;
-              });
-
-              // Save the current page index to the provider
-              // ref.read(marketWatchProvider).setCurrentWatchlistPageIndex(d);
-
-              // Get the new watchlist name before unsubscribing
-              String newWatchlistName = marketWatchlist!.values![d];
-
-              // Debug log
-              print("Page changed to watchlist: $newWatchlistName (index: $d)");
-
-              // Get provider instance for method calls
-              final marketWatch = ref.read(marketWatchProvider);
-
-              // Unsubscribe from current watchlist
-              await marketWatch.requestMWScrip(
-                  context: context, isSubscribe: false);
-
-              // Change to the new watchlist with proper flag
-              if (newWatchlistName == "My Stocks" ||
-                  newWatchlistName == "Nifty50" ||
-                  newWatchlistName == "Niftybank" ||
-                  newWatchlistName == "Sensex") {
-                await marketWatch.changeWlName(newWatchlistName, "Yes");
-
-                // For predefined lists, ensure we have data
-                if (newWatchlistName == "Nifty50" ||
-                    newWatchlistName == "Niftybank" ||
-                    newWatchlistName == "Sensex") {
-                  // Explicitly check for predefined data and force refresh if needed
-                  bool hasCachedData = marketWatch.marketWatchScripData
-                      .containsKey(newWatchlistName);
-                  if (!hasCachedData) {
-                    print(
-                        "No cached data for $newWatchlistName, forcing refresh");
-                    await marketWatch.fetchPreDefMWScrip(context);
-                  }
-                }
-              } else {
-                await marketWatch.changeWlName(newWatchlistName, "No");
-              }
-
-              // Change watchlist scrips
-              await marketWatch.changeWLScrip(marketWatch.wlName, context);
-
-              // Special handling for My Stocks - explicitly subscribe to index data
-              if (newWatchlistName == "My Stocks") {
-                // Force resubscription to ensure index data is included
-                await marketWatch.requestMWScrip(
-                    context: context, isSubscribe: true);
-              }
-            },
-            itemBuilder: (BuildContext context, int index) {
-              final marketWatch = ref.read(marketWatchProvider);
-              // ---------- 1.  name & data that belong to THIS page ----------
-              final String pageName = marketWatchlist!.values![index];
-              final List pageScrips = (pageName == marketWatch.wlName)
-                  ? marketWatch.scrips
-                  : jsonDecode(
-                      marketWatch.marketWatchScripData[pageName] ?? '[]');
-
-              // ---------- 2.  give the page its own key so Flutter won't recycle ----------
-              return KeyedSubtree(
-                key: ValueKey(pageName),
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    await marketWatch.fetchMWScrip(pageName, context);
-                  },
-                  child: pageName == "My Stocks"
-                      ? const StocksScreen()
-                      : pageScrips.isEmpty
-                          ? _buildEmptyState(theme, marketWatch, ref)
-                          : _buildWatchlistView(
-                              pageScrips,
-                              /*watchlistChanged:*/ false,
-                              ["Nifty50", "Niftybank", "Sensex", "My Stocks"]
-                                      .contains(pageName)
-                                  ? "Yes"
-                                  : "No",
-                              sortBy,
-                            ),
-                ),
-              );
-            },
-          ),
+          headerSliverBuilder: (_, inner) => [
+            _buildSearchBar(ref, theme, wlName, isPreDef, watchList?.values?.length ?? 0),
+            _buildPinnedTabs(ref, theme, watchList, wlName),
+          ],
+          body: _buildPageView(ref, theme, watchList, sortBy),
         ),
       );
     });
   }
 
-  Widget _buildWatchlistTabs(
-      WidgetRef ref, String wlName, dynamic marketWatchlist) {
-    final theme = ref.watch(themeProvider);
-
-    if (marketWatchlist == null || marketWatchlist.values == null) {
-      return const SizedBox.shrink();
+  Widget _buildPageView(WidgetRef ref, ThemesProvider theme, dynamic watchList, String sortBy) {
+    // Show immediately even if watchList is null initially
+    if (watchList?.values == null) {
+      return const SizedBox.shrink(); // No loader, just empty space
     }
 
-    // Calculate pages (3 tabs per page)
-    final totalTabs = marketWatchlist.values.length;
-    final tabsPerPage = 3;
-    final totalPages = (totalTabs / tabsPerPage).ceil();
-
-    // Calculate which page contains the selected tab
-    final selectedTabPage = (_selectedTabIndex / tabsPerPage).floor();
-
-    // Update the tab page controller to show the correct page
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_isDisposed && _tabPageController.hasClients) {
-        final currentPage = _tabPageController.page?.round() ?? 0;
-        if (currentPage != selectedTabPage) {
-          _tabPageController.animateToPage(
-            selectedTabPage,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
+    return PageView.builder(
+      controller: _pageController,
+      itemCount: watchList.values.length,
+      onPageChanged: (index) {
+        if (index != _currentPageIndex) {
+          _handlePageChanged(index, ref);
         }
-      }
-    });
+      },
+      itemBuilder: (context, index) {
+        final pageName = watchList.values[index];
+        
+        return KeyedSubtree(
+          key: ValueKey('${pageName}_$index'),
+          child: Consumer(
+            builder: (context, ref, _) {
+              final marketWatch = ref.watch(marketWatchProvider);
+              
+              // Get data immediately - no async waiting
+              List pageScrips = [];
+              if (index == _currentPageIndex && pageName == marketWatch.wlName) {
+                pageScrips = marketWatch.scrips;
+              } else {
+                final cachedData = marketWatch.marketWatchScripData[pageName];
+                if (cachedData != null) {
+                  try {
+                    pageScrips = jsonDecode(cachedData);
+                  } catch (e) {
+                    debugPrint('Error parsing cached data for $pageName: $e');
+                    pageScrips = [];
+                  }
+                }
+              }
 
-    return Container(
-      height: 40,
-      child: PageView.builder(
-        controller: _tabPageController,
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: totalPages,
-        onPageChanged: (pageIndex) {
-          // Optional: Handle page change if needed
-        },
-        itemBuilder: (BuildContext context, int pageIndex) {
-          return _buildTabPageContent(
-            marketWatchlist.values,
-            pageIndex,
-            tabsPerPage,
-            theme,
-            ref,
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTabPageContent(
-    List<dynamic> tabValues,
-    int pageIndex,
-    int tabsPerPage,
-    ThemesProvider theme,
-    WidgetRef ref,
-  ) {
-    final startIndex = pageIndex * tabsPerPage;
-    final endIndex = (startIndex + tabsPerPage).clamp(0, tabValues.length);
-    
-    return Row(
-      children: [
-        for (int i = startIndex; i < endIndex; i++)
-          Expanded(
-            child: Container(
-              margin: EdgeInsets.only(
-                right: i < endIndex - 1 ? 1 : 0, // Add separator between tabs
-              ),
-              child: _buildTabItem(
-                tabValues[i],
-                i,
-                theme,
-                ref,
-              ),
-            ),
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await marketWatch.fetchMWScrip(pageName, context);
+                },
+                child: _buildPageContent(ref, theme, pageName, pageScrips, sortBy),
+              );
+            },
           ),
-        // Fill remaining space if fewer than 3 tabs on last page
-        if (endIndex - startIndex < tabsPerPage)
-          for (int j = 0; j < tabsPerPage - (endIndex - startIndex); j++)
-            const Expanded(child: SizedBox()),
-      ],
+        );
+      },
     );
   }
 
-  Widget _buildTabItem(
-    String name,
-    int index,
-    ThemesProvider theme,
-    WidgetRef ref,
-  ) {
-    final isSelected = index == _selectedTabIndex;
-
-    // Debug print to check if selection is working
-    if (isSelected) {
-      print(
-          "Tab $index ($name) is selected, _selectedTabIndex: $_selectedTabIndex");
+  Widget _buildPageContent(WidgetRef ref, ThemesProvider theme, String pageName, List scrips, String sortBy) {
+    if (pageName == 'My Stocks') {
+      return const StocksScreen();
     }
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        splashColor: theme.isDarkMode
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.05),
-        highlightColor: theme.isDarkMode
-            ? Colors.white.withOpacity(0.01)
-            : Colors.black.withOpacity(0.01),
-        onTapDown: (_) {
-          // Provide haptic feedback for tab tap
-          HapticFeedback.lightImpact();
-        },
-        onTap: () async {
-          // Add delay for visual feedback
-          await Future.delayed(const Duration(milliseconds: 150));
-          // Only handle tap if it's actually a different tab
-          if (index == _selectedTabIndex) {
-            return; // Don't do anything if tapping the already selected tab
-          }
+    if (scrips.isEmpty) {
+      return _buildEmptyState(theme, ref.read(marketWatchProvider));
+    }
 
-          // First immediately scroll to center the tapped tab (force it since user tapped)
-          _scrollToSelectedTab(index, force: true);
+    return _buildWatchlistView(scrips, sortBy);
+  }
 
-          final marketWatch = ref.read(marketWatchProvider);
-
-          // Force immediate UI update by updating selected tab index
-          setState(() {
-            _selectedTabIndex = index;
-            _currentWatchlist = name;
-          });
-
-          // Use jumpToPage for instant navigation to prevent active color traveling
-          _controller.jumpToPage(index);
-
-          // Then update data after the UI has responded
-          await marketWatch.requestMWScrip(
-              context: context, isSubscribe: false);
-
-          if (name == "My Stocks" ||
-              name == "Nifty50" ||
-              name == "Niftybank" ||
-              name == "Sensex") {
-            await marketWatch.changeWlName(name, "Yes");
-          } else {
-            await marketWatch.changeWlName(name, "No");
-          }
-
-          await marketWatch.changeWLScrip(name, context);
-
-          // Subscribe to data for all watchlist types
-          await marketWatch.requestMWScrip(
-              context: context, isSubscribe: true);
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: double.infinity,
-              alignment: Alignment.center,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              child: TextWidget.subText(
-                  text: _formatTabName(name),
-                  color: isSelected
-                      ? theme.isDarkMode
-                          ? colors.secondaryDark
-                          : colors.secondaryLight
-                      : colors.textSecondaryLight,
-                  textOverflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  theme: theme.isDarkMode,
-                  fw: isSelected ? 2 : null),
-            ),
-            // Animated underline indicator
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOut,
-              height: 2,
-              width: isSelected ? (MediaQuery.of(context).size.width / 3) - 18 : 0,
-              margin: const EdgeInsets.only(top: 1),
-              decoration: BoxDecoration(
-                color: colors.colorBlue,
-                borderRadius: BorderRadius.circular(2),
+  SliverToBoxAdapter _buildSearchBar(
+    WidgetRef ref,
+    ThemesProvider theme,
+    String wlName,
+    String isPreDef,
+    int scripLen,
+  ) {
+    return SliverToBoxAdapter(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Container(
+          height: 40,
+          decoration: BoxDecoration(
+            color: colors.searchBg,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    final mw = ref.read(marketWatchProvider);
+                    WidgetsBinding.instance.addPostFrameCallback((_) async {
+                      await mw.requestMWScrip(context: context, isSubscribe: false);
+                    });
+                    Navigator.pushNamed(
+                      context,
+                      Routes.searchScrip,
+                      arguments: wlName,
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 12),
+                      SvgPicture.asset(assets.searchIcon, width: 18, height: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextWidget.subText(
+                          text: 'Search & add',
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          theme: theme.isDarkMode,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
+              if (isPreDef != 'Yes' && scripLen > 1)
+                Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.15)
+                          : Colors.black.withOpacity(.15),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(.08)
+                          : Colors.black.withOpacity(.08),
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        showModalBottomSheet(
+                          useSafeArea: true,
+                          isScrollControlled: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(16)),
+                          ),
+                          context: context,
+                          builder: (_) => const ScripFilterBottomSheet(),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: SvgPicture.asset(
+                          assets.searchFilter,
+                          width: 16,
+                          height: 16,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Format tab names to be short but recognizable
-  String _formatTabName(String name) {
-    if (name == "My Stocks") return "Holdings";
-    if (name == "Nifty50") return "Nifty 50";
-    if (name == "Niftybank") return "Nifty Bank";
-    if (name == "Sensex") return "Sensex";
-
-    // For user-created watchlists, keep the name but ensure it's capitalized
-    if (name.isEmpty) return "";
-    return name.length <= 10
-        ? "${name[0].toUpperCase()}${name.substring(1)}"
-        : "${name.substring(0, 9)}..";
+  SliverPersistentHeader _buildPinnedTabs(
+    WidgetRef ref,
+    ThemesProvider theme,
+    dynamic watchList,
+    String wlName,
+  ) {
+    return SliverPersistentHeader(
+      pinned: true,
+      delegate: _SliverTabsDelegate(
+        height: 40,
+        selectedWatchlistName: wlName,
+        watchlistNames: watchList?.values?.cast<String>(),
+        child: Container(
+          padding: const EdgeInsets.only(top: 6),
+          decoration: BoxDecoration(
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            border: Border(
+              bottom: BorderSide(
+                color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 8, right: 4),
+                child: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    splashColor: theme.isDarkMode
+                        ? Colors.white.withOpacity(.15)
+                        : Colors.black.withOpacity(.15),
+                    highlightColor: theme.isDarkMode
+                        ? Colors.white.withOpacity(.08)
+                        : Colors.black.withOpacity(.08),
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 150));
+                      showModalBottomSheet(
+                        useSafeArea: true,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16)),
+                        ),
+                        context: context,
+                        builder: (_) => WatchlistsBottomSheet(
+                          currentWLName: wlName,
+                        ),
+                      );
+                    },
+                    child: SizedBox(
+                      height: 32,
+                      width: 32,
+                      child: Center(
+                        child: SvgPicture.asset(
+                          assets.hamMenu,
+                          width: 20,
+                          height: 20,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _buildWatchlistTabs(ref, wlName, watchList, theme),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  Widget _buildEmptyState(
-      ThemesProvider theme, MarketWatchProvider marketWatch, WidgetRef ref) {
-    // Cache the icon to prevent rebuilds
-    final noDataIcon = SvgPicture.asset(
-      assets.noDatafound,
-      color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-    );
+  Widget _buildWatchlistTabs(
+    WidgetRef ref,
+    String wlName,
+    dynamic watchList,
+    ThemesProvider theme,
+  ) {
+    if (watchList?.values == null) return const SizedBox.shrink();
 
+    return SizedBox(
+      height: 40,
+      child: ListView.builder(
+        key: const PageStorageKey<String>('watchlistTabs'),
+        controller: _tabScrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: watchList.values.length,
+        itemBuilder: (_, i) {
+          final name = watchList.values[i];
+          final selected = name == wlName;
+
+          return SizedBox(
+            width: _tabWidth,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                splashColor: theme.isDarkMode
+                    ? Colors.white.withOpacity(.05)
+                    : Colors.black.withOpacity(.05),
+                highlightColor: theme.isDarkMode
+                    ? Colors.white.withOpacity(.01)
+                    : Colors.black.withOpacity(.01),
+                onTapDown: (_) => HapticFeedback.lightImpact(),
+                onTap: () => _handleTabTap(name, i, ref),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      child: TextWidget.subText(
+                        text: _formatTabName(name),
+                        color: selected
+                            ? (theme.isDarkMode
+                                ? colors.secondaryDark
+                                : colors.secondaryLight)
+                            : colors.textSecondaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        theme: theme.isDarkMode,
+                        fw: selected ? 2 : null,
+                      ),
+                    ),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      height: 2,
+                      width: selected ? _tabWidth - 18 : 0,
+                      margin: const EdgeInsets.only(top: 1),
+                      decoration: BoxDecoration(
+                        color: colors.colorBlue,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(ThemesProvider theme, MarketWatchProvider mw) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1130,16 +666,22 @@ class _WatchListScreen extends State<WatchListScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CustomTextBtn(
-                label: 'Add Symbol',
-                onPress: () {
-                  marketWatch.requestMWScrip(
-                      context: context, isSubscribe: false);
-                  Navigator.pushNamed(context, Routes.searchScrip,
-                      arguments: marketWatch.wlName);
-                },
-                icon: assets.addCircleIcon),
+              label: 'Add Symbol',
+              icon: assets.addCircleIcon,
+              onPress: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  await mw.requestMWScrip(context: context, isSubscribe: false);
+                });
+                Navigator.pushNamed(
+                  context,
+                  Routes.searchScrip,
+                  arguments: mw.wlName,
+                );
+              },
+            ),
+            const SizedBox(height: 8),
             TextWidget.subText(
-              text: "No symbol in this watchlist",
+              text: 'No symbol in this watchlist',
               color: theme.isDarkMode
                   ? colors.textPrimaryDark
                   : colors.textPrimaryLight,
@@ -1148,16 +690,14 @@ class _WatchListScreen extends State<WatchListScreen>
             const SizedBox(height: 8),
             SizedBox(
               width: 250,
-              child: Center(
-                child: TextWidget.paraText(
-                  text:
-                      "Use the search box above to find and add stocks, indices, futures or options. ",
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark
-                      : colors.textSecondaryLight,
-                  theme: theme.isDarkMode,
-                  align: TextAlign.center,
-                ),
+              child: TextWidget.paraText(
+                text:
+                    'Use the search box above to find and add stocks, indices, futures or options.',
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                theme: theme.isDarkMode,
+                align: TextAlign.center,
               ),
             ),
           ],
@@ -1166,40 +706,38 @@ class _WatchListScreen extends State<WatchListScreen>
     );
   }
 
-  Widget _buildWatchlistView(
-      List scrips, bool watchlistChanged, String isPreDefWLs, String sortBy) {
-    // Debug output to check the data structure
-    print("Building watchlist view with ${scrips.length} items");
-    if (scrips.isNotEmpty) {
-      print("First item in watchlist: ${scrips[0]}");
-      // Check if key fields that the WatchlistCard expects are present
-      if (scrips[0] is Map) {
-        final item = scrips[0];
-        print("Has token: ${item.containsKey('token')}");
-        print("Has tsym: ${item.containsKey('tsym')}");
-        print("Has exch: ${item.containsKey('exch')}");
-        print("tsym value: ${item['tsym']}");
-      }
-    }
-
-    // Using a more optimized list to prevent unnecessary rebuilds
-    // Add sortBy parameter to create a unique key that changes when sort changes
+  Widget _buildWatchlistView(List scrips, String sortBy) {
     return ListView.separated(
-      key: ValueKey(
-          "${scrips.length}_$sortBy"), // Use key based on list length AND sort order
-
+      key: ValueKey('${scrips.length}_$sortBy'),
       itemCount: scrips.length,
-      separatorBuilder: (context, index) => const ListDivider(),
-      itemBuilder: (BuildContext context, int idx) {
-        final scrip = scrips[idx];
-
-        // Use RepaintBoundary to isolate the card from other cards
-        return RepaintBoundary(
-          child: WatchlistCard(watchListData: scrip),
-        );
-      },
-      // Use cacheExtent to improve smoothness
       cacheExtent: 500,
+      separatorBuilder: (_, __) => const ListDivider(),
+      itemBuilder: (_, i) =>
+          RepaintBoundary(child: WatchlistCard(watchListData: scrips[i])),
     );
+  }
+
+  String _formatTabName(String v) {
+    if (v == 'My Stocks') return 'Holdings';
+    if (v == 'Nifty50') return 'Nifty 50';
+    if (v == 'Niftybank') return 'Nifty Bank';
+    if (v == 'Sensex') return 'Sensex';
+    return v.isEmpty
+        ? ''
+        : v.length <= 10
+            ? '${v[0].toUpperCase()}${v.substring(1)}'
+            : '${v.substring(0, 9)}..';
+  }
+
+  bool _listsEqual(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  void _safeSetState(VoidCallback fn) {
+    if (mounted) setState(fn);
   }
 }

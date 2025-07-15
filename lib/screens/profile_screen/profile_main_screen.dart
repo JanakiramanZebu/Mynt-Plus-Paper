@@ -588,22 +588,19 @@ class UserAccountScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: () async {
-                  // Prevent double-tap issues
-                  if (!_canTap()) return;
-
-                  await trancation.fetchValidateToken(context);
-                  Future.delayed(
-                    const Duration(milliseconds: 100),
-                    () async {
-                      await trancation.ip();
-                      await trancation.fetchupiIdView(
-                        trancation.bankdetails!.dATA![trancation.indexss][1],
-                        trancation.bankdetails!.dATA![trancation.indexss][2],
-                      );
-                      await trancation.fetchcwithdraw(context);
-                    },
-                  );
+                onPressed: () async {   
+                  // await trancation.fetchValidateToken(context);
+                  // Future.delayed(
+                  //   const Duration(milliseconds: 100),
+                  //   () async {
+                  //     await trancation.ip();
+                  //     await trancation.fetchupiIdView(
+                  //       trancation.bankdetails!.dATA![trancation.indexss][1],
+                  //       trancation.bankdetails!.dATA![trancation.indexss][2],
+                  //     );
+                  //     await trancation.fetchcwithdraw(context);
+                  //   },
+                  // );
                   trancation.changebool(true);
                   Navigator.pushNamed(context, Routes.fundscreen,
                       arguments: trancation);

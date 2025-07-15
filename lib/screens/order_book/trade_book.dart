@@ -232,6 +232,23 @@ class TradeBook extends ConsumerWidget {
                                               : colors.textPrimaryLight,
                                         ),
                                       ),
+                                      // BUY/SELL Badge
+                                      TextWidget.paraText(
+                                        text: tradeBook[index].trantype == "S"
+                                            ? "SELL"
+                                            : "BUY",
+                                        theme: false,
+                                        color: tradeBook[index].trantype == "S"
+                                            ? theme.isDarkMode
+                                                ? colors.lossDark
+                                                : colors.lossLight
+                                            : theme.isDarkMode
+                                                ? colors.profitDark
+                                                : colors.profitLight,
+                                        fw: 0,
+                                      ),
+
+                                      // const SizedBox(width: 8),
 
                                       // Order Number
                                       // TextWidget.subText(
@@ -256,13 +273,23 @@ class TradeBook extends ConsumerWidget {
                                       Expanded(
                                         child: TextWidget.paraText(
                                           text:
-                                              "${tradeBook[index].exch} - ${tradeBook[index].prctyp ?? ''} - ${tradeBook[index].sPrdtAli} - ${formatDateTime(value: tradeBook[index].norentm!).substring(12, 21)}",
+                                              "${tradeBook[index].exch} - ${tradeBook[index].prctyp ?? ''} - ${tradeBook[index].sPrdtAli}",
                                           theme: false,
                                           color: theme.isDarkMode
                                               ? colors.textSecondaryDark
                                               : colors.textSecondaryLight,
                                           fw: 3,
                                         ),
+                                      ),
+
+                                      TextWidget.paraText(
+                                        text:
+                                            "${((int.tryParse(tradeBook[index].flqty.toString()) ?? 0) / (tradeBook[index].exch == 'MCX' ? (int.tryParse(tradeBook[index].ls.toString()) ?? 1) : 1)).toInt()}",
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        theme: theme.isDarkMode,
+                                        fw: 3,
                                       ),
                                       // TextWidget.paraText(
                                       //   text:
@@ -283,50 +310,17 @@ class TradeBook extends ConsumerWidget {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        children: [
-                                          // BUY/SELL Badge
-                                          TextWidget.paraText(
-                                            text:
-                                                tradeBook[index].trantype == "S"
-                                                    ? "SELL"
-                                                    : "BUY",
-                                            theme: false,
-                                            color:
-                                                tradeBook[index].trantype == "S"
-                                                    ? theme.isDarkMode
-                                                        ? colors.lossDark
-                                                        : colors.lossLight
-                                                    : theme.isDarkMode
-                                                        ? colors.profitDark
-                                                        : colors.profitLight,
-                                            fw: 0,
-                                          ),
-
-                                          const SizedBox(width: 8),
-                                          TextWidget.paraText(
-                                            text:
-                                                "${((int.tryParse(tradeBook[index].flqty.toString()) ?? 0) / (tradeBook[index].exch == 'MCX' ? (int.tryParse(tradeBook[index].ls.toString()) ?? 1) : 1)).toInt()}",
-                                            color: theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight,
-                                            theme: theme.isDarkMode,
-                                            fw: 3,
-                                          ),
-                                          // Product Badge
-
-                                          // const SizedBox(width: 8),
-
-                                          // // Price Type Badge
-                                          // TextWidget.paraText(
-                                          //   text: "${tradeBook[index].prctyp}",
-                                          //   theme: false,
-                                          //   color: theme.isDarkMode
-                                          //       ? colors.textSecondaryDark
-                                          //       : colors.textSecondaryLight,
-                                          //   fw: 3,
-                                          // ),
-                                        ],
+                                      TextWidget.paraText(
+                                        text: formatDateTime(
+                                                value:
+                                                    tradeBook[index].norentm!)
+                                            .substring(12, 21)
+                                            .trim(),
+                                        theme: false,
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        fw: 3,
                                       ),
                                       TextWidget.paraText(
                                         text:

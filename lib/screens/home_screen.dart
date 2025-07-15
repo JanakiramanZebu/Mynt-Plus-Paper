@@ -22,6 +22,7 @@ import '../provider/notification_provider.dart';
 import '../provider/order_provider.dart';
 import '../provider/portfolio_provider.dart';
 import '../provider/thems.dart';
+import '../provider/transcation_provider.dart';
 import '../provider/user_profile_provider.dart';
 import '../provider/version_provider.dart';
 import '../provider/websocket_provider.dart';
@@ -815,11 +816,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     await marketWatchList.requestMWScrip(context: context, isSubscribe: true);
 
     // Load any additional watchlist data in the background
-    Future.microtask(() {
-      if (mounted) {
-        marketWatchList.fetchMWList(context, false);
-      }
-    });
+    // Future.microtask(() {
+    //   if (mounted) {
+    //     marketWatchList.fetchMWList(context, false);
+    //   }
+    // });
   }
 
   void _handlePortfolioTap() async {
@@ -837,6 +838,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         context: context, isSubscribe: false);
     await portfolio.requestWSHoldings(context: context, isSubscribe: true);
     await portfolio.requestWSPosition(context: context, isSubscribe: true);
+
+    await ref.read(transcationProvider).fetchValidateToken(context);
+
+    await ref.read(transcationProvider).ip();
+    await ref.read(transcationProvider).fetchupiIdView(
+          ref
+              .read(transcationProvider)
+              .bankdetails!
+              .dATA![ref.read(transcationProvider).indexss][1],
+          ref
+              .read(transcationProvider)
+              .bankdetails!
+              .dATA![ref.read(transcationProvider).indexss][2],
+        );
+    await ref.read(transcationProvider).fetchcwithdraw(context);
 
     // Fetch data in the background without blocking UI transition
     Future.microtask(() {
@@ -909,6 +925,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         await ref.read(apikeyprovider).fetchapikey(context);
         await ref.read(notificationprovider).fetchexchagemsg(context);
         await ref.read(notificationprovider).fetchbrokermsg(context);
+
+
+        //funds
+
+        await ref.read(transcationProvider).fetchValidateToken(context);
+
+        await ref.read(transcationProvider).ip();
+        await ref.read(transcationProvider).fetchupiIdView(
+              ref
+                  .read(transcationProvider)
+                  .bankdetails!
+                  .dATA![ref.read(transcationProvider).indexss][1],
+              ref
+                  .read(transcationProvider)
+                  .bankdetails!
+                  .dATA![ref.read(transcationProvider).indexss][2],
+            );
+        await ref.read(transcationProvider).fetchcwithdraw(context);
 
         //// reports/////
         if (reportsprovider.ledgerAllData == null) {

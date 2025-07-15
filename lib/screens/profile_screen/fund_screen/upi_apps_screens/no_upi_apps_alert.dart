@@ -40,53 +40,50 @@ class _NoUPIAppsAlertState extends ConsumerState<NoUPIAppsAlert> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(
-                height: 6,
-              ),
               const CustomDragHandler(),
-              const SizedBox(
-                height: 6,
-              ),
               SvgPicture.asset("assets/icon/ipo_cancel_icon.svg"),
               const SizedBox(
-                height: 10,
+                height: 16,
               ),
-              TextWidget.titleText(
+              TextWidget.subText(
                   text:
-                  "No suitable app available, kindly choose a different mode of payment",
+                      "No suitable app available, kindly choose a different mode of payment",
                   theme: false,
-                  color:
-                      theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
-                  fw: 1,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
                   align: TextAlign.center),
               const SizedBox(
-                height: 10,
+                height: 16,
               ),
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: ElevatedButton(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                         elevation: 0,
+                        minimumSize: const Size(0, 40),
                         backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
+                            ? colors.primaryDark
+                            : colors.primaryLight,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
+                          borderRadius: BorderRadius.circular(5),
                         )),
                     onPressed: () async {
                       launch("https://play.google.com/store/apps");
                     },
-                  child: TextWidget.paraText(
+                    child: TextWidget.subText(
                       text: "Get UPI Apps",
                       theme: false,
-                      color: theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.colorWhite,
-                      fw: 1),
+                      color: colors.colorWhite,
+                      fw: 2,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(
-                height: 15,
+                height: 16,
               )
             ],
           ),

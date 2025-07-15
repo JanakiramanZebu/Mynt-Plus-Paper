@@ -209,4 +209,5 @@ class Routes {
 
   // rough
   static const String heatmapcalendarscreen = 'HeatmapCalendarScreen ';
+  static const String withdrawscreen = 'withdrawscreen';
 }

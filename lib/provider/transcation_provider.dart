@@ -177,8 +177,12 @@ class TranctionProvider extends DefaultChangeNotifier {
   RegExp _upiPattern = RegExp(r'^[\w.-]+@[\w.-]+$');
   RegExp get upiPattern => _upiPattern;
 
-  bool _isBottomSheetShown = true;
-  bool get isBottomSheetShown => _isBottomSheetShown;
+  // Replace single bottom sheet flag with two separate flags
+  bool _isUpiAppsBottomSheetShown = false;
+  bool get isUpiAppsBottomSheetShown => _isUpiAppsBottomSheetShown;
+
+  bool _isUpiIdBottomSheetShown = false;
+  bool get isUpiIdBottomSheetShown => _isUpiIdBottomSheetShown;
 
   final List _defaultUpiapps = [
     {
@@ -216,7 +220,24 @@ class TranctionProvider extends DefaultChangeNotifier {
   }
 
   initialdata(BuildContext contex) {
+    // Reset form state
     _intValue = 0;
+    _funderror = '';
+    _maxfunderror = '';
+    amount.clear();
+    // upiid.clear();
+    
+    // Reset other form-related states
+    _selectedIndex = -1;
+    _upiIdbutton = true;
+    upiiderror = null;
+    amounterror = null;
+    
+    // Reset bottom sheet state
+    _isUpiAppsBottomSheetShown = false;
+    _isUpiIdBottomSheetShown = false;
+    
+    // Initialize bank and account data
     _multipleAccno = _accno = bankdetails!.dATA![index][2];
     _ifsc = bankdetails!.dATA![indexss][3];
     _bankname = bankdetails!.dATA![indexss][1];
@@ -225,7 +246,6 @@ class TranctionProvider extends DefaultChangeNotifier {
         '${bankdetails!.dATA![indexss][1]} - ${hideAccountNumber(accno)}';
     _textValue = decryptclientcheck!.companyCode![0];
     _companycode = decryptclientcheck!.companyCode!;
-    _selectedIndex = -1;
     setAccountslist(_accno);
     if (_companycode.contains("NSE_FNO")) {
       _textValue = "NSE_FNO";
@@ -238,29 +258,41 @@ class TranctionProvider extends DefaultChangeNotifier {
     }
   }
 
-  changeValue(bool value, BuildContext context) {
-    _isBottomSheetShown = value;
+  changeValue(bool value, BuildContext context, {bool isUpiApps = true}) {
+    if (isUpiApps) {
+      _isUpiAppsBottomSheetShown = value;
+    } else {
+      _isUpiIdBottomSheetShown = value;
+    }
     Navigator.pop(context);
+    notifyListeners();
+  }
+
+  // Reset bottom sheet state when starting a new payment process
+  void resetBottomSheetState() {
+    _isUpiAppsBottomSheetShown = false;
+    _isUpiIdBottomSheetShown = false;
     notifyListeners();
   }
 
   String? amounterror, upiiderror;
 
   clearerror() {
-    upiiderror == null;
-    amounterror == null;
+    upiiderror = null;
+    amounterror = null;
     notifyListeners();
   }
 
   validateUPI(String value) {
     upiid.text = value;
-    if (upiid.text.trim().isEmpty) {
+    if (upiid.text.isEmpty) {
       upiiderror = 'Please enter a UPI ID';
     } else if (!_upiPattern.hasMatch(upiid.text)) {
       upiiderror = 'Please enter a valid UPI ID';
     } else {
       _upiIdbutton = false;
       upiiderror = null;
+      upiiderror = "";
     }
     notifyListeners();
     return upiiderror == null && _upiIdbutton == false;
@@ -325,7 +357,7 @@ class TranctionProvider extends DefaultChangeNotifier {
 
   Future fetchValidateToken(BuildContext context) async {
     try {
-      togglefundLoadingOn(true);
+      togglefundLoading(true);
 
       _fundTokenValidation = await api.getFundvalidateSession();
       if (_fundTokenValidation!.emsg == "invalid token") {
@@ -341,7 +373,7 @@ class TranctionProvider extends DefaultChangeNotifier {
           .add({"type": "fetchValidateToken", "Error": "$e"});
       notifyListeners();
     } finally {
-      togglefundLoadingOn(false);
+      togglefundLoading(false);
     }
   }
 
@@ -350,41 +382,60 @@ class TranctionProvider extends DefaultChangeNotifier {
     String orderNo,
     String upiTranID,
   ) async {
+    print("fetchUpiPaymentstatus called with orderNo: $orderNo, upiTranID: $upiTranID");
     //final localstorage = await SharedPreferences.getInstance();
     try {
-      togglefundLoadingOn(true);
-      _hdfcUPIStatus = await api.getHdfcUPIStatus(orderNo, upiTranID);
-      if (hdfcUPIStatus?.data?.status == "EXPIRED" ||
-          hdfcUPIStatus?.data?.status == "REJECTED" ||
-          hdfcUPIStatus?.data?.status == "SUCCESS") {
-        togglefundLoadingOn(false);
-        showModalBottomSheet(
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-            backgroundColor: const Color(0xffffffff),
-            isDismissible: false,
-            enableDrag: false,
-            showDragHandle: false,
-            useSafeArea: false,
-            isScrollControlled: true,
-            context: context,
-            builder: (BuildContext context) {
-              return PopScope(
-                  canPop: false,
-                  onPopInvokedWithResult: (didPop, result) async {
-                    if (didPop) return;
-                  },
-                  child: const UPIAppsPaymentSuccessAlert());
-            });
+      if (!context.mounted) {
+        return false;
       }
+      togglefundLoading(true);
+      _hdfcUPIStatus = await api.getHdfcUPIStatus(orderNo, upiTranID);
+      print("UPI Apps Payment Status Response");
+      if (!context.mounted) {
+        return false;
+      }
+      if (hdfcUPIStatus?.data?.status == "FAILED" ||
+          hdfcUPIStatus?.data?.status == "REJECTED" ||
+          hdfcUPIStatus?.data?.status == "SUCCESS"
+         ) {
+        if (!_isUpiAppsBottomSheetShown) {
+          _isUpiAppsBottomSheetShown = true;
+          if (context.mounted) {
+            showModalBottomSheet(
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                backgroundColor: const Color(0xffffffff),
+                isDismissible: false,
+                enableDrag: false,
+                showDragHandle: false,
+                useSafeArea: false,
+                isScrollControlled: true,
+                context: context,
+                builder: (BuildContext context) {
+                  return PopScope(
+                      canPop: false,
+                      onPopInvokedWithResult: (didPop, result) async {
+                        if (didPop) return;
+                      },
+                      child: const UPIAppsPaymentSuccessAlert());
+                }).whenComplete(() {
+                  _isUpiAppsBottomSheetShown = false;
+                });
+          }
+        }
+        return false;
+      }
+      return true;
     } catch (e) {
-      // log("Failed to fetch bank Data:: ${e.toString()}");
-      ref.read(indexListProvider)
-          .logError
-          .add({"type": "fetchUpiPaymentstatus", "Error": "$e"});
-      notifyListeners();
+      if (context.mounted) {
+        ref.read(indexListProvider)
+            .logError
+            .add({"type": "fetchUpiPaymentstatus", "Error": "$e"});
+        notifyListeners();
+      }
+      return true;
     } finally {
-      togglefundLoadingOn(false);
+      togglefundLoading(false);
     }
   }
 
@@ -484,13 +535,17 @@ class TranctionProvider extends DefaultChangeNotifier {
   Future fetcUPIIDPayment(
       BuildContext context, String upiId, String clientId, String accno) async {
     try {
-      togglefundLoadingOn(true);
-      _hdfcpaymentdata = await api.getUPIIDPayment(upiId, clientId, accno);
+      togglefundLoading(true);
+      print("UPI ID Payment Initiation: upiId=$upiId, clientId=$clientId, accno=$accno, bankname=$_bankname, segment=$_textValue");
+      _hdfcpaymentdata = await api.getUPIIDPayment(upiId, clientId, accno, _bankname);
 
+// print("bankname()*(*):: ${bankdetails!.dATA![indexss][1]}");
       if (hdfcpaymentdata!.data!.verifiedVPAStatus1 == "Not Available" ||
           hdfcpaymentdata!.data!.verifiedVPAStatus2 == "Not Available") {
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, 'Please enter the valid UPI ID'));
+        upiiderror = 'UPI ID is Invaild';
+        notifyListeners();
+
+        return; // Stop the flow if UPI ID is invalid
       }
       //log("HDFC BANK $hdfcpaymentdata");
     } catch (e) {
@@ -500,7 +555,7 @@ class TranctionProvider extends DefaultChangeNotifier {
           .add({"type": "fetcUPIIDPayment", "Error": "$e"});
       notifyListeners();
     } finally {
-      togglefundLoadingOn(false);
+      togglefundLoading(false);
     }
   }
 
@@ -512,7 +567,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     String clientId,
   ) async {
     try {
-      togglefundLoadingOn(true);
+      togglefundLoading(true);
       if (hdfcpaymentdata!.data!.verifiedVPAStatus1 == "Available" ||
           hdfcpaymentdata!.data!.verifiedVPAStatus2 == "Available") {
         _hdfctranction =
@@ -526,15 +581,15 @@ class TranctionProvider extends DefaultChangeNotifier {
           .add({"type": "fetchHdfctranction", "Error": "$e"});
       notifyListeners();
     } finally {
-      togglefundLoadingOn(false);
+      togglefundLoading(false);
     }
   }
 
   Future fetchUPIPaymet(BuildContext context, String amt, String bankaccno,
       String clientid, String name) async {
     try {
-      togglefundLoadingOn(true);
-
+      togglefundLoading(true);
+      print("UPI Apps Payment Initiation: amt=$amt, bankaccno=$bankaccno, clientid=$clientid, name=$name, segment=$_textValue");
       _hdfcdirectpayment =
           await api.getUPIAppsPayment(amt, _allacc, clientid, name);
       if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -551,7 +606,7 @@ class TranctionProvider extends DefaultChangeNotifier {
           .add({"type": "fetchUPIPaymet", "Error": "$e"});
       notifyListeners();
     } finally {
-      togglefundLoadingOn(false);
+      togglefundLoading(false);
     }
   }
 
@@ -588,77 +643,107 @@ class TranctionProvider extends DefaultChangeNotifier {
   Future<void> checkAndLaunchUrl(String url, BuildContext context) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
-      showModalBottomSheet(
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-          backgroundColor: const Color(0xffffffff),
-          isDismissible: false,
-          enableDrag: false,
-          showDragHandle: false,
-          useSafeArea: false,
-          isScrollControlled: true,
-          context: context,
-          builder: (BuildContext context) {
-            return PopScope(
-                canPop: false,
-                onPopInvokedWithResult: (didPop, result) async {
-                  if (didPop) return;
-                },
-                child: const PaymentCancelAlert());
-          });
+      // Only show bottom sheet if it hasn't been shown yet
+      if (!_isUpiIdBottomSheetShown) {
+        _isUpiIdBottomSheetShown = true;
+        
+        // Final check before showing bottom sheet
+        if (context.mounted) {
+          showModalBottomSheet(
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+              backgroundColor: const Color(0xffffffff),
+              isDismissible: false,
+              enableDrag: false,
+              showDragHandle: false,
+              useSafeArea: false,
+              isScrollControlled: true,
+              context: context,
+              builder: (BuildContext context) {
+                return PopScope(
+                    canPop: false,
+                    onPopInvokedWithResult: (didPop, result) async {
+                      if (didPop) return;
+                    },
+                    child: const PaymentCancelAlert());
+              });
+        }
+      }
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      showModalBottomSheet(
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-          backgroundColor: const Color(0xffffffff),
-          context: context,
-          builder: (BuildContext context) {
-            return const NoUPIAppsAlert();
-          });
+      // Only show bottom sheet if it hasn't been shown yet
+      if (!_isUpiIdBottomSheetShown) {
+        _isUpiIdBottomSheetShown = true;
+        
+        // Final check before showing bottom sheet
+        if (context.mounted) {
+          showModalBottomSheet(
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+              backgroundColor: const Color(0xffffffff),
+              context: context,
+              builder: (BuildContext context) {
+                return const NoUPIAppsAlert();
+              });
+        }
+      }
     }
   }
 
-  Future fetchHdfcpaymetstatus(
+ Future<bool> fetchHdfcpaymetstatus(
       BuildContext context, String ordno, String upiTransid) async {
     try {
-      togglefundLoadingOn(true);
-
+      if (!context.mounted) {
+        return false;
+      }
+      togglefundLoading(true);
       _hdfcpaymentstatus = await api.getHdfcPaymentstatus(ordno, upiTransid);
-      _isBottomSheetShown = true;
+      print("UPI ID Payment Status Response  [32m");
+      if (!context.mounted) {
+        return false;
+      }
       if (hdfcpaymentstatus?.upiId?.status == "EXPIRED" ||
           hdfcpaymentstatus?.upiId?.status == "REJECTED" ||
-          hdfcpaymentstatus?.upiId?.status == "SUCCESS") {
-        _isBottomSheetShown = false;
-        showModalBottomSheet(
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-            backgroundColor: const Color(0xffffffff),
-            isDismissible: false,
-            enableDrag: false,
-            showDragHandle: false,
-            useSafeArea: false,
-            isScrollControlled: true,
-            context: context,
-            builder: (BuildContext context) {
-              return PopScope(
-                  canPop: false,
-                  onPopInvokedWithResult: (didPop, result) async {
-                    if (didPop) return;
-                  },
-                  child: const UpiIdSucessorFaliureScreen());
-            });
+          hdfcpaymentstatus?.upiId?.status == "SUCCESS" ||
+          hdfcpaymentstatus?.upiId?.status == "FAILED") {
+        if (!_isUpiIdBottomSheetShown) {
+          _isUpiIdBottomSheetShown = true;
+          if (context.mounted) {
+            showModalBottomSheet(
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                backgroundColor: Colors.transparent,
+                isDismissible: false,
+                enableDrag: false,
+                showDragHandle: false,
+                useSafeArea: false,
+                isScrollControlled: true,
+                context: context,
+                builder: (BuildContext context) {
+                  return PopScope(
+                      canPop: false,
+                      onPopInvokedWithResult: (didPop, result) async {
+                        if (didPop) return;
+                      },
+                      child: Container(child: const UpiIdSucessorFaliureScreen()));
+                }).whenComplete(() {
+                  _isUpiIdBottomSheetShown = false;
+                });
+          }
+        }
+        return false;
       }
-
-      //print("HDFC PAYMENTSTATUS ${_hdfcpaymentstatus!.upiId!.clientVPA}");
+      return true;
     } catch (e) {
-      // log("Failed to fetch bank Data:: ${e.toString()}");
-      ref.read(indexListProvider)
-          .logError
-          .add({"type": "fetchHdfcpaymetstatus", "Error": "$e"});
-      notifyListeners();
+      if (context.mounted) {
+        ref.read(indexListProvider)
+            .logError
+            .add({"type": "fetchHdfcpaymetstatus", "Error": "$e"});
+        notifyListeners();
+      }
+      return true;
     } finally {
-      togglefundLoadingOn(false);
+      togglefundLoading(false);
     }
   }
 
@@ -671,8 +756,8 @@ class TranctionProvider extends DefaultChangeNotifier {
     Razorpay razorpay,
   ) async {
     try {
-      togglefundLoadingOn(true);
-
+      togglefundLoading(true);
+      print("Net Banking Payment Initiation: amt=$amt, accno=$accno, name=$name, ifsc=$ifsc, segment=$_textValue");
       _razorpay = await api.getrazorpay(amt, accno, name, ifsc);
       if (_razorpay!.status == "created") {
         var options = {
@@ -716,14 +801,15 @@ class TranctionProvider extends DefaultChangeNotifier {
       ref.read(indexListProvider).logError.add({"type": "RAZORPAY", "Error": "$e"});
       notifyListeners();
     } finally {
-      togglefundLoadingOn(false);
+      togglefundLoading(false);
     }
   }
 
   Future fetchrazorpayStatus(String paymentid) async {
     try {
-      togglefundLoadingOn(true);
+      togglefundLoading(true);
       _razorpayTranstationRes = await api.getrazorpayStatus(paymentid);
+       print( "Net Banking (Razorpay) Payment Status Response $_razorpayTranstationRes");
       // log("PAYMENT ID${_razorpayTranstationRes?.id} $paymentid");
     } catch (e) {
       // log("Failed to Razorpay Status:: ${e.toString()}");
@@ -732,7 +818,7 @@ class TranctionProvider extends DefaultChangeNotifier {
           .add({"type": "fetchrazorpayStatus", "Error": "$e"});
       notifyListeners();
     } finally {
-      togglefundLoadingOn(false);
+      togglefundLoading(false);
     }
   }
 
@@ -762,7 +848,7 @@ class TranctionProvider extends DefaultChangeNotifier {
   Future fetchPaymentWithDraw(
       String ip, String amount, String segment, BuildContext context) async {
     try {
-      togglefundLoadingOn(true);
+      togglefundLoading(true);
       _paymentWithdraw = await api.getpayemntwithdraw(ip, amount, segment);
       if (_paymentWithdraw!.msg == "Sucess") {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -776,13 +862,13 @@ class TranctionProvider extends DefaultChangeNotifier {
           .add({"type": "fetchPaymentWithDraw", "Error": "$e"});
       notifyListeners();
     } finally {
-      togglefundLoadingOn(false);
+      togglefundLoading(false);
     }
   }
 
   Future fetchPaymentWithDrawStatus(BuildContext context) async {
     try {
-      togglefundLoadingOn(true);
+      togglefundLoading(true);
 
       _withdrawstatus = await api.getWithDrawStatus();
       //print("${_withdrawstatus?[0].eNTRYTIME}");
@@ -794,7 +880,7 @@ class TranctionProvider extends DefaultChangeNotifier {
           .add({"type": "fetchPaymentWithDrawStatus", "Error": "$e"});
       notifyListeners();
     } finally {
-      togglefundLoadingOn(false);
+      togglefundLoading(false);
     }
   }
 }

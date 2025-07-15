@@ -39,10 +39,10 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+      },
       child: Consumer(
         builder: (context, ref, child) {
           //  final fund = ref.watch(transcationProvider);
@@ -74,23 +74,23 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
                         size: 70,
                       ),
                       const SizedBox(
-                        height: 10,
+                        height: 16,
                       ),
-                      TextWidget.titleText(
-                          text: "Failed",
-                          theme: false,
-                          color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                          fw: 1),
+                      TextWidget.subText(
+                        text: "Failed",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                      ),
                       const SizedBox(
                         height: 5,
                       ),
                       TextWidget.subText(
-                          text: "Your payment has failed.",
-                          theme: false,
-                          color: colors.colorGrey,
-                          fw: 0),
+                        text: "Your payment has failed.",
+                        theme: false,
+                        color: colors.textSecondaryLight,
+                      ),
                       const SizedBox(
                         height: 10,
                       ),
@@ -98,68 +98,54 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
                           text: "₹${widget.amount}.00",
                           fs: 40,
                           color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                          fw: 1,
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
                           theme: false),
                       const SizedBox(
                         height: 10,
                       ),
-                      TextWidget.subText(
-                          text: time,
-                          theme: false,
-                          color: colors.colorGrey,
-                          fw: 0),
+                      TextWidget.paraText(
+                        text: time,
+                        theme: false,
+                        color: colors.textSecondaryLight,
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const ListDivider(),
-                const SizedBox(
-                  height: 10,
-                ),
-                headerTitleText("Bank Name"),
-                contantTitleText(widget.bankname, theme),
-                const SizedBox(
-                  height: 15,
-                ),
-                headerTitleText("A/c No"),
-                contantTitleText(widget.acco, theme),
-                const SizedBox(
-                  height: 15,
-                ),
-                headerTitleText("Reason"),
-                contantTitleText(
+                data("Bank Name", widget.bankname, theme),
+                data("A/c No", widget.acco, theme),
+                data(
+                    "Reason",
                     "Your payment has been cancelled. Try again or complete the payment later.",
                     theme),
                 const SizedBox(
-                  height: 10,
+                  height: 16,
                 ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          minimumSize: const Size(0, 40),
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
                         ),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        FocusScope.of(context).unfocus();
-                      },
-                      child: TextWidget.titleText(
-                          text: 'Close',
-                          theme: false,
-                          color: theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.colorWhite,
-                          fw: 1)),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          FocusScope.of(context).unfocus();
+                        },
+                        child: TextWidget.subText(
+                            text: 'Close',
+                            theme: false,
+                            color: colors.colorWhite,
+                            fw: 2)),
+                  ),
                 ),
                 const SizedBox(
                   height: 10,
@@ -172,16 +158,44 @@ class _RazorpayFailedUiState extends State<RazorpayFailedUi> {
     );
   }
 
-  Widget headerTitleText(String text) {
-    return TextWidget.subText(
-        text: text, theme: false, color: colors.colorGrey, fw: 0);
-  }
 
-  Widget contantTitleText(String text, ThemesProvider theme) {
-    return TextWidget.titleText(
-        text: text,
-        theme: false,
-        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-        fw: 1);
+
+  data(String name, String value, ThemesProvider theme) {
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextWidget.subText(
+                text: name,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                ),
+            const SizedBox(width: 16),
+            SizedBox(
+              width: 200,
+              child: TextWidget.subText(
+                text: value,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                
+                align: TextAlign.right,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Divider(
+          thickness: 0,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
+      ],
+    );
   }
 }

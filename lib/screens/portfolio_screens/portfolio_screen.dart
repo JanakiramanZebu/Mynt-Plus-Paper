@@ -226,7 +226,15 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: ((index == 0 && portfolio.allPostionList.isNotEmpty) || (index == 1 && (portfolio.holdingsModel?.isNotEmpty??false)))? colors.btnBg : null,
+                                  color: ((index == 0 &&
+                                              portfolio
+                                                  .allPostionList.isNotEmpty) ||
+                                          (index == 1 &&
+                                              (portfolio.holdingsModel
+                                                      ?.isNotEmpty ??
+                                                  false)))
+                                      ? colors.btnBg
+                                      : null,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: TextWidget.subText(

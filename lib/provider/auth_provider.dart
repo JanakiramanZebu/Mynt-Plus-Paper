@@ -102,8 +102,7 @@ class AuthProvider extends DefaultChangeNotifier {
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(16))),
           scrollable: true,
-          actionsPadding:
-              const EdgeInsets.only(left: 16, right: 16, bottom: 14, top: 3),
+          
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           insetPadding: const EdgeInsets.symmetric(horizontal: 16),
           titlePadding: const EdgeInsets.only(left: 16),
@@ -137,8 +136,8 @@ class AuthProvider extends DefaultChangeNotifier {
                               !ref.read(themeProvider).isDarkMode
                                   ? colors.colorBlack
                                   : colors.colorWhite,
-                              14,
-                              FontWeight.w500)))
+                              16,
+                              FontWeight.w600)))
                 ]),
                 const SizedBox(height: 10),
               ])),
