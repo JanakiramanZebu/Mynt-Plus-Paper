@@ -58,7 +58,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                     text: "Bill and Details",
                     textOverflow: TextOverflow.ellipsis,
                     theme: theme.isDarkMode,
-                    fw: 1),
+                    fw: 0),
               ),
               ledgerdata.ledgerBillData!.expenses == null
                   ? Center(
@@ -71,52 +71,56 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
+                             Divider(
+                                        color: const Color.fromARGB(
+                                            255, 212, 212, 212),
+                                      ),
                             Container(
                               width: screenWidth,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    color: theme.isDarkMode
-                                        ? const Color(0xffB5C0CF)
-                                            .withOpacity(.15)
-                                        : const Color(0xffF1F3F8)),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 16.0, left: 16.0, right: 16.0),
-                                  child: Column(
-                                    children: [
-                                      for (var item in ledgerdata
-                                                  .ledgerBillData!.expenses! !=
-                                              null
-                                          ? ledgerdata.ledgerBillData!.expenses!
-                                          : [])
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(bottom: 20),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              TextWidget.subText(
-                                                  text: "${item.sCRIPNAME}",
-                                                  color: Color(0xFF696969),
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 0),
-                                              TextWidget.subText(
-                                                  text: "${item.nETAMT}",
-                                                  textOverflow:
-                                                      TextOverflow.ellipsis,
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1),
-                                            ],
-                                          ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 16.0, left: 16.0, right: 16.0),
+                                child: Column(
+                                  children: [
+                                    for (var item in ledgerdata
+                                                .ledgerBillData!.expenses! !=
+                                            null
+                                        ? ledgerdata.ledgerBillData!.expenses!
+                                        : [])
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 20),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            TextWidget.paraText(
+                                                text: "${item.sCRIPNAME}",
+                                                color:  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 3),
+                                            TextWidget.subText(
+                                                text: "${item.nETAMT}",
+                                                color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 3),
+                                          ],
                                         ),
-                                    ],
-                                  ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ),
+                              Divider(
+                                        color: const Color.fromARGB(
+                                            255, 212, 212, 212),
+                                      ),
                             ListView.separated(
                               physics: ScrollPhysics(),
                               itemCount: ledgerdata
@@ -143,14 +147,11 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 1),
+                                                fw: 0),
                                           ),
                                         ],
                                       ),
-                                      Divider(
-                                        color: const Color.fromARGB(
-                                            255, 212, 212, 212),
-                                      ),
+                                       SizedBox(height: 4),
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(top: 4.0),
@@ -160,15 +161,15 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                           children: [
                                             Row(
                                               children: [
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     text: "BQty : ",
                                                     color: Color(0xFF696969),
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
+                                                    fw: 3),
 
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     text:
                                                         " ${double.tryParse(ledgerdata.ledgerBillData!.transactions![index].bQTY!)!.toInt()}",
                                                     color: double.tryParse(ledgerdata
@@ -191,9 +192,9 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 1),
+                                                    fw: 3),
 
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     text:
                                                         " @ ₹${double.parse(ledgerdata.ledgerBillData!.transactions![index].bRATE.toString()).toStringAsFixed(2)}",
                                                     color: double.tryParse(ledgerdata
@@ -216,7 +217,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 1),
+                                                    fw: 3),
 
                                                 // Text(
                                                 //   ("${ledgerdata.ledgerBillData!.transactions![index].bAMT}"
@@ -239,14 +240,14 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                             ),
                                             Row(
                                               children: [
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     text: "NQty :  ",
                                                     color: Color(0xFF696969),
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
+                                                    fw: 3),
+                                                TextWidget.paraText(
                                                     text:
                                                         "${double.tryParse((double.parse(ledgerdata.ledgerBillData!.transactions![index].bQTY!) - double.parse(ledgerdata.ledgerBillData!.transactions![index].sQTY!)).toString())!.toInt()} ",
                                                     color: theme.isDarkMode
@@ -255,7 +256,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 1),
+                                                    fw: 3),
                                               ],
                                             ),
                                           ],
@@ -270,14 +271,14 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                           children: [
                                             Row(
                                               children: [
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     text: "SQty : ",
                                                     color: Color(0xFF696969),
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
+                                                    fw: 3),
+                                                TextWidget.paraText(
                                                     text:
                                                         " ${double.tryParse(ledgerdata.ledgerBillData!.transactions![index].sQTY.toString())!.toInt()} @ ₹${double.parse(ledgerdata.ledgerBillData!.transactions![index].sRATE.toString()).toStringAsFixed(2)}",
                                                     color: double.tryParse(ledgerdata
@@ -306,19 +307,19 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 1),
+                                                    fw: 3),
                                               ],
                                             ),
                                             Row(
                                               children: [
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     text: "NAmt : ",
                                                     color: Color(0xFF696969),
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
+                                                    fw: 3),
+                                                TextWidget.paraText(
                                                     text:
                                                         "₹ ${double.tryParse(ledgerdata.ledgerBillData?.transactions?[index].nETAMT?.toString() ?? "0")?.toStringAsFixed(2) ?? "0.00"}",
                                                     color: theme.isDarkMode
@@ -327,7 +328,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 1),
+                                                    fw: 3),
                                               ],
                                             ),
                                           ],

@@ -183,13 +183,13 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
 
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -205,13 +205,13 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -227,13 +227,13 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
 
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -251,13 +251,13 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -274,13 +274,13 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                             : "0.00"),
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -299,13 +299,13 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
 
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -322,13 +322,13 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                             : "0.00"),
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -345,13 +345,13 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                             : "0.00"),
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: 8.0,
+                        bottom: 4.0,
                       ),
                       child: Divider(
                         color: theme.isDarkMode
                             ? const Color(0xffB5C0CF).withOpacity(.15)
                             : const Color(0xffF1F3F8),
-                        thickness: 7.0,
+                        thickness: 1.0,
                       ),
                     ),
                     headingstat(
@@ -1007,13 +1007,13 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.subText(
+              TextWidget.paraText(
                   text: "${heading}",
                   color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
-                  fw: 0),
+                  fw: 3),
               TextWidget.subText(
                   text: "${value ?? 0}",
                   color: (double.parse(value)) > 0
@@ -1025,7 +1025,7 @@ class _TaxpnlvalueScreen extends State<TaxpnlvalueScreen> {
                               : colors.colorBlack,
                   textOverflow: TextOverflow.ellipsis,
                   theme: theme.isDarkMode,
-                  fw: 1),
+                  fw: 3),
             ],
           ),
         ],

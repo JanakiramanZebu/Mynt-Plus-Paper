@@ -867,19 +867,20 @@ class AppRoutes {
 
       case Routes.withdrawscreen:
         final trancation = args as TranctionProvider;
-        return MaterialPageRoute(
-          builder: (context) => Consumer(
+        return _createRoute(
+          pageBuilder: (_, __, ___) => Consumer(
             builder: (context, ref, _) {
               final theme = ref.read(themeProvider);
               final fund = ref.watch(transcationProvider);
               return WithdrawScreen(
                 withdarw: trancation,
-                foucs: FocusNode(),
+                foucs: fund.focusNode,
                 theme: theme,
-                segment: fund.textValue, // Change as needed or pass via args if needed
+                segment: fund.textValue, 
               );
             },
           ),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       default:

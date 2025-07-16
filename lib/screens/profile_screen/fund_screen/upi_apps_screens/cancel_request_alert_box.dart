@@ -107,6 +107,8 @@ class _PaymentCancelAlertState extends ConsumerState<PaymentCancelAlert> {
                         width: MediaQuery.of(context).size.width,
                         child: ElevatedButton(
                             onPressed: () {
+                              // Clear the amount text field
+                              ref.read(transcationProvider).amount.clear();
                               Navigator.pop(context);
                               _timer?.cancel();
                               FocusScope.of(context).unfocus();

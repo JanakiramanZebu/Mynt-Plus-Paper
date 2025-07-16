@@ -113,13 +113,11 @@ class PdfDownload extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Start Date",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)),
+                              TextWidget.paraText(
+                                  text: "Start Date",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3),
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 6),
                                 alignment: Alignment.centerLeft,
@@ -137,7 +135,7 @@ class PdfDownload extends StatelessWidget {
                                             ? colors.colorWhite
                                             : colors.colorBlack,
                                         11,
-                                        FontWeight.w500)),
+                                        FontWeight.w400)),
                               ),
                             ],
                           ),
@@ -152,13 +150,11 @@ class PdfDownload extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("End Date",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)),
+                              TextWidget.paraText(
+                                  text: "End Date",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3),
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 6),
                                 alignment: Alignment.centerLeft,
@@ -176,7 +172,7 @@ class PdfDownload extends StatelessWidget {
                                             ? colors.colorWhite
                                             : colors.colorBlack,
                                         11,
-                                        FontWeight.w500)),
+                                        FontWeight.w400)),
                               ),
                             ],
                           ),
@@ -190,24 +186,24 @@ class PdfDownload extends StatelessWidget {
                             child: OutlinedButton(
                                 style: OutlinedButton.styleFrom(
                                     side: BorderSide(
-                                      color: !theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.colorWhite,
+                                      color: theme.isDarkMode
+                                          ? colors.primaryDark
+                                          : colors.primaryLight,
                                     ),
                                     shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(
-                                            Radius.circular(32)))),
+                                            Radius.circular(5)))),
                                 onPressed: () async {
                                   ledgerprovider.fetchpdfdownload(
                                       context,
                                       ledgerprovider.startDate,
                                       ledgerprovider.today);
                                 },
-                                child: Text("Get",
+                               child: Text("Get",
                                     style: textStyle(
-                                        !theme.isDarkMode
-                                            ? colors.colorBlack
-                                            : colors.colorWhite,
+                                        theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight,
                                         12,
                                         FontWeight.w600)))),
                       ),
@@ -236,7 +232,7 @@ class PdfDownload extends StatelessWidget {
                     color: theme.isDarkMode
                         ? const Color(0xffB5C0CF).withOpacity(.15)
                         : const Color(0xffF1F3F8),
-                    thickness: 7.0,
+                    thickness: 1.0,
                   ),
                 ),
 
@@ -357,20 +353,25 @@ class PdfDownload extends StatelessWidget {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(
-                                          "${value.docType} - ",
-                                          style: textStyle(
-                                              theme.isDarkMode
-                                                  ? colors.colorWhite
-                                                  : colors.colorBlack,
-                                              14,
-                                              FontWeight.w600),
-                                        ),
-                                        Text(
-                                          "${value.docDate}",
-                                          style: textStyle(Color(0xFF696969),
-                                              12, FontWeight.w600),
-                                        ),
+                                        TextWidget.subText(
+                                  text: "${value.docType} - ",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
+                                  fw: 3),
+                                   TextWidget.captionText(
+                                  text:  "${value.docDate}",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+
+ color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+
+                                  fw: 3),
+                                       
+                                         
+                                 
                                       ],
                                     ),
                                     IconButton(
@@ -392,14 +393,13 @@ class PdfDownload extends StatelessWidget {
                                 (BuildContext context, int index) {
                               return Padding(
                                 padding: const EdgeInsets.only(
-                                  top: 2.0,
-                                  bottom: 0.0,
+                                  top: 2.0, 
                                 ),
                                 child: Divider(
                                   color: theme.isDarkMode
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
-                                  thickness: 7.0,
+                                  thickness: 1.0,
                                 ),
                               );
                             },

@@ -100,127 +100,121 @@ class LedgerScreen extends StatelessWidget {
                   children: [
                     Container(
                       width: screenWidth,
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? const Color(0xffB5C0CF).withOpacity(.15)
-                                : const Color(0xffF1F3F8)),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      TextWidget.subText(
-                                          text: "Opening Balance",
-                                          color: Color(0xFF696969),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    TextWidget.paraText(
+                                        text: "Opening Balance",
+                                        color: Color(0xFF696969),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    // Text(
+                                    //   "Opening Balance",
+                                    //   style: textStyle(Color(0xFF696969), 14,
+                                    //       FontWeight.w500),
+                                    // ),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(top: 8.0),
+                                      child: TextWidget.subText(
+                                          text:
+                                              "₹ ${ledgerprovider.ledgerAllData?.openingBalance == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.openingBalance ?? '')?.toStringAsFixed(2) ?? '0.00')}",
                                           textOverflow: TextOverflow.ellipsis,
                                           theme: theme.isDarkMode,
                                           fw: 0),
-                                      // Text(
-                                      //   "Opening Balance",
-                                      //   style: textStyle(Color(0xFF696969), 14,
-                                      //       FontWeight.w500),
-                                      // ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: TextWidget.titleText(
-                                            text:
-                                                "₹ ${ledgerprovider.ledgerAllData?.openingBalance == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.openingBalance ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            fw: 1),
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      TextWidget.subText(
-                                          text: "Total Debit",
-                                          color: Color(0xFF696969),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    TextWidget.paraText(
+                                        text: "Total Debit",
+                                        color: Color(0xFF696969),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(top: 8.0),
+                                      child: TextWidget.subText(
+                                          text:
+                                              "₹ ${ledgerprovider.ledgerAllData?.drAmt == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.drAmt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+                                          color: Colors.red,
                                           textOverflow: TextOverflow.ellipsis,
                                           theme: theme.isDarkMode,
                                           fw: 0),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: TextWidget.titleText(
-                                            text:
-                                                "₹ ${ledgerprovider.ledgerAllData?.drAmt == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.drAmt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                            color: Colors.red,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            fw: 1),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 16.0, right: 16.0, bottom: 16.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      TextWidget.subText(
-                                          text: "Closing Balance  ",
-                                          color: Color(0xFF696969),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16.0, right: 16.0, bottom: 16.0),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    TextWidget.paraText(
+                                        text: "Closing Balance  ",
+                                        color: Color(0xFF696969),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(top: 8.0),
+                                      child: TextWidget.subText(
+                                          text:
+                                              "₹ ${ledgerprovider.ledgerAllData?.closingBalance == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.closingBalance ?? '')?.toStringAsFixed(2) ?? '0.00')}",
                                           textOverflow: TextOverflow.ellipsis,
                                           theme: theme.isDarkMode,
                                           fw: 0),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: TextWidget.titleText(
-                                            text:
-                                                "₹ ${ledgerprovider.ledgerAllData?.closingBalance == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.closingBalance ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            fw: 1),
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      TextWidget.subText(
-                                          text: "Total Credit",
-                                          color: Color(0xFF696969),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    TextWidget.paraText(
+                                        text: "Total Credit",
+                                        color: Color(0xFF696969),
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 0),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(top: 8.0),
+                                      child: TextWidget.subText(
+                                          text:
+                                              "₹ ${ledgerprovider.ledgerAllData?.crAmt == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.crAmt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
+                                          color: Colors.green,
                                           textOverflow: TextOverflow.ellipsis,
                                           theme: theme.isDarkMode,
                                           fw: 0),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: TextWidget.titleText(
-                                            text:
-                                                "₹ ${ledgerprovider.ledgerAllData?.crAmt == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.crAmt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                            color: Colors.green,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            fw: 1),
-                                      )
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                    )
+                                  ],
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
 
@@ -263,7 +257,15 @@ class LedgerScreen extends StatelessWidget {
                     // ),
                   ],
                 ),
-
+Padding(
+                  padding: const EdgeInsets.only(top: 2.0),
+                  child: Divider(
+                    color: theme.isDarkMode
+                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                        : const Color(0xffF1F3F8),
+                    thickness: 1.0,
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(
                       right: 16.0, left: 16.0, top: 16.0, bottom: 8.0),
@@ -281,7 +283,7 @@ class LedgerScreen extends StatelessWidget {
                                   text: "Start Date",
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 1),
+                                  fw: 3),
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 8),
                                 alignment: Alignment.centerLeft,
@@ -299,7 +301,7 @@ class LedgerScreen extends StatelessWidget {
                                             ? colors.colorWhite
                                             : colors.colorBlack,
                                         11,
-                                        FontWeight.w500)),
+                                        FontWeight.w400)),
                               ),
                             ],
                           ),
@@ -318,7 +320,7 @@ class LedgerScreen extends StatelessWidget {
                                   text: "End Date",
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
-                                  fw: 1),
+                                  fw: 3),
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 6),
                                 alignment: Alignment.centerLeft,
@@ -336,7 +338,7 @@ class LedgerScreen extends StatelessWidget {
                                             ? colors.colorWhite
                                             : colors.colorBlack,
                                         11,
-                                        FontWeight.w500)),
+                                        FontWeight.w400)),
                               ),
                             ],
                           ),
@@ -350,13 +352,13 @@ class LedgerScreen extends StatelessWidget {
                             child: OutlinedButton(
                                 style: OutlinedButton.styleFrom(
                                     side: BorderSide(
-                                      color: !theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.colorWhite,
+                                      color: theme.isDarkMode
+                                          ? colors.primaryDark
+                                          : colors.primaryLight,
                                     ),
                                     shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(
-                                            Radius.circular(32)))),
+                                            Radius.circular(5)))),
                                 onPressed: () async {
                                   ledgerprovider.fetchLegerData(
                                       context,
@@ -365,9 +367,9 @@ class LedgerScreen extends StatelessWidget {
                                 },
                                 child: Text("Get",
                                     style: textStyle(
-                                        !theme.isDarkMode
-                                            ? colors.colorBlack
-                                            : colors.colorWhite,
+                                        theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight,
                                         12,
                                         FontWeight.w600)))),
                       ),
@@ -419,11 +421,11 @@ Padding(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,    
                           children: [
-                            TextWidget.paraText(
+                            TextWidget.subText(
                                 text: "Bill Margin  :",
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
-                                fw: 1),
+                                fw: 3),
                              Padding(
                                     padding: const EdgeInsets.only(
                                         top: 8.0, bottom: 8.0),
@@ -435,7 +437,7 @@ Padding(
                                 text: "Yes",
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
-                                fw: 1),
+                                fw: 3),
                                         const SizedBox(width: 10),
                         
                                         CustomSwitch(
@@ -455,7 +457,7 @@ Padding(
                                 text: "No",
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
-                                fw: 1),
+                                fw: 3),
                                       ],
                                     ),
                                   ),
@@ -567,7 +569,7 @@ Padding(
                     color: theme.isDarkMode
                         ? const Color(0xffB5C0CF).withOpacity(.15)
                         : const Color(0xffF1F3F8),
-                    thickness: 7.0,
+                    thickness: 1.0,
                   ),
                 ),
                 ledgerprovider.ledgerAllData?.fullStat?.isEmpty ?? true
@@ -659,29 +661,29 @@ Padding(
                                               TextWidget.subText(
                                                   text:
                                                       "${ledgerprovider.ledgerAllData!.fullStat![index].tYPE} ",
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
+                                                   color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
-                                                  fw: 1),
+                                                  fw: 3),
                                               TextWidget.paraText(
                                                   text:
                                                       " ${dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString())}",
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
+                                                   color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
-                                                  fw: 0),
+                                                  fw: 3),
                                             ],
                                           ),
                                           Padding(
                                             padding: const EdgeInsets.only(
                                                 right: 16.0),
-                                            child: TextWidget.subText(
+                                            child: TextWidget.paraText(
                                                 align: TextAlign.right,
                                                 text: ledgerprovider
                                                             .ledgerAllData!
@@ -700,7 +702,7 @@ Padding(
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
+                                                fw: 3),
                                           ),
                                         ],
                                       ),
@@ -715,10 +717,15 @@ Padding(
                                           Row(
                                             children: [
                                               // CustomExchBadge(exch: "${ledgerprovider.ledgerAllData!.fullStat![index].tYPE}",),
-                                              CustomExchBadge(
-                                                exch:
-                                                    "${ledgerprovider.ledgerAllData!.fullStat![index].cOCD}",
-                                              ),
+                                              TextWidget.paraText(
+                                                    align: TextAlign.right,
+                                                    text: "${ledgerprovider.ledgerAllData!.fullStat![index].cOCD}",
+                                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                                              
                                             ],
                                           ),
                                           Padding(
@@ -726,39 +733,32 @@ Padding(
                                                 right: 16.0),
                                             child: Row(
                                               children: [
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     align: TextAlign.right,
-                                                    text: "CL Bal :   ${ledgerprovider.ledgerAllData!.fullStat![index].billMargin}  ${ledgerprovider.ledgerAllData!.fullStat![index].sortNo}",
-                                                    color: Color(0xFF696969),
+                                                    text: "CL Bal : ",
+                                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
+                                                    fw: 3),
+                                                TextWidget.paraText(
                                                     align: TextAlign.right,
                                                     text:
                                                         " ₹${(double.tryParse(ledgerprovider.ledgerAllData!.fullStat![index].nETAMT ?? '')?.toStringAsFixed(2) ?? '0.00')}",
                                                     color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
+                                                    fw: 3),
                                               ],
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 2.0),
-                                      child: Divider(
-                                        color: const Color.fromARGB(
-                                            255, 212, 212, 212),
-                                        thickness: 0.5,
-                                      ),
-                                    ),
+                                    SizedBox(height:8),
                                     Padding(
                                       padding: const EdgeInsets.only(
                                           left: 16.0,
@@ -774,12 +774,11 @@ Padding(
                                           Align(
                                             alignment: Alignment
                                                 .centerLeft, // Forces text to the left
-                                            child: Text(
-                                              "${ledgerprovider.ledgerAllData!.fullStat![index].nARRATION}",
-                                              textAlign: TextAlign
-                                                  .start, // Ensures left alignment
-                                              style: textStyle(
-                                                ledgerprovider
+                                            child:  TextWidget.captionText(
+                                                    align: TextAlign.start,
+                                                    maxLines: 5,
+                                                    text: "${ledgerprovider.ledgerAllData!.fullStat![index].nARRATION}",
+                                                     color: ledgerprovider
                                                                 .ledgerAllData
                                                                 ?.fullStat?[
                                                                     index]
@@ -791,12 +790,14 @@ Padding(
                                                                     index]
                                                                 .bill ==
                                                             'Yes'
-                                                    ? Colors.blue
-                                                    : Color(0xFF696969),
-                                                12,
-                                                FontWeight.w500,
-                                              ),
-                                            ),
+                                                    ? theme.isDarkMode ? colors.primaryDark : colors.primaryLight
+                                                    :theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+
+                                            
                                           ),
                                         ],
                                       ),
@@ -814,14 +815,14 @@ Padding(
                               //             .fullStat![index ].vOUCHERDATE) {
                               return Padding(
                                 padding: const EdgeInsets.only(
-                                  top: 2.0,
+                                  top: 4.0,
                                   bottom: 0.0,
                                 ),
                                 child: Divider(
                                   color: theme.isDarkMode
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
-                                  thickness: 7.0,
+                                  thickness: 1.0,
                                 ),
                               );
                               // }else{

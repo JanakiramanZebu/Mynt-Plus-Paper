@@ -150,26 +150,9 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                         ? colors.highlightDark
                                         : colors.highlightLight,
                                     onTap: () async {
-                                      await marketwatch.chngDephBtn("Overview");
-                                      marketwatch.scripdepthsize(true);
-                                      // Navigator.pop(context);
-
-                                      showModalBottomSheet(
-                                          barrierColor: Colors.transparent,
-                                          isScrollControlled: true,
-                                          useSafeArea: true,
-                                          isDismissible: true,
-                                          shape: const RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                      top:
-                                                          Radius.circular(16))),
-                                          backgroundColor:
-                                              const Color(0xffffffff),
-                                          context: context,
-                                          builder: (context) => ScripDepthInfo(
-                                              wlValue: depthArgs,
-                                              isBasket: ''));
+                                      await marketwatch.scripdepthsize(true);
+                                      await marketwatch.calldepthApis(
+                                          context, depthArgs, "");
                                     },
                                     child: Row(
                                       mainAxisAlignment:

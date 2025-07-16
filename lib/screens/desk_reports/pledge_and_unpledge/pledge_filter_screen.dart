@@ -77,7 +77,7 @@ class _PledgeFilterState extends State<PledgeFilter>
           } else if (((double.parse(value.cOLQTY.toString()).toInt()) != 0) &&
               widget.activetabe == "1") {
             matchesTab = true;
-          } else if (value.status == "Not_ok" && widget.activetabe == "2") {
+          } else if (value.status == "Not_ok" && widget.activetabe == "2" && ((double.parse(value.cOLQTY.toString()).toInt()) == 0 )) {
             matchesTab = true;
           }
 
@@ -204,7 +204,7 @@ class _PledgeFilterState extends State<PledgeFilter>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _mainpage(ledgerprovider, theme, context, showlist),
+                  _mainpage(ledgerprovider, theme, context, showlist,widget.activetabe),
 
                   // OrderBook(orderBook: orderBook.allOrder!),
 
@@ -356,7 +356,7 @@ class _PledgeFilterState extends State<PledgeFilter>
   }
 
   _mainpage(LDProvider ledgerprovider, ThemesProvider theme,
-      BuildContext context, dataval) {
+      BuildContext context, dataval,String tab) {
     return dataval.length == 0 || dataval.isEmpty
         // Handle the null or empty case
         ? Center(
@@ -408,43 +408,45 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                         : colors.colorBlack,
                                                     fw: 3),
                                                     SizedBox(width: 10.0),
-                                                    ((((value.cashEqColl!.foCashEq != null
-                                                            ? value.cashEqColl!
-                                                                    .foCashEq ==
-                                                                'True'
-                                                            : true) &&
-                                                        (value.cashEqColl!.cdCashEq != null
-                                                            ? value.cashEqColl!
-                                                                    .cdCashEq ==
-                                                                'True'
-                                                            : true) &&
-                                                        (value.cashEqColl!.comCashEq !=
-                                                                null
-                                                            ? value.cashEqColl!
-                                                                    .comCashEq ==
-                                                                'True'
-                                                            : true)) &&
-                                                    value.cOLQTY != '0.000') ||
-                                                (((value.cashEqColl!.foCashEq !=
-                                                                null
-                                                            ? value.cashEqColl!
-                                                                    .foCashEq ==
-                                                                'False'
-                                                            : true) &&
-                                                        (value.cashEqColl!.cdCashEq != null
-                                                            ? value.cashEqColl!
-                                                                    .cdCashEq ==
-                                                                'False'
-                                                            : true) &&
-                                                        (value.cashEqColl!
-                                                                    .comCashEq !=
-                                                                null
-                                                            ? value.cashEqColl!
-                                                                    .comCashEq ==
-                                                                'False'
-                                                            : true)) &&
-                                                    value.cOLQTY != '0.000'))
-                                            ? Container(
+                                            //         ((((value.cashEqColl!.foCashEq != null
+                                            //                 ? value.cashEqColl!
+                                            //                         .foCashEq ==
+                                            //                     'True'
+                                            //                 : true) &&
+                                            //             (value.cashEqColl!.cdCashEq != null
+                                            //                 ? value.cashEqColl!
+                                            //                         .cdCashEq ==
+                                            //                     'True'
+                                            //                 : true) &&
+                                            //             (value.cashEqColl!.comCashEq !=
+                                            //                     null
+                                            //                 ? value.cashEqColl!
+                                            //                         .comCashEq ==
+                                            //                     'True'
+                                            //                 : true)) &&
+                                            //         value.cOLQTY != '0.000') ||
+                                            //     (((value.cashEqColl!.foCashEq !=
+                                            //                     null
+                                            //                 ? value.cashEqColl!
+                                            //                         .foCashEq ==
+                                            //                     'False'
+                                            //                 : true) &&
+                                            //             (value.cashEqColl!.cdCashEq != null
+                                            //                 ? value.cashEqColl!
+                                            //                         .cdCashEq ==
+                                            //                     'False'
+                                            //                 : true) &&
+                                            //             (value.cashEqColl!
+                                            //                         .comCashEq !=
+                                            //                     null
+                                            //                 ? value.cashEqColl!
+                                            //                         .comCashEq ==
+                                            //                     'False'
+                                            //                 : true)) &&
+                                            //         value.cOLQTY != '0.000'))
+                                            // ? 
+                                            tab == "1" ?
+                                            Container(
                                                 margin: const EdgeInsets.only(
                                                     right: 4),
                                                 padding:
@@ -453,37 +455,34 @@ class _PledgeFilterState extends State<PledgeFilter>
                                                         vertical: 3),
                                                 decoration: BoxDecoration(
                                                     borderRadius: BorderRadius
-                                                        .circular(10),
-                                                    color:
-                                                        value.cRnc == 'noncash'
-                                                            ? const Color(
-                                                                0xff007B7B)
-                                                            : const Color(
-                                                                0xff2069BB)),
+                                                        .circular(5),
+                                                    color: 
+                                                           const Color(0xffB5C0CF).withOpacity(.15)),
                                                 child: Text(
-                                                    ((value.cashEqColl!
-                                                                        .foCashEq !=
-                                                                    null
-                                                                ? value.cashEqColl!
-                                                                        .foCashEq ==
-                                                                    'True'
-                                                                : true) &&
-                                                            (value.cashEqColl!.cdCashEq != null
-                                                                ? value.cashEqColl!.cdCashEq ==
-                                                                    'True'
-                                                                : true) &&
-                                                            (value.cashEqColl!.comCashEq != null
-                                                                ? value.cashEqColl!.comCashEq ==
-                                                                    'True'
-                                                                : true))
-                                                        ? 'Cash'
-                                                        : 'Non Cash',
+                                                    // ((value.cashEqColl!
+                                                    //                     .foCashEq !=
+                                                    //                 null
+                                                    //             ? value.cashEqColl!
+                                                    //                     .foCashEq ==
+                                                    //                 'True'
+                                                    //             : true) &&
+                                                    //         (value.cashEqColl!.cdCashEq != null
+                                                    //             ? value.cashEqColl!.cdCashEq ==
+                                                    //                 'True'
+                                                    //             : true) &&
+                                                    //         (value.cashEqColl!.comCashEq != null
+                                                    //             ? value.cashEqColl!.comCashEq ==
+                                                    //                 'True'
+                                                    //             : true))
+                                                    //     ? 'Cash'
+                                                    //     : 'Non Cash',
+
+                                                    value.status == 'Not_ok' ? 'Un-Approved' : value.cRnc == 'noncash' ? 'Non-Case' : value.cRnc == 'cash' ? 'Case'  : '-' ,
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     maxLines: 1,
                                                     style: textStyle(
-                                                        const Color.fromARGB(
-                                                            255, 255, 255, 255),
+                                                         value.status == 'Not_ok' ? colors.kColorRedButton : colors.colorBlack,
                                                         10,
                                                         FontWeight.w500)),
                                               )

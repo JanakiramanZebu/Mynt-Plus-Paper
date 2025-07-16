@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../provider/order_provider.dart';
+import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
@@ -155,7 +156,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                       ),
                     ),
                     Expanded(
-                        child: TabBarView(
+                        child: _CustomTabBarView(
                             controller: orderBook.tabCtrl,
                             children: [
                           // OrderBook(orderBook: orderBook.allOrder!),
@@ -307,5 +308,147 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
             ],
           ),
         ));
+  }
+}
+
+// Custom TabBarView that handles edge swipe gestures to parent tabs
+class _CustomTabBarView extends StatefulWidget {
+  final TabController controller;
+  final List<Widget> children;
+
+  const _CustomTabBarView({
+    required this.controller,
+    required this.children,
+  });
+
+  @override
+  State<_CustomTabBarView> createState() => _CustomTabBarViewState();
+}
+
+class _CustomTabBarViewState extends State<_CustomTabBarView> {
+  late PageController _pageController;
+  bool _isExternalTabChange = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: widget.controller.index);
+
+    // Listen to internal tab controller changes (sync with page)
+    widget.controller.addListener(() {
+      if (_isExternalTabChange) {
+        return; // Avoid sync during external tab transition
+      }
+
+      final currentPage = _pageController.page?.round();
+      final newIndex = widget.controller.index;
+
+      if (_pageController.hasClients && currentPage != newIndex) {
+        _pageController.animateToPage(
+          newIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.ease,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _navigateToOuterTab({
+    required int current,
+    required int target,
+    required VoidCallback action,
+  }) {
+    if (_isExternalTabChange || current == target) return;
+
+    _isExternalTabChange = true;
+    action();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _isExternalTabChange = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+      builder: (context, WidgetRef ref, child) {
+        final portfolio = ref.read(portfolioProvider);
+
+        return NotificationListener<OverscrollIndicatorNotification>(
+          onNotification: (OverscrollIndicatorNotification notification) {
+            final currentPage = _pageController.page?.round() ?? 0;
+
+            if (notification.leading && currentPage == 0) {
+              _navigateToOuterTab(
+                current: portfolio.selectedTab,
+                target: portfolio.selectedTab - 1,
+                action: () {
+                  portfolio.portTab.animateTo(portfolio.selectedTab - 1);
+                },
+              );
+              notification.disallowIndicator();
+              return true;
+            }
+
+            if (!notification.leading &&
+                currentPage == widget.children.length - 1) {
+              _navigateToOuterTab(
+                current: portfolio.selectedTab,
+                target: portfolio.selectedTab + 1,
+                action: () {
+                  portfolio.portTab.animateTo(portfolio.selectedTab + 1);
+                },
+              );
+              notification.disallowIndicator();
+              return true;
+            }
+
+            return false;
+          },
+          child: GestureDetector(
+            onPanEnd: (details) {
+              final velocity = details.velocity.pixelsPerSecond.dx;
+              final currentPage = _pageController.page?.round() ?? 0;
+
+              // Fast swipe right → Holdings
+              if (velocity > 300 && currentPage == 0) {
+                _navigateToOuterTab(
+                  current: portfolio.selectedTab,
+                  target: portfolio.selectedTab - 1,
+                  action: () {
+                    portfolio.portTab.animateTo(portfolio.selectedTab - 1);
+                  },
+                );
+              }
+
+              // Fast swipe left → Funds
+              if (velocity < -300 &&
+                  currentPage == widget.children.length - 1) {
+                _navigateToOuterTab(
+                  current: portfolio.selectedTab,
+                  target: portfolio.selectedTab + 1,
+                  action: () {
+                    portfolio.portTab.animateTo(portfolio.selectedTab + 1);
+                  },
+                );
+              }
+            },
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: widget.children.length,
+              onPageChanged: (index) {
+                widget.controller.animateTo(index);
+              },
+              itemBuilder: (context, index) => widget.children[index],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

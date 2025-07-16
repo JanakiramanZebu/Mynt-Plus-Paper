@@ -110,6 +110,7 @@ class Assets {
   final String dInfo = "assets/icon/d-info.svg";
   final String calendar = "assets/icon/calendar.svg";
   final String timeAlaram = "assets/icon/time-alarm.svg";
+  final String breakup = "assets/icon/breakup.svg";
 
   final String themeIcon = "assets/icon/theme_icon.svg";
 

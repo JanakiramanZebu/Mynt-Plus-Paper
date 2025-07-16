@@ -239,6 +239,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   changeTabIndex(int index) {
     _selectedTab = index;
+    print("selectedTab: $index");
+    notifyListeners();
   }
 
   chngPosSelection(String val) {

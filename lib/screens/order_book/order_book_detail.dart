@@ -149,29 +149,9 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                 Colors.black.withOpacity(0.08),
                                             onTap: () async {
                                               await marketwatch
-                                                  .chngDephBtn("Overview");
-                                              marketwatch.scripdepthsize(true);
-                                              // Navigator.pop(context);
-
-                                              showModalBottomSheet(
-                                                  barrierColor:
-                                                      Colors.transparent,
-                                                  isScrollControlled: true,
-                                                  useSafeArea: true,
-                                                  isDismissible: true,
-                                                  shape: const RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.vertical(
-                                                              top: Radius
-                                                                  .circular(
-                                                                      16))),
-                                                  backgroundColor:
-                                                      const Color(0xffffffff),
-                                                  context: context,
-                                                  builder: (context) =>
-                                                      ScripDepthInfo(
-                                                          wlValue: depthArgs,
-                                                          isBasket: ''));
+                                                  .scripdepthsize(true);
+                                              await marketwatch.calldepthApis(
+                                                  context, depthArgs, "");
                                             },
                                             child: Row(
                                               mainAxisAlignment:
@@ -191,7 +171,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                       children: [
                                                         TextWidget.headText(
                                                             text:
-                                                                "${displayData.symbol?.replaceAll("-EQ", "")}",
+                                                                "${displayData.symbol?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option}",
                                                             theme: false,
                                                             color: theme
                                                                     .isDarkMode
@@ -200,20 +180,6 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                                 : colors
                                                                     .textPrimaryLight,
                                                             fw: 0),
-                                                        TextWidget.headText(
-                                                            text:
-                                                                "${displayData.option}",
-                                                            theme: false,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .textPrimaryDark
-                                                                : colors
-                                                                    .textPrimaryLight,
-                                                            fw: 0,
-                                                            textOverflow:
-                                                                TextOverflow
-                                                                    .ellipsis),
                                                         const SizedBox(
                                                             width: 4),
                                                         CustomExchBadge(
@@ -606,10 +572,10 @@ class _OrderDetailsSection extends ConsumerWidget {
       _buildInfoRow("Price", "${orderBookData.prc ?? "-"}", theme, context),
       const SizedBox(height: 8),
       _buildInfoRow(
-          "Avg Price", "${orderBookData.avgprc ?? "-"}", theme, context),
+          "Avg Price", "${orderBookData.avgprc ?? "0.00"}", theme, context),
       const SizedBox(height: 8),
       _buildInfoRow(
-          "Trigger Price", "${orderBookData.trgprc ?? "-"}", theme, context),
+          "Trigger Price", "${orderBookData.trgprc ?? "0.00"}", theme, context),
       const SizedBox(height: 8),
       _buildInfoRow(
           "Product / Type",
@@ -934,128 +900,95 @@ void _showCancelOrderDialog(
                   ? colors.lossDark
                   : colors.lossLight
               : theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight;
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight;
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
         backgroundColor: colors.colorWhite,
-        titleTextStyle: TextWidget.textStyle(
-            theme: false,
-            color: theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
-            fontSize: 14,
-            fw: 0),
-        contentTextStyle: TextWidget.textStyle(
-            color: theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
-            fontSize: 12,
-            fw: 0,
-            theme: false),
-        titlePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        titlePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(14))),
+            borderRadius: BorderRadius.all(Radius.circular(8))),
         scrollable: true,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
+          horizontal: 12,
+          vertical: 12,
         ),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        actionsPadding:
+            const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
         title: Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Row(
-                  children: [
-                    TextWidget.subText(
-                        text:
-                            "${orderBookData.symbol?.replaceAll("-EQ", "")} ${orderBookData.option} ",
-                        theme: theme.isDarkMode,
-                        fw: 3,
+                Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 150));
+                      Navigator.pop(context);
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    splashColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    highlightColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 22,
                         color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight),
-                    TextWidget.paraText(
-                        text: "${orderBookData.exch} ",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        fw: 3),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
-                        // borderRadius: BorderRadius.circular(5),
-                        // border: Border.all(
-                        //   color: color,
-                        //   width: 1,
-                        // ),
-                      ),
-                      child: TextWidget.paraText(
-                          text: "${orderBookData.status}",
-                          theme: false,
-                          color: color,
-                          fw: 3),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        onTap: () async {
-                          await Future.delayed(
-                              const Duration(milliseconds: 150));
-                          Navigator.pop(context);
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        splashColor: theme.isDarkMode
-                            ? colors.splashColorDark
-                            : colors.splashColorLight,
-                        highlightColor: theme.isDarkMode
-                            ? colors.splashColorDark
-                            : colors.splashColorLight,
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: Icon(
-                            Icons.close_rounded,
-                            size: 22,
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.iconColor,
-                          ),
-                        ),
+                            ? colors.colorWhite
+                            : colors.colorBlack,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
-            const ListDivider(),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextWidget.subText(
+                    text:
+                        "${orderBookData.symbol?.replaceAll("-EQ", "")} ${orderBookData.expDate} ${orderBookData.option} ${orderBookData.exch}",
+                    theme: theme.isDarkMode,
+                    fw: 3,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight),
+              ],
+            ),
+            const SizedBox(height: 5),
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: Center(
+                child: TextWidget.subText(
+                    text: "Do you want to Cancel this order?",
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 3),
+              ),
+            )
           ],
         ),
-        content: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            TextWidget.subText(
-                text: "Do you want to Cancel this order?",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                fw: 3)
-          ]),
-        ),
+        // content: SizedBox(
+        //   width: MediaQuery.of(context).size.width,
+        //   child:
+        //       Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+
+        //   ]),
+        // ),
         actions: [
           SizedBox(
             width: double.infinity,
@@ -1069,15 +1002,17 @@ void _showCancelOrderDialog(
               },
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(0, 40), // width, height
-                side: BorderSide(color: colors.error), // Outline border color
+                side: BorderSide(
+                    color: colors.btnOutlinedBorder), // Outline border color
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
-                backgroundColor: Colors.transparent, // Transparent background
+                backgroundColor: colors.primaryDark, // Transparent background
               ),
-              child: TextWidget.subText(
+              child: TextWidget.titleText(
                 text: "Cancel",
-                color: colors.error,
+                color:
+                    !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                 theme: theme.isDarkMode,
                 fw: 0,
               ),

@@ -117,13 +117,11 @@ class Tradebook extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Start Date",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)),
+                              TextWidget.paraText(
+                                  text: "Start Date",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3),
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 6),
                                 alignment: Alignment.centerLeft,
@@ -141,7 +139,7 @@ class Tradebook extends StatelessWidget {
                                             ? colors.colorWhite
                                             : colors.colorBlack,
                                         11,
-                                        FontWeight.w500)),
+                                        FontWeight.w400)),
                               ),
                             ],
                           ),
@@ -156,13 +154,11 @@ class Tradebook extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("End Date",
-                                  style: textStyle(
-                                      theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)),
+                              TextWidget.paraText(
+                                  text: "End Date",
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 3),
                               Container(
                                 margin: const EdgeInsets.symmetric(vertical: 6),
                                 alignment: Alignment.centerLeft,
@@ -180,7 +176,7 @@ class Tradebook extends StatelessWidget {
                                             ? colors.colorWhite
                                             : colors.colorBlack,
                                         11,
-                                        FontWeight.w500)),
+                                        FontWeight.w400)),
                               ),
                             ],
                           ),
@@ -194,13 +190,13 @@ class Tradebook extends StatelessWidget {
                             child: OutlinedButton(
                                 style: OutlinedButton.styleFrom(
                                     side: BorderSide(
-                                      color: !theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.colorWhite,
+                                      color: theme.isDarkMode
+                                          ? colors.primaryDark
+                                          : colors.primaryLight,
                                     ),
                                     shape: const RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(
-                                            Radius.circular(32)))),
+                                            Radius.circular(5)))),
                                 onPressed: () async {
                                   ledgerprovider.fetchtradebookdata(
                                       context,
@@ -209,9 +205,9 @@ class Tradebook extends StatelessWidget {
                                 },
                                 child: Text("Get",
                                     style: textStyle(
-                                        !theme.isDarkMode
-                                            ? colors.colorBlack
-                                            : colors.colorWhite,
+                                        theme.isDarkMode
+                                            ? colors.primaryDark
+                                            : colors.primaryLight,
                                         12,
                                         FontWeight.w600)))),
                       ),
@@ -240,7 +236,7 @@ class Tradebook extends StatelessWidget {
                     color: theme.isDarkMode
                         ? const Color(0xffB5C0CF).withOpacity(.15)
                         : const Color(0xffF1F3F8),
-                    thickness: 7.0,
+                    thickness: 1.0,
                   ),
                 ),
 
@@ -381,28 +377,28 @@ class Tradebook extends StatelessWidget {
                                                     color: theme.isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
-                                                    fw: 1),
-                                                Text("${value.sTRIKEPRICE} ",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : Color(0xFF696969),
-                                                        13,
-                                                        FontWeight.w500)),
-                                                Text("${value.oPTIONTYPE} ",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : Color(0xFF696969),
-                                                        12,
-                                                        FontWeight.w500)),
-                                                Text("${value.eXPIRYDATE} ",
-                                                    style: textStyle(
-                                                        theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : Color(0xFF696969),
-                                                        12,
-                                                        FontWeight.w500)),
+                                                    fw: 3),
+                                                TextWidget.paraText(
+                                                    text:
+                                                        "${value.sTRIKEPRICE} ",
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                                                TextWidget.paraText(
+                                                    text:
+                                                        "${value.oPTIONTYPE} ",
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
+                                                TextWidget.paraText(
+                                                    text:
+                                                        "${value.eXPIRYDATE} ",
+                                                    textOverflow:
+                                                        TextOverflow.ellipsis,
+                                                    theme: theme.isDarkMode,
+                                                    fw: 3),
                                               ],
                                             ),
                                             Padding(
@@ -410,14 +406,20 @@ class Tradebook extends StatelessWidget {
                                                   top: 8.0),
                                               child: Row(
                                                 children: [
-                                                  CustomExchBadge(
-                                                    exch:
-                                                        "${value.cOMPANYCODE}",
-                                                  ),
-                                                  CustomExchBadge(
-                                                    exch:
-                                                        "${value.tRADENUMBER}",
-                                                  ),
+                                                  TextWidget.captionText(
+                                                      text:
+                                                          "${value.cOMPANYCODE}",
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 3),
+                                                  TextWidget.captionText(
+                                                      text:
+                                                          "${value.tRADENUMBER}",
+                                                      textOverflow:
+                                                          TextOverflow.ellipsis,
+                                                      theme: theme.isDarkMode,
+                                                      fw: 3),
                                                 ],
                                               ),
                                             ),
@@ -441,7 +443,7 @@ class Tradebook extends StatelessWidget {
                                             Padding(
                                               padding: const EdgeInsets.only(
                                                   right: 16.0),
-                                              child: TextWidget.subText(
+                                              child: TextWidget.paraText(
                                                   text: "${value.showtype}",
                                                   color: value.showtype == "BUY"
                                                       ? Colors.green
@@ -449,24 +451,17 @@ class Tradebook extends StatelessWidget {
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
-                                                  fw: 1),
+                                                  fw: 3),
                                             ),
                                           ],
                                         ),
                                       ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2.0),
-                                    child: Divider(
-                                      color: const Color.fromARGB(
-                                          255, 212, 212, 212),
-                                      thickness: 0.5,
-                                    ),
-                                  ),
+                                
                                   Padding(
                                     padding: const EdgeInsets.only(
-                                        left: 16.0, right: 16.0),
+                                        left: 16.0, right: 16.0,top: 15.0),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
@@ -475,45 +470,45 @@ class Tradebook extends StatelessWidget {
                                           children: [
                                             Row(
                                               children: [
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     text: "Trade Date : ",
-                                                    color: Color(0xFF696969),
+                                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
+                                                    fw: 3),
+                                                TextWidget.paraText(
                                                     text: "${value.tRADEDATE}",
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
+                                                     color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 1),
+                                                    fw: 3),
                                               ],
                                             ),
                                           ],
                                         ),
                                         Row(
                                           children: [
-                                            TextWidget.subText(
+                                            TextWidget.paraText(
                                                 text: "Qty :  ",
-                                                color: Color(0xFF696969),
+                                                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
-                                            TextWidget.subText(
+                                                fw: 3),
+                                            TextWidget.paraText(
                                                 text:
                                                     "${double.tryParse(value.showqnt.toString())!.toInt()}",
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
+                                                 color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 1),
+                                                fw: 3),
 
                                             //         Text(
                                             // " (${value.tRADEDATE})",
@@ -537,24 +532,24 @@ class Tradebook extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            TextWidget.subText(
+                                            TextWidget.paraText(
                                                 text: "Amount :  ",
-                                                color: Color(0xFF696969),
+                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
-                                            TextWidget.subText(
+                                                fw: 3),
+                                            TextWidget.paraText(
                                                 // text:  "₹ ${value.showamt}",
                                                 text:
                                                     "${(double.tryParse(value.showamt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
+                                                 color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 1),
+                                                fw: 3),
 
                                             //         Text(
                                             // " (${value.tRADEDATE})",
@@ -570,24 +565,24 @@ class Tradebook extends StatelessWidget {
                                           children: [
                                             Row(
                                               children: [
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     text: "Price :  ",
-                                                    color: Color(0xFF696969),
+                                                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
-                                                TextWidget.subText(
+                                                    fw: 3),
+                                                TextWidget.paraText(
                                                     // text:  "₹ ${value.showprice}",
                                                     text:
                                                         "${(double.tryParse(value.showprice ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
+                                                     color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors.textPrimaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 1),
+                                                    fw: 3),
                                               ],
                                             ),
                                           ],
@@ -602,14 +597,13 @@ class Tradebook extends StatelessWidget {
                                 (BuildContext context, int index) {
                               return Padding(
                                 padding: const EdgeInsets.only(
-                                  top: 2.0,
-                                  bottom: 0.0,
+                                  top: 2.0, 
                                 ),
                                 child: Divider(
                                   color: theme.isDarkMode
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
-                                  thickness: 7.0,
+                                  thickness: 1.0,
                                 ),
                               );
                             },

@@ -29,6 +29,7 @@ import '../models/auth_model/logout_model.dart';
 import '../models/auth_model/mobile_login_model.dart';
 import '../models/auth_model/mobile_otp_model.dart';
 import '../models/profile_model/client_detail_model.dart';
+import '../res/global_state_text.dart';
 import '../res/res.dart';
 import '../routes/app_routes.dart';
 import '../routes/route_names.dart';
@@ -94,83 +95,107 @@ class AuthProvider extends DefaultChangeNotifier {
     showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
+        final theme = ref.read(themeProvider);
         return AlertDialog(
-          backgroundColor: ref.read(themeProvider).isDarkMode
-              ? const Color.fromARGB(255, 18, 18, 18)
-              : colors.colorWhite,
+          backgroundColor: colors.colorWhite,
           shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(16))),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
           scrollable: true,
-          
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-          titlePadding: const EdgeInsets.only(left: 16),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          titlePadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          title: Column(
             children: [
-              Text('Conformation!',
-                  style: textStyle(
-                      !ref.read(themeProvider).isDarkMode
-                          ? colors.colorBlack
-                          : colors.colorWhite,
-                      16,
-                      FontWeight.w600)),
-              IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.close_rounded))
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.subText(
+                      text: "Do you like to remove this account from devices?",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 3,
+                      align: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-          content: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: Column(children: [
-                Divider(color: colors.colorDivider, height: 0),
-                const SizedBox(height: 10),
-                Row(children: [
-                  Expanded(
-                      child: Text(
-                          "Do you like to remove this account from devices?",
-                          style: textStyle(
-                              !ref.read(themeProvider).isDarkMode
-                                  ? colors.colorBlack
-                                  : colors.colorWhite,
-                              16,
-                              FontWeight.w600)))
-                ]),
-                const SizedBox(height: 10),
-              ])),
           actions: [
             SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: ElevatedButton(
-                  onPressed: () async {
-                    // Safety checks
-                    if (i >= 0 && i < _loggedMobile.length) {
-                      _loggedMobile.removeAt(i);
-                      notifyListeners();
-                      final List<String> jsonList =
-                          _loggedMobile.map((obj) => obj.toJson()).toList();
-                      pref.setLoggedClientList(jsonList);
-                    }
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: !ref.read(themeProvider).isDarkMode
-                          ? colors.colorBlack
-                          : colors.colorbluegrey,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50))),
-                  child: Text("Proceed",
-                      style: textStyle(
-                          ref.read(themeProvider).isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          14,
-                          FontWeight.w500))),
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () async {
+                  if (i >= 0 && i < _loggedMobile.length) {
+                    _loggedMobile.removeAt(i);
+                    notifyListeners();
+                    final List<String> jsonList =
+                        _loggedMobile.map((obj) => obj.toJson()).toList();
+                    pref.setLoggedClientList(jsonList);
+                  }
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 40),
+                  side: BorderSide(color: colors.btnOutlinedBorder),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  backgroundColor: colors.primaryDark,
+                ),
+                child: TextWidget.titleText(
+                  text: "Remove",
+                  theme: theme.isDarkMode,
+                  color:
+                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  fw: 0,
+                ),
+              ),
             ),
           ],
         );
@@ -1191,27 +1216,27 @@ class AuthProvider extends DefaultChangeNotifier {
         ref.read(themeProvider).navigateToNewPage(context);
         initialLoadMethods(context, s);
       } else {
-        _showAuthenticationFailedDialog(context, s);
+        _showAuthenticationFailedDialog(context, s, ref.read(themeProvider));
       }
     } on PlatformException catch (e) {
       print("cvbghnjmk ${e}");
       if (e.code == auth_error.notAvailable) {
         if (defaultTargetPlatform == TargetPlatform.iOS) {
-          _showAuthenticationRequiredDialog(context, s);
+          _showAuthenticationRequiredDialog(
+              context, s, ref.read(themeProvider));
         } else {
           initialLoadMethods(context, s);
         }
       } else if (e.code == auth_error.notEnrolled) {
-        // Handle not enrolled case
-        _showBiometricNotSetupDialog(context, s);
+        _showBiometricNotSetupDialog(context, s, ref.read(themeProvider));
       } else {
-        // Handle other platform exceptions
         _showAuthenticationErrorDialog(
-            context, s, e.message ?? 'Unknown error');
+            context, s, e.message ?? 'Unknown error', ref.read(themeProvider));
       }
     } catch (e) {
       // Handle other exceptions
-      _showAuthenticationErrorDialog(context, s, e.toString());
+      _showAuthenticationErrorDialog(
+          context, s, e.toString(), ref.read(themeProvider));
     }
 
     notifyListeners();
@@ -1272,61 +1297,124 @@ class AuthProvider extends DefaultChangeNotifier {
     );
   }
 
-  void _showAuthenticationFailedDialog(BuildContext context, String s) {
+  void _showAuthenticationFailedDialog(BuildContext context, String s, theme) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          titleTextStyle: textStyles.appBarTitleTxt,
-          contentTextStyle: textStyles.menuTxt,
+          backgroundColor: colors.colorWhite,
           titlePadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(14))),
+              borderRadius: BorderRadius.all(Radius.circular(8))),
           scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: const Text("Authentication Failed"),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Authentication is required to proceed further!"),
-                SizedBox(height: 10),
-              ],
-            ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                // Go back to login or previous screen instead of recursive call
-                Navigator.of(context).pop();
-              },
-              child: Text("Cancel", style: textStyles.btnText),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                // Use a slight delay to ensure dialog is closed before retry
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  deviceAuth(context, s);
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: ref.read(themeProvider).isDarkMode
-                    ? colors.colorbluegrey
-                    : colors.colorBlack,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          title: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextWidget.subText(
+                        text: "Authentication Failed",
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 3),
+                    SizedBox(height: 10),
+                    TextWidget.subText(
+                      text: "Authentication is required to proceed further!",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 3,
+                      align: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-              child: Text("Try Again", style: textStyles.btnText),
+            ],
+          ),
+          actions: [
+            // TextButton(
+            //   onPressed: () {
+            //     Navigator.of(dialogContext).pop();
+            //     // Go back to login or previous screen instead of recursive call
+            //     Navigator.of(context).pop();
+            //   },
+            //   child: Text("Cancel", style: textStyles.btnText),
+            // ),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  // Use a slight delay to ensure dialog is closed before retry
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    deviceAuth(context, s);
+                  });
+                },
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 40), // width, height
+                  side: BorderSide(
+                      color: colors.btnOutlinedBorder), // Outline border color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  backgroundColor: colors.primaryDark, // Transparent background
+                ),
+                child: TextWidget.titleText(
+                    text: "Try Again",
+                    theme: theme.isDarkMode,
+                    color: !theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack,
+                    fw: 0),
+              ),
             ),
           ],
         );
@@ -1334,57 +1422,115 @@ class AuthProvider extends DefaultChangeNotifier {
     );
   }
 
-  void _showAuthenticationRequiredDialog(BuildContext context, String s) {
+  void _showAuthenticationRequiredDialog(
+      BuildContext context, String s, theme) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          titleTextStyle: textStyles.appBarTitleTxt,
-          contentTextStyle: textStyles.menuTxt,
+          backgroundColor: colors.colorWhite,
           titlePadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(14))),
-          scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: const Text("Authentication Required"),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Authentication is required to proceed further!")
-              ],
-            ),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Navigator.of(context).pop();
-              },
-              child: Text("Cancel", style: textStyles.btnText),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  deviceAuth(context, s);
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: ref.read(themeProvider).isDarkMode
-                    ? colors.colorbluegrey
-                    : colors.colorBlack,
-                padding: const EdgeInsets.symmetric(vertical: 13),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+          scrollable: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          title: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // TextWidget.subText(
+                    //   text: "Authentication Required",
+                    //   theme: theme.isDarkMode,
+                    //   color: theme.isDarkMode
+                    //       ? colors.textPrimaryDark
+                    //       : colors.textPrimaryLight,
+                    //   fw: 3,
+                    // ),
+                    const SizedBox(height: 10),
+                    TextWidget.subText(
+                      text: "Authentication is required to proceed further!",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 3,
+                      align: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-              child: Text("Proceed", style: textStyles.btnText),
+            ],
+          ),
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    deviceAuth(context, s);
+                  });
+                },
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 40),
+                  side: BorderSide(color: colors.btnOutlinedBorder),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  backgroundColor: colors.primaryDark,
+                ),
+                child: TextWidget.titleText(
+                  text: "Proceed",
+                  theme: theme.isDarkMode,
+                  color:
+                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  fw: 0,
+                ),
+              ),
             ),
           ],
         );
@@ -1392,30 +1538,113 @@ class AuthProvider extends DefaultChangeNotifier {
     );
   }
 
-  void _showBiometricNotSetupDialog(BuildContext context, String s) {
+  void _showBiometricNotSetupDialog(BuildContext context, String s, theme) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text("Biometric Not Setup"),
-          content: const Text(
-              "Please setup biometric authentication in your device settings."),
+          backgroundColor: colors.colorWhite,
+          titlePadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
+          scrollable: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          title: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // TextWidget.subText(
+                    //   text: "Biometric Not Setup",
+                    //   theme: theme.isDarkMode,
+                    //   color: theme.isDarkMode
+                    //       ? colors.textPrimaryDark
+                    //       : colors.textPrimaryLight,
+                    //   fw: 3,
+                    // ),
+                    const SizedBox(height: 10),
+                    TextWidget.subText(
+                      text:
+                          "Please setup biometric authentication in your device settings.",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 3,
+                      align: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Navigator.of(context).pop();
-              },
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                // Proceed without biometric or redirect to settings
-                initialLoadMethods(context, s);
-              },
-              child: const Text("Continue"),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  initialLoadMethods(context, s);
+                },
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 40),
+                  side: BorderSide(color: colors.btnOutlinedBorder),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  backgroundColor: colors.primaryDark,
+                ),
+                child: TextWidget.titleText(
+                  text: "Continue",
+                  theme: theme.isDarkMode,
+                  color:
+                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  fw: 0,
+                ),
+              ),
             ),
           ],
         );
@@ -1424,30 +1653,113 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   void _showAuthenticationErrorDialog(
-      BuildContext context, String s, String error) {
+      BuildContext context, String s, String error, theme) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text("Authentication Error"),
-          content: Text("An error occurred: $error"),
+          backgroundColor: colors.colorWhite,
+          titlePadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
+          scrollable: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          actionsPadding:
+              const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+          title: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 22,
+                          color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // TextWidget.subText(
+                    //   text: "Authentication Error",
+                    //   theme: theme.isDarkMode,
+                    //   color: theme.isDarkMode
+                    //       ? colors.textPrimaryDark
+                    //       : colors.textPrimaryLight,
+                    //   fw: 3,
+                    // ),
+                    const SizedBox(height: 10),
+                    TextWidget.subText(
+                      text: "An error occurred: $error",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 3,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Navigator.of(context).pop();
-              },
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  deviceAuth(context, s);
-                });
-              },
-              child: const Text("Retry"),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    deviceAuth(context, s);
+                  });
+                },
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 40),
+                  side: BorderSide(color: colors.btnOutlinedBorder),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  backgroundColor: colors.primaryDark,
+                ),
+                child: TextWidget.titleText(
+                  text: "Retry",
+                  theme: theme.isDarkMode,
+                  color:
+                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  fw: 0,
+                ),
+              ),
             ),
           ],
         );

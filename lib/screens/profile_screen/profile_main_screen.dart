@@ -2762,7 +2762,7 @@ class ReportsScreen extends ConsumerWidget {
       {'title': 'Positions'},
       {'title': 'Profit & Loss'},
       {'title': 'Tax P&L'},
-      {'title': 'Tradebook / Contract'},
+      {'title': 'Tradebook'},
       {'title': 'Downloads'},
       {'title': 'Corporate Actions'},
       // {'title': 'CA Events'},
@@ -2930,7 +2930,7 @@ class ReportsScreen extends ConsumerWidget {
                           Navigator.pushNamed(context, Routes.taxpnlscreen,
                               arguments: "DDDDD");
                           break;
-                        case 'Tradebook / Contract':
+                        case 'Tradebook':
                           // await ledgerdate.getCurrentDate('tradebook');
                           if (ledgerdate.tradebookdata == null) {
                             await ledgerdate.getCurrentDate('tradebook');

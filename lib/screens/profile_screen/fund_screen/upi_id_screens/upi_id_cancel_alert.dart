@@ -53,6 +53,8 @@ class _UPIIDPaymentCancelAlertState extends ConsumerState<UPIIDPaymentCancelAler
   }
 
   void _triggerButtonAction() {
+    // Clear the amount text field
+    ref.read(transcationProvider).amount.clear();
     Navigator.pop(context);
     _timer?.cancel();
     FocusScope.of(context).unfocus();

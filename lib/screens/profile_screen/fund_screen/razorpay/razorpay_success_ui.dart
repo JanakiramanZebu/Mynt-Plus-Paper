@@ -68,23 +68,23 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                         size: 70,
                       ),
                       const SizedBox(
-                        height: 10,
+                        height: 16,
                       ),
-                      TextWidget.titleText(
+                      TextWidget.subText(
                           text: "SUCCESS",
                           theme: false,
                           color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                          fw: 1),
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                          ),
                       const SizedBox(
                         height: 5,
                       ),
-                      TextWidget.subText(
+                      TextWidget.paraText(
                           text: "Payment Successful",
                           theme: false,
-                          color: colors.colorGrey,
-                          fw: 0),
+                          color: colors.textSecondaryLight,
+                          ),
                       const SizedBox(
                         height: 10,
                       ),
@@ -92,71 +92,62 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
                           text: "₹${widget.amount}.00".toString(),
                           fs: 40,
                           theme: theme.isDarkMode,
-                          fw: 1),
+                           color: theme.isDarkMode
+                              ? colors.colorWhite
+                              : colors.colorBlack,
+                          ),
                       const SizedBox(
                         height: 10,
                       ),
-                      TextWidget.subText(
+                      TextWidget.paraText(
                           text: time,
                           theme: false,
-                          color: colors.colorGrey,
-                          fw: 0),
+                          color: colors.textSecondaryLight,
+                          ),
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const ListDivider(),
-                const SizedBox(
-                  height: 10,
-                ),
-                headerTitleText("Bank Name"),
-                contantTitleText(
-                    fund.razorpayTranstationRes!.notes!.bankname.toString(),
-                    theme),
-                const SizedBox(
-                  height: 15,
-                ),
-                headerTitleText("A/c No"),
-                contantTitleText(
-                    fund.razorpayTranstationRes!.notes!.accNo.toString(),
-                    theme),
-                const SizedBox(
-                  height: 15,
-                ),
-                headerTitleText("Payment Id"),
-                contantTitleText(
-                    fund.razorpayTranstationRes!.id.toString(), theme),
-                const SizedBox(
-                  height: 15,
-                ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
+               SizedBox(height: 16,),
+                 data("Bank Name",
+                     fund.razorpayTranstationRes?.notes?.bankname?.toString() ?? "N/A", theme),
+
+                      data("A/c No",
+                    fund.razorpayTranstationRes?.notes?.accNo?.toString() ?? "N/A", theme),
+               
+                data("Payment Id",
+                     fund.razorpayTranstationRes?.id?.toString() ?? "N/A", theme),
+                      const SizedBox(height: 16),
+               
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          minimumSize: const Size(0, 40),
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
                         ),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        FocusScope.of(context).unfocus();
-                      },
-                      child: TextWidget.titleText(
-                          text: 'Close',
-                          theme: false,
-                          color: theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.colorWhite,
-                          fw: 1)),
+                        onPressed: () {
+                          // Clear the amount text field
+                          ref.read(transcationProvider).amount.clear();
+                          Navigator.pop(context);
+                          FocusScope.of(context).unfocus();
+                        },
+                        child: TextWidget.titleText(
+                            text: 'Close',
+                            theme: false,
+                            color:colors.colorWhite,
+                            fw: 2)),
+                  ),
                 ),
                 const SizedBox(
-                  height: 10,
+                  height: 20,
                 ),
               ],
             ),
@@ -166,16 +157,40 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
     );
   }
 
-  Widget headerTitleText(String text) {
-    return TextWidget.subText(
-        text: text, theme: false, color: colors.colorGrey, fw: 0);
-  }
-
-  Widget contantTitleText(String text, ThemesProvider theme) {
-    return TextWidget.titleText(
-        text: text,
-        theme: false,
-        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-        fw: 1);
+  data(String name, String value, ThemesProvider theme) {
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextWidget.subText(
+              text: name,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: TextWidget.subText(
+                text: value,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                align: TextAlign.right,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Divider(
+          thickness: 0,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
+      ],
+    );
   }
 }
