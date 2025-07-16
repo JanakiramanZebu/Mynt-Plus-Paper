@@ -88,7 +88,7 @@ class _WatchListScreenState extends State<WatchListScreen>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _tabScrollController = ScrollController();
   late final SwipeActionController _swipeController;
-  final PageController _pageController = PageController(initialPage: 0);
+  late final PageController _pageController;
 
   final TextEditingController _searchController = TextEditingController();
   final double _tabWidth = 95.0;
@@ -118,17 +118,34 @@ class _WatchListScreenState extends State<WatchListScreen>
     );
 
     _tabScrollController.addListener(_handleTabScroll);
+  }
 
-    // Initialize immediately with stored data
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!_isDisposed) {
-    _initializeWithStoredData();
+  bool _isInitialized = false;
 
-    }});
-    // Load additional data in background
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _ensurePredefinedWatchlistsLoaded();
-    });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    if (!_isInitialized) {
+      // Initialize PageController with stored page index from provider
+      final marketWatch = ProviderScope.containerOf(context).read(marketWatchProvider);
+      _pageController = PageController(initialPage: marketWatch.currentWatchlistPageIndex);
+      _currentPageIndex = marketWatch.currentWatchlistPageIndex;
+      
+      _isInitialized = true;
+
+      // Initialize immediately with stored data
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_isDisposed) {
+          _initializeWithStoredData();
+        }
+      });
+      
+      // Load additional data in background
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _ensurePredefinedWatchlistsLoaded();
+      });
+    }
   }
 
   @override
@@ -147,25 +164,9 @@ void _initializeWithStoredData() {
   if (_isDisposed || !mounted) return;
 
   final marketWatch = ProviderScope.containerOf(context).read(marketWatchProvider);
-  final watchList = marketWatch.marketWatchlist;
   
-  // Get the correct index for current watchlist
-  int initialPageIndex = 0;
-  if (watchList?.values != null) {
-    final currentIndex = watchList!.values!.indexOf(marketWatch.wlName);
-    if (currentIndex != -1) {
-      initialPageIndex = currentIndex;
-    }
-  }
-  
-  // Update current page index and jump to correct page
-  _currentPageIndex = initialPageIndex;
-  if (_pageController.hasClients && initialPageIndex > 0) {
-    _pageController.jumpToPage(initialPageIndex);
-  }
-  
-  // Set tab scroll position
-  _scrollToSelectedTab(initialPageIndex, force: true);
+  // Set tab scroll position to the stored page index
+  _scrollToSelectedTab(_currentPageIndex, force: true);
   
   // Load additional data in background
   _ensurePredefinedWatchlistsLoaded();
@@ -263,6 +264,10 @@ void _initializeWithStoredData() {
     final newWatchlistName = watchList.values![pageIndex];
     
     _currentPageIndex = pageIndex;
+    
+    // Save the current page index to provider for persistence
+    marketWatch.setCurrentWatchlistPageIndex(pageIndex);
+    
     _scrollToSelectedTab(pageIndex, force: true);
 
     try {
@@ -285,6 +290,9 @@ void _initializeWithStoredData() {
 
     _currentPageIndex = index;
     
+    // Save the current page index to provider for persistence
+    ref.read(marketWatchProvider).setCurrentWatchlistPageIndex(index);
+    
     if (_pageController.hasClients) {
       _pageController.jumpToPage(index);
     }
@@ -301,7 +309,18 @@ void _initializeWithStoredData() {
       final watchList = ref.watch(marketWatchProvider.select((p) => p.marketWatchlist));
       final isPreDef = ref.watch(marketWatchProvider.select((p) => p.isPreDefWLs));
       final sortBy = ref.watch(marketWatchProvider.select((p) => p.sortByWL));
+      final providerPageIndex = ref.watch(marketWatchProvider.select((p) => p.currentWatchlistPageIndex));
       final theme = ref.watch(themeProvider);
+
+      // Listen for page index changes from provider (e.g., from bottom sheet)
+      if (providerPageIndex != _currentPageIndex && _pageController.hasClients) {
+        _currentPageIndex = providerPageIndex;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_pageController.hasClients && !_isDisposed) {
+            _pageController.jumpToPage(providerPageIndex);
+          }
+        });
+      }
 
       final names = watchList?.values?.cast<String>() ?? [];
       if (!_listsEqual(names, _lastTabNames)) {
@@ -315,14 +334,6 @@ void _initializeWithStoredData() {
 
       if (_lastWatchlistName != wlName) {
         _lastWatchlistName = wlName;
-        
-        final currentIndex = names.indexOf(wlName);
-        if (currentIndex != -1 && _currentPageIndex != currentIndex) {
-          _currentPageIndex = currentIndex;
-          if (_pageController.hasClients) {
-            _pageController.jumpToPage(currentIndex);
-          }
-        }
         
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => _scrollToWatchlistTab(ref, wlName),

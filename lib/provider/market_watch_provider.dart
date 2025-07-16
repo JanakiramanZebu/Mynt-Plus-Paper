@@ -2726,16 +2726,16 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         await fetchMWList(context, false, true);
 
         // If we deleted the active watchlist, switch to the first available one
-        if (wasActiveWatchlist &&
-            _marketWatchlist != null &&
-            _marketWatchlist!.values!.isNotEmpty) {
+        // if (wasActiveWatchlist &&
+        //     _marketWatchlist != null &&
+        //     _marketWatchlist!.values!.isNotEmpty) {
           String newActiveWatchlist = _marketWatchlist!.values!.first;
           _wlName = newActiveWatchlist;
           _isPreDefWLs = _preDefWL.contains(newActiveWatchlist) ? "Yes" : "No";
-
+          setCurrentWatchlistPageIndex(0);
           // Load data for the new active watchlist
           await changeWLScrip(newActiveWatchlist, context);
-        }
+        // }
 
         // Update UI to reflect changes
         notifyListeners();
@@ -2752,8 +2752,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
       toggleLoadingOn(true);
-      await changeWlName(wlName, "No");
+      // await changeWlName(wlName, "No");
       await fetchMWList(context, false);
+      _wlName = wlName;
+      await changeWLScrip(wlName, context);
+      setCurrentWatchlistPageIndex(0);
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 100));
       notifyListeners();

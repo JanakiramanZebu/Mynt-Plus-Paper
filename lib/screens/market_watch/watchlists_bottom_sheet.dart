@@ -143,17 +143,17 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                             return Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                onTap: () {
+                                onTap: () async{
                                   // click to switch watch list
                                   ref
                                       .read(marketWatchProvider)
                                       .setCurrentWatchlistPageIndex(index);
 
-                                  ref
+                                  await ref
                                       .read(marketWatchProvider)
                                       .changeWlName(watchlist[index], "No");
 
-                                  marketWatch.changeWLScrip(
+                                  await marketWatch.changeWLScrip(
                                       watchlist[index], context);
 
                                   Navigator.pop(context);
