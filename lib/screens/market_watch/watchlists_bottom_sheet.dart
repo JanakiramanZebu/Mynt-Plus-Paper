@@ -286,9 +286,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                                                                 const EdgeInsets
                                                                     .symmetric(
                                                                     horizontal:
-                                                                        12,
+                                                                        8,
                                                                     vertical:
-                                                                        12),
+                                                                        8),
                                                             shape: const RoundedRectangleBorder(
                                                                 borderRadius: BorderRadius
                                                                     .all(Radius

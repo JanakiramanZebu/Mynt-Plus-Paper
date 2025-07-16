@@ -103,8 +103,7 @@ class AuthProvider extends DefaultChangeNotifier {
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
           scrollable: true,
-          titlePadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           insetPadding:
@@ -1242,61 +1241,6 @@ class AuthProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  void _showAccountSwitchConfirmationDialog(BuildContext context, String s) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return WillPopScope(
-          onWillPop: () async => false, // Prevent back button
-          child: AlertDialog(
-            titleTextStyle: textStyles.appBarTitleTxt,
-            contentTextStyle: textStyles.menuTxt,
-            titlePadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(14))),
-            scrollable: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-            insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-            title: const Text("Account Switch Confirmed"),
-            content: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Authentication successful! Ready to switch account."),
-                  SizedBox(height: 10),
-                ],
-              ),
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop();
-                  ref.read(themeProvider).navigateToNewPage(context);
-                  initialLoadMethods(context, s);
-                },
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-                  backgroundColor: ref.read(themeProvider).isDarkMode
-                      ? colors.colorbluegrey
-                      : colors.colorBlack,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text("Proceed", style: textStyles.btnText),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   void _showAuthenticationFailedDialog(BuildContext context, String s, theme) {
     showDialog(
       context: context,
@@ -1304,8 +1248,7 @@ class AuthProvider extends DefaultChangeNotifier {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: colors.colorWhite,
-          titlePadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(8))),
           scrollable: true,
@@ -1357,14 +1300,7 @@ class AuthProvider extends DefaultChangeNotifier {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    TextWidget.subText(
-                        text: "Authentication Failed",
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        fw: 3),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextWidget.subText(
                       text: "Authentication is required to proceed further!",
                       theme: theme.isDarkMode,
@@ -1430,8 +1366,7 @@ class AuthProvider extends DefaultChangeNotifier {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: colors.colorWhite,
-          titlePadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
@@ -1545,8 +1480,7 @@ class AuthProvider extends DefaultChangeNotifier {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: colors.colorWhite,
-          titlePadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
@@ -1660,8 +1594,7 @@ class AuthProvider extends DefaultChangeNotifier {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: colors.colorWhite,
-          titlePadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),

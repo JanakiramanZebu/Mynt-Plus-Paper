@@ -1063,8 +1063,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 final theme = ref.read(themeProvider);
                 return AlertDialog(
                     backgroundColor: colors.colorWhite,
-                    titlePadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 12),
+                    titlePadding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(8))),
                     scrollable: true,

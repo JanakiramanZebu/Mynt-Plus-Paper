@@ -174,7 +174,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                         backgroundColor: colors.colorWhite,
                                         titlePadding:
                                             const EdgeInsets.symmetric(
-                                                horizontal: 12, vertical: 12),
+                                                horizontal: 8, vertical: 8),
                                         shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(8)),

@@ -53,7 +53,8 @@ class _ConvertPositionDialogueState
     final theme = ref.read(themeProvider);
     return AlertDialog(
       backgroundColor: colors.colorWhite,
-      titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      titlePadding:
+          const EdgeInsets.only(left: 16, right: 8, top: 8, bottom: 0),
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(8))),
       scrollable: true,

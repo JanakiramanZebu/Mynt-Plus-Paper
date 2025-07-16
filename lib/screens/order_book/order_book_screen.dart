@@ -329,6 +329,13 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
   late PageController _pageController;
   bool _isExternalTabChange = false;
 
+  // Track pointer events for edge swipes
+  double _startX = 0;
+  double _startY = 0;
+  double _currentX = 0;
+  double _currentY = 0;
+  bool _isTracking = false;
+
   @override
   void initState() {
     super.initState();
@@ -379,11 +386,36 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
       builder: (context, WidgetRef ref, child) {
         final portfolio = ref.read(portfolioProvider);
 
-        return NotificationListener<OverscrollIndicatorNotification>(
-          onNotification: (OverscrollIndicatorNotification notification) {
+        return Listener(
+          onPointerDown: (PointerDownEvent event) {
+            _startX = event.position.dx;
+            _startY = event.position.dy;
+            _currentX = _startX;
+            _currentY = _startY;
+            _isTracking = true;
+          },
+          onPointerMove: (PointerMoveEvent event) {
+            if (_isTracking) {
+              _currentX = event.position.dx;
+              _currentY = event.position.dy;
+            }
+          },
+          onPointerUp: (PointerUpEvent event) {
+            if (!_isTracking) return;
+            _isTracking = false;
+
+            final deltaX = _currentX - _startX;
+            final deltaY = _currentY - _startY;
             final currentPage = _pageController.page?.round() ?? 0;
 
-            if (notification.leading && currentPage == 0) {
+            // Only process if horizontal movement is greater than vertical
+            if (deltaX.abs() <= deltaY.abs()) return;
+
+            // Minimum distance for edge swipe
+            const minDistance = 50.0;
+
+            // Right swipe from first tab -> Holdings
+            if (deltaX > minDistance && currentPage == 0) {
               _navigateToOuterTab(
                 current: portfolio.selectedTab,
                 target: portfolio.selectedTab - 1,
@@ -391,11 +423,10 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
                   portfolio.portTab.animateTo(portfolio.selectedTab - 1);
                 },
               );
-              notification.disallowIndicator();
-              return true;
             }
 
-            if (!notification.leading &&
+            // Left swipe from last tab -> Funds
+            if (deltaX < -minDistance &&
                 currentPage == widget.children.length - 1) {
               _navigateToOuterTab(
                 current: portfolio.selectedTab,
@@ -404,48 +435,18 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
                   portfolio.portTab.animateTo(portfolio.selectedTab + 1);
                 },
               );
-              notification.disallowIndicator();
-              return true;
             }
-
-            return false;
           },
-          child: GestureDetector(
-            onPanEnd: (details) {
-              final velocity = details.velocity.pixelsPerSecond.dx;
-              final currentPage = _pageController.page?.round() ?? 0;
-
-              // Fast swipe right → Holdings
-              if (velocity > 300 && currentPage == 0) {
-                _navigateToOuterTab(
-                  current: portfolio.selectedTab,
-                  target: portfolio.selectedTab - 1,
-                  action: () {
-                    portfolio.portTab.animateTo(portfolio.selectedTab - 1);
-                  },
-                );
-              }
-
-              // Fast swipe left → Funds
-              if (velocity < -300 &&
-                  currentPage == widget.children.length - 1) {
-                _navigateToOuterTab(
-                  current: portfolio.selectedTab,
-                  target: portfolio.selectedTab + 1,
-                  action: () {
-                    portfolio.portTab.animateTo(portfolio.selectedTab + 1);
-                  },
-                );
-              }
+          onPointerCancel: (PointerCancelEvent event) {
+            _isTracking = false;
+          },
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.children.length,
+            onPageChanged: (index) {
+              widget.controller.animateTo(index);
             },
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: widget.children.length,
-              onPageChanged: (index) {
-                widget.controller.animateTo(index);
-              },
-              itemBuilder: (context, index) => widget.children[index],
-            ),
+            itemBuilder: (context, index) => widget.children[index],
           ),
         );
       },

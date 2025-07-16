@@ -320,28 +320,44 @@ class _SetAlertState extends State<SetAlert> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
-                  backgroundColor:
-                      errorText.isNotEmpty || valueCtrl.text.isEmpty
-                          ? Colors.grey // Disabled color
-                          : (theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight),
+                  backgroundColor: errorText.isNotEmpty
+                      ? Colors.grey
+                      : (theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(5)),
                 ),
-                onPressed: _handlesetalert &&
-                        (errorText.isNotEmpty || valueCtrl.text.isEmpty)
-                    ? null
+                onPressed: _handlesetalert ||
+                        valueCtrl.text.isEmpty ||
+                        valueCtrl.text == "0" ||
+                        errorText.isNotEmpty
+                    ? () {}
                     : () async {
-                        if (valueCtrl.text == "0") {
-                          errorText = "Value cannot be 0";
-                        } else {
-                          errorText = "";
+                        setState(() {
+                          _handlesetalert = true;
+                        });
+
+                        if (valueCtrl.text.isEmpty) {
                           setState(() {
-                            _handlesetalert = true;
+                            errorText = "Value cannot be empty";
+                            _handlesetalert = false;
                           });
-                          try {
-                            await ref.read(marketWatchProvider).fetchSetAlert(
+                          return;
+                        }
+
+                        if (valueCtrl.text == "0") {
+                          setState(() {
+                            errorText = "Value cannot be 0";
+                            _handlesetalert = false;
+                          });
+                          return;
+                        }
+
+                        errorText = "";
+
+                        try {
+                          await ref.read(marketWatchProvider).fetchSetAlert(
                                 widget.wlvalue.exch,
                                 widget.wlvalue.tsym,
                                 valueCtrl.text,
@@ -350,31 +366,32 @@ class _SetAlertState extends State<SetAlert> {
                                     : alertValue == "Below" &&
                                             alertTypeVal == "LTP"
                                         ? "LTP_B"
-                                        /*: alertValue == "Above" &&
-                                                                            alertTypeVal ==
-                                                                                "Perc.Change"
-                                                                    ? "CH_PER_A"
-                                                                    : "CH_PER_B"*/
-                                        : "LTP_B",
+                                        : "LTP_B", // fallback
                                 context,
                                 scripInfo.alertPendingModel!.length,
                                 "${widget.depthdata.lp}",
-                                remark.text);
-                          } finally {
-                            if (mounted) {
-                              setState(() {
-                                _handlesetalert = false;
-                              });
-                            }
+                                remark.text,
+                              );
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              _handlesetalert = false;
+                            });
                           }
                         }
-                        ;
                       },
-                child: TextWidget.subText(
-                    text: 'Set alert',
-                    color: colors.colorWhite,
-                    theme: theme.isDarkMode,
-                    fw: 2),
+                child: _handlesetalert || scripInfo.loading
+                    ? SizedBox(
+                        width: 18,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: colors.colorWhite),
+                      )
+                    : TextWidget.subText(
+                        text: 'Set alert',
+                        color: colors.colorWhite,
+                        theme: theme.isDarkMode,
+                        fw: 2),
               ),
             ),
           ),

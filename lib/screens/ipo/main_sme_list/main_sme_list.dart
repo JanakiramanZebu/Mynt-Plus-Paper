@@ -12,6 +12,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/functions.dart';
@@ -251,9 +252,8 @@ class _IPOListSection extends StatelessWidget {
       },
       separatorBuilder: (context, index) {
         return Divider(
-          height: 0,
-          color:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+          height: 1,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
         );
       },
     );
@@ -284,16 +284,19 @@ class _IPOListItem extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
-            const SizedBox(height: 8),
-            _buildFooter(context),
+            _buildHeader(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(context) {
+    final dateText = isPreOpen ? "Opens on" : "Closes on";
+    final date = isPreOpen
+        ? _formatDate(ipo.biddingStartDate!)
+        : ipo.biddingEndDate!.substring(5, 11);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -303,160 +306,162 @@ class _IPOListItem extends StatelessWidget {
             children: [
               SizedBox(
                 width: 250,
-                child: Text(
-                  ipo.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: MainSmeListCard.textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600,
-                  ),
+                child: TextWidget.subText(
+                  text: ipo.name,
+                  theme: false,
+                  fw: 0,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  textOverflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(height: 4),
-              _buildIPOTypeChip(),
+              const SizedBox(height: 8),
+              TextWidget.paraText(
+                text: "${ipo.key} - $dateText $date",
+                theme: false,
+                fw: 0,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+              ),
             ],
           ),
         ),
         if (!isPreOpen && ipo.totalsub != null && ipo.totalsub != '')
-          _buildSubscriptionInfo(),
+          _buildSubscriptionInfo(context),
       ],
     );
   }
 
-  Widget _buildIPOTypeChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: ipo.key == "SME"
-            ? theme.isDarkMode
-                ? colors.colorGrey.withOpacity(.3)
-                : const Color.fromARGB(255, 243, 242, 174)
-            : theme.isDarkMode
-                ? colors.colorGrey.withOpacity(.3)
-                : const Color.fromARGB(255, 251, 215, 148),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        "${ipo.key}",
-        style: MainSmeListCard.textStyle(
-          const Color(0xff666666),
-          10,
-          FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSubscriptionInfo() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "${ipo.totalsub}x",
-          style: MainSmeListCard.textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          "Subscription",
-          style: MainSmeListCard.textStyle(
-            const Color(0xff666666),
-            10,
-            FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFooter(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildDateInfo(),
-        _buildApplyButton(context),
-      ],
-    );
-  }
-
-  Widget _buildDateInfo() {
-    final dateText = isPreOpen ? "Opens on" : "Closes on";
-    final date = isPreOpen
-        ? _formatDate(ipo.biddingStartDate!)
-        : ipo.biddingEndDate!.substring(5, 11);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          dateText,
-          style: MainSmeListCard.textStyle(
-            const Color(0xff666666),
-            10,
-            FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          date,
-          style: MainSmeListCard.textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildApplyButton(BuildContext context) {
+  Widget _buildSubscriptionInfo(BuildContext context) {
     bool isApplyButtonEnabled = true;
 
-    return SizedBox(
-      height: 30,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          minimumSize: const Size(0, 30),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-          backgroundColor:
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(50),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Material(
+          color: Colors.transparent,
+          shape: const RoundedRectangleBorder(),
+          child: InkWell(
+            customBorder: const RoundedRectangleBorder(),
+            splashColor: theme.isDarkMode
+                ? colors.splashColorDark
+                : colors.splashColorLight,
+            highlightColor:
+                theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+            onTap: () {
+              if (isApplyButtonEnabled) {
+                isApplyButtonEnabled = false;
+                _onApplyPressed(context);
+              } else {
+                return;
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: TextWidget.titleText(
+                text: isPreOpen ? 'Pre Apply' : 'Apply',
+                theme: false,
+                fw: 0,
+                color:
+                    theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+              ),
+            ),
           ),
         ),
-        onPressed: () {
-          if (isApplyButtonEnabled) {
-            isApplyButtonEnabled = false;
-            _onApplyPressed(context);
-          } else {
-            return;
-          }
-        },
-        child: ipoProvider.loading
-            ? const SizedBox(
-                width: 18,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xff666666),
-                ),
-              )
-            : Text(
-                isPreOpen ? 'Pre Apply' : 'Apply',
-                style: MainSmeListCard.textStyle(
-                  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  12,
-                  FontWeight.w500,
-                ),
-              ),
-      ),
+        const SizedBox(height: 6),
+        TextWidget.paraText(
+          text: "${ipo.totalsub}x Sub",
+          theme: false,
+          fw: 3,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
+        ),
+      ],
     );
   }
+
+  // Widget _buildFooter(BuildContext context) {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //     children: [
+  //       // _buildDateInfo(),
+  //     ],
+  //   );
+  // }
+
+  // Widget _buildDateInfo() {
+
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       Text(
+  //         dateText,
+  //         style: MainSmeListCard.textStyle(
+  //           const Color(0xff666666),
+  //           10,
+  //           FontWeight.w500,
+  //         ),
+  //       ),
+  //       const SizedBox(height: 4),
+  //       Text(
+  //         date,
+  //         style: MainSmeListCard.textStyle(
+  //           theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+  //           14,
+  //           FontWeight.w500,
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
+
+  // Widget _buildApplyButton(BuildContext context) {
+  //   bool isApplyButtonEnabled = true;
+
+  //   return SizedBox(
+  //     height: 30,
+  //     child: ElevatedButton(
+  //       style: ElevatedButton.styleFrom(
+  //         elevation: 0,
+  //         minimumSize: const Size(0, 30),
+  //         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+  //         backgroundColor:
+  //             theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(50),
+  //         ),
+  //       ),
+  //       onPressed: () {
+  //         if (isApplyButtonEnabled) {
+  //           isApplyButtonEnabled = false;
+  //           _onApplyPressed(context);
+  //         } else {
+  //           return;
+  //         }
+  //       },
+  //       child: ipoProvider.loading
+  //           ? const SizedBox(
+  //               width: 18,
+  //               height: 20,
+  //               child: CircularProgressIndicator(
+  //                 strokeWidth: 2,
+  //                 color: Color(0xff666666),
+  //               ),
+  //             )
+  //           : Text(
+  //               ,
+  //               style: MainSmeListCard.textStyle(
+  //                 theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+  //                 12,
+  //                 FontWeight.w500,
+  //               ),
+  //             ),
+  //     ),
+  //   );
+  // }
 
   Future<void> _onIPOTap(BuildContext context) async {
     await ipoProvider.getIpoSinglePage(ipoName: "${ipo.name}");
@@ -475,9 +480,9 @@ class _IPOListItem extends StatelessWidget {
           ),
           child: MainSmeSinglePage(
             pricerange:
-                "₹${double.parse(ipo.minPrice!).toInt()} - ₹${double.parse(ipo.maxPrice!).toInt()}",
+                "${double.parse(ipo.minPrice!).toInt()} - ${double.parse(ipo.maxPrice!).toInt()}",
             mininv:
-                "₹${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice!).toDouble(), int.parse(ipo.minBidQuantity!).toInt()).toInt())}",
+                "${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice!).toDouble(), int.parse(ipo.minBidQuantity!).toInt()).toInt())}",
             enddate: "${ipo.biddingEndDate}",
             startdate: "${ipo.biddingStartDate}",
             ipotype: "${ipo.key}",

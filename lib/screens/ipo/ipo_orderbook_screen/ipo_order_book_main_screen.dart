@@ -5,6 +5,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/iop_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 import 'ipo_order_book_tab/close_ipo_tab.dart';
@@ -14,7 +15,8 @@ class IpoOrderbookMainScreen extends ConsumerStatefulWidget {
   const IpoOrderbookMainScreen({super.key});
 
   @override
-  ConsumerState<IpoOrderbookMainScreen> createState() => _IpoOrderbookMainScreenState();
+  ConsumerState<IpoOrderbookMainScreen> createState() =>
+      _IpoOrderbookMainScreenState();
 }
 
 class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
@@ -44,9 +46,9 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
   }
 
   Widget _buildBody(ipo, theme, double devHeight) {
-    final hasOrders = (ipo.openorder?.isNotEmpty ?? false) || 
-                      (ipo.closeorder?.isNotEmpty ?? false);
-    
+    final hasOrders = (ipo.openorder?.isNotEmpty ?? false) ||
+        (ipo.closeorder?.isNotEmpty ?? false);
+
     if (!hasOrders) {
       return _buildNoDataState(devHeight);
     }
@@ -87,23 +89,14 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
   Widget _buildSectionHeader(String title, theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-      child: Text(
-        title,
-        style: _textStyle(
-            theme.isDarkMode
-                ? colors.colorWhite.withOpacity(0.3)
-                : colors.colorBlack.withOpacity(0.3),
-            16,
-            FontWeight.w600),
+      child: TextWidget.subText(
+        text: title,
+        theme: false,
+        fw: 0,
+        color: theme.isDarkMode
+            ? colors.textSecondaryDark
+            : colors.textSecondaryLight,
       ),
-    );
-  }
-
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
-    return TextStyle(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
     );
   }
 }

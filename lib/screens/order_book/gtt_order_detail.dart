@@ -349,9 +349,9 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                     const EdgeInsets
                                                                         .symmetric(
                                                                         horizontal:
-                                                                            12,
+                                                                            8,
                                                                         vertical:
-                                                                            12),
+                                                                            8),
                                                                 shape: const RoundedRectangleBorder(
                                                                     borderRadius:
                                                                         BorderRadius.all(
@@ -681,7 +681,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          TextWidget.paraText(
+          TextWidget.subText(
               text: title,
               theme: false,
               color: theme.isDarkMode

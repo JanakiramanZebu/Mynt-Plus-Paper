@@ -83,10 +83,10 @@ class BasketList extends ConsumerWidget {
           ),
         ),
         basket.bsktList.isEmpty
-            ? SizedBox(height: 440, child: const NoDataFound())
+            ? SizedBox(height: 400, child: const NoDataFound())
             : ListView.separated(
                 shrinkWrap: true,
-                itemCount: basket.bsktList.length,
+                itemCount: basket.bsktList.length ?? 0,
                 itemBuilder: (BuildContext context, int index) {
                   return ListTile(
                       onLongPress: () {
@@ -100,7 +100,7 @@ class BasketList extends ConsumerWidget {
                                 return AlertDialog(
                                   backgroundColor: colors.colorWhite,
                                   titlePadding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 12),
+                                      horizontal: 8, vertical: 8),
                                   shape: const RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(8))),

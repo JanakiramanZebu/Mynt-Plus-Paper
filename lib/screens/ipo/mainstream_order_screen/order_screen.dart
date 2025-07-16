@@ -8,6 +8,7 @@ import '../../../models/ipo_model/ipo_place_order_model.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/ipo_error_widget.dart';
@@ -82,7 +83,7 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
           if (ipo.checkForErrorsInSMEPlaceOrder(addIpo)) {
             ipo.setisMainIPOPlaceOrderBtnActiveValue = true;
           }
-           ipo.setMainIPOPlaceOrderRequiredMaxPrice = addIpo;
+          ipo.setMainIPOPlaceOrderRequiredMaxPrice = addIpo;
 
           return Scaffold(
               appBar: AppBar(
@@ -90,14 +91,22 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                 centerTitle: false,
                 leadingWidth: 38,
                 titleSpacing: 1,
-                leading: InkWell(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 9),
-                    child: SvgPicture.asset(
-                      assets.backArrow,
+                leading: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    splashColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    highlightColor: theme.isDarkMode
+                        ? colors.highlightDark
+                        : colors.highlightLight,
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(
+                      Icons.arrow_back_ios_outlined,
+                      size: 18,
                       color: theme.isDarkMode
                           ? colors.colorWhite
                           : colors.colorBlack,
@@ -106,55 +115,37 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                 ),
                 backgroundColor:
                     theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                shadowColor: const Color(0xffECEFF3),
                 title: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                   title: Padding(
                     padding: const EdgeInsets.only(bottom: 8, top: 10),
-                    child: Text("${widget.mainstream.name}",
-                        style: textStyle(
-                            theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
-                            15,
-                            FontWeight.w600)),
+                    child: TextWidget.heroText(
+                        text: "${widget.mainstream.name}",
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 0),
                   ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(bottom: 13),
                     child: Row(
                       children: [
-                        Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: widget.mainstream.key == "SME"
-                                    ? theme.isDarkMode
-                                        ? colors.colorGrey.withOpacity(.1)
-                                        : const Color.fromARGB(
-                                            255, 243, 242, 174)
-                                    : theme.isDarkMode
-                                        ? colors.colorGrey.withOpacity(.1)
-                                        : const Color.fromARGB(
-                                            255, 251, 215, 148), //(0xffF1F3F8),
-                                borderRadius: BorderRadius.circular(4)),
-                            child: Text("${widget.mainstream.key}",
-                                style: textStyle(const Color(0xff666666), 9,
-                                    FontWeight.w500))),
+                        TextWidget.paraText(
+                            text: "${widget.mainstream.key}",
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            fw: 3),
                         const SizedBox(
                           width: 5,
                         ),
-                        Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: theme.isDarkMode
-                                    ? const Color(0xffECF8F1).withOpacity(.3)
-                                    : const Color(0xffECF8F1),
-                                borderRadius: BorderRadius.circular(4)),
-                            child: Text("Open",
-                                style: textStyle(
-                                    Color(0xff43A833), 11, FontWeight.w500))),
+                        TextWidget.paraText(
+                            text: "Open",
+                            theme: theme.isDarkMode,
+                            color: const Color(0xff43A833),
+                            fw: 3),
                       ],
                     ),
                   ),
@@ -576,7 +567,8 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                                               addIpo[index],
                                                               ipo.isMainIPOPlaceOrderBtnActive,
                                                               ipo,
-                                                              widget.mainstream,selectedChip);
+                                                              widget.mainstream,
+                                                              selectedChip);
                                                           setState(() {
                                                             ipo.setMainIPOPlaceOrderRequiredMaxPrice =
                                                                 addIpo;
@@ -612,7 +604,8 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                                                       .isMainIPOPlaceOrderBtnActive,
                                                                   ipo,
                                                                   widget
-                                                                      .mainstream,selectedChip);
+                                                                      .mainstream,
+                                                                  selectedChip);
                                                               setState(() {
                                                                 ipo.setMainIPOPlaceOrderRequiredMaxPrice =
                                                                     addIpo;
@@ -638,7 +631,8 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                                   ipo.isMainIPOPlaceOrderBtnActive,
                                                   ipo,
                                                   value,
-                                                  widget.mainstream,selectedChip);
+                                                  widget.mainstream,
+                                                  selectedChip);
                                               setState(() {
                                                 // if (addIpo[index]
                                                 //         .qualityController
@@ -957,10 +951,10 @@ class _ApplyIpoScreenState extends ConsumerState<ApplyIpoScreen> {
                                 : () {
                                     addNewItem();
                                     ipo.categoryOnChange(
-                                    addIpo,
-                                    ipo.maxUPIAmt,
-                                    ipo.isMainIPOPlaceOrderBtnActive,
-                                    selectedChip);
+                                        addIpo,
+                                        ipo.maxUPIAmt,
+                                        ipo.isMainIPOPlaceOrderBtnActive,
+                                        selectedChip);
                                   },
                             icon: SvgPicture.asset(
                               assets.add,

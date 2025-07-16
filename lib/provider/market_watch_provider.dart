@@ -3642,7 +3642,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _setAlertModel =
           await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
-      ref.read(orderProvider).changeTabIndex(5, context);
+      // ref.read(orderProvider).changeTabIndex(5, context);
 
       if (_setAlertModel!.stat! == "OI created") {
         // Fetch updated alert list
@@ -3661,7 +3661,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         // Navigate to the Alert tab after closing the alert creation screens
         ref.read(indexListProvider).bottomMenu(2, context);
-        ref.read(portfolioProvider).portTab.animateTo(2);
+        ref.read(portfolioProvider).changeTabIndex(2);
         ref.read(orderProvider).changeTabIndex(5, context);
       } else if (_setAlertModel!.stat! == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);

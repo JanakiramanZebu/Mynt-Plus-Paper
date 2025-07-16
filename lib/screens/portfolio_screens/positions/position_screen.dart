@@ -811,7 +811,9 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
     return InkWell(
       onLongPress: widget.showLongPressOption
           ? () {
-              Navigator.pushNamed(context, Routes.positionExit);
+              if (widget.position.qty != "0") {
+                Navigator.pushNamed(context, Routes.positionExit);
+              }
             }
           : null,
       onTap: () async {

@@ -168,7 +168,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                               children: [
                                                 TextWidget.headText(
                                                     text:
-                                                        "${displayData.symbol?.replaceAll("-EQ", "") ?? ''}",
+                                                        "${displayData.symbol?.replaceAll("-EQ", "") ?? ''} ${displayData.expDate ?? ''}",
                                                     theme: false,
                                                     color: theme.isDarkMode
                                                         ? colors.textPrimaryDark

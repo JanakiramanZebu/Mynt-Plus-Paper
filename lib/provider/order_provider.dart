@@ -500,8 +500,11 @@ class OrderProvider extends DefaultChangeNotifier {
       //       ? "SIP ${_siporderBookModel!.sipDetails!.length}"
       //       : "SIP",
       // ),
-      const Tab(
-        text: ("Alerts"),
+      Tab(
+        text: ref.read(marketWatchProvider).alertPendingModel != null &&
+                ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty
+            ? "Alerts ${ref.read(marketWatchProvider).alertPendingModel!.length}"
+            : "Alerts",
         // ref.read(marketWatchProvider).alertPendingModel != null &&
         //           ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty)
         //       ? "Alert (${ref.read(marketWatchProvider).alertPendingModel!.length})"
@@ -736,7 +739,7 @@ class OrderProvider extends DefaultChangeNotifier {
         // if (!isExit) {
         //   Navigator.pop(context);
         // } else {
-          
+
         // }
 
         Navigator.pop(context);
@@ -765,12 +768,11 @@ class OrderProvider extends DefaultChangeNotifier {
           .read(indexListProvider)
           .logError
           .add({"type": "API Place Order", "Error": "$e"});
-          
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, "Error on placing order"));
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(warningMessage(context, "Error on placing order"));
       }
-      
     } finally {
       notifyListeners();
     }
@@ -853,8 +855,8 @@ class OrderProvider extends DefaultChangeNotifier {
         // Update order book
         fetchOrderBook(context, true);
 
-          Navigator.pop(context);
-          Navigator.pop(context);
+        Navigator.pop(context);
+        Navigator.pop(context);
 
         // Navigate to order confirmation screen with all sliced orders
         if (context.mounted) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import '../../../../provider/iop_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
@@ -24,7 +25,8 @@ class IpoOpenOrder extends ConsumerWidget {
           if (ipo.showSearch) _SearchBar(ipo: ipo, theme: theme),
           ipo.iposearch!.isEmpty
               ? _OpenOrderList(orders: ipo.openorder!, theme: theme)
-              : _OpenOrderList(orders: ipo.iposearch!, theme: theme, isSearch: true),
+              : _OpenOrderList(
+                  orders: ipo.iposearch!, theme: theme, isSearch: true),
         ],
       ),
     );
@@ -55,9 +57,7 @@ class _SearchBar extends StatelessWidget {
             child: TextFormField(
               controller: ipo.openOrderController,
               style: _textStyle(
-                  theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack,
+                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                   16,
                   FontWeight.w600),
               decoration: InputDecoration(
@@ -66,8 +66,8 @@ class _SearchBar extends StatelessWidget {
                       : const Color(0xffF1F3F8),
                   filled: true,
                   hintStyle: GoogleFonts.inter(
-                      textStyle: _textStyle(const Color(0xff69758F), 15,
-                          FontWeight.w500)),
+                      textStyle: _textStyle(
+                          const Color(0xff69758F), 15, FontWeight.w500)),
                   prefixIconColor: const Color(0xff586279),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -116,7 +116,8 @@ class _SearchBar extends StatelessWidget {
     );
   }
 
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
+  static TextStyle _textStyle(
+      Color color, double fontSize, FontWeight fWeight) {
     return GoogleFonts.inter(
         textStyle:
             TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
@@ -147,10 +148,8 @@ class _OpenOrderList extends StatelessWidget {
       ),
       separatorBuilder: (BuildContext context, int index) {
         return Divider(
-          height: 0,
-          color: theme.isDarkMode
-              ? colors.darkColorDivider
-              : colors.colorDivider,
+          height: 1,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
         );
       },
     );
@@ -172,8 +171,7 @@ class _OpenOrderItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(
-            context, Routes.ipoopendetailsscreen,
+        Navigator.pushNamed(context, Routes.ipoopendetailsscreen,
             arguments: order);
       },
       child: Padding(
@@ -195,22 +193,23 @@ class _OpenOrderItem extends StatelessWidget {
       children: [
         SizedBox(
           width: 250,
-          child: Text(
-              order.companyName.toString(),
-              style: textStyles.scripNameTxtStyle.copyWith(
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack),
-              overflow: TextOverflow.ellipsis),
+          child: TextWidget.subText(
+            text: order.companyName.toString(),
+            theme: false,
+            fw: 0,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            textOverflow: TextOverflow.ellipsis,
+          ),
         ),
-        Text(
-          _getInvestedAmount(),
-          style: _textStyle(
-              theme.isDarkMode
-                  ? colors.colorWhite
-                  : colors.colorBlack,
-              14,
-              FontWeight.w600),
+        TextWidget.subText(
+          text: _getInvestedAmount(),
+          theme: false,
+          fw: 0,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
         ),
       ],
     );
@@ -220,33 +219,46 @@ class _OpenOrderItem extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          order.responseDatetime.toString() == ""
+        TextWidget.subText(
+          text: order.responseDatetime.toString() == ""
               ? "----"
               : ipodateres(order.responseDatetime.toString()),
-          style: _textStyle(
-              isSearch 
-                  ? (theme.isDarkMode ? colors.colorWhite : colors.colorBlack)
-                  : const Color(0xff666666),
-              isSearch ? 14 : 12,
-              FontWeight.w600),
+          theme: false,
+          fw: 3,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
         ),
         Row(
           children: [
-            SvgPicture.asset(order.reponseStatus == "new success"
-                ? "assets/icon/success.svg"
-                : "assets/icon/pendingicon.svg"),
-            SizedBox(width: isSearch ? 4 : 5),
-            Text(
-              order.reponseStatus == "new success"
-                  ? "Success"
-                  : "Pending",
-              style: _textStyle(
-                  theme.isDarkMode
-                      ? colors.colorWhite
-                      : colors.colorBlack,
-                  14,
-                  FontWeight.w600),
+            // SvgPicture.asset(order.reponseStatus == "new success"
+            //     ? "assets/icon/success.svg"
+            //     : "assets/icon/pendingicon.svg"),
+            // SizedBox(width: isSearch ? 4 : 5),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: order.reponseStatus == "new success"
+                    ? theme.isDarkMode
+                        ? colors.profitDark.withOpacity(0.1)
+                        : colors.profitLight.withOpacity(0.1)
+                    : colors.pending.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: TextWidget.subText(
+                text: order.reponseStatus == "new success"
+                    ? "Success"
+                    : "Pending",
+                theme: false,
+                fw: 0,
+                color: order.reponseStatus == "new success"
+                    ? theme.isDarkMode
+                        ? colors.profitDark
+                        : colors.profitLight
+                    : theme.isDarkMode
+                        ? colors.pending
+                        : colors.pending,
+              ),
             ),
           ],
         ),
@@ -257,15 +269,15 @@ class _OpenOrderItem extends StatelessWidget {
   String _getInvestedAmount() {
     if (isSearch) {
       return order.type == "BSE"
-          ? "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate!) * double.parse(order.bidDetail![0].quantity!)).toString()}"
-          : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].amount.toString()))}";
+          ? "${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].rate!) * double.parse(order.bidDetail![0].quantity!)).toString()}"
+          : "${getFormatter(noDecimal: true, v4d: false, value: double.parse(order.bidDetail![0].amount.toString()))}";
     } else {
       // For regular orders, calculate max value
       List<String> stringList = [];
       for (var i = 0; i < order.bidDetail!.length; i++) {
         stringList.add(order.type == "BSE"
             ? (double.parse(order.bidDetail![i].rate!) *
-                double.parse(order.bidDetail![i].quantity!))
+                    double.parse(order.bidDetail![i].quantity!))
                 .toString()
             : order.bidDetail![i].amount.toString());
       }
@@ -273,13 +285,7 @@ class _OpenOrderItem extends StatelessWidget {
           .reduce((curr, next) =>
               double.parse(curr) > double.parse(next) ? curr : next)
           .toString();
-      return "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}";
+      return "${getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue))}";
     }
-  }
-
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }

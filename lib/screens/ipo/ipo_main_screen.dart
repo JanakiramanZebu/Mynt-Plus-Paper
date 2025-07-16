@@ -9,6 +9,8 @@ import '../../../res/res.dart';
 import '../../provider/iop_provider.dart';
 import '../../provider/thems.dart';
 import '../../routes/route_names.dart';
+import '../../sharedWidget/custom_text_form_field.dart';
+import '../../utils/no_emoji_inputformatter.dart';
 
 class IPOScreen extends StatefulWidget {
   final int? initialTabIndex;
@@ -29,8 +31,10 @@ class _IPOmainScreenState extends State<IPOScreen> {
     return Consumer(
       builder: (context, WidgetRef ref, _) {
         final theme = ref.watch(themeProvider);
+        final ipo = ref.watch(ipoProvide);
 
         return Scaffold(
+          appBar: _buildAppBar(context, theme, ipo),
           body: IpoExploreScreens(
               theme: theme, initialTabIndex: widget.initialTabIndex),
         );
@@ -38,13 +42,44 @@ class _IPOmainScreenState extends State<IPOScreen> {
     );
   }
 
-  static TextStyle _textStyle(
-      Color color, double fontSize, FontWeight fWeight) {
-    return GoogleFonts.inter(
-      textStyle: TextStyle(
-        fontWeight: fWeight,
-        color: color,
-        fontSize: fontSize,
+  AppBar _buildAppBar(
+      BuildContext context, ThemesProvider theme, IPOProvider ipo) {
+    return AppBar(
+      leading: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.hardEdge,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            splashColor: theme.isDarkMode
+                ? colors.splashColorDark
+                : colors.splashColorLight,
+            highlightColor:
+                theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+            onTap: () => Navigator.pop(context),
+            child: Icon(
+              Icons.arrow_back_ios_outlined,
+              size: 18,
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            ),
+          ),
+        ),
+      ),
+      elevation: 0,
+      centerTitle: false,
+      titleSpacing: -8,
+      title: TextWidget.heroText(
+          text: "IPO",
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          fw: 0),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(50),
+        child: _SearchBarSection(theme: theme, ipo: ipo),
       ),
     );
   }
@@ -52,61 +87,96 @@ class _IPOmainScreenState extends State<IPOScreen> {
 
 class _SearchBarSection extends StatelessWidget {
   final ThemesProvider theme;
+  final IPOProvider ipo;
 
-  const _SearchBarSection({required this.theme});
+  const _SearchBarSection({required this.theme, required this.ipo});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Expanded(
-            child: Container(
-              height: 45,
-              child: SearchBar(
-                onTap: () {
-                  FocusScope.of(context).requestFocus(FocusNode());
-                  Navigator.pushNamed(context, Routes.iposearchscreen);
-                },
-                hintText: "Search IPO",
-                hintStyle: WidgetStateProperty.all(
-                  const TextStyle(
-                    color: Color(0xff69758F),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                backgroundColor: WidgetStateProperty.all(
-                  theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                ),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                    side: BorderSide.none,
-                  ),
-                ),
-                textStyle: WidgetStateProperty.all(
-                  _IPOmainScreenState._textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500,
-                  ),
-                ),
-                elevation: WidgetStateProperty.all(0),
-                leading: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: SvgPicture.asset(
-                    assets.searchIcon,
-                    color: const Color(0xff586279),
-                    fit: BoxFit.contain,
-                    width: 20,
-                  ),
-                ),
+              child: SizedBox(
+            height: 40,
+            child: TextFormField(
+              controller: ipo.ipocommonsearchcontroller,
+              style: TextWidget.textStyle(
+                fontSize: 14,
+                theme: theme.isDarkMode,
+                fw: 1,
               ),
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [
+                UpperCaseTextFormatter(),
+                NoEmojiInputFormatter(),
+                FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/.,]'))
+              ],
+              decoration: InputDecoration(
+                  hintText: "Search & Add stocks",
+                  hintStyle: TextWidget.textStyle(
+                      fontSize: 14,
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                      color: colors.textSecondaryLight),
+                  fillColor: colors.searchBg,
+                  filled: true,
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SvgPicture.asset(assets.searchIcon,
+                        color: colors.textPrimaryLight,
+                        fit: BoxFit.scaleDown,
+                        width: 20),
+                  ),
+                  suffixIcon: Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.hardEdge,
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      splashColor: theme.isDarkMode
+                          ? colors.splashColorDark
+                          : colors.splashColorLight,
+                      highlightColor: theme.isDarkMode
+                          ? colors.highlightDark
+                          : colors.highlightLight,
+                      onTap: () async {
+                        Future.delayed(const Duration(milliseconds: 150), () {
+                          FocusScope.of(context).requestFocus(FocusNode());
+                        });
+                      },
+                      child: SvgPicture.asset(assets.removeIcon,
+                          fit: BoxFit.scaleDown, width: 20),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(20)),
+                  disabledBorder: InputBorder.none,
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(20)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                  border: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(20))),
+              onChanged: (value) {
+                FocusScope.of(context).requestFocus(FocusNode());
+                Navigator.pushNamed(context, Routes.iposearchscreen);
+                // if (value.isNotEmpty) {
+                //   // positionBook.showPositionSearch(false);
+                // } else {
+                //   positionBook.showPositionSearch(false);
+                // }
+
+                // positionBook.positionSearch(value, context);
+              },
             ),
-          ),
+          )),
         ],
       ),
     );

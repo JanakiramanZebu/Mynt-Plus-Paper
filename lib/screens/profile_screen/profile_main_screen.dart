@@ -588,7 +588,7 @@ class UserAccountScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: () async {   
+                onPressed: () async {
                   // await trancation.fetchValidateToken(context);
                   // Future.delayed(
                   //   const Duration(milliseconds: 100),
