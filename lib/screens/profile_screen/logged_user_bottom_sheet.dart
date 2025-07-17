@@ -311,7 +311,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                   : colors.highlightLight,
                               child: Padding(
                                 padding: const EdgeInsets.all(5),
-                                child: TextWidget.paraText(
+                                child: TextWidget.subText(
                                     text: "Log Out",
                                     theme: false,
                                     color: theme.isDarkMode
@@ -454,7 +454,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                           : colors.highlightLight,
                                       child: Padding(
                                         padding: const EdgeInsets.all(5),
-                                        child: TextWidget.paraText(
+                                        child: TextWidget.subText(
                                             text: "Remove",
                                             theme: false,
                                             color: !theme.isDarkMode

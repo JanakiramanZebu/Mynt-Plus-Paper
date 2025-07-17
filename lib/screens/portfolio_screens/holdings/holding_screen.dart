@@ -604,7 +604,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                       Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TextWidget.paraText(
+                            TextWidget.subText(
                                 text: "1D Change",
                                 theme: false,
                                 color: theme.isDarkMode
@@ -649,7 +649,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          TextWidget.paraText(
+                          TextWidget.subText(
                               text: "Total P&L",
                               theme: false,
                               color: theme.isDarkMode
@@ -700,7 +700,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TextWidget.paraText(
+                            TextWidget.subText(
                                 text: "Invested",
                                 theme: false,
                                 color: theme.isDarkMode
@@ -721,7 +721,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            TextWidget.paraText(
+                            TextWidget.subText(
                                 text: "Current",
                                 theme: false,
                                 color: theme.isDarkMode
@@ -933,13 +933,13 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 5),
-                                    child: TextWidget.paraText(
+                                    child: TextWidget.subText(
                                       text: "E-DIS",
                                       theme: false,
                                       color: theme.isDarkMode
                                           ? colors.secondaryDark
                                           : colors.secondaryLight,
-                                      fw: 2,
+                                      // fw: 2,
                                     ),
                                   ),
                                 ),
@@ -972,13 +972,13 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10, vertical: 5),
-                                  child: TextWidget.paraText(
+                                  child: TextWidget.subText(
                                     text: "Pledge",
                                     theme: false,
                                     color: theme.isDarkMode
                                         ? colors.secondaryDark
                                         : colors.secondaryLight,
-                                    fw: 2,
+                                    // fw: 2,
                                   ),
                                 ),
                               ),
@@ -1007,13 +1007,13 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10, vertical: 5),
-                                  child: TextWidget.paraText(
+                                  child: TextWidget.subText(
                                     text: "My MF",
                                     theme: false,
                                     color: theme.isDarkMode
                                         ? colors.secondaryDark
                                         : colors.secondaryLight,
-                                    fw: 2,
+                                    // fw: 2,
                                   ),
                                 ),
                               ),
@@ -1150,7 +1150,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
                     holdingProvider.showHoldSearch(true);
                   } else {
                     // Disable search mode when field is empty
-                    holdingProvider.showHoldSearch(false);
+                    // holdingProvider.showHoldSearch(false);
                   }
 
                   // Perform the search

@@ -155,10 +155,22 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
                 ),
               ],
             ),
-            _DynamicLtpInfo(
-              ltp: widget.exchTsym.lp ?? '0.00',
-              labelColor: labelColor,
-              contentColor: contentColor,
+            Row(
+              children: [
+                _DynamicLtpInfo(
+                  ltp: widget.exchTsym.lp ?? '0.00',
+                  labelColor: labelColor,
+                  contentColor: contentColor,
+                ),
+                TextWidget.paraText(
+                  text: " (${widget.exchTsym.perChange ?? '0.00'}%)",
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fw: 3,
+                ),
+              ],
             ),
           ]),
           const SizedBox(height: 8),

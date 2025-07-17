@@ -811,11 +811,12 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 TextWidget.subText(
-                                                    text: "Pledge-Unpledge",
-                                                    color: colors
-                                                        .btnOutlinedBorder,
-                                                    theme: false,
-                                                    fw: 2),
+                                                  text: "Pledge-Unpledge",
+                                                  color:
+                                                      colors.btnOutlinedBorder,
+                                                  theme: false,
+                                                  // fw: 2
+                                                ),
                                               ],
                                             ),
                                           ),

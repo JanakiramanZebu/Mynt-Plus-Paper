@@ -45,6 +45,7 @@ import '../screens/ipo/ipo_orderbook_screen/ipo_orderbook_details/close_order_de
 import '../screens/ipo/ipo_orderbook_screen/ipo_orderbook_details/open_order_details.dart';
 import '../screens/ipo/mainstream_order_screen/order_screen.dart';
 import '../screens/ipo/sme_order_screen/sme_order.dart';
+import '../screens/ipo/IPO_order_screen/ipo_order_screen.dart';
 import '../screens/market_watch/edit_scrip.dart';
 import '../screens/market_watch/fundamental_detail_screen.dart';
 import '../screens/market_watch/futures/future_screen.dart';
@@ -664,15 +665,15 @@ class AppRoutes {
 
       case Routes.applyIPO:
         return _createRoute(
-          pageBuilder: (_, __, ___) => ApplyIpoScreen(mainstream: args),
+          pageBuilder: (_, __, ___) => UnifiedIpoOrderScreen(ipoData: args),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
-      case Routes.smeapplyIPO:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => SMEApplyIpoScreen(smeipo: args),
-          beginOffset: const Offset(-1.0, 0.0),
-        );
+      // case Routes.smeapplyIPO:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => SMEApplyIpoScreen(smeipo: args),
+      //     beginOffset: const Offset(-1.0, 0.0),
+      //   );
 
       case Routes.ipoorderbook:
         return _createRoute(
@@ -695,7 +696,8 @@ class AppRoutes {
 
       case Routes.ipoopendetailsscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => IpoOpenOrderDetails(ipodetails: args),
+          pageBuilder: (_, __, ___) =>
+              IpoOpenOrderDetails(ipodetails: args, index: args),
           beginOffset: const Offset(0.0, 1.0),
         );
 
@@ -876,7 +878,7 @@ class AppRoutes {
                 withdarw: trancation,
                 foucs: fund.focusNode,
                 theme: theme,
-                segment: fund.textValue, 
+                segment: fund.textValue,
               );
             },
           ),

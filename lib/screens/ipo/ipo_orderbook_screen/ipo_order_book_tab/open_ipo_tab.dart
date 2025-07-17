@@ -8,6 +8,7 @@ import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
+import '../ipo_orderbook_details/open_order_details.dart';
 
 class IpoOpenOrder extends ConsumerWidget {
   // final IPOProvider ipo;
@@ -145,6 +146,7 @@ class _OpenOrderList extends StatelessWidget {
         order: orders[index],
         theme: theme,
         isSearch: isSearch,
+        index: index,
       ),
       separatorBuilder: (BuildContext context, int index) {
         return Divider(
@@ -160,19 +162,40 @@ class _OpenOrderItem extends StatelessWidget {
   final dynamic order;
   final dynamic theme;
   final bool isSearch;
+  final int index;
 
   const _OpenOrderItem({
     required this.order,
     required this.theme,
     this.isSearch = false,
+    required this.index,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(context, Routes.ipoopendetailsscreen,
-            arguments: order);
+        showModalBottomSheet(
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          isDismissible: true,
+          enableDrag: false,
+          useSafeArea: true,
+          context: context,
+          builder: (context) => Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: IpoOpenOrderDetails(ipodetails: order, index: index)),
+        );
+
+        // Navigator.pushNamed(context, Routes.ipoopendetailsscreen,
+        //     arguments: order);
       },
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -202,32 +225,6 @@ class _OpenOrderItem extends StatelessWidget {
                 : colors.textPrimaryLight,
             textOverflow: TextOverflow.ellipsis,
           ),
-        ),
-        TextWidget.subText(
-          text: _getInvestedAmount(),
-          theme: false,
-          fw: 0,
-          color: theme.isDarkMode
-              ? colors.textPrimaryDark
-              : colors.textPrimaryLight,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        TextWidget.subText(
-          text: order.responseDatetime.toString() == ""
-              ? "----"
-              : ipodateres(order.responseDatetime.toString()),
-          theme: false,
-          fw: 3,
-          color: theme.isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
         ),
         Row(
           children: [
@@ -261,6 +258,32 @@ class _OpenOrderItem extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        TextWidget.subText(
+          text: order.responseDatetime.toString() == ""
+              ? "----"
+              : ipodateres(order.responseDatetime.toString()),
+          theme: false,
+          fw: 3,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
+        ),
+        TextWidget.subText(
+          text: _getInvestedAmount(),
+          theme: false,
+          fw: 0,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
         ),
       ],
     );

@@ -46,7 +46,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      TextWidget.paraText(
+                      TextWidget.subText(
                           text: "Available Margin",
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
@@ -106,8 +106,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                                   ? colors.primaryDark
                                   : colors.primaryLight,
                             ),
-                            onPressed: ()  {
-                             
+                            onPressed: () {
                               // trancation.changebool(true);
                               Navigator.pushNamed(context, Routes.fundscreen,
                                   arguments: trancation);
@@ -155,7 +154,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                                 },
                               );
                               trancation.changebool(false);
-                              Navigator.pushNamed(context, Routes.withdrawscreen,
+                              Navigator.pushNamed(
+                                  context, Routes.withdrawscreen,
                                   arguments: trancation);
                             },
                             child: Text(

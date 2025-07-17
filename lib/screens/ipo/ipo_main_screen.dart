@@ -62,7 +62,7 @@ class _IPOmainScreenState extends State<IPOScreen> {
             child: Icon(
               Icons.arrow_back_ios_outlined,
               size: 18,
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              color: theme.isDarkMode ? colors.colorGrey : colors.colorBlack,
             ),
           ),
         ),

@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/screens/ipo/preclose_ipo/preclose_ipo_screen.dart';
+import 'package:mynt_plus/screens/ipo/IPO_order_screen/ipo_order_screen.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/thems.dart';
@@ -46,7 +47,7 @@ class MainSmeListCard extends StatelessWidget {
 
       final hasAnyData = openIpos.isNotEmpty ||
           preOpenIpos.isNotEmpty ||
-          (ipos.ipoPreClose?.msg.isNotEmpty ?? false);
+          (ipos.ipoPreClose?.msg?.isNotEmpty ?? false);
 
       if (!hasAnyData) {
         return Padding(
@@ -88,7 +89,7 @@ class MainSmeListCard extends StatelessWidget {
                     ),
                     _buildDivider(theme),
                   ],
-                  if (ipos.ipoPreClose!.msg.isNotEmpty) ...[
+                  if (ipos.ipoPreClose?.msg?.isNotEmpty == true) ...[
                     const ClosedIPOScreen(),
                   ],
                   const SizedBox(height: 24),
@@ -294,8 +295,8 @@ class _IPOListItem extends StatelessWidget {
   Widget _buildHeader(context) {
     final dateText = isPreOpen ? "Opens on" : "Closes on";
     final date = isPreOpen
-        ? _formatDate(ipo.biddingStartDate!)
-        : ipo.biddingEndDate!.substring(5, 11);
+        ? _formatDate(ipo.biddingStartDate ?? "")
+        : (ipo.biddingEndDate?.substring(5, 11) ?? "");
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -307,7 +308,7 @@ class _IPOListItem extends StatelessWidget {
               SizedBox(
                 width: 250,
                 child: TextWidget.subText(
-                  text: ipo.name,
+                  text: ipo.name ?? "",
                   theme: false,
                   fw: 0,
                   color: theme.isDarkMode
@@ -318,7 +319,7 @@ class _IPOListItem extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               TextWidget.paraText(
-                text: "${ipo.key} - $dateText $date",
+                text: "${ipo.key ?? ""} - $dateText $date",
                 theme: false,
                 fw: 0,
                 color: theme.isDarkMode
@@ -328,8 +329,10 @@ class _IPOListItem extends StatelessWidget {
             ],
           ),
         ),
-        if (!isPreOpen && ipo.totalsub != null && ipo.totalsub != '')
-          _buildSubscriptionInfo(context),
+        // if (!isPreOpen &&
+        //     ipo.totalsub != null &&
+        //     ipo.totalsub.toString().isNotEmpty)
+        _buildSubscriptionInfo(context),
       ],
     );
   }
@@ -360,10 +363,10 @@ class _IPOListItem extends StatelessWidget {
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              child: TextWidget.titleText(
+              child: TextWidget.subText(
                 text: isPreOpen ? 'Pre Apply' : 'Apply',
                 theme: false,
-                fw: 0,
+                fw: 3,
                 color:
                     theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
               ),
@@ -372,7 +375,7 @@ class _IPOListItem extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         TextWidget.paraText(
-          text: "${ipo.totalsub}x Sub",
+          text: "${ipo.totalsub?.toString() ?? ""}x Sub",
           theme: false,
           fw: 3,
           color: theme.isDarkMode
@@ -465,6 +468,10 @@ class _IPOListItem extends StatelessWidget {
 
   Future<void> _onIPOTap(BuildContext context) async {
     await ipoProvider.getIpoSinglePage(ipoName: "${ipo.name}");
+    if (isPreOpen) {
+      return;
+    }
+
     if (context.mounted) {
       showModalBottomSheet(
         isScrollControlled: true,
@@ -480,12 +487,12 @@ class _IPOListItem extends StatelessWidget {
           ),
           child: MainSmeSinglePage(
             pricerange:
-                "${double.parse(ipo.minPrice!).toInt()} - ${double.parse(ipo.maxPrice!).toInt()}",
+                "${double.parse(ipo.minPrice ?? "0").toInt()} - ${double.parse(ipo.maxPrice ?? "0").toInt()}",
             mininv:
-                "${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice!).toDouble(), int.parse(ipo.minBidQuantity!).toInt()).toInt())}",
-            enddate: "${ipo.biddingEndDate}",
-            startdate: "${ipo.biddingStartDate}",
-            ipotype: "${ipo.key}",
+                "${convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice ?? "0").toDouble(), int.parse(ipo.minBidQuantity ?? "0").toInt()).toInt())}",
+            enddate: "${ipo.biddingEndDate ?? ""}",
+            startdate: "${ipo.biddingStartDate ?? ""}",
+            ipotype: "${ipo.key ?? ""}",
             ipodetails: jsonEncode(ipo),
           ),
         ),
@@ -507,7 +514,7 @@ class _IPOListItem extends StatelessWidget {
       if (context.mounted) {
         Navigator.pushNamed(
           context,
-          Routes.smeapplyIPO,
+          Routes.applyIPO,
           arguments: ipo,
         );
       }

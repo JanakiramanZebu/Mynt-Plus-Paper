@@ -334,7 +334,8 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
                                               if (widget.positionList.qty !=
-                                                  "0") ...[
+                                                      "0" &&
+                                                  !positions.isDay) ...[
                                                 Expanded(
                                                   child: Container(
                                                     height: 40,
@@ -454,120 +455,124 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                 ),
                                                 const SizedBox(width: 12),
                                               ],
-                                              // if (widget.positionList.qty !=
-                                              //         "0" &&
-                                              //     !positions.isDay) ...[
-                                              Expanded(
-                                                child: Container(
-                                                  height: 40,
-                                                  decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                      color: theme.isDarkMode
-                                                          ? colors.colorGrey
-                                                          : const Color(
-                                                              0xff0037B7),
+                                              if (widget.positionList.qty !=
+                                                      "0" &&
+                                                  !positions.isDay) ...[
+                                                Expanded(
+                                                  child: Container(
+                                                    height: 40,
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                        color: theme.isDarkMode
+                                                            ? colors.colorGrey
+                                                            : const Color(
+                                                                0xff0037B7),
+                                                      ),
+                                                      color: const Color(
+                                                          0xffF1F3F8),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
                                                     ),
-                                                    color:
-                                                        const Color(0xffF1F3F8),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
-                                                  ),
-                                                  child: Material(
-                                                    color: Colors.transparent,
-                                                    shape:
-                                                        const BeveledRectangleBorder(),
-                                                    child: InkWell(
-                                                      customBorder:
+                                                    child: Material(
+                                                      color: Colors.transparent,
+                                                      shape:
                                                           const BeveledRectangleBorder(),
-                                                      splashColor: theme
-                                                              .isDarkMode
-                                                          ? colors
-                                                              .splashColorDark
-                                                          : colors
-                                                              .splashColorLight,
-                                                      highlightColor: theme
-                                                              .isDarkMode
-                                                          ? colors.highlightDark
-                                                          : colors
-                                                              .highlightLight,
-                                                      onTap: () async {
-                                                        await ref
-                                                            .read(
-                                                                marketWatchProvider)
-                                                            .fetchScripInfo(
-                                                              "${widget.positionList.token}",
-                                                              '${widget.positionList.exch}',
-                                                              context,
-                                                              true,
-                                                            );
-                                                        Navigator.pop(context);
-                                                        OrderScreenArgs
-                                                            orderArgs =
-                                                            OrderScreenArgs(
-                                                          exchange:
-                                                              '${widget.positionList.exch}',
-                                                          tSym:
-                                                              '${widget.positionList.tsym}',
-                                                          isExit: true,
-                                                          token:
-                                                              "${widget.positionList.token}",
-                                                          transType: int.parse(widget
-                                                                      .positionList
-                                                                      .netqty!) <
-                                                                  0
-                                                              ? true
-                                                              : false,
-                                                          prd:
-                                                              '${widget.positionList.prd}',
-                                                          lotSize: widget
-                                                              .positionList
-                                                              .netqty,
-                                                          ltp: widget
-                                                              .positionList.lp,
-                                                          perChange: widget
-                                                                  .positionList
-                                                                  .perChange ??
-                                                              "0.00",
-                                                          orderTpye: '',
-                                                          holdQty:
-                                                              '${widget.positionList.netqty}',
-                                                          isModify: false,
-                                                          raw: {},
-                                                        );
+                                                      child: InkWell(
+                                                        customBorder:
+                                                            const BeveledRectangleBorder(),
+                                                        splashColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .splashColorDark
+                                                            : colors
+                                                                .splashColorLight,
+                                                        highlightColor: theme
+                                                                .isDarkMode
+                                                            ? colors
+                                                                .highlightDark
+                                                            : colors
+                                                                .highlightLight,
+                                                        onTap: () async {
+                                                          await ref
+                                                              .read(
+                                                                  marketWatchProvider)
+                                                              .fetchScripInfo(
+                                                                "${widget.positionList.token}",
+                                                                '${widget.positionList.exch}',
+                                                                context,
+                                                                true,
+                                                              );
+                                                          Navigator.pop(
+                                                              context);
+                                                          OrderScreenArgs
+                                                              orderArgs =
+                                                              OrderScreenArgs(
+                                                            exchange:
+                                                                '${widget.positionList.exch}',
+                                                            tSym:
+                                                                '${widget.positionList.tsym}',
+                                                            isExit: true,
+                                                            token:
+                                                                "${widget.positionList.token}",
+                                                            transType: int.parse(widget
+                                                                        .positionList
+                                                                        .netqty!) <
+                                                                    0
+                                                                ? true
+                                                                : false,
+                                                            prd:
+                                                                '${widget.positionList.prd}',
+                                                            lotSize: widget
+                                                                .positionList
+                                                                .netqty,
+                                                            ltp: widget
+                                                                .positionList
+                                                                .lp,
+                                                            perChange: widget
+                                                                    .positionList
+                                                                    .perChange ??
+                                                                "0.00",
+                                                            orderTpye: '',
+                                                            holdQty:
+                                                                '${widget.positionList.netqty}',
+                                                            isModify: false,
+                                                            raw: {},
+                                                          );
 
-                                                        Navigator.pushNamed(
-                                                            context,
-                                                            Routes
-                                                                .placeOrderScreen,
-                                                            arguments: {
-                                                              "orderArg":
-                                                                  orderArgs,
-                                                              "scripInfo": ref
-                                                                  .read(
-                                                                      marketWatchProvider)
-                                                                  .scripInfoModel!,
-                                                              "isBskt": "",
-                                                            });
-                                                      },
-                                                      child: Center(
-                                                        child:
-                                                            TextWidget.subText(
-                                                          text: "Exit",
-                                                          theme: false,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .primaryDark
-                                                              : colors
-                                                                  .primaryLight,
-                                                          fw: 2,
+                                                          Navigator.pushNamed(
+                                                              context,
+                                                              Routes
+                                                                  .placeOrderScreen,
+                                                              arguments: {
+                                                                "orderArg":
+                                                                    orderArgs,
+                                                                "scripInfo": ref
+                                                                    .read(
+                                                                        marketWatchProvider)
+                                                                    .scripInfoModel!,
+                                                                "isBskt": "",
+                                                              });
+                                                        },
+                                                        child: Center(
+                                                          child: TextWidget
+                                                              .subText(
+                                                            text: "Exit",
+                                                            theme: false,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .primaryDark
+                                                                : colors
+                                                                    .primaryLight,
+                                                            fw: 2,
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
+                                              ],
                                             ],
                                             // ],
                                           ),
@@ -607,15 +612,18 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                     ? colors.highlightDark
                                                     : colors.highlightLight,
                                                 onTap: () {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return ConvertPositionDialogue(
-                                                          convertPosition: widget
-                                                              .positionList);
-                                                    },
-                                                  );
+                                                  if (widget.positionList.qty !=
+                                                      "0") {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext
+                                                          context) {
+                                                        return ConvertPositionDialogue(
+                                                            convertPosition: widget
+                                                                .positionList);
+                                                      },
+                                                    );
+                                                  }
                                                 },
                                                 child: Center(
                                                   child: Row(
@@ -635,7 +643,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                       TextWidget.subText(
                                                         text:
                                                             "Convert Position",
-                                                        fw: 2,
+                                                        // fw: 2,
                                                         color:
                                                             colors.primaryLight,
                                                         theme: false,
