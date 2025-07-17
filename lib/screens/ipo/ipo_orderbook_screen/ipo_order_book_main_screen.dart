@@ -58,11 +58,48 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (ipo.openorder!.isNotEmpty) ...[
-            _buildSectionHeader("Open Orders", theme),
+            Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: theme.isDarkMode ? colors.btnBg : colors.btnBg,
+                  border: Border(
+                    top: BorderSide(
+                      color: theme.isDarkMode
+                          ? colors.dividerDark
+                          : colors.dividerLight,
+                    ),
+                    bottom: BorderSide(
+                      color: theme.isDarkMode
+                          ? colors.dividerDark
+                          : colors.dividerLight,
+                    ),
+                  ),
+                ),
+                child: _buildSectionHeader("Open Orders", theme)),
             const IpoOpenOrder(),
           ],
           if (ipo.closeorder!.isNotEmpty) ...[
-            _buildSectionHeader("Closed Orders", theme),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: theme.isDarkMode ? colors.btnBg : colors.btnBg,
+                border: Border(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.dividerDark
+                        : colors.dividerLight,
+                  ),
+                  bottom: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.dividerDark
+                        : colors.dividerLight,
+                  ),
+                ),
+              ),
+              child: _buildSectionHeader("Closed Orders", theme),
+            ),
             const IpoCloseOrder(),
           ],
         ],

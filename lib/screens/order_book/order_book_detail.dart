@@ -373,7 +373,7 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                                                             width: 6),
                                                         TextWidget.subText(
                                                           text: "Order History",
-                                                          fw: 0,
+                                                          // fw: 0,
                                                           color: theme
                                                                   .isDarkMode
                                                               ? colors

@@ -174,7 +174,7 @@ class QrDetails extends ConsumerWidget {
                       color: theme.isDarkMode
                           ? colors.colorBlack
                           : colors.colorWhite,
-                      fw: 0,
+                      fw: 2,
                     ),
                   ),
                 ),

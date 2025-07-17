@@ -75,7 +75,6 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
           ),
           Divider(
             height: 1,
-            thickness: 1,
             color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           ),
           Expanded(

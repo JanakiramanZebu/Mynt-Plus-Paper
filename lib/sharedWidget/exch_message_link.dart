@@ -1,44 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:readmore/readmore.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../provider/thems.dart';
+import '../res/global_state_text.dart';
 import '../res/res.dart';
 
 class LinkExtractor extends StatelessWidget {
   final String text;
   final ThemesProvider theme;
   const LinkExtractor({super.key, required this.text, required this.theme});
-
   @override
   Widget build(BuildContext context) {
     return _buildFormattedText(text);
   }
 
   Widget _buildFormattedText(String text) {
-    // Simple regex to match HTML anchor tags
     final htmlLinkRegex =
         RegExp(r'<a href="([^"]+)">([^<]+)</a>', caseSensitive: false);
-    // Simple regex to match URLs
     final urlRegex = RegExp(r'https?://[^\s]+', caseSensitive: false);
-
     final htmlMatches = htmlLinkRegex.allMatches(text);
     final urlMatches = urlRegex.allMatches(text);
-
     if (htmlMatches.isEmpty && urlMatches.isEmpty) {
-      // No links found, return simple ReadMoreText
       return ReadMoreText(
         text,
-        style: textStyles.notificationtextstyle.copyWith(
-          color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        // textAlign: TextAlign.justify,
+        style: TextWidget.textStyle(
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
+          fontSize: 14,
+          height: 1.5,
         ),
-        textAlign: TextAlign.left,
-        trimLines: 2,
-        moreStyle: textStyles.morestyle.copyWith(
+        trimLines: 3,
+        moreStyle: TextWidget.textStyle(
+          theme: theme.isDarkMode,
           color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+          fontSize: 14,
         ),
-        lessStyle: textStyles.morestyle.copyWith(
+        lessStyle: TextWidget.textStyle(
+          theme: theme.isDarkMode,
           color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+          fontSize: 14,
         ),
         colorClickableText:
             theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
@@ -47,8 +50,6 @@ class LinkExtractor extends StatelessWidget {
         trimExpandedText: 'Read less',
       );
     }
-
-    // Process text with links
     return _buildTextWithLinks(text, htmlMatches, urlMatches);
   }
 
@@ -56,10 +57,7 @@ class LinkExtractor extends StatelessWidget {
       Iterable<RegExpMatch> urlMatches) {
     List<Widget> widgets = [];
     int lastIndex = 0;
-
-    // Combine and sort all matches by their start position
     List<MapEntry<int, Map<String, dynamic>>> allMatches = [];
-
     for (final match in htmlMatches) {
       allMatches.add(MapEntry(match.start, {
         'type': 'html',
@@ -67,7 +65,6 @@ class LinkExtractor extends StatelessWidget {
         'end': match.end,
       }));
     }
-
     for (final match in urlMatches) {
       allMatches.add(MapEntry(match.start, {
         'type': 'url',
@@ -75,14 +72,10 @@ class LinkExtractor extends StatelessWidget {
         'end': match.end,
       }));
     }
-
     allMatches.sort((a, b) => a.key.compareTo(b.key));
-
     for (final entry in allMatches) {
       final match = entry.value['match'] as RegExpMatch;
       final matchType = entry.value['type'] as String;
-
-      // Add text before the link
       if (match.start > lastIndex) {
         final beforeText = text.substring(lastIndex, match.start);
         if (beforeText.isNotEmpty) {
@@ -111,11 +104,8 @@ class LinkExtractor extends StatelessWidget {
           );
         }
       }
-
-      // Add the link
       String? url;
       String linkText;
-
       if (matchType == 'html') {
         url = match.group(1);
         linkText = match.group(2) ?? '';
@@ -123,17 +113,13 @@ class LinkExtractor extends StatelessWidget {
         url = match.group(0);
         linkText = url ?? '';
       }
-
       if (url != null) {
         widgets.add(
           _buildClickableLink(url, linkText),
         );
       }
-
       lastIndex = match.end;
     }
-
-    // Add remaining text after the last link
     if (lastIndex < text.length) {
       final remainingText = text.substring(lastIndex);
       if (remainingText.isNotEmpty) {
@@ -162,7 +148,6 @@ class LinkExtractor extends StatelessWidget {
         );
       }
     }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: widgets,
@@ -179,13 +164,11 @@ class LinkExtractor extends StatelessWidget {
             if (await canLaunchUrl(uri)) {
               await launchUrl(uri, mode: LaunchMode.externalApplication);
             } else {
-              // Fallback for older url_launcher versions
               if (await canLaunch(url)) {
                 await launch(url);
               }
             }
           } catch (e) {
-            // Handle invalid URLs silently or show a snackbar
             debugPrint('Error launching URL: $e');
           }
         },
