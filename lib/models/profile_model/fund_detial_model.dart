@@ -50,6 +50,7 @@ class FundDetailModel {
   String? rpnl;
   String? utilizedMrgn;
   String? pendordval;
+  String? collateral;
 
   FundDetailModel(
       {this.prfname,
@@ -102,7 +103,8 @@ class FundDetailModel {
       this.mrgprt,
       this.rpnl,
       this.utilizedMrgn,
-      this.pendordval});
+      this.pendordval,
+      this.collateral});
 
   FundDetailModel.fromJson(Map<String, dynamic> json) {
     prfname = json['prfname'];
@@ -155,6 +157,7 @@ class FundDetailModel {
     rpnl = json['rpnl'];
     utilizedMrgn = json['utilizedMrgn'];
     pendordval = json['pendordval'];
+    collateral = json['collateral'];
   }
 
   Map<String, dynamic> toJson() {
@@ -209,6 +212,7 @@ class FundDetailModel {
     data['rpnl'] = rpnl;
     data['utilizedMrgn'] = utilizedMrgn;
     data['pendordval'] = pendordval;
+    data['collateral'] = collateral;
     return data;
   }
 }
