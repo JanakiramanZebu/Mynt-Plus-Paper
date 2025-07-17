@@ -616,7 +616,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             element.exchTsym![0].expDate = "${spilitSymbol["expDate"]}";
             element.exchTsym![0].option = "${spilitSymbol["option"]}";
             int qty = (int.parse("${element.npoadqty ?? 0}") +
-                    int.parse("${element.brkcolqty ?? 0}") +
+                    // int.parse("${element.brkcolqty ?? 0}") +
                     int.parse("${element.npoadt1qty ?? 0}") +
                     int.parse("${element.holdqty ?? 0}") +
                     int.parse("${element.btstqty ?? 0}")) -
