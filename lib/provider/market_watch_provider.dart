@@ -309,7 +309,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _resetSortPreference();
     _setupWebSocketListener();
     // Load saved page index
-    _loadCurrentPageIndex();
+    // _loadCurrentPageIndex();
 
     // Listen to WebSocket data updates using a proper subscription
     _setupWebSocketListener();
