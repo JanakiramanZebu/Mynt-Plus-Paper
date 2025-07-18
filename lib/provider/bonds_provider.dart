@@ -404,11 +404,10 @@ class BondsProvider extends DefaultChangeNotifier {
           _bondOrderResponcesModel!.status == "success"
               ? successMessage(
                   context, _bondOrderResponcesModel!.orderStatusResponse!)
-              : error(context, _bondOrderResponcesModel!.reason!));
-
-      Navigator.pop(context);
-      Navigator.pushNamed(context, Routes.bondsorderbook);
-      // return _ipoOrderResponcesModel;
+              : error(context, _bondOrderResponcesModel!.reason!));      
+        Navigator.pop(context); 
+        Navigator.pushReplacementNamed(context, Routes.bonds, arguments: 1);
+      
     } catch (e) {
       print("bonds placeorder error:: $e");
     } finally {

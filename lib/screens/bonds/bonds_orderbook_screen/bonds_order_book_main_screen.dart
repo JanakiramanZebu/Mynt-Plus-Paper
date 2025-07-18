@@ -6,6 +6,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/screens/bonds/bonds_loader/logo_loader.dart';
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
 import 'bonds_order_book_tab/close_bonds_tab.dart';
@@ -19,7 +20,8 @@ class BondsOrderbookMainScreen extends ConsumerStatefulWidget {
       _BondsOrderbookMainScreenState();
 }
 
-class _BondsOrderbookMainScreenState extends ConsumerState<BondsOrderbookMainScreen> {
+class _BondsOrderbookMainScreenState
+    extends ConsumerState<BondsOrderbookMainScreen> {
   @override
   void initState() {
     super.initState();
@@ -45,8 +47,10 @@ class _BondsOrderbookMainScreenState extends ConsumerState<BondsOrderbookMainScr
     });
   }
 
-  Widget _buildContent(BondsProvider bonds, ThemesProvider theme, double devHeight) {
-    final bool isEmpty = (bonds.openOrderBook?.isEmpty ?? true) && (bonds.closeOrderBook?.isEmpty ?? true);
+  Widget _buildContent(
+      BondsProvider bonds, ThemesProvider theme, double devHeight) {
+    final bool isEmpty = (bonds.openOrderBook?.isEmpty ?? true) &&
+        (bonds.closeOrderBook?.isEmpty ?? true);
 
     if (isEmpty) {
       return _buildEmptyState(devHeight);
@@ -56,18 +60,10 @@ class _BondsOrderbookMainScreenState extends ConsumerState<BondsOrderbookMainScr
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (bonds.openOrderBook != null && bonds.openOrderBook!.isNotEmpty) 
-            _buildOrderSection(
-              "Open Orders", 
-              const BondsOpenOrder(), 
-              theme
-            ),
-          if (bonds.closeOrderBook != null && bonds.closeOrderBook!.isNotEmpty) 
-            _buildOrderSection(
-              "Closed Orders", 
-              const BondsCloseOrder(), 
-              theme
-            ),
+          if (bonds.openOrderBook != null && bonds.openOrderBook!.isNotEmpty)
+            _buildOrderSection("Open Orders", const BondsOpenOrder(), theme),
+          if (bonds.closeOrderBook != null && bonds.closeOrderBook!.isNotEmpty)
+            _buildOrderSection("Closed Orders", const BondsCloseOrder(), theme),
         ],
       ),
     );
@@ -89,29 +85,25 @@ class _BondsOrderbookMainScreenState extends ConsumerState<BondsOrderbookMainScr
     );
   }
 
-  Widget _buildOrderSection(String title, Widget orderWidget, ThemesProvider theme) {
+  Widget _buildOrderSection(
+      String title, Widget orderWidget, ThemesProvider theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-          child: Text(
-            title,
-            style: textStyle(
-              theme.isDarkMode
-                ? colors.colorWhite.withOpacity(0.3)
-                : colors.colorBlack.withOpacity(0.3),
-              16,
-              FontWeight.w600
-            ),
+          child: TextWidget.subText(
+            text: title,
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            fw: 0,
           ),
         ),
         orderWidget,
         Divider(
           height: 0,
-          color: theme.isDarkMode
-            ? colors.darkColorDivider
-            : colors.colorDivider,
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
         ),
       ],
     );

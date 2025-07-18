@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../res/global_state_text.dart';
+import '../res/res.dart';
 import 'functions.dart';
 
 class IpoErrorBadge extends StatelessWidget {
@@ -8,28 +10,25 @@ class IpoErrorBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      width: MediaQuery.of(context).size.width,
-      decoration: BoxDecoration(
-          color: const Color(0xfffff3e0),
-          borderRadius: BorderRadius.circular(30)),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.info_outline_rounded,
-            color: Color(0xfffb8c00),
-            size: 20,
+    return Row(
+      children: [
+        //  Icon(
+        //         Icons.info_outline_rounded,
+        //         color: Color(0xfffb8c00),
+        //         size: 20,
+        //       ),
+        //       const SizedBox(
+        //         width: 10,
+        //       ),
+        Expanded(
+          child: TextWidget.captionText(
+            text: errorName,
+            theme: false,
+            color: colors.error,
+            fw: 500,
           ),
-          const SizedBox(
-            width: 10,
-          ),
-          Expanded(
-            child: Text(errorName,
-                style: textStyle(const Color(0xfffb8c00), 13, FontWeight.w500)),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

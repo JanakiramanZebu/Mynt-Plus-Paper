@@ -13,10 +13,12 @@ import 'package:mynt_plus/screens/bonds/live_bonds/treasury_bonds.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/loader_ui.dart';
+import '../../../res/global_state_text.dart';
 
 class BondsExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider theme;
-  const BondsExploreScreens({super.key, required this.theme});
+  final int? initialTabIndex;
+  const BondsExploreScreens({super.key, required this.theme, this.initialTabIndex});
 
   @override
   ConsumerState<BondsExploreScreens> createState() => _ExploreScreensState();
@@ -66,7 +68,7 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
   void initState() {
     super.initState();
     // _tabController = TabController(length: tablistitems.length, vsync: this, initialIndex: 0);
-  _allBondsTabController = TabController(length: 2, vsync: this, initialIndex: 0) ;
+  _allBondsTabController = TabController(length: 2, vsync: this, initialIndex: widget.initialTabIndex ?? 0) ;
 
    _allBondsTabController.animation!.addListener(() {
     final newIndex = _allBondsTabController.animation!.value.round();
@@ -88,12 +90,10 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
 
   @override
   Widget build(BuildContext context) {
-   
     return Consumer(
       builder: (context, ref, child) {
         final explore = ref.watch(authProvider);
         final bonds = ref.watch(bondsProvider);
-
         final theme = ref.read(themeProvider);
         //  List<Map<String, Object>> tablistitems = btablistitems;
         return TransparentLoaderScreen(
@@ -101,49 +101,58 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // const CustomDragHandler(),
+              
               Container(
                 width: MediaQuery.of(context).size.width,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
                 decoration: BoxDecoration(
-                    border: Border(
-                        // top: BorderSide(
-                        //     color: widget.theme.isDarkMode
-                        //         ? colors.darkColorDivider
-                        //         : colors.colorDivider,
-                        //     width: 0),
-                        bottom: BorderSide(
-                            color: widget.theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
-                            width: 0))),
-                // height: 60,
-                child: TabBar(
-               labelPadding: const EdgeInsets.only(right: 8),
-                  tabAlignment: TabAlignment.start,
-                 indicatorColor: const Color.fromARGB(255, 255, 255, 255),
-                  controller: _allBondsTabController,
-                  isScrollable: true,
-                  tabs: List.generate(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: widget.theme.isDarkMode
+                          ? colors.darkColorDivider
+                          : colors.colorDivider,
+                      width: 0,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: List.generate(
                     tablistitems.length,
-                    (tab) => tabConstruce(
-                        // tablistitems[tab]['imgpath'].toString(),
-                        tablistitems[tab]['title'].toString(),
-                        theme,                       
-                        tab,
-                        () {}),
+                    (tab) => Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        // borderRadius: BorderRadius.circular(6),
+                        splashColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black.withOpacity(0.05),
+                        highlightColor: theme.isDarkMode
+                            ? Colors.white.withOpacity(0.01)
+                            : Colors.black.withOpacity(0.01),
+                        onTap: () {
+                          setState(() {
+                            selectedTab = tab;
+                          });
+                          _allBondsTabController.animateTo(tab);
+                        },
+                        child: tabConstruce(
+                          tablistitems[tab]['title'].toString(),
+                          theme,
+                          tab,
+                          () {},
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
               Expanded(
                 child: TabBarView(
-                  // physics: const NeverScrollableScrollPhysics(),
                   controller: _allBondsTabController,
-                  // children: List.generate(tablistitems.length,(tab) => const BondsListScreen())
-                   children: const [
-                   BondsListScreen(),
+                  children: const [
+                    BondsListScreen(),
                     BondsOrderbookMainScreen()
-                  ],   
+                  ],
                 ),
               ),
             ],
@@ -153,58 +162,45 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
     );
   }
 
-  Widget tabConstruce( String title, ThemesProvider theme, int tab,
-      VoidCallback onPressed) {
-    return ValueListenableBuilder(
-       valueListenable: _allBondsTabController.animation!,
-       builder: (context, value, child) {
-        final isActive = value.round() == tab; 
-        return ElevatedButton(
-          onPressed: () {
-          _allBondsTabController.animateTo(tab);
-          },
-          style: ElevatedButton.styleFrom(
-              elevation: 0,
-             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-              backgroundColor: theme.isDarkMode
-              ? isActive
-                  ? colors.colorbluegrey
-                  : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
-              : isActive
-                  ? const Color(0xff000000)
-                  : const Color.fromARGB(255, 255, 255, 255),
-               shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18), 
-        side: const BorderSide( 
-          color: Colors.black, 
-          width: 1, 
+  Widget tabConstruce(String title, ThemesProvider theme, int tab, VoidCallback onPressed) {
+    final isActive = selectedTab == tab;
+   
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 100,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: TextWidget.subText(
+            text: title,
+            color: isActive
+                ? theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight
+                : colors.textSecondaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            theme: theme.isDarkMode,
+            fw: isActive ? 2 : null,
+          ),
         ),
-      ),
-      
-        minimumSize: const Size(0, 30),
-      
-      
-      ),
-      
-          child: Text(title,
-              style: textStyle(
-            theme.isDarkMode
-                ? Color(isActive ? 0xff000000 : 0xffffffff)
-                : Color(isActive ? 0xffffffff : 0xff000000),
-            14,
-            FontWeight.w500,
-          ),));
-       },
-      
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          height: 2,
+          width: isActive ? 82 : 0, 
+          margin: const EdgeInsets.only(top: 1),
+          decoration: BoxDecoration(
+            color: colors.colorBlue,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      ],
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
-  }
-  
+
 }
 
 

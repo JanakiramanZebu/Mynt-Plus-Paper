@@ -6,10 +6,13 @@ import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/screens/bonds/bonds_explore_screens.dart';
 import '../../../res/res.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../routes/route_names.dart';
+import '../../sharedWidget/custom_back_btn.dart';
 
 class BondsScreen extends ConsumerStatefulWidget {
-  const BondsScreen({super.key});
+  final int? initialTabIndex;
+  const BondsScreen({super.key, this.initialTabIndex});
 
   @override
   ConsumerState<BondsScreen> createState() => _BondsmainScreenState();
@@ -21,11 +24,21 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
   static const double _searchBarHeight = 45.0;
   static const double _searchBarBorderRadius = 25.0;
   static const double _searchBarFontSize = 14.0;
+  
+  int? initialTabIndex;
 
   @override
   void initState() {
     super.initState();
+    
+    // Check for navigation arguments
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args != null && args is int) {
+        setState(() {
+          initialTabIndex = args;
+        });
+      }
       ref.read(bondsProvider).fetchAllBonds();
     });
   }
@@ -35,13 +48,79 @@ class _BondsmainScreenState extends ConsumerState<BondsScreen> {
     final theme = ref.watch(themeProvider);
 
     return Scaffold(
-      // appBar: _buildAppBar(context, theme),
-      body: BondsExploreScreens(theme: theme),
+      appBar: _buildAppBar(context, theme),
+      body: BondsExploreScreens(theme: theme, initialTabIndex: initialTabIndex),
     );
   }
 }
 
-
+ AppBar _buildAppBar(BuildContext context, ThemesProvider theme) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      elevation: 0,
+      leadingWidth: 48,
+      centerTitle: false,
+      titleSpacing: 0,
+      leading: const CustomBackBtn(),
+      title: _buildSearchBar(context, theme),
+    );
+  }
+  
+  // Widget _buildBackButton(BuildContext context, ThemesProvider theme) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(horizontal: 8),
+  //     child: InkWell(
+  //       onTap: () => Navigator.pop(context),
+  //       child: Icon(
+  //         Icons.arrow_back_ios,
+  //         color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+  //         size: 18,
+  //       ),
+  //     ),
+  //   );
+  // }
+  
+  Widget _buildSearchBar(BuildContext context, ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 24),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                FocusScope.of(context).requestFocus(FocusNode());
+                Navigator.pushNamed(context, Routes.bondssearchScreen);
+              },
+              child: Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colors.searchBg,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 12),
+                    SvgPicture.asset(
+                      assets.searchIcon,
+                      width: 18,
+                      height: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    TextWidget.subText(
+                      text: "Search Bonds",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
 
 
