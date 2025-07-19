@@ -25,6 +25,7 @@ import '../screens/desk_reports/ca_event_main_page.dart';
 import '../screens/desk_reports/calendarpnl_heatmap/headmap_calendar.dart';
 import '../screens/desk_reports/calenderPnl_screen.dart';
 import '../screens/desk_reports/cdsl_pledge.dart';
+import '../screens/desk_reports/contract_calendar_screen.dart';
 import '../screens/desk_reports/cp_action_main_page.dart';
 import '../screens/desk_reports/equity_taxpnl_screen.dart';
 import '../screens/desk_reports/holding_screen.dart';
@@ -535,6 +536,12 @@ class AppRoutes {
       case Routes.pdfdownload:
         return _createRoute(
           pageBuilder: (_, __, ___) => PdfDownload(ddd: args),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
+      case Routes.contractCalendar:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const ContractCalendarScreen(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 

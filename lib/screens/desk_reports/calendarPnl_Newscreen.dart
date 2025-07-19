@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -15,45 +14,17 @@ import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_switch_btn.dart';
-import '../../sharedWidget/custom_text_form_field.dart';
 import '../../sharedWidget/snack_bar.dart';
-import '../../utils/no_emoji_inputformatter.dart';
 import 'bottom_sheets/sharing_screen.dart';
 
-class CalenderpnlScreen extends ConsumerStatefulWidget {
+class CalenderpnlScreen extends StatefulWidget {
   const CalenderpnlScreen({super.key});
 
   @override
-  ConsumerState<CalenderpnlScreen> createState() => _CalenderpnlScreenState();
+  State<CalenderpnlScreen> createState() => _CalenderpnlScreenState();
 }
 
-class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
-  int activeTab = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    _tabController.animation!.addListener(_onTabChanged);
-  }
-
-  void _onTabChanged() {
-    final newIndex = _tabController.animation!.value.round();
-    if (activeTab != newIndex) {
-      setState(() {
-        activeTab = newIndex;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
+class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -94,11 +65,10 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                 Navigator.pop(context);
               },
               child: const CustomBackBtn()),
-          elevation: 0,
-          title: TextWidget.titleText(
+          elevation: 0.2,
+          title: TextWidget.heroText(
               text: "P&L Insights",
               textOverflow: TextOverflow.ellipsis,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
               theme: theme.isDarkMode,
               fw: 1),
         ),
@@ -551,207 +521,60 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                       ledgerprovider.formattedStartDate,
                                       ledgerprovider.formattedendDate,
                                       ledgerprovider.selectedSegment,
-                                      context,
-                                    );
-                                    ledgerprovider
-                                        .changeormountedsharing("change");
-                                    ledgerprovider.fetchcalenderpnldata(
-                                      context,
-                                      ledgerprovider.formattedStartDate,
-                                      ledgerprovider.formattedendDate,
-                                      ledgerprovider.selectedSegment,
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                            Column(
-                              children: [
-                                // ledgerprovider.calenderpnlAllData?.data == null
-                                //     ? SizedBox()
-                                //     : Padding(
-                                //         padding: const EdgeInsets.only(
-                                //             left: 16.0, right: 4.0, top: 8.0),
-                                //         child: Row(
-                                //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                //           children: [
-                                //             Row(
-                                //               children: [
-                                //                 TextWidget.subText(
-                                //                     text: "Your trade is verified by ZEBU",
-                                //                     textOverflow: TextOverflow.ellipsis,
-                                //                     theme: theme.isDarkMode,
-                                //                     fw: 1),
-                                //                 IconButton(
-                                //                   iconSize: 20,
-                                //                   icon: const Icon(Icons.check_circle,
-                                //                       color: Colors.green),
-                                //                   onPressed: () => {},
-                                //                 ),
-                                //               ],
-                                //             ),
-                                //             Row(
-                                //               children: [
-                                //                 Padding(
-                                //                   padding: const EdgeInsets.only(
-                                //                       top: 8.0, bottom: 8.0),
-                                //                   child: Row(
-                                //                     mainAxisAlignment:
-                                //                         MainAxisAlignment.center,
-                                //                     children: [
-                                //                       CustomSwitch(
-                                //                           onChanged: (bool value) {
-                                //                             print(
-                                //                                 'object ${ledgerprovider.notsharing}');
-                                //                             ledgerprovider
-                                //                                 .sharingornotsharing(value);
-                                //                             if (value == false &&
-                                //                                 ledgerprovider.ucode ==
-                                //                                     '') {
-                                //                               ledgerprovider.sendsharing(
-                                //                                   "",
-                                //                                   ledgerprovider
-                                //                                               .changeornot ==
-                                //                                           'change'
-                                //                                       ? ledgerprovider
-                                //                                           .formattedStartDate
-                                //                                       : ledgerprovider
-                                //                                           .startDate,
-                                //                                   ledgerprovider
-                                //                                               .changeornot ==
-                                //                                           'change'
-                                //                                       ? ledgerprovider
-                                //                                           .formattedendDate
-                                //                                       : ledgerprovider
-                                //                                           .today,
-                                //                                   ledgerprovider
-                                //                                       .calenderpnlAllData!
-                                //                                       .fullresponse!,
-                                //                                   ledgerprovider.notsharing,
-                                //                                   ledgerprovider
-                                //                                       .selectedSegment,
-                                //                                   context);
-                                //                             } else {
-                                //                               ledgerprovider.sendsharing(
-                                //                                   ledgerprovider.ucode,
-                                //                                   "",
-                                //                                   "",
-                                //                                   "",
-                                //                                   ledgerprovider.notsharing,
-                                //                                   "",
-                                //                                   context);
-                                //                             }
-                                //                           },
-                                //                           color: theme.isDarkMode
-                                //                               ? const Color(0xffB5C0CF)
-                                //                                   .withOpacity(.15)
-                                //                               : const Color(0xffF1F3F8),
-                                //                           value: ledgerprovider.notsharing),
-                                //                       const SizedBox(width: 6),
-                                //                     ],
-                                //                   ),
-                                //                 ),
-                                //                 IconButton(
-                                //                   iconSize: 20,
-                                //                   icon: Icon(Icons.share_outlined,
-                                //                       color:
-                                //                           ledgerprovider.notsharing == false
-                                //                               ? Colors.black
-                                //                               : Colors.grey),
-                                //                   onPressed: () => {
-                                //                     if (ledgerprovider.notsharing == false)
-                                //                       {
-                                //                         _showBottomSheetSharing(
-                                //                             context, SharingScreen())
-                                //                       }
-                                //                     else
-                                //                       {
-                                //                         ScaffoldMessenger.of(context)
-                                //                             .showSnackBar(
-                                //                           warningMessage(
-                                //                               context, 'Sharing is not on'),
-                                //                         )
-                                //                       }
-                                //                   },
-                                //                 ),
-                                //               ],
-                                //             ),
-                                //           ],
-                                //         ),
-                                //       ),
+                                      context);
+                                  ledgerprovider
+                                      .changeormountedsharing("change");
 
-                                TextWidget.subText(
-                                    text: ledgerprovider.selectedFinancialYear,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    fw: 3),
-                                const SizedBox(height: 4),
-                                TextWidget.subText(
-                                    text: "Realised P&L",
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    fw: 3),
-                                const SizedBox(height: 4),
-                                TextWidget.headText(
-                                    text:
-                                        "${ledgerprovider.calenderpnlAllData != null ? ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2) : 0.0} ",
-                                    color: ledgerprovider.calenderpnlAllData !=
-                                            null
-                                        ? ledgerprovider.calenderpnlAllData!
-                                                    .realized !=
-                                                0
-                                            ? ledgerprovider.calenderpnlAllData!
-                                                        .realized <
-                                                    0
-                                                ? theme.isDarkMode
-                                                    ? colors.lossDark
-                                                    : colors.lossLight
-                                                : theme.isDarkMode
-                                                    ? colors.profitDark
-                                                    : colors.profitLight
-                                            : theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight
-                                        : theme.isDarkMode
-                                            ? colors.textSecondaryDark
-                                            : colors.textSecondaryLight,
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    fw: 0),
-                              ],
+                                  ledgerprovider.fetchcalenderpnldata(
+                                    context,
+                                    ledgerprovider.formattedStartDate,
+                                    ledgerprovider.formattedendDate,
+                                    ledgerprovider.selectedSegment,
+                                  );
+                                }
+                              },
                             ),
-                            Material(
-                              color: Colors.transparent,
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                splashColor: theme.isDarkMode
-                                    ? colors.splashColorDark
-                                    : colors.splashColorLight,
-                                highlightColor: theme.isDarkMode
-                                    ? colors.highlightDark
-                                    : colors.highlightLight,
-                                customBorder: const CircleBorder(),
-                                child: Icon(Icons.chevron_right,
-                                    size: 40,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight),
-                                onTap: () {
-                                  final index = ledgerprovider
-                                      .availableFinancialYears
-                                      .indexOf(
-                                          ledgerprovider.selectedFinancialYear);
-                                  if (index > 0) {
-                                    final newFY = ledgerprovider
-                                        .availableFinancialYears[index - 1];
-                                    ledgerprovider.setFinancialYear(newFY);
-                                    ledgerprovider.fetchsharingdata(
+                          ),
+                        ),
+                        Container(
+                          height: 35.0,
+                          // width: screenWidth * 0.45,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? const Color(0xff3A3A3A)
+                                : const Color(0xffF1F3F8),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: ledgerprovider.selectedSegment,
+                              dropdownColor: theme.isDarkMode
+                                  ? const Color(0xff3A3A3A)
+                                  : const Color(0xffF1F3F8),
+                              items:
+                                  ledgerprovider.availableSegments.map((seg) {
+                                return DropdownMenuItem<String>(
+                                  value: seg,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 4.0),
+                                    child: Text(
+                                      seg,
+                                      style: textStyle(
+                                        theme.isDarkMode
+                                            ? Colors.white
+                                            : Colors.black,
+                                        12,
+                                        FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (seg) {
+                                if (seg != null) {
+                                  ledgerprovider.setSegment(seg);
+                                  ledgerprovider.fetchsharingdata(
                                       ledgerprovider.formattedStartDate,
                                       ledgerprovider.formattedendDate,
                                       ledgerprovider.selectedSegment,
@@ -857,8 +680,6 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                         : const Color(0xffF1F3F8),
                                     thickness: 1.0,
                                   ),
-
-                                  // data-change
                                   Padding(
                                       padding: const EdgeInsets.only(
                                           left: 16.0, top: 8.0, bottom: 8.0),
@@ -900,35 +721,25 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                         double.parse(
                                                             item.realisedpnl!));
 
-                                              // Format the date (e.g. "03 Oct 2024")
-                                              final dateString =
-                                                  '${dateKey.day.toString().padLeft(2, '0')} '
-                                                  '${_monthName(dateKey.month)} '
-                                                  '${dateKey.year}';
-
-                                              // Get the first trade symbol for display (or use a default)
-                                              final firstTrade = tradesForDate
-                                                      .isNotEmpty
-                                                  ? ((tradesForDate.first
-                                                                  .sCRIPNAME
-                                                                  ?.trim()
-                                                                  .isEmpty ??
-                                                              true) ||
-                                                          tradesForDate
-                                                              .first.sCRIPNAME!
-                                                              .contains("0")
-                                                      ? tradesForDate.first
-                                                              .sCRIPSYMBOL ??
-                                                          "N/A"
-                                                      : tradesForDate
-                                                          .first.sCRIPNAME!)
-                                                  : "N/A";
-
-                                              return Theme(
-                                                  data: Theme.of(context)
-                                                      .copyWith(
-                                                          dividerColor: Colors
-                                                              .transparent),
+                                            // Format the date (e.g. "03 Oct 2024")
+                                            final dateString =
+                                                '${dateKey.day.toString().padLeft(2, '0')} '
+                                                '${_monthName(dateKey.month)} '
+                                                '${dateKey.year}';
+                                            return Theme(
+                                                data: Theme.of(context)
+                                                    .copyWith(
+                                                        dividerColor:
+                                                            Colors.transparent),
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    _showBottomSheet(
+                                                        context,
+                                                        tradesForDate,
+                                                        theme,
+                                                        dateString,
+                                                        screenWidth);
+                                                  },
                                                   child: Padding(
                                                     padding: const EdgeInsets
                                                         .symmetric(
@@ -939,57 +750,41 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                           MainAxisAlignment
                                                               .spaceBetween,
                                                       children: [
-                                                        SizedBox(
-                                                          width:
-                                                              screenWidth * 0.7,
-                                                          child: TextWidget.subText(
-                                                              text:
-                                                                  "$firstTrade $dateString",
-                                                              color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .textPrimaryDark
-                                                                  : colors
-                                                                      .textPrimaryLight,
-                                                              textOverflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              theme: theme
-                                                                  .isDarkMode,
-                                                              fw: 0),
-                                                        ),
-                                                        TextWidget.titleText(
+                                                        TextWidget.subText(
                                                             text:
-                                                                "${(totalRealisedPnl).toStringAsFixed(2)} ",
+                                                                "${dateString} (${tradesForDate.length})",
+                                                            color: theme.isDarkMode
+                                                                ? colors
+                                                                    .colorWhite
+                                                                : colors
+                                                                    .colorBlack,
+                                                            textOverflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            theme: theme
+                                                                .isDarkMode,
+                                                            fw: 0),
+                                                        TextWidget.subText(
+                                                            text:
+                                                                "₹${(totalRealisedPnl).toStringAsFixed(2)} ",
                                                             color: totalRealisedPnl !=
                                                                     0
                                                                 ? totalRealisedPnl >
                                                                         0
-                                                                    ? theme
-                                                                            .isDarkMode
-                                                                        ? colors
-                                                                            .profitDark
-                                                                        : colors
-                                                                            .profitLight
+                                                                    ? Colors
+                                                                        .green
                                                                     : totalRealisedPnl <
                                                                             0
-                                                                        ? theme
-                                                                                .isDarkMode
-                                                                            ? colors
-                                                                                .lossDark
-                                                                            : colors
-                                                                                .lossLight
-                                                                        : theme
-                                                                                .isDarkMode
-                                                                            ? colors
-                                                                                .textSecondaryDark
-                                                                            : colors
-                                                                                .textSecondaryLight
+                                                                        ? Colors
+                                                                            .red
+                                                                        : Colors
+                                                                            .black
                                                                 : theme
                                                                         .isDarkMode
                                                                     ? colors
-                                                                        .textPrimaryDark
+                                                                        .colorWhite
                                                                     : colors
-                                                                        .textPrimaryLight,
+                                                                        .colorBlack,
                                                             textOverflow:
                                                                 TextOverflow
                                                                     .ellipsis,
@@ -998,26 +793,28 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                             fw: 0),
                                                       ],
                                                     ),
-                                                  ));
-                                            },
-                                            separatorBuilder:
-                                                (BuildContext context,
-                                                    int index) {
-                                              return Divider(
-                                                color: theme.isDarkMode
-                                                    ? colors.dividerDark
-                                                    : colors.dividerLight,
-                                              );
-                                            },
-                                          )
-                                  ],
-                                ),
-                              ],
-                            ),
+                                                  ),
+                                                ));
+                                          },
+                                          separatorBuilder:
+                                              (BuildContext context,
+                                                  int index) {
+                                            return Divider(
+                                              color: theme.isDarkMode
+                                                  ? const Color(0xffB5C0CF)
+                                                      .withOpacity(.15)
+                                                  : const Color(0xffF1F3F8),
+                                              thickness: 7.0,
+                                            );
+                                          },
+                                        )
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                ],
-              ),
+                      ),
+              ],
             ),
           ),
         ),
@@ -1060,10 +857,11 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 2.0),
+        const Padding(
+          padding: EdgeInsets.only(top: 2.0),
           child: Divider(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            color: Color.fromARGB(255, 212, 212, 212),
+            thickness: 0.5,
           ),
         ),
         Padding(
@@ -1359,8 +1157,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                   ),
                   Divider(
                     color: theme.isDarkMode
-                        ? colors.dividerDark
-                        : colors.dividerLight,
+                        ? const Color(0xffB5C0CF).withOpacity(.15)
+                        : const Color(0xffF1F3F8),
+                    thickness: 7.0,
                   ),
                   // Text(
                   //                       date,
@@ -1420,12 +1219,11 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                       ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2.0),
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 2.0),
                                     child: Divider(
-                                      color: theme.isDarkMode
-                                          ? colors.dividerDark
-                                          : colors.dividerLight,
+                                      color: Color.fromARGB(255, 212, 212, 212),
+                                      thickness: 0.5,
                                     ),
                                   ),
                                   Padding(
@@ -1565,8 +1363,9 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                       separatorBuilder: (BuildContext context, int index) {
                         return Divider(
                           color: theme.isDarkMode
-                              ? colors.dividerDark
-                              : colors.dividerLight,
+                              ? const Color(0xffB5C0CF).withOpacity(.15)
+                              : const Color(0xffF1F3F8),
+                          thickness: 7.0,
                         );
                       },
                     ),
@@ -1626,7 +1425,7 @@ class _CalendarTabsState extends State<CalendarTabs> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
           elevation: 0,
           color:
-              widget.theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              widget.theme.isDarkMode ? const Color(0xff1E1E1E) : Colors.white,
           child: Container(
             width: screenWidth * 0.9, // Adjust as needed
 
@@ -1807,39 +1606,36 @@ class _MonthlyGrid extends StatelessWidget {
     final monthName = monthAbbrs[monthDate.month - 1];
     Color bgColor;
     if (monthValue == null) {
-      bgColor = theme.isDarkMode
-          ? colors.textSecondaryDark
-          : colors.textSecondaryLight;
+      bgColor =
+          theme.isDarkMode ? const Color(0xff3A3A3A) : const Color(0xffF1F3F8);
     } else {
-      bgColor = (monthValue < 0) ? colors.lossLight : colors.profitLight;
+      bgColor = (monthValue < 0)
+          ? Colors.red.withOpacity(0.2)
+          : Colors.green.withOpacity(0.2);
     }
     return Container(
       margin: const EdgeInsets.all(6),
-      width: screenWidth * 0.19,
-      height: screenWidth * 0.19,
+      width: screenWidth * 0.18,
+      height: screenWidth * 0.18,
       decoration: BoxDecoration(
-        color: colors.btnBg.withOpacity(0.8),
+        color: bgColor,
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TextWidget.subText(
-            text: monthName,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            textOverflow: TextOverflow.ellipsis,
-            theme: theme.isDarkMode,
-            fw: 3,
+          Text(
+            monthName,
+            style: textStyle(theme.isDarkMode ? Colors.white : Colors.black, 14,
+                FontWeight.w600),
           ),
           const SizedBox(height: 6),
-          TextWidget.subText(
-            text: displayText,
-            color: bgColor,
-            textOverflow: TextOverflow.ellipsis,
-            theme: theme.isDarkMode,
-            fw: 0,
+          Text(
+            displayText,
+            style: textStyle(
+                theme.isDarkMode ? Colors.white70 : Colors.grey[800]!,
+                12,
+                FontWeight.w500),
           ),
         ],
       ),

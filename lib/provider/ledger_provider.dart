@@ -9,6 +9,8 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../api/core/api_core.dart';
 import '../api/core/api_export.dart';
 import '../locator/locator.dart';
@@ -18,6 +20,7 @@ import '../models/desk_reports_model/SharingResponseCalendar_model.dart';
 import '../models/desk_reports_model/ca_events_model.dart';
 import '../models/desk_reports_model/calender_pnl_model.dart';
 import '../models/desk_reports_model/cdsl_response_model.dart';
+import '../models/desk_reports_model/cmr_download_model.dart';
 import '../models/desk_reports_model/cp_action_model.dart';
 import '../models/desk_reports_model/dercomcur_taxpnl_model.dart';
 import '../models/desk_reports_model/editreport_model.dart';
@@ -36,6 +39,8 @@ import '../models/desk_reports_model/tax_pnl_Eq_charge_model.dart';
 import '../models/desk_reports_model/taxpnl_eq_model.dart';
 import '../models/desk_reports_model/tradebook_model.dart';
 import '../models/desk_reports_model/unpledge_history_model.dart';
+import '../res/global_state_text.dart';
+import '../res/res.dart';
 import '../routes/route_names.dart';
 import '../screens/desk_reports/bottom_sheets/ledger_filter.dart';
 import '../sharedWidget/fund_function.dart';
@@ -43,6 +48,20 @@ import 'core/default_change_notifier.dart';
 import 'package:intl/intl.dart';
 
 final ledgerProvider = ChangeNotifierProvider((ref) => LDProvider(ref));
+
+// Helper class for document details
+class DocumentDetail {
+  final String docType;
+  final String recno;
+  final String docFileName;
+  final String docDate;
+  DocumentDetail({
+    required this.docType,
+    required this.recno,
+    required this.docFileName,
+    required this.docDate,
+  });
+}
 
 class LDProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
@@ -71,6 +90,9 @@ class LDProvider extends DefaultChangeNotifier {
 
   LedgerModelData? _ledgerAllDataDummy;
   LedgerModelData? get ledgerAllDataDummy => _ledgerAllDataDummy;
+
+  CmrDownloadModel? _cmrdownload;
+  CmrDownloadModel? get cmrdownload => _cmrdownload;
 
   CPActionModule? _cpactiondata;
   CPActionModule? get cpactiondata => _cpactiondata;
@@ -618,10 +640,11 @@ class LDProvider extends DefaultChangeNotifier {
                     colorScheme: ColorScheme.light(
                       primary: theme.isDarkMode
                           ? Colors.white
-                          : Colors.black, // Selected date highlight color
+                          : colors
+                              .primaryLight, // Selected date highlight color
                       onPrimary: theme.isDarkMode
                           ? Colors.black
-                          : Colors.white, // Selected text color
+                          : colors.colorWhite, // Selected text color
                       surface: theme.isDarkMode ? Colors.black : Colors.white,
                       onSurface: theme.isDarkMode
                           ? Colors.white
@@ -639,22 +662,33 @@ class LDProvider extends DefaultChangeNotifier {
                 ),
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      "Cancel",
-                      style: TextStyle(
-                        color: theme.isDarkMode
-                            ? Colors.grey[300]
-                            : theme.isDarkMode
-                                ? Colors.white
-                                : Colors.black,
+                  // TextButton(
+                  //   onPressed: () => Navigator.pop(context),
+                  //   child: Text(
+                  //     "Cancel",
+                  //     style: TextStyle(
+                  //       color: theme.isDarkMode
+                  //           ? Colors.grey[300]
+                  //           : theme.isDarkMode
+                  //               ? Colors.white
+                  //               : Colors.black,
+                  //     ),
+                  //   ),
+                  // ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      // minimumSize: const Size(0, 40), // width, height
+
+                      backgroundColor: theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                  ),
-                  TextButton(
                     onPressed: () {
                       if (pickedDate != null) {
                         _pickedStartDate = pickedDate;
@@ -664,11 +698,11 @@ class LDProvider extends DefaultChangeNotifier {
                       }
                       Navigator.pop(context);
                     },
-                    child: Text(
-                      "OK",
-                      style: TextStyle(
-                        color: theme.isDarkMode ? Colors.white : Colors.black,
-                      ),
+                    child: TextWidget.subText(
+                      text: "Ok",
+                      theme: theme.isDarkMode,
+                      fw: 2,
+                      color: colors.colorWhite,
                     ),
                   ),
                 ],
@@ -836,6 +870,27 @@ class LDProvider extends DefaultChangeNotifier {
       debugPrint("$e");
     }
   }
+
+  Future fetchcmrdownload(BuildContext context) async {
+    try {
+      _cmrdownload = await api.cmrdownload();
+      final Uri uri =
+          Uri.parse("https://rekycbe.mynt.in/${_cmrdownload!.path}");
+      print("urilinks: $uri");
+      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw 'Could not launch  ';
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+//  final Uri uri = Uri.parse(
+//           "${apiLinks.reportsapi}/downloaddocmob?cc=${prefs.clientId}&recno=${recno}");
+//       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+//         throw 'Could not launch  ';
+//       }
 
   Future fetchunpledgehistory(BuildContext context) async {
     try {
@@ -1415,26 +1470,31 @@ class LDProvider extends DefaultChangeNotifier {
         _pdfresponse =
             await api.getpdffileapitaxpnl(eq, dercomcur, eqcharge, year);
         if (_pdfresponse == 'File downloaded successfully') {
+          Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             successMessage(context, 'PDF Downloaded, Check Your Download'),
           );
           _taxderloading = false;
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, '$_pdfresponse'),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   warningMessage(context, '$_pdfresponse'),
+          // );
           _taxderloading = false;
+          throw _pdfresponse;
         }
 
         _taxderloading = false;
         notifyListeners();
       } catch (e) {
         _taxderloading = false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, 'Error occurred try again later'),
-        );
-        debugPrint("$e");
+        //  ScaffoldMessenger.of(context).showSnackBar(
+        //   warningMessage(context, 'Error occurred try again later'),
+        // );
+        // debugPrint("$e");
+        throw e.toString();
       }
+    } else {
+      throw 'Cannot move beyond year $_yearforTaxpnlDummy';
     }
   }
 
@@ -1500,27 +1560,35 @@ class LDProvider extends DefaultChangeNotifier {
 
   Future fetchpdfdownload(BuildContext context, String from, String to) async {
     try {
-      _pdfdownloadloading = true;
+      _reportsloading = true;
       notifyListeners();
+
+      // Fetch the data
       _pdfdownload = await api.getpdfdownload(from, to);
-      print("$_pdfdownload object");
-      _pdfdaataDummy = PdfDownloadModel.fromJson(_pdfdownload!.toJson());
-      // final dummy = [];
-      // for (var i = 0; i < _pdfdownload!.data!.length; i++) {
-      //   dummy.add(_pdfdownload!.data![i].docType);
-      // }
-      // _tradebookfilterarray = dummy.toSet().toList();
-      // print(_tradebookfilterarray);
-      _filterval = SingingCharacter.all;
-      _pdfdownloadloading = false;
+
+      // Store the full data as backup
+      _pdfdaataDummy = _pdfdownload;
+      // _pdfdaataDummy = PdfDownloadModel.fromJson(_pdfdownload!.toJson());
+
+      // _filterval = SingingCharacter.all;
+
+      // Filter to show only Contract and CN documents
+      if (_pdfdownload?.data != null) {
+        _pdfdownload!.data = _pdfdownload!.data!
+            .where((doc) => doc.docType == 'Contract' || doc.docType == 'CN')
+            .toList();
+      }
+
+      _reportsloading = false;
       notifyListeners();
     } catch (e) {
+      _reportsloading = false;
       debugPrint("$e");
-      _pdfdownloadloading = false;
-
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          warningMessage(context, 'Error occurred try again later'),
+        );
+      }
     }
   }
 
@@ -2994,6 +3062,165 @@ class LDProvider extends DefaultChangeNotifier {
     _cpactionerrormsg = '';
     _cutoffcheckboxofs = false;
     notifyListeners();
+  }
+
+  // Add month picker function
+  void monthPickerDialog(BuildContext context, ThemesProvider theme) async {
+    // Always start with current date
+    final initialDate = DateTime.now();
+    DateTime selectedDate = initialDate;
+    
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 300,
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: ColorScheme.light(
+                      primary: theme.isDarkMode ? Colors.white : colors.primaryLight,
+                      onPrimary: theme.isDarkMode ? Colors.black : colors.colorWhite,
+                      surface: theme.isDarkMode ? Colors.black : Colors.white,
+                      onSurface: theme.isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  child: CalendarDatePicker(
+                    initialDate: initialDate,
+                    firstDate: DateTime(initialDate.year - 2),
+                    lastDate: DateTime(initialDate.year + 2),
+                    onDateChanged: (date) {
+                      selectedDate = date;
+                    },
+                    initialCalendarMode: DatePickerMode.year,
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                    onPressed: () {
+                      // Set start date to first day of month
+                      final firstDay = DateTime(selectedDate.year, selectedDate.month, 1);
+                      // Set end date to last day of month
+                      final lastDay = DateTime(selectedDate.year, selectedDate.month + 1, 0);
+                      
+                      _startDate = "${firstDay.day.toString().padLeft(2, '0')}/${firstDay.month.toString().padLeft(2, '0')}/${firstDay.year}";
+                      _endDate = "${lastDay.day.toString().padLeft(2, '0')}/${lastDay.month.toString().padLeft(2, '0')}/${lastDay.year}";
+                      
+                      notifyListeners();
+                      Navigator.pop(context);
+                    },
+                    child: TextWidget.subText(
+                      text: "Ok",
+                      theme: theme.isDarkMode,
+                      fw: 2,
+                      color: colors.colorWhite,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Contract Calendar related variables
+  Map<DateTime, List<String>> _contractDocumentDates = {};
+  Map<DateTime, List<String>> get contractDocumentDates => _contractDocumentDates;
+
+  // Store full document details for each date
+  Map<DateTime, List<DocumentDetail>> _contractDocumentDetails = {};
+  Map<DateTime, List<DocumentDetail>> get contractDocumentDetails => _contractDocumentDetails;
+
+  String _selectedContractFilter = 'CN'; // Default to CN
+  String get selectedContractFilter => _selectedContractFilter;
+
+  List<String> contractFilterOptions = ['CN', 'Contract'];
+
+  // Loading state for contract calendar
+  bool _isContractCalendarLoading = false;
+  bool get isContractCalendarLoading => _isContractCalendarLoading;
+
+  // Contract Calendar methods
+  void setContractFilter(String filter) {
+    _selectedContractFilter = filter;
+    notifyListeners();
+  }
+
+  Future fetchContractDocuments(int year, int month) async {
+    try {
+      _isContractCalendarLoading = true;
+      notifyListeners();
+      
+      // Format dates for API (DD/MM/YYYY format)
+      final startDate = "01/${month.toString().padLeft(2, '0')}/${year}";
+      final endDate = "${DateTime(year, month + 1, 0).day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/${year}";
+      
+      // Call existing PDF download API
+      _pdfdownload = await api.getpdfdownload(startDate, endDate);
+      
+      // Clear previous data
+      _contractDocumentDates.clear();
+      _contractDocumentDetails.clear();
+      
+      // Parse response and populate document dates
+      if (_pdfdownload?.data != null) {
+        for (var doc in _pdfdownload!.data!) {
+          if (doc.docDate != null && (doc.docType == 'CN' || doc.docType == 'Contract')) {
+            // Parse date from DD/MM/YYYY format
+            final dateParts = doc.docDate!.split('/');
+            if (dateParts.length == 3) {
+              final day = int.parse(dateParts[0]);
+              final month = int.parse(dateParts[1]);
+              final year = int.parse(dateParts[2]);
+              final docDate = DateTime(year, month, day);
+              
+              if (!_contractDocumentDates.containsKey(docDate)) {
+                _contractDocumentDates[docDate] = [];
+              }
+              _contractDocumentDates[docDate]!.add(doc.docType!);
+
+              // Store full document details
+              if (!_contractDocumentDetails.containsKey(docDate)) {
+                _contractDocumentDetails[docDate] = [];
+              }
+              _contractDocumentDetails[docDate]!.add(DocumentDetail(
+                docType: doc.docType!,
+                recno: doc.recno ?? '',
+                docFileName: doc.docFileName ?? '',
+                docDate: doc.docDate!,
+              ));
+            }
+          }
+        }
+      }
+      
+      _isContractCalendarLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isContractCalendarLoading = false;
+      notifyListeners();
+      debugPrint("Error fetching contract documents: $e");
+    }
   }
 }
 // List<double> getCustItemsHeight() {

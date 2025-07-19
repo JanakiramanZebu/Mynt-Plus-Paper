@@ -200,6 +200,7 @@ class Routes {
   static const String pledgehistorymainscreen = 'PledgeHistoryMainScreen';
   static const String pledgeunpledgeresponse = 'PledgenUnpledgeResponse';
   static const String pdfdownload = 'PdfDownload';
+  static const String contractCalendar = 'ContractCalendar';
 
   static const String eqtaxpnleq = 'EqTaxpnlEq';
   static const String cdslWebView = 'CDSLWebView';
