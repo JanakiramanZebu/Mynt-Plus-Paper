@@ -9,7 +9,48 @@ import '../../../../provider/iop_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
+import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
+import '../../../../res/global_state_text.dart';
+
+
+Widget data(String name, String value, ThemesProvider theme) {
+  return Column(
+    
+    children: [
+      const SizedBox(height: 12),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        
+        children: [
+          TextWidget.subText(
+            text: name,
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textSecondaryLight,
+          ),
+          SizedBox(
+            width: 200,
+            child: TextWidget.subText(
+              text: value,
+              theme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+                  align: TextAlign.right,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Divider(
+        thickness: 0,
+        color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+      )
+    ],
+  );
+}
 
 class BondsCloseOrderDetails extends ConsumerWidget {
   final BondsOrderBookModel bondsCloseDetails;
@@ -23,35 +64,88 @@ class BondsCloseOrderDetails extends ConsumerWidget {
     int currentYear = DateTime.now().year;
     final currentDate = DateTime.now();
     final theme = ref.watch(themeProvider);
-    
-    return Scaffold(
-      appBar: _buildAppBar(context, theme),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _HeaderSection(bondsCloseDetails: bondsCloseDetails, theme: theme),
-            Divider(
-              height: 0,
-              color: theme.isDarkMode
-                  ? colors.darkColorDivider
-                  : colors.colorDivider,
-            ),
-            _ReasonSection(bondsCloseDetails: bondsCloseDetails, theme: theme),
-            const SizedBox(height: 16),
-            Divider(
-              height: 0,
-              color: theme.isDarkMode
-                  ? colors.darkColorDivider
-                  : colors.colorDivider,
-            ),
-            const SizedBox(height: 8),
-            _OrderDetailsSection(bondsCloseDetails: bondsCloseDetails, theme: theme),
-            _BidDetailsSection(bondsCloseDetails: bondsCloseDetails, theme: theme),
-          ],
-        ),
-      ),
-    );
+
+    return DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.88,
+        minChildSize: 0.05,
+        maxChildSize: 0.99,
+        builder: (context, scrollController) {
+          return Consumer(
+            builder: (context, ref, _) {
+              return Scaffold(
+                backgroundColor: Colors.transparent,
+
+                // appBar: _buildAppBar(context, theme),
+                body: Container(
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode
+                        ? colors.colorBlack
+                        : colors.colorWhite,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      const CustomDragHandler(),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _HeaderSection(
+                                  bondsCloseDetails: bondsCloseDetails,
+                                  theme: theme),
+                              // Divider(
+                              //   height: 0,
+                              //   color: theme.isDarkMode
+                              //       ? colors.darkColorDivider
+                              //       : colors.colorDivider,
+                              // ),
+                             
+                              // const SizedBox(height: 16),
+                              // Divider(
+                              //   height: 0,
+                              //   color: theme.isDarkMode
+                              //       ? colors.darkColorDivider
+                              //       : colors.colorDivider,
+                              // ),
+                              // const SizedBox(height: 8),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: _OrderDetailsSection(
+                                    bondsCloseDetails: bondsCloseDetails,
+                                    theme: theme),
+                              ),
+                               Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: _ReasonSection(
+                                    bondsCloseDetails: bondsCloseDetails,
+                                    theme: theme),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: _BidDetailsSection(
+                                    bondsCloseDetails: bondsCloseDetails,
+                                    theme: theme),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        });
   }
 
   AppBar _buildAppBar(BuildContext context, ThemesProvider theme) {
@@ -75,23 +169,11 @@ class BondsCloseOrderDetails extends ConsumerWidget {
       ),
       backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
       shadowColor: const Color(0xffECEFF3),
-      title: Text(
-        "Order Details",
-        style: _textStyle(
-          theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          16,
-          FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  static TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
-    return GoogleFonts.inter(
-      textStyle: TextStyle(
-        fontWeight: fWeight,
-        color: color,
-        fontSize: fontSize,
+      title: TextWidget.titleText(
+        text: "Order Details",
+        theme: theme.isDarkMode,
+        color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        fw: 2,
       ),
     );
   }
@@ -109,14 +191,14 @@ class _HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _SymbolInfo(bondsCloseDetails: bondsCloseDetails, theme: theme),
-          const SizedBox(height: 16),
+          // const SizedBox(height: 16),
           _OrderIdRow(bondsCloseDetails: bondsCloseDetails, theme: theme),
-          const SizedBox(height: 16),
+          // const SizedBox(height: 16),
           _PaymentStatusRow(bondsCloseDetails: bondsCloseDetails, theme: theme),
         ],
       ),
@@ -142,17 +224,22 @@ class _SymbolInfo extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              bondsCloseDetails.symbol.toString(),
-              style: textStyles.scripNameTxtStyle.copyWith(
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: TextWidget.titleText(
+                text: bondsCloseDetails.symbol.toString(),
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                fw: 1,
               ),
             ),
-            const SizedBox(height: 5),
-            Text(
-              bondsCloseDetails.symbol.toString(),
-              style: textStyles.scripExchTxtStyle,
-            ),
+            // const SizedBox(height: 16),
+            // TextWidget.paraText(
+            //   text: bondsCloseDetails.symbol.toString(),
+            //   theme: theme.isDarkMode,
+            //   color: colors.textSecondaryLight,
+            //   fw: 0,
+            // ),
           ],
         ),
       ],
@@ -171,39 +258,88 @@ class _OrderIdRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final isSuccess = bondsCloseDetails.reponseStatus == "success";
+    final isFailed = bondsCloseDetails.reponseStatus == "new failed" ||
+        bondsCloseDetails.reponseStatus == "failed";
+    return Column(
       children: [
+        data(
+          "Order Id",
+          bondsCloseDetails.applicationNumber != ""
+              ? bondsCloseDetails.applicationNumber.toString()
+              : " - ",
+          theme,
+        ),
         Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Order Id : ",
-                    style: BondsCloseOrderDetails._textStyle(
-                      colors.colorGrey,
-                      14,
-                      FontWeight.w600,
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextWidget.subText(
+                  text: "Order Status",
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isSuccess
+                            ? colors.error.withOpacity(0.1)
+                            : isFailed
+                                ? colors.error.withOpacity(0.1)
+                                : colors.pending.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: TextWidget.paraText(
+                        text: isSuccess
+                            ? "Cancelled"
+                            : isFailed
+                                ? "Failed"
+                                : "Pending",
+                        theme: false,
+                        color: isSuccess
+                            ? colors.error
+                            : isFailed
+                                ? colors.error
+                                : colors.pending,
+                      ),
                     ),
-                  ),
-                  TextSpan(
-                    text: bondsCloseDetails.applicationNumber != ""
-                        ? bondsCloseDetails.applicationNumber.toString()
-                        : " - ",
-                    style: BondsCloseOrderDetails._textStyle(
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                      12,
-                      FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+
+                    // SvgPicture.asset(
+                    //   isSuccess
+                    //       ? "assets/icon/failed.svg"
+                    //       : isFailed
+                    //           ? "assets/icon/failed.svg"
+                    //           : "assets/icon/pendingicon.svg",
+                    // ),
+                    // const SizedBox(width: 4),
+                    // TextWidget.subText(
+                    //   text: isSuccess
+                    // ? "Cancelled"
+                    // : isFailed
+                    //     ? "Failed"
+                    //     : "Pending",
+                    //   theme: theme.isDarkMode,
+                    //   color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    // ),
+                  ],
+                ),
+              ],
             ),
+            const SizedBox(height: 8),
+            Divider(
+              thickness: 0,
+              color:
+                  theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            )
           ],
         ),
-        _StatusBadge(bondsCloseDetails: bondsCloseDetails, theme: theme),
       ],
     );
   }
@@ -221,31 +357,53 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isSuccess = bondsCloseDetails.reponseStatus == "success";
-    final isFailed = bondsCloseDetails.reponseStatus == "new failed" || 
-                     bondsCloseDetails.reponseStatus == "failed";
-    
+    final isFailed = bondsCloseDetails.reponseStatus == "new failed" ||
+        bondsCloseDetails.reponseStatus == "failed";
+
     return Row(
       children: [
-        SvgPicture.asset(
-          isSuccess 
-              ? "assets/icon/failed.svg"
-              : isFailed
-                  ? "assets/icon/failed.svg"
-                  : "assets/icon/pendingicon.svg",
-        ),
-        const SizedBox(width: 4),
-        Text(
-          isSuccess 
-              ? "Cancelled"
-              : isFailed
-                  ? "Failed"
-                  : "Pending",
-          style: BondsCloseOrderDetails._textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w600,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: isSuccess
+                ? colors.error.withOpacity(0.1)
+                : isFailed
+                    ? colors.error.withOpacity(0.1)
+                    : colors.pending.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: TextWidget.paraText(
+            text: isSuccess
+                ? "Cancelled"
+                : isFailed
+                    ? "Failed"
+                    : "Pending",
+            theme: false,
+            color: isSuccess
+                ? colors.error
+                : isFailed
+                    ? colors.error
+                    : colors.pending,
           ),
         ),
+        // SvgPicture.asset(
+        //   isSuccess
+        //       ? "assets/icon/failed.svg"
+        //       : isFailed
+        //           ? "assets/icon/failed.svg"
+        //           : "assets/icon/pendingicon.svg",
+        // ),
+        // const SizedBox(width: 4),
+        // TextWidget.subText(
+        //   text: isSuccess
+        //       ? "Cancelled"
+        //       : isFailed
+        //           ? "Failed"
+        //           : "Pending",
+        //   theme: theme.isDarkMode,
+        //   color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        //   fw: 2,
+        // ),
       ],
     );
   }
@@ -263,41 +421,64 @@ class _PaymentStatusRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isEmpty = bondsCloseDetails.clearingStatus == "";
-    
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Payment",
-              style: BondsCloseOrderDetails._textStyle(
-                colors.colorGrey,
-                14,
-                FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
+        const SizedBox(height: 12),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SvgPicture.asset(
-              isEmpty
-                  ? "assets/icon/failed.svg"
-                  : "assets/icon/success.svg",
+            TextWidget.subText(
+              text: "Payment",
+              theme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
             ),
-            const SizedBox(width: 4),
-            Text(
-              isEmpty ? "Failed" : bondsCloseDetails.clearingStatus.toString(),
-              style: BondsCloseOrderDetails._textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w600,
-              ),
+            Row(
+              children: [
+
+                 Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                          color: isEmpty ? colors.error.withOpacity(0.1) :  bondsCloseDetails.clearingStatus.toString() == "Fund Pending" ? colors.pending.withOpacity(0.1) : colors.success.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: TextWidget.paraText(
+                        text:  isEmpty
+                      ? "Failed"
+                      : bondsCloseDetails.clearingStatus.toString() == "Fund Pending"
+                      ? "Fund Pending"
+                      : "Success",
+                        theme: false,
+                        color:  isEmpty ? colors.error :  bondsCloseDetails.clearingStatus.toString() == "Fund Pending" ? colors.pending : colors.success,
+                        
+                      ),
+                    ),
+                // SvgPicture.asset(
+                //   isEmpty
+                //       ? "assets/icon/failed.svg"
+                //       : "assets/icon/success.svg",
+                // ),
+                // const SizedBox(width: 4),
+                // TextWidget.subText(
+                //   text: isEmpty
+                //       ? "Failed"
+                //       : bondsCloseDetails.clearingStatus.toString(),
+                //   theme: theme.isDarkMode,
+                //   color: theme.isDarkMode
+                //       ? colors.textPrimaryDark
+                //       : colors.textPrimaryLight,
+                // ),
+              ],
             ),
           ],
         ),
+        const SizedBox(height: 8),
+        Divider(
+          thickness: 0,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
       ],
     );
   }
@@ -314,32 +495,12 @@ class _ReasonSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Reason",
-            style: BondsCloseOrderDetails._textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              14,
-              FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            bondsCloseDetails.failReason == ""
-                ? " - "
-                : bondsCloseDetails.failReason.toString(),
-            style: BondsCloseOrderDetails._textStyle(
-              colors.colorGrey,
-              13,
-              FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
+    return data(
+      "Reason",
+      bondsCloseDetails.failReason == ""
+          ? " - "
+          : bondsCloseDetails.failReason.toString(),
+      theme,
     );
   }
 }
@@ -357,57 +518,36 @@ class _OrderDetailsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildDetailRow("Order no", 
+       
+        data(
+          "Quantity",
+          // (bondsCloseDetails.bidDetail!.investmentValue! / bondsCloseDetails.bidDetail!.price!).toStringAsFixed(0),
+
+
+           (double.parse(bondsCloseDetails.totalAmountPayable!) / bondsCloseDetails.bidDetail!.
+          price!).toStringAsFixed(0),
+          theme,
+        ),
+        data(
+          "Price",
+          "${bondsCloseDetails.bidDetail!.price!}",
+          theme,
+        ),
+         data(
+          "Order no",
           bondsCloseDetails.orderNumber != null
               ? bondsCloseDetails.orderNumber!.toString()
-              : " - ", 
-          theme),
-        _buildDetailRow("Quantity",
-          "${(double.parse(bondsCloseDetails.totalAmountPayable!) / bondsCloseDetails.bidDetail!.price!).toStringAsFixed(0)}",
-          theme),
-        _buildDetailRow("Price", "${bondsCloseDetails.bidDetail!.price!}", theme),
-        _buildDetailRow("Bid Date & Time",
+              : " - ",
+          theme,
+        ),
+        data(
+          "Bid Date & Time",
           bondsCloseDetails.responseDatetime.toString() == ""
               ? "----"
               : ipodateres(bondsCloseDetails.responseDatetime.toString()),
-          theme),
+          theme,
+        ),
       ],
-    );
-  }
-
-  Widget _buildDetailRow(String name, String value, ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                name,
-                style: BondsCloseOrderDetails._textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600,
-                ),
-              ),
-              Text(
-                value,
-                style: BondsCloseOrderDetails._textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  12,
-                  FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Divider(
-            height: 0,
-            color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          ),
-        ],
-      ),
     );
   }
 }
@@ -427,32 +567,26 @@ class _BidDetailsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
-          child: Text(
-            "Bid order Details",
-            style: BondsCloseOrderDetails._textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              14,
-              FontWeight.w600,
-            ),
+          padding: const EdgeInsets.only(left: 0, top: 16, bottom: 8),
+          child: TextWidget.subText(
+            text: "Bid order Details",
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            fw: 0,
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Bid Details",
-                style: BondsCloseOrderDetails._textStyle(
-                  colors.colorGrey,
-                  12,
-                  FontWeight.w500,
-                ),
-              ),
-              _BidDetailsTable(bondsCloseDetails: bondsCloseDetails, theme: theme),
-            ],
-          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // TextWidget.paraText(
+            //   text: "Bid Details",
+            //   theme: false,
+            //   color: colors.colorGrey,
+            //   fw: 0,
+            // ),
+            _BidDetailsTable(
+                bondsCloseDetails: bondsCloseDetails, theme: theme),
+          ],
         ),
       ],
     );
@@ -496,70 +630,64 @@ class _BidDetailsTable extends StatelessWidget {
           ),
           columns: [
             DataColumn(
-              label: Text(
-                "Qty",
-                style: BondsCloseOrderDetails._textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600,
-                ),
+              label: TextWidget.subText(
+                text: "Qty",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                
               ),
             ),
             DataColumn(
-              label: Text(
-                "Price",
-                style: BondsCloseOrderDetails._textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600,
-                ),
+              label: TextWidget.subText(
+                text: "Price",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                
               ),
             ),
             DataColumn(
-              label: Text(
-                "Amount",
-                style: BondsCloseOrderDetails._textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600,
-                ),
+              label: TextWidget.subText(
+                text: "Amount",
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                
               ),
             ),
           ],
           rows: [
             DataRow(cells: [
               DataCell(
-                Text(
-                  "${(double.parse(bondsCloseDetails.totalAmountPayable!) / bondsCloseDetails.bidDetail!.price!).toStringAsFixed(0)}",
-                  style: BondsCloseOrderDetails._textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    12,
-                    FontWeight.w500,
-                  ),
+                TextWidget.paraText(
+                  text:
+                      // (bondsCloseDetails.bidDetail!.investmentValue! / bondsCloseDetails.bidDetail!.price!).toStringAsFixed(0),
+
+                       "${(double.parse(bondsCloseDetails.totalAmountPayable!) / bondsCloseDetails.
+                      bidDetail!.price!).toStringAsFixed(0)}",
+                  theme: theme.isDarkMode,
+                  color:
+                      theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                 ),
               ),
               DataCell(
-                Text(
-                  "${bondsCloseDetails.bidDetail!.price!}",
-                  style: BondsCloseOrderDetails._textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    12,
-                    FontWeight.w500,
-                  ),
+                TextWidget.paraText(
+                  text: "${bondsCloseDetails.bidDetail!.price!}",
+                  theme: theme.isDarkMode,
+                  color:
+                      theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                 
                 ),
               ),
               DataCell(
-                Text(
-                  "₹${getFormatter(
+                TextWidget.paraText(
+                  text: "₹${getFormatter(
                     noDecimal: true,
                     v4d: false,
                     value: double.parse(bondsCloseDetails.totalAmountPayable!),
                   )}",
-                  style: BondsCloseOrderDetails._textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    12,
-                    FontWeight.w500,
-                  ),
+                  theme: theme.isDarkMode,
+                  color:
+                      theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  
                 ),
               ),
             ]),

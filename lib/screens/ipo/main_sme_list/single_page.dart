@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_mainstream_model.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_sme_model.dart';
+import 'package:mynt_plus/screens/ipo/IPO_order_screen/ipo_order_screen.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/routes/route_names.dart';
@@ -347,12 +348,12 @@ class _IPODetailsContainer extends StatelessWidget {
         );
 
         if (context.mounted) {
-          if (decodedJson['subType'] == "SME") {
+          if (decodedJson['key'] == "SME") {
             final ipoOrderbookData = SMEIPO.fromJson(decodedJson);
             await singlepage.smeipocategory();
             Navigator.pushNamed(
               context,
-              Routes.smeapplyIPO,
+              Routes.applyIPO,
               arguments: ipoOrderbookData,
             );
           } else {

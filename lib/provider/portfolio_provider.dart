@@ -1561,7 +1561,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // Holding search by Trade symbol
   holdingSearch(String value, BuildContext context) {
-    if (value.length > 1) {
+    if (value.length > 0) {
       _holdingSearchItem = [];
       _holdingSearchItem = _holdingsModel!
           .where((element) => element.exchTsym![0].tsym!
@@ -1576,7 +1576,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // MF Holding search by Trade symbol
   mfHoldingSearch(String value, BuildContext context) {
-    if (value.length > 1) {
+    if (value.length > 0) {
       _mfHoldingSearchItem = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _mfHoldingSearchItem = _mfHoldingsModel!
@@ -1598,7 +1598,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
   positionSearch(String value, BuildContext context) {
-    if (value.length > 1) {
+    if (value.length > 0) {
       // _showSearchPosition = true;
       _positionSearchItem = [];
       _positionSearchItem = _allPostionList

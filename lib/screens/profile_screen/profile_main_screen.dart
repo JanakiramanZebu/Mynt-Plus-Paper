@@ -272,7 +272,7 @@ class UserAccountScreen extends ConsumerWidget {
           //    color: colors.fundbuttonBg,
           //                    ),
           // ),
-          // const SizedBox(height: 4),
+          const SizedBox(height: 16),
           // Padding(
           //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
           //   child: Divider(
