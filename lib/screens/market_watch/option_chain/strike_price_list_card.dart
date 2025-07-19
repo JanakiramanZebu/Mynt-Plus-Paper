@@ -31,7 +31,7 @@ class StrikePriceListCard extends ConsumerWidget {
       itemBuilder: (BuildContext context, int index) {
         final strikePrice = strike[index].strprc;
         return Container(
-          height: 58,
+          height: 65,
           alignment: Alignment.center,
           color: theme.isDarkMode
               ? const Color(0xffB5C0CF).withOpacity(.15)

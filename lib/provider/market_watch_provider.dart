@@ -242,7 +242,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   String? _selectedTradeSym;
   String _numStrike = "10";
   String? _optionExch;
-  final List<String> _numStrikes = ["5", "10", "15", "50"];
+  final List<String> _numStrikes = ["5", "10", "15", "All"];
 
   List<String> get sortDate => _sortedDate;
   String? get selectedExpDate => _selectedExpDate;
@@ -309,7 +309,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _resetSortPreference();
     _setupWebSocketListener();
     // Load saved page index
-    _loadCurrentPageIndex();
+    // _loadCurrentPageIndex();
 
     // Listen to WebSocket data updates using a proper subscription
     _setupWebSocketListener();
@@ -586,6 +586,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   StockData? get fundamentalData => _fundamentalData;
 
   List<String> _exarr = [];
+  List<String> get exarr => _exarr;
 
   final String _firstGetData = "0";
   String get fistGetData => _firstGetData;
@@ -2090,6 +2091,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       required BuildContext context,
       required String numofStrike}) async {
     try {
+      if (numofStrike == "All") {
+        numofStrike = "50";
+      }
       toggleLoad(true);
 
       // STEP 1: Immediately clear old option chain data to prevent stale UI

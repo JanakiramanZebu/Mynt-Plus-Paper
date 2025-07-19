@@ -11,6 +11,7 @@ import '../../routes/app_routes.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/no_data_found.dart';
+import '../../sharedWidget/snack_bar.dart';
 
 class SearchScripList extends StatefulWidget {
   final List<ScripNewValue> searchValue;
@@ -51,6 +52,7 @@ class _searchScripList extends State<SearchScripList> {
         final theme = ref.read(themeProvider);
         final searchScrip = ref.watch(marketWatchProvider);
 
+
         if (widget.searchValue.isEmpty) {
           return const NoDataFound();
         }
@@ -61,7 +63,7 @@ class _searchScripList extends State<SearchScripList> {
           separatorBuilder: (context, index) => const ListDivider(),
           itemBuilder: (BuildContext context, int index) {
             final scrip = widget.searchValue[index];
-
+print(!searchScrip.exarr.contains('"${scrip.exch}"'));
             return Material(
               color: Colors.transparent,
               child: InkWell(
@@ -188,6 +190,11 @@ class _searchScripList extends State<SearchScripList> {
                               splashColor: Colors.grey.withOpacity(0.3),
                               highlightColor: Colors.grey.withOpacity(0.2),
                               onTap: () async {
+                                if(!searchScrip.exarr.contains('"${scrip.exch}"')){
+        ScaffoldMessenger.of(context).showSnackBar(
+          error(context, "Segment is not active."));
+                                }
+                                else{
                                 if (searchScrip.isAdded![index]) {
                                   await searchScrip.isActiveAddBtn(
                                       false, index);
@@ -238,15 +245,24 @@ class _searchScripList extends State<SearchScripList> {
                                     print("Error applying sort: $e");
                                   }
                                 }
+                                }
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(
                                     8), // ensure adequate tap target
-                                child: SvgPicture.asset(
+                                child: !searchScrip.exarr.contains('"${scrip.exch}"') ?
+                                SvgPicture.asset(assets.dInfo,
+                                  color:  Colors.red,
+                                  height: 20,
+                                  width: 20,
+                                ) :
+                                
+                                SvgPicture.asset(
                                   searchScrip.isAdded![index]
                                       ? assets.bookmarkIcon
                                       : assets.bookmarkedIcon,
-                                  color: theme.isDarkMode &&
+                                  color:
+                                  theme.isDarkMode &&
                                           searchScrip.isAdded![index]
                                       ? colors.colorLightBlue
                                       : searchScrip.isAdded![index]
