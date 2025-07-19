@@ -122,7 +122,6 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                   ),
                   child: Column(
                     children: [
-                      const CustomDragHandler(),
                       Expanded(
                         child: SingleChildScrollView(
                           controller: scrollController,
@@ -131,6 +130,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  const CustomDragHandler(),
                                   Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,

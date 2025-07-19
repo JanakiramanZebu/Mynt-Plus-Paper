@@ -8,6 +8,7 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
+import '../ipo_orderbook_details/close_order_details.dart';
 
 class IpoCloseOrder extends ConsumerWidget {
   const IpoCloseOrder({super.key});
@@ -56,8 +57,24 @@ class _CloseOrderItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(context, Routes.ipoclosedetailsscreen,
-            arguments: order);
+        showModalBottomSheet(
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          isDismissible: true,
+          enableDrag: false,
+          useSafeArea: true,
+          context: context,
+          builder: (context) => Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: IpoCloseOrderDetails(ipoclose: order)),
+        );
       },
       child: Padding(
         padding: const EdgeInsets.all(16.0),

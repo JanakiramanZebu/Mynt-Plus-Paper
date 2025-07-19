@@ -146,7 +146,6 @@ class _OpenOrderList extends StatelessWidget {
         order: orders[index],
         theme: theme,
         isSearch: isSearch,
-        index: index,
       ),
       separatorBuilder: (BuildContext context, int index) {
         return Divider(
@@ -162,13 +161,11 @@ class _OpenOrderItem extends StatelessWidget {
   final dynamic order;
   final dynamic theme;
   final bool isSearch;
-  final int index;
 
   const _OpenOrderItem({
     required this.order,
     required this.theme,
     this.isSearch = false,
-    required this.index,
   });
 
   @override
@@ -191,7 +188,7 @@ class _OpenOrderItem extends StatelessWidget {
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
-              child: IpoOpenOrderDetails(ipodetails: order, index: index)),
+              child: IpoOpenOrderDetails(ipodetails: order)),
         );
 
         // Navigator.pushNamed(context, Routes.ipoopendetailsscreen,

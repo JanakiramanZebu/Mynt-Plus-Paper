@@ -112,8 +112,6 @@ class LDProvider extends DefaultChangeNotifier {
 
   PledgeAndUnpledgeModel? _pledgeandunpledge;
   PledgeAndUnpledgeModel? get pledgeandunpledge => _pledgeandunpledge;
-  
-
 
   PledgeAndUnpledgeModel? _pledgedataonly;
   PledgeAndUnpledgeModel? get pledgedataonly => _pledgedataonly;
@@ -313,6 +311,80 @@ class LDProvider extends DefaultChangeNotifier {
 
   set setedisclickfromcpaction(val) {
     _edisclickfromcpaction = val;
+    notifyListeners();
+  }
+
+  String _monthName(int month) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    return months[month - 1];
+  }
+
+  TextEditingController profitlossSearchCtrl = TextEditingController();
+  clearProfitlossSearch() {
+    profitlossSearchCtrl.clear();
+    // Reset to original data when search is cleared
+    if (_originalGrouped.isNotEmpty) {
+      grouped = Map.from(_originalGrouped);
+      notifyListeners();
+    }
+  }
+
+  bool _showProfitlossSearch = false;
+  bool get showProfitlossSearch => _showProfitlossSearch;
+
+  showProfiossSearch(bool value) {
+    _showProfitlossSearch = value;
+    notifyListeners();
+  }
+
+  // Store original grouped data for search reset
+  Map<DateTime, List<TradeData>> _originalGrouped = {};
+
+  profitlossSearch(String value, BuildContext context) {
+    // If this is the first search, store the original data
+    if (_originalGrouped.isEmpty) {
+      _originalGrouped = Map.from(grouped);
+    }
+
+    if (value.isEmpty) {
+      // Reset to original data when search is cleared
+      grouped = Map.from(_originalGrouped);
+    } else {
+      // Create a new filtered grouped map
+      Map<DateTime, List<TradeData>> filteredGrouped = {};
+
+      _originalGrouped.forEach((date, trades) {
+        // Filter trades for this date
+        List<TradeData> filteredTrades = trades.where((element) {
+          final symbol = element.sCRIPSYMBOL?.toLowerCase() ?? '';
+          final scripName = element.sCRIPNAME?.toLowerCase() ?? '';
+          final searchTerm = value.toLowerCase();
+
+          return symbol.contains(searchTerm) || scripName.contains(searchTerm);
+        }).toList();
+
+        // Only add dates that have matching trades
+        if (filteredTrades.isNotEmpty) {
+          filteredGrouped[date] = filteredTrades;
+        }
+      });
+
+      grouped = filteredGrouped;
+    }
+
     notifyListeners();
   }
 
@@ -1205,6 +1277,8 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
       _calenderpnlAllData = await api.getcalenderpnldata(from, to, type);
       grouped = {};
+      // Reset original grouped data when new data is loaded
+      _originalGrouped = {};
       if (_calenderpnlAllData != null) {
         _heatmapData = {}; // Reset before adding new data
 
@@ -1248,6 +1322,12 @@ class LDProvider extends DefaultChangeNotifier {
 
       print("objectobject${_heatmapData}");
       _calendarpnlloading = false;
+
+      // Clear search when new data is loaded
+      if (profitlossSearchCtrl.text.isNotEmpty) {
+        profitlossSearchCtrl.clear();
+      }
+
       notifyListeners();
     } catch (e) {
       _calendarpnlloading = false;
@@ -1443,41 +1523,32 @@ class LDProvider extends DefaultChangeNotifier {
       // );
     }
   }
-  refreshforfilterdata(){
-    if (_pledgeandunpledge!.data != null && _pledgeandunpledge!.data!.isNotEmpty)  {
-        for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
-          final value = _pledgeandunpledge!.data![i];
-          print("${value.initiated == "0" &&
-                                                      value.status == 'Ok' &&
-                                                      (double.parse(value.nSOHQTY.toString())
-                                                                  .toInt()) +
-                                                              (double.parse(value
-                                                                      .sOHQTY
-                                                                      .toString())
-                                                                  .toInt()) !=
-                                                          0}pledgevavavavava");
-            if (value.initiated == "0" &&
-                                                      value.status == 'Ok' &&
-                                                      (double.parse(value.nSOHQTY.toString())
-                                                                  .toInt()) +
-                                                              (double.parse(value
-                                                                      .sOHQTY
-                                                                      .toString())
-                                                                  .toInt()) !=
-                                                          0) {
 
-              print("pledgevavavavava");
-            } 
+  refreshforfilterdata() {
+    if (_pledgeandunpledge!.data != null &&
+        _pledgeandunpledge!.data!.isNotEmpty) {
+      for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
+        final value = _pledgeandunpledge!.data![i];
+        print(
+            "${value.initiated == "0" && value.status == 'Ok' && (double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt()) != 0}pledgevavavavava");
+        if (value.initiated == "0" &&
+            value.status == 'Ok' &&
+            (double.parse(value.nSOHQTY.toString()).toInt()) +
+                    (double.parse(value.sOHQTY.toString()).toInt()) !=
+                0) {
+          print("pledgevavavavava");
         }
       }
+    }
   }
+
   Future fetchpledgeandunpledge(BuildContext context) async {
     try {
       _pledgeloader = true;
       notifyListeners();
-      _pledgeandunpledge = await api.getpledgeandunpledge(); 
+      _pledgeandunpledge = await api.getpledgeandunpledge();
       _pledgesegmentcheck = await api.getsegforpledge();
-      _listforpledge = []; 
+      _listforpledge = [];
       if (_pledgesegmentcheck?.str != null) {}
       _segresponse =
           jsonDecode(decryptionFunction(_pledgesegmentcheck!.str.toString()));
@@ -1488,13 +1559,13 @@ class LDProvider extends DefaultChangeNotifier {
       // }
       // _tradebookfilterarray = dummy.toSet().toList();
       // print(_tradebookfilterarray);
-      refreshforfilterdata(); 
+      refreshforfilterdata();
       _filterval = SingingCharacter.all;
       _pledgeloader = false;
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-      _pledgeloader = false; 
+      _pledgeloader = false;
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
@@ -2157,8 +2228,9 @@ class LDProvider extends DefaultChangeNotifier {
               _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
           0.0;
     }
-    _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance; 
-    _ledgerAllData!.closingBalance = originalList[originalList.length - 1].nETAMT ?? '0.00'; 
+    _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
+    _ledgerAllData!.closingBalance =
+        originalList[originalList.length - 1].nETAMT ?? '0.00';
 
     _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
     _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
@@ -2682,7 +2754,6 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   void changesegval(String seg, dynamic index) {
-
     index.segmentselect = seg;
 
     _segmentvalue = seg;

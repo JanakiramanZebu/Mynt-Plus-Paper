@@ -122,12 +122,12 @@ class _OrderBookDetailState extends ConsumerState<OrderBookDetail> {
                       ),
                       child: Column(
                         children: <Widget>[
-                          const CustomDragHandler(),
                           Expanded(
                             child: SingleChildScrollView(
                               controller: scrollController,
                               child: Column(
                                 children: [
+                                  const CustomDragHandler(),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16.0),

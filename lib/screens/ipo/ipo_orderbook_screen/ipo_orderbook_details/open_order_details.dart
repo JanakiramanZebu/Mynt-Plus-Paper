@@ -14,11 +14,9 @@ import '../../ipo_cancel_alert/cancel_alert.dart';
 
 class IpoOpenOrderDetails extends ConsumerStatefulWidget {
   final IpoOrderBookModel ipodetails;
-  final int index;
   const IpoOpenOrderDetails({
     super.key,
     required this.ipodetails,
-    required this.index,
   });
 
   @override
@@ -90,13 +88,13 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                   ),
                   child: Column(
                     children: [
-                      const CustomDragHandler(),
                       Expanded(
                         child: SingleChildScrollView(
                           controller: scrollController,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              const CustomDragHandler(),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                     vertical: 16, horizontal: 16),
@@ -264,49 +262,59 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                         thickness: 0),
                                     const SizedBox(height: 8),
                                     _buildInfoRow(
-                                        "App no",
-                                        widget.ipodetails.type == "BSE"
-                                            ? "-"
-                                            : widget.ipodetails.respBid != null
-                                                ? widget
-                                                    .ipodetails
-                                                    .respBid![widget.index]
-                                                    .bidReferenceNumber
-                                                    .toString()
-                                                : " - ",
-                                        theme),
+                                      "App no",
+                                      widget.ipodetails.type == "BSE"
+                                          ? widget.ipodetails.bidReferenceNumber
+                                              .toString()
+                                          : widget.ipodetails.respBid != null
+                                              ? widget.ipodetails.respBid![0]
+                                                  .bidReferenceNumber
+                                                  .toString()
+                                              : " - ",
+                                      theme,
+                                    ),
                                     const SizedBox(height: 8),
                                     _buildInfoRow(
-                                        "Qty",
-                                        widget.ipodetails.respBid![widget.index]
-                                            .quantity
-                                            .toString(),
-                                        theme),
+                                      "Qty",
+                                      (widget.ipodetails.respBid != null &&
+                                              widget.ipodetails.respBid!
+                                                  .isNotEmpty)
+                                          ? widget
+                                              .ipodetails.respBid![0].quantity
+                                              .toString()
+                                          : "-",
+                                      theme,
+                                    ),
                                     const SizedBox(height: 8),
                                     _buildInfoRow(
-                                        "Price",
-                                        widget.ipodetails.type == "BSE"
-                                            ? widget.ipodetails
-                                                .bidDetail![widget.index].rate
-                                                .toString()
-                                            : "${double.parse(widget.ipodetails.bidDetail![widget.index].price.toString()).toInt()}",
-                                        theme),
+                                      "Price",
+                                      (widget.ipodetails.bidDetail != null &&
+                                              widget.ipodetails.bidDetail!
+                                                  .isNotEmpty)
+                                          ? widget.ipodetails.type == "BSE"
+                                              ? widget
+                                                  .ipodetails.bidDetail![0].rate
+                                                  .toString()
+                                              : "${double.tryParse(widget.ipodetails.bidDetail![0].price.toString())?.toInt() ?? "-"}"
+                                          : "-",
+                                      theme,
+                                    ),
                                     const SizedBox(height: 8),
                                     _buildInfoRow(
-                                        "Total amount",
-                                        widget.ipodetails.type == "BSE"
-                                            ? "${getFormatter(noDecimal: true, v4d: false, value: double.parse(widget.ipodetails.bidDetail![widget.index].rate!) * double.parse(widget.ipodetails.bidDetail![widget.index].quantity!)).toString()}"
-                                            : "${getFormatter(
-                                                noDecimal: true,
-                                                v4d: false,
-                                                value: double.parse(widget
-                                                        .ipodetails
-                                                        .bidDetail![
-                                                            widget.index]
-                                                        .amount!)
-                                                    .toDouble(),
-                                              )}",
-                                        theme),
+                                      "Total amount",
+                                      widget.ipodetails.type == "BSE"
+                                          ? "${getFormatter(noDecimal: true, v4d: false, value: double.parse(widget.ipodetails.bidDetail![0].rate!) * double.parse(widget.ipodetails.bidDetail![0].quantity!)).toString()}"
+                                          : "${getFormatter(
+                                              noDecimal: true,
+                                              v4d: false,
+                                              value: double.parse(widget
+                                                      .ipodetails
+                                                      .bidDetail![0]
+                                                      .amount!)
+                                                  .toDouble(),
+                                            )}",
+                                      theme,
+                                    ),
                                     const SizedBox(height: 8),
                                     _buildInfoRow(
                                         "Bid Date & Time",
@@ -326,6 +334,210 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                             : widget.ipodetails.failReason
                                                 .toString(),
                                         theme),
+                                    const SizedBox(height: 8),
+                                    TextWidget.subText(
+                                      text:
+                                          widget.ipodetails.bidDetail!.length ==
+                                                  1
+                                              ? "Single bid order"
+                                              : widget.ipodetails.bidDetail!
+                                                          .length ==
+                                                      2
+                                                  ? "Double bid order"
+                                                  : "Triple bid order",
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
+                                      fw: 3,
+                                    ),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: Theme(
+                                          data: Theme.of(context).copyWith(
+                                            cardColor: Colors
+                                                .transparent, // To ensure background matches
+                                            textTheme: TextTheme(
+                                                bodyMedium: TextStyle(
+                                                    color: Colors.white)),
+                                            dataTableTheme:
+                                                const DataTableThemeData(
+                                              headingTextStyle: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold),
+                                              dataTextStyle: TextStyle(
+                                                  color: Colors.white),
+                                              dividerThickness: 1.0,
+                                            ),
+                                          ),
+                                          child: DataTable(
+                                            columnSpacing: 16.0,
+                                            horizontalMargin: 0,
+                                            headingRowHeight: 40.0,
+                                            border: TableBorder(
+                                              horizontalInside: BorderSide(
+                                                  color: Colors.white54,
+                                                  width:
+                                                      0.8), // Horizontal lines
+                                            ),
+                                            columns: [
+                                              DataColumn(
+                                                label: Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: TextWidget.subText(
+                                                      text: "Bid",
+                                                      theme: false,
+                                                      color: theme.isDarkMode
+                                                          ? colors
+                                                              .textSecondaryDark
+                                                          : colors
+                                                              .textSecondaryLight,
+                                                      fw: 3),
+                                                ),
+                                              ),
+                                              DataColumn(
+                                                label: TextWidget.subText(
+                                                    text: "Qty",
+                                                    theme: false,
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
+                                                    fw: 3),
+                                              ),
+                                              DataColumn(
+                                                label: TextWidget.subText(
+                                                    text: "Price",
+                                                    theme: false,
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
+                                                    fw: 3),
+                                              ),
+                                              DataColumn(
+                                                label: TextWidget.subText(
+                                                    text: "Amount",
+                                                    theme: false,
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
+                                                    fw: 3),
+                                              ),
+                                              DataColumn(
+                                                label: TextWidget.subText(
+                                                    text: "Cut off",
+                                                    theme: false,
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
+                                                    fw: 3),
+                                              ),
+                                            ],
+                                            rows: List<DataRow>.generate(
+                                              widget
+                                                  .ipodetails.bidDetail!.length,
+                                              (index) {
+                                                final bid = widget.ipodetails
+                                                    .bidDetail![index];
+                                                final isCutOff = widget
+                                                            .ipodetails.type ==
+                                                        "BSE"
+                                                    ? (bid.cuttoffflag! != "0")
+                                                    : bid.atCutOff!;
+                                                return DataRow(cells: [
+                                                  DataCell(Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 8),
+                                                    child: TextWidget.subText(
+                                                        text: "${index + 1}",
+                                                        theme: false,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        fw: 3),
+                                                  )),
+                                                  DataCell(
+                                                    TextWidget.subText(
+                                                        text: bid.quantity!,
+                                                        theme: false,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        fw: 3),
+                                                  ),
+                                                  DataCell(
+                                                    TextWidget.subText(
+                                                        text: widget.ipodetails
+                                                                    .type ==
+                                                                "BSE"
+                                                            ? bid.rate
+                                                                .toString()
+                                                            : "${double.parse(bid.price.toString()).toInt()}",
+                                                        theme: false,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        fw: 3),
+                                                  ),
+                                                  DataCell(
+                                                    TextWidget.subText(
+                                                        text: widget.ipodetails
+                                                                    .type ==
+                                                                "BSE"
+                                                            ? "₹${getFormatter(noDecimal: true, v4d: false, value: (double.parse(bid.rate!) * double.parse(bid.quantity!)))}"
+                                                            : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(bid.amount!).toDouble())}",
+                                                        theme: false,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight,
+                                                        fw: 3),
+                                                  ),
+                                                  DataCell(Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 12),
+                                                    child: Icon(
+                                                      isCutOff
+                                                          ? Icons.check_circle
+                                                          : Icons.cancel,
+                                                      color: isCutOff
+                                                          ? Colors.green
+                                                          : Colors.red,
+                                                    ),
+                                                  )),
+                                                ]);
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Divider(
+                                        color: theme.isDarkMode
+                                            ? colors.dividerDark
+                                            : colors.dividerLight,
+                                        thickness: 0)
                                   ],
                                 ),
                               ),
@@ -710,21 +922,6 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                               //             .toString()),
                               //     theme),
 
-                              Padding(
-                                padding: const EdgeInsets.only(left: 16),
-                                child: TextWidget.subText(
-                                  text: widget.ipodetails.bidDetail!.length == 1
-                                      ? "Single bid order"
-                                      : widget.ipodetails.bidDetail!.length == 2
-                                          ? "Double bid order"
-                                          : "Triple bid order",
-                                  theme: false,
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  fw: 3,
-                                ),
-                              ),
                               // ListView.builder(
                               //     itemCount: ipodetails.bidDetail!.length,
                               //     physics: const NeverScrollableScrollPhysics(),
@@ -861,167 +1058,6 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                               //       );
                               //     }),
 
-                              SizedBox(
-                                width: double.infinity,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: Theme(
-                                    data: Theme.of(context).copyWith(
-                                      cardColor: Colors
-                                          .transparent, // To ensure background matches
-                                      textTheme: TextTheme(
-                                          bodyMedium:
-                                              TextStyle(color: Colors.white)),
-                                      dataTableTheme: const DataTableThemeData(
-                                        headingTextStyle: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold),
-                                        dataTextStyle:
-                                            TextStyle(color: Colors.white),
-                                        dividerThickness: 1.0,
-                                      ),
-                                    ),
-                                    child: DataTable(
-                                      columnSpacing: 16.0,
-                                      horizontalMargin: 0,
-                                      headingRowHeight: 40.0,
-                                      border: TableBorder(
-                                        horizontalInside: BorderSide(
-                                            color: Colors.white54,
-                                            width: 0.8), // Horizontal lines
-                                      ),
-                                      columns: [
-                                        DataColumn(
-                                          label: Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: TextWidget.subText(
-                                                text: "Bid",
-                                                theme: false,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
-                                                fw: 3),
-                                          ),
-                                        ),
-                                        DataColumn(
-                                          label: TextWidget.subText(
-                                              text: "Qty",
-                                              theme: false,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
-                                              fw: 3),
-                                        ),
-                                        DataColumn(
-                                          label: TextWidget.subText(
-                                              text: "Price",
-                                              theme: false,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
-                                              fw: 3),
-                                        ),
-                                        DataColumn(
-                                          label: TextWidget.subText(
-                                              text: "Amount",
-                                              theme: false,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
-                                              fw: 3),
-                                        ),
-                                        DataColumn(
-                                          label: TextWidget.subText(
-                                              text: "Cut off",
-                                              theme: false,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
-                                              fw: 3),
-                                        ),
-                                      ],
-                                      rows: List<DataRow>.generate(
-                                        widget.ipodetails.bidDetail!.length,
-                                        (index) {
-                                          final bid = widget
-                                              .ipodetails.bidDetail![index];
-                                          final isCutOff =
-                                              widget.ipodetails.type == "BSE"
-                                                  ? (bid.cuttoffflag! != "0")
-                                                  : bid.atCutOff!;
-                                          return DataRow(cells: [
-                                            DataCell(Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 8),
-                                              child: TextWidget.subText(
-                                                  text: "${index + 1}",
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                  fw: 3),
-                                            )),
-                                            DataCell(
-                                              TextWidget.subText(
-                                                  text: bid.quantity!,
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                  fw: 3),
-                                            ),
-                                            DataCell(
-                                              TextWidget.subText(
-                                                  text: widget.ipodetails
-                                                              .type ==
-                                                          "BSE"
-                                                      ? bid.rate.toString()
-                                                      : "${double.parse(bid.price.toString()).toInt()}",
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                  fw: 3),
-                                            ),
-                                            DataCell(
-                                              TextWidget.subText(
-                                                  text: widget.ipodetails
-                                                              .type ==
-                                                          "BSE"
-                                                      ? "₹${getFormatter(noDecimal: true, v4d: false, value: (double.parse(bid.rate!) * double.parse(bid.quantity!)))}"
-                                                      : "₹${getFormatter(noDecimal: true, v4d: false, value: double.parse(bid.amount!).toDouble())}",
-                                                  theme: false,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                  fw: 3),
-                                            ),
-                                            DataCell(Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 12),
-                                              child: Icon(
-                                                isCutOff
-                                                    ? Icons.check_circle
-                                                    : Icons.cancel,
-                                                color: isCutOff
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                              ),
-                                            )),
-                                          ]);
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              )
-
                               // Padding(
                               //   padding: const EdgeInsets.only(top: 8, left: 16, bottom: 5),
                               //   child: Text(
@@ -1064,13 +1100,18 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                   ? colors.textSecondaryDark
                   : colors.textSecondaryLight,
               fw: 3),
-          TextWidget.subText(
-              text: value1,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              fw: 3),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.6,
+            child: TextWidget.subText(
+                text: value1,
+                theme: false,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                softWrap: true,
+                align: TextAlign.end,
+                fw: 3),
+          ),
         ],
       ),
       const SizedBox(height: 8),
@@ -1078,44 +1119,6 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
           thickness: 0)
     ]);
-  }
-
-  Padding data(String name, String value, ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                name,
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w600),
-              ),
-              Text(
-                value,
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    12,
-                    FontWeight.w500),
-              )
-            ],
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          Divider(
-            height: 0,
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider,
-          )
-        ],
-      ),
-    );
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {

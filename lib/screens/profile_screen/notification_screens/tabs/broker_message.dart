@@ -71,7 +71,7 @@ class BrokerMsg extends ConsumerWidget {
                               text:
                                   "${noftification.brokermsg![index].norentm}",
                               theme: false,
-                              color: colors.colorGrey,
+                              color: colors.textSecondaryLight,
                               fw: 0,
                             ),
                             const SizedBox(

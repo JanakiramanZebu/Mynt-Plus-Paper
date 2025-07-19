@@ -166,7 +166,7 @@ class OrderProvider extends DefaultChangeNotifier {
   String _lastOrderSortMethod = "TIMEDSC"; // Default sorting
   String get lastOrderSortMethod => _lastOrderSortMethod;
 
-  clearAllorders() {
+  clearAllorders() async {
     _torderBookModel = [];
     _ttradeBook = [];
     _orderBookModel = [];
@@ -176,8 +176,6 @@ class OrderProvider extends DefaultChangeNotifier {
     _orderHistoryModel = [];
     _siporderBookModel = null;
     _siporderBookSearch = [];
-    _bsktScripList = [];
-    _bsktScripList = [];
     _gttOrderBookSearch = [];
     _tradeBooksearch = [];
     _executedOrder = [];
@@ -185,6 +183,12 @@ class OrderProvider extends DefaultChangeNotifier {
     _allOrder = [];
     _orderBookModel = [];
     _selectedTab = 0;
+    // Clear basket data from preferences for current user
+    // final userId = pref.clientId;
+    // if (userId != null && userId.isNotEmpty) {
+    //   await pref.setBasketListForUser(userId, '');
+    //   await pref.setBasketScripForUser(userId, '');
+    // }
     // Clear subscription tracking
     clearSubscriptions();
     notifyListeners();
@@ -1881,17 +1885,19 @@ class OrderProvider extends DefaultChangeNotifier {
 
   createBasketOrder(String val, BuildContext context) async {
     String curDate = convDateWithTime();
-
     getBasketName();
-
     _bsktList.add({
       "bsketName": val,
       "createdDate": curDate,
       "max": '20',
       "curLength": '0'
     });
-    await pref.setBasketList(jsonEncode(_bsktList));
-
+    final userId = pref.clientId;
+    if (userId != null && userId.isNotEmpty) {
+      await pref.setBasketListForUser(userId, jsonEncode(_bsktList));
+    } else {
+      await pref.setBasketList(jsonEncode(_bsktList));
+    }
     getBasketName();
     tabSize();
     Navigator.pop(context);
@@ -1899,9 +1905,19 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   getBasketName() async {
-    _bsktList = pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList!);
-
-    _bsktScrips = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+    final userId = pref.clientId;
+    if (userId != null && userId.isNotEmpty) {
+      _bsktList = pref.getBasketListForUser(userId)!.isEmpty
+          ? []
+          : jsonDecode(pref.getBasketListForUser(userId)!);
+      _bsktScrips = pref.getBasketScripsForUser(userId)!.isEmpty
+          ? {}
+          : jsonDecode(pref.getBasketScripsForUser(userId)!);
+    } else {
+      _bsktList = pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList!);
+      _bsktScrips =
+          pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+    }
 
     if (_bsktList.isNotEmpty) {
       for (var element in _bsktList) {
@@ -1919,25 +1935,38 @@ class OrderProvider extends DefaultChangeNotifier {
 
   removeBasket(int index) async {
     _bsktList.removeAt(index);
-
-    await pref.setBasketList(jsonEncode(_bsktList));
-    _bsktList = pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList!);
+    final userId = pref.clientId;
+    if (userId != null && userId.isNotEmpty) {
+      await pref.setBasketListForUser(userId, jsonEncode(_bsktList));
+      _bsktList = pref.getBasketListForUser(userId)!.isEmpty
+          ? []
+          : jsonDecode(pref.getBasketListForUser(userId)!);
+    } else {
+      await pref.setBasketList(jsonEncode(_bsktList));
+      _bsktList = pref.bsktList!.isEmpty ? [] : jsonDecode(pref.bsktList!);
+    }
     tabSize();
     notifyListeners();
   }
 
   removeBsktScrip(int index, String bsktName) {
     Map<String, dynamic> data = {};
-    data = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
-
+    final userId = pref.clientId;
+    if (userId != null && userId.isNotEmpty) {
+      data = pref.getBasketScripsForUser(userId)!.isEmpty
+          ? {}
+          : jsonDecode(pref.getBasketScripsForUser(userId)!);
+    } else {
+      data = pref.bsktScrips!.isEmpty ? {} : jsonDecode(pref.bsktScrips!);
+    }
     _bsktScripList.removeAt(index);
-
     data.addAll({bsktName: _bsktScripList});
-
     String jsonData = jsonEncode(data);
-
-    pref.setBasketScrip(jsonData);
-
+    if (userId != null && userId.isNotEmpty) {
+      pref.setBasketScripForUser(userId, jsonData);
+    } else {
+      pref.setBasketScrip(jsonData);
+    }
     getBasketName();
   }
 

@@ -137,12 +137,12 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                       ),
                       child: Column(
                         children: [
-                          const CustomDragHandler(),
                           Expanded(
                             child: SingleChildScrollView(
                               controller: scrollController,
                               child: Column(
                                 children: [
+                                  const CustomDragHandler(),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16.0),

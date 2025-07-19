@@ -27,7 +27,6 @@ class IpoExploreScreens extends ConsumerStatefulWidget {
 class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
   final List<Tab> tabItems = [
     const Tab(text: "Open"),
     const Tab(text: "Upcoming"),

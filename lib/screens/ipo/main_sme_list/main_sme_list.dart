@@ -468,9 +468,9 @@ class _IPOListItem extends StatelessWidget {
 
   Future<void> _onIPOTap(BuildContext context) async {
     await ipoProvider.getIpoSinglePage(ipoName: "${ipo.name}");
-    if (isPreOpen) {
-      return;
-    }
+    // if (isPreOpen) {
+    //   return;
+    // }
 
     if (context.mounted) {
       showModalBottomSheet(

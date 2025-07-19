@@ -347,7 +347,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         return Scaffold(
           // Pass only the selected index to the AppBar builder
           appBar: _buildAppBar(selectedBtmIndx, theme.isDarkMode),
-          bottomNavigationBar: buildBottomNav(selectedBtmIndx, theme),
+          bottomNavigationBar: ref.watch(userProfileProvider).profileloader
+              ? const SizedBox.shrink()
+              : buildBottomNav(selectedBtmIndx, theme),
           // Pass only the selected index and theme to the Body builder
           body: _buildBody(selectedBtmIndx, theme),
         );

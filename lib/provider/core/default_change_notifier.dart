@@ -29,7 +29,7 @@ abstract class DefaultChangeNotifier extends ChangeNotifier {
     isLoad = on;
     notifyListeners();
   }
- 
+
   void togglefundLoadingOn(bool on) {
     fundisLoad = on;
     print("togglefundLoadingOn: $on");

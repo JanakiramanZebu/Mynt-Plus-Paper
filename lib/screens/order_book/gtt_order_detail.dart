@@ -97,7 +97,6 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                         ),
                         child: Column(
                           children: <Widget>[
-                            const CustomDragHandler(),
                             SingleChildScrollView(
                               controller: scrollController,
                               child: Padding(
@@ -106,6 +105,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    const CustomDragHandler(),
                                     Material(
                                       color: Colors.transparent,
                                       shape: const BeveledRectangleBorder(),

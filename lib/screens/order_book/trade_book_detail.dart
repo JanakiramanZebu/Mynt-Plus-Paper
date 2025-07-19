@@ -127,7 +127,6 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                   ),
                   child: Column(
                     children: [
-                      const CustomDragHandler(),
                       Expanded(
                         child: SingleChildScrollView(
                           controller: scrollController,
@@ -136,6 +135,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                 const EdgeInsets.symmetric(horizontal: 16.0),
                             child: Column(
                               children: [
+                                const CustomDragHandler(),
                                 const SizedBox(height: 16),
                                 Material(
                                   color: Colors.transparent,

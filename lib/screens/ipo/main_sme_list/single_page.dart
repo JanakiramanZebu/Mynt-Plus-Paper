@@ -135,12 +135,12 @@ class _IPODetailsContainer extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CustomDragHandler(),
           Expanded(
             child: SingleChildScrollView(
               controller: scrollController,
               child: Column(
                 children: [
+                  const CustomDragHandler(),
                   const SizedBox(height: 6),
                   // _buildStatusBanner(),
                   _buildCompanyHeader(),

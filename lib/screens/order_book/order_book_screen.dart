@@ -279,32 +279,46 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
               //   indent: 8,
               //   endIndent: 8,
               // ),
-              InkWell(
-                onTap: () async {
-                  FocusScope.of(context).unfocus();
-                  showModalBottomSheet(
-                    useSafeArea: true,
-                    isScrollControlled: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(16)),
+              Material(
+                color: Colors.transparent,
+                shape: CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.highlightDark
+                      : colors.highlightLight,
+                  onTap: () async {
+                    Future.delayed(const Duration(milliseconds: 100), () {
+                      FocusScope.of(context).unfocus();
+                      showModalBottomSheet(
+                        useSafeArea: true,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16)),
+                        ),
+                        context: context,
+                        builder: (context) {
+                          return const OrderbookFilterBottomSheet();
+                        },
+                      );
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SvgPicture.asset(
+                      assets.filterIcon,
+                      width: 14,
+                      height: 14,
+                      color: colors.textPrimaryLight,
                     ),
-                    context: context,
-                    builder: (context) {
-                      return const OrderbookFilterBottomSheet();
-                    },
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: SvgPicture.asset(
-                    assets.filterIcon,
-                    width: 14,
-                    height: 14,
-                    color: const Color(0xff121212),
                   ),
                 ),
               ),
+              const SizedBox(width: 4),
             ],
           ),
         ));

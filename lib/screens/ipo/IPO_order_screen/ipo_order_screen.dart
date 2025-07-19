@@ -711,11 +711,11 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                       child: Padding(
                                                         padding:
                                                             const EdgeInsets
-                                                                .all(8.0),
+                                                                .all(14.0),
                                                         child: SvgPicture.asset(
                                                             assets.switchIcon,
-                                                            fit: BoxFit
-                                                                .scaleDown),
+                                                            fit:
+                                                                BoxFit.contain),
                                                       ),
                                                     ),
                                                   ),

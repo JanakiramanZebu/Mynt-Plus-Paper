@@ -82,18 +82,27 @@ class LinkExtractor extends StatelessWidget {
           widgets.add(
             ReadMoreText(
               beforeText,
-              style: textStyles.notificationtextstyle.copyWith(
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              style: TextWidget.textStyle(
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fontSize: 14,
+                height: 1.5,
               ),
               textAlign: TextAlign.left,
               trimLines: 2,
-              moreStyle: textStyles.morestyle.copyWith(
+              moreStyle: TextWidget.textStyle(
+                theme: theme.isDarkMode,
                 color:
                     theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                fontSize: 14,
               ),
-              lessStyle: textStyles.morestyle.copyWith(
+              lessStyle: TextWidget.textStyle(
+                theme: theme.isDarkMode,
                 color:
                     theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+                fontSize: 14,
               ),
               colorClickableText:
                   theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
@@ -126,18 +135,27 @@ class LinkExtractor extends StatelessWidget {
         widgets.add(
           ReadMoreText(
             remainingText,
-            style: textStyles.notificationtextstyle.copyWith(
-              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            style: TextWidget.textStyle(
+              theme: theme.isDarkMode,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fontSize: 14,
+              height: 1.5,
             ),
             textAlign: TextAlign.left,
             trimLines: 2,
-            moreStyle: textStyles.morestyle.copyWith(
+            moreStyle: TextWidget.textStyle(
+              theme: theme.isDarkMode,
               color:
                   theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+              fontSize: 14,
             ),
-            lessStyle: textStyles.morestyle.copyWith(
+            lessStyle: TextWidget.textStyle(
+              theme: theme.isDarkMode,
               color:
                   theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
+              fontSize: 14,
             ),
             colorClickableText:
                 theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
@@ -196,10 +214,12 @@ class LinkExtractor extends StatelessWidget {
               Flexible(
                 child: Text(
                   linkText.isNotEmpty ? linkText : url,
-                  style: textStyles.notificationtextstyle.copyWith(
+                  style: TextWidget.textStyle(
+                    theme: theme.isDarkMode,
                     color: colors.colorBlue,
                     decoration: TextDecoration.underline,
                     fontSize: 14,
+                    height: 1.5,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
