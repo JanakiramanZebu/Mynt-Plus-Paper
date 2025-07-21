@@ -558,10 +558,11 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
 
         // Return divider for odd indices
         if (idx.isOdd) {
-          return Container(
-              color:
-                  theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-              height: 1);
+          return Divider(
+            thickness: 0,
+            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            height: 0,
+          );
         }
 
         // Wrap each position item with RepaintBoundary to isolate updates

@@ -1179,14 +1179,18 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> {
   // Get a cached divider container based on theme
   Widget _getDividerContainer(bool isDarkMode) {
     if (isDarkMode) {
-      _cachedDarkDivider ??= Container(
-          color: isDarkMode ? colors.dividerDark : colors.dividerLight,
-          height: 1);
+      _cachedDarkDivider ??= Divider(
+        thickness: 0,
+        color: isDarkMode ? colors.dividerDark : colors.dividerLight,
+        height: 0,
+      );
       return _cachedDarkDivider!;
     } else {
-      _cachedLightDivider ??= Container(
-          color: isDarkMode ? colors.dividerDark : colors.dividerLight,
-          height: 1);
+      _cachedLightDivider ??= Divider(
+        thickness: 0,
+        color: isDarkMode ? colors.dividerDark : colors.dividerLight,
+        height: 0,
+      );
       return _cachedLightDivider!;
     }
   }

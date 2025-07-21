@@ -887,7 +887,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                               horizontal: 16,
                             ),
                             child: Divider(
-                                thickness: 1,
+                                thickness: 0,
                                 color: theme.isDarkMode
                                     ? colors.darkColorDivider
                                     : colors.colorDivider),

@@ -65,7 +65,12 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
       builder: (context, WidgetRef ref, _) {
         final theme = ref.watch(themeProvider);
         final ledgerprovider = ref.watch(ledgerProvider);
-        final sortedDates = ledgerprovider.grouped.keys.toList()
+        // Filter sortedDates to only include dates within the selected financial year
+        final sortedDates = ledgerprovider.grouped.keys
+            .where((date) =>
+                !date.isBefore(ledgerprovider.startTaxDate) &&
+                !date.isAfter(ledgerprovider.endTaxDate))
+            .toList()
           ..sort((a, b) => b.compareTo(a));
         Future<void> _refresh() async {
           await Future.delayed(
@@ -167,8 +172,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                               ledgerprovider.availableSegments[index]);
                           ledgerprovider.fetchcalenderpnldata(
                               context,
-                              ledgerprovider.startDate,
-                              ledgerprovider.today,
+                              ledgerprovider.formattedStartDate,
+                              ledgerprovider.formattedendDate,
                               ledgerprovider.availableSegments[index]);
                         },
                       ),
@@ -498,7 +503,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                           .textSecondaryLight,
                                                 ),
                                               ),
-                                              onTap: () {
+                                              onTap: () async {
                                                 final index = ledgerprovider
                                                     .availableFinancialYears
                                                     .indexOf(ledgerprovider
@@ -526,7 +531,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                   ledgerprovider
                                                       .changeormountedsharing(
                                                           "change");
-                                                  ledgerprovider
+                                                  await ledgerprovider
                                                       .fetchcalenderpnldata(
                                                     context,
                                                     ledgerprovider
@@ -739,7 +744,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                           .textSecondaryLight,
                                                 ),
                                               ),
-                                              onTap: () {
+                                              onTap: () async {
                                                 final index = ledgerprovider
                                                     .availableFinancialYears
                                                     .indexOf(ledgerprovider
@@ -750,7 +755,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                       index - 1];
                                                   ledgerprovider
                                                       .setFinancialYear(newFY);
-                                                  ledgerprovider
+                                                  await ledgerprovider
                                                       .fetchsharingdata(
                                                     ledgerprovider
                                                         .formattedStartDate,
@@ -763,7 +768,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                   ledgerprovider
                                                       .changeormountedsharing(
                                                           "change");
-                                                  ledgerprovider
+                                                  await ledgerprovider
                                                       .fetchcalenderpnldata(
                                                     context,
                                                     ledgerprovider
