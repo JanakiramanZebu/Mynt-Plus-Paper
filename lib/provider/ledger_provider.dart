@@ -372,10 +372,10 @@ class LDProvider extends DefaultChangeNotifier {
     ledgerSearchCtrl.clear();
     notifyListeners();
     // // Reset to original data when search is cleared
-    if (_originalGrouped.isNotEmpty) {
-      grouped = Map.from(_originalGrouped);
-      notifyListeners();
-    }
+    // if (_originalGrouped.isNotEmpty) {
+    //   grouped = Map.from(_originalGrouped);
+    //   notifyListeners();
+    // }
   }
 
   bool _showProfitlossSearch = false;
@@ -386,11 +386,17 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  bool _showLedgerSearch = false;
+  bool _showLedgerSearch = true;
   bool get showLedgerSearch => _showLedgerSearch;
 
-  showledgerSearch(bool value) {
+  void showledgerSearch(bool value) {
     _showLedgerSearch = value;
+    if (value) {
+      // When closing search, reset the search and restore full data
+      clearLedgerSearch();
+      // Optionally, you can also re-fetch data if needed
+      // fetchLegerData(context, startDate, endDate);
+    }
     notifyListeners();
   }
 
@@ -1839,11 +1845,10 @@ class LDProvider extends DefaultChangeNotifier {
   Future fetchBillDetails(BuildContext context, String sett, String mrktyp,
       String comc, String tdate) async {
     try {
-      _ledgerloading = true;
+      // _ledgerloading = true;
       notifyListeners();
 
       _ledgerBillData = await api.getLedgerBilldata(sett, mrktyp, comc, tdate);
-      _ledgerloading = false;
 
       // if (_ledgerAllData!.stat == "Ok") {
       //   // for (var element in _ledgerAllData!.topSchemes!) {
@@ -1851,14 +1856,18 @@ class LDProvider extends DefaultChangeNotifier {
       //   // }
       // }
       // formatedList(_ledgerBillData!.fullStat!);
-      notifyListeners();
-    } catch (e) {
+    } 
+    catch (e) {
       debugPrint("$e");
       _ledgerloading = false;
 
       ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, 'Error occurred try again later'),
       );
+    }finally {
+      // _ledgerloading = false;
+      notifyListeners();
+
     }
   }
 

@@ -6,6 +6,7 @@ import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_us
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
 class LedgerBillBottom extends StatefulWidget {
@@ -54,11 +55,11 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
               Padding(
                 padding: const EdgeInsets.only(
                     top: 8.0, left: 16.0, right: 16.0, bottom: 8.0),
-                child: TextWidget.heroText(
+                child: TextWidget.titleText(
                     text: "Bill and Details",
                     textOverflow: TextOverflow.ellipsis,
                     theme: theme.isDarkMode,
-                    fw: 0),
+                    fw: 1),
               ),
               ledgerdata.ledgerBillData!.expenses == null
                   ? Center(
@@ -71,10 +72,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                             Divider(
-                                        color: const Color.fromARGB(
-                                            255, 212, 212, 212),
-                                      ),
+                            const ListDivider(),
                             Container(
                               width: screenWidth,
                               child: Padding(

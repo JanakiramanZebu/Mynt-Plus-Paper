@@ -117,6 +117,7 @@ mixin LedgerApi on ApiCore {
             "from": from, "to": to
           }));
 
+      print('getLedgerdata response: ' + res.body); 
       final json = jsonDecode((res.body));
       // print("${json['stat']}");
       if (json['stat'] != 'Not Ok') {
