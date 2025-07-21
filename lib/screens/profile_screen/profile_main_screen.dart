@@ -286,7 +286,7 @@ class UserAccountScreen extends ConsumerWidget {
           // ),
 
           /// 🔹 Horizontal Buttons (inline style)
-          _buildHorizontalButtons(context, ref, theme, funds, mf),
+          // _buildHorizontalButtons(context, ref, theme, funds, mf),
 
           /// 🔹 Menu List
           Expanded(
@@ -2890,9 +2890,8 @@ class ReportsScreen extends ConsumerWidget {
                           await ledgerdate.getCurrentDate('else');
                           Navigator.pushNamed(context, Routes.calenderpnlScreen,
                               arguments: "DDDDD");
-                       
 
-                          case 'Tax P&L':
+                        case 'Tax P&L':
                           // await ledgerdate.getYearlistTaxpnl();
                           // if (ledgerdate.taxpnldercomcur == null &&
                           //     ledgerdate.taxpnleq == null) {
@@ -2909,7 +2908,7 @@ class ReportsScreen extends ConsumerWidget {
                           // Navigator.pushNamed(context, Routes.taxpnlscreen,
                           //     arguments: "DDDDD");
 
-                         await showModalBottomSheet(
+                          await showModalBottomSheet(
                             isScrollControlled: true,
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.only(
@@ -2930,15 +2929,15 @@ class ReportsScreen extends ConsumerWidget {
                           );
 
                           break;
-                           case 'Ledger':
+                        case 'Ledger':
                           await ledgerdate.getCurrentDate('else');
 
                           Navigator.pushNamed(context, Routes.ledgerscreen,
                               arguments: "DDDDD");
                           break;
 
-                           case 'Client Master(CMR)':
-                            await showModalBottomSheet(
+                        case 'Client Master(CMR)':
+                          await showModalBottomSheet(
                             isScrollControlled: true,
                             backgroundColor: Colors.transparent,
                             shape: const RoundedRectangleBorder(
@@ -2956,7 +2955,9 @@ class ReportsScreen extends ConsumerWidget {
                                 Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(16),
-                                    color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                                    color: theme.isDarkMode
+                                        ? colors.colorBlack
+                                        : colors.colorWhite,
                                     boxShadow: const [
                                       BoxShadow(
                                         color: Color(0xff999999),
@@ -2967,16 +2968,22 @@ class ReportsScreen extends ConsumerWidget {
                                   ),
                                   child: Padding(
                                     padding: EdgeInsets.only(
-                                      bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
+                                      bottom: 24 +
+                                          MediaQuery.of(context)
+                                              .viewInsets
+                                              .bottom,
                                     ),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 8.0, horizontal: 16.0),
                                           child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                             children: [
                                               TextWidget.titleText(
                                                 text: "Client Master (CMR)",
@@ -2988,22 +2995,35 @@ class ReportsScreen extends ConsumerWidget {
                                                 shape: const CircleBorder(),
                                                 child: InkWell(
                                                   onTap: () async {
-                                                    await Future.delayed(const Duration(milliseconds: 150));
+                                                    await Future.delayed(
+                                                        const Duration(
+                                                            milliseconds: 150));
                                                     Navigator.pop(context);
                                                   },
-                                                  borderRadius: BorderRadius.circular(20),
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
                                                   splashColor: theme.isDarkMode
-                                                      ? Colors.white.withOpacity(0.15)
-                                                      : Colors.black.withOpacity(0.15),
-                                                  highlightColor: theme.isDarkMode
-                                                      ? Colors.white.withOpacity(0.08)
-                                                      : Colors.black.withOpacity(0.08),
+                                                      ? Colors.white
+                                                          .withOpacity(0.15)
+                                                      : Colors.black
+                                                          .withOpacity(0.15),
+                                                  highlightColor: theme
+                                                          .isDarkMode
+                                                      ? Colors.white
+                                                          .withOpacity(0.08)
+                                                      : Colors.black
+                                                          .withOpacity(0.08),
                                                   child: Padding(
-                                                    padding: const EdgeInsets.all(6.0),
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            6.0),
                                                     child: Icon(
                                                       Icons.close_rounded,
                                                       size: 22,
-                                                      color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
+                                                      color: theme.isDarkMode
+                                                          ? const Color(
+                                                              0xffBDBDBD)
+                                                          : colors.colorGrey,
                                                     ),
                                                   ),
                                                 ),
@@ -3012,12 +3032,15 @@ class ReportsScreen extends ConsumerWidget {
                                           ),
                                         ),
                                         Divider(
-                                          color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                                          color: theme.isDarkMode
+                                              ? colors.darkColorDivider
+                                              : colors.colorDivider,
                                           height: 0,
                                         ),
                                         const SizedBox(height: 24),
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 24.0),
                                           child: SizedBox(
                                             width: double.infinity,
                                             height: 48,
@@ -3025,20 +3048,22 @@ class ReportsScreen extends ConsumerWidget {
                                               style: OutlinedButton.styleFrom(
                                                 elevation: 0,
                                                 minimumSize: const Size(0, 48),
-                                                backgroundColor: theme.isDarkMode
-                                                    ? colors.primaryDark
-                                                    : colors.primaryLight,
+                                                backgroundColor:
+                                                    theme.isDarkMode
+                                                        ? colors.primaryDark
+                                                        : colors.primaryLight,
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(5),
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
                                                 ),
                                                 padding: EdgeInsets.zero,
                                               ),
                                               onPressed: () {
                                                 // Download functionality will be added later
                                                 print("Downloading cmr");
-                                                ledgerdate.fetchcmrdownload(context);
+                                                ledgerdate
+                                                    .fetchcmrdownload(context);
                                                 print("Downloading cmr api");
-
                                               },
                                               child: TextWidget.subText(
                                                 text: "Download",
@@ -3058,209 +3083,209 @@ class ReportsScreen extends ConsumerWidget {
                             ),
                           );
                           break;
-                  //          case 'DP Holdings & Transcation':
-                  //           await showModalBottomSheet(
-                  //           isScrollControlled: true,
-                  //           backgroundColor: Colors.transparent,
-                  //           shape: const RoundedRectangleBorder(
-                  //             borderRadius: BorderRadius.only(
-                  //               topLeft: Radius.circular(16),
-                  //               topRight: Radius.circular(16),
-                  //             ),
-                  //           ),
-                  //           isDismissible: true,
-                  //           enableDrag: false,
-                  //           useSafeArea: true,
-                  //           context: context,
-                  //           builder: (context) => Stack(
-                  //             children: [
-                  //               Container(
-                  //                 decoration: BoxDecoration(
-                  //                   borderRadius: BorderRadius.circular(16),
-                  //                   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  //                   boxShadow: const [
-                  //                     BoxShadow(
-                  //                       color: Color(0xff999999),
-                  //                       blurRadius: 4.0,
-                  //                       offset: Offset(2.0, 0.0),
-                  //                     )
-                  //                   ],
-                  //                 ),
-                  //                 child: Padding(
-                  //                   padding: EdgeInsets.only(
-                  //                     bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
-                  //                   ),
-                  //                   child: Column(
-                  //                     mainAxisSize: MainAxisSize.min,
-                  //                     crossAxisAlignment: CrossAxisAlignment.start,
-                  //                     children: [
-                  //                       Padding(
-                  //                         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                  //                         child: Row(
-                  //                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //                           children: [
-                  //                             TextWidget.titleText(
-                  //                               text: "DP Holding & Transaction",
-                  //                               theme: theme.isDarkMode,
-                  //                               fw: 1,
-                  //                             ),
-                  //                             Material(
-                  //                               color: Colors.transparent,
-                  //                               shape: const CircleBorder(),
-                  //                               child: InkWell(
-                  //                                 onTap: () async {
-                  //                                   await Future.delayed(const Duration(milliseconds: 150));
-                  //                                   Navigator.pop(context);
-                  //                                 },
-                  //                                 borderRadius: BorderRadius.circular(20),
-                  //                                 splashColor: theme.isDarkMode
-                  //                                     ? Colors.white.withOpacity(0.15)
-                  //                                     : Colors.black.withOpacity(0.15),
-                  //                                 highlightColor: theme.isDarkMode
-                  //                                     ? Colors.white.withOpacity(0.08)
-                  //                                     : Colors.black.withOpacity(0.08),
-                  //                                 child: Padding(
-                  //                                   padding: const EdgeInsets.all(6.0),
-                  //                                   child: Icon(
-                  //                                     Icons.close_rounded,
-                  //                                     size: 22,
-                  //                                     color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
-                  //                                   ),
-                  //                                 ),
-                  //                               ),
-                  //                             ),
-                  //                           ],
-                  //                         ),
-                  //                       ),
-                  //                       Divider(
-                  //                         color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-                  //                         height: 0,
-                  //                       ),
-                  //                       const SizedBox(height: 16),
-                  //                       Padding(
-                  //                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  //                         child: TextWidget.subText(
-                  //                           text: "Financial Year",
-                  //                           theme: theme.isDarkMode,
-                  //                         ),
-                  //                       ),
-                  //                       const SizedBox(height: 8),
-                  //                       Padding(
-                  //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  //   child: Column(
-                  //     crossAxisAlignment: CrossAxisAlignment.start,
-                  //     children: [
-                  //       Container(
-                  //         width: double.infinity,
-                  //         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                  //         decoration: BoxDecoration(
-                  //           color: Color(0xffF1F3F8),
-                  //           border: Border.all(
-                  //             color: colors.colorBlue,
-                  //           ),
-                  //           borderRadius: BorderRadius.circular(5),
-                  //         ),
-                  //         child: Row(
-                  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //           children: [
-                  //             Material(
-                  //               color: Colors.transparent,
-                  //               borderRadius: BorderRadius.circular(20),
-                  //               child: InkWell(
-                  //                 borderRadius: BorderRadius.circular(20),
-                  //                 splashColor: theme.isDarkMode
-                  //                     ? colors.colorWhite.withOpacity(0.1)
-                  //                     : colors.colorBlack.withOpacity(0.1),
-                  //                 onTap: (){},
-                  //                 child: Container(
-                  //                   width: 40,
-                  //                   height: 40,
-                  //                   alignment: Alignment.center,
-                  //                   child: Icon(
-                  //                     Icons.chevron_left,
-                  //                     size: 24,
-                  //                     color: theme.isDarkMode
-                  //                             ? colors.colorWhite
-                  //                             : colors.colorBlack,
-                  //                   ),
-                  //                 ),
-                  //               ),
-                  //             ),
-                  //             TextWidget.subText(
-                  //               text: "Apr 2025 - Mar 2026",
-                  //               theme: theme.isDarkMode,
-                  //               fw: 1,
-                  //             ),
-                  //             Material(
-                  //               color: Colors.transparent,
-                  //               borderRadius: BorderRadius.circular(20),
-                  //               child: InkWell(
-                  //                 borderRadius: BorderRadius.circular(20),
-                  //                 splashColor: theme.isDarkMode
-                  //                     ? colors.colorWhite.withOpacity(0.1)
-                  //                     : colors.colorBlack.withOpacity(0.1),
-                  //                 onTap: () {
-                                   
-                  //                 },
-                  //                 child: Container(
-                  //                   width: 40,
-                  //                   height: 40,
-                  //                   alignment: Alignment.center,
-                  //                   child: Icon(
-                  //                     Icons.chevron_right,
-                  //                     size: 24,
-                  //                     color:theme.isDarkMode
-                  //                             ? colors.colorWhite
-                  //                             : colors.colorBlack,
-                  //                   ),
-                  //                 ),
-                  //               ),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
-                  //                       const SizedBox(height: 24),
-                  //                       Padding(
-                  //                         padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  //                         child: SizedBox(
-                  //                           width: double.infinity,
-                  //                           height: 48,
-                  //                           child: OutlinedButton(
-                  //                             style: OutlinedButton.styleFrom(
-                  //                               elevation: 0,
-                  //                               minimumSize: const Size(0, 48),
-                  //                               backgroundColor: theme.isDarkMode
-                  //                                   ? colors.primaryDark
-                  //                                   : colors.primaryLight,
-                  //                               shape: RoundedRectangleBorder(
-                  //                                 borderRadius: BorderRadius.circular(5),
-                  //                               ),
-                  //                               padding: EdgeInsets.zero,
-                  //                             ),
-                  //                             onPressed: () {
-                  //                               // Download functionality will be added later
-                  //                             },
-                  //                             child: TextWidget.subText(
-                  //                               text: "Download",
-                  //                               theme: theme.isDarkMode,
-                  //                               color: colors.colorWhite,
-                  //                               fw: 2,
-                  //                               align: TextAlign.center,
-                  //                             ),
-                  //                           ),
-                  //                         ),
-                  //                       ),
-                  //                     ],
-                  //                   ),
-                  //                 ),
-                  //               ),
-                  //             ],
-                  //           ),
-                  //         );
-                  //         break;
+                        //          case 'DP Holdings & Transcation':
+                        //           await showModalBottomSheet(
+                        //           isScrollControlled: true,
+                        //           backgroundColor: Colors.transparent,
+                        //           shape: const RoundedRectangleBorder(
+                        //             borderRadius: BorderRadius.only(
+                        //               topLeft: Radius.circular(16),
+                        //               topRight: Radius.circular(16),
+                        //             ),
+                        //           ),
+                        //           isDismissible: true,
+                        //           enableDrag: false,
+                        //           useSafeArea: true,
+                        //           context: context,
+                        //           builder: (context) => Stack(
+                        //             children: [
+                        //               Container(
+                        //                 decoration: BoxDecoration(
+                        //                   borderRadius: BorderRadius.circular(16),
+                        //                   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                        //                   boxShadow: const [
+                        //                     BoxShadow(
+                        //                       color: Color(0xff999999),
+                        //                       blurRadius: 4.0,
+                        //                       offset: Offset(2.0, 0.0),
+                        //                     )
+                        //                   ],
+                        //                 ),
+                        //                 child: Padding(
+                        //                   padding: EdgeInsets.only(
+                        //                     bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
+                        //                   ),
+                        //                   child: Column(
+                        //                     mainAxisSize: MainAxisSize.min,
+                        //                     crossAxisAlignment: CrossAxisAlignment.start,
+                        //                     children: [
+                        //                       Padding(
+                        //                         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        //                         child: Row(
+                        //                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //                           children: [
+                        //                             TextWidget.titleText(
+                        //                               text: "DP Holding & Transaction",
+                        //                               theme: theme.isDarkMode,
+                        //                               fw: 1,
+                        //                             ),
+                        //                             Material(
+                        //                               color: Colors.transparent,
+                        //                               shape: const CircleBorder(),
+                        //                               child: InkWell(
+                        //                                 onTap: () async {
+                        //                                   await Future.delayed(const Duration(milliseconds: 150));
+                        //                                   Navigator.pop(context);
+                        //                                 },
+                        //                                 borderRadius: BorderRadius.circular(20),
+                        //                                 splashColor: theme.isDarkMode
+                        //                                     ? Colors.white.withOpacity(0.15)
+                        //                                     : Colors.black.withOpacity(0.15),
+                        //                                 highlightColor: theme.isDarkMode
+                        //                                     ? Colors.white.withOpacity(0.08)
+                        //                                     : Colors.black.withOpacity(0.08),
+                        //                                 child: Padding(
+                        //                                   padding: const EdgeInsets.all(6.0),
+                        //                                   child: Icon(
+                        //                                     Icons.close_rounded,
+                        //                                     size: 22,
+                        //                                     color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
+                        //                                   ),
+                        //                                 ),
+                        //                               ),
+                        //                             ),
+                        //                           ],
+                        //                         ),
+                        //                       ),
+                        //                       Divider(
+                        //                         color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                        //                         height: 0,
+                        //                       ),
+                        //                       const SizedBox(height: 16),
+                        //                       Padding(
+                        //                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        //                         child: TextWidget.subText(
+                        //                           text: "Financial Year",
+                        //                           theme: theme.isDarkMode,
+                        //                         ),
+                        //                       ),
+                        //                       const SizedBox(height: 8),
+                        //                       Padding(
+                        //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        //   child: Column(
+                        //     crossAxisAlignment: CrossAxisAlignment.start,
+                        //     children: [
+                        //       Container(
+                        //         width: double.infinity,
+                        //         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                        //         decoration: BoxDecoration(
+                        //           color: Color(0xffF1F3F8),
+                        //           border: Border.all(
+                        //             color: colors.colorBlue,
+                        //           ),
+                        //           borderRadius: BorderRadius.circular(5),
+                        //         ),
+                        //         child: Row(
+                        //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //           children: [
+                        //             Material(
+                        //               color: Colors.transparent,
+                        //               borderRadius: BorderRadius.circular(20),
+                        //               child: InkWell(
+                        //                 borderRadius: BorderRadius.circular(20),
+                        //                 splashColor: theme.isDarkMode
+                        //                     ? colors.colorWhite.withOpacity(0.1)
+                        //                     : colors.colorBlack.withOpacity(0.1),
+                        //                 onTap: (){},
+                        //                 child: Container(
+                        //                   width: 40,
+                        //                   height: 40,
+                        //                   alignment: Alignment.center,
+                        //                   child: Icon(
+                        //                     Icons.chevron_left,
+                        //                     size: 24,
+                        //                     color: theme.isDarkMode
+                        //                             ? colors.colorWhite
+                        //                             : colors.colorBlack,
+                        //                   ),
+                        //                 ),
+                        //               ),
+                        //             ),
+                        //             TextWidget.subText(
+                        //               text: "Apr 2025 - Mar 2026",
+                        //               theme: theme.isDarkMode,
+                        //               fw: 1,
+                        //             ),
+                        //             Material(
+                        //               color: Colors.transparent,
+                        //               borderRadius: BorderRadius.circular(20),
+                        //               child: InkWell(
+                        //                 borderRadius: BorderRadius.circular(20),
+                        //                 splashColor: theme.isDarkMode
+                        //                     ? colors.colorWhite.withOpacity(0.1)
+                        //                     : colors.colorBlack.withOpacity(0.1),
+                        //                 onTap: () {
+
+                        //                 },
+                        //                 child: Container(
+                        //                   width: 40,
+                        //                   height: 40,
+                        //                   alignment: Alignment.center,
+                        //                   child: Icon(
+                        //                     Icons.chevron_right,
+                        //                     size: 24,
+                        //                     color:theme.isDarkMode
+                        //                             ? colors.colorWhite
+                        //                             : colors.colorBlack,
+                        //                   ),
+                        //                 ),
+                        //               ),
+                        //             ),
+                        //           ],
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                        //                       const SizedBox(height: 24),
+                        //                       Padding(
+                        //                         padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        //                         child: SizedBox(
+                        //                           width: double.infinity,
+                        //                           height: 48,
+                        //                           child: OutlinedButton(
+                        //                             style: OutlinedButton.styleFrom(
+                        //                               elevation: 0,
+                        //                               minimumSize: const Size(0, 48),
+                        //                               backgroundColor: theme.isDarkMode
+                        //                                   ? colors.primaryDark
+                        //                                   : colors.primaryLight,
+                        //                               shape: RoundedRectangleBorder(
+                        //                                 borderRadius: BorderRadius.circular(5),
+                        //                               ),
+                        //                               padding: EdgeInsets.zero,
+                        //                             ),
+                        //                             onPressed: () {
+                        //                               // Download functionality will be added later
+                        //                             },
+                        //                             child: TextWidget.subText(
+                        //                               text: "Download",
+                        //                               theme: theme.isDarkMode,
+                        //                               color: colors.colorWhite,
+                        //                               fw: 2,
+                        //                               align: TextAlign.center,
+                        //                             ),
+                        //                           ),
+                        //                         ),
+                        //                       ),
+                        //                     ],
+                        //                   ),
+                        //                 ),
+                        //               ),
+                        //             ],
+                        //           ),
+                        //         );
+                        //         break;
                         // case 'Holdings':
                         //   await ledgerdate.getCurrentDate('else');
 
@@ -3285,7 +3310,6 @@ class ReportsScreen extends ConsumerWidget {
                         //       arguments: "DDDDD");
                         //   break;
 
-                        
                         // case 'Tradebook':
                         //   // await ledgerdate.getCurrentDate('tradebook');
                         //   if (ledgerdate.tradebookdata == null) {

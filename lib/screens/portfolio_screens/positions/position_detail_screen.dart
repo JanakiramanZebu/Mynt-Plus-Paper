@@ -446,7 +446,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                                     .primaryDark
                                                                 : colors
                                                                     .primaryLight,
-                                                            fw: 2,
+                                                            fw: 0,
                                                           ),
                                                         ),
                                                       ),
@@ -565,7 +565,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                                                     .primaryDark
                                                                 : colors
                                                                     .primaryLight,
-                                                            fw: 2,
+                                                            fw: 0,
                                                           ),
                                                         ),
                                                       ),

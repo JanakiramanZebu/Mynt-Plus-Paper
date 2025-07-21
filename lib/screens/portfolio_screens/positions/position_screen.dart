@@ -972,7 +972,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              "Qty ",
+              "QTY ",
               style: _getStyle(
                   theme.isDarkMode
                       ? colors.textSecondaryDark
@@ -998,7 +998,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
             // Right 50%: P&L value
 
             Text(
-              "Avg  ",
+              "AVG ",
               style: _getStyle(
                   theme.isDarkMode
                       ? colors.textSecondaryDark

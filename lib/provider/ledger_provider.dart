@@ -364,7 +364,7 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
-    TextEditingController ledgerSearchCtrl = TextEditingController();
+  TextEditingController ledgerSearchCtrl = TextEditingController();
   clearLedgerSearch() {
     ledgerSearchCtrl.clear();
     notifyListeners();
@@ -407,55 +407,45 @@ class LDProvider extends DefaultChangeNotifier {
       // Create a new filtered grouped map
       Map<DateTime, List<TradeData>> filteredGrouped = {};
 
+      // Helper to format date as '15 Jun 2025'
+      String formatDate(DateTime date) {
+        const monthAbbrs = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec'
+        ];
+        return '${date.day.toString().padLeft(2, '0')} '
+            '${monthAbbrs[date.month - 1]} '
+            '${date.year}';
+      }
+
+      final searchTerm = value.toLowerCase();
+
       _originalGrouped.forEach((date, trades) {
+        // Check if search term matches the formatted date string
+        final dateString = formatDate(date).toLowerCase();
+        bool dateMatches = dateString.contains(searchTerm);
+
         // Filter trades for this date
         List<TradeData> filteredTrades = trades.where((element) {
           final symbol = element.sCRIPSYMBOL?.toLowerCase() ?? '';
           final scripName = element.sCRIPNAME?.toLowerCase() ?? '';
-          final searchTerm = value.toLowerCase();
-
           return symbol.contains(searchTerm) || scripName.contains(searchTerm);
         }).toList();
 
-        // Only add dates that have matching trades
-        if (filteredTrades.isNotEmpty) {
-          filteredGrouped[date] = filteredTrades;
-        }
-      });
-
-      grouped = filteredGrouped;
-    }
-
-    notifyListeners();
-  }
-
-   Map<DateTime, List<TradeData>> _originalGroupedledger = {};
-
-  ledgerSearch(String value, BuildContext context) {
-    // If this is the first search, store the original data
-    if (_originalGroupedledger.isEmpty) {
-      _originalGroupedledger = Map.from(grouped);
-    }
-
-    if (value.isEmpty) {
-      // Reset to original data when search is cleared
-      grouped = Map.from(_originalGroupedledger);
-    } else {
-      // Create a new filtered grouped map
-      Map<DateTime, List<TradeData>> filteredGrouped = {};
-
-      _originalGroupedledger.forEach((date, trades) {
-        // Filter trades for this date
-        List<TradeData> filteredTrades = trades.where((element) {
-          final symbol = element.sCRIPSYMBOL?.toLowerCase() ?? '';
-          final scripName = element.sCRIPNAME?.toLowerCase() ?? '';
-          final searchTerm = value.toLowerCase();
-
-          return symbol.contains(searchTerm) || scripName.contains(searchTerm);
-        }).toList();
-
-        // Only add dates that have matching trades
-        if (filteredTrades.isNotEmpty) {
+        // If date matches, include all trades for that date
+        if (dateMatches) {
+          filteredGrouped[date] = trades;
+        } else if (filteredTrades.isNotEmpty) {
           filteredGrouped[date] = filteredTrades;
         }
       });
@@ -3125,7 +3115,7 @@ class LDProvider extends DefaultChangeNotifier {
     // Always start with current date
     final initialDate = DateTime.now();
     DateTime selectedDate = initialDate;
-    
+
     await showModalBottomSheet(
       context: context,
       backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
@@ -3143,8 +3133,10 @@ class LDProvider extends DefaultChangeNotifier {
                 child: Theme(
                   data: Theme.of(context).copyWith(
                     colorScheme: ColorScheme.light(
-                      primary: theme.isDarkMode ? Colors.white : colors.primaryLight,
-                      onPrimary: theme.isDarkMode ? Colors.black : colors.colorWhite,
+                      primary:
+                          theme.isDarkMode ? Colors.white : colors.primaryLight,
+                      onPrimary:
+                          theme.isDarkMode ? Colors.black : colors.colorWhite,
                       surface: theme.isDarkMode ? Colors.black : Colors.white,
                       onSurface: theme.isDarkMode ? Colors.white : Colors.black,
                     ),
@@ -3166,20 +3158,26 @@ class LDProvider extends DefaultChangeNotifier {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
-                      backgroundColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                      backgroundColor: theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
                     onPressed: () {
                       // Set start date to first day of month
-                      final firstDay = DateTime(selectedDate.year, selectedDate.month, 1);
+                      final firstDay =
+                          DateTime(selectedDate.year, selectedDate.month, 1);
                       // Set end date to last day of month
-                      final lastDay = DateTime(selectedDate.year, selectedDate.month + 1, 0);
-                      
-                      _startDate = "${firstDay.day.toString().padLeft(2, '0')}/${firstDay.month.toString().padLeft(2, '0')}/${firstDay.year}";
-                      _endDate = "${lastDay.day.toString().padLeft(2, '0')}/${lastDay.month.toString().padLeft(2, '0')}/${lastDay.year}";
-                      
+                      final lastDay = DateTime(
+                          selectedDate.year, selectedDate.month + 1, 0);
+
+                      _startDate =
+                          "${firstDay.day.toString().padLeft(2, '0')}/${firstDay.month.toString().padLeft(2, '0')}/${firstDay.year}";
+                      _endDate =
+                          "${lastDay.day.toString().padLeft(2, '0')}/${lastDay.month.toString().padLeft(2, '0')}/${lastDay.year}";
+
                       notifyListeners();
                       Navigator.pop(context);
                     },
@@ -3201,11 +3199,13 @@ class LDProvider extends DefaultChangeNotifier {
 
   // Contract Calendar related variables
   Map<DateTime, List<String>> _contractDocumentDates = {};
-  Map<DateTime, List<String>> get contractDocumentDates => _contractDocumentDates;
+  Map<DateTime, List<String>> get contractDocumentDates =>
+      _contractDocumentDates;
 
   // Store full document details for each date
   Map<DateTime, List<DocumentDetail>> _contractDocumentDetails = {};
-  Map<DateTime, List<DocumentDetail>> get contractDocumentDetails => _contractDocumentDetails;
+  Map<DateTime, List<DocumentDetail>> get contractDocumentDetails =>
+      _contractDocumentDetails;
 
   String _selectedContractFilter = 'CN'; // Default to CN
   String get selectedContractFilter => _selectedContractFilter;
@@ -3227,22 +3227,24 @@ class LDProvider extends DefaultChangeNotifier {
     try {
       _isContractCalendarLoading = true;
       notifyListeners();
-      
+
       // Format dates for API (DD/MM/YYYY format)
       final startDate = "01/${month.toString().padLeft(2, '0')}/${year}";
-      final endDate = "${DateTime(year, month + 1, 0).day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/${year}";
-      
+      final endDate =
+          "${DateTime(year, month + 1, 0).day.toString().padLeft(2, '0')}/${month.toString().padLeft(2, '0')}/${year}";
+
       // Call existing PDF download API
       _pdfdownload = await api.getpdfdownload(startDate, endDate);
-      
+
       // Clear previous data
       _contractDocumentDates.clear();
       _contractDocumentDetails.clear();
-      
+
       // Parse response and populate document dates
       if (_pdfdownload?.data != null) {
         for (var doc in _pdfdownload!.data!) {
-          if (doc.docDate != null && (doc.docType == 'CN' || doc.docType == 'Contract')) {
+          if (doc.docDate != null &&
+              (doc.docType == 'CN' || doc.docType == 'Contract')) {
             // Parse date from DD/MM/YYYY format
             final dateParts = doc.docDate!.split('/');
             if (dateParts.length == 3) {
@@ -3250,7 +3252,7 @@ class LDProvider extends DefaultChangeNotifier {
               final month = int.parse(dateParts[1]);
               final year = int.parse(dateParts[2]);
               final docDate = DateTime(year, month, day);
-              
+
               if (!_contractDocumentDates.containsKey(docDate)) {
                 _contractDocumentDates[docDate] = [];
               }
@@ -3270,7 +3272,7 @@ class LDProvider extends DefaultChangeNotifier {
           }
         }
       }
-      
+
       _isContractCalendarLoading = false;
       notifyListeners();
     } catch (e) {
@@ -3278,6 +3280,25 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
       debugPrint("Error fetching contract documents: $e");
     }
+  }
+
+  void searchLedgerType(String value) {
+    if (_ledgerAllDataDummy == null || _ledgerAllDataDummy!.fullStat == null)
+      return;
+
+    if (value.isEmpty) {
+      // Reset to original data
+      _ledgerAllData!.fullStat = List.from(_ledgerAllDataDummy!.fullStat!);
+    } else {
+      final searchTerm = value.toLowerCase();
+      _ledgerAllData!.fullStat = _ledgerAllDataDummy!.fullStat!
+          .where((entry) =>
+              (entry.tYPE?.toLowerCase().contains(searchTerm) ?? false) ||
+              (entry.nARRATION?.toLowerCase().contains(searchTerm) ?? false) ||
+              (entry.vOUCHERDATE?.toLowerCase().contains(searchTerm) ?? false))
+          .toList();
+    }
+    notifyListeners();
   }
 }
 // List<double> getCustItemsHeight() {
