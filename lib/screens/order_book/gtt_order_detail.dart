@@ -97,7 +97,6 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                         ),
                         child: Column(
                           children: <Widget>[
-                            const CustomDragHandler(),
                             SingleChildScrollView(
                               controller: scrollController,
                               child: Padding(
@@ -106,6 +105,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    const CustomDragHandler(),
                                     Material(
                                       color: Colors.transparent,
                                       shape: const BeveledRectangleBorder(),
@@ -117,30 +117,10 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                         highlightColor:
                                             Colors.black.withOpacity(0.08),
                                         onTap: () async {
-                                          await scripInfo
-                                              .chngDephBtn("Overview");
-                                          marketwatch.scripdepthsize(true);
-                                          // Navigator.pop(context);
-
-                                          showModalBottomSheet(
-                                              barrierColor: Colors.transparent,
-                                              isScrollControlled: true,
-                                              useSafeArea: true,
-                                              isDismissible: true,
-                                              shape:
-                                                  const RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.vertical(
-                                                              top: Radius
-                                                                  .circular(
-                                                                      16))),
-                                              backgroundColor:
-                                                  const Color(0xffffffff),
-                                              context: context,
-                                              builder: (context) =>
-                                                  ScripDepthInfo(
-                                                      wlValue: depthArgs,
-                                                      isBasket: ''));
+                                          await marketwatch
+                                              .scripdepthsize(true);
+                                          await marketwatch.calldepthApis(
+                                              context, depthArgs, "");
                                         },
                                         child: Column(
                                             crossAxisAlignment:
@@ -365,119 +345,126 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                 backgroundColor:
                                                                     colors
                                                                         .colorWhite,
-                                                                titleTextStyle:
-                                                                    TextWidget.textStyle(
-                                                                        theme: theme
-                                                                            .isDarkMode,
-                                                                        fontSize:
-                                                                            17,
-                                                                        fw: 1),
-                                                                contentTextStyle: TextWidget.textStyle(
-                                                                    color: theme.isDarkMode
-                                                                        ? colors
-                                                                            .textSecondaryDark
-                                                                        : colors
-                                                                            .textSecondaryLight,
-                                                                    fontSize:
-                                                                        14,
-                                                                    fw: 3,
-                                                                    theme:
-                                                                        false),
                                                                 titlePadding:
                                                                     const EdgeInsets
                                                                         .symmetric(
                                                                         horizontal:
-                                                                            14,
+                                                                            8,
                                                                         vertical:
-                                                                            10),
+                                                                            8),
                                                                 shape: const RoundedRectangleBorder(
                                                                     borderRadius:
                                                                         BorderRadius.all(
-                                                                            Radius.circular(14))),
+                                                                            Radius.circular(8))),
                                                                 scrollable:
                                                                     true,
                                                                 contentPadding:
                                                                     const EdgeInsets
                                                                         .symmetric(
                                                                   horizontal:
-                                                                      14,
+                                                                      12,
+                                                                  vertical: 12,
                                                                 ),
+                                                                actionsPadding:
+                                                                    const EdgeInsets.only(
+                                                                        bottom:
+                                                                            16,
+                                                                        right:
+                                                                            16,
+                                                                        left:
+                                                                            16,
+                                                                        top: 8),
                                                                 insetPadding:
                                                                     const EdgeInsets
                                                                         .symmetric(
                                                                         horizontal:
-                                                                            20),
+                                                                            30,
+                                                                        vertical:
+                                                                            12),
                                                                 title: Column(
                                                                   children: [
                                                                     Row(
                                                                       mainAxisAlignment:
                                                                           MainAxisAlignment
-                                                                              .spaceBetween,
+                                                                              .end,
                                                                       children: [
-                                                                        Row(
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.center,
-                                                                          children: [
-                                                                            TextWidget.subText(
-                                                                                text: "${displayData.tsym?.replaceAll("-EQ", "")}",
-                                                                                theme: theme.isDarkMode,
-                                                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                                                                fw: 3),
-                                                                            CustomExchBadge(exch: "${displayData.exch}"),
-                                                                          ],
-                                                                        ),
-                                                                        Row(
-                                                                          children: [
-                                                                            Material(
-                                                                              color: Colors.transparent,
-                                                                              shape: const CircleBorder(),
-                                                                              child: InkWell(
-                                                                                onTap: () async {
-                                                                                  await Future.delayed(const Duration(milliseconds: 150));
-                                                                                  Navigator.pop(context);
-                                                                                },
-                                                                                borderRadius: BorderRadius.circular(20),
-                                                                                splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                                                                                highlightColor: theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-                                                                                child: Padding(
-                                                                                  padding: const EdgeInsets.all(6.0),
-                                                                                  child: Icon(
-                                                                                    Icons.close_rounded,
-                                                                                    size: 22,
-                                                                                    color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
-                                                                                  ),
-                                                                                ),
+                                                                        Material(
+                                                                          color:
+                                                                              Colors.transparent,
+                                                                          shape:
+                                                                              const CircleBorder(),
+                                                                          child:
+                                                                              InkWell(
+                                                                            onTap:
+                                                                                () async {
+                                                                              await Future.delayed(const Duration(milliseconds: 150));
+                                                                              Navigator.pop(context);
+                                                                            },
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(20),
+                                                                            splashColor: theme.isDarkMode
+                                                                                ? colors.splashColorDark
+                                                                                : colors.splashColorLight,
+                                                                            highlightColor: theme.isDarkMode
+                                                                                ? colors.splashColorDark
+                                                                                : colors.splashColorLight,
+                                                                            child:
+                                                                                Padding(
+                                                                              padding: const EdgeInsets.all(6.0),
+                                                                              child: Icon(
+                                                                                Icons.close_rounded,
+                                                                                size: 22,
+                                                                                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                                                                               ),
                                                                             ),
-                                                                          ],
+                                                                          ),
                                                                         ),
                                                                       ],
                                                                     ),
-                                                                    const ListDivider(),
-                                                                  ],
-                                                                ),
-                                                                content:
+                                                                    const SizedBox(
+                                                                        height:
+                                                                            12),
+                                                                    Row(
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .end,
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .center,
+                                                                      children: [
+                                                                        TextWidget.subText(
+                                                                            text:
+                                                                                "${displayData.tsym?.replaceAll("-EQ", "")} ${displayData.expDate} ${displayData.option}",
+                                                                            theme: theme
+                                                                                .isDarkMode,
+                                                                            color: theme.isDarkMode
+                                                                                ? colors.textPrimaryDark
+                                                                                : colors.textPrimaryLight,
+                                                                            fw: 3),
+                                                                      ],
+                                                                    ),
+                                                                    const SizedBox(
+                                                                        height:
+                                                                            5),
                                                                     SizedBox(
-                                                                  width: MediaQuery.of(
-                                                                          dialogContext)
-                                                                      .size
-                                                                      .width,
-                                                                  child: Column(
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      TextWidget.subText(
-                                                                          text:
-                                                                              "Do you want to Cancel this order?",
-                                                                          theme: theme
-                                                                              .isDarkMode,
-                                                                          color: theme.isDarkMode
-                                                                              ? colors.textSecondaryDark
-                                                                              : colors.textSecondaryLight,
-                                                                          fw: 3),
-                                                                    ],
-                                                                  ),
+                                                                      width: MediaQuery.of(
+                                                                              context)
+                                                                          .size
+                                                                          .width,
+                                                                      child:
+                                                                          Center(
+                                                                        child: TextWidget.subText(
+                                                                            text:
+                                                                                "Do you want to Cancel this order?",
+                                                                            theme: theme
+                                                                                .isDarkMode,
+                                                                            color: theme.isDarkMode
+                                                                                ? colors.textPrimaryDark
+                                                                                : colors.textPrimaryLight,
+                                                                            fw: 3),
+                                                                      ),
+                                                                    ),
+                                                                  ],
                                                                 ),
                                                                 actions: [
                                                                   SizedBox(
@@ -500,21 +487,22 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                             40), // width, height
                                                                         side: BorderSide(
                                                                             color:
-                                                                                colors.error), // Outline border color
+                                                                                colors.btnOutlinedBorder), // Outline border color
                                                                         shape:
                                                                             RoundedRectangleBorder(
                                                                           borderRadius:
                                                                               BorderRadius.circular(5),
                                                                         ),
                                                                         backgroundColor:
-                                                                            Colors.transparent, // Transparent background
+                                                                            colors.primaryDark, // Transparent background
                                                                       ),
                                                                       child: TextWidget
-                                                                          .subText(
+                                                                          .titleText(
                                                                         text:
                                                                             "Cancel",
-                                                                        color: colors
-                                                                            .error,
+                                                                        color: !theme.isDarkMode
+                                                                            ? colors.colorWhite
+                                                                            : colors.colorBlack,
                                                                         theme: theme
                                                                             .isDarkMode,
                                                                         fw: 0,
@@ -693,7 +681,7 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          TextWidget.paraText(
+          TextWidget.subText(
               text: title,
               theme: false,
               color: theme.isDarkMode

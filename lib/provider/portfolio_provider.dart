@@ -239,6 +239,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   changeTabIndex(int index) {
     _selectedTab = index;
+    print("selectedTab: $index");
+    notifyListeners();
   }
 
   chngPosSelection(String val) {
@@ -614,7 +616,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             element.exchTsym![0].expDate = "${spilitSymbol["expDate"]}";
             element.exchTsym![0].option = "${spilitSymbol["option"]}";
             int qty = (int.parse("${element.npoadqty ?? 0}") +
-                    int.parse("${element.brkcolqty ?? 0}") +
+                    // int.parse("${element.brkcolqty ?? 0}") +
                     int.parse("${element.npoadt1qty ?? 0}") +
                     int.parse("${element.holdqty ?? 0}") +
                     int.parse("${element.btstqty ?? 0}")) -
@@ -1559,7 +1561,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // Holding search by Trade symbol
   holdingSearch(String value, BuildContext context) {
-    if (value.length > 1) {
+    if (value.length > 0) {
       _holdingSearchItem = [];
       _holdingSearchItem = _holdingsModel!
           .where((element) => element.exchTsym![0].tsym!
@@ -1574,7 +1576,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // MF Holding search by Trade symbol
   mfHoldingSearch(String value, BuildContext context) {
-    if (value.length > 1) {
+    if (value.length > 0) {
       _mfHoldingSearchItem = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _mfHoldingSearchItem = _mfHoldingsModel!
@@ -1596,7 +1598,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
   positionSearch(String value, BuildContext context) {
-    if (value.length > 1) {
+    if (value.length > 0) {
       // _showSearchPosition = true;
       _positionSearchItem = [];
       _positionSearchItem = _allPostionList

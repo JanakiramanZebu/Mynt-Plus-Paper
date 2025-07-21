@@ -395,13 +395,13 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 5),
-                            child: TextWidget.paraText(
+                            child: TextWidget.subText(
                               text: "OptionZ",
                               theme: false,
                               color: theme.isDarkMode
                                   ? colors.secondaryDark
                                   : colors.secondaryLight,
-                              fw: 2,
+                              // fw: 2,
                             ),
                           ),
                         ),
@@ -518,7 +518,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
               if (value.isNotEmpty) {
                 // positionBook.showPositionSearch(false);
               } else {
-                positionBook.showPositionSearch(false);
+                // positionBook.showPositionSearch(false);
               }
 
               positionBook.positionSearch(value, context);
@@ -676,7 +676,7 @@ class _PnLDisplay extends StatelessWidget {
           const EdgeInsets.only(top: 20.0, left: 8.0, right: 8.0, bottom: 15),
       child: Column(
         children: [
-          TextWidget.paraText(
+          TextWidget.subText(
               text: !isNetPnl ? "Total MTM" : "Total P&L",
               theme: theme.isDarkMode,
               color: theme.isDarkMode
@@ -811,7 +811,9 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
     return InkWell(
       onLongPress: widget.showLongPressOption
           ? () {
-              Navigator.pushNamed(context, Routes.positionExit);
+              if (widget.position.qty != "0") {
+                Navigator.pushNamed(context, Routes.positionExit);
+              }
             }
           : null,
       onTap: () async {
@@ -970,7 +972,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              "Qty ",
+              "QTY ",
               style: _getStyle(
                   theme.isDarkMode
                       ? colors.textSecondaryDark
@@ -996,7 +998,7 @@ class _PositionItemState extends ConsumerState<_PositionItem> {
             // Right 50%: P&L value
 
             Text(
-              "Avg  ",
+              "AVG ",
               style: _getStyle(
                   theme.isDarkMode
                       ? colors.textSecondaryDark

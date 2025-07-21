@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
@@ -13,6 +14,8 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../sharedWidget/custom_switch_btn.dart';
+import '../../sharedWidget/custom_text_form_field.dart';
+import '../../utils/no_emoji_inputformatter.dart';
 import 'bottom_sheets/ledger_filter.dart';
 
 class LedgerScreen extends StatelessWidget {
@@ -59,33 +62,40 @@ class LedgerScreen extends StatelessWidget {
 
       return RefreshIndicator(
         onRefresh: _refresh,
-        child: Scaffold(
-          appBar: AppBar(
-            // automaticallyImplyLeading: false,
-            leadingWidth: 41,
-            titleSpacing: 6,
-            centerTitle: false,
-            leading: InkWell(
-              onTap: () {
-                ledgerprovider.falseloader('ledger');
-              },
-              child: const CustomBackBtn(),
-            ),
-            elevation: 0.2,
-            title: TextWidget.heroText(
-                text: "Ledger",
-                textOverflow: TextOverflow.ellipsis,
-                theme: theme.isDarkMode,
-                fw: 1),
-            // leading: InkWell(
-            //   onTap: () {
+        child: PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) async {
+            ledgerprovider.falseloader('ledger');
+            ledgerprovider.showledgerSearch(true);
+            Navigator.pop(context);
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              // automaticallyImplyLeading: false,
+              leadingWidth: 41,
+              titleSpacing: 6,
+              centerTitle: false,
+              leading: InkWell(
+                onTap: () {
+                  ledgerprovider.falseloader('ledger');
+                  ledgerprovider.showledgerSearch(true);
+                  Navigator.pop(context);
+                },
+                child: const CustomBackBtn(),
+              ),
+              elevation: 0.2,
+              title: TextWidget.heroText(
+                  text: "Ledger",
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 1),
+              // leading: InkWell(
+              //   onTap: () {
 
-            //   },
-            //   child: Icon(Icons.ios_share)),
-          ),
-          body: TransparentLoaderScreen(
-            isLoading: ledgerprovider.ledgerloading,
-            child: Column(
+              //   },
+              //   child: Icon(Icons.ios_share)),
+            ),
+            body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Text("${ddd}")
@@ -103,114 +113,146 @@ class LedgerScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 16.0),
                             child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                ledgerprovider.availableFinancialYears.indexOf(
+                                            ledgerprovider
+                                                .selectedFinancialYear) <
+                                        ledgerprovider.availableFinancialYears
+                                                .length -
+                                            1
+                                    ? Material(
+                                        color: Colors.transparent,
+                                        shape: const CircleBorder(),
+                                        child: InkWell(
+                                          splashColor: theme.isDarkMode
+                                              ? colors.splashColorDark
+                                              : colors.splashColorLight,
+                                          highlightColor: theme.isDarkMode
+                                              ? colors.highlightDark
+                                              : colors.highlightLight,
+                                          customBorder: const CircleBorder(),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Icon(
+                                              Icons.arrow_back_ios_outlined,
+                                              size: 18,
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                            ),
+                                          ),
+                                          onTap: () {
+                                            final index = ledgerprovider
+                                                .availableFinancialYears
+                                                .indexOf(ledgerprovider
+                                                    .selectedFinancialYear);
+                                            if (index <
+                                                ledgerprovider
+                                                        .availableFinancialYears
+                                                        .length -
+                                                    1) {
+                                              final newFY = ledgerprovider
+                                                      .availableFinancialYears[
+                                                  index + 1];
+                                              ledgerprovider
+                                                  .setFinancialYear(newFY);
+                                              ledgerprovider.fetchLegerData(
+                                                context,
+                                                ledgerprovider
+                                                    .formattedStartDate,
+                                                ledgerprovider.formattedendDate,
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      )
+                                    : const SizedBox(width: 20),
                                 Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
                                   children: [
                                     TextWidget.paraText(
-                                        text: "Opening Balance",
+                                        text: "Balance  ",
                                         color: Color(0xFF696969),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 3),
-                                    // Text(
-                                    //   "Opening Balance",
-                                    //   style: textStyle(Color(0xFF696969), 14,
-                                    //       FontWeight.w500),
-                                    // ),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(top: 8.0),
-                                      child: TextWidget.subText(
-                                          text:
-                                              "₹ ${ledgerprovider.ledgerAllData?.openingBalance == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.openingBalance ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                          textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
-                                          fw: 0),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    TextWidget.paraText(
-                                        text: "Total Debit",
-                                        color: Color(0xFF696969),
-                                        textOverflow: TextOverflow.ellipsis,
-                                        theme: theme.isDarkMode,
-                                        fw: 3),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(top: 8.0),
-                                      child: TextWidget.subText(
-                                          text:
-                                              "₹ ${ledgerprovider.ledgerAllData?.drAmt == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.drAmt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                          color: Colors.red,
-                                          textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
-                                          fw: 0),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 16.0, right: 16.0, bottom: 16.0),
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    TextWidget.paraText(
-                                        text: "Closing Balance  ",
-                                        color: Color(0xFF696969),
-                                        textOverflow: TextOverflow.ellipsis,
-                                        theme: theme.isDarkMode,
-                                        fw: 3),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(top: 8.0),
-                                      child: TextWidget.subText(
-                                          text:
-                                              "₹ ${ledgerprovider.ledgerAllData?.closingBalance == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.closingBalance ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                          textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
-                                          fw: 0),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    TextWidget.paraText(
-                                        text: "Total Credit",
-                                        color: Color(0xFF696969),
+                                    const SizedBox(height: 10),
+                                    TextWidget.subText(
+                                        text: ledgerprovider.ledgerAllData
+                                                    ?.closingBalance ==
+                                                'null'
+                                            ? '0.00'
+                                            : (double.tryParse(ledgerprovider
+                                                            .ledgerAllData
+                                                            ?.closingBalance ??
+                                                        '')
+                                                    ?.toStringAsFixed(2) ??
+                                                '0.00'),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 0),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(top: 8.0),
-                                      child: TextWidget.subText(
-                                          text:
-                                              "₹ ${ledgerprovider.ledgerAllData?.crAmt == 'null' ? '0.00' : (double.tryParse(ledgerprovider.ledgerAllData?.crAmt ?? '')?.toStringAsFixed(2) ?? '0.00')}",
-                                          color: Colors.green,
-                                          textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
-                                          fw: 0),
-                                    )
+                                    const SizedBox(height: 10),
+                                    TextWidget.subText(
+                                        text: ledgerprovider
+                                            .selectedFinancialYear,
+                                        color: theme.isDarkMode
+                                            ? colors.textSecondaryDark
+                                            : colors.textSecondaryLight,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 3),
                                   ],
                                 ),
+                                ledgerprovider.availableFinancialYears.indexOf(
+                                            ledgerprovider
+                                                .selectedFinancialYear) >
+                                        0
+                                    ? Material(
+                                        color: Colors.transparent,
+                                        shape: const CircleBorder(),
+                                        child: InkWell(
+                                          splashColor: theme.isDarkMode
+                                              ? colors.splashColorDark
+                                              : colors.splashColorLight,
+                                          highlightColor: theme.isDarkMode
+                                              ? colors.highlightDark
+                                              : colors.highlightLight,
+                                          customBorder: const CircleBorder(),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Icon(
+                                              Icons.arrow_forward_ios_outlined,
+                                              size: 18,
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                            ),
+                                          ),
+                                          onTap: () {
+                                            final index = ledgerprovider
+                                                .availableFinancialYears
+                                                .indexOf(ledgerprovider
+                                                    .selectedFinancialYear);
+                                            if (index > 0) {
+                                              final newFY = ledgerprovider
+                                                      .availableFinancialYears[
+                                                  index - 1];
+                                              ledgerprovider
+                                                  .setFinancialYear(newFY);
+                                              ledgerprovider.fetchLegerData(
+                                                context,
+                                                ledgerprovider
+                                                    .formattedStartDate,
+                                                ledgerprovider.formattedendDate,
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      )
+                                    : const SizedBox(width: 20),
                               ],
                             ),
                           ),
@@ -257,7 +299,7 @@ class LedgerScreen extends StatelessWidget {
                     // ),
                   ],
                 ),
-Padding(
+                Padding(
                   padding: const EdgeInsets.only(top: 2.0),
                   child: Divider(
                     color: theme.isDarkMode
@@ -266,209 +308,296 @@ Padding(
                     thickness: 1.0,
                   ),
                 ),
+
+                ledgerprovider.showLedgerSearch
+                    ? Padding(
+                        padding: const EdgeInsets.only(
+                            left: 16, right: 16, top: 10, bottom: 8),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 40,
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 5),
+                                decoration: BoxDecoration(
+                                  color: colors.searchBg,
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 10),
+                                      child: Row(
+                                        children: [
+                                          Material(
+                                            color: Colors.transparent,
+                                            shape: const CircleBorder(),
+                                            clipBehavior: Clip.hardEdge,
+                                            child: InkWell(
+                                              customBorder:
+                                                  const CircleBorder(),
+                                              splashColor: theme.isDarkMode
+                                                  ? colors.splashColorDark
+                                                  : colors.splashColorLight,
+                                              highlightColor: theme.isDarkMode
+                                                  ? colors.highlightDark
+                                                  : colors.highlightLight,
+                                              onTap: () {
+                                                Future.delayed(
+                                                    const Duration(
+                                                        milliseconds: 150), () {
+                                                  // positionBook.showPositionSearch(true);
+                                                  ledgerprovider
+                                                      .showledgerSearch(false);
+                                                });
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: SvgPicture.asset(
+                                                  assets.searchIcon,
+                                                  color:
+                                                      colors.textPrimaryLight,
+                                                  width: 20,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          Material(
+                                            color: Colors.transparent,
+                                            shape: const CircleBorder(),
+                                            clipBehavior: Clip.hardEdge,
+                                            child: InkWell(
+                                              customBorder:
+                                                  const CircleBorder(),
+                                              splashColor: theme.isDarkMode
+                                                  ? colors.splashColorDark
+                                                  : colors.splashColorLight,
+                                              highlightColor: theme.isDarkMode
+                                                  ? colors.highlightDark
+                                                  : colors.highlightLight,
+                                              onTap: () {
+                                                ledgerprovider.setfilterpage =
+                                                    'ledger';
+                                                _showBottomSheet(
+                                                    context, LedgerFilter());
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: SvgPicture.asset(
+                                                  assets.filterLinesDark,
+                                                  color:
+                                                      colors.textPrimaryLight,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Material(
+                                      color: Colors.transparent,
+                                      shape: const CircleBorder(),
+                                      clipBehavior: Clip.hardEdge,
+                                      child: InkWell(
+                                        customBorder: const CircleBorder(),
+                                        splashColor: theme.isDarkMode
+                                            ? colors.splashColorDark
+                                            : colors.splashColorLight,
+                                        highlightColor: theme.isDarkMode
+                                            ? colors.highlightDark
+                                            : colors.highlightLight,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Icon(Icons.download,
+                                              color: theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack),
+                                        ),
+                                        onTap: () => {
+                                          ledgerprovider.pdfdownloadforledger(
+                                              context,
+                                              ledgerprovider.ledgerAllData
+                                                      ?.toJson() ??
+                                                  {},
+                                              ledgerprovider
+                                                      .ledgerAllData?.drAmt ??
+                                                  '0.00',
+                                              ledgerprovider
+                                                      .ledgerAllData?.crAmt ??
+                                                  '0.00',
+                                              ledgerprovider.ledgerAllData
+                                                      ?.closingBalance ??
+                                                  '0.00',
+                                              ledgerprovider.ledgerAllData
+                                                      ?.openingBalance ??
+                                                  '0.00',
+                                              ledgerprovider.startDate,
+                                              ledgerprovider.endDate),
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            // TextButton(
+                            //     onPressed: () {
+                            //       positionBook.showPositionSearch(false);
+                            //     },
+                            //     child: TextWidget.paraText(
+                            //         text: "Close",
+                            //         theme: false,
+                            //         color: theme.isDarkMode
+                            //             ? colors.colorLightBlue
+                            //             : colors.colorBlue,
+                            //         fw: 0))
+                          ],
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: SizedBox(
+                          height: 40,
+                          child: TextFormField(
+                            autofocus: true,
+                            controller: ledgerprovider.ledgerSearchCtrl,
+                            style: TextWidget.textStyle(
+                              fontSize: 14,
+                              theme: theme.isDarkMode,
+                              fw: 1,
+                            ),
+                            keyboardType: TextInputType.text,
+                            textCapitalization: TextCapitalization.characters,
+                            inputFormatters: [
+                              UpperCaseTextFormatter(),
+                              NoEmojiInputFormatter(),
+                              FilteringTextInputFormatter.deny(
+                                  RegExp('[π£•₹€℅™∆√¶/.,]'))
+                            ],
+                            decoration: InputDecoration(
+                                hintText: "Search",
+                                hintStyle: TextWidget.textStyle(
+                                    fontSize: 14,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                    color: colors.textSecondaryLight),
+                                fillColor: colors.searchBg,
+                                filled: true,
+                                prefixIcon: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SvgPicture.asset(assets.searchIcon,
+                                      color: colors.textPrimaryLight,
+                                      fit: BoxFit.scaleDown,
+                                      width: 20),
+                                ),
+                                suffixIcon: Material(
+                                  color: Colors.transparent,
+                                  shape: const CircleBorder(),
+                                  clipBehavior: Clip.hardEdge,
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+                                    splashColor: theme.isDarkMode
+                                        ? colors.splashColorDark
+                                        : colors.splashColorLight,
+                                    highlightColor: theme.isDarkMode
+                                        ? colors.highlightDark
+                                        : colors.highlightLight,
+                                    onTap: () async {
+                                      Future.delayed(
+                                          const Duration(milliseconds: 150),
+                                          () {
+                                        FocusScope.of(context).unfocus();
+                                        ledgerprovider.clearLedgerSearch();
+                                        ledgerprovider.showledgerSearch(true);
+                                      });
+                                    },
+                                    child: SvgPicture.asset(assets.removeIcon,
+                                        fit: BoxFit.scaleDown, width: 20),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20)),
+                                disabledBorder: InputBorder.none,
+                                focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20)),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 5),
+                                border: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(20))),
+                            onChanged: (value) {
+                              if (value.isNotEmpty) {
+                                // positionBook.showPositionSearch(false);
+                              } else {
+                                // positionBook.showPositionSearch(false);
+                              }
+
+                              ledgerprovider.searchLedgerType(value);
+                            },
+                          ),
+                        ),
+                      ),
+
                 Padding(
                   padding: const EdgeInsets.only(
                       right: 16.0, left: 16.0, top: 16.0, bottom: 8.0),
                   child: Row(
                     children: [
                       Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            ledgerprovider.datePickerStart(context, theme);
-                          },
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextWidget.paraText(
-                                  text: "Start Date",
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
-                                  fw: 3),
-                              Container(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                alignment: Alignment.centerLeft,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 8),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(30),
-                                    color: theme.isDarkMode
-                                        ? const Color(0xffB5C0CF)
-                                            .withOpacity(.15)
-                                        : const Color(0xffF1F3F8)),
-                                child: Text("${ledgerprovider.startDate}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        11,
-                                        FontWeight.w400)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 15),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            ledgerprovider.datePickerEnd(context, theme);
-                          },
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextWidget.paraText(
-                                  text: "End Date",
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
-                                  fw: 3),
-                              Container(
-                                margin: const EdgeInsets.symmetric(vertical: 6),
-                                alignment: Alignment.centerLeft,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 8),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(30),
-                                    color: theme.isDarkMode
-                                        ? const Color(0xffB5C0CF)
-                                            .withOpacity(.15)
-                                        : const Color(0xffF1F3F8)),
-                                child: Text("${ledgerprovider.endDate}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        11,
-                                        FontWeight.w400)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 15),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16.0, top: 16.0),
-                        child: SizedBox(
-                            height: 27,
-                            child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                    side: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.primaryDark
-                                          : colors.primaryLight,
-                                    ),
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(5)))),
-                                onPressed: () async {
-                                  ledgerprovider.fetchLegerData(
-                                      context,
-                                      ledgerprovider.startDate,
-                                      ledgerprovider.endDate);
-                                },
-                                child: Text("Get",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.primaryDark
-                                            : colors.primaryLight,
-                                        12,
-                                        FontWeight.w600)))),
-                      ),
-                      InkWell(
-                          onTap: () async {
-                            ledgerprovider.setfilterpage = 'ledger';
-                            _showBottomSheet(context, LedgerFilter());
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: SvgPicture.asset(assets.filterLines,
-                                color: theme.isDarkMode
-                                    ? const Color(0xffBDBDBD)
-                                    : colors.colorGrey),
-                          )),
-                      SizedBox(width: 8),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 14.0),
-                        child: IconButton(
-                          iconSize: 20,
-                          icon: Icon(Icons.download,
-                              color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack),
-                          onPressed: () => {
-                            ledgerprovider.pdfdownloadforledger(
-                                context,
-                                ledgerprovider.ledgerAllData?.toJson() ?? {},
-                                ledgerprovider.ledgerAllData?.drAmt ?? '0.00',
-                                ledgerprovider.ledgerAllData?.crAmt ?? '0.00',
-                                ledgerprovider.ledgerAllData?.closingBalance ??
-                                    '0.00',
-                                ledgerprovider.ledgerAllData?.openingBalance ??
-                                    '0.00',
-                                ledgerprovider.startDate,
-                                ledgerprovider.endDate),
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-Padding(
-                  padding: const EdgeInsets.only(
-                      right: 16.0, left: 16.0, bottom: 8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,    
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             TextWidget.subText(
                                 text: "Bill Margin  :",
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
                                 fw: 3),
-                             Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 8.0, bottom: 8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                          TextWidget.paraText(
-                                text: "Yes",
-                                textOverflow: TextOverflow.ellipsis,
-                                theme: theme.isDarkMode,
-                                fw: 3),
-                                        const SizedBox(width: 10),
-                        
-                                        CustomSwitch(
-                                            onChanged: (bool value) {
-                                               ledgerprovider
-                                                  .billnotbill(value);
-                                                  print("${value}");
-                                            },
-                                            color: theme.isDarkMode
-                                                ? const Color(0xffB5C0CF)
-                                                    .withOpacity(.15)
-                                                : const Color(0xffF1F3F8),
-                                            value: ledgerprovider.billmargin),
-                                        const SizedBox(width: 10),
-                        
-                                              TextWidget.paraText(
-                                text: "No",
-                                textOverflow: TextOverflow.ellipsis,
-                                theme: theme.isDarkMode,
-                                fw: 3),
-                                      ],
-                                    ),
-                                  ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  TextWidget.paraText(
+                                      text: "Yes",
+                                      textOverflow: TextOverflow.ellipsis,
+                                      theme: theme.isDarkMode,
+                                      fw: 3),
+                                  const SizedBox(width: 10),
+                                  CustomSwitch(
+                                      onChanged: (bool value) {
+                                        ledgerprovider.billnotbill(value);
+                                        print("${value}");
+                                      },
+                                      color: theme.isDarkMode
+                                          ? const Color(0xffB5C0CF)
+                                              .withOpacity(.15)
+                                          : const Color(0xffF1F3F8),
+                                      value: ledgerprovider.billmargin),
+                                  const SizedBox(width: 10),
+                                  TextWidget.paraText(
+                                      text: "No",
+                                      textOverflow: TextOverflow.ellipsis,
+                                      theme: theme.isDarkMode,
+                                      fw: 3),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                       
-                       
-                      
-                      
-                      
                     ],
                   ),
                 ),
@@ -661,9 +790,9 @@ Padding(
                                               TextWidget.subText(
                                                   text:
                                                       "${ledgerprovider.ledgerAllData!.fullStat![index].tYPE} ",
-                                                   color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
+                                                  color: theme.isDarkMode
+                                                      ? colors.textPrimaryDark
+                                                      : colors.textPrimaryLight,
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
@@ -671,9 +800,9 @@ Padding(
                                               TextWidget.paraText(
                                                   text:
                                                       " ${dateFormatChangeForLedger(ledgerprovider.ledgerAllData!.fullStat![index].vOUCHERDATE.toString())}",
-                                                   color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
+                                                  color: theme.isDarkMode
+                                                      ? colors.textPrimaryDark
+                                                      : colors.textPrimaryLight,
                                                   textOverflow:
                                                       TextOverflow.ellipsis,
                                                   theme: theme.isDarkMode,
@@ -718,14 +847,17 @@ Padding(
                                             children: [
                                               // CustomExchBadge(exch: "${ledgerprovider.ledgerAllData!.fullStat![index].tYPE}",),
                                               TextWidget.paraText(
-                                                    align: TextAlign.right,
-                                                    text: "${ledgerprovider.ledgerAllData!.fullStat![index].cOCD}",
-                                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                                              
+                                                  align: TextAlign.right,
+                                                  text:
+                                                      "${ledgerprovider.ledgerAllData!.fullStat![index].cOCD}",
+                                                  color: theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                      : colors
+                                                          .textSecondaryLight,
+                                                  textOverflow:
+                                                      TextOverflow.ellipsis,
+                                                  theme: theme.isDarkMode,
+                                                  fw: 3),
                                             ],
                                           ),
                                           Padding(
@@ -736,7 +868,11 @@ Padding(
                                                 TextWidget.paraText(
                                                     align: TextAlign.right,
                                                     text: "CL Bal : ",
-                                                     color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -747,7 +883,8 @@ Padding(
                                                         " ₹${(double.tryParse(ledgerprovider.ledgerAllData!.fullStat![index].nETAMT ?? '')?.toStringAsFixed(2) ?? '0.00')}",
                                                     color: theme.isDarkMode
                                                         ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
+                                                        : colors
+                                                            .textPrimaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
@@ -758,7 +895,7 @@ Padding(
                                         ],
                                       ),
                                     ),
-                                    SizedBox(height:8),
+                                    SizedBox(height: 8),
                                     Padding(
                                       padding: const EdgeInsets.only(
                                           left: 16.0,
@@ -774,11 +911,12 @@ Padding(
                                           Align(
                                             alignment: Alignment
                                                 .centerLeft, // Forces text to the left
-                                            child:  TextWidget.captionText(
-                                                    align: TextAlign.start,
-                                                    maxLines: 5,
-                                                    text: "${ledgerprovider.ledgerAllData!.fullStat![index].nARRATION}",
-                                                     color: ledgerprovider
+                                            child: TextWidget.captionText(
+                                                align: TextAlign.start,
+                                                maxLines: 5,
+                                                text:
+                                                    "${ledgerprovider.ledgerAllData!.fullStat![index].nARRATION}",
+                                                color: ledgerprovider
                                                                 .ledgerAllData
                                                                 ?.fullStat?[
                                                                     index]
@@ -790,14 +928,18 @@ Padding(
                                                                     index]
                                                                 .bill ==
                                                             'Yes'
-                                                    ? theme.isDarkMode ? colors.primaryDark : colors.primaryLight
-                                                    :theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-
-                                            
+                                                    ? theme.isDarkMode
+                                                        ? colors.primaryDark
+                                                        : colors.primaryLight
+                                                    : theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                                theme: theme.isDarkMode,
+                                                fw: 3),
                                           ),
                                         ],
                                       ),

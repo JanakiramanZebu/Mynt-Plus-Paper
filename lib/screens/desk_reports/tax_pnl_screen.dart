@@ -15,6 +15,7 @@ import 'tax_pnl_screens/charges_value_screen.dart';
 import 'tax_pnl_screens/chart_for_tax_scree.dart';
 import 'tax_pnl_screens/pnl_value_screen.dart';
 import 'tax_pnl_screens/turnover_value_screen.dart';
+import '../../sharedWidget/custom_drag_handler.dart';
 
 class TaxPnlScreen extends StatefulWidget {
   const TaxPnlScreen({super.key});
@@ -40,15 +41,25 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
     }
   ];
   late TabController _tabController;
+  bool isLoading = false;
+  String? errorMessage;
+  String? yearErrorMessage;
+
+  void showError(String message) {
+    setState(() {
+      yearErrorMessage = message;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // 4 Tabs
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
-    _tabController.dispose(); // Dispose to prevent memory leaks
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -56,328 +67,268 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.watch(themeProvider);
-      double screenWidth = MediaQuery.of(context).size.width;
-
       final ledgerprovider = ref.watch(ledgerProvider);
 
-      return Scaffold(
-        appBar: AppBar(
-          // automaticallyImplyLeading: false,
-          elevation: 0.2,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextWidget.heroText(
-                  text: "Tax P&L",
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                  fw: 1),
-
-              // DropdownButtonHideUnderline(
-              //     child: DropdownButton2(
-              //         menuItemStyleData: MenuItemStyleData(
-              //             customHeights: ledgerprovider.getCustItemsHeight()),
-              //         buttonStyleData: ButtonStyleData(
-              //             height: 36,
-              //             width: MediaQuery.of(context).size.width,
-              //             decoration: const BoxDecoration(
-              //                 color: Color(0xffF1F3F8),
-              //                 borderRadius:
-              //                     BorderRadius.all(Radius.circular(32)))),
-              //         dropdownStyleData: DropdownStyleData(
-              //           padding: const EdgeInsets.symmetric(vertical: 6),
-              //           decoration: BoxDecoration(
-              //             borderRadius: BorderRadius.circular(4),
-              //           ),
-              //           offset: const Offset(0, 8),
-              //         ),
-              //         isExpanded: true,
-              //         style:
-              //             textStyle(const Color(0XFF000000), 13, FontWeight.w500),
-              //         hint: Text(mfOrder.paymentName,
-              //             style: textStyle(
-              //                 const Color(0XFF000000), 13, FontWeight.w500)),
-              //         items: mfOrder.addDividers(),
-              //         value: mfOrder.paymentName,
-              //         onChanged: (value) async {
-              //           mfOrder.chngPayName("$value");
-              //         })),
-            ],
-          ),
-          // leading: InkWell(
-          //   onTap: () {
-
-          //   },
-          //   child: Icon(Icons.ios_share)),
-        ),
-        body: TransparentLoaderScreen(
-          isLoading: ledgerprovider.taxderloading,
-          child: Stack(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Padding(
-                  //   padding: const EdgeInsets.only(left : 16.0, top : 24.0),
-                  //   child: BarChartWidget(),
-                  // ),
-                  Container(
-                      width: screenWidth,
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.only(left: 16.0, right: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                             TextWidget.subText(
-                  text: "Financial Year",
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                   color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
-                  fw: 0),
-                           
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.arrow_left,
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack),
-                                  onPressed: () => {
-                                    ledgerprovider.fetchtaxpnleqdata(
-                                        context,
-                                        ledgerprovider.yearforTaxpnl - 1)
-                                  },
-                                ),
-                                // Center(
-                                //   child: Container(
-                                //     width: screenWidth * 0.5,
-                                //     alignment: Alignment.centerLeft,
-                                //     padding: const EdgeInsets.symmetric(
-                                //         vertical: 10, horizontal: 10),
-                                //     decoration: BoxDecoration(
-                                //         borderRadius: BorderRadius.circular(30),
-                                //         color: theme.isDarkMode
-                                //             ? const Color(0xffB5C0CF).withOpacity(.15)
-                                //             : const Color(0xffF1F3F8)),
-                                //     child: Center(
-                                //       child:
-                                 TextWidget.paraText(
-                  text: "${ledgerprovider.yearforTaxpnl}",
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                   color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                  fw: 3),
-                                
-                      
-                                //     ),
-                                //   ),
-                                // ),
-                                IconButton(
-                                  icon: Icon(Icons.arrow_right,
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack),
-                                  onPressed: () => {
-                                    ledgerprovider.fetchtaxpnleqdata(
-                                        context,
-                                        ledgerprovider.yearforTaxpnl + 1)
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      )),
-
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        padding:
-                            const EdgeInsets.only(bottom: 0, left: 15, top: 2),
-                        decoration: BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.darkColorDivider
-                                        : colors.colorDivider,
-                                    width: 0.4))),
-                        // height: 60,
-                        child: 
-                         TabBar(
-              onTap: (index) {
-                setState(() {});
-              },
-              tabAlignment: TabAlignment.start,
-              indicatorSize: TabBarIndicatorSize.tab,
-              isScrollable: true,
-              indicatorColor: theme.isDarkMode
-                  ? colors.secondaryDark
-                  : colors.secondaryLight,
-              unselectedLabelColor: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              unselectedLabelStyle: TextWidget.textStyle(
-                fontSize: 14,
-                theme: false,
-                fw: 3,
-              ),
-              labelColor: theme.isDarkMode
-                  ? colors.secondaryDark
-                  : colors.secondaryLight,
-              labelStyle:
-                  TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
-              controller: _tabController,
-              tabs: List.generate(tablistitems.length, (index) {
-                final isSelected = _tabController.index == index;
-
-                final color = isSelected
-                    ? (theme.isDarkMode
-                        ? colors.secondaryDark
-                        : colors.secondaryLight)
-                    : (theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight);
-
-                return Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      TextWidget.subText(
-                        text: tablistitems[index]['title'].toString(),
-                        theme: false,
-                        color: color,
-                        fw: isSelected ? 2 : null,
-                      ),
-                      const SizedBox(width: 5),
-                       
-                    ],
-                  ),
-                );
-              }),
+      
+      return Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xff999999),
+                  blurRadius: 4.0,
+                  offset: Offset(2.0, 0.0),
+                )
+              ],
             ),
-                      
-                                    ),  
-                  ),
-
-                  Expanded(
-                    child: TabBarView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      controller: _tabController,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        TaxpnlvalueScreen(),
-                        TaxTurnOver(),
-                        TaxCharges(),
+                        TextWidget.titleText(
+                          text: "Tax P&L",
+                          theme: theme.isDarkMode,
+                          fw: 1,
+                        ),
+                        Material(
+                          color: Colors.transparent,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            onTap: () async {
+                              await Future.delayed(const Duration(milliseconds: 150));
+                              Navigator.pop(context);
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            splashColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(0.15)
+                                : Colors.black.withOpacity(0.15),
+                            highlightColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(0.08)
+                                : Colors.black.withOpacity(0.08),
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 22,
+                                color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
+                    ),
+                  ),
+                  Divider(
+                    color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                    height: 0,
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: TextWidget.subText(
+                      text: "Financial Year",
+                      theme: theme.isDarkMode,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffF1F3F8),
+                            border: Border.all(
+                              color: colors.colorBlue,
+                            ),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(20),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  splashColor: theme.isDarkMode
+                                      ? colors.colorWhite.withOpacity(0.1)
+                                      : colors.colorBlack.withOpacity(0.1),
+                                  onTap: ledgerprovider.yearforTaxpnl <= (ledgerprovider.yearforTaxpnlDummy - 4)
+                                      ? null
+                                      : () {
+                                          ledgerprovider.fetchtaxpnleqdata(
+                                              context,
+                                              ledgerprovider.yearforTaxpnl - 1);
+                                        },
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    child: Icon(
+                                      Icons.chevron_left,
+                                      size: 24,
+                                      color: ledgerprovider.yearforTaxpnl <= (ledgerprovider.yearforTaxpnlDummy - 4)
+                                          ? Colors.grey
+                                          : theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                "Apr ${ledgerprovider.yearforTaxpnl} - Mar ${ledgerprovider.yearforTaxpnl + 1}",
+                                style: TextWidget.textStyle(
+                                  fontSize: 14,
+                                  theme: theme.isDarkMode,
+                                  fw: 1,
+                                ),
+                              ),
+                              Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(20),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  splashColor: theme.isDarkMode
+                                      ? colors.colorWhite.withOpacity(0.1)
+                                      : colors.colorBlack.withOpacity(0.1),
+                                  onTap: ledgerprovider.yearforTaxpnl >= ledgerprovider.yearforTaxpnlDummy
+                                      ? null
+                                      : () => {
+                                          ledgerprovider.fetchtaxpnleqdata(
+                                              context,
+                                              ledgerprovider.yearforTaxpnl + 1)
+                                        },
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    child: Icon(
+                                      Icons.chevron_right,
+                                      size: 24,
+                                      color: ledgerprovider.yearforTaxpnl >= ledgerprovider.yearforTaxpnlDummy
+                                          ? Colors.grey
+                                          : theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: TextWidget.subText(
+                          text: errorMessage!,
+                          theme: theme.isDarkMode,
+                          color: Colors.red,
+                          fw: 1,
+                          align: TextAlign.left,
+                        ),
+                      ),
+                    ),
+                  ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          elevation: 0,
+                          minimumSize: const Size(0, 48), 
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          padding: EdgeInsets.zero, 
+                        ),
+                        onPressed: isLoading
+                            ? null
+                            : () async {
+                                try {
+                                  setState(() {
+                                    isLoading = true;
+                                    errorMessage = null;
+                                  });
+                                  await ledgerprovider.pdfdownloadfortaxpnl(
+                                    context,
+                                    ledgerprovider.taxpnleq?.data?.toJson() ??
+                                        {},
+                                    ledgerprovider.taxpnldercomcur?.data
+                                            ?.toJson() ??
+                                        {},
+                                    ledgerprovider.taxpnleqCharge?.toJson() ??
+                                        {},
+                                    ledgerprovider.yearforTaxpnl,
+                                  );
+                                  setState(() {
+                                    errorMessage = null;
+                                  });
+                                } catch (e) {
+                                  setState(() {
+                                    errorMessage = e.toString();
+                                  });
+                                } finally {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                              },
+                        child: isLoading
+                            ? SizedBox(
+                                width: 18,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colors.colorWhite,
+                                ),
+                              )
+                            : TextWidget.subText(
+                                text: "Download",
+                                theme: theme.isDarkMode,
+                                color: colors.colorWhite,
+                                fw: 2,
+                                align: TextAlign.center,
+                              ),
+                      ),
                     ),
                   ),
                 ],
               ),
-              Positioned(
-                bottom: 20,
-                left: 20,
-                right: 20,
-                child: Container(
-                    height: 40,
-                    width: 65,
-                    margin: const EdgeInsets.only(right: 12, top: 15),
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            backgroundColor: theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5))),
-                        onPressed: () async {
-                          ledgerprovider.pdfdownloadfortaxpnl(
-                              context,
-                              ledgerprovider.taxpnleq?.data?.toJson() ?? {},
-                              ledgerprovider.taxpnldercomcur?.data?.toJson() ??
-                                  {},
-                              ledgerprovider.taxpnleqCharge?.toJson() ?? {},
-                              ledgerprovider.yearforTaxpnl);
-                        },
-                        child: Text("Download",
-                            textAlign: TextAlign.center,
-                            style: textStyle(
-                                !theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                12,
-                                FontWeight.w500)))),
-              ),
-              SizedBox(
-                height: 20.0,
-              )
-            ],
+            ),
           ),
-        ),
+        ],
       );
     });
   }
-
-  void _showBottomSheet(BuildContext context, Widget bottomSheet) {
-    showModalBottomSheet(
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-        useSafeArea: true,
-        isDismissible: true,
-        backgroundColor: Colors.white,
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => Container(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: bottomSheet));
-  }
-
-  Widget tabConstruce(String title, ThemesProvider theme, int tab,
-      VoidCallback onPressed, ledgerprovider) {
-    return ElevatedButton(
-        onPressed: () {
-          setState(() {
-            ledgerprovider.taxpnlExTabchange(tab);
-          });
-          _tabController.animateTo(tab);
-          print("object act tab $tab");
-        },
-        style: ElevatedButton.styleFrom(
-            elevation: 0,
-            side: const BorderSide(
-                color: Color.fromARGB(255, 0, 0, 0),
-                width: 1), // Border color & width
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            backgroundColor: theme.isDarkMode
-                ? tab == ledgerprovider.activeTabTaxPnl
-                    ? colors.colorbluegrey
-                    : const Color(0xffB5C0CF).withOpacity(.15)
-                : tab == ledgerprovider.activeTabTaxPnl
-                    ? const Color(0xff000000)
-                    : Color.fromARGB(0, 241, 243, 248),
-            shape: const StadiumBorder()),
-        child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(title,
-                  style: textStyle(
-                      theme.isDarkMode
-                          ? Color(tab == ledgerprovider.activeTabTaxPnl
-                              ? 0xff000000
-                              : 0xffffffff)
-                          : Color(tab == ledgerprovider.activeTabTaxPnl
-                              ? 0xffffffff
-                              : 0xff000000),
-                      12,
-                      FontWeight.w500))
-            ]));
-  }
 }
+
+// Helper for white text color
+Color getWhiteTextColor(bool isDarkMode) => const Color(0xffFFFFFF);

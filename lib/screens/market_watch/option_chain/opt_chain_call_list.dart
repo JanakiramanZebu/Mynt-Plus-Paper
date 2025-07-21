@@ -17,6 +17,7 @@ import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/snack_bar.dart';
+import 'package:flutter/foundation.dart';
 
 class OptChainCallList extends StatelessWidget {
   final List<OptionValues>? callData;
@@ -78,30 +79,95 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
   late String _perChange;
   late String _oiLack;
   late String _oiPerChng;
+  late double _currentOI;
   StreamSubscription? _subscription;
-  bool _isListenerSetup = false;
+
+  // Static variable to track global maximum OI across all CALL options
+  static double _globalMaxOI = 0.0;
 
   @override
   void initState() {
     super.initState();
-    // Initialize with current values
+    
+    // Initialize with option model data first (context not available for websocket yet)
     _lp = widget.option.lp ?? widget.option.close ?? "0.00";
     _perChange = widget.option.perChange ?? "0.00";
     _oiLack = widget.option.oiLack ?? "0.00";
     _oiPerChng = widget.option.oiPerChng ?? "0.00";
-
-    // Don't set up the listener in initState - moved to didChangeDependencies
+    
+    // Initialize current OI from option model
+    _currentOI = double.tryParse(widget.option.oi ?? "0") ?? 
+                 double.tryParse(widget.option.oiLack ?? "0") ?? 0.0;
+    
+    // Convert OI lack back to full OI if needed
+    if (_currentOI < 1000 && _currentOI > 0) {
+      _currentOI = _currentOI * 100000;
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Only set up the listener once
-    if (!_isListenerSetup) {
-      _setupSocketListener();
-      _isListenerSetup = true;
+    // Now context is available - check for existing websocket data and update if needed
+    try {
+      final provider = ProviderScope.containerOf(context).read(websocketProvider);
+      final socketData = provider.socketDatas;
+      final existingData = socketData[widget.option.token];
+      
+      if (existingData != null) {
+        // Update with websocket data if available
+        final newLp = existingData['lp']?.toString();
+        final newPc = existingData['pc']?.toString();
+        final newOI = double.tryParse("${existingData['oi']}") ?? 0.0;
+        
+        if (newLp != null && newLp != "null") _lp = newLp;
+        if (newPc != null && newPc != "null") _perChange = newPc;
+        if (newOI >= 0) {
+          _currentOI = newOI;
+          _oiLack = (_currentOI / 100000).toStringAsFixed(2);
+          
+          // Calculate OI percentage change
+          final poi = double.tryParse("${existingData['poi'] ?? 0.00}") ?? 0.0;
+          if (poi > 0) {
+            _oiPerChng = (((_currentOI - poi) / poi) * 100).toStringAsFixed(2);
+          } else if (_currentOI > 0) {
+            _oiPerChng = "100.00";
+          } else {
+            _oiPerChng = "0.00";
+          }
+        }
+
+        // Update global max OI if current OI is greater
+        if (_currentOI > _globalMaxOI) {
+          _globalMaxOI = _currentOI;
+        }
+
+        if (kDebugMode) {
+          print("=== CALL WEBSOCKET SYNC ===");
+          print("Token: ${widget.option.token}");
+          print("Updated from WebSocket - LTP: $_lp, PC: $_perChange, OI: $_currentOI");
+          print("LTP: $_lp, PC: $_perChange, OI: $_currentOI, OI Per Chng: $_oiPerChng, poi: ${existingData['poi']}, oi: ${existingData['oi']}");
+          print("===========================");
+        }
+        
+        // Update UI with websocket data
+        setState(() {});
+      }
+    } catch (e) {
+      // If provider access fails, just use option model data
+      if (kDebugMode) {
+        print("=== CALL INIT FALLBACK ===");
+        print("Token: ${widget.option.token}");
+        print("Using Option Model - LTP: $_lp, PC: $_perChange, OI: $_currentOI");
+
+        
+        print("==========================");
+      }
     }
+
+    // Always re-setup the listener to ensure fresh data flow
+    _setupSocketListener();
   }
 
   @override
@@ -111,53 +177,50 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
   }
 
   void _setupSocketListener() {
+    // Cancel existing subscription first
+    _subscription?.cancel();
+    
     // Get the stream of data
     final provider = ProviderScope.containerOf(context).read(websocketProvider);
 
-    // Only subscribe to changes for THIS token
+    // Always subscribe to changes for THIS token
     _subscription = provider.socketDataStream.listen((socketData) {
       if (!mounted) return;
 
-      // Only process if this token's data changed
+      // Only process if this token's data exists
       if (socketData.containsKey(widget.option.token)) {
         final data = socketData[widget.option.token];
         if (data == null) return;
 
-        // Debug: Log socket updates for this token
-        // print("=== CALL SOCKET UPDATE ===");
-        // print("Token: ${widget.option.token}");
-        // print("Socket LTP: ${data['lp']}");
-        // print("Socket PC: ${data['pc']}");
-        // print("Current _lp: $_lp");
-        // print("Current _perChange: $_perChange");
-        // print("==========================");
-
-        // Check if values actually changed before updating state
+        // Always update values when websocket data comes in (remove restrictive checks)
         bool needsUpdate = false;
 
         final newLp = data['lp']?.toString();
-        if (newLp != null &&
-            newLp != _lp &&
-            newLp != "null" &&
-            newLp != "0" &&
-            newLp != "0.0") {
+        if (newLp != null && newLp != "null" && newLp != _lp) {
           _lp = newLp;
           needsUpdate = true;
         }
 
         final newPc = data['pc']?.toString();
-        if (newPc != null &&
-            newPc != _perChange &&
-            newPc != "null" &&
-            newPc != "0" &&
-            newPc != "0.0") {
+        if (newPc != null && newPc != "null" && newPc != _perChange) {
           _perChange = newPc;
           needsUpdate = true;
         }
 
         // Calculate OI values only if needed
         final oi = double.tryParse("${data['oi']}");
-        if (oi != null && oi > 0) {
+        if (oi != null && oi >= 0) { // Allow 0 values
+          // Update current OI value
+          if (oi != _currentOI) {
+            _currentOI = oi;
+            needsUpdate = true;
+            
+            // Update GLOBAL max OI if current OI is greater
+            if (_currentOI > _globalMaxOI) {
+              _globalMaxOI = _currentOI;
+            }
+          }
+          
           final newOiLack = (oi / 100000).toStringAsFixed(2);
           if (newOiLack != _oiLack) {
             _oiLack = newOiLack;
@@ -165,15 +228,32 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
           }
 
           final poi = double.tryParse("${data['poi'] ?? 0.00}") ?? 0.0;
-          final newOiPerChng = ((poi / oi) * 100).toStringAsFixed(2);
-          if (newOiPerChng != _oiPerChng) {
+          String newOiPerChng = "0.00";
+          print("poi: $poi");
+          print("oi: $oi");
+          // Safe calculation to avoid division by zero
+          if (poi > 0) {
+          
+            newOiPerChng = (((oi - poi) / poi) * 100).toStringAsFixed(2);
+          } else if (oi > 0) {
+            // If previous OI was 0 but current OI exists, show as 100% increase
+            newOiPerChng = "100.00";
+          }
+          
+          if (newOiPerChng != _oiPerChng && newOiPerChng != "NaN") {
             _oiPerChng = newOiPerChng;
             needsUpdate = true;
           }
         }
 
-        // Only rebuild if data actually changed
+        // Always rebuild if we have any data update
         if (needsUpdate) {
+          // if (kDebugMode) {
+            print("=== CALL DATA UPDATE ===");
+            print("Token: ${widget.option.token}");
+            print("LTP: $_lp, PC: $_perChange, OI: $_currentOI, OI Per Chng: $_oiPerChng, poi: $data['poi'], oi: $data['oi']");
+            print("========================");
+          // }
           setState(() {});
         }
       }
@@ -229,7 +309,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
                 : _handleTap(context, widget.option)
           },
           child: Container(
-            height: 58,
+            height: 65,
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: widget.showPriceView
                 ? _buildPriceData(theme)
@@ -240,10 +320,21 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
     );
   }
 
-  Widget _buildOIData(ThemesProvider theme) {
-    return Column(
+Widget _buildOIData(ThemesProvider theme) {
+  // Calculate line width percentage based on current OI relative to GLOBAL max OI
+  double lineWidthPercentage = 0.0;
+  
+  if (_currentOI > 0 && _globalMaxOI > 0) {
+    // Calculate line width percentage based on current OI relative to GLOBAL max OI
+    lineWidthPercentage = (_currentOI / _globalMaxOI).clamp(0.0, 1.0);
+  }
+
+  return Container(
+    height: 55,
+    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           _oiLack,
@@ -255,14 +346,40 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
           "(${_oiPerChng == "NaN" ? "0.00" : _oiPerChng}%)",
           style: _getPercentageStyle(_oiPerChng),
         ),
+        const SizedBox(height: 2),
+        // Dynamic width line based on OI
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            height: 1.5,
+            width: MediaQuery.of(context).size.width * 0.25 * lineWidthPercentage,
+            decoration: BoxDecoration(
+              color: _oiPerChng.startsWith("-") ? colors.error : colors.profitLight,
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+        ),
       ],
-    );
+    ),
+  );
+}
+
+
+Widget _buildPriceData(ThemesProvider theme) {
+  // Calculate line width percentage based on current OI relative to GLOBAL max OI
+  double lineWidthPercentage = 0.0;
+  
+  if (_currentOI > 0 && _globalMaxOI > 0) {
+    // Calculate line width percentage based on current OI relative to GLOBAL max OI
+    lineWidthPercentage = (_currentOI / _globalMaxOI).clamp(0.0, 1.0);
   }
 
-  Widget _buildPriceData(ThemesProvider theme) {
-    return Column(
+  return Container(
+    height: 55,
+    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           _lp,
@@ -274,9 +391,23 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
           "(${_perChange}%)",
           style: _getPercentageStyle(_perChange),
         ),
+        const SizedBox(height: 2),
+        // Dynamic width line based on OI
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            height: 1.5,
+            width: MediaQuery.of(context).size.width * 0.25 * lineWidthPercentage,
+            decoration: BoxDecoration(
+              color: colors.profitLight,
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+        ),
       ],
-    );
-  }
+    ),
+  );
+}
 
   void _symbolenotFound(BuildContext context) {
     ScaffoldMessenger.of(context)
@@ -354,7 +485,7 @@ class _OptionChainCallRowState extends State<_OptionChainCallRow> {
       // () {
         Color color = colors.textSecondaryLight;
         if (perChange != "0.00") {
-          color = perChange.startsWith("-") ? colors.error : colors.profitLight;
+          color = colors.profitLight;
         }
         return TextWidget.textStyle(fontSize: 14, color: color, theme: false,);
       // },

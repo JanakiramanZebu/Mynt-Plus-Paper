@@ -2,10 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_mainstream_model.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_sme_model.dart';
+import 'package:mynt_plus/screens/ipo/IPO_order_screen/ipo_order_screen.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -132,15 +135,22 @@ class _IPODetailsContainer extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CustomDragHandler(),
-          const SizedBox(height: 6),
-          _buildStatusBanner(),
-          _buildCompanyHeader(),
-          const SizedBox(height: 16),
           Expanded(
-            child: _buildScrollableContent(),
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: Column(
+                children: [
+                  const CustomDragHandler(),
+                  const SizedBox(height: 6),
+                  // _buildStatusBanner(),
+                  _buildCompanyHeader(),
+                  _buildApplyButton(context),
+                  const SizedBox(height: 16),
+                  _buildScrollableContent(),
+                ],
+              ),
+            ),
           ),
-          _buildApplyButton(context),
         ],
       ),
     );
@@ -164,15 +174,9 @@ class _IPODetailsContainer extends StatelessWidget {
   }
 
   Widget _buildCompanyHeader() {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.darkGrey : const Color(0xfffafbff),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: ListTile(
-        trailing: _buildCompanyLogo(),
-        title: _buildCompanyInfo(),
-      ),
+    return ListTile(
+      trailing: _buildCompanyLogo(),
+      title: _buildCompanyInfo(),
     );
   }
 
@@ -210,13 +214,13 @@ class _IPODetailsContainer extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "${singlepage.iposinglepage!.data!['Company Name']} ",
-          style: _textStyle(
-            !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            16,
-            FontWeight.w600,
-          ),
+        TextWidget.headText(
+          text: "${singlepage.iposinglepage!.data!['Company Name']} ",
+          theme: false,
+          fw: 0,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
         ),
         const SizedBox(height: 8),
         _buildStatusChips(),
@@ -227,9 +231,9 @@ class _IPODetailsContainer extends StatelessWidget {
   Widget _buildStatusChips() {
     return Row(
       children: [
-        _buildStatusChip(),
-        const SizedBox(width: 10),
         _buildTypeChip(),
+        const SizedBox(width: 10),
+        _buildStatusChip(),
       ],
     );
   }
@@ -238,50 +242,33 @@ class _IPODetailsContainer extends StatelessWidget {
     final status = ipostartdate(widget.startdate, widget.enddate);
     final isOpen = status == "Open";
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isOpen
-            ? theme.isDarkMode
-                ? const Color(0xffECF8F1).withOpacity(.3)
-                : const Color(0xffECF8F1)
-            : theme.isDarkMode
-                ? const Color(0xffFFF6E6).withOpacity(.3)
-                : const Color(0xffFFF6E6),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        status,
-        style: _textStyle(
-          Color(isOpen ? 0xff43A833 : 0xffB37702),
-          11,
-          FontWeight.w500,
-        ),
-      ),
+    return TextWidget.paraText(
+      text: status.toUpperCase(),
+      theme: false,
+      fw: 3,
+      color: isOpen
+          ? theme.isDarkMode
+              ? colors.profitDark
+              : colors.profitLight
+          : theme.isDarkMode
+              ? colors.lossDark
+              : colors.lossLight,
     );
   }
 
   Widget _buildTypeChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode
-            ? colors.colorGrey.withOpacity(.3)
-            : const Color.fromARGB(255, 243, 242, 174),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        widget.ipotype,
-        style: _textStyle(const Color(0xff666666), 10, FontWeight.w500),
-      ),
+    return TextWidget.paraText(
+      text: widget.ipotype,
+      theme: false,
+      fw: 3,
+      color: theme.isDarkMode
+          ? colors.textSecondaryDark
+          : colors.textSecondaryLight,
     );
   }
 
   Widget _buildScrollableContent() {
-    return ListView(
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      controller: scrollController,
+    return Column(
       children: [
         _IPODetailsSection(
           theme: theme,
@@ -290,23 +277,21 @@ class _IPODetailsContainer extends StatelessWidget {
         ),
         _buildDivider(),
         _SubscriptionSection(theme: theme, singlepage: singlepage),
-
-        
         _IPOTimelineSection(theme: theme, singlepage: singlepage),
         _buildDivider(),
-        _AboutCompanySection(
-          theme: theme,
-          singlepage: singlepage,
-          isExpanded: isExpanded,
-          onExpandToggle: onExpandToggle,
-        ),
+        // _AboutCompanySection(
+        //   theme: theme,
+        //   singlepage: singlepage,
+        //   isExpanded: isExpanded,
+        //   onExpandToggle: onExpandToggle,
+        // ),
       ],
     );
   }
 
   Widget _buildDivider() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Divider(
         color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
       ),
@@ -315,21 +300,22 @@ class _IPODetailsContainer extends StatelessWidget {
 
   Widget _buildApplyButton(BuildContext context) {
     bool isApplyButtonEnabled = true;
-    if (singlepage.iposinglepage!.data['status'] == "CLOSED") {
-      return const SizedBox();
-    }
+    // if (singlepage.iposinglepage!.data['status'] == "CLOSED") {
+    //   return const SizedBox();
+    // }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: SizedBox(
         width: double.infinity,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor:
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        child: OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(0, 40),
+            side: BorderSide(color: colors.btnOutlinedBorder),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50),
+              borderRadius: BorderRadius.circular(5),
             ),
+            backgroundColor: colors.primary,
           ),
           onPressed: () {
             if (isApplyButtonEnabled) {
@@ -339,13 +325,11 @@ class _IPODetailsContainer extends StatelessWidget {
               return;
             }
           },
-          child: Text(
-            "Apply for IPO",
-            style: _textStyle(
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              14,
-              FontWeight.w500,
-            ),
+          child: TextWidget.subText(
+            text: "Apply",
+            theme: false,
+            fw: 1,
+            color: colors.colorWhite,
           ),
         ),
       ),
@@ -364,12 +348,12 @@ class _IPODetailsContainer extends StatelessWidget {
         );
 
         if (context.mounted) {
-          if (decodedJson['subType'] == "SME") {
+          if (decodedJson['key'] == "SME") {
             final ipoOrderbookData = SMEIPO.fromJson(decodedJson);
             await singlepage.smeipocategory();
             Navigator.pushNamed(
               context,
-              Routes.smeapplyIPO,
+              Routes.applyIPO,
               arguments: ipoOrderbookData,
             );
           } else {
@@ -416,172 +400,146 @@ class _IPODetailsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "IPO Details",
-            style: _textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              14,
-              FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
+          // Text(
+          //   "IPO Details",
+          //   style: _textStyle(
+          //     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          //     14,
+          //     FontWeight.w600,
+          //   ),
+          // ),
+          // const SizedBox(height: 16),
           _rowOfInfoData(
-            "IPO date",
+            "Min amount",
+            widget.mininv,
+          ),
+          const SizedBox(height: 8),
+
+          _rowOfInfoData(
+              "Lot size",
+              singlepage.iposinglepage!.data["IpoDetails"]["LotSize"] == "" ||
+                      singlepage.iposinglepage!.data["IpoDetails"]["LotSize"] ==
+                          null
+                  ? "--"
+                  : "${singlepage.iposinglepage!.data!["IpoDetails"]['LotSize']}"),
+          const SizedBox(height: 8),
+
+          _rowOfInfoData(
+            "Price range",
+            widget.pricerange,
+          ),
+          const SizedBox(height: 8),
+
+          _rowOfInfoData(
+            "Date",
             singlepage.iposinglepage!.data["IpoDetails"]["IpoDate"],
+          ),
+          const SizedBox(height: 8),
+
+          _rowOfInfoData(
+            "Issue size",
+            singlepage.iposinglepage!.data["IpoDetails"]["tlShares"],
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
+            "Listing at",
+            singlepage.iposinglepage!.data["IpoDetails"]["ListingAt"] == "" ||
+                    singlepage.iposinglepage!.data["IpoDetails"]["ListingAt"] ==
+                        null
+                ? "--"
+                : "${singlepage.iposinglepage!.data['IpoDetails']['ListingAt']}",
+          ),
+          const SizedBox(height: 8),
+          _rowOfInfoData(
             "Listing date",
             singlepage.iposinglepage!.data["IpoDetails"]["ListingDt"],
           ),
           const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Price range",
-            widget.pricerange,
-            "Min. amount",
-            widget.mininv,
-          ),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextWidget.subText(
+                    text: "RHP Doc",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 3),
+                Material(
+                  color: Colors.transparent,
+                  shape: const RoundedRectangleBorder(),
+                  child: InkWell(
+                    customBorder: const RoundedRectangleBorder(),
+                    splashColor: theme.isDarkMode
+                        ? colors.splashColorDark
+                        : colors.splashColorLight,
+                    highlightColor: theme.isDarkMode
+                        ? colors.highlightDark
+                        : colors.highlightLight,
+                    onTap: singlepage.iposinglepage!.data['IpoDetails']
+                                ['RHP'] !=
+                            ""
+                        ? () => _launchURL(singlepage
+                            .iposinglepage!.data!['IpoDetails']['RHP'])
+                        : () {},
+                    child: TextWidget.subText(
+                        text: singlepage.iposinglepage!.data["IpoDetails"]
+                                        ["RHP"] ==
+                                    "" ||
+                                singlepage.iposinglepage!.data["IpoDetails"]
+                                        ["RHP"] ==
+                                    null
+                            ? "--"
+                            : "Download",
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.primaryDark
+                            : colors.primaryLight,
+                        fw: 0),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Divider(
+                color:
+                    theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+                thickness: 0)
+          ]),
+
           const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Total Issue Size",
-            singlepage.iposinglepage!.data["IpoDetails"]["tlShares"],
-            "Lot size",
-            singlepage.iposinglepage!.data["IpoDetails"]["LotSize"] == "" ||
-                    singlepage.iposinglepage!.data["IpoDetails"]["LotSize"] ==
-                        null
-                ? "--"
-                : "${singlepage.iposinglepage!.data!["IpoDetails"]['LotSize']}",
-          ),
-          _buildListingAndRHPSection(),
         ],
       ),
     );
   }
 
-  Widget _buildListingAndRHPSection() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Listing at",
-                style: _textStyle(const Color(0xff666666), 12, FontWeight.w400),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                singlepage.iposinglepage!.data["IpoDetails"]["ListingAt"] ==
-                            "" ||
-                        singlepage.iposinglepage!.data["IpoDetails"]
-                                ["ListingAt"] ==
-                            null
-                    ? "--"
-                    : "${singlepage.iposinglepage!.data['IpoDetails']['ListingAt']}",
-                style: _textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600,
-                ),
-              ),
-              Divider(
-                color: theme.isDarkMode
-                    ? colors.darkColorDivider
-                    : colors.colorDivider,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 16),
-        if (singlepage.iposinglepage!.data['IpoDetails']['RHP'] != "")
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "RHP DOC",
-                  style:
-                      _textStyle(const Color(0xff666666), 12, FontWeight.w400),
-                ),
-                const SizedBox(height: 4),
-                InkWell(
-                  onTap: () => _launchURL(
-                      singlepage.iposinglepage!.data!['IpoDetails']['RHP']),
-                  child: Text(
-                    "Download",
-                    style: _textStyle(colors.colorBlue, 14, FontWeight.w600),
-                  ),
-                ),
-                Divider(
-                  color: theme.isDarkMode
-                      ? colors.darkColorDivider
-                      : colors.colorDivider,
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _rowOfInfoData(
-      String title1, String value1, String title2, String value2) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title1,
-                style: _textStyle(const Color(0xff666666), 12, FontWeight.w400),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value1,
-                style: _textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600,
-                ),
-              ),
-              Divider(
-                color: theme.isDarkMode
-                    ? colors.darkColorDivider
-                    : colors.colorDivider,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title2,
-                style: _textStyle(const Color(0xff666666), 12, FontWeight.w400),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value2,
-                style: _textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600,
-                ),
-              ),
-              Divider(
-                color: theme.isDarkMode
-                    ? colors.darkColorDivider
-                    : colors.colorDivider,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+  Widget _rowOfInfoData(String title1, String value1) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextWidget.subText(
+              text: title1,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              fw: 3),
+          TextWidget.subText(
+              text: value1,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+              fw: 3),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Divider(
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          thickness: 0)
+    ]);
   }
 
   void _launchURL(String url) async {
@@ -601,7 +559,7 @@ class _IPODetailsSection extends StatelessWidget {
   }
 }
 
-class _SubscriptionSection extends StatelessWidget {
+class _SubscriptionSection extends StatefulWidget {
   final ThemesProvider theme;
   final dynamic singlepage;
 
@@ -611,67 +569,136 @@ class _SubscriptionSection extends StatelessWidget {
   });
 
   @override
+  State<_SubscriptionSection> createState() => _SubscriptionSectionState();
+}
+
+class _SubscriptionSectionState extends State<_SubscriptionSection> {
+  bool showsubcription = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      color:
-          theme.isDarkMode ? const Color(0xFF2A2A2A) : colors.kColorLightGrey,
-      child: Builder(
-        builder: (context) {
-          final subscriptionData =
-              singlepage.iposinglepage!.data['subsciption'];
+    return Builder(
+      builder: (context) {
+        final subscriptionData =
+            widget.singlepage.iposinglepage!.data['subsciption'];
 
-          if (subscriptionData == null || subscriptionData.isEmpty) {
-            return Container();
-          }
+        if (subscriptionData == null || subscriptionData.isEmpty) {
+          return Container();
+        }
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-              Text(
-                "Subscription Status",
-                style: _textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "The IPO has been subscribed ${singlepage.iposinglepage!.data['tlSub']['Subscription (times)']} times",
-                style: _textStyle(colors.colorGrey, 14, FontWeight.w500),
-              ),
-              const SizedBox(height: 16),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: subscriptionData.length,
-                separatorBuilder: (context, index) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Divider(color: colors.colorDivider),
-                ),
-                itemBuilder: (context, index) {
-                  final category =
-                      subscriptionData[index]["Category"] ?? "Unknown";
-                  final subscriptionTimes = subscriptionData[index]
-                              ["Subscription (times)"]
-                          ?.toString() ??
-                      "N/A";
-
-                  return _ipoDateDisplay(category, subscriptionTimes);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Material(
+              color: Colors.transparent,
+              shape: const RoundedRectangleBorder(),
+              child: InkWell(
+                customBorder: const RoundedRectangleBorder(),
+                splashColor: widget.theme.isDarkMode
+                    ? colors.splashColorDark
+                    : colors.splashColorLight,
+                highlightColor: widget.theme.isDarkMode
+                    ? colors.highlightDark
+                    : colors.highlightLight,
+                onTap: () {
+                  setState(() {
+                    showsubcription = !showsubcription;
+                  });
                 },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextWidget.subText(
+                                text: "Subscription Status",
+                                theme: false,
+                                fw: 0,
+                                color: widget.theme.isDarkMode
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
+                              ),
+                              const SizedBox(height: 4),
+                              TextWidget.paraText(
+                                text:
+                                    "Subscribed by ${widget.singlepage.iposinglepage!.data['tlSub']['Subscription (times)']} times",
+                                theme: false,
+                                fw: 0,
+                                color: widget.theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const SizedBox(width: 8),
+                          Container(
+                            height: 45,
+                            width: 26,
+                            padding: const EdgeInsets.all(7),
+                            child: SvgPicture.asset(
+                              assets.rightarrowcur,
+                              width: 12,
+                              height: 12,
+                              color: colors.iconColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
-               Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Divider(
-        color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-      ),
-    )
-            ],
-          );
-        },
-      ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Divider(
+                color: widget.theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider,
+              ),
+            ),
+            showsubcription
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: subscriptionData.length,
+                          separatorBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Divider(color: colors.colorDivider),
+                          ),
+                          itemBuilder: (context, index) {
+                            final category = subscriptionData[index]
+                                    ["Category"] ??
+                                "Unknown";
+                            final subscriptionTimes = subscriptionData[index]
+                                        ["Subscription (times)"]
+                                    ?.toString() ??
+                                "N/A";
+
+                            return _ipoDateDisplay(category, subscriptionTimes);
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+                  )
+                : const SizedBox(),
+          ],
+        );
+      },
     );
   }
 
@@ -695,7 +722,9 @@ class _SubscriptionSection extends StatelessWidget {
               child: Text(
                 _getInvestorCategory(text),
                 style: _textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  widget.theme.isDarkMode
+                      ? colors.colorWhite
+                      : colors.colorBlack,
                   14,
                   FontWeight.w500,
                 ),
@@ -704,7 +733,7 @@ class _SubscriptionSection extends StatelessWidget {
             Text(
               "$value x",
               style: _textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                widget.theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                 14,
                 FontWeight.w500,
               ),
@@ -774,14 +803,14 @@ class _IPOTimelineSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          Text(
-            "IPO TimeLine",
-            style: _textStyle(
-              !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              14,
-              FontWeight.w600,
-            ),
-          ),
+          // Text(
+          //   "IPO TimeLine",
+          //   style: _textStyle(
+          //     !theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          //     14,
+          //     FontWeight.w600,
+          //   ),
+          // ),
           ListView.builder(
             itemCount:
                 singlepage.iposinglepage!.data['IPO_Timeline'].length - 1,
@@ -802,15 +831,6 @@ class _IPOTimelineSection extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  static TextStyle _textStyle(
-      Color color, double fontSize, FontWeight fWeight) {
-    return TextStyle(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
     );
   }
 }

@@ -7,6 +7,8 @@ import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
+import '../bonds_orderbook_details/close_order_details.dart';
+import '../../../../res/global_state_text.dart';
 
 class BondsCloseOrder extends ConsumerWidget {
   const BondsCloseOrder({super.key});
@@ -15,7 +17,7 @@ class BondsCloseOrder extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
     final bonds = ref.watch(bondsProvider);
-    
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,13 +65,32 @@ class _OrderItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => _navigateToDetails(context),
+      onTap: () {
+        showModalBottomSheet(
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          isDismissible: true,
+          enableDrag: false,
+          useSafeArea: true,
+          context: context,
+          builder: (context) => Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: _navigateToDetails(context)),
+        );
+      },
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             _OrderHeader(order: order, theme: theme),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             _OrderFooter(order: order, theme: theme),
           ],
         ),
@@ -77,12 +98,8 @@ class _OrderItem extends StatelessWidget {
     );
   }
 
-  void _navigateToDetails(BuildContext context) {
-    Navigator.pushNamed(
-      context,
-      Routes.bondsclosedetailsscreen,
-      arguments: order,
-    );
+  _navigateToDetails(BuildContext context) {
+    return BondsCloseOrderDetails(bondsCloseDetails: order);
   }
 }
 
@@ -100,29 +117,16 @@ class _OrderHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          order.symbol.toString(),
-          style: textStyles.scripNameTxtStyle.copyWith(
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          ),
+        TextWidget.subText(
+          text: order.symbol.toString(),
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              "₹${getFormatter(
-                noDecimal: true,
-                v4d: false,
-                value: double.parse(order.investmentValue.toString()).toDouble(),
-              )}",
-              style: _textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
+        _StatusBadge(order: order, theme: theme),
+
+      
       ],
     );
   }
@@ -145,19 +149,30 @@ class _OrderFooter extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              order.responseDatetime.toString() == ""
+            TextWidget.paraText(
+              text: order.responseDatetime.toString() == ""
                   ? "----"
                   : ipodateres(order.responseDatetime.toString()),
-              style: _textStyle(
-                const Color(0xff666666),
-                12,
-                FontWeight.w600,
-              ),
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
             ),
+             
           ],
         ),
-        _StatusBadge(order: order, theme: theme),
+
+         TextWidget.paraText(
+          text: getFormatter(
+            noDecimal: true,
+            v4d: false,
+            value: double.parse(order.investmentValue.toString()).toDouble(),
+          ),
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+        ),
       ],
     );
   }
@@ -176,20 +191,37 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SvgPicture.asset(
-          order.reponseStatus == "Cancel Success"
-              ? "assets/icon/failed.svg"
-              : "assets/icon/failed.svg",
-        ),
-        const SizedBox(width: 5),
-        Text(
-          order.reponseStatus == "Cancel Success" ? "Cancelled" : "Failed",
-          style: _textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w600,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: order.reponseStatus == "Cancel Success"
+                ? colors.error.withOpacity(0.1)
+                : colors.error.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: TextWidget.paraText(
+            text: order.reponseStatus == "Cancel Success"
+                ? "Cancelled"
+                : "Failed",
+            theme: false,
+            color: order.reponseStatus == "Cancel Success"
+                ? colors.error
+                : colors.error,
           ),
         ),
+
+        // SvgPicture.asset(
+        //   order.reponseStatus == "Cancel Success"
+        //       ? "assets/icon/failed.svg"
+        //       : "assets/icon/failed.svg",
+        // ),
+        // const SizedBox(width: 5),
+        // TextWidget.subText(
+        //   text: order.reponseStatus == "Cancel Success" ? "Cancelled" : "Failed",
+        //   theme: theme.isDarkMode,
+        //   color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+        //   fw: 2,
+        // ),
       ],
     );
   }
@@ -207,14 +239,4 @@ class _OrderDivider extends StatelessWidget {
       color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
     );
   }
-}
-
-TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
-  return GoogleFonts.inter(
-    textStyle: TextStyle(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    ),
-  );
 }

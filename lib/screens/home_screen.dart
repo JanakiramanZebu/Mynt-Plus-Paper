@@ -347,7 +347,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         return Scaffold(
           // Pass only the selected index to the AppBar builder
           appBar: _buildAppBar(selectedBtmIndx, theme.isDarkMode),
-          bottomNavigationBar: buildBottomNav(selectedBtmIndx, theme),
+          bottomNavigationBar: ref.watch(userProfileProvider).profileloader
+              ? const SizedBox.shrink()
+              : buildBottomNav(selectedBtmIndx, theme),
           // Pass only the selected index and theme to the Body builder
           body: _buildBody(selectedBtmIndx, theme),
         );
@@ -926,7 +928,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         await ref.read(notificationprovider).fetchexchagemsg(context);
         await ref.read(notificationprovider).fetchbrokermsg(context);
 
-
         //funds
 
         await ref.read(transcationProvider).fetchValidateToken(context);
@@ -935,8 +936,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         await ref.read(transcationProvider).fetchupiIdView(
               ref
                   .read(transcationProvider)
-                  .bankdetails!
-                  .dATA![ref.read(transcationProvider).indexss][1],
+                  .bankdetails?.dATA?[ref.read(transcationProvider).indexss][1] ?? "",
               ref
                   .read(transcationProvider)
                   .bankdetails!
@@ -1063,64 +1063,96 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 // Use ref.read where state is not needed for building the dialog
                 final theme = ref.read(themeProvider);
                 return AlertDialog(
-                    backgroundColor: theme.isDarkMode
-                        ? const Color.fromARGB(255, 18, 18, 18)
-                        : colors.colorWhite,
-                    titleTextStyle: textStyles.appBarTitleTxt.copyWith(
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack),
-                    contentTextStyle: textStyles.menuTxt,
-                    titlePadding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
+                    backgroundColor: colors.colorWhite,
+                    titlePadding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(14))),
+                        borderRadius: BorderRadius.all(Radius.circular(8))),
                     scrollable: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-                    insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-                    title: TextWidget.titleText(
-                      text: "Exit App",
-                      theme: false,
-                      color: Color(0xff000000),
-                      fw: 0,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
                     ),
-                    content: SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        child: const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [Text("Do you want to Exit the App?")])),
+                    actionsPadding: const EdgeInsets.only(
+                        bottom: 16, right: 16, left: 16, top: 8),
+                    insetPadding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 12),
+                    title: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Material(
+                              color: Colors.transparent,
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                onTap: () async {
+                                  await Future.delayed(
+                                      const Duration(milliseconds: 150));
+                                  Navigator.of(context).pop(false);
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                splashColor: theme.isDarkMode
+                                    ? colors.splashColorDark
+                                    : colors.splashColorLight,
+                                highlightColor: theme.isDarkMode
+                                    ? colors.splashColorDark
+                                    : colors.splashColorLight,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6.0),
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 22,
+                                    color: theme.isDarkMode
+                                        ? colors.colorWhite
+                                        : colors.colorBlack,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          child: Center(
+                            child: TextWidget.subText(
+                              text: "Do you want to Exit the App?",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              fw: 3,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     actions: [
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: theme.isDarkMode
-                                ? const Color(0xffF1F3F8)
-                                : const Color(0xffF1F3F8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(0, 40), // width, height
+                            side: BorderSide(
+                                color: colors
+                                    .btnOutlinedBorder), // Outline border color
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4))),
-                        child: TextWidget.subText(
-                            text: "No",
-                            theme: false,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            backgroundColor:
+                                colors.primaryDark, // Transparent background
+                          ),
+                          child: TextWidget.titleText(
+                            text: "Exit",
                             color: !theme.isDarkMode
-                                ? const Color(0xff666666)
-                                : const Color(0xff666666),
-                            fw: 0),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4))),
-                        child: TextWidget.subText(
-                            text: "Yes",
-                            theme: false,
-                            color: colors.colorWhite,
-                            fw: 0),
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            theme: theme.isDarkMode,
+                            fw: 0,
+                          ),
+                        ),
                       ),
                     ]);
               }) ??

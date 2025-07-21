@@ -122,7 +122,6 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                   ),
                   child: Column(
                     children: [
-                      const CustomDragHandler(),
                       Expanded(
                         child: SingleChildScrollView(
                           controller: scrollController,
@@ -131,6 +130,7 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  const CustomDragHandler(),
                                   Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -164,23 +164,22 @@ class _PendingAlertDetailsState extends ConsumerState<PendingAlertDetails> {
                                               const SizedBox(height: 4),
                                               TextWidget.titleText(
                                                   text:
-                                                      "₹${widget.alert.ltp ?? widget.alert.close ?? 0.00}",
+                                                      "${widget.alert.ltp ?? widget.alert.close ?? 0.00}",
                                                   theme: theme.isDarkMode,
-                                                  color: widget
-                                                              .alert.perChange ==
+                                                  color: widget.alert.change ==
                                                           null
                                                       ? theme.isDarkMode
                                                           ? colors
                                                               .textSecondaryDark
                                                           : colors
                                                               .textSecondaryLight
-                                                      : widget.alert.perChange!
+                                                      : widget.alert.change!
                                                               .startsWith("-")
                                                           ? theme.isDarkMode
                                                               ? colors.lossDark
                                                               : colors.lossLight
                                                           : widget.alert
-                                                                      .perChange ==
+                                                                      .change ==
                                                                   "0.00"
                                                               ? theme.isDarkMode
                                                                   ? colors

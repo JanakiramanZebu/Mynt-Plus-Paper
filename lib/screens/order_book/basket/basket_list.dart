@@ -83,10 +83,10 @@ class BasketList extends ConsumerWidget {
           ),
         ),
         basket.bsktList.isEmpty
-            ? SizedBox(height: 440, child: const NoDataFound())
+            ? SizedBox(height: 400, child: const NoDataFound())
             : ListView.separated(
                 shrinkWrap: true,
-                itemCount: basket.bsktList.length,
+                itemCount: basket.bsktList.length ?? 0,
                 itemBuilder: (BuildContext context, int index) {
                   return ListTile(
                       onLongPress: () {
@@ -98,121 +98,142 @@ class BasketList extends ConsumerWidget {
                               builder: (BuildContext context,
                                   StateSetter setDialogState) {
                                 return AlertDialog(
-                                  backgroundColor: theme.isDarkMode
-                                      ? const Color.fromARGB(255, 18, 18, 18)
-                                      : colors.colorWhite,
+                                  backgroundColor: colors.colorWhite,
+                                  titlePadding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 8),
                                   shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(16))),
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(8))),
                                   scrollable: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
                                   actionsPadding: const EdgeInsets.only(
-                                      left: 16, right: 16, bottom: 14, top: 10),
-                                  contentPadding: EdgeInsets.zero,
+                                      bottom: 16, right: 16, left: 16, top: 8),
                                   insetPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  titlePadding: const EdgeInsets.only(
-                                      left: 16, right: 8, top: 0, bottom: 0),
-                                  title: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        TextWidget.titleText(
-                                            text: "Delete Basket",
-                                            theme: theme.isDarkMode,
-                                            fw: 1),
-                                        InkWell(
-                                          onTap: () {
-                                            Navigator.pop(context);
-                                          },
-                                          borderRadius: BorderRadius.circular(
-                                              32), // Makes the ripple circular
-                                          splashColor: theme.isDarkMode
-                                              ? Colors.white.withOpacity(0.2)
-                                              : Colors.black.withOpacity(0.1),
-                                          highlightColor: Colors
-                                              .transparent, // Optional: remove highlight if not needed
-                                          customBorder:
-                                              const CircleBorder(), // Ensures ripple is circular
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(
-                                                8.0), // Ensures enough space for ripple
-                                            child: Icon(
-                                              Icons.close_rounded,
-                                              size: 22,
-                                              color: theme.isDarkMode
-                                                  ? const Color(0xffBDBDBD)
-                                                  : colors.colorGrey,
-                                            ),
-                                          ),
-                                        )
-                                      ]),
-                                  content: SizedBox(
-                                      width: MediaQuery.of(context).size.width,
-                                      child: Column(children: [
-                                        const ListDivider(),
-                                        const SizedBox(height: 14),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16),
-                                          child: TextWidget.subText(
-                                              text:
-                                                  "Are you sure you want to delete this basket ${basket.bsktList[index]['bsketName'].toString().toUpperCase()} ?",
-                                              theme: theme.isDarkMode,
-                                              fw: 0),
-                                        ),
-                                      ])),
-                                  actions: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: OutlinedButton(
-                                            onPressed: (_isDeleting)
-                                                ? null
-                                                : () async {
-                                                    setDialogState(() {
-                                                      _isDeleting = true;
-                                                    });
-                                                    await basket
-                                                        .removeBasket(index);
-                                                    Navigator.pop(context);
-
-                                                    if (context.mounted) {
-                                                      setDialogState(() {
-                                                        _isDeleting = false;
-                                                      });
-                                                    }
-                                                  },
-                                            style: OutlinedButton.styleFrom(
-                                              minimumSize: const Size(
-                                                  0, 40), // width, height
-                                              side: BorderSide(
-                                                  color: colors
-                                                      .darkred), // Outline border color
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
+                                      horizontal: 30, vertical: 12),
+                                  title: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Material(
+                                            color: Colors.transparent,
+                                            shape: const CircleBorder(),
+                                            child: InkWell(
+                                              onTap: () =>
+                                                  Navigator.pop(context),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              splashColor: theme.isDarkMode
+                                                  ? colors.splashColorDark
+                                                  : colors.splashColorLight,
+                                              highlightColor: theme.isDarkMode
+                                                  ? colors.splashColorDark
+                                                  : colors.splashColorLight,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(6.0),
+                                                child: Icon(
+                                                  Icons.close_rounded,
+                                                  size: 22,
+                                                  color: theme.isDarkMode
+                                                      ? const Color(0xffBDBDBD)
+                                                      : colors.colorGrey,
+                                                ),
                                               ),
-                                              backgroundColor: Colors
-                                                  .transparent, // Transparent background
                                             ),
-                                            child: (_isDeleting)
-                                                ? const SizedBox(
-                                                    width: 18,
-                                                    height: 20,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                            color: Color(
-                                                                0xff666666)),
-                                                  )
-                                                : TextWidget.subText(
-                                                    text: "Delete",
-                                                    color: colors.kColorRedText,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 0),
                                           ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            // TextWidget.subText(
+                                            //   text: "Delete Basket",
+                                            //   theme: theme.isDarkMode,
+                                            //   color: theme.isDarkMode
+                                            //       ? colors.textPrimaryDark
+                                            //       : colors.textPrimaryLight,
+                                            //   fw: 3,
+                                            // ),
+                                            const SizedBox(height: 5),
+                                            TextWidget.subText(
+                                              text:
+                                                  "Are you sure you want to delete this basket ${basket.bsktList[index]['bsketName'].toString().toUpperCase()}?",
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight,
+                                              fw: 3,
+                                              align: TextAlign.center,
+                                            ),
+                                          ],
                                         ),
-                                      ],
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: _isDeleting
+                                            ? null
+                                            : () async {
+                                                setDialogState(() {
+                                                  _isDeleting = true;
+                                                });
+                                                await basket
+                                                    .removeBasket(index);
+                                                Navigator.pop(context);
+                                                if (context.mounted) {
+                                                  setDialogState(() {
+                                                    _isDeleting = false;
+                                                  });
+                                                }
+                                              },
+                                        style: OutlinedButton.styleFrom(
+                                          minimumSize: const Size(
+                                              0, 40), // width, height
+                                          side: BorderSide(
+                                              color: colors
+                                                  .btnOutlinedBorder), // Outline border color
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                          backgroundColor: colors
+                                              .primaryDark, // Transparent background
+                                        ),
+                                        child: _isDeleting
+                                            ? SizedBox(
+                                                width: 18,
+                                                height: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: theme.isDarkMode
+                                                      ? colors.textSecondaryDark
+                                                      : colors
+                                                          .textSecondaryLight,
+                                                ),
+                                              )
+                                            : TextWidget.titleText(
+                                                text: "Delete",
+                                                theme: theme.isDarkMode,
+                                                color: !theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                fw: 0,
+                                              ),
+                                      ),
                                     ),
                                   ],
                                 );

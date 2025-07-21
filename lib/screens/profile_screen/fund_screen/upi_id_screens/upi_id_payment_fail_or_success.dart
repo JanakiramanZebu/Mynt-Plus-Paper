@@ -137,6 +137,8 @@ class _UpiIdSucessorFaliureScreenState
                           ),
                         ),
                         onPressed: () {
+                          // Clear the amount text field
+                          ref.read(transcationProvider).amount.clear();
                           Navigator.pop(context);
                           Navigator.pop(context);
                           FocusScope.of(context).unfocus();

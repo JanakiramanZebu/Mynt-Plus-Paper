@@ -328,4 +328,5 @@ class ApiLinks {
   String get fundforprofile => 'https://fundapi.mynt.in/api/';
   String get caevents => 'https://v3.mynt.in/equity/';
   String get position => 'https://be.zebull.in/api/';
+  String get cmrdownload => 'https://rekycbe.mynt.in/report/cmr';
 }

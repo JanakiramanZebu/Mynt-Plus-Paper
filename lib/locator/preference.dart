@@ -181,18 +181,15 @@ class Preferences {
   Future setSipDate(bool isselect) async =>
       await _prefInstance!.setBool(_isSipDate, isselect);
 
-
   Future setOrderprefer(String keys, String value) async =>
       await _prefInstance!.setString(keys, value);
 
   String? get showOrderpref => _prefInstance?.getString("ord_prf_$clientId");
 
-
   Future setRiskDiscloser(bool statis) async =>
-      await _prefInstance!.setString('rist_dis', statis? 'true' : '');
+      await _prefInstance!.setString('rist_dis', statis ? 'true' : '');
 
   String? get showRiskDis => _prefInstance?.getString("rist_dis");
-
 
   /// ORDER BOOK Filter
   bool? get isObScripname => _prefInstance?.getBool(_isObScripName) ?? true;
@@ -278,6 +275,18 @@ class Preferences {
 
   // Orders
 
+  // Per-user basket storage
+  Future setBasketScripForUser(String userId, String scrips) async =>
+      await _prefInstance!.setString('basketScrips_$userId', scrips);
+  Future setBasketListForUser(String userId, String scrips) async =>
+      await _prefInstance!.setString('basketList_$userId', scrips);
+
+  String? getBasketScripsForUser(String userId) =>
+      _prefInstance?.getString('basketScrips_$userId') ?? "";
+  String? getBasketListForUser(String userId) =>
+      _prefInstance?.getString('basketList_$userId') ?? "";
+
+  // Legacy (global, not per-user)
   Future setBasketScrip(String scrips) async =>
       await _prefInstance!.setString(_basketScrips, scrips);
   Future setBasketList(String scrips) async =>

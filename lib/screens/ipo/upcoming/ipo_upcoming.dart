@@ -7,6 +7,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 
 class UpcomingIpo extends StatelessWidget {
@@ -37,14 +38,6 @@ class UpcomingIpo extends StatelessWidget {
         ),
       );
     });
-  }
-
-  static TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
-    return GoogleFonts.inter(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    );
   }
 }
 
@@ -81,7 +74,7 @@ class _UpcomingIPOList extends StatelessWidget {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: upcomingIPOs.length,
+      itemCount: upcomingIPOs.length ?? 0,
       itemBuilder: (context, index) {
         return _UpcomingIPOItem(
           ipo: upcomingIPOs[index],
@@ -90,10 +83,8 @@ class _UpcomingIPOList extends StatelessWidget {
       },
       separatorBuilder: (context, index) {
         return Divider(
-          height: 0,
-          color: theme.isDarkMode
-              ? colors.darkColorDivider
-              : const Color(0xffECEDEE),
+          height: 1,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
         );
       },
     );
@@ -112,14 +103,8 @@ class _UpcomingIPOItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(child: _buildCompanyInfo()),
-          _buildDRHPButton(),
-        ],
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Expanded(child: _buildCompanyInfo()),
     );
   }
 
@@ -127,17 +112,48 @@ class _UpcomingIPOItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 280,
-          child: Text(
-            ipo.companyName!,
-            overflow: TextOverflow.ellipsis,
-            style: UpcomingIpo.textStyle(
-              theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              14,
-              FontWeight.w600,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(
+              width: 280,
+              child: TextWidget.subText(
+                text: ipo.companyName!,
+                theme: false,
+                fw: 0,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                textOverflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
+            Material(
+              color: Colors.transparent,
+              shape: const RoundedRectangleBorder(),
+              child: InkWell(
+                onTap: () => _onDRHPTap(),
+                customBorder: const RoundedRectangleBorder(),
+                splashColor: theme.isDarkMode
+                    ? colors.splashColorDark
+                    : colors.splashColorLight,
+                highlightColor: theme.isDarkMode
+                    ? colors.highlightDark
+                    : colors.highlightLight,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: TextWidget.titleText(
+                    text: 'DRHP',
+                    theme: false,
+                    fw: 0,
+                    color: theme.isDarkMode
+                        ? colors.primaryDark
+                        : colors.primaryLight,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         _buildIPOTypeChip(),
@@ -146,57 +162,19 @@ class _UpcomingIPOItem extends StatelessWidget {
   }
 
   Widget _buildIPOTypeChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: ipo.ipoType == "SME"
-            ? theme.isDarkMode
-                ? colors.colorGrey.withOpacity(.3)
-                : const Color.fromARGB(255, 243, 242, 174)
-            : theme.isDarkMode
-                ? colors.colorGrey.withOpacity(.3)
-                : const Color.fromARGB(255, 251, 215, 148),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        "${ipo.ipoType}",
-        style: UpcomingIpo.textStyle(
-          const Color(0xff666666),
-          10,
-          FontWeight.w500,
-        ),
-      ),
+    return TextWidget.paraText(
+      text: "${ipo.ipoType}",
+      theme: false,
+      fw: 3,
+      color: theme.isDarkMode
+          ? colors.textSecondaryDark
+          : colors.textSecondaryLight,
     );
   }
 
-  Widget _buildDRHPButton() {
-    return GestureDetector(
-      onTap: () => _onDRHPTap(),
-      behavior: HitTestBehavior.translucent,
-      child: Padding(
-        padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.open_in_new,
-              size: 14,
-              color: Color(0xFF0037B7),
-            ),
-            const SizedBox(width: 2),
-            Text(
-              'DRHP',
-              style: UpcomingIpo.textStyle(
-                const Color(0xFF0037B7),
-                12,
-                FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildDRHPButton() {
+  //   return;
+  // }
 
   void _onDRHPTap() {
     final String? drhpUrl = ipo.drhp;

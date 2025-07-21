@@ -108,13 +108,14 @@ class PdfDownload extends StatelessWidget {
                       Expanded(
                         child: InkWell(
                           onTap: () {
-                            ledgerprovider.datePickerStart(context, theme);
+                            //  ledgerprovider.datePickerStart(context, theme);
+                            ledgerprovider.monthPickerDialog(context, theme);
                           },
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               TextWidget.paraText(
-                                  text: "Start Date",
+                                  text: "Select Month",
                                   textOverflow: TextOverflow.ellipsis,
                                   theme: theme.isDarkMode,
                                   fw: 3),
@@ -129,44 +130,8 @@ class PdfDownload extends StatelessWidget {
                                       ? const Color(0xffB5C0CF).withOpacity(.15)
                                       : const Color(0xffF1F3F8),
                                 ),
-                                child: Text("${ledgerprovider.startDate}",
-                                    style: textStyle(
-                                        theme.isDarkMode
-                                            ? colors.colorWhite
-                                            : colors.colorBlack,
-                                        11,
-                                        FontWeight.w400)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 15),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            ledgerprovider.datePickerEnd(context, theme);
-                          },
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextWidget.paraText(
-                                  text: "End Date",
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
-                                  fw: 3),
-                              Container(
-                                margin: const EdgeInsets.symmetric(vertical: 6),
-                                alignment: Alignment.centerLeft,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 10),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                  color: theme.isDarkMode
-                                      ? const Color(0xffB5C0CF).withOpacity(.15)
-                                      : const Color(0xffF1F3F8),
-                                ),
-                                child: Text("${ledgerprovider.endDate}",
+                                child: Text(
+                                    "${ledgerprovider.startDate} - ${ledgerprovider.endDate}",
                                     style: textStyle(
                                         theme.isDarkMode
                                             ? colors.colorWhite
@@ -197,7 +162,8 @@ class PdfDownload extends StatelessWidget {
                                   ledgerprovider.fetchpdfdownload(
                                       context,
                                       ledgerprovider.startDate,
-                                      ledgerprovider.today);
+                                      // ledgerprovider.today);
+                                      ledgerprovider.endDate);
                                 },
                                child: Text("Get",
                                     style: textStyle(
@@ -329,7 +295,7 @@ class PdfDownload extends StatelessWidget {
                 // ),
 
                 ledgerprovider.pdfdownload == null
-                    ? Center(
+                    ? const Center(
                         child: Padding(
                         padding: EdgeInsets.only(top: 60),
                         child: NoDataFound(),

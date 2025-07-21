@@ -332,7 +332,7 @@ mixin TranscationApi on ApiCore {
           headers: funddefaultHeaders,
           body: jsonEncode({"string": encryptedPayload}));
       final json = jsonDecode(res.body);
-      final decryptedData = decryptionFunction(json["str"]);
+      final decryptedData = decryptionFunction(json["str"]);    
       //  log("getpayemntwithdraw------------ ${jsonDecode(jsonEncode(decryptedData))}}");
       return PaymentWithdraw.fromJson(jsonDecode(decryptedData));
     } catch (e) {

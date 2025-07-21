@@ -242,7 +242,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   String? _selectedTradeSym;
   String _numStrike = "10";
   String? _optionExch;
-  final List<String> _numStrikes = ["5", "10", "15", "50"];
+  final List<String> _numStrikes = ["5", "10", "15", "All"];
 
   List<String> get sortDate => _sortedDate;
   String? get selectedExpDate => _selectedExpDate;
@@ -309,7 +309,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     _resetSortPreference();
     _setupWebSocketListener();
     // Load saved page index
-    _loadCurrentPageIndex();
+    // _loadCurrentPageIndex();
 
     // Listen to WebSocket data updates using a proper subscription
     _setupWebSocketListener();
@@ -586,6 +586,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   StockData? get fundamentalData => _fundamentalData;
 
   List<String> _exarr = [];
+  List<String> get exarr => _exarr;
 
   final String _firstGetData = "0";
   String get fistGetData => _firstGetData;
@@ -646,13 +647,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         symbol: '${flow ? raw['symbol'] : raw.symbol}',
         expDate: '${flow ? raw['expDate'] : raw.expDate}',
         option: '${flow ? raw['option'] : raw.option}');
-    scripdepthsize(false);
     showModalBottomSheet(
         isScrollControlled: true,
         useSafeArea: true,
         isDismissible: true,
         enableDrag: true,
-         shape: const RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
@@ -2091,6 +2091,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       required BuildContext context,
       required String numofStrike}) async {
     try {
+      if (numofStrike == "All") {
+        numofStrike = "50";
+      }
       toggleLoad(true);
 
       // STEP 1: Immediately clear old option chain data to prevent stale UI
@@ -2726,16 +2729,16 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         await fetchMWList(context, false, true);
 
         // If we deleted the active watchlist, switch to the first available one
-        if (wasActiveWatchlist &&
-            _marketWatchlist != null &&
-            _marketWatchlist!.values!.isNotEmpty) {
+        // if (wasActiveWatchlist &&
+        //     _marketWatchlist != null &&
+        //     _marketWatchlist!.values!.isNotEmpty) {
           String newActiveWatchlist = _marketWatchlist!.values!.first;
           _wlName = newActiveWatchlist;
           _isPreDefWLs = _preDefWL.contains(newActiveWatchlist) ? "Yes" : "No";
-
+          setCurrentWatchlistPageIndex(0);
           // Load data for the new active watchlist
           await changeWLScrip(newActiveWatchlist, context);
-        }
+        // }
 
         // Update UI to reflect changes
         notifyListeners();
@@ -2752,8 +2755,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
     if (_addDeleteScripModel!.stat!.toUpperCase() == "OK") {
       toggleLoadingOn(true);
-      await changeWlName(wlName, "No");
+      // await changeWlName(wlName, "No");
       await fetchMWList(context, false);
+      _wlName = wlName;
+      await changeWLScrip(wlName, context);
+      setCurrentWatchlistPageIndex(0);
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 100));
       notifyListeners();
@@ -3640,7 +3646,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _setAlertModel =
           await api.getSetAlert(exch, tysm, value, alertTypeVal, remark);
-      ref.read(orderProvider).changeTabIndex(5, context);
+      // ref.read(orderProvider).changeTabIndex(5, context);
 
       if (_setAlertModel!.stat! == "OI created") {
         // Fetch updated alert list
@@ -3656,11 +3662,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // Close the alert creation screens
         Navigator.pop(context);
         Navigator.pop(context);
-        Navigator.pop(context);
 
         // Navigate to the Alert tab after closing the alert creation screens
         ref.read(indexListProvider).bottomMenu(2, context);
-        ref.read(portfolioProvider).portTab.animateTo(2);
+        ref.read(portfolioProvider).changeTabIndex(2);
         ref.read(orderProvider).changeTabIndex(5, context);
       } else if (_setAlertModel!.stat! == "Not_Ok") {
         ref.read(authProvider).ifSessionExpired(context);

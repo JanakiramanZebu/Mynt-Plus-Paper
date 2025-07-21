@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
@@ -59,11 +60,15 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
       setState(() {});
     });
     super.initState();
-    Future.microtask(() {
-      ref.read(marketWatchProvider).loadDefaultTabs();
-    });
 
+    // Import the classes to reset global max OI
+    // Reset global max OI values when opening option chain
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Reset both call and put global max OI values
+      if (kDebugMode) {
+        print("=== OPTION CHAIN INIT: Resetting Global Max OI ===");
+      }
+      
       Future.delayed(const Duration(milliseconds: 500), () {
         _scrollToCurrentStrikePrice();
       });
@@ -94,6 +99,14 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    if (kDebugMode) {
+      print("=== OPTION CHAIN DISPOSE ===");
+    }
+    super.dispose();
   }
 
   @override
@@ -184,6 +197,12 @@ class _OptionChainSSState extends ConsumerState<OptionChainSS> {
               _ColumnHeaders(
                 scrollToStrikePrice: _scrollToCurrentStrikePrice,
                 showPriceView: showPriceView,
+                onToggleView: () async {
+                  await Future.delayed(const Duration(milliseconds: 150));
+                  setState(() {
+                    showPriceView = !showPriceView;
+                  });
+                },
               ),
 
               // Pre-defined watchlist info banner (conditional)
@@ -308,29 +327,29 @@ class _NewAppBarTitle extends ConsumerWidget {
         const Spacer(),
 
         // Price/OI Toggle Button
-        Material(
-          color: Colors.transparent, // Important to allow ripple to show
-          child: InkWell(
-            borderRadius:
-                BorderRadius.circular(4), // Optional: match container shape
-            splashColor: theme.isDarkMode
-                ? colors.splashColorDark
-                : colors.splashColorLight,
-            highlightColor:
-                theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-            onTap: onToggleView,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: TextWidget.subText(
-                text: showPriceView ? "Price" : "OI",
-                color: theme.isDarkMode
-                    ? colors.secondaryDark
-                    : colors.secondaryLight,
-                theme: theme.isDarkMode,
-              ),
-            ),
-          ),
-        ),
+        // Material(
+        //   color: Colors.transparent, // Important to allow ripple to show
+        //   child: InkWell(
+        //     borderRadius:
+        //         BorderRadius.circular(4), // Optional: match container shape
+        //     splashColor: theme.isDarkMode
+        //         ? colors.splashColorDark
+        //         : colors.splashColorLight,
+        //     highlightColor:
+        //         theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+        //     onTap: onToggleView,
+        //     child: Container(
+        //       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        //       child: TextWidget.subText(
+        //         text: showPriceView ? "Price" : "OI",
+        //         color: theme.isDarkMode
+        //             ? colors.secondaryDark
+        //             : colors.secondaryLight,
+        //         theme: theme.isDarkMode,
+        //       ),
+        //     ),
+        //   ),
+        // ),
 
         const SizedBox(width: 4),
 
@@ -472,11 +491,13 @@ void _showStrikeCountSelector(
 class _ColumnHeaders extends ConsumerWidget {
   final VoidCallback scrollToStrikePrice;
   final bool showPriceView;
+  final VoidCallback onToggleView;
 
   const _ColumnHeaders({
     Key? key,
     required this.scrollToStrikePrice,
     required this.showPriceView,
+    required this.onToggleView,
   }) : super(key: key);
 
   @override
@@ -491,16 +512,18 @@ class _ColumnHeaders extends ConsumerWidget {
           color: colors.colorWhite,
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            //  TextWidget.paraText(
-            //           text: showPriceView ? "Call Price" : "Call OI",
-            //           theme: theme.isDarkMode,
-            //           fw: 0),
-
-            TextWidget.subText(
-                text: showPriceView ? "  Call Price   " : "  Call OI   ",
+            // Left arrow icon
+            InkWell(
+              onTap: onToggleView,
+              borderRadius: BorderRadius.circular(20),
+              child: TextWidget.subText(
+                text: showPriceView ? "  <> Call Price   " : "  <> Call OI   ",
                 color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                 theme: theme.isDarkMode,
                 ),
+            ),
+            // Call Price / Call OI
+            
             Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: InkWell(
@@ -522,18 +545,16 @@ class _ColumnHeaders extends ConsumerWidget {
                       Icon(Icons.arrow_drop_down,
                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, size: 20)
                     ]))),
-
-            TextWidget.subText(
-                text: showPriceView ? "Put Price" : "Put OI",
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                theme: theme.isDarkMode,
-                ),
-
-            //  TextWidget.paraText(
-            //           text: "OI",
-
-            //           theme: theme.isDarkMode,
-            //           fw: 0),
+            // Put Price / Put OI
+            InkWell(
+              onTap: onToggleView,
+              borderRadius: BorderRadius.circular(20),
+              child: TextWidget.subText(
+                  text: showPriceView ? "<> Put Price" : "<> Put OI",
+                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  theme: theme.isDarkMode,
+                  ),
+            ),
           ])),
     );
   }

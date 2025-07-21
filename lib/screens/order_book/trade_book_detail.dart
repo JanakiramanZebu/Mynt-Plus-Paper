@@ -127,7 +127,6 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                   ),
                   child: Column(
                     children: [
-                      const CustomDragHandler(),
                       Expanded(
                         child: SingleChildScrollView(
                           controller: scrollController,
@@ -136,6 +135,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                 const EdgeInsets.symmetric(horizontal: 16.0),
                             child: Column(
                               children: [
+                                const CustomDragHandler(),
                                 const SizedBox(height: 16),
                                 Material(
                                   color: Colors.transparent,
@@ -150,26 +150,9 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                         ? colors.highlightDark
                                         : colors.highlightLight,
                                     onTap: () async {
-                                      await marketwatch.chngDephBtn("Overview");
-                                      marketwatch.scripdepthsize(true);
-                                      // Navigator.pop(context);
-
-                                      showModalBottomSheet(
-                                          barrierColor: Colors.transparent,
-                                          isScrollControlled: true,
-                                          useSafeArea: true,
-                                          isDismissible: true,
-                                          shape: const RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.vertical(
-                                                      top:
-                                                          Radius.circular(16))),
-                                          backgroundColor:
-                                              const Color(0xffffffff),
-                                          context: context,
-                                          builder: (context) => ScripDepthInfo(
-                                              wlValue: depthArgs,
-                                              isBasket: ''));
+                                      await marketwatch.scripdepthsize(true);
+                                      await marketwatch.calldepthApis(
+                                          context, depthArgs, "");
                                     },
                                     child: Row(
                                       mainAxisAlignment:
@@ -185,7 +168,7 @@ class _TradeBookDetailState extends ConsumerState<TradeBookDetail> {
                                               children: [
                                                 TextWidget.headText(
                                                     text:
-                                                        "${displayData.symbol?.replaceAll("-EQ", "") ?? ''}",
+                                                        "${displayData.symbol?.replaceAll("-EQ", "") ?? ''} ${displayData.expDate ?? ''}",
                                                     theme: false,
                                                     color: theme.isDarkMode
                                                         ? colors.textPrimaryDark

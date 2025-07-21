@@ -6,6 +6,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/functions.dart';
+import '../../../res/global_state_text.dart';
 
 class BondsCommonSearch extends ConsumerWidget {
   const BondsCommonSearch({super.key});
@@ -44,80 +45,105 @@ class BondsCommonSearch extends ConsumerWidget {
       BuildContext context, BondsProvider bonds, ThemesProvider theme) {
     return AppBar(
       elevation: _appBarElevation,
-      leadingWidth: _leadingWidth,
+      leadingWidth: 48,
       centerTitle: false,
-      titleSpacing: -8,
-      leading: _buildBackButton(context, bonds, theme),
+      titleSpacing: 0,
+      leading: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.hardEdge,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          splashColor: Colors.black.withOpacity(0.15),
+          highlightColor: Colors.black.withOpacity(0.08),
+          onTap: () {
+            bonds.clearCommonBondsSearch();
+            Navigator.pop(context);
+          },
+          child: Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            child: Icon(
+              Icons.arrow_back_ios_outlined,
+              size: 18,
+              color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            ),
+          ),
+        ),
+      ),
       shadowColor: const Color(0xffECEFF3),
       title: _buildSearchField(context, bonds, theme),
     );
   }
 
-  Widget _buildBackButton(
-      BuildContext context, BondsProvider bonds, ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: InkWell(
-        onTap: () {
-          bonds.clearCommonBondsSearch();
-          Navigator.pop(context);
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Icon(
-            Icons.arrow_back_ios,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            size: _iconSize,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildSearchField(
       BuildContext context, BondsProvider bonds, ThemesProvider theme) {
+    final controller = bonds.bondscommonsearchcontroller;
     return Container(
-      height: _searchFieldHeight,
-      padding: _searchPadding,
-      child: TextFormField(
-        autofocus: true,
-        controller: bonds.bondscommonsearchcontroller,
-        style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w500),
-        decoration: InputDecoration(
-            fillColor:
-                theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-            filled: true,
-            hintStyle: textStyle(_hintColor, 14, FontWeight.w500),
-            prefixIconColor: _iconColor,
-            prefixIcon: Padding(
-              padding: _iconPadding,
-              child: SvgPicture.asset(assets.searchIcon,
-                  color: _iconColor, fit: BoxFit.contain, width: 20),
+      padding: const EdgeInsets.only(right: 12, top: 8, bottom: 7),
+      child: Container(
+        height: 40,
+        decoration: BoxDecoration(
+          color: colors.searchBg,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 12),
+            SvgPicture.asset(
+              assets.searchIcon,
+              width: 18,
+              height: 18,
             ),
-            suffixIcon: InkWell(
-              onTap: () => bonds.clearCommonBondsSearch(),
-              child: Padding(
-                padding: _iconPadding,
-                child: SvgPicture.asset(assets.removeIcon,
-                    fit: BoxFit.scaleDown, width: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextFormField(
+                autofocus: true,
+                controller: controller,
+                style: TextWidget.textStyle(
+                  fontSize: 14,
+                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  theme: theme.isDarkMode,
+                ),
+                decoration: InputDecoration(
+                  isCollapsed: true,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  hintText: "Search Bonds",
+                  hintStyle: TextWidget.textStyle(
+                    fontSize: 14,
+                    theme: theme.isDarkMode,
+                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                ),
+                onChanged: (value) => bonds.searchCommonBonds(value, context),
               ),
             ),
-            enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(_borderRadius)),
-            disabledBorder: InputBorder.none,
-            focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(_borderRadius)),
-            hintText: "Search Bonds",
-            contentPadding: const EdgeInsets.only(top: 20),
-            border: OutlineInputBorder(
-                borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(_borderRadius))),
-        onChanged: (value) => bonds.searchCommonBonds(value, context),
+            if (controller.text.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () => bonds.clearCommonBondsSearch(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SvgPicture.asset(
+                        assets.removeIcon,
+                        width: 20,
+                        height: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -25,6 +25,7 @@ import '../screens/desk_reports/ca_event_main_page.dart';
 import '../screens/desk_reports/calendarpnl_heatmap/headmap_calendar.dart';
 import '../screens/desk_reports/calenderPnl_screen.dart';
 import '../screens/desk_reports/cdsl_pledge.dart';
+import '../screens/desk_reports/contract_calendar_screen.dart';
 import '../screens/desk_reports/cp_action_main_page.dart';
 import '../screens/desk_reports/equity_taxpnl_screen.dart';
 import '../screens/desk_reports/holding_screen.dart';
@@ -45,6 +46,7 @@ import '../screens/ipo/ipo_orderbook_screen/ipo_orderbook_details/close_order_de
 import '../screens/ipo/ipo_orderbook_screen/ipo_orderbook_details/open_order_details.dart';
 import '../screens/ipo/mainstream_order_screen/order_screen.dart';
 import '../screens/ipo/sme_order_screen/sme_order.dart';
+import '../screens/ipo/IPO_order_screen/ipo_order_screen.dart';
 import '../screens/market_watch/edit_scrip.dart';
 import '../screens/market_watch/fundamental_detail_screen.dart';
 import '../screens/market_watch/futures/future_screen.dart';
@@ -537,6 +539,12 @@ class AppRoutes {
           beginOffset: const Offset(-1.0, 0.0),
         );
 
+      case Routes.contractCalendar:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const ContractCalendarScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
+
       case Routes.cdslWebView:
         return _createRoute(
           pageBuilder: (_, __, ___) => CDSLWebView(argument: args),
@@ -664,15 +672,15 @@ class AppRoutes {
 
       case Routes.applyIPO:
         return _createRoute(
-          pageBuilder: (_, __, ___) => ApplyIpoScreen(mainstream: args),
+          pageBuilder: (_, __, ___) => UnifiedIpoOrderScreen(ipoData: args),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
-      case Routes.smeapplyIPO:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => SMEApplyIpoScreen(smeipo: args),
-          beginOffset: const Offset(-1.0, 0.0),
-        );
+      // case Routes.smeapplyIPO:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => SMEApplyIpoScreen(smeipo: args),
+      //     beginOffset: const Offset(-1.0, 0.0),
+      //   );
 
       case Routes.ipoorderbook:
         return _createRoute(
@@ -689,13 +697,17 @@ class AppRoutes {
 
       case Routes.ipoclosedetailsscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => IpoCloseOrderDetails(ipoclose: args),
+          pageBuilder: (_, __, ___) => IpoCloseOrderDetails(
+            ipoclose: args,
+          ),
           beginOffset: const Offset(0.0, 1.0),
         );
 
       case Routes.ipoopendetailsscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => IpoOpenOrderDetails(ipodetails: args),
+          pageBuilder: (_, __, ___) => IpoOpenOrderDetails(
+            ipodetails: args,
+          ),
           beginOffset: const Offset(0.0, 1.0),
         );
 
@@ -867,19 +879,20 @@ class AppRoutes {
 
       case Routes.withdrawscreen:
         final trancation = args as TranctionProvider;
-        return MaterialPageRoute(
-          builder: (context) => Consumer(
+        return _createRoute(
+          pageBuilder: (_, __, ___) => Consumer(
             builder: (context, ref, _) {
               final theme = ref.read(themeProvider);
               final fund = ref.watch(transcationProvider);
               return WithdrawScreen(
                 withdarw: trancation,
-                foucs: FocusNode(),
+                foucs: fund.focusNode,
                 theme: theme,
-                segment: fund.textValue, // Change as needed or pass via args if needed
+                segment: fund.textValue,
               );
             },
           ),
+          beginOffset: const Offset(-1.0, 0.0),
         );
 
       default:

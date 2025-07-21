@@ -126,10 +126,7 @@ class _BottomSheetContentState extends State<BottomSheetContent>
           color: const Color(0xffFFFFFF),
           border: Border.all(color: const Color(0xFFDBDBDB), width: 1),
         ),
-        textStyle: 
-             TextWidget.textStyle(
-                 fontSize: 16 ,  theme: theme.isDarkMode  ),		
-
+        textStyle: TextWidget.textStyle(fontSize: 16, theme: theme.isDarkMode),
       );
       final focusedPinTheme = defaultPinThemes.copyBorderWith(
         border: Border.all(color: const Color(0xff0037B7), width: 1),
@@ -472,9 +469,9 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                           highlightColor: theme.isDarkMode
                                               ? Colors.white.withOpacity(0.08)
                                               : Colors.black.withOpacity(0.08),
-                                          onTap:
-                                              () async {
-                                                 await Future.delayed(Duration(milliseconds: 100));
+                                          onTap: () async {
+                                            await Future.delayed(
+                                                Duration(milliseconds: 100));
                                             SmsAutoFill().unregisterListener();
                                             otpController.text = '';
                                             _startListeningForOtp();
@@ -488,7 +485,9 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                             child: TextWidget.subText(
                                                 text: "Resend OTP",
                                                 theme: false,
-                                               color:  theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
+                                                color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
                                                 fw: 3),
                                           )),
                                     )
@@ -497,7 +496,9 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                       theme: false,
                                       color: resendTime == "00 : 00"
                                           ? Colors.transparent
-                                          :  theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
+                                          : theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
                                       fw: 3)
                               : const SizedBox(),
                           Material(
@@ -533,7 +534,9 @@ class _BottomSheetContentState extends State<BottomSheetContent>
                                           ? 'Switch OTP'
                                           : 'Switch TOTP',
                                       theme: false,
-                                      color:  theme.isDarkMode ?  colors.textSecondaryDark : colors.textSecondaryLight,
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
                                       fw: 3),
                                 )),
                           ),

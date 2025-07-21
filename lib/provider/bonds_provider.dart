@@ -157,6 +157,12 @@ class BondsProvider extends DefaultChangeNotifier {
       bondDetails.quantityerrortext =
           "Maximum investment upto ₹${bondDetails.maxrequriedprice.toString()} only ";
       setisBondPlaceOrderBtnActiveValue = false;
+    } else if (double.parse(bondDetails.quantityController.text) %
+            bondDetails.lotsize !=
+        0) {
+      bondDetails.quantityerrortext =
+          "Quantity must be a multiple of ${bondDetails.lotsize}";
+      setisBondPlaceOrderBtnActiveValue = false;
     } else {
       bondDetails.minrequriedprice =
           double.parse(bondDetails.quantityController.text).toInt() *
@@ -174,12 +180,18 @@ class BondsProvider extends DefaultChangeNotifier {
   }
 
   addQuantity(BondDetails bondDetails) {
-    // print(bondDetails);
     if (bondDetails.quantityController.text.isNotEmpty) {
-      bondDetails.quantityController.text =
-          (double.parse(bondDetails.quantityController.text).toInt() +
-                  bondDetails.lotsize)
-              .toString();
+      var currentQuantity =
+          double.parse(bondDetails.quantityController.text).toInt();
+      var newQuantity = currentQuantity + bondDetails.lotsize;
+      // Ensure we don't exceed max quantity
+      if (newQuantity <=
+          bondDetails.maxrequriedprice / double.parse(bondDetails.bidprice)) {
+        bondDetails.quantityController.text = newQuantity.toString();
+      }
+    } else {
+      // If empty, start with minimum lot size
+      bondDetails.quantityController.text = bondDetails.lotsize.toString();
     }
     notifyListeners();
     bondValidateController(bondDetails);
@@ -187,23 +199,34 @@ class BondsProvider extends DefaultChangeNotifier {
 
   substractQuantity(BondDetails bondDetails) {
     if (bondDetails.quantityController.text.isNotEmpty) {
-      bondDetails.quantityController.text =
-          (double.parse(bondDetails.quantityController.text).toInt() -
-                  bondDetails.lotsize)
-              .toString();
+      var currentQuantity =
+          double.parse(bondDetails.quantityController.text).toInt();
+      var newQuantity = currentQuantity - bondDetails.lotsize;
+      // Ensure we don't go below minimum lot size
+      if (newQuantity >= bondDetails.lotsize) {
+        bondDetails.quantityController.text = newQuantity.toString();
+      }
     }
     notifyListeners();
     bondValidateController(bondDetails);
   }
 
   quantityOnchange(BondDetails bondDetails, String value) {
-    bondDetails.quantityController.text = value;
-    bondDetails.quantityController.text.isEmpty
-        ? bondDetails.minrequriedprice = 0
-        : bondDetails.minrequriedprice =
-            (double.parse(bondDetails.quantityController.text).toInt() *
-                    int.parse(bondDetails.bidpricecontroller.text))
-                .toInt();
+    if (value.isNotEmpty) {
+      try {
+        var quantity = double.parse(value).toInt();
+        // Only update if it's a valid number
+        bondDetails.quantityController.text = quantity.toString();
+        bondDetails.minrequriedprice =
+            (quantity * int.parse(bondDetails.bidpricecontroller.text)).toInt();
+      } catch (e) {
+        // If not a valid number, don't update
+        return;
+      }
+    } else {
+      bondDetails.quantityController.text = "";
+      bondDetails.minrequriedprice = 0;
+    }
     notifyListeners();
     bondValidateController(bondDetails);
   }
@@ -280,15 +303,27 @@ class BondsProvider extends DefaultChangeNotifier {
 
   Future fetchAllBonds() async {
     try {
-      // _currentBondTab = "Govt. Bonds";
       _bondsList = [];
-      // _govtBonds = await api.getGovtBondApi();
-      // _bondsList = _govtBonds!.ncbGSec ?? [];
       await fetchGovtBonds();
       await fetchTreassuryBonds();
       await fetchStateBonds();
       await fetchGoldBonds();
       await fetchBondsOrderBook();
+
+      // Combine all types of bonds into bondsList
+      if (_govtBonds?.ncbGSec != null) {
+        _bondsList!.addAll(_govtBonds!.ncbGSec!);
+      }
+      if (_treasuryBonds?.ncbTBill != null) {
+        _bondsList!.addAll(_treasuryBonds!.ncbTBill!);
+      }
+      if (_stateBonds?.ncbSDL != null) {
+        _bondsList!.addAll(_stateBonds!.ncbSDL!);
+      }
+      if (_sovereignGoldBonds?.ncbSGB != null) {
+        _bondsList!.addAll(_sovereignGoldBonds!.ncbSGB!);
+      }
+
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
@@ -405,9 +440,8 @@ class BondsProvider extends DefaultChangeNotifier {
               ? successMessage(
                   context, _bondOrderResponcesModel!.orderStatusResponse!)
               : error(context, _bondOrderResponcesModel!.reason!));
-
-      Navigator.pop(context);
-      Navigator.pushNamed(context, Routes.bondsorderbook);
+        Navigator.pop(context); 
+      Navigator.pushReplacementNamed(context, Routes.bonds, arguments: 1);
       // return _ipoOrderResponcesModel;
     } catch (e) {
       print("bonds placeorder error:: $e");

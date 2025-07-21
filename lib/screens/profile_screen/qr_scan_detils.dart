@@ -24,32 +24,29 @@ class QrDetails extends ConsumerWidget {
     return details.uniqueId == null
         ? Container(
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? Colors.black : Colors.white,
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0))
-                ]),
+              borderRadius: BorderRadius.circular(16),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const CustomDragHandler(),
-                const SizedBox(height: 15),
+                const SizedBox(height: 20),
                 SvgPicture.asset(
                   "assets/icon/invalid_qr.svg",
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
                 ),
                 const SizedBox(height: 15),
                 TextWidget.titleText(
                   text: "Invalid QR Code",
                   theme: theme.isDarkMode,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  fw: 1,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 0,
                 ),
                 Padding(
                   padding:
@@ -59,24 +56,24 @@ class QrDetails extends ConsumerWidget {
                         "Try again with a different QR code; the one you are trying to scan is incorrect.",
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                    fw: 0,
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 3,
                   ),
                 ),
                 Container(
                   margin:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   width: MediaQuery.of(context).size.width,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.colorbluegrey
-                            : colors.colorBlack,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        )),
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 40),
+                      side: BorderSide(color: colors.btnOutlinedBorder),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      backgroundColor: colors.primaryDark,
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
                       camera.start();
@@ -85,9 +82,9 @@ class QrDetails extends ConsumerWidget {
                       text: "Retry",
                       theme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? colors.colorBlack
-                          : colors.colorWhite,
-                      fw: 1,
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 0,
                     ),
                   ),
                 ),
@@ -95,126 +92,119 @@ class QrDetails extends ConsumerWidget {
             ),
           )
         : Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? Colors.black : Colors.white,
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0))
-                ]),
+              borderRadius: BorderRadius.circular(16),
+              color: theme.isDarkMode ? Colors.black : Colors.white,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const CustomDragHandler(),
-                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        splashColor: theme.isDarkMode
+                            ? colors.splashColorDark
+                            : colors.splashColorLight,
+                        highlightColor: theme.isDarkMode
+                            ? colors.highlightDark
+                            : colors.highlightLight,
+                        onTap: () {
+                          Navigator.pop(context);
+                          camera.start();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 22,
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 Container(
-                  alignment: Alignment.center,
+                  alignment: Alignment.centerLeft,
                   child: TextWidget.titleText(
                     text: "Login Conformation",
                     theme: theme.isDarkMode,
                     color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack,
-                    fw: 1,
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 0,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 25),
                 rowtable("IP Address", details.ip ?? "", theme),
-                rowtable("City", details.city ?? "", theme),
-                rowtable("State", details.region ?? "", theme),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                          child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: theme.isDarkMode
-                                ? colors.colorbluegrey
-                                : colors.colorBlack,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
-                            )),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          camera.start();
-                        },
-                        child: TextWidget.titleText(
-                          text: "Cancel",
-                          theme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          fw: 1,
-                        ),
-                      )),
-                      const SizedBox(
-                        width: 12,
+                const SizedBox(height: 25),
+                // rowtable("City", details.city ?? "", theme),
+                // rowtable("State", details.region ?? "", theme),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 40),
+                      side: BorderSide(color: colors.btnOutlinedBorder),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
                       ),
-                      Expanded(
-                          child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: theme.isDarkMode
-                                ? colors.colorbluegrey
-                                : colors.colorBlack,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
-                            )),
-                        onPressed: () async {
-                          await ref.read(userProfileProvider).fetchQR(
-                              context,
-                              details.uniqueId.toString(),
-                              details.loginSource.toString(),
-                              camera);
-                        },
-                        child: TextWidget.titleText(
-                          text: "Confirm",
-                          theme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? colors.colorBlack
-                              : colors.colorWhite,
-                          fw: 1,
-                        ),
-                      )),
-                    ],
+                      backgroundColor: colors.primaryDark,
+                    ),
+                    onPressed: () async {
+                      await ref.read(userProfileProvider).fetchQR(
+                          context,
+                          details.uniqueId.toString(),
+                          details.loginSource.toString(),
+                          camera);
+                    },
+                    child: TextWidget.titleText(
+                      text: "Confirm",
+                      theme: theme.isDarkMode,
+                      color: theme.isDarkMode
+                          ? colors.colorBlack
+                          : colors.colorWhite,
+                      fw: 2,
+                    ),
                   ),
                 ),
+                const SizedBox(height: 20),
               ],
             ),
           );
   }
 }
 
-Padding rowtable(String header, String description, ThemesProvider themes) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        TextWidget.titleText(
-          text: header,
-          theme: themes.isDarkMode,
-          color: themes.isDarkMode ? colors.colorGrey : colors.colorBlack,
-          fw: 1,
-        ),
-        const SizedBox(
-          height: 40,
-        ),
-        TextWidget.subText(
-          text: description,
-          theme: themes.isDarkMode,
-          color: themes.isDarkMode ? colors.colorWhite : colors.colorGrey,
-          fw: 1,
-        ),
-      ],
-    ),
+Row rowtable(String header, String description, ThemesProvider themes) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      TextWidget.subText(
+        text: header,
+        theme: themes.isDarkMode,
+        color: themes.isDarkMode
+            ? colors.textSecondaryDark
+            : colors.textSecondaryLight,
+        fw: 3,
+      ),
+      TextWidget.subText(
+        text: description,
+        theme: themes.isDarkMode,
+        color: themes.isDarkMode
+            ? colors.textSecondaryDark
+            : colors.textSecondaryLight,
+        fw: 3,
+      ),
+    ],
   );
 }

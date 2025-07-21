@@ -8,6 +8,8 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/bonds/bonds_order_screen/orderscreenbottompage.dart';
 
+import '../../../res/global_state_text.dart';
+
 class SovereignGoldBondsScreen extends StatelessWidget {
   const SovereignGoldBondsScreen({super.key});
 
@@ -56,13 +58,22 @@ class SovereignGoldBondsScreen extends StatelessWidget {
     
     return InkWell(
       onTap: () => _showOrderBottomSheet(context, bonds, bond),
-      child: Padding(
-        padding: _itemPadding,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildBondHeader(bond, theme),
+            Row(
+               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(child: _buildBondHeader(bond, theme)),
+                _buildApplyButton(context, bonds, bond, theme),
+              ],
+            ),
+
+           
             const SizedBox(height: 8),
             _buildBondFooter(context, bonds, bond, theme),
           ],
@@ -76,107 +87,122 @@ class SovereignGoldBondsScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: _nameMaxWidth,
-              child: Text(
-                bond.name!,
-                overflow: TextOverflow.ellipsis,
-                style: _textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            _buildBondTypeBadge(theme),
-          ],
+        SizedBox(
+          width: _nameMaxWidth,
+          child: TextWidget.subText(
+            text: bond.name!,
+            theme: theme.isDarkMode,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            textOverflow: TextOverflow.ellipsis,
+          ),
+        ),
+       
+      ],
+    );
+  }
+
+   Widget _buildYieldInfo(dynamic bond, ThemesProvider theme) {
+    return Row(
+      children: [
+        TextWidget.paraText(
+          text: '${bond.yield}%',
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
+        ),
+        const SizedBox(width: 4),
+        TextWidget.paraText(
+          text: "Indicative Yield",
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
         ),
       ],
     );
   }
   
-  Widget _buildBondTypeBadge(ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: theme.isDarkMode
-          ? colors.colorGrey.withOpacity(.3)
-          : const Color.fromARGB(78, 136, 137, 211),
-        borderRadius: BorderRadius.circular(_badgeBorderRadius),
-      ),
-      child: Text(
-        "SGB",
-        style: _textStyle(const Color(0xff666666), 10, FontWeight.w500),
-      ),
-    );
-  }
+
   
   Widget _buildBondFooter(BuildContext context, BondsProvider bonds, dynamic bond, ThemesProvider theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildClosingDate(bond, theme),
-        _buildApplyButton(context, bonds, bond, theme),
+        if (bond.yield != '') _buildYieldInfo(bond, theme),
       ],
     );
   }
   
   Widget _buildClosingDate(dynamic bond, ThemesProvider theme) {
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          "Closes on",
-          style: _textStyle(const Color(0xff666666), 10, FontWeight.w500),
+        TextWidget.paraText(
+          text: "SGB",
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
+          // w500
+        ),
+        const SizedBox(width: 4),
+        TextWidget.paraText(
+          text: "- Closes on ",
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
         ),
         const SizedBox(height: 4),
-        Text(
-          '${bond.biddingEndDate!.substring(5, 11)}',
-          style: _textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w500
-          ),
+        TextWidget.paraText(
+          text: '${bond.biddingEndDate!.substring(5, 11)}',
+          theme: theme.isDarkMode,
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
         ),
       ],
     );
   }
   
   Widget _buildApplyButton(BuildContext context, BondsProvider bonds, dynamic bond, ThemesProvider theme) {
-    return SizedBox(
-      height: _buttonHeight,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(0, _buttonHeight),
-          elevation: 0,
-          padding: _buttonPadding,
-          backgroundColor: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(_buttonBorderRadius),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        splashColor: theme.isDarkMode
+            ? colors.splashColorDark
+            : colors.splashColorLight,
+        highlightColor:
+            theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
+        onTap: () => _showOrderBottomSheet(context, bonds, bond),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Center(
+            child: bonds.loading
+                ? const SizedBox(
+                    width: 18,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xff666666),
+                    ),
+                  )
+                : TextWidget.subText(
+                    text: 'Apply',
+                    color: theme.isDarkMode
+                        ? colors.secondaryDark
+                        : colors.secondaryLight,
+                    theme: theme.isDarkMode,
+                    fw: 2,
+                  ),
           ),
         ),
-        onPressed: () => _showOrderBottomSheet(context, bonds, bond),
-        child: bonds.loading
-          ? const SizedBox(
-              width: 18,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Color(0xff666666)
-              ),
-            )
-          : Text(
-              'Apply',
-              style: _textStyle(
-                theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                12,
-                FontWeight.w500
-              ),
-            ),
       ),
     );
   }
@@ -209,11 +235,5 @@ class SovereignGoldBondsScreen extends StatelessWidget {
     );
   }
 
-  TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
-    return GoogleFonts.inter(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    );
-  }
+ 
 }

@@ -66,6 +66,7 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
               _isNavigating = true;
             });
             // Add a small delay for the UI to reflect loading state if needed
+            marketWatch.scripdepthsize(false);
             await marketWatch.calldepthApis(context, widget.watchListData, "");
           } catch (e) {
             // Handle any errors
@@ -91,9 +92,12 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
             padding: const EdgeInsets.only(bottom: 4),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
-              children: [                
+              children: [
                 Text(
-                  widget.watchListData["symbol"].toString().replaceAll("-EQ", "").toUpperCase(),
+                  widget.watchListData["symbol"]
+                      .toString()
+                      .replaceAll("-EQ", "")
+                      .toUpperCase(),
                   style: TextWidget.textStyle(
                     fontSize: 14,
                     color: theme.isDarkMode
@@ -128,7 +132,9 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                     if (widget.watchListData['expDate'].toString().isNotEmpty)
                       TextWidget.paraText(
                         text: " ${widget.watchListData['expDate']}",
-                        color: theme.isDarkMode ? colors.textSecondaryDark :  colors.textSecondaryLight,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
                         theme: theme.isDarkMode,
                       ),
                     if (widget.watchListData['holdingQty'] != null &&
@@ -136,14 +142,14 @@ class _WatchlistCardState extends ConsumerState<WatchlistCard> {
                             .toString()
                             .isNotEmpty &&
                         widget.watchListData['holdingQty'] != "null") ...[
-                          const SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       SvgPicture.asset(assets.suitcase,
                           height: 12,
                           width: 16,
                           color: theme.isDarkMode
                               ? colors.secondaryDark
                               : colors.secondaryLight),
-                              const SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       TextWidget.paraText(
                         text: "${widget.watchListData['holdingQty']}",
                         color: colors.secondaryLight,

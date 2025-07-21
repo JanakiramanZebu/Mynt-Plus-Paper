@@ -116,7 +116,6 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
             ),
             _DynamicPnlInfo(
               profitLoss: widget.exchTsym.profitNloss ?? '0.00',
-              pnlChange: widget.exchTsym.pNlChng ?? '0.00',
             ),
 
             // LTP - dynamic, will update from socket
@@ -155,10 +154,8 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
                 ),
               ],
             ),
-            _DynamicLtpInfo(
-              ltp: widget.exchTsym.lp ?? '0.00',
-              labelColor: labelColor,
-              contentColor: contentColor,
+            _DynamicPnlInfo(
+              pnlChange: widget.exchTsym.pNlChng ?? '0.00',
             ),
           ]),
           const SizedBox(height: 8),
@@ -179,13 +176,29 @@ class _HoldingsListState extends ConsumerState<HoldingsList> {
             //     ),
             //   ],
             // )
-
+            Row(
+              children: [
+                _DynamicLtpInfo(
+                  ltp: widget.exchTsym.lp ?? '0.00',
+                  labelColor: labelColor,
+                  contentColor: contentColor,
+                ),
+                TextWidget.paraText(
+                  text: " (${widget.exchTsym.perChange ?? '0.00'}%)",
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  fw: 3,
+                ),
+              ],
+            ),
             // Dynamic current value information
-            _DynamicCurrentValueInfo(
-              currentValue: widget.holdingData.currentValue ?? '0.00',
-              labelColor: labelColor,
-              contentColor: contentColor,
-            )
+            // _DynamicCurrentValueInfo(
+            //   currentValue: widget.holdingData.currentValue ?? '0.00',
+            //   labelColor: labelColor,
+            //   contentColor: contentColor,
+            // )
           ])
         ]));
   }
@@ -225,7 +238,7 @@ class _StaticQuantityInfo extends StatelessWidget {
     return Consumer(builder: (context, ref, _) {
       final theme = ref.watch(themeProvider);
       return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-        Text("Qty ",
+        Text("QTY ",
             style: _getStyle(labelColor, 12, 3, 'qty-label', theme.isDarkMode)),
         Text("${holdingData.currentQty ?? 0}",
             style:
@@ -277,7 +290,7 @@ class _StaticPriceInfo extends StatelessWidget {
     return Consumer(builder: (context, ref, _) {
       final theme = ref.watch(themeProvider);
       return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-        Text("Avg ",
+        Text("AVG ",
             style: _getStyle(labelColor, 12, 3, 'qty-label', theme.isDarkMode)),
         Text("${holdingData.avgPrc}",
             style:
@@ -327,7 +340,7 @@ class _StaticInvestmentInfo extends StatelessWidget {
         return Row(
           children: [
             Text(
-              "Inv ",
+              "INV ",
               style:
                   _getStyle(labelColor, 12, 3, 'inv-label', theme.isDarkMode),
             ),
@@ -522,24 +535,25 @@ class _DynamicPercentChangeState extends ConsumerState<_DynamicPercentChange> {
 
 // A widget that only displays and updates P&L information
 class _DynamicPnlInfo extends ConsumerStatefulWidget {
-  final String profitLoss;
-  final String pnlChange;
+  final String? profitLoss;
+  final String? pnlChange;
 
   const _DynamicPnlInfo({
     Key? key,
-    required this.profitLoss,
-    required this.pnlChange,
-  }) : super(key: key);
+    this.profitLoss,
+    this.pnlChange,
+  })  : assert(profitLoss != null || pnlChange != null,
+            'Either profitLoss or pnlChange must be provided.'),
+        super(key: key);
 
   @override
   ConsumerState<_DynamicPnlInfo> createState() => _DynamicPnlInfoState();
 }
 
 class _DynamicPnlInfoState extends ConsumerState<_DynamicPnlInfo> {
-  late String _profitLoss;
-  late String _pnlChange;
+  String? _profitLoss;
+  String? _pnlChange;
 
-  // Cached text styles
   static final Map<String, TextStyle> _styles = {};
 
   @override
@@ -550,7 +564,7 @@ class _DynamicPnlInfoState extends ConsumerState<_DynamicPnlInfo> {
   }
 
   @override
-  void didUpdateWidget(_DynamicPnlInfo oldWidget) {
+  void didUpdateWidget(covariant _DynamicPnlInfo oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.profitLoss != widget.profitLoss) {
       _profitLoss = widget.profitLoss;
@@ -560,59 +574,60 @@ class _DynamicPnlInfoState extends ConsumerState<_DynamicPnlInfo> {
     }
   }
 
-  @override
-  void dispose() {
-    // Avoid accessing anything from context in dispose
-    super.dispose();
-  }
-
-  // Get or create a text style
   static TextStyle _getStyle(
       Color color, double size, int? fw, bool isDarkMode) {
     final key = '${color.value}|$size|$fw|$isDarkMode';
-    if (!_styles.containsKey(key)) {
-      _styles[key] = TextWidget.textStyle(
-          color: color, fontSize: size, theme: isDarkMode, fw: fw);
-    }
-    return _styles[key]!;
+    return _styles.putIfAbsent(
+      key,
+      () => TextWidget.textStyle(
+        color: color,
+        fontSize: size,
+        theme: isDarkMode,
+        fw: fw,
+      ),
+    );
+  }
+
+  Color _getColorFromValue(
+      String? value, Color profitColor, Color lossColor, Color neutralColor) {
+    if (value == null) return neutralColor;
+    if (value == "NaN") return lossColor;
+    if (value.startsWith("-")) return lossColor;
+    if (value == "0.00") return neutralColor;
+    return profitColor;
   }
 
   @override
   Widget build(BuildContext context) {
-    // Use theme from ConsumerState for any theme-specific styling
     final theme = ref.watch(themeProvider);
 
-    final pnlColor = _profitLoss.startsWith("-")
-        ? theme.isDarkMode
-            ? colors.lossDark
-            : colors.lossLight
-        : _profitLoss == "0.00"
-            ? theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight
-            : theme.isDarkMode
-                ? colors.profitDark
-                : colors.profitLight;
+    final profitColor =
+        theme.isDarkMode ? colors.profitDark : colors.profitLight;
+    final lossColor = theme.isDarkMode ? colors.lossDark : colors.lossLight;
+    final neutralColor =
+        theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
 
-    final pnlChangeColor = _pnlChange.startsWith("-")
-        ? theme.isDarkMode
-            ? colors.lossDark
-            : colors.lossLight
-        : _pnlChange == "NaN"
-            ? theme.isDarkMode
-                ? colors.lossDark
-                : colors.lossLight
-            : theme.isDarkMode
-                ? colors.profitDark
-                : colors.profitLight;
+    final pnlColor =
+        _getColorFromValue(_profitLoss, profitColor, lossColor, neutralColor);
+    final pnlChangeColor =
+        _getColorFromValue(_pnlChange, profitColor, lossColor, neutralColor);
 
     return RepaintBoundary(
-      child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-        Text(" (${_pnlChange == "NaN" ? 0.0 : _pnlChange}%) ",
-            style: _getStyle(pnlChangeColor, 12, 3, theme.isDarkMode)),
-        Text("${_profitLoss}",
-            style: _getStyle(pnlColor, 16, 3, theme.isDarkMode)),
-      ]),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (_pnlChange != null)
+            Text(
+              "(${_pnlChange == "NaN" ? "0.0" : _pnlChange}%) ",
+              style: _getStyle(pnlChangeColor, 12, 3, theme.isDarkMode),
+            ),
+          if (_profitLoss != null)
+            Text(
+              _profitLoss!,
+              style: _getStyle(pnlColor, 16, 3, theme.isDarkMode),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -10,6 +10,7 @@ import '../models/desk_reports_model/SharingResponseCalendar_model.dart';
 import '../models/desk_reports_model/ca_events_model.dart';
 import '../models/desk_reports_model/calender_pnl_model.dart';
 import '../models/desk_reports_model/cdsl_response_model.dart';
+import '../models/desk_reports_model/cmr_download_model.dart';
 import '../models/desk_reports_model/cp_action_model.dart';
 import '../models/desk_reports_model/dercomcur_taxpnl_model.dart';
 import '../models/desk_reports_model/editreport_model.dart';
@@ -1090,6 +1091,29 @@ mixin LedgerApi on ApiCore {
       // log("MF Master ==>$json");
     } catch (e) {
       print("${e} errorerror");
+      rethrow;
+    }
+  }
+
+
+
+ 
+   Future<CmrDownloadModel> cmrdownload() async {
+    try {
+      final uri = Uri.parse(apiLinks.cmrdownload); 
+    final res = await apiClient.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        "client_id": "${prefs.clientId}",
+      }),
+    );
+
+      final json = jsonDecode((res.body));
+        return CmrDownloadModel.fromJson(json);
+      } catch (e) {
       rethrow;
     }
   }

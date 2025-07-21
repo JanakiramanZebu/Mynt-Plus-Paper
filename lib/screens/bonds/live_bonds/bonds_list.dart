@@ -67,11 +67,4 @@ class BondsListScreen extends StatelessWidget {
     );
   }
 
-  TextStyle textStyle(Color color, double fontSize, FontWeight fWeight) {
-    return GoogleFonts.inter(
-      fontWeight: fWeight,
-      color: color,
-      fontSize: fontSize,
-    );
-  }
 }

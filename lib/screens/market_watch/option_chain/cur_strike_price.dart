@@ -50,7 +50,7 @@ class CurStrkprice extends ConsumerWidget {
                     
                     
                      TextWidget.subText(
-                      text:"₹$price (${double.parse(pc) >= 0 ? "+" : "-"}${double.parse(pc).toStringAsFixed(2)}%)" ,
+                      text:"₹$price (${double.parse(pc).toStringAsFixed(2)}%)" ,
                       color:Color(0xffffffff) ,
                       theme: false,
                       fw: 3),

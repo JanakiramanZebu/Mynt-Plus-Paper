@@ -500,20 +500,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                     TextWidget
                                                                         .titleText(
                                                                       text:
-                                                                          "${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()} ",
-                                                                      color: theme.isDarkMode
-                                                                          ? colors
-                                                                              .textPrimaryDark
-                                                                          : colors
-                                                                              .textPrimaryLight,
-                                                                      theme: theme
-                                                                          .isDarkMode,
-                                                                    ),
-                                                                    TextWidget
-                                                                        .titleText(
-                                                                      text: widget
-                                                                          .wlValue
-                                                                          .option,
+                                                                          "${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()} ${widget.wlValue.expDate} ${widget.wlValue.option} ${widget.wlValue.exch} ",
                                                                       color: theme.isDarkMode
                                                                           ? colors
                                                                               .textPrimaryDark
@@ -1438,7 +1425,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 : colors.secondaryLight,
                                                                             theme:
                                                                                 theme.isDarkMode,
-                                                                            fw: 2,
+                                                                            // fw: 2,
                                                                           ),
                                                                         ],
                                                                       ),
@@ -1551,7 +1538,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 : colors.secondaryLight,
                                                                             theme:
                                                                                 theme.isDarkMode,
-                                                                            fw: 2,
+                                                                            // fw: 2,
                                                                           ),
                                                                         ],
                                                                       ),
@@ -1800,69 +1787,48 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           ],
                                                                         )
                                                                       ]),
-                                                                  
-                                                                          (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" &&
-                                                                              scripInfo.totSellQtyPer.toStringAsFixed(2) ==
-                                                                                  "0.00")?
-                                                                                  const SizedBox()
-                                                                                  :
-                                                                  Column(
-                                                                    children: [
-                                                                      const SizedBox(
-                                                                      height:
-                                                                          10),
-                                                                      LinearPercentIndicator(
-                                                                      
-                                                                          // leading: Text(
-                                                                          //     "${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%",
-                                                                          //     style: textStyle(
-                                                                          //         theme.isDarkMode
-                                                                          //             ? colors
-                                                                          //                 .colorWhite
-                                                                          //             : colors
-                                                                          //                 .colorBlack,
-                                                                          //         14,
-                                                                          //         FontWeight
-                                                                          //             .w500)),
-                                                                          // trailing: Text(
-                                                                          //     "${scripInfo.totSellQtyPer.toStringAsFixed(2)}%",
-                                                                          //     style: textStyle(
-                                                                          //         theme.isDarkMode
-                                                                          //             ? colors
-                                                                          //                 .colorWhite
-                                                                          //             : colors
-                                                                          //                 .colorBlack,
-                                                                          //         14,
-                                                                          //         FontWeight
-                                                                          //             .w500)),
-                                                                          lineHeight:
-                                                                              5.0,
-                                                                          barRadius:
-                                                                              const Radius
-                                                                                  .circular(
-                                                                                  4.0), // Half of lineHeight for capsule shape
-                                                                          backgroundColor: (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" &&
-                                                                                  scripInfo.totSellQtyPer.toStringAsFixed(2) ==
-                                                                                      "0.00")
-                                                                              ? colors
-                                                                                  .textSecondaryLight
-                                                                              : colors
-                                                                                  .tertiary,
-                                                                          percent: scripInfo
-                                                                              .totBuyQtyPerChng,
-                                                                          padding: const EdgeInsets
-                                                                              .symmetric(
-                                                                              horizontal:
-                                                                                  0),
-                                                                          progressColor:
-                                                                              colors
-                                                                                  .primary),
-                                                                                  const SizedBox(
-                                                                      height:
-                                                                          16),
-                                                                    ],
-                                                                  ),
-                                                                
+
+                                                                  (scripInfo.totBuyQtyPer.toStringAsFixed(2) ==
+                                                                              "0.00" &&
+                                                                          scripInfo.totSellQtyPer.toStringAsFixed(2) ==
+                                                                              "0.00")
+                                                                      ? const SizedBox()
+                                                                      : Column(
+                                                                          children: [
+                                                                            const SizedBox(height: 10),
+                                                                            LinearPercentIndicator(
+
+                                                                                // leading: Text(
+                                                                                //     "${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%",
+                                                                                //     style: textStyle(
+                                                                                //         theme.isDarkMode
+                                                                                //             ? colors
+                                                                                //                 .colorWhite
+                                                                                //             : colors
+                                                                                //                 .colorBlack,
+                                                                                //         14,
+                                                                                //         FontWeight
+                                                                                //             .w500)),
+                                                                                // trailing: Text(
+                                                                                //     "${scripInfo.totSellQtyPer.toStringAsFixed(2)}%",
+                                                                                //     style: textStyle(
+                                                                                //         theme.isDarkMode
+                                                                                //             ? colors
+                                                                                //                 .colorWhite
+                                                                                //             : colors
+                                                                                //                 .colorBlack,
+                                                                                //         14,
+                                                                                //         FontWeight
+                                                                                //             .w500)),
+                                                                                lineHeight: 5.0,
+                                                                                barRadius: const Radius.circular(4.0), // Half of lineHeight for capsule shape
+                                                                                backgroundColor: (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" && scripInfo.totSellQtyPer.toStringAsFixed(2) == "0.00") ? colors.textSecondaryLight : colors.tertiary,
+                                                                                percent: scripInfo.totBuyQtyPerChng,
+                                                                                padding: const EdgeInsets.symmetric(horizontal: 0),
+                                                                                progressColor: colors.primary),
+                                                                            const SizedBox(height: 16),
+                                                                          ],
+                                                                        ),
                                                                 ],
                                                                 const SizedBox(
                                                                     height: 4),

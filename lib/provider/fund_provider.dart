@@ -214,6 +214,7 @@ class FundProvider extends DefaultChangeNotifier {
         double auxUnclearedcash =
             double.parse(_fundDetailModel!.auxUnclearedcash ?? "0.00");
         double daycash = double.parse(_fundDetailModel!.daycash ?? "0.00");
+        double collateral = double.parse(_fundDetailModel!.collateral ?? "0.00");
 
         if (cash != 0.00) {
           _listOfCredits.add({"value": "$cash", "name": "Opening Balance"});
@@ -245,11 +246,15 @@ class FundProvider extends DefaultChangeNotifier {
         if (daycash != 0.00) {
           _listOfCredits.add({"value": "$daycash", "name": "Day Cash"});
         }
+        if (collateral != 0.00) {
+          _listOfCredits.add({"value": "$collateral", "name": "Collateral"});
+        }
 
         fundDetailModel!.totCredit = (cash +
                 payin +
                 payout +
                 brkcollamt +
+                collateral +
                 unclearedcash +
                 auxDaycash +
                 auxBrkcollamt +

@@ -39,38 +39,40 @@ class ExchangeMessage extends ConsumerWidget {
                                 text:
                                     "${noftification.exchangemessage![index].exchTm} (${noftification.exchangemessage![index].exch})",
                                 theme: false,
-                                color: colors.textSecondaryLight),
+                                color: colors.textSecondaryLight,
+                                fw: 0),
                             const SizedBox(
                               height: 5,
                             ),
                             ReadMoreText(
                               "${noftification.exchangemessage![index].exchMsg}",
                               style: TextWidget.textStyle(
-                                fontSize: 14,
-                                theme: false,
-                                color: theme.isDarkMode
-                                    ? colors.textPrimaryDark
-                                    : colors.textPrimaryLight,
-                              ),
+                                  fontSize: 14,
+                                  theme: false,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  height: 1.5,
+                                  letterSpacing: 0.5),
                               textAlign: TextAlign.left,
                               trimLines: 2,
                               moreStyle: TextWidget.textStyle(
                                 fontSize: 12,
                                 theme: false,
                                 color: theme.isDarkMode
-                                    ? colors.secondaryDark
-                                    : colors.secondaryLight,
+                                    ? colors.colorLightBlue
+                                    : colors.colorBlue,
                               ),
                               lessStyle: TextWidget.textStyle(
                                 fontSize: 12,
                                 theme: false,
                                 color: theme.isDarkMode
-                                    ? colors.secondaryDark
-                                    : colors.secondaryLight,
+                                    ? colors.colorLightBlue
+                                    : colors.colorBlue,
                               ),
                               colorClickableText: theme.isDarkMode
-                                  ? colors.secondaryDark
-                                  : colors.secondaryLight,
+                                  ? colors.colorLightBlue
+                                  : colors.colorBlue,
                               trimMode: TrimMode.Line,
                               trimCollapsedText: 'Read more',
                               trimExpandedText: ' Read less',
@@ -81,7 +83,7 @@ class ExchangeMessage extends ConsumerWidget {
                     },
                     separatorBuilder: (BuildContext context, int index) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Divider(
                           color: theme.isDarkMode
                               ? colors.darkColorDivider
@@ -90,11 +92,5 @@ class ExchangeMessage extends ConsumerWidget {
                       );
                     },
                   ));
-  }
-
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }
