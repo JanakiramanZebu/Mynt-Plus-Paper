@@ -150,7 +150,7 @@ class _TaxPnlScreenState extends State<TaxPnlScreen>
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Color(0xffF1F3F8),
+                            color: const Color(0xffF1F3F8),
                             border: Border.all(
                               color: colors.colorBlue,
                             ),

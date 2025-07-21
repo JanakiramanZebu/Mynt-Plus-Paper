@@ -36,6 +36,7 @@ import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/custom_drag_handler.dart';
 import '../desk_reports/calenderPnl_screen.dart';
+import '../desk_reports/contract_calendar_screen.dart';
 import '../desk_reports/pdf_downalod_screen.dart';
 import '../desk_reports/tax_pnl_screen.dart';
 import 'Api_key_screen.dart';
@@ -285,7 +286,7 @@ class UserAccountScreen extends ConsumerWidget {
           // ),
 
           /// 🔹 Horizontal Buttons (inline style)
-          // _buildHorizontalButtons(context, ref, theme, funds, mf),
+          _buildHorizontalButtons(context, ref, theme, funds, mf),
 
           /// 🔹 Menu List
           Expanded(
@@ -3327,7 +3328,27 @@ class ReportsScreen extends ConsumerWidget {
                           //       ) ),
                           // );
 
-                          Navigator.pushNamed(context, Routes.contractCalendar);
+                          await showModalBottomSheet(
+                            isScrollControlled: true,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
+                              ),
+                            ),
+                            isDismissible: true,
+                            enableDrag: false,
+                            useSafeArea: true,
+                            context: context,
+                            builder: (context) => Container(
+                                padding: EdgeInsets.only(
+                                  bottom:
+                                      MediaQuery.of(context).viewInsets.bottom,
+                                ),
+                                child: ContractCalendarScreen()),
+                          );
+
+                          // Navigator.pushNamed(context, Routes.contractCalendar);
 
                           break;
                         case 'Corporate Actions':

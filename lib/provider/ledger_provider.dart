@@ -364,11 +364,30 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
+    TextEditingController ledgerSearchCtrl = TextEditingController();
+  clearLedgerSearch() {
+    ledgerSearchCtrl.clear();
+    notifyListeners();
+    // // Reset to original data when search is cleared
+    if (_originalGrouped.isNotEmpty) {
+      grouped = Map.from(_originalGrouped);
+      notifyListeners();
+    }
+  }
+
   bool _showProfitlossSearch = false;
   bool get showProfitlossSearch => _showProfitlossSearch;
 
   showProfiossSearch(bool value) {
     _showProfitlossSearch = value;
+    notifyListeners();
+  }
+
+  bool _showLedgerSearch = false;
+  bool get showLedgerSearch => _showLedgerSearch;
+
+  showledgerSearch(bool value) {
+    _showLedgerSearch = value;
     notifyListeners();
   }
 
@@ -389,6 +408,43 @@ class LDProvider extends DefaultChangeNotifier {
       Map<DateTime, List<TradeData>> filteredGrouped = {};
 
       _originalGrouped.forEach((date, trades) {
+        // Filter trades for this date
+        List<TradeData> filteredTrades = trades.where((element) {
+          final symbol = element.sCRIPSYMBOL?.toLowerCase() ?? '';
+          final scripName = element.sCRIPNAME?.toLowerCase() ?? '';
+          final searchTerm = value.toLowerCase();
+
+          return symbol.contains(searchTerm) || scripName.contains(searchTerm);
+        }).toList();
+
+        // Only add dates that have matching trades
+        if (filteredTrades.isNotEmpty) {
+          filteredGrouped[date] = filteredTrades;
+        }
+      });
+
+      grouped = filteredGrouped;
+    }
+
+    notifyListeners();
+  }
+
+   Map<DateTime, List<TradeData>> _originalGroupedledger = {};
+
+  ledgerSearch(String value, BuildContext context) {
+    // If this is the first search, store the original data
+    if (_originalGroupedledger.isEmpty) {
+      _originalGroupedledger = Map.from(grouped);
+    }
+
+    if (value.isEmpty) {
+      // Reset to original data when search is cleared
+      grouped = Map.from(_originalGroupedledger);
+    } else {
+      // Create a new filtered grouped map
+      Map<DateTime, List<TradeData>> filteredGrouped = {};
+
+      _originalGroupedledger.forEach((date, trades) {
         // Filter trades for this date
         List<TradeData> filteredTrades = trades.where((element) {
           final symbol = element.sCRIPSYMBOL?.toLowerCase() ?? '';
@@ -3154,7 +3210,8 @@ class LDProvider extends DefaultChangeNotifier {
   String _selectedContractFilter = 'CN'; // Default to CN
   String get selectedContractFilter => _selectedContractFilter;
 
-  List<String> contractFilterOptions = ['CN', 'Contract'];
+  // Filter options for contract calendar
+  List<String> contractFilterOptions = ['Contract', 'CN'];
 
   // Loading state for contract calendar
   bool _isContractCalendarLoading = false;

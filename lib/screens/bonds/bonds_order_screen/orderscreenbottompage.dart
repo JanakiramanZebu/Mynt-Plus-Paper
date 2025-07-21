@@ -359,7 +359,7 @@ class _BondOrderScreenbottomPageState
                                       bondOrderData["investmentValue"] =
                                           (bondDetails.faceValue *
                                                   int.parse(
-                                                      bondDetails.quantitytext))
+                                                      bondDetails.quantityController.text))
                                               .toInt();
                                       bondOrderData["price"] =
                                           int.parse(bondDetails.bidprice);
@@ -398,12 +398,12 @@ class _BondOrderScreenbottomPageState
                         backgroundColor: !theme.isDarkMode
                             ? bonds.checkSufficientLedgerBal(bondDetails)
                                 ? bonds.isBondPlaceOrderBtnActive == true
-                                    ? colors.darkGrey
+                                    ? colors.primaryLight
                                     : const Color(0xfff5f5f5)
-                                : colors.colorBlack
+                                : colors.primaryLight
                             : bonds.checkSufficientLedgerBal(bondDetails)
                                 ? bonds.isBondPlaceOrderBtnActive == true
-                                    ? const Color(0xfff5f5f5)
+                                    ? colors.colorBlue
                                     : colors.darkGrey
                                 : const Color(0xfff5f5f5),
                         shape: RoundedRectangleBorder(
@@ -420,7 +420,7 @@ class _BondOrderScreenbottomPageState
                                       ? colors.colorWhite
                                       : const Color(0xff999999)
                                   : bonds.isBondPlaceOrderBtnActive == true
-                                      ? colors.colorBlack
+                                      ? colors.colorWhite
                                       : colors.darkGrey,
                               fw: 2)
                           : TextWidget.subText(

@@ -36,92 +36,90 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
         final ledgerprovider = ref.watch(ledgerProvider);
         final theme = ref.watch(themeProvider);
         
-        return Scaffold(
-          backgroundColor: theme.isDarkMode ? const Color(0xff1A1A1A) : const Color(0xffF1F3F8),
-          appBar: AppBar(
-            backgroundColor: theme.isDarkMode ? const Color(0xff1A1A1A) : const Color(0xffF1F3F8),
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: theme.isDarkMode ? Colors.white : Colors.black,
+        return Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0xff999999),
+                    blurRadius: 4.0,
+                    offset: Offset(2.0, 0.0),
+                  )
+                ],
               ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              'Contract Calendar',
-              style: textStyle(
-                theme.isDarkMode ? Colors.white : Colors.black,
-                18,
-                FontWeight.w600,
-              ),
-            ),
-            centerTitle: true,
-          ),
-          body: Stack(
-            children: [
-              Column(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Filter Toggle
-                  Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: theme.isDarkMode ? const Color(0xff3A3A3A) : Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                     child: Row(
-                      children: ledgerprovider.contractFilterOptions.map((filter) {
-                        final isSelected = ledgerprovider.selectedContractFilter == filter;
-                        return Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              ledgerprovider.setContractFilter(filter);
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextWidget.titleText(
+                          text: "Contract Note",
+                          theme: theme.isDarkMode,
+                          fw: 1,
+                        ),
+                        Material(
+                          color: Colors.transparent,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            onTap: () async {
+                              await Future.delayed(const Duration(milliseconds: 150));
+                              Navigator.pop(context);
                             },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? Colors.blue
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  filter,
-                                  style: textStyle(
-                                    isSelected ? Colors.white : (theme.isDarkMode ? Colors.white : Colors.black),
-                                    14,
-                                    FontWeight.w500,
-                                  ),
-                                ),
+                            borderRadius: BorderRadius.circular(20),
+                            splashColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(0.15)
+                                : Colors.black.withOpacity(0.15),
+                            highlightColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(0.08)
+                                : Colors.black.withOpacity(0.08),
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 22,
+                                color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
                               ),
                             ),
                           ),
-                        );
-                      }).toList(),
+                        ),
+                      ],
                     ),
                   ),
+                  Divider(
+                    color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                    height: 0,
+                  ),
+                  
                   
                   // Calendar
-                  Expanded(
-                    child: _buildCalendar(context, ledgerprovider, theme),
-                  ),
+                  _buildCalendar(context, ledgerprovider, theme),
+                  const SizedBox(height: 24),
                 ],
               ),
-              
-              // Loading overlay
-              if (ledgerprovider.isContractCalendarLoading)
-                Container(
-                  color: Colors.black.withOpacity(0.3),
+            ),
+            
+            // Loading overlay
+            if (ledgerprovider.isContractCalendarLoading)
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: const Center(
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
                     ),
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         );
       },
     );
@@ -160,14 +158,13 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
                     color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
                   ),
                 ),
-                child: Text(
-                  filter,
-                  style: TextStyle(
-                    color: ledgerprovider.selectedContractFilter == filter
-                        ? Colors.white
-                        : (theme.isDarkMode ? colors.primaryDark : colors.primaryLight),
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: TextWidget.subText(
+                  text: filter,
+                  theme: theme.isDarkMode,
+                  color: ledgerprovider.selectedContractFilter == filter
+                      ? Colors.white
+                      : null,
+                  fw: 0,
                 ),
               ),
             ),
@@ -202,6 +199,10 @@ class _ContractCalendarState extends State<_ContractCalendar> {
   void initState() {
     super.initState();
     _month = DateTime.now();
+    // Fetch data for the initial month
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onMonthChanged(_month);
+    });
   }
 
   @override
@@ -209,37 +210,77 @@ class _ContractCalendarState extends State<_ContractCalendar> {
     final daysToDisplay = _buildMonthDays(_month);
     final weeks = _chunkDays(daysToDisplay, 7);
     
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      elevation: 0,
-      color: widget.theme.isDarkMode ? const Color(0xff1E1E1E) : Colors.white,
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Consumer(
+      builder: (context, ref, child) {
+        final ledgerprovider = ref.watch(ledgerProvider);
+        final theme = ref.watch(themeProvider);
+        return Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+          elevation: 0,
+          color: widget.theme.isDarkMode ? const Color(0xff1E1E1E) : Colors.white,
+          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
         child: Column(
           children: [
             // Month title with left/right arrows
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left),
-                    onPressed: _goToPreviousMonth,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.chevron_left),
+                        onPressed: _goToPreviousMonth,
+                      ),
+                      TextWidget.titleText(
+                        text: _formatMonthYear(_month),
+                        theme: widget.theme.isDarkMode,
+                        fw: 1,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.chevron_right),
+                        onPressed: _goToNextMonth,
+                      ),
+                    ],
                   ),
-                  Text(
-                    _formatMonthYear(_month),
-                    style: textStyle(
-                      widget.theme.isDarkMode ? Colors.white : Colors.black,
-                      16,
-                      FontWeight.w700,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right),
-                    onPressed: _goToNextMonth,
-                  ),
+      
+                // Toggle-like Filter
+Container(
+  padding: const EdgeInsets.all(4),
+  decoration: BoxDecoration(
+    color: const Color(0xffF1F3F8),
+    borderRadius: BorderRadius.circular(8),
+  ),
+  child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: ledgerprovider.contractFilterOptions.map((filter) {
+      final isSelected = ledgerprovider.selectedContractFilter == filter;
+      // Map display names
+      String displayName = filter == 'CN' ? 'MCX' : (filter == 'Contract' ? 'Combine' : filter);
+      return GestureDetector(
+        onTap: () {
+          ledgerprovider.setContractFilter(filter);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? colors.primaryLight : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: TextWidget.paraText(
+            text: displayName,
+            theme: theme.isDarkMode,
+            color: isSelected ? Colors.white : Colors.black,
+            fw: 0,
+          ),
+        ),
+      );
+    }).toList(),
+  ),
+)
+
                 ],
               ),
             ),
@@ -249,13 +290,13 @@ class _ContractCalendarState extends State<_ContractCalendar> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Text("Mon", style: textStyle(widget.theme.isDarkMode ? Colors.white : Colors.black, 12, FontWeight.w700)),
-                  Text("Tue", style: textStyle(widget.theme.isDarkMode ? Colors.white : Colors.black, 12, FontWeight.w700)),
-                  Text("Wed", style: textStyle(widget.theme.isDarkMode ? Colors.white : Colors.black, 12, FontWeight.w700)),
-                  Text("Thu", style: textStyle(widget.theme.isDarkMode ? Colors.white : Colors.black, 12, FontWeight.w700)),
-                  Text("Fri", style: textStyle(widget.theme.isDarkMode ? Colors.white : Colors.black, 12, FontWeight.w700)),
-                  Text("Sat", style: textStyle(widget.theme.isDarkMode ? Colors.white : Colors.black, 12, FontWeight.w700)),
-                  Text("Sun", style: textStyle(widget.theme.isDarkMode ? Colors.white : Colors.black, 12, FontWeight.w700)),
+                  TextWidget.paraText(text: "Mon", theme: widget.theme.isDarkMode, fw: 1),
+                  TextWidget.paraText(text: "Tue", theme: widget.theme.isDarkMode, fw: 1),
+                  TextWidget.paraText(text: "Wed", theme: widget.theme.isDarkMode, fw: 1),
+                  TextWidget.paraText(text: "Thu", theme: widget.theme.isDarkMode, fw: 1),
+                  TextWidget.paraText(text: "Fri", theme: widget.theme.isDarkMode, fw: 1),
+                  TextWidget.paraText(text: "Sat", theme: widget.theme.isDarkMode, fw: 1),
+                  TextWidget.paraText(text: "Sun", theme: widget.theme.isDarkMode, fw: 1),
                 ],
               ),
             ),
@@ -272,14 +313,14 @@ class _ContractCalendarState extends State<_ContractCalendar> {
               ),
           ],
         ),
-      ),
+      );
+      }
     );
   }
 
   Widget _buildDayBox(BuildContext context, DateTime date) {
     double screenWidth = MediaQuery.of(context).size.width;
     final ledgerprovider = ProviderScope.containerOf(context, listen: false).read(ledgerProvider);
-    // Check if date has documents of selected filter type
     final docs = ledgerprovider.contractDocumentDetails[date] ?? [];
     final selectedType = ledgerprovider.selectedContractFilter;
     final DocumentDetail? doc = docs.cast<DocumentDetail?>().firstWhere(
@@ -287,18 +328,24 @@ class _ContractCalendarState extends State<_ContractCalendar> {
       orElse: () => null,
     );
     final hasSelectedType = doc != null;
-    
+
+    // Detect if this day is outside the current month
+    final bool isOutsideMonth = date.month != _month.month;
+
     Color bgColor;
-    if (hasSelectedType) {
-      bgColor = Colors.blue.withOpacity(0.3); // Highlight color for documents
+    if (isOutsideMonth) {
+      bgColor = Colors.grey.shade200;
+    } else if (hasSelectedType) {
+      bgColor = colors.primaryLight;
     } else {
-      bgColor = widget.theme.isDarkMode ? const Color(0xff3A3A3A) : const Color(0xffF1F3F8);
+      bgColor = const Color(0xffF1F3F8);
     }
-    
+
+    Color textColor = isOutsideMonth ? Colors.grey : (hasSelectedType ? colors.colorWhite : colors.colorBlack);
+
     return GestureDetector(
-      onTap: hasSelectedType
+      onTap: (hasSelectedType && !isOutsideMonth)
           ? () {
-              // Initiate download
               ledgerprovider.pdfdownloadfunction(
                 context,
                 doc!.recno,
@@ -317,17 +364,15 @@ class _ContractCalendarState extends State<_ContractCalendar> {
         child: Stack(
           children: [
             Center(
-              child: Text(
-                date.day.toString(),
-                style: textStyle(
-                  widget.theme.isDarkMode ? Colors.white : Colors.black,
-                  12,
-                  FontWeight.w500,
-                ),
+              child: TextWidget.paraText(
+                text: date.day.toString(),
+                color: textColor,
+                theme: widget.theme.isDarkMode,
+                fw: 0,
               ),
             ),
-            if (hasSelectedType)
-              Positioned(
+            if (hasSelectedType && !isOutsideMonth)
+              const Positioned(
                 top: 2,
                 right: 2,
                 child: Icon(
