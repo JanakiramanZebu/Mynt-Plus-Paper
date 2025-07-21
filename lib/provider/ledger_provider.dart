@@ -93,6 +93,9 @@ class LDProvider extends DefaultChangeNotifier {
   PledgeHistoryModel? _pledgeHistoryData;
   PledgeHistoryModel? get pledgeHistoryData => _pledgeHistoryData;
 
+  List<dynamic> _historyalterlist = [];
+  List<dynamic> get historyalterlist => _historyalterlist;
+
   PnlModel? _pnlAllDatadummy;
   PnlModel? get pnlAllDataDummy => _pnlAllDatadummy;
 
@@ -112,8 +115,6 @@ class LDProvider extends DefaultChangeNotifier {
 
   PledgeAndUnpledgeModel? _pledgeandunpledge;
   PledgeAndUnpledgeModel? get pledgeandunpledge => _pledgeandunpledge;
-  
-
 
   PledgeAndUnpledgeModel? _pledgedataonly;
   PledgeAndUnpledgeModel? get pledgedataonly => _pledgedataonly;
@@ -784,8 +785,24 @@ class LDProvider extends DefaultChangeNotifier {
   Future fetchpledgehistory(BuildContext context) async {
     try {
       _pledgehistory = true;
+      _historyalterlist = [];
       notifyListeners();
       _pledgeHistoryData = await api.getpledgehistory();
+      if (_pledgeHistoryData?.data?.isNotEmpty ?? false) {
+        for (var i = 0; i < _pledgeHistoryData!.data!.length; i++) {
+          final dataItem = _pledgeHistoryData!.data![i];
+          if (dataItem.reqList != null && dataItem.reqList!.isNotEmpty) {
+            for (var y = 0; y < dataItem.reqList!.length; y++) {
+              dataItem.reqList![y].reqid = dataItem.reqid;
+              dataItem.reqList![y].datetime = dataItem.datTim;
+              _historyalterlist.add(dataItem.reqList![y]);
+            }
+          }
+        }
+      }
+
+      print(_historyalterlist.length);
+
       //  _ledgerAllData = new LedgerModelData();
       _pledgehistory = false;
       notifyListeners();
@@ -1443,41 +1460,32 @@ class LDProvider extends DefaultChangeNotifier {
       // );
     }
   }
-  refreshforfilterdata(){
-    if (_pledgeandunpledge!.data != null && _pledgeandunpledge!.data!.isNotEmpty)  {
-        for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
-          final value = _pledgeandunpledge!.data![i];
-          print("${value.initiated == "0" &&
-                                                      value.status == 'Ok' &&
-                                                      (double.parse(value.nSOHQTY.toString())
-                                                                  .toInt()) +
-                                                              (double.parse(value
-                                                                      .sOHQTY
-                                                                      .toString())
-                                                                  .toInt()) !=
-                                                          0}pledgevavavavava");
-            if (value.initiated == "0" &&
-                                                      value.status == 'Ok' &&
-                                                      (double.parse(value.nSOHQTY.toString())
-                                                                  .toInt()) +
-                                                              (double.parse(value
-                                                                      .sOHQTY
-                                                                      .toString())
-                                                                  .toInt()) !=
-                                                          0) {
 
-              print("pledgevavavavava");
-            } 
+  refreshforfilterdata() {
+    if (_pledgeandunpledge!.data != null &&
+        _pledgeandunpledge!.data!.isNotEmpty) {
+      for (var i = 0; i < _pledgeandunpledge!.data!.length; i++) {
+        final value = _pledgeandunpledge!.data![i];
+        print(
+            "${value.initiated == "0" && value.status == 'Ok' && (double.parse(value.nSOHQTY.toString()).toInt()) + (double.parse(value.sOHQTY.toString()).toInt()) != 0}pledgevavavavava");
+        if (value.initiated == "0" &&
+            value.status == 'Ok' &&
+            (double.parse(value.nSOHQTY.toString()).toInt()) +
+                    (double.parse(value.sOHQTY.toString()).toInt()) !=
+                0) {
+          print("pledgevavavavava");
         }
       }
+    }
   }
+
   Future fetchpledgeandunpledge(BuildContext context) async {
     try {
       _pledgeloader = true;
       notifyListeners();
-      _pledgeandunpledge = await api.getpledgeandunpledge(); 
+      _pledgeandunpledge = await api.getpledgeandunpledge();
       _pledgesegmentcheck = await api.getsegforpledge();
-      _listforpledge = []; 
+      _listforpledge = [];
       if (_pledgesegmentcheck?.str != null) {}
       _segresponse =
           jsonDecode(decryptionFunction(_pledgesegmentcheck!.str.toString()));
@@ -1488,13 +1496,13 @@ class LDProvider extends DefaultChangeNotifier {
       // }
       // _tradebookfilterarray = dummy.toSet().toList();
       // print(_tradebookfilterarray);
-      refreshforfilterdata(); 
+      refreshforfilterdata();
       _filterval = SingingCharacter.all;
       _pledgeloader = false;
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
-      _pledgeloader = false; 
+      _pledgeloader = false;
       // ScaffoldMessenger.of(context).showSnackBar(
       //   warningMessage(context, 'Error occurred try again later'),
       // );
@@ -2157,8 +2165,9 @@ class LDProvider extends DefaultChangeNotifier {
               _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
           0.0;
     }
-    _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance; 
-    _ledgerAllData!.closingBalance = originalList[originalList.length - 1].nETAMT ?? '0.00'; 
+    _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
+    _ledgerAllData!.closingBalance =
+        originalList[originalList.length - 1].nETAMT ?? '0.00';
 
     _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
     _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
@@ -2682,7 +2691,6 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   void changesegval(String seg, dynamic index) {
-
     index.segmentselect = seg;
 
     _segmentvalue = seg;

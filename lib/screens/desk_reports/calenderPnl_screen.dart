@@ -121,7 +121,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                 color: theme.isDarkMode
                                                     ? colors.colorWhite
                                                     : colors.colorBlack,
-                                                fw: 1)),
+                                                fw: 0)),
                                       ],
                                     ),
                                     IconButton(
@@ -146,204 +146,175 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                   children: [
                     Container(
                       width: screenWidth,
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? const Color(0xffB5C0CF).withOpacity(.15)
-                                : const Color(0xffF1F3F8)),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Realised P&L",
-                                        style: textStyle(
-                                            const Color(0xFF696969),
-                                            14,
-                                            FontWeight.w500),
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: Text(
-                                          "${ledgerprovider.calenderpnlAllData != null ? ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2) : 0.0} ",
-                                          style: ledgerprovider
-                                                      .calenderpnlAllData !=
-                                                  null
-                                              ? ledgerprovider
-                                                          .calenderpnlAllData!
-                                                          .realized !=
-                                                      0
-                                                  ? ledgerprovider
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    TextWidget.paraText(
+                                                    text: "Realised P&L",
+                                                    theme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
+                                                    fw: 3),
+                                   Padding(
+                                     padding: const EdgeInsets.only(top : 8.0),
+                                     child: TextWidget.subText(
+                                                      text: "${ledgerprovider.calenderpnlAllData != null ? ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2) : 0.0} ",
+                                                      theme: theme.isDarkMode,
+                                                      color:   ledgerprovider
                                                               .calenderpnlAllData!
                                                               .realized <
                                                           0
-                                                      ? textStyle(Colors.red,
-                                                          16, FontWeight.w600)
-                                                      : textStyle(Colors.green,
-                                                          16, FontWeight.w600)
-                                                  : textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      16,
-                                                      FontWeight.w600)
-                                              : textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  16,
-                                                  FontWeight.w600),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        "Unrealised P&L",
-                                        textAlign: TextAlign.right,
-                                        style: textStyle(
-                                            const Color(0xFF696969),
-                                            14,
-                                            FontWeight.w500),
-                                      ),
+                                                      ?  Colors.red
+                                                           
+                                                      :  ledgerprovider
+                                                              .calenderpnlAllData!
+                                                              .realized <
+                                                          0
+                                                      ?   Colors.green   : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight  ,
+                                                      
+                                                      fw: 0),
+                                   ),
+                                     
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                     TextWidget.paraText(
+                                                    text:  "Unrealised P&L",
+                                                    theme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
+                                                    fw: 3),
                                       Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: Text(
-                                          ledgerprovider.calenderpnlAllData !=
+                                        padding: const EdgeInsets.only(top :8.0),
+                                        child: TextWidget.subText(
+                                                      text:  ledgerprovider.calenderpnlAllData !=
                                                   null
                                               ? ledgerprovider
                                                   .calenderpnlAllData!
                                                   .unrealized
                                                   .toStringAsFixed(2)
                                               : '0.0',
-                                          style: ledgerprovider
-                                                      .calenderpnlAllData !=
-                                                  null
-                                              ? ledgerprovider
-                                                          .calenderpnlAllData!
-                                                          .unrealized !=
-                                                      0
-                                                  ? ledgerprovider
+                                                      theme: theme.isDarkMode,
+                                                      color:   ledgerprovider
                                                               .calenderpnlAllData!
                                                               .unrealized <
                                                           0
-                                                      ? textStyle(Colors.red,
-                                                          16, FontWeight.w600)
-                                                      : textStyle(Colors.green,
-                                                          16, FontWeight.w600)
-                                                  : textStyle(
-                                                      theme.isDarkMode
-                                                          ? colors.colorWhite
-                                                          : colors.colorBlack,
-                                                      16,
-                                                      FontWeight.w600)
-                                              : textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  16,
-                                                  FontWeight.w600),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 18.0,
-                                  right: 18.0,
-                                  top: 4.0,
-                                  bottom: 18.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Charges and Taxes",
-                                        style: textStyle(
-                                            const Color(0xFF696969),
-                                            14,
-                                            FontWeight.w500),
+                                                      ?  Colors.red
+                                                           
+                                                      :  ledgerprovider
+                                                              .calenderpnlAllData!
+                                                              .unrealized <
+                                                          0
+                                                      ?   Colors.green   : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight  ,
+                                                      
+                                                      fw: 0),
                                       ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: Text(
-                                          ledgerprovider.calenderpnlAllData !=
-                                                  null
-                                              ? ledgerprovider
-                                                          .calenderpnlAllData!
-                                                          .totalCharges !=
-                                                      null
-                                                  ? ledgerprovider
-                                                      .calenderpnlAllData!
-                                                      .totalCharges!
-                                                      .toStringAsFixed(2)
-                                                  : '0.0'
-                                              : '0.0',
-                                          textAlign: TextAlign.right,
-                                          style: textStyle(
-                                              Colors.red, 16, FontWeight.w600),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        "Net Realised P&L",
-                                        textAlign: TextAlign.right,
-                                        style: textStyle(
-                                            const Color(0xFF696969),
-                                            14,
-                                            FontWeight.w500),
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: Text(
-                                          netvalue.toStringAsFixed(2),
-                                          textAlign: TextAlign.right,
-                                          style: netvalue != 0
-                                              ? netvalue > 0
-                                                  ? textStyle(Colors.green, 16,
-                                                      FontWeight.w600)
-                                                  : textStyle(Colors.red, 16,
-                                                      FontWeight.w600)
-                                              : textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  16,
-                                                  FontWeight.w600),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                     
+                                  ],
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 18.0,
+                                right: 18.0,
+                                top: 4.0,
+                                bottom: 18.0),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                     TextWidget.paraText(
+                                                    text:  "Charges and Taxes",
+                                                    theme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
+                                                    fw: 3),
+                                     
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(top: 8.0),
+                                      child: TextWidget.subText(
+                                                    text:   ledgerprovider.calenderpnlAllData !=
+                                                null
+                                            ? ledgerprovider
+                                                        .calenderpnlAllData!
+                                                        .totalCharges !=
+                                                    null
+                                                ? ledgerprovider
+                                                    .calenderpnlAllData!
+                                                    .totalCharges!
+                                                    .toStringAsFixed(2)
+                                                : '0.0'
+                                            : '0.0',
+                                                    theme: theme.isDarkMode,
+                                                    color:     Colors.red,
+                                                         
+                                                    
+                                                    
+                                                    fw: 0),
+                                      
+                                      
+                                      
+                                    )
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    TextWidget.paraText(
+                                                    text: "Net Realised P&L",
+                                                    theme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
+                                                    fw: 3),
+                                     
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(top: 8.0),
+                                      child: 
+                                      TextWidget.subText(
+                                                    text:    netvalue.toStringAsFixed(2),
+                                                    theme: theme.isDarkMode,
+                                                    color:    netvalue <
+                                                          0
+                                                      ?  Colors.red
+                                                           
+                                                      :  netvalue <
+                                                          0
+                                                      ?   Colors.green   : theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight  ,
+                                                         
+                                                    
+                                                    
+                                                    fw: 0),
+                                       
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -364,7 +335,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                         text: "Your trade is verified by ZEBU",
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
-                                        fw: 1),
+                                        fw: 3),
                                     IconButton(
                                       iconSize: 20,
                                       icon: const Icon(Icons.check_circle,
@@ -683,7 +654,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                   Padding(
                                       padding: const EdgeInsets.only(
                                           left: 16.0, top: 8.0, bottom: 8.0),
-                                      child: TextWidget.titleText(
+                                      child: TextWidget.subText(
                                           text: "Date-specific Information",
                                           color: const Color.fromARGB(
                                               255, 0, 0, 0),
@@ -750,7 +721,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                           MainAxisAlignment
                                                               .spaceBetween,
                                                       children: [
-                                                        TextWidget.subText(
+                                                        TextWidget.paraText(
                                                             text:
                                                                 "${dateString} (${tradesForDate.length})",
                                                             color: theme.isDarkMode
@@ -763,7 +734,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                                     .ellipsis,
                                                             theme: theme
                                                                 .isDarkMode,
-                                                            fw: 0),
+                                                            fw: 3),
                                                         TextWidget.subText(
                                                             text:
                                                                 "₹${(totalRealisedPnl).toStringAsFixed(2)} ",
@@ -804,7 +775,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                   ? const Color(0xffB5C0CF)
                                                       .withOpacity(.15)
                                                   : const Color(0xffF1F3F8),
-                                              thickness: 7.0,
+                                              thickness: 1.0,
                                             );
                                           },
                                         )
@@ -1153,13 +1124,13 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                         color: theme.isDarkMode
                             ? colors.colorWhite
                             : colors.colorBlack,
-                        fw: 1),
+                        fw: 0),
                   ),
                   Divider(
                     color: theme.isDarkMode
                         ? const Color(0xffB5C0CF).withOpacity(.15)
                         : const Color(0xffF1F3F8),
-                    thickness: 7.0,
+                    thickness: 1.0,
                   ),
                   // Text(
                   //                       date,
@@ -1199,33 +1170,24 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                             onTap: () async {
                                               // Handle the onTap event here
                                             },
-                                            child: Text(
-                                              "${trade[index].sCRIPSYMBOL}",
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  13,
-                                                  FontWeight.w600),
-                                              softWrap:
-                                                  true, // Allows text to wrap
-                                              overflow: TextOverflow
-                                                  .ellipsis, // Adds "..." if the text is too long
-                                              maxLines:
-                                                  2, // Limits text to 2 lines, change as needed
-                                            ),
+                                            child: 
+                                            TextWidget.subText(
+                                              text:  "${trade[index].sCRIPSYMBOL}",
+                                              textOverflow: TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                              color: theme.isDarkMode
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight,
+                                                  maxLines: 3,
+                                              fw: 0),
+                                            
+                                           
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 2.0),
-                                    child: Divider(
-                                      color: Color.fromARGB(255, 212, 212, 212),
-                                      thickness: 0.5,
-                                    ),
-                                  ),
+                                   SizedBox(height: 10.0),
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 8.0),
                                     child: Row(
@@ -1234,16 +1196,16 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                       children: [
                                         Row(
                                           children: [
-                                            TextWidget.subText(
+                                            TextWidget.paraText(
                                                 color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : const Color(0xFF696969),
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
                                                 text: "Buy Qty : ",
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 1),
-                                            TextWidget.subText(
+                                                fw: 3),
+                                            TextWidget.paraText(
                                                 text:
                                                     "${double.tryParse(trade[index].bQTY)!.toInt()} @ ₹${double.tryParse(trade[index].bRATE)!.toStringAsFixed(2)}",
                                                 textOverflow:
@@ -1270,27 +1232,30 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                     : theme.isDarkMode
                                                         ? colors.colorWhite
                                                         : colors.colorBlack,
-                                                fw: 0),
+                                                fw: 3),
                                           ],
                                         ),
                                         Row(
                                           children: [
-                                            TextWidget.subText(
+                                            TextWidget.paraText(
                                                 color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : const Color(0xFF696969),
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
                                                 text: "  Net Qty : ",
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 1),
-                                            TextWidget.subText(
+                                                fw: 3),
+                                            TextWidget.paraText(
                                                 text:
                                                     "${double.tryParse(trade[index].updatedNETQTY)!.toInt()}  ",
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
+                                                     color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
+                                                fw: 3),
                                           ],
                                         ),
                                       ],
@@ -1304,16 +1269,16 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                       children: [
                                         Row(
                                           children: [
-                                            TextWidget.subText(
+                                            TextWidget.paraText(
                                                 color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : const Color(0xFF696969),
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
                                                 text: "Sell Qty : ",
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 1),
-                                            TextWidget.subText(
+                                                fw: 3),
+                                            TextWidget.paraText(
                                                 text:
                                                     "${double.tryParse(trade[index].sQTY)!.toInt()} @ ₹${double.tryParse(trade[index].sRATE)!.toStringAsFixed(2)}",
                                                 textOverflow:
@@ -1325,30 +1290,33 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                                                             .toInt() !=
                                                         0
                                                     ? Colors.red
-                                                    : theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                fw: 0),
+                                                    :        theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
+                                                fw: 3),
                                           ],
                                         ),
                                         Row(
                                           children: [
-                                            TextWidget.subText(
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : const Color(0xFF696969),
+                                            TextWidget.paraText(
+                                               color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
                                                 text: 'Realised : ',
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 1),
-                                            TextWidget.subText(
+                                                fw: 3),
+                                            TextWidget.paraText(
                                                 text:
                                                     "₹${double.parse(trade[index].realisedpnl).toStringAsFixed(2)}",
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
+                                                color :   theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
+                                                fw: 3),
                                           ],
                                         ),
                                       ],
@@ -1365,7 +1333,7 @@ class _CalenderpnlScreenState extends State<CalenderpnlScreen> {
                           color: theme.isDarkMode
                               ? const Color(0xffB5C0CF).withOpacity(.15)
                               : const Color(0xffF1F3F8),
-                          thickness: 7.0,
+                          thickness: 1.0,
                         );
                       },
                     ),
@@ -1624,11 +1592,12 @@ class _MonthlyGrid extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            monthName,
-            style: textStyle(theme.isDarkMode ? Colors.white : Colors.black, 14,
-                FontWeight.w600),
-          ),
+          TextWidget.subText(
+                                        text: monthName,
+                                        textOverflow: TextOverflow.ellipsis,
+                                        theme: theme.isDarkMode,
+                                        fw: 0),
+          
           const SizedBox(height: 6),
           Text(
             displayText,

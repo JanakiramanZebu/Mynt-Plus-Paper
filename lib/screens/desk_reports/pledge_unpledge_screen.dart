@@ -585,13 +585,13 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                       .symmetric(
                                                       horizontal: 10,
                                                       vertical: 5),
-                                                  child: TextWidget.paraText(
+                                                  child: TextWidget.subText(
                                                     text: "History",
                                                     theme: false,
                                                     color: theme.isDarkMode
                                                         ? colors.secondaryDark
                                                         : colors.secondaryLight,
-                                                    fw: 2,
+                                                    fw: 3,
                                                   ),
                                                 ),
                                               ),

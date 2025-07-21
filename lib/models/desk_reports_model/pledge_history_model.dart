@@ -104,6 +104,8 @@ class ReqList {
   String? quantity;
   String? segments;
   String? status;
+  String? reqid;
+  String? datetime;
 
   ReqList(
       {this.symbol,
@@ -111,7 +113,9 @@ class ReqList {
       this.isinreqid,
       this.quantity,
       this.segments,
-      this.status});
+      this.status,
+      this.reqid,
+      });
 
   ReqList.fromJson(Map<String, dynamic> json) {
     symbol = json['Symbol'];
@@ -120,6 +124,8 @@ class ReqList {
     quantity = json['quantity'];
     segments = json['segments'];
     status = json['status'];
+    datetime = json['datetime'];
+    reqid = json['reqid'];
   }
 
   Map<String, dynamic> toJson() {
@@ -130,6 +136,8 @@ class ReqList {
     data['quantity'] = this.quantity;
     data['segments'] = this.segments;
     data['status'] = this.status;
+    data['reqid'] = this.reqid;
+    data['datetime'] = this.datetime;
     return data;
   }
 }

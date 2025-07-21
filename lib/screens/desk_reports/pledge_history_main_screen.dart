@@ -182,8 +182,7 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen>
               ),
 
               Expanded(
-                child: TabBarView(
-                  physics: const NeverScrollableScrollPhysics(),
+                child: TabBarView( 
                   controller: _tabController,
                   children: [
                     PledgeHistoryScreen(),

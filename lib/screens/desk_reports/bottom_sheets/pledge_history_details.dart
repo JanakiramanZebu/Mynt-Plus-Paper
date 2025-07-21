@@ -87,7 +87,7 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                                               textOverflow:
                                                   TextOverflow.ellipsis,
                                               theme: theme.isDarkMode,
-                                              fw: 1),
+                                              fw: 0),
                                         ],
                                       ),
                                       Padding(
@@ -135,17 +135,10 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                                     ],
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 2.0),
-                                  child: Divider(
-                                    color: const Color.fromARGB(
-                                        255, 212, 212, 212),
-                                    thickness: 0.5,
-                                  ),
-                                ),
+                                
                                 Padding(
                                   padding: const EdgeInsets.only(
-                                      top: 2.0, left: 14.0, bottom: 4.0),
+                                      top: 8.0, left: 14.0,  ),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -155,24 +148,24 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                                             const EdgeInsets.only(right: 16.0),
                                         child: Row(
                                           children: [
-                                            TextWidget.subText(
+                                            TextWidget.paraText(
                                                 align: TextAlign.right,
                                                 text: "ISIN : ",
-                                                color: Color(0xFF696969),
+                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
-                                            TextWidget.subText(
+                                                fw: 3),
+                                            TextWidget.paraText(
                                                 align: TextAlign.right,
                                                 text: " ${value.isin}",
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
+                                                     color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
+                                                fw: 3),
                                           ],
                                         ),
                                       ),
@@ -181,24 +174,24 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                                             const EdgeInsets.only(right: 16.0),
                                         child: Row(
                                           children: [
-                                            TextWidget.subText(
+                                            TextWidget.paraText(
                                                 align: TextAlign.right,
                                                 text: "Req ID : ",
-                                                color: Color(0xFF696969),
+                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
-                                            TextWidget.subText(
+                                                fw: 3),
+                                            TextWidget.paraText(
                                                 align: TextAlign.right,
                                                 text: " ${value.isinreqid}",
-                                                color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
+                                                    color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
+                                                fw: 3),
                                           ],
                                         ),
                                       ),
@@ -217,24 +210,24 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                                             const EdgeInsets.only(right: 16.0),
                                         child: Row(
                                           children: [
-                                            TextWidget.subText(
+                                            TextWidget.paraText(
                                                 align: TextAlign.right,
                                                 text: "Qty : ",
-                                                color: Color(0xFF696969),
+                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
-                                            TextWidget.subText(
+                                                fw: 3),
+                                            TextWidget.paraText(
                                                 align: TextAlign.right,
                                                 text: " ${value.quantity}",
                                                 color: theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
+                                                fw: 3),
                                           ],
                                         ),
                                       ),
@@ -243,26 +236,26 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                                             const EdgeInsets.only(right: 16.0),
                                         child: Row(
                                           children: [
-                                            TextWidget.subText(
+                                            TextWidget.paraText(
                                                 align: TextAlign.right,
                                                 text: "Seg : ",
-                                                color: Color(0xFF696969),
+                                                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
                                                 textOverflow:
                                                     TextOverflow.ellipsis,
                                                 theme: theme.isDarkMode,
-                                                fw: 0),
+                                                fw: 3),
                                             Row(
                                               children: [
-                                                TextWidget.subText(
+                                                TextWidget.paraText(
                                                     align: TextAlign.right,
                                                     text: " ${value.segments}",
-                                                    color: theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
+                                                        color: theme.isDarkMode
+                                                    ? colors.textPrimaryDark
+                                                    : colors.textPrimaryLight,
                                                     textOverflow:
                                                         TextOverflow.ellipsis,
                                                     theme: theme.isDarkMode,
-                                                    fw: 0),
+                                                    fw: 3),
                                               ],
                                             ),
                                           ],
@@ -289,7 +282,7 @@ class _PledgeHistoryDetails extends State<PledgeHistoryDetails> {
                                 color: theme.isDarkMode
                                     ? const Color(0xffB5C0CF).withOpacity(.15)
                                     : const Color(0xffF1F3F8),
-                                thickness: 7.0,
+                                thickness: 1.0,
                               ),
                             );
                             // }else{

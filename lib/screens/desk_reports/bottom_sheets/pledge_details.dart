@@ -231,141 +231,186 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                 ],
               ),
               Padding(
-                padding:
-                    const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 8.0),
-                child: TextWidget.titleText(
-                    text: ledgerdata.screenpledge == 'pledge'
-                        ? "Pledge Details"
-                        : "Unpledge Details",
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    fw: 1),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  top: 2.0,
-                  bottom: 0.0,
-                ),
-                child: Divider(
-                  color: theme.isDarkMode
-                      ? const Color(0xffB5C0CF).withOpacity(.15)
-                      : const Color(0xffF1F3F8),
-                  thickness: 6.0,
-                ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
-                child: Column(
-                  children: [
-                    Row(
+                  padding: const EdgeInsets.only(
+                      top: 16.0, left: 16.0, bottom: 8.0, right: 16.0),
+                  child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TextWidget.paraText(
-                                text: 'Symbol : ',
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                textOverflow: TextOverflow.ellipsis,
-                                theme: theme.isDarkMode,
-                                fw: 3),
-                            TextWidget.paraText(
+                            TextWidget.titleText(
                                 text: widget.data.nSESYMBOL.toString(),
                                 color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
+                                    ? colors.textPrimaryDark
+                                    : colors.textPrimaryLight,
                                 textOverflow: TextOverflow.ellipsis,
                                 theme: theme.isDarkMode,
-                                fw: 3),
+                                fw: 0),
+                            SizedBox(height: 8.0),
+                            ledgerdata.screenpledge == 'pledge' ? 
+                            TextWidget.paraText(
+                                text:
+                                    "${double.tryParse(widget.data.estimated.toString())!.toStringAsFixed(2)} (${widget.data.estPercentage}%)",
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                fw: 3):TextWidget.paraText(
+                                text:
+                                    "${double.tryParse(widget.data.margin.toString())!.toStringAsFixed(2)}",
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                fw: 3) 
+                            ,
                           ],
                         ),
-                        Row(
-                          children: [
-                            TextWidget.paraText(
-                                text: 'Total Qty : ',
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                textOverflow: TextOverflow.ellipsis,
-                                theme: theme.isDarkMode,
-                                fw: 3),
-                            TextWidget.paraText(
-                                text: netValue.toString(),
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                textOverflow: TextOverflow.ellipsis,
-                                theme: theme.isDarkMode,
-                                fw: 3),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              TextWidget.paraText(
-                                  text: 'Mar / Est : ',
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
-                                  fw: 3),
-                              TextWidget.paraText(
-                                  text:
-                                      "${double.tryParse(widget.data.estimated.toString())!.toStringAsFixed(2)} (${widget.data.estPercentage}%)",
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
-                                  fw: 3),
-                            ],
-                          ),
-                          if ((double.tryParse(widget.data.cOLQTY.toString())!
-                                      .toInt() >
-                                  0) &&
-                              ledgerdata.screenpledge == 'pledge')
-                            Row(
-                              children: [
-                                TextWidget.subText(
-                                    text: 'Pledged Qty : ',
-                                    color: Color(0xFF696969),
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    fw: 0),
-                                TextWidget.subText(
-                                    text:
-                                        "${double.tryParse(widget.data.cOLQTY.toString())!.toInt()} ",
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    fw: 1),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                        TextWidget.titleText(
+                            text: netValue.toString(),
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                      ])),
+              // Padding(
+              //   padding:
+              //       const EdgeInsets.only(top: 16.0, left: 16.0, bottom: 8.0),
+              //   child: TextWidget.titleText(
+              //       text: ledgerdata.screenpledge == 'pledge'
+              //           ? "Pledge Details"
+              //           : "Unpledge Details",
+              //       textOverflow: TextOverflow.ellipsis,
+              //       theme: theme.isDarkMode,
+              //       color: theme.isDarkMode
+              //           ? colors.textPrimaryDark
+              //           : colors.textPrimaryLight,
+              //       fw: 1),
+              // ),
+              // Padding(
+              //   padding: const EdgeInsets.only(
+              //     top: 2.0,
+              //     bottom: 0.0,
+              //   ),
+              //   child: Divider(
+              //     color: theme.isDarkMode
+              //         ? const Color(0xffB5C0CF).withOpacity(.15)
+              //         : const Color(0xffF1F3F8),
+              //     thickness: 6.0,
+              //   ),
+              // ),
+              // Padding(
+              //   padding:
+              //       const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
+              //   child: Column(
+              //     children: [
+              //       Row(
+              //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //         children: [
+              //           Row(
+              //             children: [
+              //               TextWidget.paraText(
+              //                   text: 'Symbol : ',
+              //                   color: theme.isDarkMode
+              //                       ? colors.textSecondaryDark
+              //                       : colors.textSecondaryLight,
+              //                   textOverflow: TextOverflow.ellipsis,
+              //                   theme: theme.isDarkMode,
+              //                   fw: 3),
+              //               TextWidget.paraText(
+              //                   text: widget.data.nSESYMBOL.toString(),
+              //                   color: theme.isDarkMode
+              //                       ? colors.textSecondaryDark
+              //                       : colors.textSecondaryLight,
+              //                   textOverflow: TextOverflow.ellipsis,
+              //                   theme: theme.isDarkMode,
+              //                   fw: 3),
+              //             ],
+              //           ),
+              //           // Row(
+              //           //   children: [
+              //           //     TextWidget.paraText(
+              //           //         text: 'Total Qty : ',
+              //           //         color: theme.isDarkMode
+              //           //             ? colors.textSecondaryDark
+              //           //             : colors.textSecondaryLight,
+              //           //         textOverflow: TextOverflow.ellipsis,
+              //           //         theme: theme.isDarkMode,
+              //           //         fw: 3),
+              //           //     TextWidget.paraText(
+              //           //         text: netValue.toString(),
+              //           //         color: theme.isDarkMode
+              //           //             ? colors.textSecondaryDark
+              //           //             : colors.textSecondaryLight,
+              //           //         textOverflow: TextOverflow.ellipsis,
+              //           //         theme: theme.isDarkMode,
+              //           //         fw: 3),
+              //           //   ],
+              //           // ),
+              //         ],
+              //       ),
+              //       Padding(
+              //         padding: const EdgeInsets.only(top: 12.0),
+              //         child: Row(
+              //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //           children: [
+              //             Row(
+              //               children: [
+              //                 TextWidget.paraText(
+              //                     text: 'Mar / Est : ',
+              //                     color: theme.isDarkMode
+              //                         ? colors.textSecondaryDark
+              //                         : colors.textSecondaryLight,
+              //                     textOverflow: TextOverflow.ellipsis,
+              //                     theme: theme.isDarkMode,
+              //                     fw: 3),
+              //                 TextWidget.paraText(
+              //                     text:
+              //                         "${double.tryParse(widget.data.estimated.toString())!.toStringAsFixed(2)} (${widget.data.estPercentage}%)",
+              //                     textOverflow: TextOverflow.ellipsis,
+              //                     theme: theme.isDarkMode,
+              //                     fw: 3),
+              //               ],
+              //             ),
+              //             if ((double.tryParse(widget.data.cOLQTY.toString())!
+              //                         .toInt() >
+              //                     0) &&
+              //                 ledgerdata.screenpledge == 'pledge')
+              //               Row(
+              //                 children: [
+              //                   TextWidget.subText(
+              //                       text: 'Pledged Qty : ',
+              //                       color: Color(0xFF696969),
+              //                       textOverflow: TextOverflow.ellipsis,
+              //                       theme: theme.isDarkMode,
+              //                       fw: 0),
+              //                   TextWidget.subText(
+              //                       text:
+              //                           "${double.tryParse(widget.data.cOLQTY.toString())!.toInt()} ",
+              //                       textOverflow: TextOverflow.ellipsis,
+              //                       theme: theme.isDarkMode,
+              //                       fw: 1),
+              //                 ],
+              //               ),
+              //           ],
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
               Padding(
                 padding:
-                    const EdgeInsets.only(left: 16.0, right: 16.0, top: 24.0),
+                    const EdgeInsets.only(left: 16.0, right: 16.0, top: 10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidget.subText(
+                    TextWidget.paraText(
                         text:
                             "${ledgerdata.screenpledge == 'pledge' ? 'Pledge' : 'Unpledge'} Qty up to ${netValue.toString()}",
                         textOverflow: TextOverflow.ellipsis,
                         theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
                         fw: 3),
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
@@ -412,30 +457,9 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                           fw: 0),
                     ),
                     ledgerdata.screenpledge == 'pledge'
-                        ? Container(
-                            margin: const EdgeInsets.symmetric(vertical: 6),
-                            alignment: Alignment.centerLeft,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 8),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(6),
-                                color: const Color(0xffFCEFD4)),
-                            child: TextWidget.captionText(
-                                text:
-                                    "Note: Please ensure that you submit separate pledge requests for MTF and other segments (FO, CD, and Commodities). Combining pledges for MTF and other segments is not permitted. However, combining pledges for FO, CD, and Commodities segments is allowed.",
-                                textOverflow: TextOverflow.ellipsis,
-                                theme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                maxLines: 7,
-                                fw: 3),
-                          )
-                        : SizedBox(),
-                    ledgerdata.screenpledge == 'pledge'
                         ? Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: TextWidget.subText(
+                            padding: const EdgeInsets.only(),
+                            child: TextWidget.paraText(
                                 text:
                                     "Which segment do you want to pledge the stocks",
                                 textOverflow: TextOverflow.ellipsis,
@@ -449,7 +473,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     ledgerdata.screenpledge == 'pledge'
                         ? Padding(
                             padding:
-                                const EdgeInsets.only(top: 12.0, bottom: 16.0),
+                                const EdgeInsets.only(top: 12.0, bottom: 12.0),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton2(
                                 menuItemStyleData: MenuItemStyleData(
@@ -457,7 +481,6 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                       List.filled(dropdownItems.length, 40),
                                 ),
                                 buttonStyleData: ButtonStyleData(
-                                  
                                   height: 44,
                                   decoration: BoxDecoration(
                                     border: Border.all(color: colors.colorBlue),
@@ -516,6 +539,27 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                             ),
                           )
                         : SizedBox(),
+                    ledgerdata.screenpledge == 'pledge'
+                        ? Container(
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 8),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(6),
+                                color: const Color(0xffFCEFD4)),
+                            child: TextWidget.paraText(
+                                text:
+                                    "Note: Please ensure that you submit separate pledge requests for MTF and other segments (FO, CD, and Commodities). Combining pledges for MTF and other segments is not permitted. However, combining pledges for FO, CD, and Commodities segments is allowed.",
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                maxLines: 7,
+                                fw: 3),
+                          )
+                        : SizedBox(),
                     ledgerdata.dayforpledgeunpledge == 'Saturday' ||
                             ledgerdata.dayforpledgeunpledge == 'Sunday'
                         ? Container(
@@ -527,10 +571,16 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(6),
                                 color: const Color(0xffFCEFD4)),
-                            child: Text(
-                                "Note: Pledge requests process on exchange working days, submissions on weekends or exchange holidays are handled the next working day.",
-                                style: textStyle(
-                                    colors.colorBlack, 11, FontWeight.w500)),
+                            child: TextWidget.paraText(
+                                text:
+                                    "Note: Pledge requests process on exchange working days, submissions on weekends or exchange holidays are handled the next working day.",
+                                textOverflow: TextOverflow.ellipsis,
+                                theme: theme.isDarkMode,
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                maxLines: 7,
+                                fw: 3),
                           )
                         : SizedBox(),
                     Padding(
@@ -543,19 +593,21 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                               style: ElevatedButton.styleFrom(
                                   elevation: 0,
                                   shadowColor: Colors.transparent,
-                                  backgroundColor: ((ledgerdata.screenpledge ==
-                                                  'unpledge' &&
-                                              (ledgerdata.pledgesubtn ==
-                                                  false)) ||
-                                          (ledgerdata.screenpledge == 'pledge' &&
-                                              (ledgerdata.pledgesubtn == false ||
-                                                  widget.data.segmentselect
-                                                          .toString() ==
-                                                      "null")))
-                                      ? colors.colorbluegrey
-                                      : theme.isDarkMode
-                                          ? colors.primaryDark
-                                          : colors.primaryLight,
+                                  backgroundColor:
+                                      ((ledgerdata.screenpledge == 'unpledge' &&
+                                                  (ledgerdata.pledgesubtn ==
+                                                      false)) ||
+                                              (ledgerdata.screenpledge ==
+                                                      'pledge' &&
+                                                  (ledgerdata.pledgesubtn ==
+                                                          false ||
+                                                      widget.data.segmentselect
+                                                              .toString() ==
+                                                          "null")))
+                                          ? colors.colorbluegrey
+                                          : theme.isDarkMode
+                                              ? colors.primaryDark
+                                              : colors.primaryLight,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5))),
                               onPressed: () {
