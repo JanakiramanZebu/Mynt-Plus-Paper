@@ -76,8 +76,8 @@ class AuthProvider extends DefaultChangeNotifier {
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
 
-  Map _ordgrefis = {};
-  Map get savedOrderPreference => _ordgrefis;
+  Map _savedOrderPreference = {};
+  Map get savedOrderPreference => _savedOrderPreference;
 
   setChangetotp(bool value) async {
     if (_totp == value) return; // Prevent unnecessary updates
@@ -1900,31 +1900,31 @@ class AuthProvider extends DefaultChangeNotifier {
   }
 
   setPrefOrderPrefer(BuildContext context) async {
-    Map getlocal = await api.setOrderprefer({}, false, context);
+    Map getsavedOrderPreference = await api.setOrderprefer({}, false, context);
     Map local = {};
     String getapplocal = "";
     if (pref.showOrderpref != null) {
       getapplocal = pref.showOrderpref!;
     }
 
-    if (getlocal.isNotEmpty &&
-        getlocal.containsKey("metadata") &&
-        getlocal["metadata"].containsKey("expos")) {
-      _ordgrefis = getlocal['metadata'];
+    if (getsavedOrderPreference.isNotEmpty &&
+        getsavedOrderPreference.containsKey("metadata") &&
+        getsavedOrderPreference["metadata"].containsKey("expos")) {
+      _savedOrderPreference = getsavedOrderPreference['metadata'];
     } else if ((getapplocal.isNotEmpty && getapplocal.contains("expos"))) {
       local = {
         "clientid": pref.clientId,
         "metadata": jsonDecode(getapplocal),
         "source": "MOB"
       };
-      _ordgrefis = jsonDecode(getapplocal);
+      _savedOrderPreference = jsonDecode(getapplocal);
       await api.setOrderprefer(local, true, context);
     } else {
       local = {
         "clientid": pref.clientId,
         "metadata": {
           "prc": "Limit",
-          "prd": "Intraday",
+          "prd": "Delivery",
           "qtypref": "qty",
           "qty": "1",
           "validity": "DAY",
@@ -1933,7 +1933,7 @@ class AuthProvider extends DefaultChangeNotifier {
         },
         "source": "MOB"
       };
-      _ordgrefis = local['metadata'];
+      _savedOrderPreference = local['metadata'];
       await api.setOrderprefer(local, true, context);
       // String jsonString = jsonEncode(local);
       // await pref.setOrderprefer("ord_prf_${pref.clientId}", jsonString);

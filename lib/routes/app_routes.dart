@@ -652,11 +652,11 @@ class AppRoutes {
           beginOffset: const Offset(-1.0, 0.0),
         );
 
-      case Routes.repeatOrd:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => RepeatOrder(orderBookList: args),
-          beginOffset: const Offset(0.0, 1.0),
-        );
+      // case Routes.repeatOrd:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => RepeatOrder(orderBookList: args),
+      //     beginOffset: const Offset(0.0, 1.0),
+      //   );
 
       case Routes.notificationpage:
         return _createRoute(

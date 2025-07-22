@@ -411,9 +411,9 @@ class _OrderConfirmationScreenState extends ConsumerState<OrderConfirmationScree
       case 'F':
         return 'MTF';
       case 'H':
-        return 'Cover Order';
+        return 'CO - BO Order';
       case 'B':
-        return 'Bracket Order';
+        return 'CO - BO Order';
       default:
         return productCode;
     }
