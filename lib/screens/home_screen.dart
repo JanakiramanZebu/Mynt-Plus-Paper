@@ -1243,7 +1243,7 @@ class _PortfolioActions extends ConsumerWidget {
       // return _OrdersActions();
     } else if (selectedTab == 3) {
       // Funds tab
-      return _FundsWebActions();
+      // return _FundsWebActions();
     }
 
     return SizedBox.shrink();

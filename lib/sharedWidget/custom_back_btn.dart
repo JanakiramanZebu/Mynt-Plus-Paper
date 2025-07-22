@@ -17,8 +17,12 @@ class CustomBackBtn extends ConsumerWidget {
                 clipBehavior: Clip.hardEdge,
                 child: InkWell(
                   customBorder: const CircleBorder(),
-                  splashColor: Colors.grey.withOpacity(0.4),
-                  highlightColor: Colors.grey.withOpacity(0.2),
+                splashColor: theme.isDarkMode
+                                                  ? colors.splashColorDark
+                                                  : colors.splashColorLight,
+                                              highlightColor: theme.isDarkMode
+                                                  ? colors.highlightDark
+                                                  : colors.highlightLight,
                   onTap: () {                  
                     Navigator.pop(context);
                   },

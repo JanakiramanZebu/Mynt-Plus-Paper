@@ -61,7 +61,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                     theme: theme.isDarkMode,
                     fw: 1),
               ),
-              ledgerdata.ledgerBillData!.expenses == null
+              ledgerdata.ledgerBillData?.expenses == null
                   ? Center(
                       child: Padding(
                       padding: EdgeInsets.only(top: 60),
@@ -70,6 +70,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                   : Expanded(
                       // height: screenheight * 0.5,
                       child: SingleChildScrollView(
+                         controller: scrollController,
                         child: Column(
                           children: [
                             const ListDivider(),
@@ -80,11 +81,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                     top: 16.0, left: 16.0, right: 16.0),
                                 child: Column(
                                   children: [
-                                    for (var item in ledgerdata
-                                                .ledgerBillData!.expenses! !=
-                                            null
-                                        ? ledgerdata.ledgerBillData!.expenses!
-                                        : [])
+                                    for (var item in ledgerdata.ledgerBillData?.expenses ?? [])
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(bottom: 20),
@@ -343,13 +340,7 @@ class _LedgerBillBottomState extends State<LedgerBillBottom> {
                                     top: 4.0,
                                     bottom: 0.0,
                                   ),
-                                  child: Divider(
-                                    color: theme.isDarkMode
-                                        ? const Color(0xffB5C0CF)
-                                            .withOpacity(.15)
-                                        : const Color(0xffF1F3F8),
-                                    thickness: 7.0,
-                                  ),
+                                  child:ListDivider(),
                                 );
                               },
                             )

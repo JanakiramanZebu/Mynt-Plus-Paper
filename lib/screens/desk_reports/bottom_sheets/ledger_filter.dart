@@ -4,14 +4,18 @@ import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/screens/authentication/password/forgot_pass_unblock_user.dart';
 
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../sharedWidget/custom_drag_handler.dart';
+import '../../../sharedWidget/list_divider.dart';
+import 'package:flutter_svg/svg.dart';
 
 enum SingingCharacter {
-  all,
   receipt,
   journal,
   payment,
   systemjournal,
+  billmargin, // Add this
   eq,
   fno,
   com,
@@ -27,249 +31,302 @@ enum SingingCharacter {
   agts
 }
 
-class LedgerFilter extends StatefulWidget {
+class LedgerFilter extends ConsumerStatefulWidget {
   const LedgerFilter({super.key});
 
   @override
-  State<LedgerFilter> createState() => _LedgerFilter();
+  ConsumerState<LedgerFilter> createState() => _LedgerFilter();
 }
 
-// SingingCharacter? _character;
+class _LedgerFilter extends ConsumerState<LedgerFilter> {
+  Set<SingingCharacter> selectedLedgerFilters = {};
+  bool _isLoading = false;
 
-class _LedgerFilter extends State<LedgerFilter> {
   @override
   void initState() {
-    setState(() {
-      // _character = context.read(ledgerProvider).filterval;
-    });
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentFilters = ref.read(ledgerProvider).selectedFilters;
+      final allFilters = {
+        SingingCharacter.receipt,
+        SingingCharacter.payment,
+        SingingCharacter.journal,
+        SingingCharacter.systemjournal,
+        SingingCharacter.billmargin
+      };
+      setState(() {
+        if (currentFilters.length == allFilters.length &&
+            allFilters.difference(currentFilters).isEmpty) {
+          // If provider's filters are 'all', show all selected
+          selectedLedgerFilters = allFilters;
+        } else if (currentFilters.isEmpty) {
+          // First time: select all
+          selectedLedgerFilters = allFilters;
+        } else {
+          selectedLedgerFilters = Set.from(currentFilters);
+        }
+      });
+    });
   }
 
+  @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenheight = MediaQuery.of(context).size.height;
+    final ledgerprovider = ref.watch(ledgerProvider);
+    final theme = ref.watch(themeProvider);
 
-    return Consumer(builder: (context, WidgetRef ref, _) {
-      final ledgerprovider = ref.watch(ledgerProvider);
-      final filval = ledgerprovider.filterval;
-      final theme = ref.watch(themeProvider);
-
-      return DraggableScrollableSheet(
-        initialChildSize: ledgerprovider.currentfilterpage == 'tradebook'
-            ? 0.58
-            : ledgerprovider.currentfilterpage == 'pdfdownload'
-                ? 0.65
-                : 0.5, // Adjust for large/small screens
-        minChildSize: 0.05, // Adjust min size
-        maxChildSize: 0.99, // Always near full screen
-        expand: false,
-        builder: (BuildContext context, ScrollController scrollController) {
-          return Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                color: theme.isDarkMode
-                    ? Color.fromARGB(255, 0, 0, 0)
-                    : const Color(0xffF1F3F8)),
-            child: Column(
+    return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: theme.isDarkMode ? Colors.black : Colors.white,
+          boxShadow: const [
+            BoxShadow(
+                color: Color(0xff999999),
+                blurRadius: 4.0,
+                offset: Offset(2.0, 0.0))
+          ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // const CustomDragHandler(),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  color: const Color.fromARGB(255, 219, 218, 218),
-                  width: 40,
-                  height: 4.0,
-                  padding:
-                      EdgeInsets.only(top: 10, bottom: 25, left: 20, right: 20),
-                  margin: EdgeInsets.only(top: 16),
-                ),
-                Column(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0, left: 25.0),
-                          child: Text(
-                            "Filter",
-                            style: textStyle(
-                                theme.isDarkMode
-                                    ? colors.colorWhite
-                                    : colors.colorBlack,
-                                20,
-                                FontWeight.w500),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Divider(
-                            color: const Color.fromARGB(255, 212, 212, 212),
-                            thickness: 1,
-                          ),
-                        ),
-                      ],
+                TextWidget.titleText(
+                    text: "Filter",
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    theme: theme.isDarkMode,
+                    fw: 1),
+                Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 150));
+                      Navigator.pop(context);
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    splashColor: theme.isDarkMode
+                        ? Colors.white.withOpacity(0.15)
+                        : Colors.black.withOpacity(0.15),
+                    highlightColor: theme.isDarkMode
+                        ? Colors.white.withOpacity(0.08)
+                        : Colors.black.withOpacity(0.08),
+                    child: Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 22,
+                        color: theme.isDarkMode
+                            ? const Color(0xffBDBDBD)
+                            : colors.colorGrey,
+                      ),
                     ),
-                    // Text("${ledgerprovider.currentfilterpage}"),
-                    if (ledgerprovider.currentfilterpage == 'ledger') ...[
-                      radiobtn(
-                          'All', SingingCharacter.all, ledgerprovider, theme),
-                      radiobtn('Receipt', SingingCharacter.receipt,
-                          ledgerprovider, theme),
-                      radiobtn('Payment', SingingCharacter.payment,
-                          ledgerprovider, theme),
-                      radiobtn('Journal', SingingCharacter.journal,
-                          ledgerprovider, theme),
-                      radiobtn('System Journal', SingingCharacter.systemjournal,
-                          ledgerprovider, theme),
-                    ] else if (ledgerprovider.currentfilterpage == 'pnl') ...[
-                      radiobtn(
-                          'All', SingingCharacter.all, ledgerprovider, theme),
-                      radiobtn(
-                          'Equity', SingingCharacter.eq, ledgerprovider, theme),
-                      radiobtn(
-                          'FNO', SingingCharacter.fno, ledgerprovider, theme),
-                      radiobtn('Commodity', SingingCharacter.com,
-                          ledgerprovider, theme),
-                      radiobtn('Currency', SingingCharacter.cur, ledgerprovider,
-                          theme),
-                    ] else if (ledgerprovider.currentfilterpage ==
-                        'tradebook') ...[
-                      radiobtn(
-                          'All', SingingCharacter.all, ledgerprovider, theme),
-                      radiobtn(
-                          'Equity', SingingCharacter.eq, ledgerprovider, theme),
-                      radiobtn(
-                          'FNO', SingingCharacter.fno, ledgerprovider, theme),
-                      radiobtn('Commodity', SingingCharacter.com,
-                          ledgerprovider, theme),
-                      radiobtn('Currency', SingingCharacter.cur, ledgerprovider,
-                          theme),
-                      radiobtn(
-                          'Buy', SingingCharacter.buy, ledgerprovider, theme),
-                      radiobtn(
-                          'Sell', SingingCharacter.sell, ledgerprovider, theme),
-                    ] else if (ledgerprovider.currentfilterpage ==
-                        'pdfdownload') ...[
-                      radiobtn(
-                          'All', SingingCharacter.all, ledgerprovider, theme),
-                      radiobtn(
-                          'Margin Statement',
-                          SingingCharacter.marginstatement,
-                          ledgerprovider,
-                          theme),
-                      radiobtn('Contract', SingingCharacter.contract,
-                          ledgerprovider, theme),
-                      radiobtn('Weekly Statement', SingingCharacter.weekstate,
-                          ledgerprovider, theme),
-                      radiobtn(
-                          'CN', SingingCharacter.cn, ledgerprovider, theme),
-                      radiobtn('Ledger Detail', SingingCharacter.ledgerdetails,
-                          ledgerprovider, theme),
-                      radiobtn('Retention Report', SingingCharacter.rr,
-                          ledgerprovider, theme),
-                      radiobtn('AGTS Report', SingingCharacter.agts,
-                          ledgerprovider, theme),
-                    ],
-
-                    // ListTile(
-                    //   title: const Text('All'),
-                    //   leading: Radio<SingingCharacter>(
-                    //     value: SingingCharacter.all,
-                    //     groupValue: _character,
-                    //     activeColor: Colors.black,
-                    //     onChanged: (SingingCharacter? value) {
-                    //       setState(() {
-                    //         _character = value;
-                    //       });
-                    //     },
-                    //   ),
-                    // ),
-                    // ListTile(
-                    //   title: const Text('Receipt'),
-                    //   leading: Radio<SingingCharacter>(
-                    //     value: SingingCharacter.receipt,
-                    //     groupValue: _character,
-                    //     activeColor: Colors.black,
-                    //     onChanged: (SingingCharacter? value) {
-                    //       setState(() {
-                    //         _character = value;
-                    //       });
-                    //     },
-                    //   ),
-                    // ),
-                    // ListTile(
-                    //   title: const Text('Payment'),
-                    //   leading: Radio<SingingCharacter>(
-                    //     value: SingingCharacter.payment,
-                    //     groupValue: _character,
-                    //     activeColor: Colors.black,
-                    //     onChanged: (SingingCharacter? value) {
-                    //       setState(() {
-                    //         _character = value;
-                    //       });
-                    //     },
-                    //   ),
-                    // ),
-                    // ListTile(
-                    //   title: const Text('Journal'),
-                    //   leading: Radio<SingingCharacter>(
-                    //     activeColor: Colors.black,
-                    //     value: SingingCharacter.journal,
-                    //     groupValue: _character,
-                    //     onChanged: (SingingCharacter? value) {
-                    //       setState(() {
-                    //         _character = value;
-                    //       });
-                    //     },
-                    //   ),
-                    // ),
-                    // ListTile(
-                    //   title: const Text('System Journal'),
-                    //   leading: Radio<SingingCharacter>(
-                    //     value: SingingCharacter.systemjournal,
-                    //     activeColor: Colors.black,
-                    //     groupValue: _character,
-                    //     onChanged: (SingingCharacter? value) {
-                    //       setState(() {
-                    //         _character = value;
-                    //       });
-                    //     },
-                    //   ),
-                    // ),
-                  ],
+                  ),
                 ),
-                // Container(
-                //     height: 45,
-                //     width: screenWidth - 50,
-                //     margin: const EdgeInsets.only(right: 12, top: 15),
-                //     child: ElevatedButton(
-                //         style: ElevatedButton.styleFrom(
-                //             elevation: 0,
-                //             shadowColor: Colors.transparent,
-                //             backgroundColor: colors.colorBlack,
-                //             shape: RoundedRectangleBorder(
-                //                 borderRadius: BorderRadius.circular(50))),
-                //         onPressed: () async {
-                //           Navigator.pop(context);
-                //         },
-                //         child: Text("Get",
-                //             textAlign: TextAlign.center,
-                //             style: textStyle(
-                //                 colors.colorWhite, 12, FontWeight.w500)))),
               ],
             ),
-          );
+          ),
+          // const SizedBox(height: 10),
+          const ListDivider(),
+          Flexible(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height *
+                    0.6, // Max 60% of screen height
+              ),
+              child: ListView(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                children: [
+                  if (ledgerprovider.currentfilterpage == 'ledger') ...[
+                    checkboxTile('Receipt', SingingCharacter.receipt, theme),
+                    checkboxTile('Payment', SingingCharacter.payment, theme),
+                    checkboxTile('Journal', SingingCharacter.journal, theme),
+                    checkboxTile('System Journal', SingingCharacter.systemjournal, theme),
+                    checkboxTile('Bill Margin', SingingCharacter.billmargin, theme),
+                    const ListDivider(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0, vertical: 8),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          minimumSize: const Size(0, 40),
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                setState(() {
+                                  _isLoading = true;
+                                });
+                                await Future.delayed(const Duration(milliseconds: 300));
+                                ledgerprovider.applyLedgerMultiFilter(
+                                    context, selectedLedgerFilters.toList());
+                                Future.microtask(() => Navigator.pop(context));
+                              },
+                        child: _isLoading
+                            ? SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      colors.colorWhite),
+                                ),
+                              )
+                            : TextWidget.subText(
+                                text: "Apply",
+                                color: colors.colorWhite,
+                                theme: theme.isDarkMode,
+                                fw: 2,
+                              ),
+                      ),
+                    ),
+                  ] else if (ledgerprovider.currentfilterpage == 'pnl') ...[
+                        radiobtn(
+                            'Equity', SingingCharacter.eq, ledgerprovider, theme),
+                        const ListDivider(),
+                        radiobtn(
+                            'FNO', SingingCharacter.fno, ledgerprovider, theme),
+                        const ListDivider(),
+                        radiobtn('Commodity', SingingCharacter.com, ledgerprovider,
+                            theme),
+                        const ListDivider(),
+                        radiobtn('Currency', SingingCharacter.cur, ledgerprovider,
+                            theme),
+                      ] else if (ledgerprovider.currentfilterpage ==
+                          'tradebook') ...[
+                        radiobtn(
+                            'Equity', SingingCharacter.eq, ledgerprovider, theme),
+                        const ListDivider(),
+                        radiobtn(
+                            'FNO', SingingCharacter.fno, ledgerprovider, theme),
+                        const ListDivider(),
+                        radiobtn('Commodity', SingingCharacter.com, ledgerprovider,
+                            theme),
+                        const ListDivider(),
+                        radiobtn('Currency', SingingCharacter.cur, ledgerprovider,
+                            theme),
+                        const ListDivider(),
+                        radiobtn(
+                            'Buy', SingingCharacter.buy, ledgerprovider, theme),
+                        const ListDivider(),
+                        radiobtn(
+                            'Sell', SingingCharacter.sell, ledgerprovider, theme),
+                      ] else if (ledgerprovider.currentfilterpage ==
+                          'pdfdownload') ...[
+                        radiobtn(
+                            'Margin Statement',
+                            SingingCharacter.marginstatement,
+                            ledgerprovider,
+                            theme),
+                        const ListDivider(),
+                        radiobtn('Contract', SingingCharacter.contract,
+                            ledgerprovider, theme),
+                        const ListDivider(),
+                        radiobtn('Weekly Statement', SingingCharacter.weekstate,
+                            ledgerprovider, theme),
+                        const ListDivider(),
+                        radiobtn('CN', SingingCharacter.cn, ledgerprovider, theme),
+                        const ListDivider(),
+                        radiobtn('Ledger Detail', SingingCharacter.ledgerdetails,
+                            ledgerprovider, theme),
+                        const ListDivider(),
+                        radiobtn('Retention Report', SingingCharacter.rr,
+                            ledgerprovider, theme),
+                        const ListDivider(),
+                        radiobtn('AGTS Report', SingingCharacter.agts,
+                            ledgerprovider, theme),
+                      ],
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      
+    
+  }
+
+  Widget checkboxTile(
+      String label, SingingCharacter value, ThemesProvider theme) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        splashColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.15)
+            : Colors.black.withOpacity(0.15),
+        highlightColor: theme.isDarkMode
+            ? Colors.white.withOpacity(0.08)
+            : Colors.black.withOpacity(0.08),
+        onTap: () {
+          setState(() {
+            if (selectedLedgerFilters.contains(value)) {
+              selectedLedgerFilters.remove(value);
+            } else {
+              selectedLedgerFilters.add(value);
+            }
+          });
         },
-      );
-    });
+        child: ListTile(
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          minLeadingWidth: 24,
+          leading: SizedBox(
+            width: 20,
+            height: 20,
+            child: SvgPicture.asset(
+              theme.isDarkMode
+                  ? selectedLedgerFilters.contains(value)
+                      ? assets.darkCheckedboxIcon
+                      : assets.darkCheckboxIcon
+                  : selectedLedgerFilters.contains(value)
+                      ? assets.ckeckedboxIcon
+                      : assets.ckeckboxIcon,
+              width: 20,
+              height: 20,
+              fit: BoxFit.contain,
+            ),
+          ),
+          title: TextWidget.subText(
+            text: label,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            theme: theme.isDarkMode,
+          ),
+        ),
+      ),
+    );
   }
 
   ListTile radiobtn(String test, SingingCharacter value,
       LDProvider ledgerprovider, ThemesProvider theme) {
     return ListTile(
-      title: Text(
-        test,
-        style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            14,
-            FontWeight.w500),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      dense: true,
+      minLeadingWidth: 24,
+      title: TextWidget.subText(
+        text: test,
+        color:
+            theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+        theme: theme.isDarkMode,
+        fw: 0,
       ),
       leading: Radio<SingingCharacter>(
         value: value,
@@ -280,7 +337,6 @@ class _LedgerFilter extends State<LedgerFilter> {
         },
       ),
       onTap: () {
-        // Trigger the same action when tapping on the tile
         _handleSelection(value, ledgerprovider);
       },
     );
@@ -290,7 +346,7 @@ class _LedgerFilter extends State<LedgerFilter> {
     if (newvalue != null) {
       ledgerprovider.setfilterval = newvalue;
       ledgerprovider.ledgerfiltercall(context, newvalue);
-      Navigator.pop(context);
+      Future.microtask(() => Navigator.pop(context));
     }
   }
 }

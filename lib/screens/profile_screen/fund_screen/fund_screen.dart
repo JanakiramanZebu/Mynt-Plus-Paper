@@ -486,7 +486,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                   children: [
                                     TextWidget.subText(
                                       text:
-                                          "Available Bal (${formatIndianCurrency(funds.fundDetailModel?.avlMrg ?? "0.00")}) ",
+                                          "Available Balance (${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")}) ",
                                       theme: theme.isDarkMode,
                                       color: colors.textPrimaryLight,
                                     ),
@@ -807,108 +807,103 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                 separatorBuilder: (context, index) =>
                                     const ListDivider(),
                                 itemBuilder: (context, index) {
-                                  bool shouldDisable = fund.intValue > 100000;
-                                  bool isDisabled = shouldDisable &&
-                                      (index == 0 || index == 1);
+                                  bool isUpiPayment = index == 0 || index == 1; // UPI Apps and UPI ID
+                                  bool isAmountAbove1Lakh = fund.intValue > 100000;
 
                                   return Column(
                                     children: [
                                       if (index == 0) const ListDivider(),
                                       InkWell(
                                         onTap: () {
+                                          if (fund.amount.text.isEmpty || fund.intValue < 50) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              warningMessage(context, "Min amount ₹50")
+                                            );
+                                            return;
+                                          }
+
+                                          // Check for UPI payment restriction above 1 lakh
+                                          if (isUpiPayment && isAmountAbove1Lakh) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              warningMessage(context, "UPI payments are not allowed for amounts above ₹1,00,000. Please use Net Banking.")
+                                            );
+                                            return;
+                                          }
+
+                                          // Proceed with payment based on method
                                           if (index == 0) {
-                                            if (fund.amount.text.isEmpty ||
-                                                fund.intValue < 50) {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(warningMessage(
-                                                      context,
-                                                      "Min amount ₹50"));
+                                            if (defaultTargetPlatform == TargetPlatform.android) {
+                                              _handleAndroidUpiPayment(context, fund);
                                             } else {
-                                              if (defaultTargetPlatform ==
-                                                  TargetPlatform.android) {
-                                                _handleAndroidUpiPayment(
-                                                    context, fund);
-                                              } else {
-                                                _handleIosUpiPayment(context,
-                                                    fund, availableApps, theme);
-                                              }
+                                              _handleIosUpiPayment(context, fund, availableApps, theme);
                                             }
                                           } else if (index == 1) {
-                                            if (fund.amount.text.isEmpty ||
-                                                fund.intValue < 50) {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(warningMessage(
-                                                      context,
-                                                      "Min amount ₹50"));
-                                            } else {
-                                              _showUpiIdForm(
-                                                  context, fund, theme, colors);
-                                            }
+                                            _showUpiIdForm(context, fund, theme, colors);
                                           } else if (index == 2) {
-                                            if (fund.amount.text.isEmpty ||
-                                                fund.intValue < 50 
-                                               ) {
-                                              if (fund.intValue > 5000000) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(warningMessage(
-                                                        context,
-                                                        "Max amount ₹5,000,000"));
-                                              } else {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                        warningMessage(context,
-                                                            "Min amount ₹50"));
-                                              }
+                                            if (fund.intValue > 5000000) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                warningMessage(context, "Max amount ₹5,000,000")
+                                              );
                                             } else {
-                                              _handleRazorpayPayment(
-                                                  context, fund);
+                                              _handleRazorpayPayment(context, fund);
                                             }
                                           }
                                         },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16, vertical: 24),
-                                          child: Row(
-                                            children: [
-                                              SvgPicture.asset(
-                                                '${fund.defaultUpiapps[index]['image']}',
-                                              ),
-                                              const SizedBox(width: 20),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        TextWidget.paraText(
-                                                          text:
-                                                              '${fund.defaultUpiapps[index]['name']}',
-                                                          theme:
-                                                              theme.isDarkMode,
-                                                          color: colors
-                                                              .textPrimaryLight,
-                                                        ),
-                                                        SvgPicture.asset(
-                                                          assets.leftArrow,
-                                                          width: 16,
-                                                          height: 16,
-                                                          color: Colors.grey,
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ],
+                                        child: Opacity(
+                                          opacity: (isUpiPayment && isAmountAbove1Lakh) ? 0.5 : 1.0,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 24),
+                                            child: Row(
+                                              children: [
+                                                SvgPicture.asset(
+                                                  '${fund.defaultUpiapps[index]['image']}',
                                                 ),
-                                              ),
-                                            ],
+                                                const SizedBox(width: 20),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          TextWidget.paraText(
+                                                            text:
+                                                                '${fund.defaultUpiapps[index]['name']}',
+                                                            theme:
+                                                                theme.isDarkMode,
+                                                            color: colors
+                                                                .textPrimaryLight,
+                                                          ),
+                                                          SvgPicture.asset(
+                                                            assets.leftArrow,
+                                                            width: 16,
+                                                            height: 16,
+                                                            color: Colors.grey,
+                                                          )
+                                                        ],
+                                                      ),
+                                                      if (isUpiPayment && isAmountAbove1Lakh)
+                                                        Padding(
+                                                          padding: const EdgeInsets.only(top: 4),
+                                                          child: TextWidget.captionText(
+                                                            text: "Not available for amount above ₹1,00,000",
+                                                            theme: false,
+                                                            color: colors.darkred,
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
-                                      if (index ==
-                                          fund.defaultUpiapps.length - 1)
+                                      if (index == fund.defaultUpiapps.length - 1)
                                         const ListDivider(),
                                     ],
                                   );

@@ -370,12 +370,14 @@ class LDProvider extends DefaultChangeNotifier {
   TextEditingController ledgerSearchCtrl = TextEditingController();
   clearLedgerSearch() {
     ledgerSearchCtrl.clear();
+    // Reset to original data when search is cleared
+    if (_ledgerAllDataDummy != null) {
+      _ledgerAllData = LedgerModelData.fromJson(_ledgerAllDataDummy!.toJson());
+      _ledgerAllData!.fullStat?.sort((a, b) {
+        return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
+      });
+    }
     notifyListeners();
-    // // Reset to original data when search is cleared
-    // if (_originalGrouped.isNotEmpty) {
-    //   grouped = Map.from(_originalGrouped);
-    //   notifyListeners();
-    // }
   }
 
   bool _showProfitlossSearch = false;
@@ -908,20 +910,22 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
 
       _ledgerAllDataDummy = await api.getLedgerdata(from, to);
-      //  _ledgerAllData = new LedgerModelData();
-
       _ledgerAllData = LedgerModelData.fromJson(_ledgerAllDataDummy!.toJson());
       _ledgerAllData!.fullStat?.sort((a, b) {
         return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
       });
-      _filterval = SingingCharacter.all;
+      // Reset filters to all selected (including Bill Margin) on screen entry
+      _selectedFilters = {
+        SingingCharacter.receipt,
+        SingingCharacter.payment,
+        SingingCharacter.journal,
+        SingingCharacter.systemjournal,
+        SingingCharacter.billmargin
+      };
       _ledgerloading = false;
       notifyListeners();
     } catch (e) {
       _ledgerloading = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
       debugPrint("$e");
     }
   }
@@ -1370,7 +1374,7 @@ class LDProvider extends DefaultChangeNotifier {
       _valforcheck = yrn;
       _pnlloading = false;
       _reportsloadingforcharges = false;
-      _filterval = SingingCharacter.all;
+      _selectedFilters = {}; // Reset filters
       print("${_pnlAllData} valval");
       notifyListeners();
     } catch (e) {
@@ -1409,7 +1413,7 @@ class LDProvider extends DefaultChangeNotifier {
         _heatmapData = {}; // Reset before adding new data
 
         if (_calenderpnlAllData!.journal != null) {
-          _filterval = SingingCharacter.all;
+          _selectedFilters = {}; // Reset filters
 
           for (var element in _calenderpnlAllData!.journal!) {
             print("realised : ${element.realisedpnl}");
@@ -1472,7 +1476,7 @@ class LDProvider extends DefaultChangeNotifier {
       _tradebookdata = await api.gettradebookdata(from, to);
 
       _tradebookdataDummy = TradeBookModel.fromJson(_tradebookdata!.toJson());
-      _filterval = SingingCharacter.all;
+      _selectedFilters = {}; // Reset filters
       print("$_tradebookdata object");
       _tradebookloading = false;
       // print("${_calenderpnlAllData} valval");
@@ -1633,15 +1637,9 @@ class LDProvider extends DefaultChangeNotifier {
     try {
       _reportsloading = true;
       notifyListeners();
-
-      // Fetch the data
       _pdfdownload = await api.getpdfdownload(from, to);
-
-      // Store the full data as backup
       _pdfdaataDummy = _pdfdownload;
-      // _pdfdaataDummy = PdfDownloadModel.fromJson(_pdfdownload!.toJson());
-
-      // _filterval = SingingCharacter.all;
+      _selectedFilters = {}; // Reset filters
 
       // Filter to show only Contract and CN documents
       if (_pdfdownload?.data != null) {
@@ -1699,7 +1697,7 @@ class LDProvider extends DefaultChangeNotifier {
       // _tradebookfilterarray = dummy.toSet().toList();
       // print(_tradebookfilterarray);
       refreshforfilterdata();
-      _filterval = SingingCharacter.all;
+      _selectedFilters = {}; // Reset filters
       _pledgeloader = false;
       notifyListeners();
     } catch (e) {
@@ -1749,7 +1747,7 @@ class LDProvider extends DefaultChangeNotifier {
         _taxpnleq = await api.gettaxpnleq(from);
         _taxpnldercomcur = await api.gettaxpnldercomcur(from);
 
-        _filterval = SingingCharacter.all;
+        _selectedFilters = {}; // Reset filters
 
         final taxEqData = _taxpnleq?.data;
         if (taxEqData != null) {
@@ -2017,8 +2015,6 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   ledgerfiltercall(BuildContext context, val) {
-    // _ledgerAllData!.fullStat = [];
-
     if (_currentfilterpage == 'ledger') {
       List<FullStat> originalList = [];
       originalList = List.from(_ledgerAllDataDummy!.fullStat ?? []);
@@ -2088,9 +2084,9 @@ class LDProvider extends DefaultChangeNotifier {
 
           _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
           _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
-        } else if (val == SingingCharacter.all) {
-          _ledgerAllData!.fullStat =
-              List.from(originalList); // Ensure full reset
+        } else {
+          // No filter selected, show all data
+          _ledgerAllData!.fullStat = List.from(originalList);
           double totalCrAmt = 0.0;
           double totalDrAmt = 0.0;
 
@@ -2177,8 +2173,8 @@ class LDProvider extends DefaultChangeNotifier {
                   o.companyCode == 'CD_BSE')
               .toList();
           chargesforpnlseg(context, 'curr');
-        }
-        if (val == SingingCharacter.all) {
+        } else {
+          // No filter selected, show all data
           _pnlAllData!.transactions =
               List.from(_pnlAllDatadummy!.transactions ?? []);
           _pnlAllData!.expenseAmt = _pnlAllDatadummy!.expenseAmt;
@@ -2215,8 +2211,8 @@ class LDProvider extends DefaultChangeNotifier {
           _tradebookdata!.trades = (_tradebookdataDummy!.trades ?? [])
               .where((o) => o.showtype == 'SELL')
               .toList();
-        }
-        if (val == SingingCharacter.all) {
+        } else {
+          // No filter selected, show all data
           _tradebookdata!.trades = List.from(_tradebookdataDummy!.trades ?? []);
         }
       }
@@ -2249,7 +2245,8 @@ class LDProvider extends DefaultChangeNotifier {
         _pdfdownload!.data = (_pdfdaataDummy!.data ?? [])
             .where((o) => o.docType == 'CN')
             .toList();
-      } else if (val == SingingCharacter.all) {
+      } else {
+        // No filter selected, show all data
         _pdfdownload!.data = List.from(_pdfdaataDummy!.data ?? []);
       }
     }
@@ -2350,15 +2347,35 @@ class LDProvider extends DefaultChangeNotifier {
     }
 
     List<FullStat> originalList = List.from(_ledgerAllDataDummy!.fullStat!);
-    print("${originalList.length} originalList");
 
-    if (value == true) {
-      // Keep all records (no filter necessary)
-      _ledgerAllData?.fullStat = originalList;
-    } else {
-      _ledgerAllData?.fullStat =
-          originalList.where((o) => o.billMargin == 'No').toList();
+    // Apply bill margin filter
+    List<FullStat> filteredList = value 
+      ? originalList.where((o) => o.billMargin == 'Yes').toList() // Show only entries with billMargin = Yes
+      : originalList.where((o) => o.billMargin == 'No').toList(); // Show only entries with billMargin = No
+
+    // Then apply any active type filters
+    if (_selectedFilters.isNotEmpty) {
+      filteredList = filteredList.where((o) {
+        return _selectedFilters.any((filter) {
+          switch (filter) {
+            case SingingCharacter.receipt:
+              return o.tYPE == 'Reciept';
+            case SingingCharacter.payment:
+              return o.tYPE == 'Payment';
+            case SingingCharacter.journal:
+              return o.tYPE == 'Journal';
+            case SingingCharacter.systemjournal:
+              return o.tYPE == 'Bill';
+            default:
+              return false;
+          }
+        });
+      }).toList();
     }
+
+    _ledgerAllData!.fullStat = filteredList;
+
+    // Recalculate totals
     double totalCrAmt = 0.0;
     double totalDrAmt = 0.0;
 
@@ -2370,15 +2387,41 @@ class LDProvider extends DefaultChangeNotifier {
               _ledgerAllData!.fullStat![i].dRAMT?.toString() ?? '0') ??
           0.0;
     }
-    _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
-    _ledgerAllData!.closingBalance =
-        originalList[originalList.length - 1].nETAMT ?? '0.00';
 
+    _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
     _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
     _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
+
+    // Sort and calculate running balance
+    _ledgerAllData!.fullStat?.sort((a, b) {
+      return int.parse(a.sortNo!).compareTo(int.parse(b.sortNo!));
+    });
+
+    for (var i = 0; i < _ledgerAllData!.fullStat!.length; i++) {
+      if (i == 0) {
+        _ledgerAllData!.fullStat![i].nETAMT =
+            (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) -
+                    double.parse(_ledgerAllData!.fullStat![i].dRAMT!))
+                .toStringAsFixed(2);
+      } else {
+        _ledgerAllData!.fullStat![i].nETAMT =
+            (double.parse(_ledgerAllData!.fullStat![i - 1].nETAMT!) +
+                    (double.parse(_ledgerAllData!.fullStat![i].cRAMT!) -
+                        double.parse(_ledgerAllData!.fullStat![i].dRAMT!)))
+                .toStringAsFixed(2);
+      }
+    }
+
     _ledgerAllData!.fullStat?.sort((a, b) {
       return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
     });
+
+    if (_ledgerAllData!.fullStat != null && _ledgerAllData!.fullStat!.isNotEmpty) {
+      _ledgerAllData!.closingBalance = _ledgerAllData!.fullStat![0].nETAMT ?? '0.00';
+    } else {
+      _ledgerAllData!.closingBalance = '0.00';
+    }
+
     notifyListeners();
   }
 
@@ -3326,6 +3369,121 @@ class LDProvider extends DefaultChangeNotifier {
               (entry.vOUCHERDATE?.toLowerCase().contains(searchTerm) ?? false))
           .toList();
     }
+    notifyListeners();
+  }
+
+  Set<SingingCharacter> _selectedFilters = {};
+  Set<SingingCharacter> get selectedFilters => _selectedFilters;
+
+  void applyLedgerMultiFilter(BuildContext context, List<SingingCharacter> filters) {
+    _selectedFilters = Set.from(filters);
+    
+    if (_ledgerAllDataDummy == null) {
+      _ledgerAllData?.fullStat = [];
+      notifyListeners();
+      return;
+    }
+
+    List<FullStat> originalList = List.from(_ledgerAllDataDummy!.fullStat ?? []);
+    List<FullStat> filteredList = [];
+
+    // If no filters selected, show no data
+    if (filters.isEmpty) {
+      _ledgerAllData!.fullStat = [];
+      _ledgerAllData!.openingBalance = '0.00';
+      _ledgerAllData!.crAmt = '0.00';
+      _ledgerAllData!.drAmt = '0.00';
+      _ledgerAllData!.closingBalance = '0.00';
+      notifyListeners();
+      return;
+    }
+
+    bool billMarginSelected = filters.contains(SingingCharacter.billmargin);
+    // Count only the type filters (not billmargin)
+    int typeFilterCount = filters.where((f) => f != SingingCharacter.billmargin).length;
+    bool allTypesSelected = (typeFilterCount == 4 && billMarginSelected) || (typeFilterCount == 4 && !billMarginSelected);
+
+    bool matchesType(FullStat o) {
+      return filters.any((filter) {
+        switch (filter) {
+          case SingingCharacter.receipt:
+            return o.tYPE == 'Reciept';
+          case SingingCharacter.payment:
+            return o.tYPE == 'Payment';
+          case SingingCharacter.journal:
+            return o.tYPE == 'Journal';
+          case SingingCharacter.systemjournal:
+            return o.tYPE == 'Bill';
+          case SingingCharacter.billmargin:
+            return o.billMargin == 'Yes';
+          default:
+            return false;
+        }
+      });
+    }
+
+    if (allTypesSelected && billMarginSelected) {
+      // All types + Bill Margin: show all entries
+      filteredList = originalList;
+    } else if (allTypesSelected && !billMarginSelected) {
+      // All types, but not Bill Margin: show all non-margin entries
+      filteredList = originalList.where((o) => o.billMargin != 'Yes').toList();
+    } else if (billMarginSelected && typeFilterCount == 0) {
+      // Only Bill Margin selected: show all margin entries
+      filteredList = originalList.where((o) => o.billMargin == 'Yes').toList();
+    } else if (billMarginSelected && typeFilterCount > 0) {
+      // Bill Margin + some types: show margin entries of those types
+      filteredList = originalList.where((o) => o.billMargin == 'Yes' && matchesType(o)).toList();
+    } else {
+      // Only type filters: show non-margin entries of those types
+      filteredList = originalList.where((o) => o.billMargin != 'Yes' && matchesType(o)).toList();
+    }
+
+    _ledgerAllData!.fullStat = filteredList;
+
+    // Recalculate totals
+    double totalCrAmt = 0.0;
+    double totalDrAmt = 0.0;
+
+    for (var i = 0; i < filteredList.length; i++) {
+      totalCrAmt += double.tryParse(filteredList[i].cRAMT?.toString() ?? '0') ?? 0.0;
+      totalDrAmt += double.tryParse(filteredList[i].dRAMT?.toString() ?? '0') ?? 0.0;
+    }
+
+    _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
+    _ledgerAllData!.crAmt = totalCrAmt.toStringAsFixed(2);
+    _ledgerAllData!.drAmt = totalDrAmt.toStringAsFixed(2);
+
+    // Sort and calculate running balance
+    _ledgerAllData!.fullStat?.sort((a, b) {
+      return int.parse(a.sortNo!).compareTo(int.parse(b.sortNo!));
+    });
+
+    for (var i = 0; i < filteredList.length; i++) {
+      if (i == 0) {
+        filteredList[i].nETAMT =
+            (double.parse(filteredList[i].cRAMT!) -
+                    double.parse(filteredList[i].dRAMT!))
+                .toStringAsFixed(2);
+      } else {
+        filteredList[i].nETAMT =
+            (double.parse(filteredList[i - 1].nETAMT!) +
+                    (double.parse(filteredList[i].cRAMT!) -
+                        double.parse(filteredList[i].dRAMT!)))
+                .toStringAsFixed(2);
+      }
+    }
+
+    _ledgerAllData!.fullStat?.sort((a, b) {
+      return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
+    });
+
+    if (filteredList.isNotEmpty) {
+      _ledgerAllData!.closingBalance = filteredList[0].nETAMT ?? '0.00';
+    } else {
+      _ledgerAllData!.closingBalance = '0.00';
+    }
+
     notifyListeners();
   }
 }

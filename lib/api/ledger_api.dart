@@ -528,7 +528,7 @@ mixin LedgerApi on ApiCore {
 
       // print("${response}");
       final Uri uri = Uri.parse(
-          "${apiLinks.reportsapi}/downloaddocmob?cc=${prefs.clientId}&recno=${recno}");
+          "${apiLinks.reportsapi}/downloaddocmob1?cc=${prefs.clientId}&recno=${recno}");
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         throw 'Could not launch  ';
       }

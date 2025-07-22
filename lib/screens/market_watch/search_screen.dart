@@ -184,7 +184,9 @@ class _AddScripState extends ConsumerState<SearchScreen>
                             const SizedBox(width: 12),
                             SvgPicture.asset(
                               assets.searchIcon,
-                              // color: const Color(0xff586279),
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
                               width: 18,
                               height: 18,
                             ),
@@ -196,9 +198,10 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                 controller: textCtrl,
                                 style: TextWidget.textStyle(
                                   fontSize: 14,
-                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
                                   theme: theme.isDarkMode,
-                                 
                                 ),
                                 textCapitalization:
                                     TextCapitalization.characters,
@@ -218,8 +221,10 @@ class _AddScripState extends ConsumerState<SearchScreen>
                                       "Search stocks, indices, options...",
                                   hintStyle: TextWidget.textStyle(
                                     fontSize: 14,
-                                    theme: theme.isDarkMode,                                
-                                    color: theme.isDarkMode ? colors.textPrimaryDark :  colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 0, vertical: 12),
@@ -385,11 +390,11 @@ class _AddScripState extends ConsumerState<SearchScreen>
                   Container(
                     width: double.infinity,
                     alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     child: TextWidget.subText(
                         text: tab.text ?? '',
-                        color:isSelected
+                        color: isSelected
                             ? theme.isDarkMode
                                 ? colors.secondaryDark
                                 : colors.secondaryLight
