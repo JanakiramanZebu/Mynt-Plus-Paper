@@ -206,9 +206,9 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                           children: [
                             TextWidget.subText(
                               text: index == 0
-                                  ? "Position${portfolio.allPostionList.isNotEmpty ? "s" : ""}"
+                                  ? "Holding${portfolio.holdingsModel!.isNotEmpty ? "s" : ""}"
                                   : index == 1
-                                      ? "Holding${portfolio.holdingsModel!.isNotEmpty ? "s" : ""}"
+                                      ? "Position${portfolio.allPostionList.isNotEmpty ? "s" : ""}"
                                       : index == 2
                                           ? "Orders"
                                           : "Funds",
@@ -218,35 +218,34 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                             ),
                             const SizedBox(width: 5),
                             if ((index == 0 &&
-                                    portfolio.allPostionList.isNotEmpty) ||
-                                (index == 1 &&
                                     (portfolio.holdingsModel?.isNotEmpty ??
-                                        false)))
+                                        false)) ||
+                                (index == 1 &&
+                                    portfolio.allPostionList.isNotEmpty))
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: ((index == 0 &&
-                                              portfolio
-                                                  .allPostionList.isNotEmpty) ||
-                                          (index == 1 &&
                                               (portfolio.holdingsModel
                                                       ?.isNotEmpty ??
-                                                  false)))
+                                                  false)) ||
+                                          (index == 1 &&
+                                              (portfolio
+                                                  .allPostionList.isNotEmpty)))
                                       ? colors.btnBg
                                       : null,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: TextWidget.subText(
                                   text: index == 0
-                                      ? (portfolio.allPostionList.isNotEmpty
-                                          ? "${portfolio.allPostionList.length}"
+                                      ? (portfolio.holdingsModel?.isNotEmpty ??
+                                              false
+                                          ? "${portfolio.holdingsModel!.length}"
                                           : "")
                                       : index == 1
-                                          ? (portfolio.holdingsModel
-                                                      ?.isNotEmpty ??
-                                                  false
-                                              ? "${portfolio.holdingsModel!.length}"
+                                          ? (portfolio.allPostionList.isNotEmpty
+                                              ? "${portfolio.allPostionList.length}"
                                               : "")
                                           : "",
                                   theme: false,
@@ -274,8 +273,8 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
           // child: TransparentLoaderScreen(
           // isLoading: portfolio.loading,
           child: TabBarView(controller: portfolio.portTab, children: [
-            PositionScreen(listofPosition: portfolio.allPostionList),
             const HoldingScreen(),
+            PositionScreen(listofPosition: portfolio.allPostionList),
             const OrdersTabView(),
             const SecureFund(),
             //   ]

@@ -474,75 +474,77 @@ class LoggedUserBottomSheet extends ConsumerWidget {
               ),
 
               // --- Add Account Button ---
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 5),
-                child: OutlinedButton(
-                  onPressed: () {
-                    ref.read(orderProvider).clearAllorders();
-                    ref.read(ledgerProvider).setterfornullallSwitch = null;
-                    pref.setMobileLogin(true);
-                    pref.setLogout(false);
-                    ref.watch(websocketProvider).closeSocket(true);
+              SafeArea(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 5),
+                  child: OutlinedButton(
+                    onPressed: () {
+                      ref.read(orderProvider).clearAllorders();
+                      ref.read(ledgerProvider).setterfornullallSwitch = null;
+                      pref.setMobileLogin(true);
+                      pref.setLogout(false);
+                      ref.watch(websocketProvider).closeSocket(true);
 
-                    loggedUser.addClient(false);
-                    loggedUser.clearError();
-                    loggedUser.loginMethCtrl.clear();
-                    ref.read(authProvider).switchbackbutton(false);
+                      loggedUser.addClient(false);
+                      loggedUser.clearError();
+                      loggedUser.loginMethCtrl.clear();
+                      ref.read(authProvider).switchbackbutton(false);
 
-                    Navigator.pop(context);
+                      Navigator.pop(context);
 
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => PopScope(
-                          canPop: true,
-                          onPopInvokedWithResult: (didPop, result) async {
-                            if (didPop) {
-                              ref
-                                  .read(websocketProvider)
-                                  .changeconnectioncount();
-                              if (context.mounted) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => PopScope(
+                            canPop: true,
+                            onPopInvokedWithResult: (didPop, result) async {
+                              if (didPop) {
                                 ref
-                                    .read(indexListProvider)
-                                    .bottomMenu(4, context);
+                                    .read(websocketProvider)
+                                    .changeconnectioncount();
+                                if (context.mounted) {
+                                  ref
+                                      .read(indexListProvider)
+                                      .bottomMenu(4, context);
+                                }
                               }
-                            }
-                          },
-                          child: const LoginScreen(),
+                            },
+                            child: const LoginScreen(),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                      color: theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight,
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 10.5),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(4)),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // SvgPicture.asset(
-                      //   assets.addCircleIcon,
-                      //   color: theme.isDarkMode
-                      //       ? colors.primaryDark
-                      //       : colors.primaryLight,
-                      // ),
-                      // const SizedBox(width: 8),
-                      TextWidget.subText(
-                        text: "Add account",
-                        theme: false,
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
                         color: theme.isDarkMode
                             ? colors.primaryDark
                             : colors.primaryLight,
-                        fw: 2,
                       ),
-                    ],
+                      padding: const EdgeInsets.symmetric(vertical: 10.5),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(4)),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // SvgPicture.asset(
+                        //   assets.addCircleIcon,
+                        //   color: theme.isDarkMode
+                        //       ? colors.primaryDark
+                        //       : colors.primaryLight,
+                        // ),
+                        // const SizedBox(width: 8),
+                        TextWidget.subText(
+                          text: "Add account",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          fw: 2,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

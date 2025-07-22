@@ -153,8 +153,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
   bool _exitAll = false;
   bool get exitAll => _exitAll;
   List<Tab> _portTabName = [
-    const Tab(text: "Positions"),
     const Tab(text: "Holdings"),
+    const Tab(text: "Positions"),
     const Tab(text: "Orders"),
     const Tab(text: "Funds")
   ];
@@ -1267,6 +1267,28 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     b.exchTsym![0].perChange == "null"
                 ? "0.00"
                 : "${b.exchTsym![0].perChange}"));
+      });
+    } else if (sorting == "LTPPCDESC") {
+      _holdingsModel!.sort((a, b) {
+        return double.parse(b.exchTsym![0].pNlChng == null ||
+                    b.exchTsym![0].pNlChng == "null"
+                ? "0.00"
+                : "${b.exchTsym![0].pNlChng}")
+            .compareTo(double.parse(a.exchTsym![0].pNlChng == null ||
+                    a.exchTsym![0].pNlChng == "null"
+                ? "0.00"
+                : "${a.exchTsym![0].pNlChng}"));
+      });
+    } else if (sorting == "LTPPCASC") {
+      _holdingsModel!.sort((a, b) {
+        return double.parse(a.exchTsym![0].pNlChng == null ||
+                    a.exchTsym![0].pNlChng == "null"
+                ? "0.00"
+                : "${a.exchTsym![0].pNlChng}")
+            .compareTo(double.parse(b.exchTsym![0].pNlChng == null ||
+                    b.exchTsym![0].pNlChng == "null"
+                ? "0.00"
+                : "${b.exchTsym![0].pNlChng}"));
       });
     } else if (sorting == "INVDESC") {
       _holdingsModel!.sort((a, b) {

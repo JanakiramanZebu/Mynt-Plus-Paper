@@ -111,6 +111,9 @@ class Preferences {
   Future setPerchnage(bool isselect) async =>
       await _prefInstance!.setBool(_isPrechange, isselect);
 
+  Future setLtppc(bool isselect) async =>
+      await _prefInstance!.setBool(_isLtppc, isselect);
+
   Future setInvestby(bool isselect) async =>
       await _prefInstance!.setBool(_isInvest, isselect);
 //// Mf Filter
@@ -215,6 +218,7 @@ class Preferences {
   bool? get isPrice => _prefInstance?.getBool(_isPrice) ?? true;
   bool? get isQuantity => _prefInstance?.getBool(_isQuantity) ?? true;
   bool? get isPerchang => _prefInstance?.getBool(_isPrechange) ?? true;
+  bool? get isLtppc => _prefInstance?.getBool(_isLtppc) ?? true;
   bool? get isInvestby => _prefInstance?.getBool(_isInvest) ?? true;
 
   ////// MF Filter
@@ -331,6 +335,7 @@ const String _isScripName = "isScripName";
 const String _isPrice = "isPrice";
 const String _isQuantity = "isQuantity";
 const String _isPrechange = "isPrechange";
+const String _isLtppc = "isLtppc";
 const String _isInvest = "isInvest";
 
 ///MF FILTER

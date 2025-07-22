@@ -248,19 +248,19 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                 theme: theme.isDarkMode,
                                 fw: 0),
                             SizedBox(height: 8.0),
-                            ledgerdata.screenpledge == 'pledge' ? 
-                            TextWidget.paraText(
-                                text:
-                                    "${double.tryParse(widget.data.estimated.toString())!.toStringAsFixed(2)} (${widget.data.estPercentage}%)",
-                                textOverflow: TextOverflow.ellipsis,
-                                theme: theme.isDarkMode,
-                                fw: 3):TextWidget.paraText(
-                                text:
-                                    "${double.tryParse(widget.data.margin.toString())!.toStringAsFixed(2)}",
-                                textOverflow: TextOverflow.ellipsis,
-                                theme: theme.isDarkMode,
-                                fw: 3) 
-                            ,
+                            ledgerdata.screenpledge == 'pledge'
+                                ? TextWidget.paraText(
+                                    text:
+                                        "${double.tryParse(widget.data.estimated.toString())!.toStringAsFixed(2)} (${widget.data.estPercentage}%)",
+                                    textOverflow: TextOverflow.ellipsis,
+                                    theme: theme.isDarkMode,
+                                    fw: 3)
+                                : TextWidget.paraText(
+                                    text:
+                                        "${double.tryParse(widget.data.margin.toString())!.toStringAsFixed(2)}",
+                                    textOverflow: TextOverflow.ellipsis,
+                                    theme: theme.isDarkMode,
+                                    fw: 3),
                           ],
                         ),
                         TextWidget.titleText(
@@ -583,87 +583,90 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                 fw: 3),
                           )
                         : SizedBox(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Container(
-                          height: 40,
-                          width: screenWidth,
-                          margin: const EdgeInsets.only(top: 8.0),
-                          child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  shadowColor: Colors.transparent,
-                                  backgroundColor:
-                                      ((ledgerdata.screenpledge == 'unpledge' &&
-                                                  (ledgerdata.pledgesubtn ==
-                                                      false)) ||
-                                              (ledgerdata.screenpledge ==
-                                                      'pledge' &&
-                                                  (ledgerdata.pledgesubtn ==
-                                                          false ||
-                                                      widget.data.segmentselect
-                                                              .toString() ==
-                                                          "null")))
-                                          ? colors.colorbluegrey
-                                          : theme.isDarkMode
-                                              ? colors.primaryDark
-                                              : colors.primaryLight,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5))),
-                              onPressed: () {
-                                if ((ledgerdata.screenpledge == 'pledge' &&
-                                        (widget.data.segmentselect != 'null' &&
-                                            ledgerdata.pledgesubtn != false)) ||
-                                    (ledgerdata.screenpledge == 'unpledge' &&
-                                        (ledgerdata.pledgesubtn != false))) {
-                                  if (ledgerdata.screenpledge == 'pledge') {
-                                    ledgerdata.dummypledgeval(
-                                        widget.data,
-                                        ledgerdata.selectnetpledge.text,
-                                        "pledge");
-                                    ledgerdata.changesegval(
-                                        widget.data.segmentselect.toString(),
-                                        widget.data);
-                                    ledgerdata.listforpledgefunction(
-                                        context,
-                                        ledgerdata.segmentvalue,
-                                        widget.data.nSESYMBOL.toString(),
-                                        widget.data.iSIN.toString(),
-                                        widget.data.aMOUNT.toString(),
-                                        ledgerdata.selectnetpledge.text,
-                                        widget.data.nET.toString(),
-                                        "pledge",
-                                        widget.data);
-                                    ledgerdata.changesegvaldummy(
-                                        widget.data.segmentselect.toString());
-                                  } else {
-                                    ledgerdata.dummypledgeval(
-                                        widget.data,
-                                        ledgerdata.selectnetpledge.text,
-                                        "unpledge");
-                                    ledgerdata.listforpledgefunction(
-                                        context,
-                                        ledgerdata.segmentvalue,
-                                        widget.data.nSESYMBOL.toString(),
-                                        widget.data.iSIN.toString(),
-                                        widget.data.aMOUNT.toString(),
-                                        ledgerdata.selectnetpledge.text,
-                                        widget.data.nET.toString(),
-                                        "unpledge",
-                                        widget.data);
+                    SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Container(
+                            height: 40,
+                            width: screenWidth,
+                            margin: const EdgeInsets.only(top: 8.0),
+                            child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    shadowColor: Colors.transparent,
+                                    backgroundColor:
+                                        ((ledgerdata.screenpledge == 'unpledge' &&
+                                                    (ledgerdata.pledgesubtn ==
+                                                        false)) ||
+                                                (ledgerdata.screenpledge == 'pledge' &&
+                                                    (ledgerdata.pledgesubtn == false ||
+                                                        widget.data.segmentselect
+                                                                .toString() ==
+                                                            "null")))
+                                            ? colors.colorbluegrey
+                                            : theme.isDarkMode
+                                                ? colors.primaryDark
+                                                : colors.primaryLight,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(5))),
+                                onPressed: () {
+                                  if ((ledgerdata.screenpledge == 'pledge' &&
+                                          (widget.data.segmentselect !=
+                                                  'null' &&
+                                              ledgerdata.pledgesubtn !=
+                                                  false)) ||
+                                      (ledgerdata.screenpledge == 'unpledge' &&
+                                          (ledgerdata.pledgesubtn != false))) {
+                                    if (ledgerdata.screenpledge == 'pledge') {
+                                      ledgerdata.dummypledgeval(
+                                          widget.data,
+                                          ledgerdata.selectnetpledge.text,
+                                          "pledge");
+                                      ledgerdata.changesegval(
+                                          widget.data.segmentselect.toString(),
+                                          widget.data);
+                                      ledgerdata.listforpledgefunction(
+                                          context,
+                                          ledgerdata.segmentvalue,
+                                          widget.data.nSESYMBOL.toString(),
+                                          widget.data.iSIN.toString(),
+                                          widget.data.aMOUNT.toString(),
+                                          ledgerdata.selectnetpledge.text,
+                                          widget.data.nET.toString(),
+                                          "pledge",
+                                          widget.data);
+                                      ledgerdata.changesegvaldummy(
+                                          widget.data.segmentselect.toString());
+                                    } else {
+                                      ledgerdata.dummypledgeval(
+                                          widget.data,
+                                          ledgerdata.selectnetpledge.text,
+                                          "unpledge");
+                                      ledgerdata.listforpledgefunction(
+                                          context,
+                                          ledgerdata.segmentvalue,
+                                          widget.data.nSESYMBOL.toString(),
+                                          widget.data.iSIN.toString(),
+                                          widget.data.aMOUNT.toString(),
+                                          ledgerdata.selectnetpledge.text,
+                                          widget.data.nET.toString(),
+                                          "unpledge",
+                                          widget.data);
+                                    }
+                                    // ledgerdata.changesegval("");
+                                    Navigator.pop(context);
                                   }
-                                  // ledgerdata.changesegval("");
-                                  Navigator.pop(context);
-                                }
-                              },
-                              child: Text("Submit",
-                                  textAlign: TextAlign.center,
-                                  style: textStyle(
-                                      !theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      12,
-                                      FontWeight.w500)))),
+                                },
+                                child: Text("Submit",
+                                    textAlign: TextAlign.center,
+                                    style: textStyle(
+                                        !theme.isDarkMode
+                                            ? colors.colorWhite
+                                            : colors.colorBlack,
+                                        12,
+                                        FontWeight.w500)))),
+                      ),
                     ),
                   ],
                 ),

@@ -78,138 +78,135 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
 
       return Scaffold(
         backgroundColor: Colors.white,
-        bottomSheet: _buildBottomActionButtons(context, theme, mfData),
+        bottomSheet:
+            SafeArea(child: _buildBottomActionButtons(context, theme, mfData)),
         body: TransparentLoaderScreen(
           isLoading: mfData.singleloader ?? false,
           child: VerticalScrollableTabView(
-            autoScrollController: autoScrollController,
-            tabController: tabController,
-            listItemData: tabList,
-            slivers: [
-              _buildAppBar(context, theme, mfData),
-            ],
-            eachItemChild: (tabName, int index) {
-              switch (tabName) {
-                case "Overview":
-                  return MFOverview(mfStockData: widget.mfStockData);
-                case "Performance":
-                  return MFPerformance(mfStockData: widget.mfStockData);
-                case "Scheme":
-                  return MFSchemeInfo(mfStockData: widget.mfStockData);
-                case "Allocation":
-                  return MFAllocation(mfStockData: widget.mfStockData);
-                case "Rollings":
-                  return Container();
-                default:
-                  return MFComparison(mfStockData: widget.mfStockData);
-              }
-            }
-          ),
+              autoScrollController: autoScrollController,
+              tabController: tabController,
+              listItemData: tabList,
+              slivers: [
+                _buildAppBar(context, theme, mfData),
+              ],
+              eachItemChild: (tabName, int index) {
+                switch (tabName) {
+                  case "Overview":
+                    return MFOverview(mfStockData: widget.mfStockData);
+                  case "Performance":
+                    return MFPerformance(mfStockData: widget.mfStockData);
+                  case "Scheme":
+                    return MFSchemeInfo(mfStockData: widget.mfStockData);
+                  case "Allocation":
+                    return MFAllocation(mfStockData: widget.mfStockData);
+                  case "Rollings":
+                    return Container();
+                  default:
+                    return MFComparison(mfStockData: widget.mfStockData);
+                }
+              }),
         ),
       );
     });
   }
 
-  Widget _buildBottomActionButtons(BuildContext context, dynamic theme, dynamic mfData) {
+  Widget _buildBottomActionButtons(
+      BuildContext context, dynamic theme, dynamic mfData) {
     return Container(
       color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      padding: const EdgeInsets.symmetric( vertical: 8 , horizontal: 14.0),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14.0),
       child: Row(
         children: [
           Expanded(
-            child: 
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 10,  ),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: 46,
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        shadowColor: Colors.transparent,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
+              child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                  ),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: 46,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            backgroundColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            )),
+                        onPressed: () async {
+                          final isin = widget.mfStockData.iSIN;
+                          final schemeCode = widget.mfStockData.schemeCode;
+
+                          if (widget.mfStockData.sIPFLAG == "Y" &&
+                              isin != null &&
+                              schemeCode != null) {
+                            await mfData.invertfun(isin, schemeCode);
+                          }
+                          Navigator.pushNamed(context, Routes.mforderScreen,
+                              arguments: widget.mfStockData);
+                          mfData.orderchangetitle("One-time");
+                          mfData.orderpagetite("SDS");
+                          mfData.chngOrderType("One-time");
+                        },
+                        child: TextWidget.subText(
+                          text: "One-time",
+                          theme: false,
+                          color: colors.colorWhite,
+                          fw: 2,
+                          align: TextAlign.center,
                         )),
-                    onPressed: () async {
-                final isin = widget.mfStockData.iSIN;
-                final schemeCode = widget.mfStockData.schemeCode;
-                
-                if (widget.mfStockData.sIPFLAG == "Y" && isin != null && schemeCode != null) {
-                  await mfData.invertfun(isin, schemeCode);
-                }
-                Navigator.pushNamed(context, Routes.mforderScreen,
-                    arguments: widget.mfStockData);
-                mfData.orderchangetitle("One-time");
-                mfData.orderpagetite("SDS");
-                mfData.chngOrderType("One-time");
-              },
-                    child: TextWidget.subText(
-                      text:  "One-time",
-                      theme: false,
-                      color: colors.colorWhite,
-                      fw: 2,
-                      align: TextAlign.center,
-                    )),
-              ))
-            
-            
-            
-             
-          ),
+                  ))),
           const SizedBox(width: 10),
           Expanded(
-            child: 
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 10,  ),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: 46,
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        shadowColor: Colors.transparent,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
+              child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                  ),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: 46,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            backgroundColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            )),
+                        onPressed: () async {
+                          final isin = widget.mfStockData.iSIN;
+                          final schemeCode = widget.mfStockData.schemeCode;
+
+                          if (widget.mfStockData.sIPFLAG == "Y" &&
+                              isin != null &&
+                              schemeCode != null) {
+                            await mfData.invertfun(isin, schemeCode);
+                          }
+                          Navigator.pushNamed(context, Routes.mforderScreen,
+                              arguments: widget.mfStockData);
+                          mfData.orderchangetitle("SIP");
+                          mfData.chngOrderType("SIP");
+                          mfData.orderpagetite("SDS");
+                        },
+                        child: TextWidget.subText(
+                          text: "SIP",
+                          theme: false,
+                          color: colors.colorWhite,
+                          fw: 2,
+                          align: TextAlign.center,
                         )),
-                    onPressed: () async {
-                final isin = widget.mfStockData.iSIN;
-                final schemeCode = widget.mfStockData.schemeCode;
-                
-                if (widget.mfStockData.sIPFLAG == "Y" && isin != null && schemeCode != null) {
-                  await mfData.invertfun(isin, schemeCode);
-                }
-                Navigator.pushNamed(context, Routes.mforderScreen,
-                    arguments: widget.mfStockData);
-                mfData.orderchangetitle("SIP");
-                mfData.chngOrderType("SIP");
-                mfData.orderpagetite("SDS");
-              },
-                    child: TextWidget.subText(
-                      text:  "SIP",
-                      theme: false,
-                      color: colors.colorWhite,
-                      fw: 2,
-                      align: TextAlign.center,
-                    )),
-              ))
-            
-            
-            
-             
-          ),
-           
+                  ))),
         ],
       ),
     );
   }
 
-  SliverAppBar _buildAppBar(BuildContext context, dynamic theme, dynamic mfData) {
+  SliverAppBar _buildAppBar(
+      BuildContext context, dynamic theme, dynamic mfData) {
     return SliverAppBar(
       pinned: true,
       elevation: 0,
@@ -242,9 +239,13 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                 minWidth: 25,
               ),
               icon: SvgPicture.asset(
-                mfData.watchbatchval == true ? assets.bookmarkIcon : assets.bookmarkedIcon,
+                mfData.watchbatchval == true
+                    ? assets.bookmarkIcon
+                    : assets.bookmarkedIcon,
                 fit: BoxFit.contain,
-                color: mfData.watchbatchval == true ? colors.colorBlue : colors.colorGrey,
+                color: mfData.watchbatchval == true
+                    ? colors.colorBlue
+                    : colors.colorGrey,
                 height: 25,
               ),
               onPressed: () async {
@@ -271,9 +272,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
           child: Column(
             children: [
               Container(
-                color: theme.isDarkMode 
-                  ? const Color.fromARGB(255, 0, 0, 0) 
-                  : const Color.fromARGB(255, 250, 251, 255),
+                color: theme.isDarkMode
+                    ? const Color.fromARGB(255, 0, 0, 0)
+                    : const Color.fromARGB(255, 250, 251, 255),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
@@ -294,7 +295,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
 
   Widget _buildFundHeader(dynamic theme, dynamic mfData) {
     final amcCode = widget.mfStockData.aMCCode;
-    
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -310,50 +311,44 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextWidget.titleText(
-                                                    align: TextAlign.start,
-                                                    text: _formatFundName(mfData),
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 1),
-              
+                  align: TextAlign.start,
+                  text: _formatFundName(mfData),
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 1),
               const SizedBox(height: 8),
               SizedBox(
                 height: 18,
                 child: ListView(
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
-                  children: [ 
+                  children: [
                     TextWidget.paraText(
-                                  fw: 3,
-                                  text: widget.mfStockData.type ?? "Unknown",
-                                  textOverflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  theme: false,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 5),
-                                  child: TextWidget.paraText(
-                                    fw: 3,
-                                    text: widget.mfStockData.subtype ?? "Unknown",
-                                    textOverflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    theme: false,
-                                  ),
-                                  
-                                  
-                                ),
-                    
+                      fw: 3,
+                      text: widget.mfStockData.type ?? "Unknown",
+                      textOverflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      theme: false,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 5),
+                      child: TextWidget.paraText(
+                        fw: 3,
+                        text: widget.mfStockData.subtype ?? "Unknown",
+                        textOverflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        theme: false,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -367,7 +362,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
   String _formatFundName(dynamic mfData) {
     if (mfData.factSheetDataModel?.data?.name != null) {
       return mfData.factSheetDataModel!.data!.name!
-        .replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ');
+          .replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ');
     }
     return widget.mfStockData.schemeName ?? 'Unknown Fund';
   }
@@ -376,10 +371,14 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildMetricColumn("AUM (CR)", _formatAum(widget.mfStockData.aUM), theme),
-        _buildMetricColumn("NAV", _formatValue(widget.mfStockData.nETASSETVALUE), theme),
-        _buildMetricColumn("MIN. INV", _formatValue(widget.mfStockData.minimumPurchaseAmount), theme),
-        _buildMetricColumn("5YR CAGR", _formatYearData(widget.mfStockData.fIVEYEARDATA), theme),
+        _buildMetricColumn(
+            "AUM (CR)", _formatAum(widget.mfStockData.aUM), theme),
+        _buildMetricColumn(
+            "NAV", _formatValue(widget.mfStockData.nETASSETVALUE), theme),
+        _buildMetricColumn("MIN. INV",
+            _formatValue(widget.mfStockData.minimumPurchaseAmount), theme),
+        _buildMetricColumn("5YR CAGR",
+            _formatYearData(widget.mfStockData.fIVEYEARDATA), theme),
       ],
     );
   }
@@ -390,34 +389,24 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       children: [
         const SizedBox(height: 7),
         TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: title,
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark
-                                                             :  
-                                                             
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-         
+            align: TextAlign.right,
+            text: title,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            theme: theme.isDarkMode,
+            fw: 3),
         const SizedBox(height: 6),
         TextWidget.paraText(
-                                                    align: TextAlign.right,
-                                                    text: value,
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textSecondaryDark
-                                                             :  
-                                                             
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-         
+            align: TextAlign.right,
+            text: value,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textPrimaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            theme: theme.isDarkMode,
+            fw: 3),
       ],
     );
   }

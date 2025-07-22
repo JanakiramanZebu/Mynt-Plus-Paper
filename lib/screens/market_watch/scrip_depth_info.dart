@@ -766,7 +766,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                                 40,
                                                                             decoration:
                                                                                 BoxDecoration(color: colors.primary, borderRadius: BorderRadius.circular(5)),
-                                                                            child: Center(child: TextWidget.subText(text: "BUY", color: colors.colorWhite, theme: theme.isDarkMode, fw: 2))),
+                                                                            child: Center(child: TextWidget.subText(text: "Buy", color: colors.colorWhite, theme: theme.isDarkMode, fw: 2))),
                                                                       )),
                                                                       const SizedBox(
                                                                           width:
@@ -776,7 +776,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                               onTap: () async {
                                                                                 await placeOrderInput(scripInfo, ctx, depthData, false);
                                                                               },
-                                                                              child: Container(height: 40, decoration: BoxDecoration(color: colors.tertiary, borderRadius: BorderRadius.circular(5)), child: Center(child: TextWidget.subText(text: "SELL", color: colors.colorWhite, theme: theme.isDarkMode, fw: 2)))))
+                                                                              child: Container(height: 40, decoration: BoxDecoration(color: colors.tertiary, borderRadius: BorderRadius.circular(5)), child: Center(child: TextWidget.subText(text: "Sell", color: colors.colorWhite, theme: theme.isDarkMode, fw: 2)))))
                                                                     ])),
                                                     ],
                                                   ),

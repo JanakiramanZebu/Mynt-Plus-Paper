@@ -4,13 +4,19 @@ class CalenderpnlModel {
   Map? summary;
   Map? symbolarr;
   Map? fullresponse;
-  
+
   List<Journal>? journal;
   double realized = 0;
   double unrealized = 0;
   double? totalCharges;
   CalenderpnlModel(
-      {this.data, this.data2, this.journal, this.totalCharges, this.summary,this.symbolarr,this.fullresponse});
+      {this.data,
+      this.data2,
+      this.journal,
+      this.totalCharges,
+      this.summary,
+      this.symbolarr,
+      this.fullresponse});
 
   CalenderpnlModel.fromJson(Map<String, dynamic> json) {
     if (json['Data2'] != null) {
@@ -30,7 +36,7 @@ class CalenderpnlModel {
     if (json['Data'] != null) {
       data2 = json['Data'];
     }
-     if (json['summary'] != null) {
+    if (json['summary'] != null) {
       this.summary = json['summary'];
     }
 
@@ -49,17 +55,17 @@ class CalenderpnlModel {
     if (this.data2 != null) {
       data['Data'] = this.data2;
     }
-      if (this.summary != null) {
+    if (this.summary != null) {
       data['summary'] = this.summary;
     }
-        if (this.symbolarr != null) {
+    if (this.symbolarr != null) {
       data['symbolarr'] = this.symbolarr;
     }
-    
+
     if (journal != null) {
       data['journal'] = journal!.map((v) => v.toJson()).toList();
     }
-      data['fullresponse'] = fullresponse ;
+    data['fullresponse'] = fullresponse;
 
     data['total_charges'] = this.totalCharges;
     return data;
@@ -97,6 +103,8 @@ class TradeData {
   String? totalSellQty;
   String? totalSellRate;
   String? unrealisedpnl;
+  String? oQTY;
+  String? oRATE;
 
   TradeData(
       {this.aDJUSTEDNETRATE,
@@ -128,7 +136,9 @@ class TradeData {
       this.totalRealisedPnl,
       this.totalSellQty,
       this.totalSellRate,
-      this.unrealisedpnl});
+      this.unrealisedpnl,
+      this.oQTY,
+      this.oRATE});
 
   TradeData.fromJson(Map<String, dynamic> json) {
     aDJUSTEDNETRATE = json['ADJUSTED_NETRATE'].toString();
@@ -161,6 +171,8 @@ class TradeData {
     totalSellQty = json['total_sell_qty'].toString();
     totalSellRate = json['total_sell_rate'].toString();
     unrealisedpnl = json['unrealisedpnl'].toString();
+    oQTY = json['Open_Qty'].toString();
+    oRATE = json['Open_Rate'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -195,6 +207,8 @@ class TradeData {
     data['total_sell_qty'] = totalSellQty;
     data['total_sell_rate'] = totalSellRate;
     data['unrealisedpnl'] = unrealisedpnl;
+    data['Open_Qty'] = oQTY;
+    data['Open_Rate'] = oRATE;
     return data;
   }
 }

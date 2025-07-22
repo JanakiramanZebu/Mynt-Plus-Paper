@@ -35,7 +35,7 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
       builder: (context, ref, child) {
         final ledgerprovider = ref.watch(ledgerProvider);
         final theme = ref.watch(themeProvider);
-        
+
         return Stack(
           children: [
             Container(
@@ -54,7 +54,8 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -68,7 +69,8 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
                           shape: const CircleBorder(),
                           child: InkWell(
                             onTap: () async {
-                              await Future.delayed(const Duration(milliseconds: 150));
+                              await Future.delayed(
+                                  const Duration(milliseconds: 150));
                               Navigator.pop(context);
                             },
                             borderRadius: BorderRadius.circular(20),
@@ -83,7 +85,9 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
                               child: Icon(
                                 Icons.close_rounded,
                                 size: 22,
-                                color: theme.isDarkMode ? const Color(0xffBDBDBD) : colors.colorGrey,
+                                color: theme.isDarkMode
+                                    ? const Color(0xffBDBDBD)
+                                    : colors.colorGrey,
                               ),
                             ),
                           ),
@@ -92,18 +96,19 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
                     ),
                   ),
                   Divider(
-                    color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider,
                     height: 0,
                   ),
-                  
-                  
+
                   // Calendar
                   _buildCalendar(context, ledgerprovider, theme),
                   const SizedBox(height: 24),
                 ],
               ),
             ),
-            
+
             // Loading overlay
             if (ledgerprovider.isContractCalendarLoading)
               Positioned.fill(
@@ -125,7 +130,8 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
     );
   }
 
-  Widget _buildCalendar(BuildContext context, LDProvider ledgerprovider, dynamic theme) {
+  Widget _buildCalendar(
+      BuildContext context, LDProvider ledgerprovider, dynamic theme) {
     return _ContractCalendar(
       theme: theme,
       documentDates: ledgerprovider.contractDocumentDates,
@@ -148,14 +154,19 @@ class _ContractCalendarScreenState extends State<ContractCalendarScreen> {
                 ledgerprovider.setContractFilter(filter);
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 decoration: BoxDecoration(
                   color: ledgerprovider.selectedContractFilter == filter
-                      ? (theme.isDarkMode ? colors.primaryDark : colors.primaryLight)
+                      ? (theme.isDarkMode
+                          ? colors.primaryDark
+                          : colors.primaryLight)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                    color: theme.isDarkMode
+                        ? colors.primaryDark
+                        : colors.primaryLight,
                   ),
                 ),
                 child: TextWidget.subText(
@@ -209,124 +220,140 @@ class _ContractCalendarState extends State<_ContractCalendar> {
   Widget build(BuildContext context) {
     final daysToDisplay = _buildMonthDays(_month);
     final weeks = _chunkDays(daysToDisplay, 7);
-    
-    return Consumer(
-      builder: (context, ref, child) {
-        final ledgerprovider = ref.watch(ledgerProvider);
-        final theme = ref.watch(themeProvider);
-        return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-          elevation: 0,
-          color: widget.theme.isDarkMode ? const Color(0xff1E1E1E) : Colors.white,
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-        child: Column(
-          children: [
-            // Month title with left/right arrows
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.chevron_left),
-                        onPressed: _goToPreviousMonth,
-                      ),
-                      TextWidget.titleText(
-                        text: _formatMonthYear(_month),
-                        theme: widget.theme.isDarkMode,
-                        fw: 1,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.chevron_right),
-                        onPressed: _goToNextMonth,
-                      ),
-                    ],
-                  ),
-      
-                // Toggle-like Filter
-Container(
-  padding: const EdgeInsets.all(4),
-  decoration: BoxDecoration(
-    color: const Color(0xffF1F3F8),
-    borderRadius: BorderRadius.circular(8),
-  ),
-  child: Row(
-    mainAxisSize: MainAxisSize.min,
-    children: ledgerprovider.contractFilterOptions.map((filter) {
-      final isSelected = ledgerprovider.selectedContractFilter == filter;
-      // Map display names
-      String displayName = filter == 'CN' ? 'MCX' : (filter == 'Contract' ? 'Combine' : filter);
-      return GestureDetector(
-        onTap: () {
-          ledgerprovider.setContractFilter(filter);
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: isSelected ? colors.primaryLight : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: TextWidget.paraText(
-            text: displayName,
-            theme: theme.isDarkMode,
-            color: isSelected ? Colors.white : Colors.black,
-            fw: 0,
-          ),
-        ),
-      );
-    }).toList(),
-  ),
-)
 
-                ],
+    return Consumer(builder: (context, ref, child) {
+      final ledgerprovider = ref.watch(ledgerProvider);
+      final theme = ref.watch(themeProvider);
+      return SafeArea(
+        child: Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+          elevation: 0,
+          color:
+              widget.theme.isDarkMode ? const Color(0xff1E1E1E) : Colors.white,
+          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          child: Column(
+            children: [
+              // Month title with left/right arrows
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.chevron_left),
+                          onPressed: _goToPreviousMonth,
+                        ),
+                        TextWidget.titleText(
+                          text: _formatMonthYear(_month),
+                          theme: widget.theme.isDarkMode,
+                          fw: 1,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.chevron_right),
+                          onPressed: _goToNextMonth,
+                        ),
+                      ],
+                    ),
+
+                    // Toggle-like Filter
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffF1F3F8),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children:
+                            ledgerprovider.contractFilterOptions.map((filter) {
+                          final isSelected =
+                              ledgerprovider.selectedContractFilter == filter;
+                          // Map display names
+                          String displayName = filter == 'CN'
+                              ? 'MCX'
+                              : (filter == 'Contract' ? 'Combine' : filter);
+                          return GestureDetector(
+                            onTap: () {
+                              ledgerprovider.setContractFilter(filter);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? colors.primaryLight
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: TextWidget.paraText(
+                                text: displayName,
+                                theme: theme.isDarkMode,
+                                color: isSelected ? Colors.white : Colors.black,
+                                fw: 0,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    )
+                  ],
+                ),
               ),
-            ),
-            // Day headers (Mon–Sun)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextWidget.paraText(text: "Mon", theme: widget.theme.isDarkMode, fw: 1),
-                  TextWidget.paraText(text: "Tue", theme: widget.theme.isDarkMode, fw: 1),
-                  TextWidget.paraText(text: "Wed", theme: widget.theme.isDarkMode, fw: 1),
-                  TextWidget.paraText(text: "Thu", theme: widget.theme.isDarkMode, fw: 1),
-                  TextWidget.paraText(text: "Fri", theme: widget.theme.isDarkMode, fw: 1),
-                  TextWidget.paraText(text: "Sat", theme: widget.theme.isDarkMode, fw: 1),
-                  TextWidget.paraText(text: "Sun", theme: widget.theme.isDarkMode, fw: 1),
-                ],
-              ),
-            ),
-            // Calendar grid: rows of 7 days
-            for (final week in weeks)
+              // Day headers (Mon–Sun)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    for (final day in week) _buildDayBox(context, day),
+                    TextWidget.paraText(
+                        text: "Mon", theme: widget.theme.isDarkMode, fw: 1),
+                    TextWidget.paraText(
+                        text: "Tue", theme: widget.theme.isDarkMode, fw: 1),
+                    TextWidget.paraText(
+                        text: "Wed", theme: widget.theme.isDarkMode, fw: 1),
+                    TextWidget.paraText(
+                        text: "Thu", theme: widget.theme.isDarkMode, fw: 1),
+                    TextWidget.paraText(
+                        text: "Fri", theme: widget.theme.isDarkMode, fw: 1),
+                    TextWidget.paraText(
+                        text: "Sat", theme: widget.theme.isDarkMode, fw: 1),
+                    TextWidget.paraText(
+                        text: "Sun", theme: widget.theme.isDarkMode, fw: 1),
                   ],
                 ),
               ),
-          ],
+              // Calendar grid: rows of 7 days
+              for (final week in weeks)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      for (final day in week) _buildDayBox(context, day),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       );
-      }
-    );
+    });
   }
 
   Widget _buildDayBox(BuildContext context, DateTime date) {
     double screenWidth = MediaQuery.of(context).size.width;
-    final ledgerprovider = ProviderScope.containerOf(context, listen: false).read(ledgerProvider);
+    final ledgerprovider =
+        ProviderScope.containerOf(context, listen: false).read(ledgerProvider);
     final docs = ledgerprovider.contractDocumentDetails[date] ?? [];
     final selectedType = ledgerprovider.selectedContractFilter;
     final DocumentDetail? doc = docs.cast<DocumentDetail?>().firstWhere(
-      (d) => d != null && d.docType == selectedType,
-      orElse: () => null,
-    );
+          (d) => d != null && d.docType == selectedType,
+          orElse: () => null,
+        );
     final hasSelectedType = doc != null;
 
     // Detect if this day is outside the current month
@@ -341,7 +368,9 @@ Container(
       bgColor = const Color(0xffF1F3F8);
     }
 
-    Color textColor = isOutsideMonth ? Colors.grey : (hasSelectedType ? colors.colorWhite : colors.colorBlack);
+    Color textColor = isOutsideMonth
+        ? Colors.grey
+        : (hasSelectedType ? colors.colorWhite : colors.colorBlack);
 
     return GestureDetector(
       onTap: (hasSelectedType && !isOutsideMonth)
@@ -390,33 +419,34 @@ Container(
   List<DateTime> _buildMonthDays(DateTime month) {
     final firstDay = DateTime(month.year, month.month, 1);
     final lastDay = DateTime(month.year, month.month + 1, 0);
-    
+
     final days = <DateTime>[];
-    
+
     // Add days from previous month to fill first week
     final firstWeekday = firstDay.weekday;
     for (int i = firstWeekday - 1; i > 0; i--) {
       days.add(firstDay.subtract(Duration(days: i)));
     }
-    
+
     // Add days of current month
     for (int i = 1; i <= lastDay.day; i++) {
       days.add(DateTime(month.year, month.month, i));
     }
-    
+
     // Add days from next month to fill last week
     final lastWeekday = lastDay.weekday;
     for (int i = 1; i <= 7 - lastWeekday; i++) {
       days.add(lastDay.add(Duration(days: i)));
     }
-    
+
     return days;
   }
 
   List<List<DateTime>> _chunkDays(List<DateTime> days, int chunkSize) {
     final chunks = <List<DateTime>>[];
     for (int i = 0; i < days.length; i += chunkSize) {
-      final endIndex = (i + chunkSize > days.length) ? days.length : (i + chunkSize);
+      final endIndex =
+          (i + chunkSize > days.length) ? days.length : (i + chunkSize);
       chunks.add(days.sublist(i, endIndex));
     }
     return chunks;
@@ -439,4 +469,4 @@ Container(
     });
     widget.onMonthChanged(_month);
   }
-} 
+}

@@ -93,7 +93,7 @@ class UserAccountScreen extends ConsumerWidget {
       {'title': 'Notification'},
       {'title': 'Refer'},
       {'title': 'Rate Us'},
-      {'title': 'Contact'},
+      {'title': 'Contact Us'},
     ];
 
     return TransparentLoaderScreen(
@@ -479,7 +479,7 @@ class UserAccountScreen extends ConsumerWidget {
                           }
                         }
                         break;
-                      case "Contact":
+                      case "Contact Us":
                         showModalBottomSheet(
                           useSafeArea: true,
                           isScrollControlled: true,
@@ -610,7 +610,7 @@ class UserAccountScreen extends ConsumerWidget {
                       arguments: trancation);
                 },
                 child: TextWidget.subText(
-                  text: "Add Fund",
+                  text: "Add Money",
                   theme: false,
                   color: theme.isDarkMode
                       ? colors.primaryDark
@@ -863,158 +863,179 @@ class SettingsScreen extends ConsumerWidget {
           //   padding: const EdgeInsets.symmetric(horizontal: 16),
           //   child: ListDivider(),
           // ),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: settingsItems.length,
-            itemBuilder: (context, index) {
-              final item = settingsItems[index];
-              return ListTile(
-                minTileHeight: 60,
-                title: TextWidget.subText(
-                  text: item['title']!,
-                  theme: false,
-                  color: !theme.isDarkMode
-                      ? colors.textSecondaryLight
-                      : colors.textSecondaryDark,
-                ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: !theme.isDarkMode
-                      ? colors.textSecondaryLight
-                      : colors.textSecondaryDark,
-                ),
-                onTap: () {
-                  // Handle settings navigation
-                  switch (item['title']) {
-                    case 'Theme':
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              backgroundColor: theme.isDarkMode
-                                  ? const Color.fromARGB(255, 18, 18, 18)
-                                  : colors.colorWhite,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(16))),
-                              scrollable: true,
-                              actionsPadding: const EdgeInsets.only(
-                                  left: 16, right: 16, bottom: 14, top: 3),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              insetPadding:
-                                  const EdgeInsets.symmetric(horizontal: 40),
-                              titlePadding: const EdgeInsets.only(left: 16),
-                              title: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  TextWidget.titleText(
-                                      text: "Choose theme",
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.colorBlack,
-                                      fw: 1),
-                                  IconButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    icon: const Icon(
-                                      Icons.close_rounded,
-                                    ),
-                                    color: theme.isDarkMode
-                                        ? const Color(0xffBDBDBD)
-                                        : colors.colorGrey,
-                                  )
-                                ],
-                              ),
-                              content: SizedBox(
-                                  height: 115,
-                                  width: MediaQuery.of(context).size.width,
-                                  child: Column(
-                                      mainAxisSize: MainAxisSize.min,
+          settingsItems.length > 0
+              ? ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: settingsItems.length,
+                  itemBuilder: (context, index) {
+                    final item = settingsItems[index];
+                    return ListTile(
+                      minTileHeight: 60,
+                      title: TextWidget.subText(
+                        text: item['title']!,
+                        theme: false,
+                        color: !theme.isDarkMode
+                            ? colors.textSecondaryLight
+                            : colors.textSecondaryDark,
+                      ),
+                      trailing: Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: !theme.isDarkMode
+                            ? colors.textSecondaryLight
+                            : colors.textSecondaryDark,
+                      ),
+                      onTap: () {
+                        // Handle settings navigation
+                        switch (item['title']) {
+                          case 'Theme':
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    backgroundColor: theme.isDarkMode
+                                        ? const Color.fromARGB(255, 18, 18, 18)
+                                        : colors.colorWhite,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(16))),
+                                    scrollable: true,
+                                    actionsPadding: const EdgeInsets.only(
+                                        left: 16,
+                                        right: 16,
+                                        bottom: 14,
+                                        top: 3),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    insetPadding: const EdgeInsets.symmetric(
+                                        horizontal: 40),
+                                    titlePadding:
+                                        const EdgeInsets.only(left: 16),
+                                    title: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Divider(
+                                        TextWidget.titleText(
+                                            text: "Choose theme",
+                                            theme: theme.isDarkMode,
                                             color: theme.isDarkMode
-                                                ? colors.darkColorDivider
-                                                : colors.colorDivider,
-                                            height: 0),
-                                        const SizedBox(height: 10),
-                                        ListView.builder(
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          shrinkWrap: true,
-                                          itemCount: theme.themeTypes.length,
-                                          itemBuilder: (BuildContext context,
-                                              int index) {
-                                            return ListTile(
-                                              onTap: () async {
-                                                theme.toggleTheme(
-                                                    themeMod: theme
-                                                        .themeTypes[index]);
-                                                Navigator.pop(context);
-                                              },
-                                              contentPadding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 0,
-                                                      vertical: 0),
-                                              dense: true,
-                                              minLeadingWidth: 22,
-                                              leading: SvgPicture.asset(theme
-                                                      .isDarkMode
-                                                  ? theme.themeTypes[index] ==
-                                                          theme.deviceTheme
-                                                      ? assets
-                                                          .darkActProductIcon
-                                                      : assets.darkProductIcon
-                                                  : theme.themeTypes[index] ==
-                                                          theme.deviceTheme
-                                                      ? assets.actProductIcon
-                                                      : assets.productIcon),
-                                              title: TextWidget.subText(
-                                                  text: theme.themeTypes[index],
-                                                  theme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? Color(theme.themeTypes[
-                                                                  index] ==
-                                                              theme.deviceTheme
-                                                          ? 0xffffffff
-                                                          : 0xff666666)
-                                                      : Color(
-                                                          theme.themeTypes[
-                                                                      index] ==
-                                                                  theme
-                                                                      .deviceTheme
-                                                              ? 0xff000000
-                                                              : 0xff666666,
-                                                        ),
-                                                  fw: 0),
-                                            );
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            fw: 1),
+                                        IconButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
                                           },
+                                          icon: const Icon(
+                                            Icons.close_rounded,
+                                          ),
+                                          color: theme.isDarkMode
+                                              ? const Color(0xffBDBDBD)
+                                              : colors.colorGrey,
                                         )
-                                      ])),
-                            );
-                          });
-                      break;
-                    // case 'Order Preference':
-                    //   Navigator.pushNamed(context, Routes.orderPrefer);
-                    //   break;
-                  }
-                },
-              );
-            },
-            separatorBuilder: (context, index) => Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(
-                color:
-                    theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-                thickness: 1,
-              ),
-            ),
-          ),
+                                      ],
+                                    ),
+                                    content: SizedBox(
+                                        height: 115,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Divider(
+                                                  color: theme.isDarkMode
+                                                      ? colors.darkColorDivider
+                                                      : colors.colorDivider,
+                                                  height: 0),
+                                              const SizedBox(height: 10),
+                                              ListView.builder(
+                                                physics:
+                                                    const NeverScrollableScrollPhysics(),
+                                                shrinkWrap: true,
+                                                itemCount:
+                                                    theme.themeTypes.length,
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                        int index) {
+                                                  return ListTile(
+                                                    onTap: () async {
+                                                      theme.toggleTheme(
+                                                          themeMod:
+                                                              theme.themeTypes[
+                                                                  index]);
+                                                      Navigator.pop(context);
+                                                    },
+                                                    contentPadding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 0,
+                                                            vertical: 0),
+                                                    dense: true,
+                                                    minLeadingWidth: 22,
+                                                    leading: SvgPicture.asset(theme
+                                                            .isDarkMode
+                                                        ? theme.themeTypes[
+                                                                    index] ==
+                                                                theme
+                                                                    .deviceTheme
+                                                            ? assets
+                                                                .darkActProductIcon
+                                                            : assets
+                                                                .darkProductIcon
+                                                        : theme.themeTypes[
+                                                                    index] ==
+                                                                theme
+                                                                    .deviceTheme
+                                                            ? assets
+                                                                .actProductIcon
+                                                            : assets
+                                                                .productIcon),
+                                                    title: TextWidget.subText(
+                                                        text: theme
+                                                            .themeTypes[index],
+                                                        theme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? Color(theme.themeTypes[
+                                                                        index] ==
+                                                                    theme
+                                                                        .deviceTheme
+                                                                ? 0xffffffff
+                                                                : 0xff666666)
+                                                            : Color(
+                                                                theme.themeTypes[
+                                                                            index] ==
+                                                                        theme
+                                                                            .deviceTheme
+                                                                    ? 0xff000000
+                                                                    : 0xff666666,
+                                                              ),
+                                                        fw: 0),
+                                                  );
+                                                },
+                                              )
+                                            ])),
+                                  );
+                                });
+                            break;
+                          // case 'Order Preference':
+                          //   Navigator.pushNamed(context, Routes.orderPrefer);
+                          //   break;
+                        }
+                      },
+                    );
+                  },
+                  separatorBuilder: (context, index) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Divider(
+                      color: theme.isDarkMode
+                          ? colors.dividerDark
+                          : colors.dividerLight,
+                      thickness: 1,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
 
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -1079,103 +1100,107 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                         ),
                         builder: (BuildContext context) {
-                          return Container(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const CustomDragHandler(),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      TextWidget.titleText(
-                                          text: 'Freeze Account',
-                                          theme: false,
-                                          color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          fw: 1),
-                                      Material(
-                                        color: Colors.transparent,
-                                        shape: const CircleBorder(),
-                                        child: InkWell(
-                                          onTap: () async {
-                                            await Future.delayed(const Duration(
-                                                milliseconds: 150));
-                                            Navigator.of(context).pop();
-                                          },
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          splashColor: theme.isDarkMode
-                                              ? colors.splashColorDark
-                                              : colors.splashColorLight,
-                                          highlightColor: theme.isDarkMode
-                                              ? colors.highlightDark
-                                              : colors.highlightLight,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(6.0),
-                                            child: Icon(
-                                              Icons.close_rounded,
-                                              size: 22,
-                                              color: theme.isDarkMode
-                                                  ? const Color(0xffBDBDBD)
-                                                  : colors.colorGrey,
+                          return SafeArea(
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const CustomDragHandler(),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        TextWidget.titleText(
+                                            text: 'Freeze Account',
+                                            theme: false,
+                                            color: theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                            fw: 1),
+                                        Material(
+                                          color: Colors.transparent,
+                                          shape: const CircleBorder(),
+                                          child: InkWell(
+                                            onTap: () async {
+                                              await Future.delayed(
+                                                  const Duration(
+                                                      milliseconds: 150));
+                                              Navigator.of(context).pop();
+                                            },
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            splashColor: theme.isDarkMode
+                                                ? colors.splashColorDark
+                                                : colors.splashColorLight,
+                                            highlightColor: theme.isDarkMode
+                                                ? colors.highlightDark
+                                                : colors.highlightLight,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(6.0),
+                                              child: Icon(
+                                                Icons.close_rounded,
+                                                size: 22,
+                                                color: theme.isDarkMode
+                                                    ? const Color(0xffBDBDBD)
+                                                    : colors.colorGrey,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                ListDivider(),
-                                const SizedBox(height: 16.0),
-                                TextWidget.subText(
-                                  text:
-                                      "Account freeze notice: All open orders will be cancelled due to the freeze. Existing positions will remain open and will not be affected.",
-                                  theme: false,
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                ),
-                                const SizedBox(height: 24.0),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 8),
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    height: 40,
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        Navigator.of(context).pop();
-                                        userProfile.fetchFreezeAc(context);
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        //  minimumSize: const Size(0, 40),
-                                        elevation: 0,
-                                        backgroundColor: theme.isDarkMode
-                                            ? colors.primaryDark
-                                            : colors.primaryLight,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(4)),
-                                      ),
-                                      child: TextWidget.subText(
-                                          text: "Freeze",
-                                          theme: false,
-                                          color: colors.colorWhite,
-                                          fw: 2),
+                                      ],
                                     ),
                                   ),
-                                ),
-                                SizedBox(height: 10.0)
-                              ],
+                                  ListDivider(),
+                                  const SizedBox(height: 16.0),
+                                  TextWidget.subText(
+                                    text:
+                                        "Account freeze notice: All open orders will be cancelled due to the freeze. Existing positions will remain open and will not be affected.",
+                                    theme: false,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark
+                                        : colors.textSecondaryLight,
+                                  ),
+                                  const SizedBox(height: 24.0),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8),
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      height: 40,
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          Navigator.of(context).pop();
+                                          userProfile.fetchFreezeAc(context);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          //  minimumSize: const Size(0, 40),
+                                          elevation: 0,
+                                          backgroundColor: theme.isDarkMode
+                                              ? colors.primaryDark
+                                              : colors.primaryLight,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(4)),
+                                        ),
+                                        child: TextWidget.subText(
+                                            text: "Freeze",
+                                            theme: false,
+                                            color: colors.colorWhite,
+                                            fw: 2),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 10.0)
+                                ],
+                              ),
                             ),
                           );
                         },
@@ -2887,7 +2912,7 @@ class ReportsScreen extends ConsumerWidget {
                       // Handle reports navigation - you can add the existing navigation logic here
                       switch (item['title']) {
                         case 'P&L Summary':
-                          await ledgerdate.getCurrentDate('else');
+                          await ledgerdate.getCurrentDate('pandu');
                           Navigator.pushNamed(context, Routes.calenderpnlScreen,
                               arguments: "DDDDD");
 
@@ -2950,136 +2975,145 @@ class ReportsScreen extends ConsumerWidget {
                             enableDrag: false,
                             useSafeArea: true,
                             context: context,
-                            builder: (context) => Stack(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    color: theme.isDarkMode
-                                        ? colors.colorBlack
-                                        : colors.colorWhite,
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Color(0xff999999),
-                                        blurRadius: 4.0,
-                                        offset: Offset(2.0, 0.0),
-                                      )
-                                    ],
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.only(
-                                      bottom: 24 +
-                                          MediaQuery.of(context)
-                                              .viewInsets
-                                              .bottom,
+                            builder: (context) => SafeArea(
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      color: theme.isDarkMode
+                                          ? colors.colorBlack
+                                          : colors.colorWhite,
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Color(0xff999999),
+                                          blurRadius: 4.0,
+                                          offset: Offset(2.0, 0.0),
+                                        )
+                                      ],
                                     ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8.0, horizontal: 16.0),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              TextWidget.titleText(
-                                                text: "Client Master (CMR)",
-                                                theme: theme.isDarkMode,
-                                                fw: 1,
-                                              ),
-                                              Material(
-                                                color: Colors.transparent,
-                                                shape: const CircleBorder(),
-                                                child: InkWell(
-                                                  onTap: () async {
-                                                    await Future.delayed(
-                                                        const Duration(
-                                                            milliseconds: 150));
-                                                    Navigator.pop(context);
-                                                  },
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                  splashColor: theme.isDarkMode
-                                                      ? Colors.white
-                                                          .withOpacity(0.15)
-                                                      : Colors.black
-                                                          .withOpacity(0.15),
-                                                  highlightColor: theme
-                                                          .isDarkMode
-                                                      ? Colors.white
-                                                          .withOpacity(0.08)
-                                                      : Colors.black
-                                                          .withOpacity(0.08),
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            6.0),
-                                                    child: Icon(
-                                                      Icons.close_rounded,
-                                                      size: 22,
-                                                      color: theme.isDarkMode
-                                                          ? const Color(
-                                                              0xffBDBDBD)
-                                                          : colors.colorGrey,
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                        bottom: 24 +
+                                            MediaQuery.of(context)
+                                                .viewInsets
+                                                .bottom,
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8.0,
+                                                horizontal: 16.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                TextWidget.titleText(
+                                                  text: "Client Master (CMR)",
+                                                  theme: theme.isDarkMode,
+                                                  fw: 1,
+                                                ),
+                                                Material(
+                                                  color: Colors.transparent,
+                                                  shape: const CircleBorder(),
+                                                  child: InkWell(
+                                                    onTap: () async {
+                                                      await Future.delayed(
+                                                          const Duration(
+                                                              milliseconds:
+                                                                  150));
+                                                      Navigator.pop(context);
+                                                    },
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20),
+                                                    splashColor: theme
+                                                            .isDarkMode
+                                                        ? Colors.white
+                                                            .withOpacity(0.15)
+                                                        : Colors.black
+                                                            .withOpacity(0.15),
+                                                    highlightColor: theme
+                                                            .isDarkMode
+                                                        ? Colors.white
+                                                            .withOpacity(0.08)
+                                                        : Colors.black
+                                                            .withOpacity(0.08),
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              6.0),
+                                                      child: Icon(
+                                                        Icons.close_rounded,
+                                                        size: 22,
+                                                        color: theme.isDarkMode
+                                                            ? const Color(
+                                                                0xffBDBDBD)
+                                                            : colors.colorGrey,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        Divider(
-                                          color: theme.isDarkMode
-                                              ? colors.darkColorDivider
-                                              : colors.colorDivider,
-                                          height: 0,
-                                        ),
-                                        const SizedBox(height: 24),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 24.0),
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            height: 48,
-                                            child: OutlinedButton(
-                                              style: OutlinedButton.styleFrom(
-                                                elevation: 0,
-                                                minimumSize: const Size(0, 48),
-                                                backgroundColor:
-                                                    theme.isDarkMode
-                                                        ? colors.primaryDark
-                                                        : colors.primaryLight,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
+                                          Divider(
+                                            color: theme.isDarkMode
+                                                ? colors.darkColorDivider
+                                                : colors.colorDivider,
+                                            height: 0,
+                                          ),
+                                          const SizedBox(height: 24),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 24.0),
+                                            child: SizedBox(
+                                              width: double.infinity,
+                                              height: 48,
+                                              child: OutlinedButton(
+                                                style: OutlinedButton.styleFrom(
+                                                  elevation: 0,
+                                                  minimumSize:
+                                                      const Size(0, 48),
+                                                  backgroundColor:
+                                                      theme.isDarkMode
+                                                          ? colors.primaryDark
+                                                          : colors.primaryLight,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                  ),
+                                                  padding: EdgeInsets.zero,
                                                 ),
-                                                padding: EdgeInsets.zero,
-                                              ),
-                                              onPressed: () {
-                                                // Download functionality will be added later
-                                                print("Downloading cmr");
-                                                ledgerdate
-                                                    .fetchcmrdownload(context);
-                                                print("Downloading cmr api");
-                                              },
-                                              child: TextWidget.subText(
-                                                text: "Download",
-                                                theme: theme.isDarkMode,
-                                                color: colors.colorWhite,
-                                                fw: 2,
-                                                align: TextAlign.center,
+                                                onPressed: () {
+                                                  // Download functionality will be added later
+                                                  print("Downloading cmr");
+                                                  ledgerdate.fetchcmrdownload(
+                                                      context);
+                                                  print("Downloading cmr api");
+                                                },
+                                                child: TextWidget.subText(
+                                                  text: "Download",
+                                                  theme: theme.isDarkMode,
+                                                  color: colors.colorWhite,
+                                                  fw: 2,
+                                                  align: TextAlign.center,
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           );
                           break;

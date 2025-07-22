@@ -25,6 +25,7 @@ class _WatchlistsBottomSheetState
   late bool pricepisAscending;
   late bool qtyisAscending;
   late bool perchangisAscending;
+  late bool ltppcisAscending;
   late bool investbyisAscending;
 
   @override
@@ -34,6 +35,7 @@ class _WatchlistsBottomSheetState
       pricepisAscending = pref.isPrice ?? true;
       qtyisAscending = pref.isQuantity ?? true;
       perchangisAscending = pref.isPerchang ?? true;
+      ltppcisAscending = pref.isLtppc ?? true;
       investbyisAscending = pref.isInvestby ?? true;
     });
 
@@ -44,273 +46,320 @@ class _WatchlistsBottomSheetState
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.read(themeProvider);
-      return Container(
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            boxShadow: const [
-              BoxShadow(
-                  color: Color(0xff999999),
-                  blurRadius: 4.0,
-                  offset: Offset(2.0, 0.0))
-            ]),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CustomDragHandler(),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextWidget.titleText(
-                      text: "Sort by", theme: theme.isDarkMode, fw: 1),
-                ],
+      return SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              boxShadow: const [
+                BoxShadow(
+                    color: Color(0xff999999),
+                    blurRadius: 4.0,
+                    offset: Offset(2.0, 0.0))
+              ]),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CustomDragHandler(),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextWidget.titleText(
+                        text: "Sort by", theme: theme.isDarkMode, fw: 1),
+                  ],
+                ),
               ),
-            ),
-            Divider(
-                color: theme.isDarkMode
-                    ? colors.darkColorDivider
-                    : colors.colorDivider),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  if (scripisAscending == true) {
-                    ref
-                        .read(portfolioProvider)
-                        .filterHoldings(sorting: "ASC", context: context);
-                  } else if (scripisAscending == false) {
-                    ref
-                        .read(portfolioProvider)
-                        .filterHoldings(sorting: "DSC", context: context);
-                  }
+              Divider(
+                  color: theme.isDarkMode
+                      ? colors.darkColorDivider
+                      : colors.colorDivider),
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    if (scripisAscending == true) {
+                      ref
+                          .read(portfolioProvider)
+                          .filterHoldings(sorting: "ASC", context: context);
+                    } else if (scripisAscending == false) {
+                      ref
+                          .read(portfolioProvider)
+                          .filterHoldings(sorting: "DSC", context: context);
+                    }
 
-                  scripisAscending = !scripisAscending;
-                  pref.setScrip(scripisAscending);
-                  Navigator.pop(context);
-                });
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 13),
-                    child: Row(
-                      children: [
-                        Icon(
-                          pref.isScripname == true
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 20,
-                          color: colors.colorGrey,
-                        ),
-                        const SizedBox(
-                          width: 15,
-                        ),
-                        TextWidget.subText(
-                            text: "Scrip Name",
-                            theme: false,
+                    scripisAscending = !scripisAscending;
+                    pref.setScrip(scripisAscending);
+                    Navigator.pop(context);
+                  });
+                },
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 13),
+                      child: Row(
+                        children: [
+                          Icon(
+                            pref.isScripname == true
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            size: 20,
                             color: colors.colorGrey,
-                            fw: 0),
-                      ],
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
+                          TextWidget.subText(
+                              text: "Scrip Name",
+                              theme: false,
+                              color: colors.colorGrey,
+                              fw: 0),
+                        ],
+                      ),
                     ),
-                  ),
-                  const ListDivider(),
-                ],
+                    const ListDivider(),
+                  ],
+                ),
               ),
-            ),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  if (pricepisAscending == true) {
-                    ref
-                        .read(portfolioProvider)
-                        .filterHoldings(sorting: "LTPDSC", context: context);
-                  } else if (pricepisAscending == false) {
-                    ref
-                        .read(portfolioProvider)
-                        .filterHoldings(sorting: "LTPASC", context: context);
-                  }
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    if (pricepisAscending == true) {
+                      ref
+                          .read(portfolioProvider)
+                          .filterHoldings(sorting: "LTPDSC", context: context);
+                    } else if (pricepisAscending == false) {
+                      ref
+                          .read(portfolioProvider)
+                          .filterHoldings(sorting: "LTPASC", context: context);
+                    }
 
-                  pricepisAscending = !pricepisAscending;
-                  pref.setPrice(pricepisAscending);
-                  Navigator.pop(context);
-                });
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 13),
-                    child: Row(
-                      children: [
-                        Icon(
-                          pref.isPrice == true
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 20,
-                          color: colors.colorGrey,
-                        ),
-                        const SizedBox(
-                          width: 15,
-                        ),
-                        TextWidget.subText(
-                            text: "LTP",
-                            theme: false,
+                    pricepisAscending = !pricepisAscending;
+                    pref.setPrice(pricepisAscending);
+                    Navigator.pop(context);
+                  });
+                },
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 13),
+                      child: Row(
+                        children: [
+                          Icon(
+                            pref.isPrice == true
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            size: 20,
                             color: colors.colorGrey,
-                            fw: 0),
-                      ],
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
+                          TextWidget.subText(
+                              text: "LTP",
+                              theme: false,
+                              color: colors.colorGrey,
+                              fw: 0),
+                        ],
+                      ),
                     ),
-                  ),
-                  const ListDivider(),
-                ],
+                    const ListDivider(),
+                  ],
+                ),
               ),
-            ),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  if (qtyisAscending == true) {
-                    ref
-                        .read(portfolioProvider)
-                        .filterHoldings(sorting: "QTYDSC", context: context);
-                  } else if (qtyisAscending == false) {
-                    ref
-                        .read(portfolioProvider)
-                        .filterHoldings(sorting: "QTYASC", context: context);
-                  }
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    if (qtyisAscending == true) {
+                      ref
+                          .read(portfolioProvider)
+                          .filterHoldings(sorting: "QTYDSC", context: context);
+                    } else if (qtyisAscending == false) {
+                      ref
+                          .read(portfolioProvider)
+                          .filterHoldings(sorting: "QTYASC", context: context);
+                    }
 
-                  qtyisAscending = !qtyisAscending;
-                  pref.setqty(qtyisAscending);
-                  Navigator.pop(context);
-                });
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 13),
-                    child: Row(
-                      children: [
-                        Icon(
-                          pref.isQuantity == true
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 20,
-                          color: colors.colorGrey,
-                        ),
-                        const SizedBox(
-                          width: 15,
-                        ),
-                        TextWidget.subText(
-                            text: "Qty",
-                            theme: false,
+                    qtyisAscending = !qtyisAscending;
+                    pref.setqty(qtyisAscending);
+                    Navigator.pop(context);
+                  });
+                },
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 13),
+                      child: Row(
+                        children: [
+                          Icon(
+                            pref.isQuantity == true
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            size: 20,
                             color: colors.colorGrey,
-                            fw: 0),
-                      ],
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
+                          TextWidget.subText(
+                              text: "Qty",
+                              theme: false,
+                              color: colors.colorGrey,
+                              fw: 0),
+                        ],
+                      ),
                     ),
-                  ),
-                  const ListDivider(),
-                ],
+                    const ListDivider(),
+                  ],
+                ),
               ),
-            ),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  if (perchangisAscending == true) {
-                    ref
-                        .read(portfolioProvider)
-                        .filterHoldings(sorting: "PCDESC", context: context);
-                  } else if (perchangisAscending == false) {
-                    ref
-                        .read(portfolioProvider)
-                        .filterHoldings(sorting: "PCASC", context: context);
-                  }
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    if (perchangisAscending == true) {
+                      ref
+                          .read(portfolioProvider)
+                          .filterHoldings(sorting: "PCDESC", context: context);
+                    } else if (perchangisAscending == false) {
+                      ref
+                          .read(portfolioProvider)
+                          .filterHoldings(sorting: "PCASC", context: context);
+                    }
 
-                  perchangisAscending = !perchangisAscending;
-                  pref.setPerchnage(perchangisAscending);
-                  Navigator.pop(context);
-                });
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 13),
-                    child: Row(
-                      children: [
-                        Icon(
-                          pref.isPerchang == true
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 20,
-                          color: colors.colorGrey,
-                        ),
-                        const SizedBox(
-                          width: 15,
-                        ),
-                        TextWidget.subText(
-                            text: "Perc.Change",
-                            theme: false,
+                    perchangisAscending = !perchangisAscending;
+                    pref.setPerchnage(perchangisAscending);
+                    Navigator.pop(context);
+                  });
+                },
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 13),
+                      child: Row(
+                        children: [
+                          Icon(
+                            pref.isPerchang == true
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            size: 20,
                             color: colors.colorGrey,
-                            fw: 0),
-                      ],
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
+                          TextWidget.subText(
+                              text: "LTP Perc.Change",
+                              theme: false,
+                              color: colors.colorGrey,
+                              fw: 0),
+                        ],
+                      ),
                     ),
-                  ),
-                  const ListDivider(),
-                ],
+                    const ListDivider(),
+                  ],
+                ),
               ),
-            ),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  if (investbyisAscending == true) {
-                    ref
-                        .read(portfolioProvider)
-                        .filterHoldings(sorting: "INVDESC", context: context);
-                  } else if (investbyisAscending == false) {
-                    ref
-                        .read(portfolioProvider)
-                        .filterHoldings(sorting: "INVASC", context: context);
-                  }
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    if (ltppcisAscending == true) {
+                      ref.read(portfolioProvider).filterHoldings(
+                          sorting: "LTPPCDESC", context: context);
+                    } else if (ltppcisAscending == false) {
+                      ref.read(portfolioProvider).filterHoldings(
+                          sorting: "LTPPCASC", context: context);
+                    }
 
-                  investbyisAscending = !investbyisAscending;
-                  pref.setInvestby(investbyisAscending);
-                  Navigator.pop(context);
-                });
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 13),
-                    child: Row(
-                      children: [
-                        Icon(
-                          pref.isInvestby == true
-                              ? Icons.arrow_upward
-                              : Icons.arrow_downward,
-                          size: 20,
-                          color: colors.colorGrey,
-                        ),
-                        const SizedBox(
-                          width: 15,
-                        ),
-                        TextWidget.subText(
-                            text: "Invested Price",
-                            theme: false,
+                    ltppcisAscending = !ltppcisAscending;
+                    pref.setLtppc(ltppcisAscending);
+                    Navigator.pop(context);
+                  });
+                },
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 13),
+                      child: Row(
+                        children: [
+                          Icon(
+                            pref.isLtppc == true
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            size: 20,
                             color: colors.colorGrey,
-                            fw: 0),
-                      ],
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
+                          TextWidget.subText(
+                              text: "Return Perc.Change",
+                              theme: false,
+                              color: colors.colorGrey,
+                              fw: 0),
+                        ],
+                      ),
                     ),
-                  ),
-                  const ListDivider(),
-                ],
+                    const ListDivider(),
+                  ],
+                ),
               ),
-            ),
-          ],
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    if (investbyisAscending == true) {
+                      ref
+                          .read(portfolioProvider)
+                          .filterHoldings(sorting: "INVDESC", context: context);
+                    } else if (investbyisAscending == false) {
+                      ref
+                          .read(portfolioProvider)
+                          .filterHoldings(sorting: "INVASC", context: context);
+                    }
+
+                    investbyisAscending = !investbyisAscending;
+                    pref.setInvestby(investbyisAscending);
+                    Navigator.pop(context);
+                  });
+                },
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 13),
+                      child: Row(
+                        children: [
+                          Icon(
+                            pref.isInvestby == true
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            size: 20,
+                            color: colors.colorGrey,
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
+                          TextWidget.subText(
+                              text: "Invested Price",
+                              theme: false,
+                              color: colors.colorGrey,
+                              fw: 0),
+                        ],
+                      ),
+                    ),
+                    const ListDivider(),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       );
     });

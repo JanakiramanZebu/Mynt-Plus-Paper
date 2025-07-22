@@ -117,7 +117,7 @@ mixin LedgerApi on ApiCore {
             "from": from, "to": to
           }));
 
-      print('getLedgerdata response: ' + res.body); 
+      print('getLedgerdata response: ' + res.body);
       final json = jsonDecode((res.body));
       // print("${json['stat']}");
       if (json['stat'] != 'Not Ok') {
@@ -230,7 +230,8 @@ mixin LedgerApi on ApiCore {
       String ordertype,
       String appno) async {
     try {
-      final uri = Uri.parse('${apiLinks.reportsapiforcpaction}/addCorporateAction');
+      final uri =
+          Uri.parse('${apiLinks.reportsapiforcpaction}/addCorporateAction');
       dynamic data;
       if (issueType == 'RS' || issueType == 'IS') {
         data = {
@@ -263,13 +264,12 @@ mixin LedgerApi on ApiCore {
       if (json['msg'] == 'success') {
         return placeOrderResponseCopModel
             .fromJson(json as Map<String, dynamic>);
-      } else  if (json['msg'] == 'error occured on data fetch') {
+      } else if (json['msg'] == 'error occured on data fetch') {
         return placeOrderResponseCopModel
             .fromJson(json as Map<String, dynamic>);
-      }else {
+      } else {
         return placeOrderResponseCopModel.fromJson({});
       }
-      
     } catch (e) {
       rethrow;
     }
@@ -1096,25 +1096,22 @@ mixin LedgerApi on ApiCore {
     }
   }
 
-
-
- 
-   Future<CmrDownloadModel> cmrdownload() async {
+  Future<CmrDownloadModel> cmrdownload() async {
     try {
-      final uri = Uri.parse(apiLinks.cmrdownload); 
-    final res = await apiClient.post(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        "client_id": "${prefs.clientId}",
-      }),
-    );
+      final uri = Uri.parse(apiLinks.cmrdownload);
+      final res = await apiClient.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "client_id": "${prefs.clientId}",
+        }),
+      );
 
       final json = jsonDecode((res.body));
-        return CmrDownloadModel.fromJson(json);
-      } catch (e) {
+      return CmrDownloadModel.fromJson(json);
+    } catch (e) {
       rethrow;
     }
   }

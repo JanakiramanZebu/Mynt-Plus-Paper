@@ -112,7 +112,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                                   arguments: trancation);
                             },
                             child: TextWidget.subText(
-                                text: "Add Fund",
+                                text: "Add Money",
                                 theme: false,
                                 color: !theme.isDarkMode
                                     ? colors.textPrimaryDark

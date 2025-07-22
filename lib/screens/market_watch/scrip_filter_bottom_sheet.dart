@@ -114,200 +114,203 @@ class _WatchlistsBottomSheetState
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    return Container(
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: theme.isDarkMode ? Colors.black : Colors.white,
-          boxShadow: const [
-            BoxShadow(
-                color: Color(0xff999999),
-                blurRadius: 4.0,
-                offset: Offset(2.0, 0.0))
-          ]),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CustomDragHandler(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextWidget.titleText(
-                    text: "Sort by",
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 1),
-              ],
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: theme.isDarkMode ? Colors.black : Colors.white,
+            boxShadow: const [
+              BoxShadow(
+                  color: Color(0xff999999),
+                  blurRadius: 4.0,
+                  offset: Offset(2.0, 0.0))
+            ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CustomDragHandler(),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.titleText(
+                      text: "Sort by",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      theme: theme.isDarkMode,
+                      fw: 1),
+                ],
+              ),
             ),
-          ),
-          Divider(
-              color: theme.isDarkMode
-                  ? colors.darkColorDivider
-                  : colors.colorDivider),
-          // Scrip name sorting option with indicator
-          InkWell(
-            onTap: () => _applySortForType("scrip"),
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                  child: Row(
-                    children: [
-                      Icon(
-                        scripisAscending
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 20,
-                        color: currentSortType == "scrip"
-                            ? theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight
-                            : theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                      ),
-                      const SizedBox(
-                        width: 15,
-                      ),
-
-                      // TextWidget.subText(
-                      // text:"Scrip Name" ,
-                      // color: colors.colorGrey,
-                      // theme: theme.isDarkMode,
-                      // fw:  currentSortType == "scrip"
-                      //         ? 1
-                      //         : null),
-
-                      Text(
-                        "Scrip Name",
-                        style: TextWidget.textStyle(
-                            fontSize: 14,
-                            color: currentSortType == "scrip"
-                                ? theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryLight
-                                : theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                            theme: theme.isDarkMode,
-                            fw: currentSortType == "scrip" ? 0 : null),
-                      )
-                    ],
-                  ),
-                ),
-                const ListDivider(),
-              ],
-            ),
-          ),
-          // LTP sorting option with indicator
-          InkWell(
-            onTap: () => _applySortForType("price"),
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                  child: Row(
-                    children: [
-                      Icon(
-                        pricepisAscending
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 20,
-                        color: currentSortType == "price"
-                            ? theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight
-                            : theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                      ),
-                      const SizedBox(
-                        width: 15,
-                      ),
-
-                      //  TextWidget.subText(
-                      // text:"LTP",
-                      // color: colors.colorGrey,
-                      // theme: theme.isDarkMode,
-                      // fw:  currentSortType == "price"
-                      //         ? 1
-                      //         : null),
-
-                      Text(
-                        "LTP",
-                        style: TextWidget.textStyle(
-                            fontSize: 14,
-                            color: currentSortType == "price"
-                                ? theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryLight
-                                : theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                            theme: theme.isDarkMode,
-                            fw: currentSortType == "price" ? 0 : null),
-                      )
-                    ],
-                  ),
-                ),
-                const ListDivider(),
-              ],
-            ),
-          ),
-          // Percentage change sorting option with indicator
-          InkWell(
-            onTap: () => _applySortForType("perchng"),
-            child: Column(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                  child: Row(
-                    children: [
-                      Icon(
-                          perchangisAscending
+            Divider(
+                color: theme.isDarkMode
+                    ? colors.darkColorDivider
+                    : colors.colorDivider),
+            // Scrip name sorting option with indicator
+            InkWell(
+              onTap: () => _applySortForType("scrip"),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      children: [
+                        Icon(
+                          scripisAscending
                               ? Icons.arrow_upward
                               : Icons.arrow_downward,
                           size: 20,
-                          color: currentSortType == "perchng"
+                          color: currentSortType == "scrip"
                               ? theme.isDarkMode
                                   ? colors.primaryDark
                                   : colors.primaryLight
                               : theme.isDarkMode
                                   ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight),
-                      const SizedBox(
-                        width: 15,
-                      ),
-                      Text(
-                        "Perc.Change",
-                        style: TextWidget.textStyle(
-                            fontSize: 14,
+                                  : colors.textSecondaryLight,
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+
+                        // TextWidget.subText(
+                        // text:"Scrip Name" ,
+                        // color: colors.colorGrey,
+                        // theme: theme.isDarkMode,
+                        // fw:  currentSortType == "scrip"
+                        //         ? 1
+                        //         : null),
+
+                        Text(
+                          "Scrip Name",
+                          style: TextWidget.textStyle(
+                              fontSize: 14,
+                              color: currentSortType == "scrip"
+                                  ? theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight
+                                  : theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                              theme: theme.isDarkMode,
+                              fw: currentSortType == "scrip" ? 0 : null),
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            // LTP sorting option with indicator
+            InkWell(
+              onTap: () => _applySortForType("price"),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      children: [
+                        Icon(
+                          pricepisAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          size: 20,
+                          color: currentSortType == "price"
+                              ? theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight
+                              : theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                        ),
+                        const SizedBox(
+                          width: 15,
+                        ),
+
+                        //  TextWidget.subText(
+                        // text:"LTP",
+                        // color: colors.colorGrey,
+                        // theme: theme.isDarkMode,
+                        // fw:  currentSortType == "price"
+                        //         ? 1
+                        //         : null),
+
+                        Text(
+                          "LTP",
+                          style: TextWidget.textStyle(
+                              fontSize: 14,
+                              color: currentSortType == "price"
+                                  ? theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight
+                                  : theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                              theme: theme.isDarkMode,
+                              fw: currentSortType == "price" ? 0 : null),
+                        )
+                      ],
+                    ),
+                  ),
+                  const ListDivider(),
+                ],
+              ),
+            ),
+            // Percentage change sorting option with indicator
+            InkWell(
+              onTap: () => _applySortForType("perchng"),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    child: Row(
+                      children: [
+                        Icon(
+                            perchangisAscending
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            size: 20,
                             color: currentSortType == "perchng"
                                 ? theme.isDarkMode
                                     ? colors.primaryDark
                                     : colors.primaryLight
                                 : theme.isDarkMode
                                     ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                            theme: theme.isDarkMode,
-                            fw: currentSortType == "perchng" ? 0 : null),
-                      )
-                    ],
+                                    : colors.textSecondaryLight),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Text(
+                          "Perc.Change",
+                          style: TextWidget.textStyle(
+                              fontSize: 14,
+                              color: currentSortType == "perchng"
+                                  ? theme.isDarkMode
+                                      ? colors.primaryDark
+                                      : colors.primaryLight
+                                  : theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                              theme: theme.isDarkMode,
+                              fw: currentSortType == "perchng" ? 0 : null),
+                        )
+                      ],
+                    ),
                   ),
-                ),
-                const ListDivider(),
-              ],
+                  const ListDivider(),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

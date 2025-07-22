@@ -52,7 +52,6 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
   bool _GTTPriceTypeIsMarket = false;
   bool _GTTOCOPriceTypeIsMarket = false;
 
-
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -102,7 +101,8 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
         if (didPop) return; // If system handled back, do nothing
 
         ref.read(ordInputProvider).clearTextField();
-        await ref.read(marketWatchProvider)
+        await ref
+            .read(marketWatchProvider)
             .requestMWScrip(context: context, isSubscribe: true);
       },
       child: Consumer(builder: (context, WidgetRef ref, _) {
@@ -195,76 +195,75 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                           children: [
                             const SizedBox(height: 16),
                             Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(children: [
-                                        headerTitleText(
-                                            isOco
-                                                ? "Target Trigger Price"
-                                                : "Trigger Price",
-                                            theme),
-                                      ]),
-                                      const SizedBox(height: 8),
-                                      SizedBox(
-                                          height: 44,
-                                          child: CustomTextFormField(
-                                              fillColor: theme.isDarkMode
-                                                  ? colors.darkGrey
-                                                  : const Color(0xffF1F3F8),
-                                              onChanged: (value) {
-                                                double inputPrice =
-                                                    double.tryParse(value) ?? 0;
-
-                                                if (value.isNotEmpty &&
-                                                    inputPrice > 0) {
-                                                  final regex = RegExp(
-                                                      r'^(\d+)?(\.\d{0,2})?$');
-                                                  if (!regex.hasMatch(value)) {
-                                                    orderInput.val1Ctrl.text =
-                                                        value.substring(0,
-                                                            value.length - 1);
-                                                    orderInput.val1Ctrl
-                                                            .selection =
-                                                        TextSelection.collapsed(
-                                                            offset: orderInput
-                                                                .val1Ctrl
-                                                                .text
-                                                                .length);
-                                                  }
-                                                }
-                                                ScaffoldMessenger.of(context)
-                                                    .removeCurrentSnackBar();
-                                                if (value.isEmpty ||
-                                                    inputPrice <= 0) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
-                                                }
-                                              },
-                                              hintText:
-                                                  "${widget.gttOrderBook.ltp}",
-                                              hintStyle: textStyle(
-                                                  const Color(0xff666666),
-                                                  15,
-                                                  FontWeight.w400),
-                                              keyboardType: const TextInputType
-                                                  .numberWithOptions(
-                                                  decimal: true),
-                                              style: textStyle(
-                                                  theme.isDarkMode
-                                                      ? colors.colorWhite
-                                                      : colors.colorBlack,
-                                                  16,
-                                                  FontWeight.w600),
-                                              textCtrl: orderInput.val1Ctrl,
-                                              textAlign: TextAlign.start)),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(children: [
+                                      headerTitleText(
+                                          isOco
+                                              ? "Target Trigger Price"
+                                              : "Trigger Price",
+                                          theme),
                                     ]),
-                              ),
+                                    const SizedBox(height: 8),
+                                    SizedBox(
+                                        height: 44,
+                                        child: CustomTextFormField(
+                                            fillColor: theme.isDarkMode
+                                                ? colors.darkGrey
+                                                : const Color(0xffF1F3F8),
+                                            onChanged: (value) {
+                                              double inputPrice =
+                                                  double.tryParse(value) ?? 0;
+
+                                              if (value.isNotEmpty &&
+                                                  inputPrice > 0) {
+                                                final regex = RegExp(
+                                                    r'^(\d+)?(\.\d{0,2})?$');
+                                                if (!regex.hasMatch(value)) {
+                                                  orderInput.val1Ctrl.text =
+                                                      value.substring(
+                                                          0, value.length - 1);
+                                                  orderInput
+                                                          .val1Ctrl.selection =
+                                                      TextSelection.collapsed(
+                                                          offset: orderInput
+                                                              .val1Ctrl
+                                                              .text
+                                                              .length);
+                                                }
+                                              }
+                                              ScaffoldMessenger.of(context)
+                                                  .removeCurrentSnackBar();
+                                              if (value.isEmpty ||
+                                                  inputPrice <= 0) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(warningMessage(
+                                                        context,
+                                                        "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                              }
+                                            },
+                                            hintText:
+                                                "${widget.gttOrderBook.ltp}",
+                                            hintStyle: textStyle(
+                                                const Color(0xff666666),
+                                                15,
+                                                FontWeight.w400),
+                                            keyboardType: const TextInputType
+                                                .numberWithOptions(
+                                                decimal: true),
+                                            style: textStyle(
+                                                theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.colorBlack,
+                                                16,
+                                                FontWeight.w600),
+                                            textCtrl: orderInput.val1Ctrl,
+                                            textAlign: TextAlign.start)),
+                                  ]),
+                            ),
 
                             const SizedBox(height: 16),
                             // GttCondition(
@@ -390,18 +389,19 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     ScaffoldMessenger.of(
                                                             context)
                                                         .hideCurrentSnackBar();
-                                                   if (value.isEmpty || value == "0") {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                                  warningMessage(
-                                                                      context,
-                                                                      "Quantity can not be ${value == "0" ? 'zero' : 'empty'}"));
-                                                        } else {
-                                                          String newValue =
-                                                              value.replaceAll(
-                                                                  RegExp(r'[^0-9]'),
-                                                                  '');
+                                                    if (value.isEmpty ||
+                                                        value == "0") {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                              warningMessage(
+                                                                  context,
+                                                                  "Quantity can not be ${value == "0" ? 'zero' : 'empty'}"));
+                                                    } else {
+                                                      String newValue =
+                                                          value.replaceAll(
+                                                              RegExp(r'[^0-9]'),
+                                                              '');
                                                       if (newValue != value) {
                                                         orderInput.qtyCtrl
                                                             .text = newValue;
@@ -477,9 +477,14 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                             : colors.colorBlack,
                                                         16,
                                                         FontWeight.w600),
-                                                    isReadable: orderInput.actPrcType ==
-                                                                "Limit" || orderInput.actPrcType ==
-                                                                "SL Limit" ? false : true,
+                                                    isReadable: orderInput
+                                                                    .actPrcType ==
+                                                                "Limit" ||
+                                                            orderInput
+                                                                    .actPrcType ==
+                                                                "SL Limit"
+                                                        ? false
+                                                        : true,
                                                     // prefixIcon: Container(
                                                     //     margin:
                                                     //         const EdgeInsets.all(
@@ -492,30 +497,42 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                     //             ? const Color(0xff555555)
                                                     //             : colors.colorWhite),
                                                     //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                    
-                                                     suffixIcon: InkWell(
-                                                        onTap: () {
-                                                          setState(() {
-                                                            _GTTPriceTypeIsMarket =
-                                                                !_GTTPriceTypeIsMarket;
-                                                            orderInput.chngGTTPriceType(
-                                                                _GTTPriceTypeIsMarket ? "Market" : "Limit");
-                                                            if (orderInput.actPrcType == "Market" || orderInput.actPrcType =="SL MKT") {
-                                                              orderInput.priceCtrl.text ="Market";
-                                                            } else {
+
+                                                    suffixIcon: InkWell(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          _GTTPriceTypeIsMarket =
+                                                              !_GTTPriceTypeIsMarket;
+                                                          orderInput
+                                                              .chngGTTPriceType(
+                                                                  _GTTPriceTypeIsMarket
+                                                                      ? "Market"
+                                                                      : "Limit");
+                                                          if (orderInput
+                                                                      .actPrcType ==
+                                                                  "Market" ||
                                                               orderInput
-                                                                      .priceCtrl
-                                                                      .text =
-                                                                  "${widget.gttOrderBook.ltp}";
-                                                            }
-                                                          });
-                                                        },
-                                                        child: SvgPicture.asset(
-                                                            assets.switchIcon,
-                                                            fit: BoxFit.scaleDown),
-                                                      ),
-                                                    textCtrl: orderInput.priceCtrl,
-                                                    textAlign: TextAlign.start)),
+                                                                      .actPrcType ==
+                                                                  "SL MKT") {
+                                                            orderInput.priceCtrl
+                                                                    .text =
+                                                                "Market";
+                                                          } else {
+                                                            orderInput.priceCtrl
+                                                                    .text =
+                                                                "${widget.gttOrderBook.ltp}";
+                                                          }
+                                                        });
+                                                      },
+                                                      child: SvgPicture.asset(
+                                                          assets.switchIcon,
+                                                          fit:
+                                                              BoxFit.scaleDown),
+                                                    ),
+                                                    textCtrl:
+                                                        orderInput.priceCtrl,
+                                                    textAlign:
+                                                        TextAlign.start)),
                                           ]))
                                     ])),
                             const SizedBox(height: 16),
@@ -773,84 +790,77 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                               //         : colors.colorDivider),
                               const SizedBox(height: 16),
 
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0),
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(children: [
-                                          headerTitleText(
-                                              isOco
-                                                  ? "Stoploss Trigger Price"
-                                                  : "Trigger Price",
-                                              theme),
-                                        ]),
-                                        const SizedBox(height: 8),
-                                        SizedBox(
-                                            height: 44,
-                                            child: CustomTextFormField(
-                                                fillColor: theme.isDarkMode
-                                                    ? colors.darkGrey
-                                                    : const Color(0xffF1F3F8),
-                                                onChanged: (value) {
-                                                  double inputPrice =
-                                                      double.tryParse(value) ??
-                                                          0;
-
-                                                  if (value.isNotEmpty &&
-                                                      inputPrice > 0) {
-                                                    final regex = RegExp(
-                                                        r'^(\d+)?(\.\d{0,2})?$');
-                                                    if (!regex
-                                                        .hasMatch(value)) {
-                                                      orderInput.val2Ctrl.text =
-                                                          value.substring(0,
-                                                              value.length - 1);
-                                                      orderInput.val2Ctrl
-                                                              .selection =
-                                                          TextSelection.collapsed(
-                                                              offset: orderInput
-                                                                  .val2Ctrl
-                                                                  .text
-                                                                  .length);
-                                                    }
-                                                  }
-                                                  ScaffoldMessenger.of(context)
-                                                      .removeCurrentSnackBar();
-                                                  if (value.isEmpty ||
-                                                      inputPrice <= 0) {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                            warningMessage(
-                                                                context,
-                                                                "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
-                                                  }
-                                                },
-                                                hintText:
-                                                    "${widget.gttOrderBook.ltp}",
-                                                hintStyle: textStyle(
-                                                    const Color(0xff666666),
-                                                    15,
-                                                    FontWeight.w400),
-                                                keyboardType:
-                                                    const TextInputType
-                                                        .numberWithOptions(
-                                                        decimal: true),
-                                                style: textStyle(
-                                                    theme.isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
-                                                    16,
-                                                    FontWeight.w600),
-                                                textCtrl: orderInput.val2Ctrl,
-                                                textAlign: TextAlign.start)),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(children: [
+                                        headerTitleText(
+                                            isOco
+                                                ? "Stoploss Trigger Price"
+                                                : "Trigger Price",
+                                            theme),
                                       ]),
-                                ),
+                                      const SizedBox(height: 8),
+                                      SizedBox(
+                                          height: 44,
+                                          child: CustomTextFormField(
+                                              fillColor: theme.isDarkMode
+                                                  ? colors.darkGrey
+                                                  : const Color(0xffF1F3F8),
+                                              onChanged: (value) {
+                                                double inputPrice =
+                                                    double.tryParse(value) ?? 0;
 
-
+                                                if (value.isNotEmpty &&
+                                                    inputPrice > 0) {
+                                                  final regex = RegExp(
+                                                      r'^(\d+)?(\.\d{0,2})?$');
+                                                  if (!regex.hasMatch(value)) {
+                                                    orderInput.val2Ctrl.text =
+                                                        value.substring(0,
+                                                            value.length - 1);
+                                                    orderInput.val2Ctrl
+                                                            .selection =
+                                                        TextSelection.collapsed(
+                                                            offset: orderInput
+                                                                .val2Ctrl
+                                                                .text
+                                                                .length);
+                                                  }
+                                                }
+                                                ScaffoldMessenger.of(context)
+                                                    .removeCurrentSnackBar();
+                                                if (value.isEmpty ||
+                                                    inputPrice <= 0) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(warningMessage(
+                                                          context,
+                                                          "Trigger Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}"));
+                                                }
+                                              },
+                                              hintText:
+                                                  "${widget.gttOrderBook.ltp}",
+                                              hintStyle: textStyle(
+                                                  const Color(0xff666666),
+                                                  15,
+                                                  FontWeight.w400),
+                                              keyboardType: const TextInputType
+                                                  .numberWithOptions(
+                                                  decimal: true),
+                                              style: textStyle(
+                                                  theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  16,
+                                                  FontWeight.w600),
+                                              textCtrl: orderInput.val2Ctrl,
+                                              textAlign: TextAlign.start)),
+                                    ]),
+                              ),
 
                               const SizedBox(height: 16),
                               Padding(
@@ -865,8 +875,7 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                              headerTitleText(
-                                                  "Qty", theme),
+                                              headerTitleText("Qty", theme),
                                               const SizedBox(height: 8),
                                               SizedBox(
                                                   height: 44,
@@ -972,7 +981,8 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       ScaffoldMessenger.of(
                                                               context)
                                                           .hideCurrentSnackBar();
-                                                      if (value.isEmpty || value == "0") {
+                                                      if (value.isEmpty ||
+                                                          value == "0") {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
@@ -1027,10 +1037,11 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                               SizedBox(
                                                   height: 44,
                                                   child: CustomTextFormField(
-                                                      fillColor: theme.isDarkMode
-                                                          ? colors.darkGrey
-                                                          : const Color(
-                                                              0xffF1F3F8),
+                                                      fillColor:
+                                                          theme.isDarkMode
+                                                              ? colors.darkGrey
+                                                              : const Color(
+                                                                  0xffF1F3F8),
                                                       onChanged: (value) {},
                                                       hintText:
                                                           "${widget.gttOrderBook.placeOrderParamsLeg2!.prc}",
@@ -1047,9 +1058,11 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                                   .colorBlack,
                                                           16,
                                                           FontWeight.w600),
-                                                      isReadable: orderInput.actOcoPrcType ==
+                                                      isReadable: orderInput
+                                                                      .actOcoPrcType ==
                                                                   "Limit" ||
-                                                              orderInput.actOcoPrcType ==
+                                                              orderInput
+                                                                      .actOcoPrcType ==
                                                                   "SL Limit"
                                                           ? false
                                                           : true,
@@ -1061,42 +1074,42 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                                                       //             BorderRadius.circular(20),
                                                       //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                                                       //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                      
-                                                       suffixIcon: InkWell(
-                                                          onTap: () {
-                                                            setState(() {
-                                                              _GTTOCOPriceTypeIsMarket =
-                                                                  !_GTTOCOPriceTypeIsMarket;
-                                                              orderInput.chngOCOPriceType(
-                                                                  _GTTOCOPriceTypeIsMarket
-                                                                      ? "Market"
-                                                                      : "Limit");
-                                                              if (orderInput
-                                                                          .actOcoPrcType ==
-                                                                      "Market" ||
-                                                                  orderInput
-                                                                          .actOcoPrcType ==
-                                                                      "SL MKT") {
+
+                                                      suffixIcon: InkWell(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            _GTTOCOPriceTypeIsMarket =
+                                                                !_GTTOCOPriceTypeIsMarket;
+                                                            orderInput.chngOCOPriceType(
+                                                                _GTTOCOPriceTypeIsMarket
+                                                                    ? "Market"
+                                                                    : "Limit");
+                                                            if (orderInput
+                                                                        .actOcoPrcType ==
+                                                                    "Market" ||
                                                                 orderInput
-                                                                        .ocoPriceCtrl
-                                                                        .text =
-                                                                    "Market";
-                                                              } else {
-                                                                orderInput
-                                                                        .ocoPriceCtrl
-                                                                        .text =
-                                                                    "${widget.gttOrderBook.ltp}";
-                                                              }
-                                                            });
-                                                          },
-                                                          child: SvgPicture.asset(
-                                                              assets.switchIcon,
-                                                              fit: BoxFit
-                                                                  .scaleDown),
-                                                        ),
-                                                      
-                                                      textCtrl: orderInput.ocoPriceCtrl,
-                                                      textAlign: TextAlign.start)),
+                                                                        .actOcoPrcType ==
+                                                                    "SL MKT") {
+                                                              orderInput
+                                                                  .ocoPriceCtrl
+                                                                  .text = "Market";
+                                                            } else {
+                                                              orderInput
+                                                                      .ocoPriceCtrl
+                                                                      .text =
+                                                                  "${widget.gttOrderBook.ltp}";
+                                                            }
+                                                          });
+                                                        },
+                                                        child: SvgPicture.asset(
+                                                            assets.switchIcon,
+                                                            fit: BoxFit
+                                                                .scaleDown),
+                                                      ),
+                                                      textCtrl: orderInput
+                                                          .ocoPriceCtrl,
+                                                      textAlign:
+                                                          TextAlign.start)),
                                             ]))
                                       ])),
                               // const SizedBox(height: 3),
@@ -1217,15 +1230,15 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                             //       onChanged: (value) {},
                             //       textCtrl: orderInput.reMarksCtrl,
                             //     )),
-                              // if ((orderInput.actOcoPrcType == "Market" ||
-                              //         orderInput.actOcoPrcType == "SL MKT") ||
-                              //     (orderInput.actPrcType == "Market" ||
-                              //         orderInput.actPrcType == "SL MKT")) ...[
-                              //   const SizedBox(height: 16),
-                              //   marketProtectionDisclaimer(theme, context,
-                              //       widget.scripInfo, mktProtCtrl.text),
-                              //   const SizedBox(height: 16),
-                              // ],
+                            // if ((orderInput.actOcoPrcType == "Market" ||
+                            //         orderInput.actOcoPrcType == "SL MKT") ||
+                            //     (orderInput.actPrcType == "Market" ||
+                            //         orderInput.actPrcType == "SL MKT")) ...[
+                            //   const SizedBox(height: 16),
+                            //   marketProtectionDisclaimer(theme, context,
+                            //       widget.scripInfo, mktProtCtrl.text),
+                            //   const SizedBox(height: 16),
+                            // ],
                             const SizedBox(height: 100)
                           ],
                         )),
@@ -1236,177 +1249,207 @@ class _ModifyGTTState extends ConsumerState<ModifyGTT> {
                 bottomSheet: internet.connectionStatus ==
                         ConnectivityResult.none
                     ? const NoInternetWidget()
-                    : Container(
-                        color: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 4),
-                                  width: MediaQuery.of(context).size.width,
-                                  child: ElevatedButton(
-                                      onPressed: internet.connectionStatus ==
-                                              ConnectivityResult.none || ref.read(orderProvider).loading
-                                          ? null
-                                          : () async {
-                                              if (orderInput.disableGTTCond) {
-                                                if ((orderInput.val1Ctrl.text
-                                                            .isNotEmpty &&
-                                                        orderInput.val2Ctrl.text
-                                                            .isNotEmpty &&
-                                                        orderInput.priceCtrl
-                                                            .text.isNotEmpty &&
-                                                        orderInput.ocoPriceCtrl
-                                                            .text.isNotEmpty &&
-                                                        orderInput.ocoQtyCtrl
-                                                            .text.isNotEmpty) &&
-                                                    orderInput.qtyCtrl.text
-                                                        .isNotEmpty) {
-                                                  // if (orderInput
-                                                  //             .actOcoPrcType ==
-                                                  //         "SL Limit" ||
-                                                  //     orderInput
-                                                  //             .actOcoPrcType ==
-                                                  //         "SL MKT") {
-                                                  //   if (orderInput.ocoTrgPrcCtrl
-                                                  //       .text.isEmpty) {
-                                                  //     ScaffoldMessenger.of(
-                                                  //             context)
-                                                  //         .showSnackBar(
-                                                  //             warningMessage(
-                                                  //                 context,
-                                                  //                 "Trigger can not be empty"));
-                                                  //   } else {
-                                                  //     prepareToModifyOCOOrder(
-                                                  //         orderInput);
-                                                  //   }
-                                                  // } 
-                                                  // else {
+                    : SafeArea(
+                        child: Container(
+                            color: theme.isDarkMode
+                                ? colors.colorBlack
+                                : colors.colorWhite,
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 4),
+                                      width: MediaQuery.of(context).size.width,
+                                      child: ElevatedButton(
+                                          onPressed: internet
+                                                          .connectionStatus ==
+                                                      ConnectivityResult.none ||
+                                                  ref
+                                                      .read(orderProvider)
+                                                      .loading
+                                              ? null
+                                              : () async {
+                                                  if (orderInput
+                                                      .disableGTTCond) {
+                                                    if ((orderInput.val1Ctrl.text.isNotEmpty &&
+                                                            orderInput
+                                                                .val2Ctrl
+                                                                .text
+                                                                .isNotEmpty &&
+                                                            orderInput
+                                                                .priceCtrl
+                                                                .text
+                                                                .isNotEmpty &&
+                                                            orderInput
+                                                                .ocoPriceCtrl
+                                                                .text
+                                                                .isNotEmpty &&
+                                                            orderInput
+                                                                .ocoQtyCtrl
+                                                                .text
+                                                                .isNotEmpty) &&
+                                                        orderInput.qtyCtrl.text
+                                                            .isNotEmpty) {
+                                                      // if (orderInput
+                                                      //             .actOcoPrcType ==
+                                                      //         "SL Limit" ||
+                                                      //     orderInput
+                                                      //             .actOcoPrcType ==
+                                                      //         "SL MKT") {
+                                                      //   if (orderInput.ocoTrgPrcCtrl
+                                                      //       .text.isEmpty) {
+                                                      //     ScaffoldMessenger.of(
+                                                      //             context)
+                                                      //         .showSnackBar(
+                                                      //             warningMessage(
+                                                      //                 context,
+                                                      //                 "Trigger can not be empty"));
+                                                      //   } else {
+                                                      //     prepareToModifyOCOOrder(
+                                                      //         orderInput);
+                                                      //   }
+                                                      // }
+                                                      // else {
 
-                                                          double ltp = double
-                                                              .parse(widget
-                                                                      .gttOrderBook
-                                                                      .ltp ??
-                                                                  "0.00");
-                                                          double val1 =
-                                                              double.parse(
-                                                                  orderInput
-                                                                      .val1Ctrl
-                                                                      .text);
-                                                          double val2 =
-                                                              double.parse(
-                                                                  orderInput
-                                                                      .val2Ctrl
-                                                                      .text);
+                                                      double ltp = double.parse(
+                                                          widget.gttOrderBook
+                                                                  .ltp ??
+                                                              "0.00");
+                                                      double val1 =
+                                                          double.parse(
+                                                              orderInput
+                                                                  .val1Ctrl
+                                                                  .text);
+                                                      double val2 =
+                                                          double.parse(
+                                                              orderInput
+                                                                  .val2Ctrl
+                                                                  .text);
 
-                                                           if (val1 > ltp &&
-                                                              val2 < ltp) {
-                                                            prepareToModifyOCOOrder(orderInput);
-                                                          } else {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(warningMessage(
+                                                      if (val1 > ltp &&
+                                                          val2 < ltp) {
+                                                        prepareToModifyOCOOrder(
+                                                            orderInput);
+                                                      } else {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(warningMessage(
+                                                                context,
+                                                                val1 <= ltp
+                                                                    ? "Target Trigger Price can not be Less than LTP"
+                                                                    : val2 >= ltp
+                                                                        ? "Stoploss Trigger Price can not be Greater than LTP"
+                                                                        : "Trigger Price can not be equal to LTP"));
+                                                      }
+                                                      // }
+                                                    } else {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                              warningMessage(
+                                                                  context,
+                                                                  "Enter all Input fields"));
+                                                    }
+                                                  } else {
+                                                    if ((orderInput
+                                                                .val1Ctrl
+                                                                .text
+                                                                .isNotEmpty &&
+                                                            orderInput
+                                                                .priceCtrl
+                                                                .text
+                                                                .isNotEmpty) &&
+                                                        orderInput.qtyCtrl.text
+                                                            .isNotEmpty) {
+                                                      // if (orderInput.actPrcType ==
+                                                      //         "SL Limit" ||
+                                                      //     orderInput.actPrcType ==
+                                                      //         "SL MKT") {
+                                                      //   if (orderInput.trgPrcCtrl
+                                                      //       .text.isEmpty) {
+                                                      //     ScaffoldMessenger.of(
+                                                      //             context)
+                                                      //         .showSnackBar(
+                                                      //             warningMessage(
+                                                      //                 context,
+                                                      //                 "Trigger can not be empty"));
+                                                      //   } else {
+                                                      //     prepareToModifyGttOrder(
+                                                      //         orderInput);
+                                                      //   }
+                                                      // }
+                                                      // else {
+                                                      double ltp = double.parse(
+                                                          widget.gttOrderBook
+                                                                  .ltp ??
+                                                              "0.00");
+                                                      double val1 =
+                                                          double.parse(
+                                                              orderInput
+                                                                  .val1Ctrl
+                                                                  .text);
+                                                      // double val2 = double.parse(orderInput.val2Ctrl.text);
+
+                                                      if (val1 > ltp) {
+                                                        // orderInput.chngCond("Greater than");
+                                                        // orderInput.chngAlert("LTP");
+                                                        prepareToModifyGttOrder(
+                                                            orderInput);
+
+                                                        // } else if (val1 < ltp) {
+                                                        //   // orderInput.chngCond("Less than");
+                                                        //   // orderInput.chngAlert("LTP");
+                                                        //   prepareToModifyGttOrder(orderInput);
+                                                      } else {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                warningMessage(
                                                                     context,
-                                                                    val1 <= ltp
-                                                                        ? "Target Trigger Price can not be Less than LTP"
-                                                                        : val2 >= ltp
-                                                                            ? "Stoploss Trigger Price can not be Greater than LTP"
-                                                                            : "Trigger Price can not be equal to LTP"));
-                                                          }
-                                                  // }
-                                                } else {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Enter all Input fields"));
-                                                }
-                                              } else {
-                                                if ((orderInput.val1Ctrl.text
-                                                            .isNotEmpty &&
-                                                        orderInput.priceCtrl
-                                                            .text.isNotEmpty) &&
-                                                    orderInput.qtyCtrl.text
-                                                        .isNotEmpty) {
-                                                  // if (orderInput.actPrcType ==
-                                                  //         "SL Limit" ||
-                                                  //     orderInput.actPrcType ==
-                                                  //         "SL MKT") {
-                                                  //   if (orderInput.trgPrcCtrl
-                                                  //       .text.isEmpty) {
-                                                  //     ScaffoldMessenger.of(
-                                                  //             context)
-                                                  //         .showSnackBar(
-                                                  //             warningMessage(
-                                                  //                 context,
-                                                  //                 "Trigger can not be empty"));
-                                                  //   } else {
-                                                  //     prepareToModifyGttOrder(
-                                                  //         orderInput);
-                                                  //   }
-                                                  // } 
-                                                  // else {
-                                                  double ltp = double.parse(widget.gttOrderBook.ltp ?? "0.00");
-                                                          double val1 = double.parse(orderInput.val1Ctrl.text);
-                                                          // double val2 = double.parse(orderInput.val2Ctrl.text);
-
-                                                          if (val1 > ltp) {
-                                                            // orderInput.chngCond("Greater than");
-                                                            // orderInput.chngAlert("LTP");
-                                                            prepareToModifyGttOrder(orderInput);
-
-                                                          // } else if (val1 < ltp) {
-                                                          //   // orderInput.chngCond("Less than");
-                                                          //   // orderInput.chngAlert("LTP");
-                                                          //   prepareToModifyGttOrder(orderInput);
-
-                                                          } else {
-                                                            ScaffoldMessenger
-                                                                    .of(context)
-                                                                .showSnackBar(
-                                                                    warningMessage(
-                                                                        context,
-                                                                        "Trigger Price can not be equal to LTP"));
-                                                          }
-                                                    // prepareToModifyGttOrder(orderInput);
-                                                  // }
-                                                } else {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(warningMessage(
-                                                          context,
-                                                          "Enter all Input fields"));
-                                                }
-                                              }
-                                            },
-                                      style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 10),
-                                          backgroundColor: isBuy!
-                                              ? colors.ltpgreen
-                                              : colors.darkred,
-                                          // shape: const StadiumBorder()
+                                                                    "Trigger Price can not be equal to LTP"));
+                                                      }
+                                                      // prepareToModifyGttOrder(orderInput);
+                                                      // }
+                                                    } else {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                              warningMessage(
+                                                                  context,
+                                                                  "Enter all Input fields"));
+                                                    }
+                                                  }
+                                                },
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10),
+                                            backgroundColor: isBuy!
+                                                ? colors.ltpgreen
+                                                : colors.darkred,
+                                            // shape: const StadiumBorder()
                                           ),
-                                      child: ref.read(orderProvider).loading? 
-                                        const SizedBox(
-                                            width: 18,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: Color(0xff666666)),
-                                          )
-                                        : 
-                                      
-                                      Text("Modify",
-                                          style: textStyle(
-                                              const Color(0xffffffff),
-                                              14,
-                                              FontWeight.w600)))),
-                              if (defaultTargetPlatform == TargetPlatform.iOS)
-                                const SizedBox(height: 18)
-                            ]))));
+                                          child: ref.read(orderProvider).loading
+                                              ? const SizedBox(
+                                                  width: 18,
+                                                  height: 20,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                          color: Color(
+                                                              0xff666666)),
+                                                )
+                                              : Text("Modify",
+                                                  style: textStyle(
+                                                      const Color(0xffffffff),
+                                                      14,
+                                                      FontWeight.w600)))),
+                                  if (defaultTargetPlatform ==
+                                      TargetPlatform.iOS)
+                                    const SizedBox(height: 18)
+                                ])),
+                      )));
       }),
     );
   }
