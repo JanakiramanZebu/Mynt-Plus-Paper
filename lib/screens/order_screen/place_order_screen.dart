@@ -231,6 +231,14 @@ class _PlaceOrderScreenState extends ConsumerState<PlaceOrderScreen>
                         : userOrderPreference['prc'])
                 : 'Limit';
 
+            if(isUserOrderPreferenceAvailable && (userOrderPreference['prc'] == "SL MKT" || userOrderPreference['prc'] == "SL Limit")){
+                  isAdvancedOptionClicked = true;
+                  _isStoplossOrder = true;
+                  if(userOrderPreference['prc'] == "SL MKT"){
+                    _isMarketOrder=true;
+                  }
+            }
+
     priceTypes = [
       {
         "type": "Limit",
