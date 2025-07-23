@@ -75,17 +75,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                 ),
 
                 // 🔷 Button Row with border and horizontal padding only
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                        bottom: BorderSide(
-                            color: theme.isDarkMode
-                                ? colors.dividerDark
-                                : colors.dividerLight)),
-                  ),
-                  // margin: const EdgeInsets.symmetric(vertical: 16),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
                       // Add Fund Button
@@ -121,7 +112,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 10),
                       // Withdraw Button
                       Expanded(
                         child: SizedBox(
@@ -173,6 +164,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 12),
+                Divider(color: colors.colorDivider),
               ],
             ),
           ),
@@ -233,63 +226,54 @@ class _SecureFundState extends ConsumerState<SecureFund> {
     required VoidCallback onTap,
     Widget? expandedContent,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      TextWidget.subText(
-                          text: title,
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          fw: 3),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      TextWidget.subText(
-                          text: value,
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fw: 3),
-                      const SizedBox(width: 4),
-                      Icon(
-                        isExpanded
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    TextWidget.subText(
+                        text: title,
+                        theme: false,
                         color: theme.isDarkMode
                             ? colors.textSecondaryDark
                             : colors.textSecondaryLight,
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                        fw: 3),
+                  ],
+                ),
+                Row(
+                  children: [
+                    TextWidget.subText(
+                        text: value,
+                        theme: false,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 3),
+                    const SizedBox(width: 4),
+                    Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          if (isExpanded && expandedContent != null) expandedContent,
-        ],
-      ),
+        ),
+        if (isExpanded && expandedContent != null) expandedContent,
+        Divider(color: colors.colorDivider),
+      ],
     );
   }
 
@@ -336,9 +320,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Divider(
-                    height: 1,
                     color: colors.colorDivider,
                   ),
                 ),
@@ -346,7 +329,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextWidget.subText(
-                      text: "Col - Cash Equivalent",
+                      text: "Col Cash Equivalent",
                       theme: false,
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
@@ -365,9 +348,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Divider(
-                    height: 1,
                     color: colors.colorDivider,
                   ),
                 ),
@@ -375,7 +357,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextWidget.subText(
-                      text: "Col -Non-Cash",
+                      text: "Col Non-Cash",
                       theme: false,
                       color: theme.isDarkMode
                           ? colors.textSecondaryDark
@@ -395,9 +377,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                 ),
                 filteredCredits.isNotEmpty
                     ? Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Divider(
-                          height: 1,
                           color: colors.colorDivider,
                         ),
                       )
@@ -438,9 +419,8 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                     return Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Divider(
-                            height: 1,
                             color: colors.colorDivider,
                           ),
                         ),
@@ -467,7 +447,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                 itemCount: funds.listOfUsedMrgn.length,
                 itemBuilder: (BuildContext context, int index) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -494,12 +474,10 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                 },
                 separatorBuilder: (BuildContext context, int index) {
                   return Divider(
-                    height: 1,
                     color: colors.colorDivider.withOpacity(0.5),
                   );
                 }),
             Divider(
-              height: 1,
               color: colors.colorDivider.withOpacity(0.5),
             ),
           ],
@@ -533,7 +511,6 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   ]),
             ),
             Divider(
-              height: 1,
               color: colors.colorDivider.withOpacity(0.5),
             ),
           ],
@@ -565,7 +542,6 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                 ]),
           ),
           Divider(
-            height: 1,
             color: colors.colorDivider.withOpacity(0.5),
           ),
 
@@ -613,7 +589,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
         TextWidget.subText(
             text: value1, theme: false, color: const Color(0xff000000), fw: 0),
         const SizedBox(height: 2),
-        Divider(height: 1, color: colors.colorDivider.withOpacity(0.5))
+        Divider(color: colors.colorDivider.withOpacity(0.5))
       ])),
       const SizedBox(width: 24),
       Expanded(
@@ -625,7 +601,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
         TextWidget.subText(
             text: value2, theme: false, color: const Color(0xff000000), fw: 0),
         const SizedBox(height: 2),
-        Divider(height: 1, color: colors.colorDivider.withOpacity(0.5))
+        Divider(color: colors.colorDivider.withOpacity(0.5))
       ]))
     ]);
   }

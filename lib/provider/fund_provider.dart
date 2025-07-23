@@ -192,6 +192,7 @@ class FundProvider extends DefaultChangeNotifier {
     try {
       _listOfCredits = [];
       _listOfUsedMrgn = [];
+      final Set<String> usedMrgnNames = {};
       _fundDetailModel = await api.getFunds();
 
       if (_fundDetailModel!.emsg == "Session Expired :  Invalid Session Key") {
@@ -214,7 +215,8 @@ class FundProvider extends DefaultChangeNotifier {
         double auxUnclearedcash =
             double.parse(_fundDetailModel!.auxUnclearedcash ?? "0.00");
         double daycash = double.parse(_fundDetailModel!.daycash ?? "0.00");
-        double collateral = double.parse(_fundDetailModel!.collateral ?? "0.00");
+        double collateral =
+            double.parse(_fundDetailModel!.collateral ?? "0.00");
 
         if (cash != 0.00) {
           _listOfCredits.add({"value": "$cash", "name": "Opening Balance"});
@@ -270,26 +272,28 @@ class FundProvider extends DefaultChangeNotifier {
         double premium = double.parse(_fundDetailModel!.premium ?? "0.00");
         double brokerage = double.parse(_fundDetailModel!.brokerage ?? "0.00");
 
-        if (span != 0.00) {
+        if (span != 0.00 && usedMrgnNames.add("Span")) {
           _listOfUsedMrgn.add({"value": "$span", "name": "Span"});
         }
-        if (expo != 0.00) {
+        if (expo != 0.00 && usedMrgnNames.add("Exposure")) {
           _listOfUsedMrgn.add({"value": "$expo", "name": "Exposure"});
         }
-        if (addmrg != 0.00) {
+        if (addmrg != 0.00 && usedMrgnNames.add("Additional Margin")) {
           _listOfUsedMrgn
               .add({"value": "$addmrg", "name": "Additional Margin"});
         }
-        if (premium != 0.00) {
+        if (premium != 0.00 && usedMrgnNames.add("Option Premium")) {
           _listOfUsedMrgn.add({"value": "$premium", "name": "Option Premium"});
         }
-        if (brokerage != 0.00) {
+        if (brokerage != 0.00 && usedMrgnNames.add("Unrealized Expenses")) {
           _listOfUsedMrgn
               .add({"value": "$brokerage", "name": "Unrealized Expenses"});
         }
 
         utilizedMrgn = span + expo + addmrg;
-        if (!urmtom.isNegative && urmtom != 0.00) {
+        if (!urmtom.isNegative &&
+            urmtom != 0.00 &&
+            usedMrgnNames.add("Unrealized MTM")) {
           utilizedMrgn += urmtom;
 
           _listOfUsedMrgn.add({"value": "$urmtom", "name": "Unrealized MTM"});
@@ -318,7 +322,7 @@ class FundProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Funds", "Error": "$e"});
       notifyListeners();
-    } finally {}
+    }
   }
 
   showMrgBreak() {

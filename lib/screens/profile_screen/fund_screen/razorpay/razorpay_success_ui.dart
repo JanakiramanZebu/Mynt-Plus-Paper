@@ -9,6 +9,8 @@ import '../../../../res/res.dart';
 import '../../../../sharedWidget/custom_drag_handler.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/list_divider.dart';
+import '../../../../sharedWidget/loader_ui.dart';
+import '../../../../sharedWidget/splash_loader.dart';
 
 class RazorpaySuccessUi extends StatefulWidget {
   final String amount;
@@ -33,124 +35,140 @@ class _RazorpaySuccessUiState extends State<RazorpaySuccessUi> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (didPop, result) async {
-                if (didPop) return;
-              },
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+      },
       child: Consumer(
         builder: (context, ref, child) {
           final fund = ref.watch(transcationProvider);
           final theme = ref.watch(themeProvider);
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                boxShadow: const [
-                  BoxShadow(
-                      color: Color(0xff999999),
-                      blurRadius: 4.0,
-                      offset: Offset(2.0, 0.0))
-                ]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  alignment: Alignment.center,
-                  child: Column(
-                    children: [
-                      const CustomDragHandler(),
-                      Icon(
-                        Icons.check_circle_rounded,
-                        //
-                        color: colors.kColorGreenButton,
-                        size: 70,
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      TextWidget.subText(
-                          text: "SUCCESS",
-                          theme: false,
-                          color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                          ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      TextWidget.paraText(
-                          text: "Payment Successful",
-                          theme: false,
-                          color: colors.textSecondaryLight,
-                          ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      TextWidget.custmText(
-                          text: "₹${widget.amount}.00".toString(),
-                          fs: 40,
-                          theme: theme.isDarkMode,
-                           color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      TextWidget.paraText(
-                          text: time,
-                          theme: false,
-                          color: colors.textSecondaryLight,
-                          ),
-                    ],
-                  ),
-                ),
-               SizedBox(height: 16,),
-                 data("Bank Name",
-                     fund.razorpayTranstationRes?.notes?.bankname?.toString() ?? "N/A", theme),
 
-                      data("A/c No",
-                    fund.razorpayTranstationRes?.notes?.accNo?.toString() ?? "N/A", theme),
-               
-                data("Payment Id",
-                     fund.razorpayTranstationRes?.id?.toString() ?? "N/A", theme),
-                      const SizedBox(height: 16),
-               
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          minimumSize: const Size(0, 40),
-                          backgroundColor: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
+          final amount = fund.razorpayTranstationRes?.amount;
+          final amountString =
+              amount != null ? (amount / 100).toStringAsFixed(2) : "0.00";
+          return TransparentLoaderScreen(
+            isLoading: fund.fundLoading,
+            child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: theme.isDarkMode
+                        ? colors.colorBlack
+                        : colors.colorWhite,
+                    boxShadow: const [
+                      BoxShadow(
+                          color: Color(0xff999999),
+                          blurRadius: 4.0,
+                          offset: Offset(2.0, 0.0))
+                    ]),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          const CustomDragHandler(),
+                          Icon(
+                            Icons.check_circle_rounded,
+                            //
+                            color: colors.kColorGreenButton,
+                            size: 70,
                           ),
-                        ),
-                        onPressed: () {
-                          // Clear the amount text field
-                          ref.read(transcationProvider).amount.clear();
-                          Navigator.pop(context);
-                          FocusScope.of(context).unfocus();
-                        },
-                        child: TextWidget.titleText(
-                            text: 'Close',
+                          const SizedBox(
+                            height: 16,
+                          ),
+                          TextWidget.subText(
+                            text: "SUCCESS",
                             theme: false,
-                            color:colors.colorWhite,
-                            fw: 2)),
-                  ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-              ],
-            ),
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                          ),
+                          const SizedBox(
+                            height: 5,
+                          ),
+                          TextWidget.paraText(
+                            text: "Payment Successful",
+                            theme: false,
+                            color: colors.textSecondaryLight,
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          TextWidget.custmText(
+                            text: "₹$amountString".toString(),
+                            fs: 40,
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          TextWidget.paraText(
+                            text: time,
+                            theme: false,
+                            color: colors.textSecondaryLight,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 16,
+                    ),
+                    data(
+                        "Bank Name",
+                        fund.razorpayTranstationRes?.notes?.bankname
+                                ?.toString() ??
+                            "",
+                        theme),
+                    data(
+                        "A/c No",
+                        fund.razorpayTranstationRes?.notes?.accNo?.toString() ??
+                            "",
+                        theme),
+                    data(
+                        "Payment Id",
+                        fund.razorpayTranstationRes?.id?.toString() ?? "",
+                        theme),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              minimumSize: const Size(0, 40),
+                              backgroundColor: theme.isDarkMode
+                                  ? colors.primaryDark
+                                  : colors.primaryLight,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                            ),
+                            onPressed: () {
+                              // Clear the amount text field
+                              ref.read(transcationProvider).amount.clear();
+                              Navigator.pop(context);
+                              FocusScope.of(context).unfocus();
+                            },
+                            child: TextWidget.titleText(
+                                text: 'Close',
+                                theme: false,
+                                color: colors.colorWhite,
+                                fw: 2)),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                  ],
+                )),
           );
         },
       ),

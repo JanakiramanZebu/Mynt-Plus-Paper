@@ -139,10 +139,14 @@ mixin TranscationApi on ApiCore {
       );
 
       final json = jsonDecode(res.body);
-      //  log("getrazorpayStatus ${res.body} ");
+      log("getrazorpayStatus ${res.body} ");
       final razorpay = RazorpayTranstationRes.fromJson(json);
+      print("getrazorpayStatus success  ::::::: $razorpay");
+
       return razorpay;
     } catch (e) {
+      print("getrazorpayStatus error  ::::::: $e");
+      log("getrazorpayStatus error log  ::::::: $e");
       rethrow;
     }
   }
@@ -332,7 +336,7 @@ mixin TranscationApi on ApiCore {
           headers: funddefaultHeaders,
           body: jsonEncode({"string": encryptedPayload}));
       final json = jsonDecode(res.body);
-      final decryptedData = decryptionFunction(json["str"]);    
+      final decryptedData = decryptionFunction(json["str"]);
       //  log("getpayemntwithdraw------------ ${jsonDecode(jsonEncode(decryptedData))}}");
       return PaymentWithdraw.fromJson(jsonDecode(decryptedData));
     } catch (e) {

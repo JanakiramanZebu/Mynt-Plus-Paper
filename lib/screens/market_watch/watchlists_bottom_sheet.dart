@@ -32,14 +32,9 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
       final theme = ref.watch(themeProvider);
       return Container(
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: theme.isDarkMode ? Colors.black : Colors.white,
-              boxShadow: const [
-                BoxShadow(
-                    color: Color(0xff999999),
-                    blurRadius: 4.0,
-                    offset: Offset(2.0, 0.0))
-              ]),
+            borderRadius: BorderRadius.circular(16),
+            color: theme.isDarkMode ? Colors.black : Colors.white,
+          ),
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -143,7 +138,7 @@ class _WatchlistsBottomSheetState extends State<WatchlistsBottomSheet> {
                             return Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                onTap: () async{
+                                onTap: () async {
                                   // click to switch watch list
                                   ref
                                       .read(marketWatchProvider)

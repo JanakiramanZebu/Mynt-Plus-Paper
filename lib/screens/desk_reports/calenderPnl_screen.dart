@@ -40,6 +40,16 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.animation!.addListener(_onTabChanged);
+    // Fetch data only if not loaded for this year/segment
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ledgerprovider = ref.read(ledgerProvider);
+      ledgerprovider.loadOrFetchCalendarPnlData(
+        context,
+        ledgerprovider.startDate,
+        ledgerprovider.today,
+        ledgerprovider.selectedSegment,
+      );
+    });
   }
 
   void _onTabChanged() {
@@ -82,8 +92,13 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
               ledgerprovider.today, 'Equity', context);
           ledgerprovider.setSegment("Equity");
 
-          ledgerprovider.fetchcalenderpnldata(context, ledgerprovider.startDate,
-              ledgerprovider.today, 'Equity');
+          await ledgerprovider.loadOrFetchCalendarPnlData(
+            context,
+            ledgerprovider.startDate,
+            ledgerprovider.today,
+            ledgerprovider.selectedSegment,
+            force: true,
+          );
         }
 
         if (ledgerprovider.calenderpnlAllData != null) {
@@ -160,11 +175,12 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                       onTap: (index) {
                         ledgerprovider.setSegment(
                             ledgerprovider.availableSegments[index]);
-                        ledgerprovider.fetchcalenderpnldata(
-                            context,
-                            ledgerprovider.formattedStartDate,
-                            ledgerprovider.formattedendDate,
-                            ledgerprovider.availableSegments[index]);
+                        ledgerprovider.loadOrFetchCalendarPnlData(
+                          context,
+                          ledgerprovider.formattedStartDate,
+                          ledgerprovider.formattedendDate,
+                          ledgerprovider.availableSegments[index],
+                        );
                       },
                     ),
                   ],
@@ -517,8 +533,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                 ledgerprovider
                                                     .changeormountedsharing(
                                                         "change");
-                                                await ledgerprovider
-                                                    .fetchcalenderpnldata(
+                                                ledgerprovider
+                                                    .loadOrFetchCalendarPnlData(
                                                   context,
                                                   ledgerprovider
                                                       .formattedStartDate,
@@ -751,8 +767,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                 ledgerprovider
                                                     .changeormountedsharing(
                                                         "change");
-                                                await ledgerprovider
-                                                    .fetchcalenderpnldata(
+                                                ledgerprovider
+                                                    .loadOrFetchCalendarPnlData(
                                                   context,
                                                   ledgerprovider
                                                       .formattedStartDate,

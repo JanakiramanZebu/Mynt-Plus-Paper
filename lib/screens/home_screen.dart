@@ -935,8 +935,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         await ref.read(transcationProvider).ip();
         await ref.read(transcationProvider).fetchupiIdView(
               ref
-                  .read(transcationProvider)
-                  .bankdetails?.dATA?[ref.read(transcationProvider).indexss][1] ?? "",
+                      .read(transcationProvider)
+                      .bankdetails
+                      ?.dATA?[ref.read(transcationProvider).indexss][1] ??
+                  "",
               ref
                   .read(transcationProvider)
                   .bankdetails!

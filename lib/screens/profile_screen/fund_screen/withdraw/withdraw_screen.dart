@@ -45,7 +45,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
 
     // Clear the text field when screen is initialized
     widget.withdarw.withdrawamount.clear();
-    
+
     disable = (widget.withdarw.withdrawamount.text.isEmpty ||
         widget.withdarw.payoutdetails!.withdrawAmount == "0.00");
     super.initState();
@@ -87,7 +87,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                   children: [
                     TextWidget.subText(
                       text:
-                          "Withdrawable amount (Bal: ${widget.withdarw.payoutdetails!.withdrawAmount} )",
+                          "Withdrawable Amount ₹ ${widget.withdarw.payoutdetails!.withdrawAmount}",
                       theme: widget.theme.isDarkMode,
                       color: colors.textPrimaryLight,
                     ),
@@ -113,18 +113,19 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         // widget.withdarw.withdrawamount.text = value;
                         setState(() {
                           if (widget.withdarw.withdrawamount.text.isNotEmpty) {
-                            double enteredAmount = double.parse(widget.withdarw.withdrawamount.text);
-                            double availableAmount = double.parse(widget.withdarw.payoutdetails!.withdrawAmount.toString());                           
-                           
+                            double enteredAmount = double.parse(
+                                widget.withdarw.withdrawamount.text);
+                            double availableAmount = double.parse(widget
+                                .withdarw.payoutdetails!.withdrawAmount
+                                .toString());
+
                             if (enteredAmount <= 0) {
                               disable = true;
                               withdarwerror = "Amount must be greater than 0";
-                            }                            
-                            else if (enteredAmount > availableAmount) {
+                            } else if (enteredAmount > availableAmount) {
                               disable = true;
                               withdarwerror = "Insufficient fund";
-                            }                           
-                            else {
+                            } else {
                               disable = false;
                               withdarwerror = "";
                             }
@@ -191,8 +192,6 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         color: colors.error,
                       ),
               ),
-              const SizedBox(height: 16),
-             
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: OutlinedButton(
@@ -215,12 +214,17 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                               "0.00") {
                             ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(context, "Insufficient fund"));
-                          } else if (widget.withdarw.withdrawamount.text.isEmpty) {
+                          } else if (widget
+                              .withdarw.withdrawamount.text.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(
                                     context, "Please enter the amount"));
-                          } else if (double.tryParse(widget.withdarw.withdrawamount.text) != null && 
-                                     double.parse(widget.withdarw.withdrawamount.text) <= 0) {
+                          } else if (double.tryParse(
+                                      widget.withdarw.withdrawamount.text) !=
+                                  null &&
+                              double.parse(
+                                      widget.withdarw.withdrawamount.text) <=
+                                  0) {
                             ScaffoldMessenger.of(context).showSnackBar(
                                 warningMessage(
                                     context, "Amount must be greater than 0"));
@@ -230,10 +234,10 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                                     context, "Please enter a valid amount"));
                           }
                         }
-                      : () async {                       
-                        setState(() {
-                          _withdrawLoading = true;
-                        });
+                      : () async {
+                          setState(() {
+                            _withdrawLoading = true;
+                          });
                           await widget.withdarw.fetchPaymentWithDraw(
                               widget.withdarw.ipAddress,
                               widget.withdarw.withdrawamount.text,
@@ -241,19 +245,19 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                               context);
                           _isVisible = false;
                           widget.withdarw.focusNode.unfocus();
-                           widget.withdarw.withdrawamount.clear();
+                          widget.withdarw.withdrawamount.clear();
                           setState(() {
                             disable = true;
                             withdarwerror = "";
                           });
-                          
+
                           showUIWithDelay();
                           setState(() {
                             _withdrawLoading = false;
                           });
                         },
                   child: _withdrawLoading
-                      ?  SizedBox(
+                      ? SizedBox(
                           width: 18,
                           height: 20,
                           child: CircularProgressIndicator(
@@ -267,7 +271,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-               Padding(
+              Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Column(
@@ -326,13 +330,12 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         ),
                       ),
                     ),
-                    
+
                     // Expandable break up content
                     if (isBreakUpExpanded) ...[
                       const SizedBox(height: 16),
                       _buildBreakUpContent(),
                     ],
-                    
                   ],
                 ),
               ),
@@ -343,12 +346,12 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextWidget.subText(
-                          text: "Open Request",
-                          theme: false,
-                          color: widget.theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          ),
+                        text: "Open Request",
+                        theme: false,
+                        color: widget.theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                      ),
                       const SizedBox(
                         height: 12,
                       ),
@@ -365,24 +368,24 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                           title: Row(
                             children: [
                               TextWidget.paraText(
-                                  text: "Request on : ",
-                                  theme: false,
-                                  color: colors.colorBlack,
-                                 ),
+                                text: "Request on : ",
+                                theme: false,
+                                color: colors.colorBlack,
+                              ),
                               TextWidget.paraText(
-                                  text:
-                                      "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
-                                  theme: false,
-                                  color: colors.secondaryLight,
-                                 ),
+                                text:
+                                    "${widget.withdarw.withdrawstatus?[0].eNTRYTIME}",
+                                theme: false,
+                                color: colors.secondaryLight,
+                              ),
                             ],
                           ),
                           trailing: TextWidget.subText(
-                              text:
-                                  "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
-                              theme: false,
-                              color: colors.textPrimaryLight,
-                              ),
+                            text:
+                                "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
+                            theme: false,
+                            color: colors.textPrimaryLight,
+                          ),
                         ),
                       ),
                     ],
@@ -445,63 +448,63 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
   }
 
   Widget data(String name, String value, ThemesProvider theme) {
-     return Column(
-       children: [
-         const SizedBox(height: 12),
-         Row(
-           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-           children: [
-             TextWidget.subText(
-                 text: name,
-                 theme: false,
-                 color: theme.isDarkMode
-                     ? colors.textSecondaryDark
-                     : colors.textSecondaryLight,
-                 ),
-             TextWidget.subText(
-                 text: value,
-                 theme: false,
-                 color: theme.isDarkMode
-                     ? colors.textPrimaryDark
-                     : colors.textPrimaryLight,
-                 ),
-           ],
-         ),
-         const SizedBox(height: 8),
-         Divider(
-           thickness: 0,
-           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-         )
-       ],
-     );
-   }
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextWidget.subText(
+              text: name,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+            ),
+            TextWidget.subText(
+              text: value,
+              theme: false,
+              color: theme.isDarkMode
+                  ? colors.textPrimaryDark
+                  : colors.textPrimaryLight,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Divider(
+          thickness: 0,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
+      ],
+    );
+  }
 
-   Widget _buildBreakUpContent() {
-     final funds = ref.watch(fundProvider);
-     return Container(
-       padding: const EdgeInsets.symmetric(horizontal: 16),
-       child: Column(
-         children: [
-           // Available cash
-           data(
-             "Available cash",
-             "₹${funds.fundDetailModel?.totCredit ?? "0.00"}",
-             widget.theme,
-           ),
-           // Margin used
-           data(
-             "Margin used",
-             "₹${funds.fundDetailModel?.utilizedMrgn ?? "0.00"}",
-             widget.theme,
-           ),
-           // Withdrawable amount
-           data(
-             "Withdrawable amount",
-             "₹${widget.withdarw.payoutdetails!.withdrawAmount}",
-             widget.theme,
-           ),
-         ],
-       ),
-     );
-   }
+  Widget _buildBreakUpContent() {
+    final funds = ref.watch(fundProvider);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          // Available cash
+          data(
+            "Available cash",
+            "₹${funds.fundDetailModel?.totCredit ?? "0.00"}",
+            widget.theme,
+          ),
+          // Margin used
+          data(
+            "Margin used",
+            "₹${funds.fundDetailModel?.utilizedMrgn ?? "0.00"}",
+            widget.theme,
+          ),
+          // Withdrawable amount
+          data(
+            "Withdrawable amount",
+            "₹${widget.withdarw.payoutdetails!.withdrawAmount}",
+            widget.theme,
+          ),
+        ],
+      ),
+    );
+  }
 }

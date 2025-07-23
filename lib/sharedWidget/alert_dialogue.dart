@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../provider/thems.dart';
 import '../../res/res.dart';
+import '../res/global_state_text.dart';
 import 'custom_exch_badge.dart';
 
 class AlertDialogue extends ConsumerWidget {
@@ -19,83 +20,100 @@ class AlertDialogue extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.read(themeProvider);
     return AlertDialog(
-      backgroundColor: theme.isDarkMode
-          ? const Color.fromARGB(255, 18, 18, 18)
-          : colors.colorWhite,
+      backgroundColor: colors.colorWhite,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16))),
-      scrollable: true,
-      actionsPadding:
-          const EdgeInsets.only(left: 16, right: 16, bottom: 14, top: 3),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-      titlePadding: const EdgeInsets.only(left: 16),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Information',
-              style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  16,
-                  FontWeight.w600)),
-          IconButton(
-              splashRadius: 20,
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: const Icon(Icons.close_rounded))
-        ],
+        borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
-      content: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: Column(children: [
-            Divider(color: colors.colorDivider, height: 0),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+      scrollable: true,
+      titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+      actionsPadding:
+          const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
+      title: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  onTap: () async {
+                    await Future.delayed(const Duration(milliseconds: 150));
+                    Navigator.pop(context);
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  splashColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  highlightColor: theme.isDarkMode
+                      ? colors.splashColorDark
+                      : colors.splashColorLight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 22,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("$scripName  ",
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    style: textStyles.appBarTitleTxt.copyWith(
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack)),
-                CustomExchBadge(exch: exch)
+                // TextWidget.subText(
+                //   text: "$scripName",
+                //   theme: theme.isDarkMode,
+                //   color: theme.isDarkMode
+                //       ? colors.textPrimaryDark
+                //       : colors.textPrimaryLight,
+                //   fw: 3,
+                //   align: TextAlign.center,
+                // ),
+                TextWidget.subText(
+                  text: content,
+                  theme: theme.isDarkMode,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 3,
+                  align: TextAlign.center,
+                ),
               ],
             ),
-            const SizedBox(height: 16),
-            Row(children: [
-              Expanded(
-                  child: Text(content,
-                      style: textStyle(
-                          theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                          14,
-                          FontWeight.w500)))
-            ]),
-            const SizedBox(height: 10),
-          ])),
+          ),
+        ],
+      ),
       actions: [
         SizedBox(
           width: MediaQuery.of(context).size.width,
-          child: ElevatedButton(
+          child: OutlinedButton(
             onPressed: () async {
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              backgroundColor:
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(0, 40),
+              side: BorderSide(color: colors.btnOutlinedBorder),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50)),
+                borderRadius: BorderRadius.circular(5),
+              ),
+              backgroundColor: colors.primaryDark,
             ),
-            child: Text("Ok",
-                style: textStyle(
-                    !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                    14,
-                    FontWeight.w500)),
+            child: TextWidget.titleText(
+              text: "Ok",
+              theme: theme.isDarkMode,
+              color: !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+              fw: 0,
+            ),
           ),
         ),
       ],

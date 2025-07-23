@@ -917,6 +917,8 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setHideLoginOptBtn(false);
         pref.setMobileLogin(false);
 
+        ref.read(fundProvider).clearFunds();
+
         // Update UI state
         ref.read(indexListProvider).bottomMenu(1, context);
 
@@ -1735,7 +1737,9 @@ class AuthProvider extends DefaultChangeNotifier {
           await ref.read(marketWatchProvider).fetchMWList(context, false);
 
           ref.read(portfolioProvider).clearAllportfolio();
+          await ref.read(fundProvider).clearFunds();
           ref.read(orderProvider).clearAllorders();
+          ref.read(ledgerProvider).clearCalendarPnlCache();
           ref.read(ledgerProvider).setterfornullallSwitch = null;
 
           // initLaod(false);

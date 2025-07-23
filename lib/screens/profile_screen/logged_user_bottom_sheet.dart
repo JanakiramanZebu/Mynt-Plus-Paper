@@ -352,6 +352,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                               ref.read(fundProvider).clearFunds();
 
                               userProfile.clearUserData();
+                              ledgerprovider.clearCalendarPnlCache();
 
                               final websocket = ref.read(websocketProvider);
                               websocket.closeSocket(true);

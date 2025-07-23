@@ -24,6 +24,7 @@ import '../models/fund_model_testing_copy/fund_withdraw_status_model.dart';
 import '../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
 import '../models/fund_model_testing_copy/secured_client_data_model.dart';
 import '../models/fund_model_testing_copy/view_upi_id.dart';
+import '../res/res.dart';
 import '../screens/profile_screen/fund_screen/upi_apps_screens/cancel_request_alert_box.dart';
 import '../screens/profile_screen/fund_screen/upi_apps_screens/no_upi_apps_alert.dart';
 import '../screens/profile_screen/fund_screen/upi_apps_screens/upi_apps_payment_failed.dart';
@@ -185,26 +186,31 @@ class TranctionProvider extends DefaultChangeNotifier {
   bool get isUpiIdBottomSheetShown => _isUpiIdBottomSheetShown;
 
   final List _defaultUpiapps = [
-    {
-      'name': 'UPI APPS',
-      'image': 'assets/icon/icons8-bhim.svg',
-      'limit': '1,00,000'
-    },
-    {
-      'name': 'UPI ID',
-      'image': 'assets/icon/icons8-bhim.svg',
-      'limit': '1,00,000'
-    },
+    {'name': 'UPI APPS', 'image': assets.upiIcon1, 'limit': '1,00,000'},
+    {'name': 'UPI ID', 'image': assets.upiIcon1, 'limit': '1,00,000'},
     {
       'name': 'NET BANKING',
-      'image': 'assets/icon/razpay.svg',
+      'image': assets.netbankingIcon,
       'limit': '5,000,000'
     },
   ];
   List get defaultUpiapps => _defaultUpiapps;
 
+  final List _addfundIcons = [
+    {
+      'image': assets.upiIcon,
+    },
+    {
+      'image': assets.upiIcon,
+    },
+    {
+      'image': assets.netbankingIcon,
+    },
+  ];
+  List get addfundIcons => _addfundIcons;
+
   upiidOnchange(String value) {
-    upiid.text = value;
+    // upiid.text = value;
     notifyListeners();
   }
 
@@ -226,17 +232,17 @@ class TranctionProvider extends DefaultChangeNotifier {
     _maxfunderror = '';
     amount.clear();
     // upiid.clear();
-    
+
     // Reset other form-related states
     _selectedIndex = -1;
     _upiIdbutton = true;
     upiiderror = null;
     amounterror = null;
-    
+
     // Reset bottom sheet state
     _isUpiAppsBottomSheetShown = false;
     _isUpiIdBottomSheetShown = false;
-    
+
     // Initialize bank and account data
     _multipleAccno = _accno = bankdetails!.dATA![index][2];
     _ifsc = bankdetails!.dATA![indexss][3];
@@ -284,7 +290,7 @@ class TranctionProvider extends DefaultChangeNotifier {
   }
 
   validateUPI(String value) {
-    upiid.text = value;
+    // upiid.text = value;
     if (upiid.text.isEmpty) {
       upiiderror = 'Please enter a UPI ID';
     } else if (!_upiPattern.hasMatch(upiid.text)) {
@@ -368,7 +374,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       //  print("------------ ${_fundTokenValidation!.msg}}");
     } catch (e) {
       //  log("validate session:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetchValidateToken", "Error": "$e"});
       notifyListeners();
@@ -382,7 +389,8 @@ class TranctionProvider extends DefaultChangeNotifier {
     String orderNo,
     String upiTranID,
   ) async {
-    print("fetchUpiPaymentstatus called with orderNo: $orderNo, upiTranID: $upiTranID");
+    print(
+        "fetchUpiPaymentstatus called with orderNo: $orderNo, upiTranID: $upiTranID");
     //final localstorage = await SharedPreferences.getInstance();
     try {
       if (!context.mounted) {
@@ -396,14 +404,14 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
       if (hdfcUPIStatus?.data?.status == "FAILED" ||
           hdfcUPIStatus?.data?.status == "REJECTED" ||
-          hdfcUPIStatus?.data?.status == "SUCCESS"
-         ) {
+          hdfcUPIStatus?.data?.status == "SUCCESS") {
         if (!_isUpiAppsBottomSheetShown) {
           _isUpiAppsBottomSheetShown = true;
           if (context.mounted) {
             showModalBottomSheet(
                 shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(16))),
                 backgroundColor: const Color(0xffffffff),
                 isDismissible: false,
                 enableDrag: false,
@@ -419,8 +427,8 @@ class TranctionProvider extends DefaultChangeNotifier {
                       },
                       child: const UPIAppsPaymentSuccessAlert());
                 }).whenComplete(() {
-                  _isUpiAppsBottomSheetShown = false;
-                });
+              _isUpiAppsBottomSheetShown = false;
+            });
           }
         }
         return false;
@@ -428,7 +436,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       return true;
     } catch (e) {
       if (context.mounted) {
-        ref.read(indexListProvider)
+        ref
+            .read(indexListProvider)
             .logError
             .add({"type": "fetchUpiPaymentstatus", "Error": "$e"});
         notifyListeners();
@@ -450,7 +459,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       //   print("------------ ${_decryptclientcheck!.companyCode!}");
     } catch (e) {
       //log("Failed to fetch Profile Data:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetchclient", "Error": "$e"});
       notifyListeners();
@@ -506,7 +516,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       // print("WITHDRAW PAYOUT ${_payoutdetails!.cash}.");
     } catch (e) {
       // log("Failed to Get Payout Detial:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetchcwithdraw", "Error": "$e"});
       notifyListeners();
@@ -523,7 +534,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       // print("------------ ${_bankdetails!}");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetchfundbank", "Error": "$e"});
       notifyListeners();
@@ -536,8 +548,10 @@ class TranctionProvider extends DefaultChangeNotifier {
       BuildContext context, String upiId, String clientId, String accno) async {
     try {
       togglefundLoading(true);
-      print("UPI ID Payment Initiation: upiId=$upiId, clientId=$clientId, accno=$accno, bankname=$_bankname, segment=$_textValue");
-      _hdfcpaymentdata = await api.getUPIIDPayment(upiId, clientId, accno, _bankname);
+      print(
+          "UPI ID Payment Initiation: upiId=$upiId, clientId=$clientId, accno=$accno, bankname=$_bankname, segment=$_textValue");
+      _hdfcpaymentdata =
+          await api.getUPIIDPayment(upiId, clientId, accno, _bankname);
 
 // print("bankname()*(*):: ${bankdetails!.dATA![indexss][1]}");
       if (hdfcpaymentdata!.data!.verifiedVPAStatus1 == "Not Available" ||
@@ -547,10 +561,11 @@ class TranctionProvider extends DefaultChangeNotifier {
 
         return; // Stop the flow if UPI ID is invalid
       }
-      //log("HDFC BANK $hdfcpaymentdata");
+      print("HDFC BANK $hdfcpaymentdata");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetcUPIIDPayment", "Error": "$e"});
       notifyListeners();
@@ -576,7 +591,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       //print("HDFC BANK ${hdfcpaymentdata!.data!.clientVPA![0]}");
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetchHdfctranction", "Error": "$e"});
       notifyListeners();
@@ -589,7 +605,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       String clientid, String name) async {
     try {
       togglefundLoading(true);
-      print("UPI Apps Payment Initiation: amt=$amt, bankaccno=$bankaccno, clientid=$clientid, name=$name, segment=$_textValue");
+      print(
+          "UPI Apps Payment Initiation: amt=$amt, bankaccno=$bankaccno, clientid=$clientid, name=$name, segment=$_textValue");
       _hdfcdirectpayment =
           await api.getUPIAppsPayment(amt, _allacc, clientid, name);
       if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -601,7 +618,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetchUPIPaymet", "Error": "$e"});
       notifyListeners();
@@ -610,15 +628,16 @@ class TranctionProvider extends DefaultChangeNotifier {
     }
   }
 
-  setAccountslist(String accno){
-    
+  setAccountslist(String accno) {
     List<AccountItem> items = [];
     for (var i = 0; i < _bankdetails!.dATA!.length; i++) {
-      if(accno != _bankdetails?.dATA?[i][2]){
-      items.add(AccountItem(
-          accno: _bankdetails?.dATA?[i][2], ifsc: _bankdetails?.dATA?[i][3]));
-    }}
-    _allacc = "$accno${items.isNotEmpty ? '!' : ''}${getFormattedAccountNumbers(items)}";
+      if (accno != _bankdetails?.dATA?[i][2]) {
+        items.add(AccountItem(
+            accno: _bankdetails?.dATA?[i][2], ifsc: _bankdetails?.dATA?[i][3]));
+      }
+    }
+    _allacc =
+        "$accno${items.isNotEmpty ? '!' : ''}${getFormattedAccountNumbers(items)}";
     print("_allacc $_allacc");
   }
 
@@ -646,12 +665,13 @@ class TranctionProvider extends DefaultChangeNotifier {
       // Only show bottom sheet if it hasn't been shown yet
       if (!_isUpiIdBottomSheetShown) {
         _isUpiIdBottomSheetShown = true;
-        
+
         // Final check before showing bottom sheet
         if (context.mounted) {
           showModalBottomSheet(
               shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(16))),
               backgroundColor: const Color(0xffffffff),
               isDismissible: false,
               enableDrag: false,
@@ -674,12 +694,13 @@ class TranctionProvider extends DefaultChangeNotifier {
       // Only show bottom sheet if it hasn't been shown yet
       if (!_isUpiIdBottomSheetShown) {
         _isUpiIdBottomSheetShown = true;
-        
+
         // Final check before showing bottom sheet
         if (context.mounted) {
           showModalBottomSheet(
               shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(16))),
               backgroundColor: const Color(0xffffffff),
               context: context,
               builder: (BuildContext context) {
@@ -690,7 +711,7 @@ class TranctionProvider extends DefaultChangeNotifier {
     }
   }
 
- Future<bool> fetchHdfcpaymetstatus(
+  Future<bool> fetchHdfcpaymetstatus(
       BuildContext context, String ordno, String upiTransid) async {
     try {
       if (!context.mounted) {
@@ -711,7 +732,8 @@ class TranctionProvider extends DefaultChangeNotifier {
           if (context.mounted) {
             showModalBottomSheet(
                 shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(16))),
                 backgroundColor: Colors.transparent,
                 isDismissible: false,
                 enableDrag: false,
@@ -725,10 +747,11 @@ class TranctionProvider extends DefaultChangeNotifier {
                       onPopInvokedWithResult: (didPop, result) async {
                         if (didPop) return;
                       },
-                      child: Container(child: const UpiIdSucessorFaliureScreen()));
+                      child:
+                          Container(child: const UpiIdSucessorFaliureScreen()));
                 }).whenComplete(() {
-                  _isUpiIdBottomSheetShown = false;
-                });
+              _isUpiIdBottomSheetShown = false;
+            });
           }
         }
         return false;
@@ -736,7 +759,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       return true;
     } catch (e) {
       if (context.mounted) {
-        ref.read(indexListProvider)
+        ref
+            .read(indexListProvider)
             .logError
             .add({"type": "fetchHdfcpaymetstatus", "Error": "$e"});
         notifyListeners();
@@ -757,7 +781,8 @@ class TranctionProvider extends DefaultChangeNotifier {
   ) async {
     try {
       togglefundLoading(true);
-      print("Net Banking Payment Initiation: amt=$amt, accno=$accno, name=$name, ifsc=$ifsc, segment=$_textValue");
+      print(
+          "Net Banking Payment Initiation: amt=$amt, accno=$accno, name=$name, ifsc=$ifsc, segment=$_textValue");
       _razorpay = await api.getrazorpay(amt, accno, name, ifsc);
       if (_razorpay!.status == "created") {
         var options = {
@@ -798,7 +823,10 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       //  log("Failed to fetch bank Data:: ${e.toString()}");
-      ref.read(indexListProvider).logError.add({"type": "RAZORPAY", "Error": "$e"});
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "RAZORPAY", "Error": "$e"});
       notifyListeners();
     } finally {
       togglefundLoading(false);
@@ -806,14 +834,17 @@ class TranctionProvider extends DefaultChangeNotifier {
   }
 
   Future fetchrazorpayStatus(String paymentid) async {
+    _razorpayTranstationRes = null;
     try {
       togglefundLoading(true);
       _razorpayTranstationRes = await api.getrazorpayStatus(paymentid);
-       print( "Net Banking (Razorpay) Payment Status Response $_razorpayTranstationRes");
+      print(
+          "Net Banking (Razorpay) Payment Status Response $_razorpayTranstationRes");
       // log("PAYMENT ID${_razorpayTranstationRes?.id} $paymentid");
     } catch (e) {
       // log("Failed to Razorpay Status:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetchrazorpayStatus", "Error": "$e"});
       notifyListeners();
@@ -836,7 +867,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       }
     } catch (e) {
       //log("Failed to fetch bank Data:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetchupiIdView", "Error": "$e"});
       notifyListeners();
@@ -857,12 +889,13 @@ class TranctionProvider extends DefaultChangeNotifier {
         fetchPaymentWithDrawStatus(context);
       } else {
         print("Withdrawal failed with message: ${_paymentWithdraw!.msg}");
-        ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, 'Withdrawal failed: ${_paymentWithdraw!.msg}'));
+        ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+            context, 'Withdrawal failed: ${_paymentWithdraw!.msg}'));
       }
     } catch (e) {
       print("Withdrawal error: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetchPaymentWithDraw", "Error": "$e"});
       notifyListeners();
@@ -880,7 +913,8 @@ class TranctionProvider extends DefaultChangeNotifier {
       // print("${_withdrawstatus?[0].msg}");
     } catch (e) {
       //log("Failed to Payment withdraw:: ${e.toString()}");
-      ref.read(indexListProvider)
+      ref
+          .read(indexListProvider)
           .logError
           .add({"type": "fetchPaymentWithDrawStatus", "Error": "$e"});
       notifyListeners();

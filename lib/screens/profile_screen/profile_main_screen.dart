@@ -87,6 +87,8 @@ class UserAccountScreen extends ConsumerWidget {
 
     final filteredMenu = [
       {'title': 'Account Balance', 'type': 'balance'},
+      {'title': 'Pledge & Unpledge'},
+      {'title': 'Corporate Actions'},
       {'title': 'Reports'},
       // {'title': 'Account'},
       {'title': 'Settings'},
@@ -334,6 +336,32 @@ class UserAccountScreen extends ConsumerWidget {
                       // case "Account":
                       //   Navigator.pushNamed(context, Routes.myaccountScreen);
                       //   break;
+
+                      case 'Corporate Actions':
+                        // ledgerdate.fetchposition(context);
+                        if (reportsprovider.holdingsAllData == null) {
+                          await reportsprovider.getCurrentDate('else');
+                          Navigator.pushNamed(context, Routes.cabuyback,
+                              arguments: "DDDDD");
+                          await reportsprovider.fetchholdingsData(
+                              reportsprovider.today, context);
+                          if (reportsprovider.cpactiondata == null) {
+                            reportsprovider.fetchcpactiondata(context);
+                          }
+                        } else {
+                          Navigator.pushNamed(context, Routes.cabuyback,
+                              arguments: "DDDDD");
+                        }
+                        // cop action
+                        break;
+                      case 'Pledge & Unpledge':
+                        if (reportsprovider.pledgeandunpledge == null) {
+                          await reportsprovider.getCurrentDate("pandu");
+                          reportsprovider.fetchpledgeandunpledge(context);
+                        }
+                        Navigator.pushNamed(context, Routes.pledgeandun,
+                            arguments: "DDDDD");
+                        break;
                       case "Reports":
                         if (reportsprovider.ledgerAllData == null) {
                           await reportsprovider.getCurrentDate('else');
@@ -2796,9 +2824,9 @@ class ReportsScreen extends ConsumerWidget {
       {'title': 'Contract Note'},
       {'title': 'Client Master(CMR)'},
       // {'title': 'DP Holdings & Transcation'},
-      {'title': 'Corporate Actions'},
+      // {'title': 'Corporate Actions'},
       // {'title': 'CA Events'},
-      {'title': 'Pledge & Unpledge'},
+      // {'title': 'Pledge & Unpledge'},
     ];
 
     return Scaffold(
@@ -3409,24 +3437,7 @@ class ReportsScreen extends ConsumerWidget {
                           // Navigator.pushNamed(context, Routes.contractCalendar);
 
                           break;
-                        case 'Corporate Actions':
-                          // ledgerdate.fetchposition(context);
-                          if (ledgerdate.holdingsAllData == null) {
-                            await ledgerdate.getCurrentDate('else');
-                            Navigator.pushNamed(context, Routes.cabuyback,
-                                arguments: "DDDDD");
-                            await ledgerdate.fetchholdingsData(
-                                ledgerdate.today, context);
-                            if (ledgerdate.cpactiondata == null) {
-                              ledgerdate.fetchcpactiondata(context);
-                            }
-                          } else {
-                            Navigator.pushNamed(context, Routes.cabuyback,
-                                arguments: "DDDDD");
-                          }
-                          // cop action
 
-                          break;
                         case 'CA Events':
                           // ledgerdate.fetchposition(context);
                           // }
@@ -3439,14 +3450,7 @@ class ReportsScreen extends ConsumerWidget {
                           Navigator.pushNamed(context, Routes.caeventmainpage,
                               arguments: "DDDDD");
                           break;
-                        case 'Pledge & Unpledge':
-                          if (ledgerdate.pledgeandunpledge == null) {
-                            await ledgerdate.getCurrentDate("pandu");
-                            ledgerdate.fetchpledgeandunpledge(context);
-                          }
-                          Navigator.pushNamed(context, Routes.pledgeandun,
-                              arguments: "DDDDD");
-                          break;
+
                         // Add other cases as needed
                       }
                     },

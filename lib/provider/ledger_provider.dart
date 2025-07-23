@@ -63,6 +63,13 @@ class DocumentDetail {
   });
 }
 
+class CalendarPnlCache {
+  final CalenderpnlModel calenderpnlAllData;
+  final Map<DateTime, double> heatmapData;
+  final Map<DateTime, List<TradeData>> grouped;
+  CalendarPnlCache(this.calenderpnlAllData, this.heatmapData, this.grouped);
+}
+
 class LDProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
@@ -1394,11 +1401,16 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  // Add flag to track if calendar pnl data is loaded
+  // bool isCalendarPnlDataLoaded = false;
+  // void resetCalendarPnlDataLoaded() { isCalendarPnlDataLoaded = false; }
+
   Future fetchcalenderpnldata(
-      BuildContext context, String from, String to, String type) async {
+      BuildContext context, String from, String to, String type,
+      {bool force = false}) async {
+    // Always fetch if called from loadOrFetchCalendarPnlData with force=true
     try {
       final prefs = await SharedPreferences.getInstance();
-      // await prefs.remove("notice");
       _noticenewfeature = prefs.getString("notice").toString();
 
       print(_noticenewfeature);
@@ -1407,22 +1419,17 @@ class LDProvider extends DefaultChangeNotifier {
       notifyListeners();
       _calenderpnlAllData = await api.getcalenderpnldata(from, to, type);
       grouped = {};
-      // Reset original grouped data when new data is loaded
       _originalGrouped = {};
       if (_calenderpnlAllData != null) {
-        _heatmapData = {}; // Reset before adding new data
-
+        _heatmapData = {};
         if (_calenderpnlAllData!.journal != null) {
-          _selectedFilters = {}; // Reset filters
-
+          _selectedFilters = {};
           for (var element in _calenderpnlAllData!.journal!) {
-            print("realised : ${element.realisedpnl}");
+            print("realised : 33m");
             if (element.realisedpnl != '0.0') {
               String dateString = element.tRADEDATE!;
-
               try {
                 DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-
                 DateTime parsedDate = inputFormat.parse(dateString);
                 print("${element.realisedpnl}");
                 _heatmapData[DateTime(
@@ -1437,7 +1444,6 @@ class LDProvider extends DefaultChangeNotifier {
         if (_calenderpnlAllData!.data != null) {
           for (var trade in _calenderpnlAllData!.data!) {
             DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-
             DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
             final dateKey =
                 DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
@@ -1449,21 +1455,15 @@ class LDProvider extends DefaultChangeNotifier {
         }
       }
       setFinancialYear(selectedFinancialYear);
-
-      print("objectobject${_heatmapData}");
+      print("objectobject");
       _calendarpnlloading = false;
-
-      // Clear search when new data is loaded
+      // isCalendarPnlDataLoaded = true; // removed
       if (profitlossSearchCtrl.text.isNotEmpty) {
         profitlossSearchCtrl.clear();
       }
-
       notifyListeners();
     } catch (e) {
       _calendarpnlloading = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
       debugPrint("$e");
     }
   }
@@ -1854,18 +1854,16 @@ class LDProvider extends DefaultChangeNotifier {
       //   // }
       // }
       // formatedList(_ledgerBillData!.fullStat!);
-    } 
-    catch (e) {
+    } catch (e) {
       debugPrint("$e");
       _ledgerloading = false;
 
       ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, 'Error occurred try again later'),
       );
-    }finally {
+    } finally {
       // _ledgerloading = false;
       notifyListeners();
-
     }
   }
 
@@ -2349,9 +2347,13 @@ class LDProvider extends DefaultChangeNotifier {
     List<FullStat> originalList = List.from(_ledgerAllDataDummy!.fullStat!);
 
     // Apply bill margin filter
-    List<FullStat> filteredList = value 
-      ? originalList.where((o) => o.billMargin == 'Yes').toList() // Show only entries with billMargin = Yes
-      : originalList.where((o) => o.billMargin == 'No').toList(); // Show only entries with billMargin = No
+    List<FullStat> filteredList = value
+        ? originalList
+            .where((o) => o.billMargin == 'Yes')
+            .toList() // Show only entries with billMargin = Yes
+        : originalList
+            .where((o) => o.billMargin == 'No')
+            .toList(); // Show only entries with billMargin = No
 
     // Then apply any active type filters
     if (_selectedFilters.isNotEmpty) {
@@ -2416,8 +2418,10 @@ class LDProvider extends DefaultChangeNotifier {
       return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
     });
 
-    if (_ledgerAllData!.fullStat != null && _ledgerAllData!.fullStat!.isNotEmpty) {
-      _ledgerAllData!.closingBalance = _ledgerAllData!.fullStat![0].nETAMT ?? '0.00';
+    if (_ledgerAllData!.fullStat != null &&
+        _ledgerAllData!.fullStat!.isNotEmpty) {
+      _ledgerAllData!.closingBalance =
+          _ledgerAllData!.fullStat![0].nETAMT ?? '0.00';
     } else {
       _ledgerAllData!.closingBalance = '0.00';
     }
@@ -3375,16 +3379,18 @@ class LDProvider extends DefaultChangeNotifier {
   Set<SingingCharacter> _selectedFilters = {};
   Set<SingingCharacter> get selectedFilters => _selectedFilters;
 
-  void applyLedgerMultiFilter(BuildContext context, List<SingingCharacter> filters) {
+  void applyLedgerMultiFilter(
+      BuildContext context, List<SingingCharacter> filters) {
     _selectedFilters = Set.from(filters);
-    
+
     if (_ledgerAllDataDummy == null) {
       _ledgerAllData?.fullStat = [];
       notifyListeners();
       return;
     }
 
-    List<FullStat> originalList = List.from(_ledgerAllDataDummy!.fullStat ?? []);
+    List<FullStat> originalList =
+        List.from(_ledgerAllDataDummy!.fullStat ?? []);
     List<FullStat> filteredList = [];
 
     // If no filters selected, show no data
@@ -3400,8 +3406,10 @@ class LDProvider extends DefaultChangeNotifier {
 
     bool billMarginSelected = filters.contains(SingingCharacter.billmargin);
     // Count only the type filters (not billmargin)
-    int typeFilterCount = filters.where((f) => f != SingingCharacter.billmargin).length;
-    bool allTypesSelected = (typeFilterCount == 4 && billMarginSelected) || (typeFilterCount == 4 && !billMarginSelected);
+    int typeFilterCount =
+        filters.where((f) => f != SingingCharacter.billmargin).length;
+    bool allTypesSelected = (typeFilterCount == 4 && billMarginSelected) ||
+        (typeFilterCount == 4 && !billMarginSelected);
 
     bool matchesType(FullStat o) {
       return filters.any((filter) {
@@ -3426,9 +3434,10 @@ class LDProvider extends DefaultChangeNotifier {
     if (allTypesSelected && billMarginSelected) {
       // All types + Bill Margin: show all entries
       filteredList = originalList;
-    } else if(allTypesSelected){
-      filteredList = originalList.where((o) =>  o.tYPE != 'Bill-Margin' && matchesType(o)).toList();
-      
+    } else if (allTypesSelected) {
+      filteredList = originalList
+          .where((o) => o.tYPE != 'Bill-Margin' && matchesType(o))
+          .toList();
     }
     // else if (allTypesSelected && !billMarginSelected) {
     //   // All types, but not Bill Margin: show all non-margin entries
@@ -3439,10 +3448,10 @@ class LDProvider extends DefaultChangeNotifier {
     // } else if (billMarginSelected && typeFilterCount > 0) {
     //   // Bill Margin + some types: show margin entries of those types
     //   filteredList = originalList.where((o) => o.billMargin == 'Yes' && matchesType(o)).toList();
-    // } 
+    // }
     else {
       // Only type filters: show non-margin entries of those types
-      filteredList = originalList.where((o) =>  matchesType(o)).toList();
+      filteredList = originalList.where((o) => matchesType(o)).toList();
     }
 
     _ledgerAllData!.fullStat = filteredList;
@@ -3452,8 +3461,10 @@ class LDProvider extends DefaultChangeNotifier {
     double totalDrAmt = 0.0;
 
     for (var i = 0; i < filteredList.length; i++) {
-      totalCrAmt += double.tryParse(filteredList[i].cRAMT?.toString() ?? '0') ?? 0.0;
-      totalDrAmt += double.tryParse(filteredList[i].dRAMT?.toString() ?? '0') ?? 0.0;
+      totalCrAmt +=
+          double.tryParse(filteredList[i].cRAMT?.toString() ?? '0') ?? 0.0;
+      totalDrAmt +=
+          double.tryParse(filteredList[i].dRAMT?.toString() ?? '0') ?? 0.0;
     }
 
     _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
@@ -3467,16 +3478,14 @@ class LDProvider extends DefaultChangeNotifier {
 
     for (var i = 0; i < filteredList.length; i++) {
       if (i == 0) {
-        filteredList[i].nETAMT =
-            (double.parse(filteredList[i].cRAMT!) -
-                    double.parse(filteredList[i].dRAMT!))
-                .toStringAsFixed(2);
+        filteredList[i].nETAMT = (double.parse(filteredList[i].cRAMT!) -
+                double.parse(filteredList[i].dRAMT!))
+            .toStringAsFixed(2);
       } else {
-        filteredList[i].nETAMT =
-            (double.parse(filteredList[i - 1].nETAMT!) +
-                    (double.parse(filteredList[i].cRAMT!) -
-                        double.parse(filteredList[i].dRAMT!)))
-                .toStringAsFixed(2);
+        filteredList[i].nETAMT = (double.parse(filteredList[i - 1].nETAMT!) +
+                (double.parse(filteredList[i].cRAMT!) -
+                    double.parse(filteredList[i].dRAMT!)))
+            .toStringAsFixed(2);
       }
     }
 
@@ -3490,6 +3499,39 @@ class LDProvider extends DefaultChangeNotifier {
       _ledgerAllData!.closingBalance = '0.00';
     }
 
+    notifyListeners();
+  }
+
+  // Per-year and per-segment cache
+  final Map<String, CalendarPnlCache> _calendarPnlCache = {};
+  String get _calendarCacheKey => '$selectedFinancialYear|$selectedSegment';
+
+  Future<void> loadOrFetchCalendarPnlData(
+      BuildContext context, String from, String to, String type,
+      {bool force = false}) async {
+    final key = '$selectedFinancialYear|$selectedSegment';
+    if (!force && _calendarPnlCache.containsKey(key)) {
+      final cache = _calendarPnlCache[key]!;
+      _calenderpnlAllData = cache.calenderpnlAllData;
+      _heatmapData = Map.from(cache.heatmapData);
+      grouped = Map.from(cache.grouped);
+      _calendarpnlloading = false;
+      notifyListeners();
+      return;
+    }
+    await fetchcalenderpnldata(context, from, to, type, force: true);
+    if (_calenderpnlAllData != null) {
+      _calendarPnlCache[key] = CalendarPnlCache(
+          _calenderpnlAllData!, Map.from(_heatmapData), Map.from(grouped));
+    }
+  }
+
+  void clearCalendarPnlCache() {
+    _calendarPnlCache.clear();
+    _calenderpnlAllData = null;
+    _heatmapData = {};
+    grouped = {};
+    _calendarpnlloading = false;
     notifyListeners();
   }
 }

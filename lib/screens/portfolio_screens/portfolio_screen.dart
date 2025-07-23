@@ -223,8 +223,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                                 (index == 1 &&
                                     portfolio.allPostionList.isNotEmpty))
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                padding: EdgeInsets.all(4),
                                 decoration: BoxDecoration(
                                   color: ((index == 0 &&
                                               (portfolio.holdingsModel
@@ -235,7 +234,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                                                   .allPostionList.isNotEmpty)))
                                       ? colors.btnBg
                                       : null,
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: TextWidget.subText(
                                   text: index == 0
