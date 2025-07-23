@@ -3415,28 +3415,34 @@ class LDProvider extends DefaultChangeNotifier {
           case SingingCharacter.systemjournal:
             return o.tYPE == 'Bill';
           case SingingCharacter.billmargin:
-            return o.billMargin == 'Yes';
+            return o.tYPE == 'Bill-Margin';
           default:
             return false;
         }
       });
     }
 
+    // if (allTypesSelected && billMarginSelected) { o.billMargin != 'Yes'
     if (allTypesSelected && billMarginSelected) {
       // All types + Bill Margin: show all entries
       filteredList = originalList;
-    } else if (allTypesSelected && !billMarginSelected) {
-      // All types, but not Bill Margin: show all non-margin entries
-      filteredList = originalList.where((o) => o.billMargin != 'Yes').toList();
-    } else if (billMarginSelected && typeFilterCount == 0) {
-      // Only Bill Margin selected: show all margin entries
-      filteredList = originalList.where((o) => o.billMargin == 'Yes').toList();
-    } else if (billMarginSelected && typeFilterCount > 0) {
-      // Bill Margin + some types: show margin entries of those types
-      filteredList = originalList.where((o) => o.billMargin == 'Yes' && matchesType(o)).toList();
-    } else {
+    } else if(allTypesSelected){
+      filteredList = originalList.where((o) =>  o.tYPE != 'Bill-Margin' && matchesType(o)).toList();
+      
+    }
+    // else if (allTypesSelected && !billMarginSelected) {
+    //   // All types, but not Bill Margin: show all non-margin entries
+    //   filteredList = originalList.where((o) => o.billMargin != 'Yes').toList();
+    // } else if (billMarginSelected && typeFilterCount == 0) {
+    //   // Only Bill Margin selected: show all margin entries
+    //   filteredList = originalList.where((o) => o.billMargin == 'Yes').toList();
+    // } else if (billMarginSelected && typeFilterCount > 0) {
+    //   // Bill Margin + some types: show margin entries of those types
+    //   filteredList = originalList.where((o) => o.billMargin == 'Yes' && matchesType(o)).toList();
+    // } 
+    else {
       // Only type filters: show non-margin entries of those types
-      filteredList = originalList.where((o) => o.billMargin != 'Yes' && matchesType(o)).toList();
+      filteredList = originalList.where((o) =>  matchesType(o)).toList();
     }
 
     _ledgerAllData!.fullStat = filteredList;
