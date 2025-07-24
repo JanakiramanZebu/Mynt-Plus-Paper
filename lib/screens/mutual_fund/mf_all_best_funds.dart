@@ -28,25 +28,25 @@ class SaveTaxesScreen extends ConsumerWidget {
     final dynamic newlisst;
     
     // Safely select the proper basket based on selected chip
-    if (mf.newbestmodel?.baskets != null) {
+    if (mf.newbestmodel?.data?.baskets != null) {
       switch (mf.selctedchip) {
         case 'Tax Saving':
-          newlisst = mf.newbestmodel?.baskets?.taxSaving;
+          newlisst = mf.newbestmodel?.data?.baskets?.taxSaving;
           break;
         case 'High Growth Equity':
-          newlisst = mf.newbestmodel?.baskets?.highGrowthEquity;
+          newlisst = mf.newbestmodel?.data?.baskets?.highGrowthEquity;
           break;
         case 'Stable Debt':
-          newlisst = mf.newbestmodel?.baskets?.stableDebt;
+          newlisst = mf.newbestmodel?.data?.baskets?.stableDebt;
           break;
         case 'Sectoral Thematic':
-          newlisst = mf.newbestmodel?.baskets?.sectoralThematic;
+          newlisst = mf.newbestmodel?.data?.baskets?.sectoralThematic;
           break;
         case 'International  Exposure':
-          newlisst = mf.newbestmodel?.baskets?.internationalExposure;
+          newlisst = mf.newbestmodel?.data?.baskets?.internationalExposure;
           break;
         case 'Balanced Hybrid':
-          newlisst = mf.newbestmodel?.baskets?.balancedHybrid;
+          newlisst = mf.newbestmodel?.data?.baskets?.balancedHybrid;
           break;
         default:
           newlisst = null;
@@ -58,8 +58,8 @@ class SaveTaxesScreen extends ConsumerWidget {
     // Sort by 3-year data if available
     final sortedList = newlisst != null ? List.from(newlisst) : null;
     if (sortedList != null) {
-      sortedList.sort((a, b) => (double.tryParse(b.tHREEYEARDATA ?? "0") ?? 0)
-          .compareTo(double.tryParse(a.tHREEYEARDATA ?? "0") ?? 0));
+      sortedList.sort((a, b) => (double.tryParse(b.s3Year ?? "0") ?? 0)
+          .compareTo(double.tryParse(a.s3Year ?? "0") ?? 0));
     }
 
     return Scaffold(
@@ -105,13 +105,13 @@ class SaveTaxesScreen extends ConsumerWidget {
                           itemCount: sortedList.length,
                           itemBuilder: (BuildContext context, int index) {
                             final item = sortedList[index];
-                            final schemeGroupName = item.schemeGroupName ?? "Unknown Fund";
+                            final schemeGroupName = item.name ?? "Unknown Fund";
                             final amcCode = item.aMCCode ?? "default";
                             final isin = item.iSIN;
-                            final type = item.type ?? "";
+                            final type = item.schemeType ?? "";
                             final subType = item.subType ?? "";
-                            final threeYearData = item.tHREEYEARDATA ?? "0.00";
-                            final isAdd = item.isAdd == true;
+                            final threeYearData = item.s3Year ?? "0.00";
+                            // final isAdd = item.isAdd == true;
                             
                             // Parse 3-year performance data safely
                             final performanceValue = double.tryParse(
@@ -124,17 +124,17 @@ class SaveTaxesScreen extends ConsumerWidget {
                             return Column(
                               children: [
                                 InkWell(
-                                  onLongPress: () async {
-                                    if (isin != null) {
-                                      await mf.fetchMFWatchlist(
-                                        isin,
-                                        isAdd ? "delete" : "add",
-                                        context,
-                                        false,
-                                        "watch",
-                                      );
-                                    }
-                                  },
+                                  // onLongPress: () async {
+                                  //   if (isin != null) {
+                                  //     await mf.fetchMFWatchlist(
+                                  //       isin,
+                                  //       isAdd ? "delete" : "add",
+                                  //       context,
+                                  //       false,
+                                  //       "watch",
+                                  //     );
+                                  //   }
+                                  // },
                                   onTap: () async {
                                     try {
                                       if (isin != null) {
@@ -198,9 +198,10 @@ class SaveTaxesScreen extends ConsumerWidget {
                                               child: Row(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
+                                                  
                                                   CircleAvatar(
                                                     backgroundImage: NetworkImage(
-                                                      "https://v3.mynt.in/mf/static/images/mf/$amcCode.png",
+                                                      "https://v3.mynt.in/mfapi/static/images/mf/$amcCode.png",
                                                     ),
                                                   ),
                                                   const SizedBox(width: 16),

@@ -29,7 +29,7 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
 
       // Safe access to NAV value
       final navValue = mf.holssinglelist?.isNotEmpty == true 
-          ? (double.tryParse(mf.holssinglelist![0]?.nav ?? '0.0') ?? 0.0)
+          ? (double.tryParse(mf.holssinglelist![0]?.avgNav ?? '0.0') ?? 0.0)
           : 0.0;
 
       // Calculate redemption value
@@ -78,8 +78,9 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                       children: [
                         Text(
                           mf.holssinglelist?.isNotEmpty == true 
-                              ? (mf.holssinglelist![0]?.sCHEMENAME ?? "Unknown Scheme") 
-                              : "Unknown Scheme",
+                              ? (mf.holssinglelist![0]?.name ?? "Unknown Scheme") 
+                              : 
+                              "Unknown Scheme",
                           style: textStyle(
                             theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                             15,
@@ -119,8 +120,9 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                                 const SizedBox(width: 8),
                                 Text(
                                   mf.holssinglelist?.isNotEmpty == true 
-                                      ? (mf.holssinglelist![0]?.nET ?? "0.00") 
-                                      : "0.00",
+                                      ? (mf.holssinglelist![0]?.avgQty ?? "0.00") 
+                                      : 
+                                      "0.00",
                                   style: textStyle(
                                     theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                                     10,
@@ -137,15 +139,15 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                             if (value.isNotEmpty) {
                               try {
                                 final minRedemptionQty = mf.holssinglelist?.isNotEmpty == true 
-                                    ? mf.holssinglelist![0]?.mINIMUMREDEMPTIONQTY 
+                                    ? mf.holssinglelist![0]?.minRedemptionQty 
                                     : null;
                                     
                                 final netUnits = mf.holssinglelist?.isNotEmpty == true 
-                                    ? mf.holssinglelist![0]?.nET 
+                                    ? mf.holssinglelist![0]?.avgQty 
                                     : null;
                                     
                                 final navStr = mf.holssinglelist?.isNotEmpty == true 
-                                    ? mf.holssinglelist![0]?.nav 
+                                    ? mf.holssinglelist![0]?.avgQty 
                                     : null;
                                 
                                 mf.checkRedemption(value, minRedemptionQty, netUnits, navStr);
@@ -198,7 +200,8 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                             Padding(
                               padding: const EdgeInsets.only(left: 20.0, top: 5.0),
                               child: Text(
-                                "Min. redemption units ${mf.holssinglelist?.isNotEmpty == true ? (mf.holssinglelist![0]?.mINIMUMREDEMPTIONQTY ?? 'N/A') : 'N/A'}",
+                                "Min. redemption units ${mf.holssinglelist?.isNotEmpty == true ? (mf.holssinglelist![0]?.minRedemptionQty ?? 'N/A') : 'N/A'}",
+                                // "Min.  ",
                                 style: textStyle(
                                   theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
                                   11,
@@ -254,15 +257,15 @@ class _RedemptionBottomScreenNewState extends State<RedemptionBottomScreenNew> {
                       onPressed: () {
                         try {
                           final minRedemptionQty = mf.holssinglelist?.isNotEmpty == true 
-                              ? mf.holssinglelist![0]?.mINIMUMREDEMPTIONQTY 
+                              ? mf.holssinglelist![0]?.minRedemptionQty 
                               : null;
                               
                           final netUnits = mf.holssinglelist?.isNotEmpty == true 
-                              ? mf.holssinglelist![0]?.nET 
+                              ? mf.holssinglelist![0]?.avgQty 
                               : null;
                               
                           final navStr = mf.holssinglelist?.isNotEmpty == true 
-                              ? mf.holssinglelist![0]?.nav 
+                              ? mf.holssinglelist![0]?.avgNav 
                               : null;
                           
                           if (mf.checkRedemption(mf.redemptionQty.text, minRedemptionQty, netUnits, navStr)) {

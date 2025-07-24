@@ -57,7 +57,7 @@ class MFNFOScreen extends ConsumerWidget {
 
   Widget _buildContent(
       BuildContext context, MFProvider mf, ThemesProvider theme) {
-    if (mf.mfNFOList!.nfoList!.isEmpty) {
+    if (mf.mfNFOList!.data!.isEmpty) {
       return const Center(child: NoDataFound());
     } else {
       return Column(
@@ -68,9 +68,9 @@ class MFNFOScreen extends ConsumerWidget {
               shrinkWrap: true,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              itemCount: mf.mfNFOList!.nfoList!.length,
+              itemCount: mf.mfNFOList!.data!.length,
               itemBuilder: (BuildContext context, int index) {
-                final nfoItem = mf.mfNFOList!.nfoList![index];
+                final nfoItem = mf.mfNFOList!.data![index];
 
                 return Column(
                   children: [
@@ -128,7 +128,7 @@ class MFNFOScreen extends ConsumerWidget {
                               children: [
                                 CircleAvatar(
                                   backgroundImage: NetworkImage(
-                                    "https://v3.mynt.in/mf/static/images/mf/${nfoItem.aMCCode ?? 'default'}.png",
+                                    "https://v3.mynt.in/mfapi/static/images/mf/${nfoItem.aMCCode ?? 'default'}.png",
                                   ),
                                   onBackgroundImageError: (_, __) {},
                                 ),
@@ -150,7 +150,7 @@ class MFNFOScreen extends ConsumerWidget {
                                             
                                             TextWidget.subText(
                                                     align: TextAlign.start,
-                                                    text: nfoItem.fSchemeName ??
+                                                    text: nfoItem.name ??
                                                   "Unknown Fund",
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:

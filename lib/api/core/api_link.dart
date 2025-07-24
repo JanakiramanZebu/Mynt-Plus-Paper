@@ -329,4 +329,19 @@ class ApiLinks {
   String get caevents => 'https://v3.mynt.in/equity/';
   String get position => 'https://be.zebull.in/api/';
   String get cmrdownload => 'https://rekycbe.mynt.in/report/cmr';
+
+//mf new3
+  String get newvenketmfurl => "https://v3.mynt.in/mfapi";
+
+  String get mfholdingsnewapi => "$newvenketmfurl/order/holdings";
+  String get mfnewbestMf => "$newvenketmfurl/dashboard/getMfBaskets";
+  String get mfnfoMF => "$newvenketmfurl/dashboard/NFO_datas";
+  String get newmfallcatnewendpoit => "$newvenketmfurl/dashboard/getCategoryschemes"; 
+  String get mfnewwatchlist => "$newvenketmfurl/dashboard/watchlist_for_mobile"; 
+  String get mfnewsearch => "$newvenketmfurl/dashboard/mfsearch"; 
+  String get mfsinglepageapi => "$newvenketmfurl/singlepage/getFactSheetData"; 
+  String get mfsinglepagechartapi => "$newvenketmfurl/singlepage/getNavGraph"; 
+  String get mforderbookapi => "$newvenketmfurl/singlepage/getNavGraph"; 
+  String get mftemporderlinkget => "$dashBoardURL/mf/payment_gateway_link"; 
+
 }

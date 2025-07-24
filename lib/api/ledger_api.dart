@@ -108,11 +108,11 @@ mixin LedgerApi on ApiCore {
     try {
       final uri = Uri.parse('${apiLinks.reportsapi}/getLedger');
       final res = await apiClient.post(uri,
-          headers: funddefaultHeaders,
-          // headers: testingrameshheader,
+          // headers: funddefaultHeaders,
+          headers: testingrameshheader,
           body: jsonEncode({
-            "cc": "${prefs.clientId}",
-            // "cc": "ZE1A40",
+            // "cc": "${prefs.clientId}",
+            "cc": "TN1V2",
 
             "from": from, "to": to
           }));

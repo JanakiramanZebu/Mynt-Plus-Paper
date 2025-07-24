@@ -187,7 +187,7 @@ class MFCategoryListScreen extends ConsumerWidget {
                     padding: const EdgeInsets.only(right: 16),
                     child: CircleAvatar(
                       backgroundImage: NetworkImage(
-                        "https://v3.mynt.in/mf/static/images/mf/${item.aMCCode ?? 'default'}.png",
+                        "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
                       ),
                     ),
                   ),
@@ -202,7 +202,7 @@ class MFCategoryListScreen extends ConsumerWidget {
                               child: TextWidget.subText(
                                   align: TextAlign.start,
                                   text:
-                                      item.schemeGroupName ?? "Unknown Scheme",
+                                      item.name ?? "Unknown Scheme",
                                   color: theme.isDarkMode
                                       ? colors.textPrimaryDark
                                       : colors.textPrimaryLight,

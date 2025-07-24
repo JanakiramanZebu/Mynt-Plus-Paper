@@ -13,11 +13,41 @@ import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
 
-class MfCommonSearch extends ConsumerWidget {
+class MfCommonSearch extends ConsumerStatefulWidget {
   const MfCommonSearch({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MfCommonSearch> createState() => _MfCommonSearchState();
+}
+
+class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
+  late FocusNode searchFocusNode;
+
+@override
+void initState() {
+  super.initState();
+  searchFocusNode = FocusNode();
+
+  searchFocusNode.addListener(() {
+    if (searchFocusNode.hasFocus) {
+      print("TextFormField is focused");
+    }
+  });
+
+  // Automatically focus the field when screen opens
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    FocusScope.of(context).requestFocus(searchFocusNode);
+  });
+}
+
+  @override
+  void dispose() {
+    searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final mfData = ref.watch(mfProvider);
     final theme = ref.watch(themeProvider);
     final isDarkMode = theme.isDarkMode;
@@ -42,11 +72,12 @@ class MfCommonSearch extends ConsumerWidget {
             ),
           ),
           title: Padding(
-            padding: const EdgeInsets.only(right:18.0),
-            child: Container(  
+            padding: const EdgeInsets.only(right: 18.0),
+            child: Container(
               height: 60,
               padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
               child: TextFormField(
+                focusNode: searchFocusNode,
                 controller: mfData.mfsearchcontroller,
                 style: textStyle(
                   isDarkMode ? colors.colorWhite : colors.colorBlack,
@@ -57,9 +88,9 @@ class MfCommonSearch extends ConsumerWidget {
                   fillColor: isDarkMode ? colors.darkGrey : colors.kColorLightGrey,
                   filled: true,
                   hintStyle: textStyle(
-                    isDarkMode ? Colors.white : const Color.fromARGB(255, 0, 0, 0), 
-                    14, 
-                    FontWeight.w600
+                    isDarkMode ? Colors.white : const Color.fromARGB(255, 0, 0, 0),
+                    14,
+                    FontWeight.w600,
                   ),
                   prefixIconColor: const Color(0xff586279),
                   prefixIconConstraints: const BoxConstraints(
@@ -68,29 +99,29 @@ class MfCommonSearch extends ConsumerWidget {
                   prefixIcon: Padding(
                     padding: const EdgeInsets.only(left: 8, right: 8),
                     child: Icon(
-                      Icons.search, 
-                      color: isDarkMode ? Colors.white : Colors.black54
+                      Icons.search,
+                      color: isDarkMode ? Colors.white : Colors.black54,
                     ),
                   ),
                   suffixIcon: ValueListenableBuilder<TextEditingValue>(
                     valueListenable: mfData.mfsearchcontroller,
                     builder: (context, value, child) {
                       return value.text.isNotEmpty
-                        ? InkWell(
-                            onTap: () {
-                              mfData.mfsearchcontroller.clear();
-                              mfData.fetchmfCommonsearch("", context);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: SvgPicture.asset(
-                                assets.removeIcon,
-                                fit: BoxFit.scaleDown,
-                                width: 20,
+                          ? InkWell(
+                              onTap: () {
+                                mfData.mfsearchcontroller.clear();
+                                mfData.fetchmfCommonsearch("", context);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                child: SvgPicture.asset(
+                                  assets.removeIcon,
+                                  fit: BoxFit.scaleDown,
+                                  width: 20,
+                                ),
                               ),
-                            ),
-                          )
-                        : const SizedBox.shrink();
+                            )
+                          : const SizedBox.shrink();
                     },
                   ),
                   enabledBorder: OutlineInputBorder(
@@ -114,158 +145,146 @@ class MfCommonSearch extends ConsumerWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                // List of Funds
                 if (mfData.mutualFundsearchdata != null) ...[
                   mfData.mutualFundsearchdata!.isNotEmpty
-                    ? ListView.builder(
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: mfData.mutualFundsearchdata!.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final fund = mfData.mutualFundsearchdata![index];
-                          
-                          return Column(
-                            children: [
-                              InkWell(
-                                onTap: () async {
-                                  try {
-                                    mfData.loaderfun();
-                                    
-                                    if (fund.iSIN != null) {
-                                      await mfData.fetchFactSheet(fund.iSIN!);
-                                      mfData.fetchmatchisan(fund.iSIN!);
-                                      
-                                      if (mfData.factSheetDataModel?.stat != "Not Ok") {
-                                        Navigator.pushNamed(
-                                          context,
-                                          Routes.mfStockDetail,
-                                          arguments: fund,
-                                        );
+                      ? ListView.builder(
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: mfData.mutualFundsearchdata!.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final fund = mfData.mutualFundsearchdata![index];
+                            return Column(
+                              children: [
+                                InkWell(
+                                  onTap: () async {
+                                    try {
+                                      mfData.loaderfun();
+                                      if (fund.iSIN != null) {
+                                        await mfData.fetchFactSheet(fund.iSIN!);
+                                        mfData.fetchmatchisan(fund.iSIN!);
+                                        if (mfData.factSheetDataModel?.stat != "Not Ok") {
+                                          Navigator.pushNamed(
+                                            context,
+                                            Routes.mfStockDetail,
+                                            arguments: fund,
+                                          );
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            successMessage(context, "No Single Page Data"),
+                                          );
+                                          final jsondata = MutualFundList.fromJson(fund.toJson());
+                                          Navigator.pushNamed(
+                                            context,
+                                            Routes.mforderScreen,
+                                            arguments: jsondata,
+                                          );
+                                          mfData.orderchangetitle("One-time");
+                                          mfData.chngOrderType("One-time");
+                                        }
                                       } else {
                                         ScaffoldMessenger.of(context).showSnackBar(
-                                          successMessage(context, "No Single Page Data")
+                                          successMessage(context, "Invalid fund data"),
                                         );
-                                        
-                                        final jsondata = MutualFundList.fromJson(fund.toJson());
-                                        
-                                        Navigator.pushNamed(
-                                          context, 
-                                          Routes.mforderScreen,
-                                          arguments: jsondata
-                                        );
-                                        
-                                        mfData.orderchangetitle("One-time");
-                                        mfData.chngOrderType("One-time");
                                       }
-                                    } else {
+                                    } catch (e) {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        successMessage(context, "Invalid fund data")
+                                        successMessage(context, "Error loading fund details"),
                                       );
                                     }
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      successMessage(context, "Error loading fund details")
-                                    );
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          CircleAvatar(
-                                            backgroundImage: NetworkImage(
-                                              "https://v3.mynt.in/mf/static/images/mf/${fund.aMCCode ?? "default"}.png",
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            CircleAvatar(
+                                              backgroundImage: NetworkImage(
+                                                "https://v3.mynt.in/mfapi/static/images/mf/${fund.aMCCode ?? "default"}.png",
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                SizedBox(
-                                                  width: MediaQuery.of(context).size.width * 0.6,
-                                                  child: Text(
-                                                    fund.schemegroupName ?? "",
-                                                    maxLines: 2,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: textStyles.scripNameTxtStyle.copyWith(
-                                                      color: isDarkMode
-                                                        ? colors.colorWhite
-                                                        : colors.colorBlack,
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context).size.width * 0.6,
+                                                    child: Text(
+                                                      fund.mfsearchnamename ?? "",
+                                                      maxLines: 2,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: textStyles.scripNameTxtStyle.copyWith(
+                                                        color: isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                SizedBox(
-                                                  height: 18,
-                                                  child: ListView(
-                                                    scrollDirection: Axis.horizontal,
-                                                    children: [
-                                                      CustomExchBadge(
-                                                        exch: fund.type ?? ""
-                                                      ),
-                                                      const SizedBox(width: 5),
-                                                      CustomExchBadge(
-                                                        exch: fund.subtype ?? ""
-                                                      ),
-                                                    ],
+                                                  const SizedBox(height: 8),
+                                                  SizedBox(
+                                                    height: 18,
+                                                    child: ListView(
+                                                      scrollDirection: Axis.horizontal,
+                                                      children: [
+                                                        CustomExchBadge(exch: fund.type ?? ""),
+                                                        const SizedBox(width: 5),
+                                                        CustomExchBadge(exch: fund.subtype ?? ""),
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          IconButton(
-                                            splashRadius: 20,
-                                            onPressed: () async {
-                                              if (fund.iSIN != null) {
-                                                await mfData.fetchcommonsearchWadd(
-                                                  fund.iSIN!,
-                                                  fund.isAdd == true ? "delete" : "add",
-                                                  context,
-                                                  false,
-                                                );
-                                              }
-                                            },
-                                            icon: SvgPicture.asset(
-                                              color: colors.colorBlue,
-                                              fund.isAdd == true
-                                                ? assets.bookmarkIcon
-                                                : assets.bookmarkedIcon,
+                                            IconButton(
+                                              splashRadius: 20,
+                                              onPressed: () async {
+                                                if (fund.iSIN != null) {
+                                                  await mfData.fetchcommonsearchWadd(
+                                                    fund.iSIN!,
+                                                    fund.isAdd == true ? "delete" : "add",
+                                                    context,
+                                                    false,
+                                                  );
+                                                }
+                                              },
+                                              icon: SvgPicture.asset(
+                                                color: colors.colorBlue,
+                                                fund.isAdd == true
+                                                    ? assets.bookmarkIcon
+                                                    : assets.bookmarkedIcon,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Divider(
-                                        color: isDarkMode
-                                          ? colors.darkColorDivider
-                                          : colors.colorDivider,
-                                        thickness: 1.0,
-                                      ),
-                                    ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Divider(
+                                          color: isDarkMode
+                                              ? colors.darkColorDivider
+                                              : colors.colorDivider,
+                                          thickness: 1.0,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          );
-                        },
-                      )
-                    : Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 225),
-                          child: SizedBox(
-                            height: deviceHeight - 140,
-                            child: const NoDataFound(),
+                              ],
+                            );
+                          },
+                        )
+                      : Center(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 225),
+                            child: SizedBox(
+                              height: deviceHeight - 140,
+                              child: const NoDataFound(),
+                            ),
                           ),
-                        ),
-                      )
+                        )
                 ] else ...[
-                  // Show loading or initial state
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 225),

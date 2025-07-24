@@ -158,7 +158,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                     padding: const EdgeInsets.only(right: 16),
                     child: CircleAvatar(
                       backgroundImage: NetworkImage(
-                        "https://v3.mynt.in/mf/static/images/mf/${item.aMCCode ?? 'default'}.png",
+                        "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
                       ),
                     ),
                   ),
@@ -168,7 +168,7 @@ class MFWatchlistScreen extends ConsumerWidget {
                       children: [
                         TextWidget.subText(
                                                     align: TextAlign.right,
-                                                    text: item.schemegroupName ?? "Unknown Scheme",
+                                                    text: item.schemeName ?? "Unknown Scheme",
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:
                                                          colors.textPrimaryLight
