@@ -37,6 +37,7 @@ class FundDetailModel {
   String? premium;
   String? scripbskmarEI;
   String? scripbskmrg;
+  String? scripbskmar;
   String? avlMrg;
   String? avlMrgPercentage;
   String? requestTime;
@@ -51,6 +52,8 @@ class FundDetailModel {
   String? utilizedMrgn;
   String? pendordval;
   String? collateral;
+  String? cobomargin;
+  String? deliverySellBenefit;
 
   FundDetailModel(
       {this.prfname,
@@ -104,7 +107,10 @@ class FundDetailModel {
       this.rpnl,
       this.utilizedMrgn,
       this.pendordval,
-      this.collateral});
+      this.scripbskmar,
+      this.collateral,
+      this.cobomargin,
+      this.deliverySellBenefit});
 
   FundDetailModel.fromJson(Map<String, dynamic> json) {
     prfname = json['prfname'];
@@ -117,6 +123,7 @@ class FundDetailModel {
     auxBrkcollamt = json['aux_brkcollamt'];
     auxUnclearedcash = json['aux_unclearedcash'];
     daycash = json['daycash'];
+    scripbskmar = json['scripbskmar'];
     remarksAmt = json['remarks_amt'];
     remarksText = json['remarks_text'];
     marginused = json['marginused'];
@@ -158,6 +165,8 @@ class FundDetailModel {
     utilizedMrgn = json['utilizedMrgn'];
     pendordval = json['pendordval'];
     collateral = json['collateral'];
+    cobomargin = json['marprt'];
+    deliverySellBenefit = json['csc'];
   }
 
   Map<String, dynamic> toJson() {
@@ -166,6 +175,7 @@ class FundDetailModel {
     data['cash'] = cash;
     data['payin'] = payin;
     data['payout'] = payout;
+    data['scripbskmar'] = scripbskmar;
     data['brkcollamt'] = brkcollamt;
     data['unclearedcash'] = unclearedcash;
     data['aux_daycash'] = auxDaycash;
@@ -213,6 +223,8 @@ class FundDetailModel {
     data['utilizedMrgn'] = utilizedMrgn;
     data['pendordval'] = pendordval;
     data['collateral'] = collateral;
+    data['marprt'] = cobomargin;
+    data['csc'] = deliverySellBenefit;
     return data;
   }
 }

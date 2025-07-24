@@ -122,15 +122,14 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                               children: [
                                 Container(
                                   width:
-                                      MediaQuery.of(context).size.width * 0.6,
+                                      MediaQuery.of(context).size.width * 0.9,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       TextWidget.titleText(
-                                          align: TextAlign.right,
-                                          text:
-                                              data.sCHEMENAME ?? "Unknown Fund",
+                                          align: TextAlign.start,
+                                          text: data.name ?? "Unknown Fund",
                                           color: theme.isDarkMode
                                               ? colors.textPrimaryDark
                                               : colors.textPrimaryLight,
@@ -144,20 +143,20 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                                             CrossAxisAlignment.end,
                                         children: [
                                           Text(
-                                            "₹ ${_formatValue(data.gainOrLoss)} ",
+                                            "₹ ${_formatValue(data.profitLoss)} ",
                                             style: textStyle(
                                               _getColorBasedOnValue(
-                                                  data.gainOrLoss),
+                                                  data.profitLoss),
                                               14,
                                               FontWeight.w500,
                                             ),
                                           ),
                                           const SizedBox(height: 3),
                                           Text(
-                                            "(${(double.tryParse(data.percentage ?? '0') ?? 0).toStringAsFixed(2)}%)",
+                                            "(${(double.tryParse(data.profitLoss ?? '0') ?? 0).toStringAsFixed(2)}%)",
                                             style: textStyle(
                                               _getColorBasedOnValue(
-                                                  data.gainOrLoss),
+                                                  data.profitLoss),
                                               14,
                                               FontWeight.w500,
                                             ),
@@ -178,70 +177,61 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                 ),
               ),
             ],
-          ), 
+          ),
           const SizedBox(height: 16),
 
           Row(
-              children: [
-                Expanded(
-                  flex: 6,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      
-                      onPressed: () {
-                        _showBottomSheet(
-                          context,
-                          RedemptionBottomScreenNew(),
-                        );
-                        mfdata.recdemevalu();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        
-                        elevation: 0,
-                        backgroundColor: colors.btnBg,
-                        foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                        side:  BorderSide(
-                          
-                          color: colors.btnOutlinedBorder,
-                          width: 1,
-                        ),
-                         minimumSize: Size(double.infinity, 45), // height: 48
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
+            children: [
+              Expanded(
+                flex: 6,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _showBottomSheet(
+                        context,
+                        RedemptionBottomScreenNew(),
+                      );
+                      mfdata.recdemevalu();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: colors.btnBg,
+                      foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                      side: BorderSide(
+                        color: colors.btnOutlinedBorder,
+                        width: 1,
                       ),
-                      child: 
-                      TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text:  "Redeem",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.primaryDark:
-                                                         colors.primaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 2),
-                      
-                        
+                      minimumSize: Size(double.infinity, 45), // height: 48
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
                     ),
+                    child: TextWidget.subText(
+                        align: TextAlign.right,
+                        text: "Redeem",
+                        color: theme.isDarkMode
+                            ? colors.primaryDark
+                            : colors.primaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 2),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
 
           const SizedBox(height: 24),
 
           // Units and Avg Price
           rowOfInfoData(
             "Units",
-            "${data.nET ?? '0'}",
-            
+            "${data.avgQty ?? '0'}",
             theme,
           ),
           const SizedBox(height: 12),
-           Divider(
+          Divider(
             color: theme.isDarkMode
                 ? colors.darkColorDivider
                 : colors.colorDivider,
@@ -250,13 +240,12 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           const SizedBox(height: 12),
 
           rowOfInfoData(
-             
             "Avg Price",
-            "${data.bought ?? '0'}",
+            "${data.avgNav ?? '0'}",
             theme,
           ),
-            const SizedBox(height: 12),
-           Divider(
+          const SizedBox(height: 12),
+          Divider(
             color: theme.isDarkMode
                 ? colors.darkColorDivider
                 : colors.colorDivider,
@@ -267,12 +256,13 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           // Pledged Units and Current NAV
           rowOfInfoData(
             "Pledged Units",
-            "${data.pLEDGEQTY ?? '0'}",
-            
+            // "${data.pLEDGEQTY ?? '0'}",
+            "0",
+
             theme,
           ),
-            const SizedBox(height: 12),
-           Divider(
+          const SizedBox(height: 12),
+          Divider(
             color: theme.isDarkMode
                 ? colors.darkColorDivider
                 : colors.colorDivider,
@@ -281,14 +271,13 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           const SizedBox(height: 12),
 
           rowOfInfoData(
-           
             "Current NAV",
-            "${data.nav ?? '0'}",
+            "${data.currentValue ?? '0'}",
             theme,
           ),
 
-            const SizedBox(height: 12),
-           Divider(
+          const SizedBox(height: 12),
+          Divider(
             color: theme.isDarkMode
                 ? colors.darkColorDivider
                 : colors.colorDivider,
@@ -299,12 +288,11 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           // Invested and Current Value
           rowOfInfoData(
             "Invested",
-            "₹ ${data.purchase ?? '0'}",
-             
+            "₹ ${data.investedValue ?? '0'}",
             theme,
           ),
-            const SizedBox(height: 12),
-           Divider(
+          const SizedBox(height: 12),
+          Divider(
             color: theme.isDarkMode
                 ? colors.darkColorDivider
                 : colors.colorDivider,
@@ -312,20 +300,15 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           ),
           const SizedBox(height: 12),
 
-           rowOfInfoData(
-            "Invested",
-            "₹ ${data.purchase ?? '0'}",
-            
-            theme,
-          ),
+           
 
-            const SizedBox(height: 12),
-           Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider,
-            thickness: 1.0,
-          ),
+          // const SizedBox(height: 12),
+          // Divider(
+          //   color: theme.isDarkMode
+          //       ? colors.darkColorDivider
+          //       : colors.colorDivider,
+          //   thickness: 1.0,
+          // ),
 
           const Spacer(),
 
@@ -375,37 +358,26 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
     );
   }
 
-  Row rowOfInfoData(String title1, String value1,  
-      ThemesProvider theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: title1,
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-
-       TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text: value1,
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-      
-       
-       
+  Row rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      TextWidget.subText(
+          align: TextAlign.right,
+          text: title1,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          textOverflow: TextOverflow.ellipsis,
+          theme: theme.isDarkMode,
+          fw: 3),
+      TextWidget.subText(
+          align: TextAlign.right,
+          text: value1,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          textOverflow: TextOverflow.ellipsis,
+          theme: theme.isDarkMode,
+          fw: 3),
     ]);
   }
 

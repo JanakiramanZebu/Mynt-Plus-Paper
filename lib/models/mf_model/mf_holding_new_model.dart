@@ -1,34 +1,20 @@
 class mf_holdoing_new {
-  List<DataMod>? data;
+  List<Data>? data;
+  Summary? summary;
   String? stat;
-  String? msg;
-  String? purchaseValue;
-  String? currentValue;
-  String? gainOrLoss;
-  String? percentage;
 
-  mf_holdoing_new(
-      {this.data,
-      this.stat,
-      this.msg,
-      this.purchaseValue,
-      this.currentValue,
-      this.gainOrLoss,
-      this.percentage});
+  mf_holdoing_new({this.data, this.summary, this.stat});
 
   mf_holdoing_new.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null) {
-      data = <DataMod>[];
+      data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new DataMod.fromJson(v));
+        data!.add(new Data.fromJson(v));
       });
     }
+    summary =
+        json['summary'] != null ? new Summary.fromJson(json['summary']) : null;
     stat = json['stat'];
-    msg = json['msg'];
-    purchaseValue = json['purchase_value'];
-    currentValue = json['current_value'];
-    gainOrLoss = json['gain_or_loss'];
-    percentage = json['percentage'];
   }
 
   Map<String, dynamic> toJson() {
@@ -36,161 +22,186 @@ class mf_holdoing_new {
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
+    if (this.summary != null) {
+      data['summary'] = this.summary!.toJson();
+    }
     data['stat'] = this.stat;
-    data['msg'] = this.msg;
-    data['purchase_value'] = this.purchaseValue;
-    data['current_value'] = this.currentValue;
-    data['gain_or_loss'] = this.gainOrLoss;
-    data['percentage'] = this.percentage;
     return data;
   }
 }
 
-class DataMod {
-  String? cLIENTCODE;
+class Data {
+  String? clientCode;
+  String? name;
+  String? foliono;
   String? iSIN;
-  String? sCRIPNAME;
-  String? pLEDGEQTY;
-  String? bENQTY;
-  String? cOLQTY;
-  String? nSOHQTY;
-  String? sOHQTY;
-  String? iNSHORT;
-  String? oUTSHORT;
-  String? nET;
-  String? sCRIPVALUE;
-  String? aMOUNT;
-  String? aMOUNT1;
-  String? bSESYMBOL;
-  String? nSESYMBOL;
-  String? cLIENTNAME;
-  String? hAIRCUT;
-  String? hCPRICE;
-  String? hCAMOUNT;
-  String? cLIENTTEXT;
-  String? mINIMUMREDEMPTIONQTY;
-  String? sCHEMECODE;
-  String? sCHEMEPLAN;
-  String? sCHEMENAME;
-  String? aMCCODE;
+  String? stampduty;
+  String? stt;
   String? avgQty;
-  String? bought;
-  String? buyPrice;
-  String? purchase;
-  String? current;
-  String? gainOrLoss;
-  String? percentage;
-  String? nav;
+  String? avgNav;
+  String? curNav;
+  String? investedValue;
+  String? currentValue;
+  String? profitLoss;
+  String? changeprofitLoss;
+  String? minRedemptionQty;
+  String? sCHEMECODE; 
+  List<Transactions>? transactions;
 
-  DataMod(
-      {this.cLIENTCODE,
+  Data(
+      {this.clientCode,
+      this.name,
+      this.foliono,
       this.iSIN,
-      this.sCRIPNAME,
-      this.pLEDGEQTY,
-      this.bENQTY,
-      this.cOLQTY,
-      this.nSOHQTY,
-      this.sOHQTY,
-      this.iNSHORT,
-      this.oUTSHORT,
-      this.nET,
-      this.sCRIPVALUE,
-      this.aMOUNT,
-      this.aMOUNT1,
-      this.bSESYMBOL,
-      this.nSESYMBOL,
-      this.cLIENTNAME,
-      this.hAIRCUT,
-      this.hCPRICE,
-      this.hCAMOUNT,
-      this.cLIENTTEXT,
-      this.mINIMUMREDEMPTIONQTY,
-      this.sCHEMECODE,
-      this.sCHEMEPLAN,
-      this.sCHEMENAME,
-      this.aMCCODE,
+      this.stampduty,
+      this.stt,
       this.avgQty,
-      this.bought,
-      this.buyPrice,
-      this.purchase,
-      this.current,
-      this.gainOrLoss,
-      this.percentage,
-      this.nav});
+      this.avgNav,
+      this.curNav,
+      this.investedValue,
+      this.currentValue,
+      this.changeprofitLoss,
+      this.profitLoss,
+      this.transactions});
 
-  DataMod.fromJson(Map<String, dynamic> json) {
-    cLIENTCODE = json['CLIENTCODE'];
-    iSIN = json['ISIN'];
-    sCRIPNAME = json['SCRIP_NAME'];
-    pLEDGEQTY = json['PLEDGE_QTY'];
-    bENQTY = json['BENQTY'];
-    cOLQTY = json['COLQTY'];
-    nSOHQTY = json['NSOHQTY'];
-    sOHQTY = json['SOHQTY'];
-    iNSHORT = json['INSHORT'];
-    oUTSHORT = json['OUTSHORT'];
-    nET = json['NET'];
-    sCRIPVALUE = json['SCRIP_VALUE'];
-    aMOUNT = json['AMOUNT'];
-    aMOUNT1 = json['AMOUNT1'];
-    bSESYMBOL = json['BSE_SYMBOL'];
-    nSESYMBOL = json['NSE_SYMBOL'];
-    cLIENTNAME = json['CLIENT_NAME'];
-    hAIRCUT = json['HAIRCUT'];
-    hCPRICE = json['HC_PRICE'];
-    hCAMOUNT = json['HC_AMOUNT'];
-    cLIENTTEXT = json['CLIENTTEXT'];
-    mINIMUMREDEMPTIONQTY = json['MINIMUM_REDEMPTION_QTY'];
-    sCHEMECODE = json['SCHEME_CODE'];
-    sCHEMEPLAN = json['SCHEME_PLAN'];
-    sCHEMENAME = json['SCHEME_NAME'];
-    aMCCODE = json['AMC_CODE'];
-    avgQty = json['avg_qty'];
-    bought = json['bought'];
-    buyPrice = json['buy_price'];
-    purchase = json['purchase'];
-    current = json['current'];
-    gainOrLoss = json['gain_or_loss'];
-    percentage = json['percentage'];
-    nav = json['nav'];
+  Data.fromJson(Map<String, dynamic> json) {
+    clientCode = json['ClientCode'].toString();
+    changeprofitLoss = json['changeprofitloss'].toString(); 
+    name = json['name'].toString();
+    foliono = json['foliono'].toString();
+    iSIN = json['ISIN'].toString();
+    stampduty = json['stampduty'].toString();
+    stt = json['stt'].toString();
+    avgQty = json['avg_qty'].toString();
+    avgNav = json['avg_nav'].toString();
+    curNav = json['Cur_Nav'].toString();
+    investedValue = json['invested_value'].toString();
+    currentValue = json['current_value'].toString();
+    profitLoss = json['profit_loss'].toString();
+    sCHEMECODE= json["Scheme_Code"].toString();
+
+    minRedemptionQty=json["Minimum_Redemption_Qty"].toString();
+    if (json['transactions'] != null) {
+      transactions = <Transactions>[];
+      json['transactions'].forEach((v) {
+        transactions!.add(new Transactions.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['CLIENTCODE'] = this.cLIENTCODE;
+    data['ClientCode'] = this.clientCode;
+    data['name'] = this.name;
+    data['foliono'] = this.foliono;
     data['ISIN'] = this.iSIN;
-    data['SCRIP_NAME'] = this.sCRIPNAME;
-    data['PLEDGE_QTY'] = this.pLEDGEQTY;
-    data['BENQTY'] = this.bENQTY;
-    data['COLQTY'] = this.cOLQTY;
-    data['NSOHQTY'] = this.nSOHQTY;
-    data['SOHQTY'] = this.sOHQTY;
-    data['INSHORT'] = this.iNSHORT;
-    data['OUTSHORT'] = this.oUTSHORT;
-    data['NET'] = this.nET;
-    data['SCRIP_VALUE'] = this.sCRIPVALUE;
-    data['AMOUNT'] = this.aMOUNT;
-    data['AMOUNT1'] = this.aMOUNT1;
-    data['BSE_SYMBOL'] = this.bSESYMBOL;
-    data['NSE_SYMBOL'] = this.nSESYMBOL;
-    data['CLIENT_NAME'] = this.cLIENTNAME;
-    data['HAIRCUT'] = this.hAIRCUT;
-    data['HC_PRICE'] = this.hCPRICE;
-    data['HC_AMOUNT'] = this.hCAMOUNT;
-    data['CLIENTTEXT'] = this.cLIENTTEXT;
-    data['MINIMUM_REDEMPTION_QTY'] = this.mINIMUMREDEMPTIONQTY;
-    data['SCHEME_CODE'] = this.sCHEMECODE;
-    data['SCHEME_PLAN'] = this.sCHEMEPLAN;
-    data['SCHEME_NAME'] = this.sCHEMENAME;
-    data['AMC_CODE'] = this.aMCCODE;
+    data['stampduty'] = this.stampduty;
+    data['stt'] = this.stt;
     data['avg_qty'] = this.avgQty;
-    data['bought'] = this.bought;
-    data['buy_price'] = this.buyPrice;
-    data['purchase'] = this.purchase;
-    data['current'] = this.current;
-    data['gain_or_loss'] = this.gainOrLoss;
-    data['percentage'] = this.percentage;
-    data['nav'] = this.nav;
+    data['avg_nav'] = this.avgNav;
+    data['Cur_Nav'] = this.curNav;
+    data['invested_value'] = this.investedValue;
+    data['current_value'] = this.currentValue;
+    data['profit_loss'] = this.profitLoss;
+    data['Minimum_Redemption_Qty'] = this.minRedemptionQty;
+    data['Scheme_Code'] = this.sCHEMECODE;
+    data['changeprofitLoss'] = this.changeprofitLoss;
+    
+    
+ 
+    if (this.transactions != null) {
+      data['transactions'] = this.transactions!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class Transactions {
+  String? txnDate;
+  String? txnType;
+  String? txnNo;
+  String? seqNo;
+  String? arnNo;
+  String? units;
+  String? avgNav;
+  String? invAmount;
+  String? stampDuty;
+  String? sTT;
+  String? pR;
+  String? purRed;
+
+  Transactions(
+      {this.txnDate,
+      this.txnType,
+      this.txnNo,
+      this.seqNo,
+      this.arnNo,
+      this.units,
+      this.avgNav,
+      this.invAmount,
+      this.stampDuty,
+      this.sTT,
+      this.pR,
+      this.purRed});
+
+  Transactions.fromJson(Map<String, dynamic> json) {
+    txnDate = json['TxnDate'].toString();
+    txnType = json['txnType'].toString();
+    txnNo = json['txnNo'].toString();
+    seqNo = json['seqNo'].toString();
+    arnNo = json['arnNo'].toString();
+    units = json['units'].toString();
+    avgNav = json['avg_nav'].toString();
+    invAmount = json['Inv_amount'].toString();
+    stampDuty = json['stampDuty'].toString();
+    sTT = json['STT'].toString();
+    pR = json['PR'].toString();
+    purRed = json['pur_red'].toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['TxnDate'] = this.txnDate;
+    data['txnType'] = this.txnType;
+    data['txnNo'] = this.txnNo;
+    data['seqNo'] = this.seqNo;
+    data['arnNo'] = this.arnNo;
+    data['units'] = this.units;
+    data['avg_nav'] = this.avgNav;
+    data['Inv_amount'] = this.invAmount;
+    data['stampDuty'] = this.stampDuty;
+    data['STT'] = this.sTT;
+    data['PR'] = this.pR;
+    data['pur_red'] = this.purRed;
+    return data;
+  }
+}
+
+class Summary {
+  String? invested;
+  String? currentValue;
+  String? absReturnValue;
+  String? absReturnPercent;
+
+  Summary(
+      {this.invested,
+      this.currentValue,
+      this.absReturnValue,
+      this.absReturnPercent});
+
+  Summary.fromJson(Map<String, dynamic> json) {
+    invested = json['invested'].toString();
+    currentValue = json['current_value'].toString();
+    absReturnValue = json['abs_return_value'].toString();
+    absReturnPercent = json['abs_return_percent'].toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['invested'] = this.invested;
+    data['current_value'] = this.currentValue;
+    data['abs_return_value'] = this.absReturnValue;
+    data['abs_return_percent'] = this.absReturnPercent;
     return data;
   }
 }

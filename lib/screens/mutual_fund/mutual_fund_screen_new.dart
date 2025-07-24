@@ -60,7 +60,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                                 TextWidget.titleText(
                                     align: TextAlign.right,
                                     text:
-                                        "${(mfData.mfholdingnew?.purchaseValue == "" || mfData.mfholdingnew?.purchaseValue == null) ? "0.00" : mfData.mfholdingnew?.purchaseValue}",
+                                        "${(mfData.mfholdingnew?.summary?.invested == "" || mfData.mfholdingnew?.summary?.invested == null) ? "0.00" : mfData.mfholdingnew?.summary?.invested}",
                                     color: theme.isDarkMode
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
@@ -85,7 +85,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                                 TextWidget.titleText(
                                     align: TextAlign.right,
                                     text:
-                                        "${(mfData.mfholdingnew?.gainOrLoss == "" || mfData.mfholdingnew?.gainOrLoss == null) ? "0.00" : mfData.mfholdingnew?.gainOrLoss}",
+                                        "${(mfData.mfholdingnew?.summary?.absReturnValue == "" || mfData.mfholdingnew?.summary?.absReturnValue == null) ? "0.00" : mfData.mfholdingnew?.summary?.absReturnValue}",
                                     color: theme.isDarkMode
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
@@ -116,7 +116,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                                 TextWidget.titleText(
                                     align: TextAlign.right,
                                     text:
-                                        "${(mfData.mfholdingnew?.currentValue == "" || mfData.mfholdingnew?.currentValue == null) ? "0.00" : mfData.mfholdingnew?.currentValue}",
+                                        "${(mfData.mfholdingnew?.summary?.currentValue == "" || mfData.mfholdingnew?.summary?.currentValue == null) ? "0.00" : mfData.mfholdingnew?.summary?.currentValue}",
                                     color: theme.isDarkMode
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
@@ -141,7 +141,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                                 TextWidget.titleText(
                                     align: TextAlign.right,
                                     text:
-                                        "${mfData.mfholdingnew?.percentage?.toString() ?? "0"}%", // Ensures percentage is always a valid string
+                                        "${mfData.mfholdingnew?.summary?.absReturnPercent?.toString() ?? "0"}%", // Ensures percentage is always a valid string
                                     color: theme.isDarkMode
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,

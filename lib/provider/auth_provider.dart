@@ -1739,7 +1739,6 @@ class AuthProvider extends DefaultChangeNotifier {
           ref.read(portfolioProvider).clearAllportfolio();
           await ref.read(fundProvider).clearFunds();
           ref.read(orderProvider).clearAllorders();
-          ref.read(ledgerProvider).clearCalendarPnlCache();
           ref.read(ledgerProvider).setterfornullallSwitch = null;
 
           // initLaod(false);

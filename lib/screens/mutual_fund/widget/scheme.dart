@@ -68,7 +68,7 @@ class MFSchemeInfo extends ConsumerWidget {
                   CircleAvatar(
                     maxRadius: 24,
                     backgroundImage: NetworkImage(
-                      "https://v3.mynt.in/mf/static/images/manager/${factSheetData.fundManager?.toLowerCase().trim() ?? "default"}.png"
+                      "https://v3.mynt.in/mfapi/static/images/manager/${factSheetData.fundManager?.toLowerCase().trim() ?? "default"}.png"
                     )
                   ),
                   const SizedBox(width: 10),

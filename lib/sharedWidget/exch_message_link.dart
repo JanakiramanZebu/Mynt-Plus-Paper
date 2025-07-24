@@ -32,7 +32,7 @@ class LinkExtractor extends StatelessWidget {
           fontSize: 14,
           height: 1.5,
         ),
-        trimLines: 3,
+        trimLines: 5,
         moreStyle: TextWidget.textStyle(
           theme: theme.isDarkMode,
           color: theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
