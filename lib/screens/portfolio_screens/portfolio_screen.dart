@@ -42,6 +42,16 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
 
       // ref.read(portfolioProvider).tabSize(ref.read(themeProvider));
       if (ref.read(portfolioProvider).selectedTab == 0) {
+        ref
+            .read(portfolioProvider)
+            .requestWSPosition(context: context, isSubscribe: false);
+        ref
+            .read(portfolioProvider)
+            .requestWSHoldings(context: context, isSubscribe: true);
+        ref
+            .read(portfolioProvider)
+            .requestallHoldings(context: context, isSubscribe: false);
+      } else if (ref.read(portfolioProvider).selectedTab == 1) {
         ref.read(portfolioProvider).cancelTimer();
         ref
             .read(portfolioProvider)
@@ -52,16 +62,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
         ref
             .read(portfolioProvider)
             .requestallHoldings(context: context, isSubscribe: false);
-      } else if (ref.read(portfolioProvider).selectedTab == 1) {
-        ref
-            .read(portfolioProvider)
-            .requestWSPosition(context: context, isSubscribe: false);
-        ref
-            .read(portfolioProvider)
-            .requestWSHoldings(context: context, isSubscribe: true);
-        ref
-            .read(portfolioProvider)
-            .requestallHoldings(context: context, isSubscribe: false);
+        
 
         if (ref.read(ledgerProvider).pledgeandunpledge == null) {
           ref.read(ledgerProvider).getCurrentDate("pandu");
