@@ -352,7 +352,6 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                               ref.read(fundProvider).clearFunds();
 
                               userProfile.clearUserData();
-                              ledgerprovider.clearCalendarPnlCache();
 
                               final websocket = ref.read(websocketProvider);
                               websocket.closeSocket(true);
@@ -380,7 +379,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                             },
                             child: Container(
                               padding: const EdgeInsets.only(
-                                  left: 16, right: 16, top: 16, bottom: 16),
+                                  left: 16, right: 16, top: 16, bottom: 0),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -403,29 +402,27 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                           ),
                                         ),
                                         const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              TextWidget.subText(
-                                                text: acc.userName,
-                                                theme: false,
-                                                color: theme.isDarkMode
-                                                    ? colors.textPrimaryDark
-                                                    : colors.textPrimaryLight,
-                                                fw: 0,
-                                              ),
-                                              const SizedBox(height: 4),
-                                              TextWidget.paraText(
-                                                text: acc.clientId,
-                                                theme: false,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textSecondaryLight,
-                                              ),
-                                            ],
-                                          ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            TextWidget.subText(
+                                              text: acc.userName,
+                                              theme: false,
+                                              color: theme.isDarkMode
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight,
+                                              fw: 0,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            TextWidget.paraText(
+                                              text: acc.clientId,
+                                              theme: false,
+                                              color: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                  : colors.textSecondaryLight,
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),

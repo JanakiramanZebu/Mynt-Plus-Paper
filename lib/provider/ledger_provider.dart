@@ -63,13 +63,6 @@ class DocumentDetail {
   });
 }
 
-class CalendarPnlCache {
-  final CalenderpnlModel calenderpnlAllData;
-  final Map<DateTime, double> heatmapData;
-  final Map<DateTime, List<TradeData>> grouped;
-  CalendarPnlCache(this.calenderpnlAllData, this.heatmapData, this.grouped);
-}
-
 class LDProvider extends DefaultChangeNotifier {
   final api = locator<ApiExporter>();
   final Preferences pref = locator<Preferences>();
@@ -1405,68 +1398,68 @@ class LDProvider extends DefaultChangeNotifier {
   // bool isCalendarPnlDataLoaded = false;
   // void resetCalendarPnlDataLoaded() { isCalendarPnlDataLoaded = false; }
 
-  Future fetchcalenderpnldata(
-      BuildContext context, String from, String to, String type,
-      {bool force = false}) async {
-    // Always fetch if called from loadOrFetchCalendarPnlData with force=true
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      _noticenewfeature = prefs.getString("notice").toString();
+  // Future fetchcalenderpnldata(
+  //     BuildContext context, String from, String to, String type,
+  //     {bool force = false}) async {
+  //   // Always fetch if called from loadOrFetchCalendarPnlData with force=true
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     _noticenewfeature = prefs.getString("notice").toString();
 
-      print(_noticenewfeature);
+  //     print(_noticenewfeature);
 
-      _calendarpnlloading = true;
-      notifyListeners();
-      _calenderpnlAllData = await api.getcalenderpnldata(from, to, type);
-      grouped = {};
-      _originalGrouped = {};
-      if (_calenderpnlAllData != null) {
-        _heatmapData = {};
-        if (_calenderpnlAllData!.journal != null) {
-          _selectedFilters = {};
-          for (var element in _calenderpnlAllData!.journal!) {
-            print("realised : 33m");
-            if (element.realisedpnl != '0.0') {
-              String dateString = element.tRADEDATE!;
-              try {
-                DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                DateTime parsedDate = inputFormat.parse(dateString);
-                print("${element.realisedpnl}");
-                _heatmapData[DateTime(
-                        parsedDate.year, parsedDate.month, parsedDate.day)] =
-                    double.parse(element.realisedpnl ?? "0.0");
-              } catch (e) {
-                print("Error parsing date: $dateString - $e");
-              }
-            }
-          }
-        }
-        if (_calenderpnlAllData!.data != null) {
-          for (var trade in _calenderpnlAllData!.data!) {
-            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
-            final dateKey =
-                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
-            if (!grouped.containsKey(dateKey)) {
-              grouped[dateKey] = [];
-            }
-            grouped[dateKey]!.add(trade);
-          }
-        }
-      }
-      setFinancialYear(selectedFinancialYear);
-      print("objectobject");
-      _calendarpnlloading = false;
-      // isCalendarPnlDataLoaded = true; // removed
-      if (profitlossSearchCtrl.text.isNotEmpty) {
-        profitlossSearchCtrl.clear();
-      }
-      notifyListeners();
-    } catch (e) {
-      _calendarpnlloading = false;
-      debugPrint("$e");
-    }
-  }
+  //     _calendarpnlloading = true;
+  //     notifyListeners();
+  //     _calenderpnlAllData = await api.getcalenderpnldata(from, to, type);
+  //     grouped = {};
+  //     _originalGrouped = {};
+  //     if (_calenderpnlAllData != null) {
+  //       _heatmapData = {};
+  //       if (_calenderpnlAllData!.journal != null) {
+  //         _selectedFilters = {};
+  //         for (var element in _calenderpnlAllData!.journal!) {
+  //           print("realised : 33m");
+  //           if (element.realisedpnl != '0.0') {
+  //             String dateString = element.tRADEDATE!;
+  //             try {
+  //               DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  //               DateTime parsedDate = inputFormat.parse(dateString);
+  //               print("${element.realisedpnl}");
+  //               _heatmapData[DateTime(
+  //                       parsedDate.year, parsedDate.month, parsedDate.day)] =
+  //                   double.parse(element.realisedpnl ?? "0.0");
+  //             } catch (e) {
+  //               print("Error parsing date: $dateString - $e");
+  //             }
+  //           }
+  //         }
+  //       }
+  //       if (_calenderpnlAllData!.data != null) {
+  //         for (var trade in _calenderpnlAllData!.data!) {
+  //           DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  //           DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+  //           final dateKey =
+  //               DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+  //           if (!grouped.containsKey(dateKey)) {
+  //             grouped[dateKey] = [];
+  //           }
+  //           grouped[dateKey]!.add(trade);
+  //         }
+  //       }
+  //     }
+  //     setFinancialYear(selectedFinancialYear);
+  //     print("objectobject");
+  //     _calendarpnlloading = false;
+  //     // isCalendarPnlDataLoaded = true; // removed
+  //     if (profitlossSearchCtrl.text.isNotEmpty) {
+  //       profitlossSearchCtrl.clear();
+  //     }
+  //     notifyListeners();
+  //   } catch (e) {
+  //     _calendarpnlloading = false;
+  //     debugPrint("$e");
+  //   }
+  // }
 
   Future fetchtradebookdata(
       BuildContext context, String from, String to) async {
@@ -2527,7 +2520,57 @@ class LDProvider extends DefaultChangeNotifier {
     // Default to the first (current) financial year.
     selectedFinancialYear = availableFinancialYears.first;
     // Initialize startDate, endDate, selectedMonth, and monthlyPnL.
-    setFinancialYear(selectedFinancialYear);
+    setFinancialYear(selectedFinancialYear); // Only call ONCE here!
+  }
+
+  /// Sets the financial year and updates the startDate, endDate, selectedMonth,
+  /// and monthlyPnL aggregation using the provided [heatmapData].
+  void setFinancialYear(String fy) {
+    // Only update if the value has changed.
+    if (fy == "") {
+      selectedFinancialYear = availableFinancialYears.first;
+      fy = selectedFinancialYear;
+    } else {
+      selectedFinancialYear = fy;
+    }
+
+    // Parse "YYYY-YYYY" to extract the start year.
+    final parts = fy.split('-');
+    final startYear = int.parse(parts[0]);
+
+    // Define the financial year range: April of startYear to March of startYear+1.
+    startTaxDate = DateTime(startYear, 4, 1);
+    formattedStartDate = DateFormat("dd/MM/yyyy").format(startTaxDate);
+    endTaxDate = DateTime(startYear + 1, 3, 31);
+    formattedendDate = DateFormat("dd/MM/yyyy").format(endTaxDate);
+
+    // Determine current financial year based on today's date.
+    final now = DateTime.now();
+    final currentFYStartYear = now.month < 4 ? now.year - 1 : now.year;
+
+    // If the selected FY is the current one, default to current month in Daily view;
+    // otherwise, default to the FY start date.
+    selectedMonth = (startYear == currentFYStartYear)
+        ? DateTime(now.year, now.month, 1)
+        : startTaxDate;
+
+    // Use cached data if available for this year/segment
+    final cacheKey =
+        _calendarPnlCacheKey(selectedFinancialYear, selectedSegment);
+    if (_calendarPnlCache.containsKey(cacheKey) &&
+        _calendarPnlCache[cacheKey] != null) {
+      _calenderpnlAllData = _calendarPnlCache[cacheKey];
+      _rebuildGroupedAndHeatmap(_calenderpnlAllData);
+    }
+
+    if (_heatmapData != {}) {
+      // Aggregate monthly P&L data for this financial year.
+      monthlyPnL = _aggregateMonthlyPnL(_heatmapData, startTaxDate, endTaxDate);
+    }
+    // Schedule notifyListeners to run after the current frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   /// Sets the active tab: true for Monthly, false for Daily.
@@ -2889,47 +2932,6 @@ class LDProvider extends DefaultChangeNotifier {
     }
 
     notifyListeners();
-  }
-
-  /// Sets the financial year and updates the startDate, endDate, selectedMonth,
-  /// and monthlyPnL aggregation using the provided [heatmapData].
-  void setFinancialYear(String fy) {
-    // Only update if the value has changed.
-    if (fy == "") {
-      selectedFinancialYear = availableFinancialYears.first;
-      fy = selectedFinancialYear;
-    } else {
-      selectedFinancialYear = fy;
-    }
-
-    // Parse "YYYY-YYYY" to extract the start year.
-    final parts = fy.split('-');
-    final startYear = int.parse(parts[0]);
-
-    // Define the financial year range: April of startYear to March of startYear+1.
-    startTaxDate = DateTime(startYear, 4, 1);
-    formattedStartDate = DateFormat("dd/MM/yyyy").format(startTaxDate);
-    endTaxDate = DateTime(startYear + 1, 3, 31);
-    formattedendDate = DateFormat("dd/MM/yyyy").format(endTaxDate);
-
-    // Determine current financial year based on today's date.
-    final now = DateTime.now();
-    final currentFYStartYear = now.month < 4 ? now.year - 1 : now.year;
-
-    // If the selected FY is the current one, default to current month in Daily view;
-    // otherwise, default to the FY start date.
-    selectedMonth = (startYear == currentFYStartYear)
-        ? DateTime(now.year, now.month, 1)
-        : startTaxDate;
-
-    if (_heatmapData != {}) {
-      // Aggregate monthly P&L data for this financial year.
-      monthlyPnL = _aggregateMonthlyPnL(_heatmapData, startTaxDate, endTaxDate);
-    }
-    // Schedule notifyListeners to run after the current frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-    });
   }
 
   void setSegment(String seg) {
@@ -3502,37 +3504,226 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  // Per-year and per-segment cache
-  final Map<String, CalendarPnlCache> _calendarPnlCache = {};
-  String get _calendarCacheKey => '$selectedFinancialYear|$selectedSegment';
+  // Add a cache for calendar PnL data per (year, segment)
+  final Map<String, CalenderpnlModel?> _calendarPnlCache = {};
 
-  Future<void> loadOrFetchCalendarPnlData(
-      BuildContext context, String from, String to, String type,
-      {bool force = false}) async {
-    final key = '$selectedFinancialYear|$selectedSegment';
-    if (!force && _calendarPnlCache.containsKey(key)) {
-      final cache = _calendarPnlCache[key]!;
-      _calenderpnlAllData = cache.calenderpnlAllData;
-      _heatmapData = Map.from(cache.heatmapData);
-      grouped = Map.from(cache.grouped);
-      _calendarpnlloading = false;
-      notifyListeners();
-      return;
-    }
-    await fetchcalenderpnldata(context, from, to, type, force: true);
-    if (_calenderpnlAllData != null) {
-      _calendarPnlCache[key] = CalendarPnlCache(
-          _calenderpnlAllData!, Map.from(_heatmapData), Map.from(grouped));
+  // Helper to generate cache key
+  String _calendarPnlCacheKey(String fy, String segment) => '$fy|$segment';
+
+  /// Prefetch all years' data for the current segment (used on profile icon tap)
+  Future<void> prefetchAllCalendarPnlDataForSegment(
+      BuildContext context, String segment,
+      {List<String>? years}) async {
+    final yearsToFetch = years ?? availableFinancialYears;
+    for (final fy in yearsToFetch) {
+      final key = _calendarPnlCacheKey(fy, segment);
+      await _fetchAndCacheCalenderPnlData(
+        context,
+        _getStartDateForFY(fy),
+        _getEndDateForFY(fy),
+        segment,
+        key,
+      );
     }
   }
 
-  void clearCalendarPnlCache() {
-    _calendarPnlCache.clear();
-    _calenderpnlAllData = null;
-    _heatmapData = {};
+  // Helper to get formatted start date for a FY string
+  String _getStartDateForFY(String fy) {
+    final parts = fy.split('-');
+    final startYear = int.parse(parts[0]);
+    final startTaxDate = DateTime(startYear, 4, 1);
+    return DateFormat("dd/MM/yyyy").format(startTaxDate);
+  }
+
+  // Helper to get formatted end date for a FY string
+  String _getEndDateForFY(String fy) {
+    final parts = fy.split('-');
+    final startYear = int.parse(parts[0]);
+    final endTaxDate = DateTime(startYear + 1, 3, 31);
+    return DateFormat("dd/MM/yyyy").format(endTaxDate);
+  }
+
+  // Modified loadOrFetchCalendarPnlData to use cache
+  Future<void> loadOrFetchCalendarPnlData(
+      BuildContext context, String from, String to, String type,
+      {bool force = false}) async {
+    final fy = selectedFinancialYear;
+    final segment = type;
+    final cacheKey = _calendarPnlCacheKey(fy, segment);
+    if (!force &&
+        _calendarPnlCache.containsKey(cacheKey) &&
+        _calendarPnlCache[cacheKey] != null) {
+      // Use cached data
+      _calenderpnlAllData = _calendarPnlCache[cacheKey];
+      // Rebuild grouped and heatmapData from cached data
+      _rebuildGroupedAndHeatmap(_calenderpnlAllData);
+      setFinancialYear(fy);
+      notifyListeners();
+      return;
+    }
+    // Otherwise, fetch and cache
+    await fetchcalenderpnldata(context, from, to, type,
+        force: true, cacheKey: cacheKey);
+  }
+
+  // Modified fetchcalenderpnldata to support caching
+  Future fetchcalenderpnldata(
+      BuildContext context, String from, String to, String type,
+      {bool force = false, String? cacheKey}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _noticenewfeature = prefs.getString("notice").toString();
+      _calendarpnlloading = true;
+      notifyListeners();
+      final data = await api.getcalenderpnldata(from, to, type);
+      _calenderpnlAllData = data;
+      // Cache the result if cacheKey is provided
+      if (cacheKey != null) {
+        _calendarPnlCache[cacheKey] = data;
+      }
+      grouped = {};
+      _originalGrouped = {};
+      if (_calenderpnlAllData != null) {
+        _heatmapData = {};
+        if (_calenderpnlAllData!.journal != null) {
+          _selectedFilters = {};
+          for (var element in _calenderpnlAllData!.journal!) {
+            if (element.realisedpnl != '0.0') {
+              String dateString = element.tRADEDATE!;
+              try {
+                DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                DateTime parsedDate = inputFormat.parse(dateString);
+                _heatmapData[DateTime(
+                        parsedDate.year, parsedDate.month, parsedDate.day)] =
+                    double.parse(element.realisedpnl ?? "0.0");
+              } catch (e) {
+                print("Error parsing date: $dateString - $e");
+              }
+            }
+          }
+        }
+        if (_calenderpnlAllData!.data != null) {
+          for (var trade in _calenderpnlAllData!.data!) {
+            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+            final dateKey =
+                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            if (!grouped.containsKey(dateKey)) {
+              grouped[dateKey] = [];
+            }
+            grouped[dateKey]!.add(trade);
+          }
+        }
+      }
+      setFinancialYear(selectedFinancialYear);
+      _calendarpnlloading = false;
+      if (profitlossSearchCtrl.text.isNotEmpty) {
+        profitlossSearchCtrl.clear();
+      }
+      notifyListeners();
+    } catch (e) {
+      _calendarpnlloading = false;
+      debugPrint("$e");
+    }
+  }
+
+  // Helper to rebuild grouped and heatmapData from cached data
+  void _rebuildGroupedAndHeatmap(CalenderpnlModel? data) {
     grouped = {};
-    _calendarpnlloading = false;
-    notifyListeners();
+    _originalGrouped = {};
+    _heatmapData = {};
+    if (data == null) return;
+    if (data.journal != null) {
+      for (var element in data.journal!) {
+        if (element.realisedpnl != '0.0') {
+          String dateString = element.tRADEDATE!;
+          try {
+            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateTime parsedDate = inputFormat.parse(dateString);
+            _heatmapData[DateTime(
+                    parsedDate.year, parsedDate.month, parsedDate.day)] =
+                double.parse(element.realisedpnl ?? "0.0");
+          } catch (e) {
+            print("Error parsing date: $dateString - $e");
+          }
+        }
+      }
+    }
+    if (data.data != null) {
+      for (var trade in data.data!) {
+        DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+        final dateKey =
+            DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+        if (!grouped.containsKey(dateKey)) {
+          grouped[dateKey] = [];
+        }
+        grouped[dateKey]!.add(trade);
+      }
+    }
+  }
+
+  Future<void> _fetchAndCacheCalenderPnlData(BuildContext context, String from,
+      String to, String type, String cacheKey) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _noticenewfeature = prefs.getString("notice").toString();
+      _calendarpnlloading = true;
+      notifyListeners();
+      final data = await api.getcalenderpnldata(from, to, type);
+      _calenderpnlAllData = data;
+      // Cache the result
+      _calendarPnlCache[cacheKey] = data;
+      grouped = {};
+      _originalGrouped = {};
+      if (_calenderpnlAllData != null) {
+        _heatmapData = {};
+        if (_calenderpnlAllData!.journal != null) {
+          _selectedFilters = {};
+          for (var element in _calenderpnlAllData!.journal!) {
+            if (element.realisedpnl != '0.0') {
+              String dateString = element.tRADEDATE!;
+              try {
+                DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                DateTime parsedDate = inputFormat.parse(dateString);
+                _heatmapData[DateTime(
+                        parsedDate.year, parsedDate.month, parsedDate.day)] =
+                    double.parse(element.realisedpnl ?? "0.0");
+              } catch (e) {
+                print("Error parsing date: $dateString - $e");
+              }
+            }
+          }
+        }
+        if (_calenderpnlAllData!.data != null) {
+          for (var trade in _calenderpnlAllData!.data!) {
+            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+            final dateKey =
+                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            if (!grouped.containsKey(dateKey)) {
+              grouped[dateKey] = [];
+            }
+            grouped[dateKey]!.add(trade);
+          }
+        }
+      }
+      setFinancialYear(selectedFinancialYear);
+      _calendarpnlloading = false;
+      if (profitlossSearchCtrl.text.isNotEmpty) {
+        profitlossSearchCtrl.clear();
+      }
+      notifyListeners();
+    } catch (e) {
+      _calendarpnlloading = false;
+      debugPrint("$e");
+    }
+  }
+
+  // Helper to check if calendar PnL data is cached for a given year and segment
+  bool isCalendarPnlDataCached(String fy, String segment) {
+    final key = _calendarPnlCacheKey(fy, segment);
+    return _calendarPnlCache.containsKey(key) && _calendarPnlCache[key] != null;
   }
 }
 // List<double> getCustItemsHeight() {
