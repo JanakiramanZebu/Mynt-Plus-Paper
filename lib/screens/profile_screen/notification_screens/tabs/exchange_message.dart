@@ -55,7 +55,7 @@ class ExchangeMessage extends ConsumerWidget {
                                   height: 1.5,
                                   letterSpacing: 0.5),
                               textAlign: TextAlign.left,
-                              trimLines: 2,
+                              trimLines: 5,
                               moreStyle: TextWidget.textStyle(
                                 fontSize: 12,
                                 theme: false,

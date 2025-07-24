@@ -177,7 +177,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
               children: [
                 // Available cash - Expandable
                 _buildExpandableInfoRow(
-                  "Available cash",
+                  "Available Capital",
                   getFormatter(
                       value: double.parse(
                           "${funds.fundDetailModel?.totCredit ?? 0.00}"),
@@ -188,14 +188,14 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   onTap: () {
                     setState(() {
                       isAvailableCashExpanded = !isAvailableCashExpanded;
+                      isMarginUsedExpanded = false;
                     });
                   },
                   expandedContent: _buildAvailableCashContent(funds, theme),
                 ),
 
-                // Margin used - Expandable
                 _buildExpandableInfoRow(
-                  "Margin used",
+                  "Margin Used",
                   getFormatter(
                       value: double.parse(
                           "${funds.fundDetailModel?.utilizedMrgn ?? 0.00}"),
@@ -205,6 +205,7 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                   onTap: () {
                     setState(() {
                       isMarginUsedExpanded = !isMarginUsedExpanded;
+                      isAvailableCashExpanded = false;
                     });
                   },
                   expandedContent: _buildMarginUsedContent(funds, theme),
@@ -284,149 +285,207 @@ class _SecureFundState extends ConsumerState<SecureFund> {
             .sublist(1)
             .where((item) =>
                 item["name"] != "Collateral" &&
-                item["name"] != "Opening Balance")
+                item["name"] != "Opening Balance" &&
+                item["name"] != "Payin")
             .toList()
         : [];
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.subText(
+                      text: "Cash Balance",
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                      fw: 3),
+                  TextWidget.subText(
+                      text: getFormatter(
+                          value: funds.listOfCredits.isNotEmpty
+                              ? double.parse(
+                                  "${funds.listOfCredits[0]["value"]}")
+                              : 0.00,
+                          v4d: false,
+                          noDecimal: false),
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      fw: 3),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Divider(
+                  color: colors.colorDivider,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.subText(
+                    text: "Payin",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 3,
+                  ),
+                  TextWidget.subText(
+                    text:
+                        "${getFormatter(value: double.parse("${funds.fundDetailModel?.payin ?? 0.00}"), v4d: false, noDecimal: false)}",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 3,
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Divider(
+                  color: colors.colorDivider,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.subText(
+                    text: "Collateral Equity",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 3,
+                  ),
+                  TextWidget.subText(
+                    text:
+                        "${getFormatter(value: double.parse("${funds.pledgeAndUnpledgeModel?.noncashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 3,
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Divider(
+                  color: colors.colorDivider,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.subText(
+                    text: "Collateral Liquid",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 3,
+                  ),
+                  TextWidget.subText(
+                    text:
+                        "${getFormatter(value: double.parse("${funds.pledgeAndUnpledgeModel?.cashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 3,
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Divider(
+                  color: colors.colorDivider,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.subText(
+                    text: "Collateral Additional",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    fw: 3,
+                  ),
+                  TextWidget.subText(
+                    text:
+                        "${getFormatter(value: double.parse("${funds.fundDetailModel?.brkcollamt ?? 0.00}"), v4d: false, noDecimal: false)}",
+                    theme: false,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    fw: 3,
+                  ),
+                ],
+              ),
+              filteredCredits.isNotEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(
+                        color: colors.colorDivider,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ],
+          ),
           if (funds.listOfCredits.isNotEmpty) ...[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextWidget.subText(
-                        text: "Cash Balance",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        fw: 3),
-                    TextWidget.subText(
-                        text: getFormatter(
-                            value: double.parse(
-                                "${funds.listOfCredits[0]["value"]}"),
-                            v4d: false,
-                            noDecimal: false),
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        fw: 3),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Divider(
-                    color: colors.colorDivider,
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextWidget.subText(
-                      text: "Col Cash Equivalent",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      fw: 3,
-                    ),
-                    TextWidget.subText(
-                      text:
-                          "${getFormatter(value: double.parse("${funds.pledgeAndUnpledgeModel?.cashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 3,
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Divider(
-                    color: colors.colorDivider,
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextWidget.subText(
-                      text: "Col Non-Cash",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      fw: 3,
-                    ),
-                    TextWidget.subText(
-                      text:
-                          "${getFormatter(value: double.parse("${funds.pledgeAndUnpledgeModel?.noncashEquivalent ?? 0.00}"), v4d: false, noDecimal: false)}",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 3,
-                    ),
-                  ],
-                ),
-                filteredCredits.isNotEmpty
-                    ? Padding(
+            ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: filteredCredits.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextWidget.subText(
+                          text: "${filteredCredits[index]["name"]}",
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          fw: 3),
+                      TextWidget.subText(
+                          text: getFormatter(
+                              value: double.parse(
+                                  "${filteredCredits[index]["value"]}"),
+                              v4d: false,
+                              noDecimal: false),
+                          theme: false,
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          fw: 3),
+                    ],
+                  );
+                },
+                separatorBuilder: (BuildContext context, int index) {
+                  return Column(
+                    children: [
+                      Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Divider(
                           color: colors.colorDivider,
                         ),
-                      )
-                    : const SizedBox.shrink(),
-              ],
-            ),
-            if (filteredCredits.isNotEmpty)
-              ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filteredCredits.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextWidget.subText(
-                            text: "${filteredCredits[index]["name"]}",
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            fw: 3),
-                        TextWidget.subText(
-                            text: getFormatter(
-                                value: double.parse(
-                                    "${filteredCredits[index]["value"]}"),
-                                v4d: false,
-                                noDecimal: false),
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 3),
-                      ],
-                    );
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    return Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Divider(
-                            color: colors.colorDivider,
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
+                      ),
+                    ],
+                  );
+                }),
             SizedBox(height: 14),
           ],
         ],
@@ -435,54 +494,82 @@ class _SecureFundState extends ConsumerState<SecureFund> {
   }
 
   Widget _buildMarginUsedContent(funds, theme) {
+    final filteredMargin = funds.listOfUsedMrgn.length > 1
+        ? funds.listOfUsedMrgn
+            .sublist(1)
+            .where((item) =>
+                item["name"] != "Span" &&
+                item["name"] != "Exposure" &&
+                item["name"] != "Option Premium" &&
+                item["name"] != "Unrealized Expenses")
+            .toList()
+        : [];
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18),
       child: Column(
         children: [
           // Span, Exposure, Option Premium from listOfUsedMrgn
-          if (funds.listOfUsedMrgn.isNotEmpty) ...[
-            ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: funds.listOfUsedMrgn.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextWidget.subText(
-                              text: "${funds.listOfUsedMrgn[index]["name"]}",
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              fw: 3),
-                          TextWidget.subText(
-                              text: getFormatter(
-                                  value: double.parse(
-                                      "${funds.listOfUsedMrgn[index]["value"]}"),
-                                  v4d: false,
-                                  noDecimal: false),
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 3),
-                        ]),
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return Divider(
-                    color: colors.colorDivider.withOpacity(0.5),
-                  );
-                }),
-            Divider(
-              color: colors.colorDivider.withOpacity(0.5),
-            ),
-          ],
 
           // Unrealized Expenses
+
+          buildPeakMarginInfo(
+            isDarkMode: theme.isDarkMode,
+            theme: theme,
+            value: getFormatter(
+                value: double.parse("${funds.fundDetailModel?.span ?? 0.00}"),
+                v4d: false,
+                noDecimal: false),
+            text: "Span",
+          ),
+          buildPeakMarginInfo(
+            isDarkMode: theme.isDarkMode,
+            theme: theme,
+            value: getFormatter(
+                value: double.parse("${funds.fundDetailModel?.expo ?? 0.00}"),
+                v4d: false,
+                noDecimal: false),
+            text: "Exposure",
+          ),
+          buildPeakMarginInfo(
+            isDarkMode: theme.isDarkMode,
+            theme: theme,
+            value: getFormatter(
+                value: double.parse(
+                    "${funds.fundDetailModel?.scripbskmar ?? 0.00}"),
+                v4d: false,
+                noDecimal: false),
+            text: "Basket Margin",
+          ),
+          buildPeakMarginInfo(
+            isDarkMode: theme.isDarkMode,
+            theme: theme,
+            value: getFormatter(
+                value: double.parse(
+                    "${funds.fundDetailModel?.cobomargin ?? 0.00}"),
+                v4d: false,
+                noDecimal: false),
+            text: "CO / BO Margin",
+          ),
+          buildPeakMarginInfo(
+            isDarkMode: theme.isDarkMode,
+            theme: theme,
+            value: getFormatter(
+                value:
+                    double.parse("${funds.fundDetailModel?.premium ?? 0.00}"),
+                v4d: false,
+                noDecimal: false),
+            text: "Option Premium",
+          ),
+          buildPeakMarginInfo(
+            isDarkMode: theme.isDarkMode,
+            theme: theme,
+            value: getFormatter(
+                value: double.parse(
+                    "${funds.fundDetailModel?.deliverySellBenefit ?? 0.00}"),
+                v4d: false,
+                noDecimal: false),
+            text: "Delivery Sell Benefit",
+          ),
           if (funds.fundDetailModel?.pendordval != null &&
               funds.fundDetailModel!.pendordval != "0.00") ...[
             Container(
@@ -514,66 +601,146 @@ class _SecureFundState extends ConsumerState<SecureFund> {
               color: colors.colorDivider.withOpacity(0.5),
             ),
           ],
+          if (funds.listOfUsedMrgn.isNotEmpty) ...[
+            ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: filteredMargin.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextWidget.subText(
+                              text: "${filteredMargin[index]["name"]}",
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              fw: 3),
+                          TextWidget.subText(
+                              text: getFormatter(
+                                  value: double.parse(
+                                      "${filteredMargin[index]["value"]}"),
+                                  v4d: false,
+                                  noDecimal: false),
+                              theme: false,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              fw: 3),
+                        ]),
+                  );
+                },
+                separatorBuilder: (BuildContext context, int index) {
+                  return Divider(
+                    color: colors.colorDivider.withOpacity(0.5),
+                  );
+                }),
+            Divider(
+              color: colors.colorDivider.withOpacity(0.5),
+            ),
+          ],
 
           // Peak Margin
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextWidget.subText(
-                      text: "Peak Margin",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      fw: 3),
-                  TextWidget.subText(
-                      text: getFormatter(
-                          value: double.parse(
-                              "${funds.fundDetailModel?.peakMar ?? 0.00}"),
-                          v4d: false,
-                          noDecimal: false),
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 3),
-                ]),
-          ),
-          Divider(
-            color: colors.colorDivider.withOpacity(0.5),
-          ),
+          // Container(
+          //   padding: const EdgeInsets.symmetric(vertical: 12),
+          //   child: Row(
+          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //       children: [
+          //         TextWidget.subText(
+          //             text: "Peak Margin",
+          //             theme: false,
+          //             color: theme.isDarkMode
+          //                 ? colors.textSecondaryDark
+          //                 : colors.textSecondaryLight,
+          //             fw: 3),
+          //         TextWidget.subText(
+          //             text: getFormatter(
+          //                 value: double.parse(
+          //                     "${funds.fundDetailModel?.peakMar ?? 0.00}"),
+          //                 v4d: false,
+          //                 noDecimal: false),
+          //             theme: false,
+          //             color: theme.isDarkMode
+          //                 ? colors.textPrimaryDark
+          //                 : colors.textPrimaryLight,
+          //             fw: 3),
+          //       ]),
+          // ),
+          // Divider(
+          //   color: colors.colorDivider.withOpacity(0.5),
+          // ),
 
           // Expiry Margin
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextWidget.subText(
-                      text: "Expiry Margin",
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      fw: 3),
-                  TextWidget.subText(
-                      text: getFormatter(
-                          value: double.parse(
-                              "${funds.fundDetailModel?.expiryMar ?? 0.00}"),
-                          v4d: false,
-                          noDecimal: false),
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 3),
-                ]),
-          ),
+          // Container(
+          //   padding: const EdgeInsets.symmetric(vertical: 12),
+          //   child: Row(
+          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //       children: [
+          //         TextWidget.subText(
+          //             text: "Expiry Margin",
+          //             theme: false,
+          //             color: theme.isDarkMode
+          //                 ? colors.textSecondaryDark
+          //                 : colors.textSecondaryLight,
+          //             fw: 3),
+          //         TextWidget.subText(
+          //             text: getFormatter(
+          //                 value: double.parse(
+          //                     "${funds.fundDetailModel?.expiryMar ?? 0.00}"),
+          //                 v4d: false,
+          //                 noDecimal: false),
+          //             theme: false,
+          //             color: theme.isDarkMode
+          //                 ? colors.textPrimaryDark
+          //                 : colors.textPrimaryLight,
+          //             fw: 3),
+          //       ]),
+          // ),
           const SizedBox(height: 12),
         ],
       ),
+    );
+  }
+
+  Widget buildPeakMarginInfo({
+    required dynamic value,
+    required String text,
+    required bool isDarkMode,
+    required ThemesProvider theme,
+  }) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextWidget.subText(
+                text: text,
+                theme: false,
+                color: isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 3,
+              ),
+              TextWidget.subText(
+                text: value,
+                theme: false,
+                color: isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                fw: 3,
+              ),
+            ],
+          ),
+        ),
+        Divider(
+          color: colors.colorDivider.withOpacity(0.5),
+        ),
+      ],
     );
   }
 
