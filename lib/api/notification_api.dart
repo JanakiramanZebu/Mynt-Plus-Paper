@@ -1,6 +1,7 @@
 import '../models/notification_model/broker_message_model.dart';
 import '../models/notification_model/exchange_message_model.dart';
 import '../models/notification_model/exchange_status_model.dart';
+import '../models/notification_model/information_message_model.dart';
 import 'core/api_core.dart';
 
 mixin NotificationApi on ApiCore {
@@ -113,6 +114,31 @@ mixin NotificationApi on ApiCore {
             for (final item in json) {
               data.add(BrokerMessage.fromJson(item as Map<String, dynamic>));
             }
+          }
+        }
+      }
+      return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+// Get Information Messages from nlog
+  Future<List<InformationMessageModel>> getInformationMessages() async {
+    try {
+      final uri = Uri.parse('https://besim.zebull.in/nlog/get_messages');
+      final res = await apiClient.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"userid": prefs.clientId}),
+      );
+
+      final List<InformationMessageModel> data = [];
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        if (json is List) {
+          for (final item in json) {
+            data.add(InformationMessageModel.fromJson(item as Map<String, dynamic>));
           }
         }
       }

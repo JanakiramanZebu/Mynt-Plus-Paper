@@ -927,6 +927,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         await ref.read(apikeyprovider).fetchapikey(context);
         await ref.read(notificationprovider).fetchexchagemsg(context);
         await ref.read(notificationprovider).fetchbrokermsg(context);
+        await ref.read(notificationprovider).fetchInformationMessages(context);
 
         //funds
 
