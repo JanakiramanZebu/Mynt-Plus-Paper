@@ -20,10 +20,30 @@ import '../../sharedWidget/splash_loader.dart';
 import '../../utils/no_emoji_inputformatter.dart';
 import 'bottom_sheets/ledger_filter.dart';
 
-class LedgerScreen extends StatelessWidget {
+class LedgerScreen extends ConsumerStatefulWidget {
   final String ddd;
   const LedgerScreen({super.key, required this.ddd});
 
+  @override
+  ConsumerState<LedgerScreen> createState() => _LedgerScreenState();
+}
+
+class _LedgerScreenState extends ConsumerState<LedgerScreen> {
+ 
+ @override
+  void initState() {
+    super.initState();
+    if(ref.read(ledgerProvider).selectedFilters.isNotEmpty) {
+      // If there are selected filters, apply them immediately
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+    ref.read(ledgerProvider).applyLedgerMultiFilter(context,ref.read(ledgerProvider).selectedFilters.toList());
+    });
+    }
+    }
+
+ 
+ 
+ 
   @override
   Widget build(BuildContext context) {
     final List<String> staticColumn = [

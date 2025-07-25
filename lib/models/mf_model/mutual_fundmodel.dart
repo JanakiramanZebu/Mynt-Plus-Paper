@@ -69,6 +69,8 @@ class MutualFundList {
   String? channelPartnerCode;
   String? reOpeningDate;
   String? name;
+  String? mfsearchnamename;
+  
   String? aUM;
   String? iNTERNETEXPENSERATIO;
   String? tHREEYEARDATA;
@@ -77,6 +79,9 @@ class MutualFundList {
   String? nETASSETVALUE;
   String? launchDate;
   String? closureDate;
+  String? fundname;
+  
+
   String? sCHEMECATEGORY;
   String? sCHEMESUBCATEGORY;
   String? schemeMinimumAmount;
@@ -134,6 +139,7 @@ class MutualFundList {
       this.channelPartnerCode,
       this.reOpeningDate,
       this.name,
+      this.mfsearchnamename,
       this.aUM,
       this.iNTERNETEXPENSERATIO,
       this.tHREEYEARDATA,
@@ -197,12 +203,13 @@ class MutualFundList {
     channelPartnerCode = json['Channel Partner_Code'];
     reOpeningDate = json['ReOpening_Date'];
     name = json['Name'];
+    mfsearchnamename = json['name'];
     aUM = json['AUM'];
     iNTERNETEXPENSERATIO = json['INTER_NET_EXPENSE_RATIO'];
-    tHREEYEARDATA = json['THREE_YEAR_DATA'];
-    fIVEYEARDATA = json['FIVE_YEAR_DATA'];
+    tHREEYEARDATA = json['3Year'];
+    fIVEYEARDATA = json['FIVE_YEAR_DATA'] ?? json['5Year'];
     nETSCHEMECODE = json['NET_SCHEME_CODE'];
-    nETASSETVALUE = json['NET_ASSET_VALUE'];
+    nETASSETVALUE = json['NET_ASSET_VALUE'] ?? json['currentNAV'];
     launchDate = json['Launch_Date'];
     closureDate = json['Closure_Date'];
     sCHEMECATEGORY = json['SCHEME_CATEGORY'];
@@ -211,6 +218,8 @@ class MutualFundList {
     fSchemeName = json['f_scheme_name'];
     nAVSchemeType = json['NAV_Scheme_Type'];
     schemegroupName = json['schemeGroupName'];
+    fundname = json['fundname'];
+    
     type = json['Type'];
     subtype = json['SubType'];
      corpos = json["corpus"];
@@ -233,6 +242,8 @@ class MutualFundList {
     data['Minimum_Purchase_Amount'] = minimumPurchaseAmount;
     data['Additional_Purchase_Amount'] = additionalPurchaseAmount;
     data['Maximum_Purchase_Amount'] = maximumPurchaseAmount;
+    data['fundname'] = fundname;
+
     data['Purchase_Amount_Multiplier'] = purchaseAmountMultiplier;
     data['Purchase_Cutoff_Time'] = purchaseCutoffTime;
     data['Redemption_Allowed'] = redemptionAllowed;
@@ -263,9 +274,12 @@ class MutualFundList {
     data['Channel Partner_Code'] = channelPartnerCode;
     data['ReOpening_Date'] = reOpeningDate;
     data['Name'] = name;
+    data['name'] = mfsearchnamename;
+
+    
     data['AUM'] = aUM;
     data['INTER_NET_EXPENSE_RATIO'] = iNTERNETEXPENSERATIO;
-    data['THREE_YEAR_DATA'] = tHREEYEARDATA;
+    data['3Year'] = tHREEYEARDATA;
     data['FIVE_YEAR_DATA'] = fIVEYEARDATA;
     data['NET_SCHEME_CODE'] = nETSCHEMECODE;
     data['NET_ASSET_VALUE'] = nETASSETVALUE;

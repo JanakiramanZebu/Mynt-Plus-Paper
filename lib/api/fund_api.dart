@@ -64,6 +64,26 @@ mixin FundApi on ApiCore {
     }
   }
 
+
+    Future  getlinkfordisplay( ) async {
+    try {
+      final uri = Uri.parse(apiLinks.mftemporderlinkget);
+      print(uri);
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({ 
+            "client_code": "${prefs.clientId}", 
+          }));
+      final json = jsonDecode(res.body);
+      // log("HDFC STATUS => ${res.body}"); 
+          return json;
+      
+    
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 // Re-Direct to OptionZ
 
   Future<OptionZmodel> getaOptionZ(String key) async {

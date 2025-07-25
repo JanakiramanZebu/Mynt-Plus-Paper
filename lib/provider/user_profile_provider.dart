@@ -505,13 +505,17 @@ class UserProfileProvider extends DefaultChangeNotifier {
         ref.read(authProvider).loginMethCtrl.text =
             pref.isMobileLogin! ? pref.clientMob! : pref.clientId!;
         notifyListeners();
-        ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, 'The Account has been deactivated'));
 
         Navigator.of(context).pop();
         // ref.read(websocketProvider).closeSocket();
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.loginScreen, (route) => false);
+        Future.delayed(Duration.zero, () {
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+                context, Routes.loginScreen, (route) => false);
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+              successMessage(context, 'The Account has been deactivated'));
+        });
       } else {
         ScaffoldMessenger.of(context)
             .showSnackBar(warningMessage(context, data["emsg"].toString()));

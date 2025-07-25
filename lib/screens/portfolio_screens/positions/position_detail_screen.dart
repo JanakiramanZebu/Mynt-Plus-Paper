@@ -752,7 +752,7 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                         const SizedBox(height: 8),
                                         _buildInfoRow(
                                             "Avg Price",
-                                            "${widget.positionList.netavgprc ?? 0.00}",
+                                            "${widget.positionList.netupldprc ?? 0.00}",
                                             theme),
                                         const SizedBox(height: 8),
                                         _buildInfoRow(
@@ -779,6 +779,12 @@ class _PositionDetailScreenState extends ConsumerState<PositionDetailScreen> {
                                             "Sell Avg prc ( Day / CF )",
                                             "${widget.positionList.daysellavgprc ?? 0.00} / ${widget.positionList.cfsellavgprc}",
                                             theme),
+                                        const SizedBox(height: 8),
+                                        _buildInfoRow(
+                                            "Actual Avg Price",
+                                            "${widget.positionList.upldprc ?? 0.00}",
+                                            theme),
+                                        const SizedBox(height: 8),
                                       ],
                                     ),
                                   ),

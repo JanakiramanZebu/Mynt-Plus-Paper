@@ -53,7 +53,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            "₹${_formatValue(mfData.mfholdingnew?.purchaseValue)}",
+                            "₹${_formatValue(mfData.mfholdingnew?.summary?.invested)}",
                             style: textStyle(
                               theme.isDarkMode
                                   ? colors.colorWhite
@@ -82,22 +82,22 @@ class MfHoldNewScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                _formatValue(mfData.mfholdingnew?.gainOrLoss),
+                                _formatValue(mfData.mfholdingnew?.summary?.absReturnValue),
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: _getColorBasedOnValue(
-                                    mfData.mfholdingnew?.gainOrLoss,
+                                    mfData.mfholdingnew?.summary?.absReturnValue,
                                   ),
                                 ),
                               ),
                               Text(
-                                "(${_formatValue(mfData.mfholdingnew?.percentage?.toString())}%)",
+                                " (${_formatValue(mfData.mfholdingnew?.summary?.absReturnPercent?.toString())}%)",
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: _getColorBasedOnValue(
-                                    mfData.mfholdingnew?.percentage?.toString(),
+                                    mfData.mfholdingnew?.summary?.absReturnPercent?.toString(),
                                   ),
                                 ),
                               ),
@@ -124,7 +124,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            "₹${mfData.mfholdingnew?.currentValue ?? "0.00"}",
+                            "₹${mfData.mfholdingnew?.summary?.currentValue ?? "0.00"}",
                             style: textStyle(
                               theme.isDarkMode
                                   ? colors.colorWhite
@@ -142,14 +142,7 @@ class MfHoldNewScreen extends ConsumerWidget {
             ),
 
             // Show appropriate UI based on data state
-            if (_isEmptyOrErrorState(mfData))
-              Padding(
-                padding: EdgeInsets.only(
-                  top: mfData.mfholdingnew?.stat == "Not Ok" ? 280.0 : 80.0,
-                ),
-                child: const Center(child: NoDataFound()),
-              )
-            else
+           
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -160,7 +153,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                     if (item == null) return const SizedBox();
 
                     // Get formatted values with null safety
-                    final val = item.current ?? '0.00';
+                    // final val = item.current ?? '0.00';
 
                     return Container(
                       padding: const EdgeInsets.all(8),
@@ -184,7 +177,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                   flex: 6,
                                   child: TextWidget.subText(
                                       align: TextAlign.start,
-                                      text: item.sCHEMENAME ?? "Unknown Fund",
+                                      text: item.name ?? "Unknown Fund",
                                       color: theme.isDarkMode
                                           ? colors.textPrimaryDark
                                           : colors.textPrimaryLight,
@@ -205,7 +198,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                         fw: 3),
                                     TextWidget.paraText(
                                         align: TextAlign.start,
-                                        text: "₹ ${item.nav ?? "0.00"}",
+                                        text: "₹ ${item.curNav ?? "0.00"}",
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight, 
@@ -219,22 +212,22 @@ class MfHoldNewScreen extends ConsumerWidget {
                             const SizedBox(height: 6),
 
                             // Exchange badge
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                TextWidget.paraText(
-                                    align: TextAlign.start,
-                                    text: "NSE",
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    fw: 3),
-                              ],
-                            ),
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            //   children: [
+                            //     TextWidget.paraText(
+                            //         align: TextAlign.start,
+                            //         text: "NSE",
+                            //         color: theme.isDarkMode
+                            //             ? colors.textSecondaryDark
+                            //             : colors.textSecondaryLight,
+                            //         textOverflow: TextOverflow.ellipsis,
+                            //         theme: theme.isDarkMode,
+                            //         fw: 3),
+                            //   ],
+                            // ),
 
-                            const SizedBox(height: 4),
+                            // const SizedBox(height: 4),
 
                             // Divider(
                             //   height: 12,
@@ -265,7 +258,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                     TextWidget.paraText(
                                         align: TextAlign.start,
                                         text:
-                                            "${item.nET ?? 0} @ ${item.buyPrice ?? "0.00"}",
+                                            "${item.avgQty ?? 0} @ ${item.avgNav ?? "0.00"}",
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
@@ -278,16 +271,16 @@ class MfHoldNewScreen extends ConsumerWidget {
                                   children: [
                                     TextWidget.paraText(
                                         align: TextAlign.start,
-                                        text:  "₹${item.gainOrLoss ?? "0.00"}",
-                                        color: _getColorBasedOnValue(item.gainOrLoss),
+                                        text:  "₹${item.profitLoss ?? "0.00"}",
+                                        color: _getColorBasedOnValue(item.profitLoss.toString()),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 3),
                                     TextWidget.paraText(
                                         align: TextAlign.start,
                                         text:
-                                             "(${(double.tryParse(item.percentage ?? '') ?? 0.0).toStringAsFixed(2)}%)",
-                                        color: _getColorBasedOnValue(item.percentage),
+                                             "(${(double.tryParse(item.changeprofitLoss.toString()) ?? 0.0).toStringAsFixed(2)}%)",
+                                        color: _getColorBasedOnValue(item.changeprofitLoss.toString()),
                                         textOverflow: TextOverflow.ellipsis,
                                         theme: theme.isDarkMode,
                                         fw: 3),
@@ -318,7 +311,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                     TextWidget.paraText(
                                         align: TextAlign.start,
                                         text:
-                                            "${item.purchase ?? "0.00"}",
+                                            "${item.investedValue ?? "0.00"}",
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
@@ -342,7 +335,7 @@ class MfHoldNewScreen extends ConsumerWidget {
                                     TextWidget.paraText(
                                         align: TextAlign.start,
                                         text:
-                                             "₹${val}",
+                                             "₹${item.currentValue ?? "0.00"}",
                                         color: theme.isDarkMode
                                             ? colors.textSecondaryDark
                                             : colors.textSecondaryLight,
@@ -378,10 +371,10 @@ class MfHoldNewScreen extends ConsumerWidget {
   }
 
   // Helper method to check if data is empty or has an error
-  bool _isEmptyOrErrorState(MFProvider mfData) {
-    return mfData.mfholdingnew?.stat == "Not Ok" ||
-        mfData.mfholdingnew?.msg == "No Data Found";
-  }
+  // bool _isEmptyOrErrorState(MFProvider mfData) {
+  //   return mfData.mfholdingnew?.stat == "Not Ok" ||
+  //       mfData.mfholdingnew?.msg == "No Data Found";
+  // }
 
   // Helper method to safely format values
   String _formatValue(String? value) {

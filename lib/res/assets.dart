@@ -13,6 +13,8 @@ class Assets {
   final String rotationIcon = "assets/icon/rotation.svg";
   final String backCustomIcon = "assets/icon/back_custom.svg";
   final String filterIcon = "assets/icon/filterIcon.svg";
+  final String netbankingIcon = "assets/icon/netbanking_icon.svg";
+  final String upiIcon1 = "assets/icon/upi-payment-icon.svg";
 
   final String optionZIcon = "assets/icon/optionz_icon.svg";
 

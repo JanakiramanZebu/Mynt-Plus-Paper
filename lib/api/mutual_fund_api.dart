@@ -64,7 +64,7 @@ mixin MutualFundApi on ApiCore {
 
   Future<NFODataModel> getNFOData() async {
     try {
-      final uri = Uri.parse(apiLinks.nfoMF);
+      final uri = Uri.parse(apiLinks.mfnfoMF);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
@@ -74,7 +74,7 @@ mixin MutualFundApi on ApiCore {
 
       // log("MF Master ==>$json");
 
-      return NFODataModel.fromJson({"data":json});
+      return NFODataModel.fromJson(json);
     } catch (e) {
       rethrow;
     }
@@ -129,7 +129,7 @@ String convertNumber(num value) {
 
   Future<SearchMFmodel> getSearchMf(String searchValue) async {
     try {
-      final uri = Uri.parse(apiLinks.searchMF);
+      final uri = Uri.parse(apiLinks.mfnewsearch);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({"text": searchValue.toString()}));
@@ -160,8 +160,41 @@ String convertNumber(num value) {
     }
   }
 
-  Future<MfPlaceOrderResponces> getLumpSumOrder(
+  // Future<MfPlaceOrderResponces> getLumpSumOrder(
+  //     MfPlaceOrderInput mforderlumpsuminput) async {
+  //   try {
+  //     final uri = Uri.parse(apiLinks.lumpsumOrder);
+  //     final res = await apiClient.post(uri,
+  //         headers: defaultHeaders,
+  //         body: jsonEncode({
+  //           "trans_code": mforderlumpsuminput.transcode,
+  //           "client_code": prefs.clientId,
+  //           "scheme_code": mforderlumpsuminput.schemecode,
+  //           "buy_sell": mforderlumpsuminput.buysell,
+  //           "buy_sell_type": mforderlumpsuminput.buyselltype,
+  //           "dptxn": mforderlumpsuminput.dptxn,
+  //           "amount": mforderlumpsuminput.amount,
+  //           "all_redeem": mforderlumpsuminput.allredeem,
+  //           "kyc_status": mforderlumpsuminput.kycstatus,
+  //           "qty": mforderlumpsuminput.qty,
+  //           "euin_flag": mforderlumpsuminput.euinflag,
+  //           "min_redeem": mforderlumpsuminput.minredeem,
+  //           "dpc": mforderlumpsuminput.dpc
+  //         }));
+
+  //     final json = jsonDecode((res.body));
+
+  //     log("palce order mf ==>$json");
+
+  //     return MfPlaceOrderResponces.fromJson(json as Map<String, dynamic>);
+  //   } catch (e) {
+  //     rethrow;
+  //   }
+  // }
+
+Future<MfPlaceOrderResponces> getLumpSumOrder(
       MfPlaceOrderInput mforderlumpsuminput) async {
+        
     try {
       final uri = Uri.parse(apiLinks.lumpsumOrder);
       final res = await apiClient.post(uri,
@@ -336,7 +369,7 @@ String convertNumber(num value) {
     try {
 
 
-      final uri = Uri.parse(apiLinks.mfallcatnewendpoit);
+      final uri = Uri.parse(apiLinks.newmfallcatnewendpoit);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
@@ -573,7 +606,7 @@ String convertNumber(num value) {
 
    Future<BestmfNewlist> getnewMFBestListData() async {
      try {
-      final uri = Uri.parse(apiLinks.newbestMf);
+      final uri = Uri.parse(apiLinks.mfnewbestMf);
       final res = await apiClient.get(uri, headers: defaultHeaders);
 
       final json = jsonDecode((res.body));
@@ -623,7 +656,7 @@ String convertNumber(num value) {
     try {
         //  print("watttadd");
       // print("watttadd${isin},${isAdd}");
-      final uri = Uri.parse(apiLinks.mfWatchlist);
+      final uri = Uri.parse(apiLinks.mfnewwatchlist);
       Map payload = {"client_code": "${prefs.clientId}", "type": isin == "" ? "View" : isAdd};
 
       if (isin != "") {
@@ -646,8 +679,8 @@ String convertNumber(num value) {
   Future<MFWatchlistModel> getMFWatchlist(
        isin, String isAdd) async {
     try {
-      final uri = Uri.parse(apiLinks.mfWatchlist);
-      Map payload = {"client_code": "${prefs.clientId}", "type": isin == "" ? "View" : isAdd };
+      final uri = Uri.parse(apiLinks.mfnewwatchlist);
+      Map payload = {"client_code": "${prefs.clientId}", "type": isin == "" ? "view" : isAdd };
 
       if (isin != "") {
         payload.addAll({"isin": isin});
@@ -668,7 +701,7 @@ String convertNumber(num value) {
 
 Future<MFFactSheetDataModel?> getMFFactSheetData(String isin) async {
   try {
-    final uri = Uri.parse("${apiLinks.factSheetData}?ISIN=$isin");
+    final uri = Uri.parse("${apiLinks.mfsinglepageapi}?ISIN=$isin");
     final res = await apiClient.post(uri, headers: defaultHeaders);
 
     if (res.statusCode == 200) {
@@ -720,7 +753,7 @@ Future<MFFactSheetDataModel?> getMFFactSheetData(String isin) async {
     DateTime curDate = DateTime.now();
     try {
       final uri = Uri.parse(
-          "${apiLinks.navGraph}?ISIN=$isin&fromDate=1990-01-01&toDate=${curDate.year}-${curDate.month}-${curDate.day}");
+          "${apiLinks.mfsinglepagechartapi}?ISIN=$isin&fromDate=1990-01-01&toDate=${curDate.year}-${curDate.month}-${curDate.day}");
 
       final res = await apiClient.post(uri, headers: defaultHeaders);
 
@@ -867,10 +900,10 @@ Future<MFFactSheetDataModel?> getMFFactSheetData(String isin) async {
 
      Future<mf_holdoing_new> getmfholdnewapi( ) async {
     try {
-      final uri = Uri.parse(apiLinks.mfholdnewapi);
+      final uri = Uri.parse(apiLinks.mfholdingsnewapi);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
-          body: jsonEncode({"client_code":"${prefs.clientId}" }));
+          body: jsonEncode({"ClientCode":"${prefs.clientId}" }));
           // body: jsonEncode({"client_code": "ZE1A40","sipregnno":"126150781"}));
 
 

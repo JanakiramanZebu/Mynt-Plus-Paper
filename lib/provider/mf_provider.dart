@@ -331,7 +331,7 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   void recdemevalu() {
-    redemptionQty.text = _holssinglelist![0].nET!;
+    redemptionQty.text = _holssinglelist![0].avgQty!;
   }
 
   String _paymentName = "UPI";
@@ -420,8 +420,8 @@ class MFProvider extends DefaultChangeNotifier {
   List<Fund>? _catnewlist = [];
   List<Fund>? get catnewlist => _catnewlist;
 
-  List<DataMod>? _holssinglelist = [];
-  List<DataMod>? get holssinglelist => _holssinglelist;
+  List? _holssinglelist = [];
+  List? get holssinglelist => _holssinglelist;
 
   // List<MutualFundList>? _bestmfList = [];
   // List<MutualFundList>? get bestmfList => _bestmfList;
@@ -1230,11 +1230,11 @@ class MFProvider extends DefaultChangeNotifier {
 
       _newbestmodel = await api.getnewMFBestListData();
 
-      for (var watchListMf in _newbestmodel!.basketsLength!) {
-        _bestMFListStaticnew
-            .where((m) => m['title'] == watchListMf.title)
-            .forEach((m) => m['funds'] = watchListMf.count);
-      }
+      // for (var watchListMf in _newbestmodel!.basketsLength!) {
+      //   _bestMFListStaticnew
+      //       .where((m) => m['title'] == watchListMf.title)
+      //       .forEach((m) => m['funds'] = watchListMf.count);
+      // }
 
       // print("--------------mfbest ${_newbestmodel}");
       // print(_newbestmodel);
@@ -1496,9 +1496,17 @@ class MFProvider extends DefaultChangeNotifier {
         }
         List splitOverview =
             _factSheetDataModel!.data!.overview!.split("The portfolio");
-        factSheetDataModel!.data!.overview1 = "${splitOverview[0]}";
-        factSheetDataModel!.data!.overview2 =
-            "The portfolio${splitOverview[1]}";
+
+        if (splitOverview.length > 1) {
+          factSheetDataModel!.data!.overview1 = splitOverview[0];
+          factSheetDataModel!.data!.overview2 =
+              "The portfolio${splitOverview[1]}";
+        } else {
+          // Fallback if "The portfolio" is not found
+          factSheetDataModel!.data!.overview1 =
+              _factSheetDataModel!.data!.overview!;
+          factSheetDataModel!.data!.overview2 = "";
+        }
       }
       stopwatch.stop(); // Stop timer
 
@@ -1745,7 +1753,6 @@ class MFProvider extends DefaultChangeNotifier {
               "${_mfSIPModel!.data![0].sIPMINIMUMINSTALLMENTAMOUNT ?? 0.00}";
         }
       }
-
       notifyListeners();
     } catch (e) {
       debugPrint("$e");
@@ -2128,6 +2135,125 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
+  Future placeordermftemp(
+    BuildContext context,
+    String upiId,
+    MfPlaceOrderInput input,
+  ) async {
+    _investloader = true;
+    notifyListeners();
+
+    try {
+      _mfPlaceOrderResponces = await api.getLumpSumOrder(input);
+      _investloader = false;
+      notifyListeners();
+
+      if (_mfPlaceOrderResponces != null) {
+        final val = await api.getlinkfordisplay();
+
+        if (_mfPlaceOrderResponces!.stat == "Ok" && val['stat'] == 'Ok') {
+          showModalBottomSheet(
+              context: context,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              isScrollControlled: true,
+              builder: (context) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                      top: 22.0, bottom: 16.0, left: 16.0, right: 16.0),
+                  child: Wrap(
+                    children: [
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_circle,
+                                color: Colors.green, size: 48),
+                            const SizedBox(height: 12),
+                            const Text(
+                              "Payment URL link sent to your registered Mail ID ",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 20),
+
+                            Text("or"),
+                            const SizedBox(height: 20),
+                            Container(
+  width: double.infinity, // 👈 Full width
+  child: ElevatedButton(
+    onPressed: () async {
+      final Uri url = Uri.parse(val['url']);
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        print("Could not launch URL");
+      }
+    },
+    style: ElevatedButton.styleFrom(
+      elevation: 0,
+      backgroundColor: colors.primaryLight,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(5),
+      ),
+    ),
+    child: const Text(
+      "Click here to pay",
+      style: TextStyle(
+        color: Color.fromARGB(255, 246, 246, 246),
+        fontSize: 12,
+        fontWeight: FontWeight.normal,
+      ),
+    ),
+  ),
+),
+                            // InkWell(
+                            //   onTap: () async{
+
+                            //   },
+                            //   child: Padding(
+                            //     padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                            //     child: Text(
+                            //       "${val['url']}",
+                            //       style:const  TextStyle(
+                            //         color: Color(0xFF0037B7),
+                            //           fontSize: 12, fontWeight: FontWeight.normal ),
+                            //     ),
+                            //   ),
+                            // ),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              });
+        }
+      } else {
+        _investloader = false;
+        notifyListeners();
+      }
+
+      notifyListeners();
+
+      if (_createMandateModel?.mandate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            warningMessage(context, "${_createMandateModel!.error}"));
+      } else {
+        fetchMFMandateDetail();
+        ScaffoldMessenger.of(context).showSnackBar(
+            successMessage(context, "${_createMandateModel!.resp}"));
+      }
+      // print(
+      //     "object ${_createMandateModel!.error} ${_createMandateModel!.url1} ::${_createMandateModel!.mandate}");
+    } catch (e) {
+      _investloader = false;
+      notifyListeners();
+      log("Failed to place order :: ${e.toString()}");
+      notifyListeners();
+    }
+  }
+
   Future fetchCreateMandate(BuildContext context, String amount,
       String startDate, String endDate) async {
     try {
@@ -2323,21 +2449,23 @@ class MFProvider extends DefaultChangeNotifier {
 
   List<DropdownMenuItem<String>> addFrqDividers() {
     List<DropdownMenuItem<String>> menuItems = [];
-
-    for (var item in _mfSIPModel!.data!) {
-      menuItems.addAll([
-        DropdownMenuItem<String>(
-            value: item.sIPFREQUENCY.toString(),
-            child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: Text(
-                    "${item.sIPFREQUENCY![0]}${item.sIPFREQUENCY!.substring(1).toLowerCase()}",
-                    style: textStyle(
-                        const Color(0xff000000), 13, FontWeight.w500)))),
-        if (item != _mfSIPModel!.data!.last)
-          const DropdownMenuItem<String>(enabled: false, child: Divider())
-      ]);
+    if (_mfSIPModel != null) {
+      for (var item in _mfSIPModel!.data!) {
+        menuItems.addAll([
+          DropdownMenuItem<String>(
+              value: item.sIPFREQUENCY.toString(),
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Text(
+                      "${item.sIPFREQUENCY![0]}${item.sIPFREQUENCY!.substring(1).toLowerCase()}",
+                      style: textStyle(
+                          const Color(0xff000000), 13, FontWeight.w500)))),
+          if (item != _mfSIPModel!.data!.last)
+            const DropdownMenuItem<String>(enabled: false, child: Divider())
+        ]);
+      }
     }
+
     return menuItems;
   }
 

@@ -87,11 +87,13 @@ class UserAccountScreen extends ConsumerWidget {
 
     final filteredMenu = [
       {'title': 'Account Balance', 'type': 'balance'},
+      {'title': 'Pledge & Unpledge'},
+      {'title': 'Corporate Actions'},
       {'title': 'Reports'},
       // {'title': 'Account'},
       {'title': 'Settings'},
       {'title': 'Notification'},
-      {'title': 'Refer'},
+      {'title': 'Refer & Get ₹300'},
       {'title': 'Rate Us'},
       {'title': 'Contact Us'},
     ];
@@ -334,6 +336,32 @@ class UserAccountScreen extends ConsumerWidget {
                       // case "Account":
                       //   Navigator.pushNamed(context, Routes.myaccountScreen);
                       //   break;
+
+                      case 'Corporate Actions':
+                        // ledgerdate.fetchposition(context);
+                        if (reportsprovider.holdingsAllData == null) {
+                          await reportsprovider.getCurrentDate('else');
+                          Navigator.pushNamed(context, Routes.cabuyback,
+                              arguments: "DDDDD");
+                          await reportsprovider.fetchholdingsData(
+                              reportsprovider.today, context);
+                          if (reportsprovider.cpactiondata == null) {
+                            reportsprovider.fetchcpactiondata(context);
+                          }
+                        } else {
+                          Navigator.pushNamed(context, Routes.cabuyback,
+                              arguments: "DDDDD");
+                        }
+                        // cop action
+                        break;
+                      case 'Pledge & Unpledge':
+                        if (reportsprovider.pledgeandunpledge == null) {
+                          await reportsprovider.getCurrentDate("pandu");
+                          reportsprovider.fetchpledgeandunpledge(context);
+                        }
+                        Navigator.pushNamed(context, Routes.pledgeandun,
+                            arguments: "DDDDD");
+                        break;
                       case "Reports":
                         if (reportsprovider.ledgerAllData == null) {
                           await reportsprovider.getCurrentDate('else');
@@ -423,9 +451,9 @@ class UserAccountScreen extends ConsumerWidget {
                       case "OptionZ":
                         funds.optionZ(context);
                         break;
-                      case "Refer":
+                      case "Refer & Get ₹300":
                         await Share.share(
-                          "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
+                          "Loving my experience with Zebu - from Stocks & Mutual Funds to F&O, IPOs, Bonds, and more!\nOpen your free demat account here:\n👉 ${Uri.parse(reflink)}",
                         );
                         break;
                       case "Settings":
@@ -1111,19 +1139,20 @@ class SettingsScreen extends ConsumerWidget {
                                 children: [
                                   const CustomDragHandler(),
                                   Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 8),
+                                    padding: const EdgeInsets.only(
+                                        top: 0, bottom: 8),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         TextWidget.titleText(
-                                            text: 'Freeze Account',
-                                            theme: false,
-                                            color: theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                            fw: 1),
+                                          text: 'Freeze Account',
+                                          theme: false,
+                                          color: theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          fw: 1,
+                                        ),
                                         Material(
                                           color: Colors.transparent,
                                           shape: const CircleBorder(),
@@ -1159,16 +1188,16 @@ class SettingsScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   ListDivider(),
-                                  const SizedBox(height: 16.0),
+                                  const SizedBox(height: 8.0),
                                   TextWidget.subText(
                                     text:
-                                        "Account freeze notice: All open orders will be cancelled due to the freeze. Existing positions will remain open and will not be affected.",
+                                        "Freezing your account will lock access for everyone, including you.\n\nAll open orders will be automatically canceled.\n\nExisting positions will remain unaffected.\n\nYou can unfreeze your account anytime by verifying your identity.",
                                     theme: false,
                                     color: theme.isDarkMode
                                         ? colors.textSecondaryDark
                                         : colors.textSecondaryLight,
                                   ),
-                                  const SizedBox(height: 24.0),
+                                  const SizedBox(height: 20.0),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8),
@@ -1181,30 +1210,32 @@ class SettingsScreen extends ConsumerWidget {
                                           userProfile.fetchFreezeAc(context);
                                         },
                                         style: ElevatedButton.styleFrom(
-                                          //  minimumSize: const Size(0, 40),
                                           elevation: 0,
                                           backgroundColor: theme.isDarkMode
                                               ? colors.primaryDark
                                               : colors.primaryLight,
                                           shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(4)),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
                                         ),
                                         child: TextWidget.subText(
-                                            text: "Freeze",
-                                            theme: false,
-                                            color: colors.colorWhite,
-                                            fw: 2),
+                                          text: "Freeze My Account",
+                                          theme: false,
+                                          color: colors.colorWhite,
+                                          fw: 2,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  SizedBox(height: 10.0)
+                                  const SizedBox(height: 10.0),
                                 ],
                               ),
                             ),
                           );
                         },
                       );
+
                       break;
                     case 'Change Password':
                       ref.read(changePasswordProvider).userIdController.text =
@@ -1839,7 +1870,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   // Add delay for visual feedback
                   await Future.delayed(const Duration(milliseconds: 150));
 
-                  profileDetails.openInWebURL(context, "manbank");
+                  profileDetails.openInWebURL(context, "bank");
                 },
                 borderRadius: BorderRadius.circular(20),
                 splashColor: theme.isDarkMode
@@ -1971,8 +2002,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                   await Future.delayed(
                                       const Duration(milliseconds: 150));
 
-                                  profileDetails.openInWebURL(
-                                      context, "manbank");
+                                  profileDetails.openInWebURL(context, "bank");
                                 },
                                 borderRadius: BorderRadius.circular(20),
                                 splashColor: theme.isDarkMode
@@ -2796,9 +2826,9 @@ class ReportsScreen extends ConsumerWidget {
       {'title': 'Contract Note'},
       {'title': 'Client Master(CMR)'},
       // {'title': 'DP Holdings & Transcation'},
-      {'title': 'Corporate Actions'},
+      // {'title': 'Corporate Actions'},
       // {'title': 'CA Events'},
-      {'title': 'Pledge & Unpledge'},
+      // {'title': 'Pledge & Unpledge'},
     ];
 
     return Scaffold(
@@ -2975,135 +3005,77 @@ class ReportsScreen extends ConsumerWidget {
                             enableDrag: false,
                             useSafeArea: true,
                             context: context,
-                            builder: (context) => SafeArea(
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
-                                      color: theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.colorWhite,
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: Color(0xff999999),
-                                          blurRadius: 4.0,
-                                          offset: Offset(2.0, 0.0),
-                                        )
-                                      ],
-                                    ),
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                        bottom: 24 +
-                                            MediaQuery.of(context)
-                                                .viewInsets
-                                                .bottom,
-                                      ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                            builder: (context) => Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                color: theme.isDarkMode
+                                    ? colors.colorBlack
+                                    : colors.colorWhite,
+                                
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: 24 +
+                                      MediaQuery.of(context)
+                                          .viewInsets
+                                          .bottom,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8.0,
+                                          horizontal: 16.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment
+                                                .spaceBetween,
                                         children: [
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 8.0,
-                                                horizontal: 16.0),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                TextWidget.titleText(
-                                                  text: "Client Master (CMR)",
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1,
-                                                ),
-                                                Material(
-                                                  color: Colors.transparent,
-                                                  shape: const CircleBorder(),
-                                                  child: InkWell(
-                                                    onTap: () async {
-                                                      await Future.delayed(
-                                                          const Duration(
-                                                              milliseconds:
-                                                                  150));
-                                                      Navigator.pop(context);
-                                                    },
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20),
-                                                    splashColor: theme
-                                                            .isDarkMode
-                                                        ? Colors.white
-                                                            .withOpacity(0.15)
-                                                        : Colors.black
-                                                            .withOpacity(0.15),
-                                                    highlightColor: theme
-                                                            .isDarkMode
-                                                        ? Colors.white
-                                                            .withOpacity(0.08)
-                                                        : Colors.black
-                                                            .withOpacity(0.08),
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              6.0),
-                                                      child: Icon(
-                                                        Icons.close_rounded,
-                                                        size: 22,
-                                                        color: theme.isDarkMode
-                                                            ? const Color(
-                                                                0xffBDBDBD)
-                                                            : colors.colorGrey,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                          TextWidget.titleText(
+                                            text: "Client Master (CMR)",
+                                            theme: theme.isDarkMode,
+                                            fw: 1,
                                           ),
-                                          Divider(
-                                            color: theme.isDarkMode
-                                                ? colors.darkColorDivider
-                                                : colors.colorDivider,
-                                            height: 0,
-                                          ),
-                                          const SizedBox(height: 24),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 24.0),
-                                            child: SizedBox(
-                                              width: double.infinity,
-                                              height: 48,
-                                              child: OutlinedButton(
-                                                style: OutlinedButton.styleFrom(
-                                                  elevation: 0,
-                                                  minimumSize:
-                                                      const Size(0, 48),
-                                                  backgroundColor:
-                                                      theme.isDarkMode
-                                                          ? colors.primaryDark
-                                                          : colors.primaryLight,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
-                                                  ),
-                                                  padding: EdgeInsets.zero,
-                                                ),
-                                                onPressed: () {
-                                                  // Download functionality will be added later
-                                                  print("Downloading cmr");
-                                                  ledgerdate.fetchcmrdownload(
-                                                      context);
-                                                  print("Downloading cmr api");
-                                                },
-                                                child: TextWidget.subText(
-                                                  text: "Download",
-                                                  theme: theme.isDarkMode,
-                                                  color: colors.colorWhite,
-                                                  fw: 2,
-                                                  align: TextAlign.center,
+                                          Material(
+                                            color: Colors.transparent,
+                                            shape: const CircleBorder(),
+                                            child: InkWell(
+                                              onTap: () async {
+                                                await Future.delayed(
+                                                    const Duration(
+                                                        milliseconds:
+                                                            150));
+                                                Navigator.pop(context);
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      20),
+                                              splashColor: theme
+                                                      .isDarkMode
+                                                  ? Colors.white
+                                                      .withOpacity(0.15)
+                                                  : Colors.black
+                                                      .withOpacity(0.15),
+                                              highlightColor: theme
+                                                      .isDarkMode
+                                                  ? Colors.white
+                                                      .withOpacity(0.08)
+                                                  : Colors.black
+                                                      .withOpacity(0.08),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(
+                                                        6.0),
+                                                child: Icon(
+                                                  Icons.close_rounded,
+                                                  size: 22,
+                                                  color: theme.isDarkMode
+                                                      ? const Color(
+                                                          0xffBDBDBD)
+                                                      : colors.colorGrey,
                                                 ),
                                               ),
                                             ),
@@ -3111,8 +3083,55 @@ class ReportsScreen extends ConsumerWidget {
                                         ],
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    Divider(
+                                      color: theme.isDarkMode
+                                          ? colors.darkColorDivider
+                                          : colors.colorDivider,
+                                      height: 0,
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 24.0),
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        height: 48,
+                                        child: OutlinedButton(
+                                          style: OutlinedButton.styleFrom(
+                                            elevation: 0,
+                                            minimumSize:
+                                                const Size(0, 48),
+                                            backgroundColor:
+                                                theme.isDarkMode
+                                                    ? colors.primaryDark
+                                                    : colors.primaryLight,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      5),
+                                            ),
+                                            padding: EdgeInsets.zero,
+                                          ),
+                                          onPressed: () {
+                                            // Download functionality will be added later
+                                            print("Downloading cmr");
+                                            ledgerdate.fetchcmrdownload(
+                                                context);
+                                            print("Downloading cmr api");
+                                          },
+                                          child: TextWidget.subText(
+                                            text: "Download",
+                                            theme: theme.isDarkMode,
+                                            color: colors.colorWhite,
+                                            fw: 2,
+                                            align: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 35),
+                                  ],
+                                ),
                               ),
                             ),
                           );
@@ -3409,24 +3428,7 @@ class ReportsScreen extends ConsumerWidget {
                           // Navigator.pushNamed(context, Routes.contractCalendar);
 
                           break;
-                        case 'Corporate Actions':
-                          // ledgerdate.fetchposition(context);
-                          if (ledgerdate.holdingsAllData == null) {
-                            await ledgerdate.getCurrentDate('else');
-                            Navigator.pushNamed(context, Routes.cabuyback,
-                                arguments: "DDDDD");
-                            await ledgerdate.fetchholdingsData(
-                                ledgerdate.today, context);
-                            if (ledgerdate.cpactiondata == null) {
-                              ledgerdate.fetchcpactiondata(context);
-                            }
-                          } else {
-                            Navigator.pushNamed(context, Routes.cabuyback,
-                                arguments: "DDDDD");
-                          }
-                          // cop action
 
-                          break;
                         case 'CA Events':
                           // ledgerdate.fetchposition(context);
                           // }
@@ -3439,14 +3441,7 @@ class ReportsScreen extends ConsumerWidget {
                           Navigator.pushNamed(context, Routes.caeventmainpage,
                               arguments: "DDDDD");
                           break;
-                        case 'Pledge & Unpledge':
-                          if (ledgerdate.pledgeandunpledge == null) {
-                            await ledgerdate.getCurrentDate("pandu");
-                            ledgerdate.fetchpledgeandunpledge(context);
-                          }
-                          Navigator.pushNamed(context, Routes.pledgeandun,
-                              arguments: "DDDDD");
-                          break;
+
                         // Add other cases as needed
                       }
                     },

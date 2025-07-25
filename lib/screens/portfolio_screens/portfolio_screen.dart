@@ -42,6 +42,16 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
 
       // ref.read(portfolioProvider).tabSize(ref.read(themeProvider));
       if (ref.read(portfolioProvider).selectedTab == 0) {
+        ref
+            .read(portfolioProvider)
+            .requestWSPosition(context: context, isSubscribe: false);
+        ref
+            .read(portfolioProvider)
+            .requestWSHoldings(context: context, isSubscribe: true);
+        ref
+            .read(portfolioProvider)
+            .requestallHoldings(context: context, isSubscribe: false);
+      } else if (ref.read(portfolioProvider).selectedTab == 1) {
         ref.read(portfolioProvider).cancelTimer();
         ref
             .read(portfolioProvider)
@@ -52,16 +62,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
         ref
             .read(portfolioProvider)
             .requestallHoldings(context: context, isSubscribe: false);
-      } else if (ref.read(portfolioProvider).selectedTab == 1) {
-        ref
-            .read(portfolioProvider)
-            .requestWSPosition(context: context, isSubscribe: false);
-        ref
-            .read(portfolioProvider)
-            .requestWSHoldings(context: context, isSubscribe: true);
-        ref
-            .read(portfolioProvider)
-            .requestallHoldings(context: context, isSubscribe: false);
+        
 
         if (ref.read(ledgerProvider).pledgeandunpledge == null) {
           ref.read(ledgerProvider).getCurrentDate("pandu");
@@ -155,7 +156,9 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                 },
                 tabAlignment: TabAlignment.start,
                 indicatorSize: TabBarIndicatorSize.tab,
+                indicatorPadding: const EdgeInsets.symmetric(horizontal: 4),
                 isScrollable: true,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 12),
                 indicatorColor: theme.isDarkMode
                     ? colors.secondaryDark
                     : colors.secondaryLight,
@@ -223,8 +226,9 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                                 (index == 1 &&
                                     portfolio.allPostionList.isNotEmpty))
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                margin: const EdgeInsets.only(top: 2),
+                                width: 20,
+                                height: 20,
                                 decoration: BoxDecoration(
                                   color: ((index == 0 &&
                                               (portfolio.holdingsModel
@@ -235,8 +239,10 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                                                   .allPostionList.isNotEmpty)))
                                       ? colors.btnBg
                                       : null,
-                                  borderRadius: BorderRadius.circular(4),
+                                  // borderRadius: BorderRadius.circular(8),
+                                  shape: BoxShape.circle,
                                 ),
+                                alignment: Alignment.center,
                                 child: TextWidget.subText(
                                   text: index == 0
                                       ? (portfolio.holdingsModel?.isNotEmpty ??

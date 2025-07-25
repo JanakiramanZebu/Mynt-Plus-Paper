@@ -1394,79 +1394,72 @@ class LDProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  Future fetchcalenderpnldata(
-      BuildContext context, String from, String to, String type) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      // await prefs.remove("notice");
-      _noticenewfeature = prefs.getString("notice").toString();
+  // Add flag to track if calendar pnl data is loaded
+  // bool isCalendarPnlDataLoaded = false;
+  // void resetCalendarPnlDataLoaded() { isCalendarPnlDataLoaded = false; }
 
-      print(_noticenewfeature);
+  // Future fetchcalenderpnldata(
+  //     BuildContext context, String from, String to, String type,
+  //     {bool force = false}) async {
+  //   // Always fetch if called from loadOrFetchCalendarPnlData with force=true
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     _noticenewfeature = prefs.getString("notice").toString();
 
-      _calendarpnlloading = true;
-      notifyListeners();
-      _calenderpnlAllData = await api.getcalenderpnldata(from, to, type);
-      grouped = {};
-      // Reset original grouped data when new data is loaded
-      _originalGrouped = {};
-      if (_calenderpnlAllData != null) {
-        _heatmapData = {}; // Reset before adding new data
+  //     print(_noticenewfeature);
 
-        if (_calenderpnlAllData!.journal != null) {
-          _selectedFilters = {}; // Reset filters
-
-          for (var element in _calenderpnlAllData!.journal!) {
-            print("realised : ${element.realisedpnl}");
-            if (element.realisedpnl != '0.0') {
-              String dateString = element.tRADEDATE!;
-
-              try {
-                DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-
-                DateTime parsedDate = inputFormat.parse(dateString);
-                print("${element.realisedpnl}");
-                _heatmapData[DateTime(
-                        parsedDate.year, parsedDate.month, parsedDate.day)] =
-                    double.parse(element.realisedpnl ?? "0.0");
-              } catch (e) {
-                print("Error parsing date: $dateString - $e");
-              }
-            }
-          }
-        }
-        if (_calenderpnlAllData!.data != null) {
-          for (var trade in _calenderpnlAllData!.data!) {
-            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
-
-            DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
-            final dateKey =
-                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
-            if (!grouped.containsKey(dateKey)) {
-              grouped[dateKey] = [];
-            }
-            grouped[dateKey]!.add(trade);
-          }
-        }
-      }
-      setFinancialYear(selectedFinancialYear);
-
-      print("objectobject${_heatmapData}");
-      _calendarpnlloading = false;
-
-      // Clear search when new data is loaded
-      if (profitlossSearchCtrl.text.isNotEmpty) {
-        profitlossSearchCtrl.clear();
-      }
-
-      notifyListeners();
-    } catch (e) {
-      _calendarpnlloading = false;
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   warningMessage(context, 'Error occurred try again later'),
-      // );
-      debugPrint("$e");
-    }
-  }
+  //     _calendarpnlloading = true;
+  //     notifyListeners();
+  //     _calenderpnlAllData = await api.getcalenderpnldata(from, to, type);
+  //     grouped = {};
+  //     _originalGrouped = {};
+  //     if (_calenderpnlAllData != null) {
+  //       _heatmapData = {};
+  //       if (_calenderpnlAllData!.journal != null) {
+  //         _selectedFilters = {};
+  //         for (var element in _calenderpnlAllData!.journal!) {
+  //           print("realised : 33m");
+  //           if (element.realisedpnl != '0.0') {
+  //             String dateString = element.tRADEDATE!;
+  //             try {
+  //               DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  //               DateTime parsedDate = inputFormat.parse(dateString);
+  //               print("${element.realisedpnl}");
+  //               _heatmapData[DateTime(
+  //                       parsedDate.year, parsedDate.month, parsedDate.day)] =
+  //                   double.parse(element.realisedpnl ?? "0.0");
+  //             } catch (e) {
+  //               print("Error parsing date: $dateString - $e");
+  //             }
+  //           }
+  //         }
+  //       }
+  //       if (_calenderpnlAllData!.data != null) {
+  //         for (var trade in _calenderpnlAllData!.data!) {
+  //           DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  //           DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+  //           final dateKey =
+  //               DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+  //           if (!grouped.containsKey(dateKey)) {
+  //             grouped[dateKey] = [];
+  //           }
+  //           grouped[dateKey]!.add(trade);
+  //         }
+  //       }
+  //     }
+  //     setFinancialYear(selectedFinancialYear);
+  //     print("objectobject");
+  //     _calendarpnlloading = false;
+  //     // isCalendarPnlDataLoaded = true; // removed
+  //     if (profitlossSearchCtrl.text.isNotEmpty) {
+  //       profitlossSearchCtrl.clear();
+  //     }
+  //     notifyListeners();
+  //   } catch (e) {
+  //     _calendarpnlloading = false;
+  //     debugPrint("$e");
+  //   }
+  // }
 
   Future fetchtradebookdata(
       BuildContext context, String from, String to) async {
@@ -1854,18 +1847,16 @@ class LDProvider extends DefaultChangeNotifier {
       //   // }
       // }
       // formatedList(_ledgerBillData!.fullStat!);
-    } 
-    catch (e) {
+    } catch (e) {
       debugPrint("$e");
       _ledgerloading = false;
 
       ScaffoldMessenger.of(context).showSnackBar(
         warningMessage(context, 'Error occurred try again later'),
       );
-    }finally {
+    } finally {
       // _ledgerloading = false;
       notifyListeners();
-
     }
   }
 
@@ -2349,9 +2340,13 @@ class LDProvider extends DefaultChangeNotifier {
     List<FullStat> originalList = List.from(_ledgerAllDataDummy!.fullStat!);
 
     // Apply bill margin filter
-    List<FullStat> filteredList = value 
-      ? originalList.where((o) => o.billMargin == 'Yes').toList() // Show only entries with billMargin = Yes
-      : originalList.where((o) => o.billMargin == 'No').toList(); // Show only entries with billMargin = No
+    List<FullStat> filteredList = value
+        ? originalList
+            .where((o) => o.billMargin == 'Yes')
+            .toList() // Show only entries with billMargin = Yes
+        : originalList
+            .where((o) => o.billMargin == 'No')
+            .toList(); // Show only entries with billMargin = No
 
     // Then apply any active type filters
     if (_selectedFilters.isNotEmpty) {
@@ -2416,8 +2411,10 @@ class LDProvider extends DefaultChangeNotifier {
       return int.parse(b.sortNo!).compareTo(int.parse(a.sortNo!));
     });
 
-    if (_ledgerAllData!.fullStat != null && _ledgerAllData!.fullStat!.isNotEmpty) {
-      _ledgerAllData!.closingBalance = _ledgerAllData!.fullStat![0].nETAMT ?? '0.00';
+    if (_ledgerAllData!.fullStat != null &&
+        _ledgerAllData!.fullStat!.isNotEmpty) {
+      _ledgerAllData!.closingBalance =
+          _ledgerAllData!.fullStat![0].nETAMT ?? '0.00';
     } else {
       _ledgerAllData!.closingBalance = '0.00';
     }
@@ -2523,7 +2520,57 @@ class LDProvider extends DefaultChangeNotifier {
     // Default to the first (current) financial year.
     selectedFinancialYear = availableFinancialYears.first;
     // Initialize startDate, endDate, selectedMonth, and monthlyPnL.
-    setFinancialYear(selectedFinancialYear);
+    setFinancialYear(selectedFinancialYear); // Only call ONCE here!
+  }
+
+  /// Sets the financial year and updates the startDate, endDate, selectedMonth,
+  /// and monthlyPnL aggregation using the provided [heatmapData].
+  void setFinancialYear(String fy) {
+    // Only update if the value has changed.
+    if (fy == "") {
+      selectedFinancialYear = availableFinancialYears.first;
+      fy = selectedFinancialYear;
+    } else {
+      selectedFinancialYear = fy;
+    }
+
+    // Parse "YYYY-YYYY" to extract the start year.
+    final parts = fy.split('-');
+    final startYear = int.parse(parts[0]);
+
+    // Define the financial year range: April of startYear to March of startYear+1.
+    startTaxDate = DateTime(startYear, 4, 1);
+    formattedStartDate = DateFormat("dd/MM/yyyy").format(startTaxDate);
+    endTaxDate = DateTime(startYear + 1, 3, 31);
+    formattedendDate = DateFormat("dd/MM/yyyy").format(endTaxDate);
+
+    // Determine current financial year based on today's date.
+    final now = DateTime.now();
+    final currentFYStartYear = now.month < 4 ? now.year - 1 : now.year;
+
+    // If the selected FY is the current one, default to current month in Daily view;
+    // otherwise, default to the FY start date.
+    selectedMonth = (startYear == currentFYStartYear)
+        ? DateTime(now.year, now.month, 1)
+        : startTaxDate;
+
+    // Use cached data if available for this year/segment
+    final cacheKey =
+        _calendarPnlCacheKey(selectedFinancialYear, selectedSegment);
+    if (_calendarPnlCache.containsKey(cacheKey) &&
+        _calendarPnlCache[cacheKey] != null) {
+      _calenderpnlAllData = _calendarPnlCache[cacheKey];
+      _rebuildGroupedAndHeatmap(_calenderpnlAllData);
+    }
+
+    if (_heatmapData != {}) {
+      // Aggregate monthly P&L data for this financial year.
+      monthlyPnL = _aggregateMonthlyPnL(_heatmapData, startTaxDate, endTaxDate);
+    }
+    // Schedule notifyListeners to run after the current frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   /// Sets the active tab: true for Monthly, false for Daily.
@@ -2885,47 +2932,6 @@ class LDProvider extends DefaultChangeNotifier {
     }
 
     notifyListeners();
-  }
-
-  /// Sets the financial year and updates the startDate, endDate, selectedMonth,
-  /// and monthlyPnL aggregation using the provided [heatmapData].
-  void setFinancialYear(String fy) {
-    // Only update if the value has changed.
-    if (fy == "") {
-      selectedFinancialYear = availableFinancialYears.first;
-      fy = selectedFinancialYear;
-    } else {
-      selectedFinancialYear = fy;
-    }
-
-    // Parse "YYYY-YYYY" to extract the start year.
-    final parts = fy.split('-');
-    final startYear = int.parse(parts[0]);
-
-    // Define the financial year range: April of startYear to March of startYear+1.
-    startTaxDate = DateTime(startYear, 4, 1);
-    formattedStartDate = DateFormat("dd/MM/yyyy").format(startTaxDate);
-    endTaxDate = DateTime(startYear + 1, 3, 31);
-    formattedendDate = DateFormat("dd/MM/yyyy").format(endTaxDate);
-
-    // Determine current financial year based on today's date.
-    final now = DateTime.now();
-    final currentFYStartYear = now.month < 4 ? now.year - 1 : now.year;
-
-    // If the selected FY is the current one, default to current month in Daily view;
-    // otherwise, default to the FY start date.
-    selectedMonth = (startYear == currentFYStartYear)
-        ? DateTime(now.year, now.month, 1)
-        : startTaxDate;
-
-    if (_heatmapData != {}) {
-      // Aggregate monthly P&L data for this financial year.
-      monthlyPnL = _aggregateMonthlyPnL(_heatmapData, startTaxDate, endTaxDate);
-    }
-    // Schedule notifyListeners to run after the current frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-    });
   }
 
   void setSegment(String seg) {
@@ -3375,16 +3381,18 @@ class LDProvider extends DefaultChangeNotifier {
   Set<SingingCharacter> _selectedFilters = {};
   Set<SingingCharacter> get selectedFilters => _selectedFilters;
 
-  void applyLedgerMultiFilter(BuildContext context, List<SingingCharacter> filters) {
+  void applyLedgerMultiFilter(
+      BuildContext context, List<SingingCharacter> filters) {
     _selectedFilters = Set.from(filters);
-    
+
     if (_ledgerAllDataDummy == null) {
       _ledgerAllData?.fullStat = [];
       notifyListeners();
       return;
     }
 
-    List<FullStat> originalList = List.from(_ledgerAllDataDummy!.fullStat ?? []);
+    List<FullStat> originalList =
+        List.from(_ledgerAllDataDummy!.fullStat ?? []);
     List<FullStat> filteredList = [];
 
     // If no filters selected, show no data
@@ -3400,8 +3408,10 @@ class LDProvider extends DefaultChangeNotifier {
 
     bool billMarginSelected = filters.contains(SingingCharacter.billmargin);
     // Count only the type filters (not billmargin)
-    int typeFilterCount = filters.where((f) => f != SingingCharacter.billmargin).length;
-    bool allTypesSelected = (typeFilterCount == 4 && billMarginSelected) || (typeFilterCount == 4 && !billMarginSelected);
+    int typeFilterCount =
+        filters.where((f) => f != SingingCharacter.billmargin).length;
+    bool allTypesSelected = (typeFilterCount == 4 && billMarginSelected) ||
+        (typeFilterCount == 4 && !billMarginSelected);
 
     bool matchesType(FullStat o) {
       return filters.any((filter) {
@@ -3415,28 +3425,35 @@ class LDProvider extends DefaultChangeNotifier {
           case SingingCharacter.systemjournal:
             return o.tYPE == 'Bill';
           case SingingCharacter.billmargin:
-            return o.billMargin == 'Yes';
+            return o.tYPE == 'Bill-Margin';
           default:
             return false;
         }
       });
     }
 
+    // if (allTypesSelected && billMarginSelected) { o.billMargin != 'Yes'
     if (allTypesSelected && billMarginSelected) {
       // All types + Bill Margin: show all entries
       filteredList = originalList;
-    } else if (allTypesSelected && !billMarginSelected) {
-      // All types, but not Bill Margin: show all non-margin entries
-      filteredList = originalList.where((o) => o.billMargin != 'Yes').toList();
-    } else if (billMarginSelected && typeFilterCount == 0) {
-      // Only Bill Margin selected: show all margin entries
-      filteredList = originalList.where((o) => o.billMargin == 'Yes').toList();
-    } else if (billMarginSelected && typeFilterCount > 0) {
-      // Bill Margin + some types: show margin entries of those types
-      filteredList = originalList.where((o) => o.billMargin == 'Yes' && matchesType(o)).toList();
-    } else {
+    } else if (allTypesSelected) {
+      filteredList = originalList
+          .where((o) => o.tYPE != 'Bill-Margin' && matchesType(o))
+          .toList();
+    }
+    // else if (allTypesSelected && !billMarginSelected) {
+    //   // All types, but not Bill Margin: show all non-margin entries
+    //   filteredList = originalList.where((o) => o.billMargin != 'Yes').toList();
+    // } else if (billMarginSelected && typeFilterCount == 0) {
+    //   // Only Bill Margin selected: show all margin entries
+    //   filteredList = originalList.where((o) => o.billMargin == 'Yes').toList();
+    // } else if (billMarginSelected && typeFilterCount > 0) {
+    //   // Bill Margin + some types: show margin entries of those types
+    //   filteredList = originalList.where((o) => o.billMargin == 'Yes' && matchesType(o)).toList();
+    // }
+    else {
       // Only type filters: show non-margin entries of those types
-      filteredList = originalList.where((o) => o.billMargin != 'Yes' && matchesType(o)).toList();
+      filteredList = originalList.where((o) => matchesType(o)).toList();
     }
 
     _ledgerAllData!.fullStat = filteredList;
@@ -3446,8 +3463,10 @@ class LDProvider extends DefaultChangeNotifier {
     double totalDrAmt = 0.0;
 
     for (var i = 0; i < filteredList.length; i++) {
-      totalCrAmt += double.tryParse(filteredList[i].cRAMT?.toString() ?? '0') ?? 0.0;
-      totalDrAmt += double.tryParse(filteredList[i].dRAMT?.toString() ?? '0') ?? 0.0;
+      totalCrAmt +=
+          double.tryParse(filteredList[i].cRAMT?.toString() ?? '0') ?? 0.0;
+      totalDrAmt +=
+          double.tryParse(filteredList[i].dRAMT?.toString() ?? '0') ?? 0.0;
     }
 
     _ledgerAllData!.openingBalance = _ledgerAllDataDummy!.openingBalance;
@@ -3461,16 +3480,14 @@ class LDProvider extends DefaultChangeNotifier {
 
     for (var i = 0; i < filteredList.length; i++) {
       if (i == 0) {
-        filteredList[i].nETAMT =
-            (double.parse(filteredList[i].cRAMT!) -
-                    double.parse(filteredList[i].dRAMT!))
-                .toStringAsFixed(2);
+        filteredList[i].nETAMT = (double.parse(filteredList[i].cRAMT!) -
+                double.parse(filteredList[i].dRAMT!))
+            .toStringAsFixed(2);
       } else {
-        filteredList[i].nETAMT =
-            (double.parse(filteredList[i - 1].nETAMT!) +
-                    (double.parse(filteredList[i].cRAMT!) -
-                        double.parse(filteredList[i].dRAMT!)))
-                .toStringAsFixed(2);
+        filteredList[i].nETAMT = (double.parse(filteredList[i - 1].nETAMT!) +
+                (double.parse(filteredList[i].cRAMT!) -
+                    double.parse(filteredList[i].dRAMT!)))
+            .toStringAsFixed(2);
       }
     }
 
@@ -3485,6 +3502,228 @@ class LDProvider extends DefaultChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  // Add a cache for calendar PnL data per (year, segment)
+  final Map<String, CalenderpnlModel?> _calendarPnlCache = {};
+
+  // Helper to generate cache key
+  String _calendarPnlCacheKey(String fy, String segment) => '$fy|$segment';
+
+  /// Prefetch all years' data for the current segment (used on profile icon tap)
+  Future<void> prefetchAllCalendarPnlDataForSegment(
+      BuildContext context, String segment,
+      {List<String>? years}) async {
+    final yearsToFetch = years ?? availableFinancialYears;
+    for (final fy in yearsToFetch) {
+      final key = _calendarPnlCacheKey(fy, segment);
+      await _fetchAndCacheCalenderPnlData(
+        context,
+        _getStartDateForFY(fy),
+        _getEndDateForFY(fy),
+        segment,
+        key,
+      );
+    }
+  }
+
+  // Helper to get formatted start date for a FY string
+  String _getStartDateForFY(String fy) {
+    final parts = fy.split('-');
+    final startYear = int.parse(parts[0]);
+    final startTaxDate = DateTime(startYear, 4, 1);
+    return DateFormat("dd/MM/yyyy").format(startTaxDate);
+  }
+
+  // Helper to get formatted end date for a FY string
+  String _getEndDateForFY(String fy) {
+    final parts = fy.split('-');
+    final startYear = int.parse(parts[0]);
+    final endTaxDate = DateTime(startYear + 1, 3, 31);
+    return DateFormat("dd/MM/yyyy").format(endTaxDate);
+  }
+
+  // Modified loadOrFetchCalendarPnlData to use cache
+  Future<void> loadOrFetchCalendarPnlData(
+      BuildContext context, String from, String to, String type,
+      {bool force = false}) async {
+    final fy = selectedFinancialYear;
+    final segment = type;
+    final cacheKey = _calendarPnlCacheKey(fy, segment);
+    if (!force &&
+        _calendarPnlCache.containsKey(cacheKey) &&
+        _calendarPnlCache[cacheKey] != null) {
+      // Use cached data
+      _calenderpnlAllData = _calendarPnlCache[cacheKey];
+      // Rebuild grouped and heatmapData from cached data
+      _rebuildGroupedAndHeatmap(_calenderpnlAllData);
+      setFinancialYear(fy);
+      notifyListeners();
+      return;
+    }
+    // Otherwise, fetch and cache
+    await fetchcalenderpnldata(context, from, to, type,
+        force: true, cacheKey: cacheKey);
+  }
+
+  // Modified fetchcalenderpnldata to support caching
+  Future fetchcalenderpnldata(
+      BuildContext context, String from, String to, String type,
+      {bool force = false, String? cacheKey}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _noticenewfeature = prefs.getString("notice").toString();
+      _calendarpnlloading = true;
+      notifyListeners();
+      final data = await api.getcalenderpnldata(from, to, type);
+      _calenderpnlAllData = data;
+      // Cache the result if cacheKey is provided
+      if (cacheKey != null) {
+        _calendarPnlCache[cacheKey] = data;
+      }
+      grouped = {};
+      _originalGrouped = {};
+      if (_calenderpnlAllData != null) {
+        _heatmapData = {};
+        if (_calenderpnlAllData!.journal != null) {
+          _selectedFilters = {};
+          for (var element in _calenderpnlAllData!.journal!) {
+            if (element.realisedpnl != '0.0') {
+              String dateString = element.tRADEDATE!;
+              try {
+                DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                DateTime parsedDate = inputFormat.parse(dateString);
+                _heatmapData[DateTime(
+                        parsedDate.year, parsedDate.month, parsedDate.day)] =
+                    double.parse(element.realisedpnl ?? "0.0");
+              } catch (e) {
+                print("Error parsing date: $dateString - $e");
+              }
+            }
+          }
+        }
+        if (_calenderpnlAllData!.data != null) {
+          for (var trade in _calenderpnlAllData!.data!) {
+            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+            final dateKey =
+                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            if (!grouped.containsKey(dateKey)) {
+              grouped[dateKey] = [];
+            }
+            grouped[dateKey]!.add(trade);
+          }
+        }
+      }
+      setFinancialYear(selectedFinancialYear);
+      _calendarpnlloading = false;
+      if (profitlossSearchCtrl.text.isNotEmpty) {
+        profitlossSearchCtrl.clear();
+      }
+      notifyListeners();
+    } catch (e) {
+      _calendarpnlloading = false;
+      debugPrint("$e");
+    }
+  }
+
+  // Helper to rebuild grouped and heatmapData from cached data
+  void _rebuildGroupedAndHeatmap(CalenderpnlModel? data) {
+    grouped = {};
+    _originalGrouped = {};
+    _heatmapData = {};
+    if (data == null) return;
+    if (data.journal != null) {
+      for (var element in data.journal!) {
+        if (element.realisedpnl != '0.0') {
+          String dateString = element.tRADEDATE!;
+          try {
+            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateTime parsedDate = inputFormat.parse(dateString);
+            _heatmapData[DateTime(
+                    parsedDate.year, parsedDate.month, parsedDate.day)] =
+                double.parse(element.realisedpnl ?? "0.0");
+          } catch (e) {
+            print("Error parsing date: $dateString - $e");
+          }
+        }
+      }
+    }
+    if (data.data != null) {
+      for (var trade in data.data!) {
+        DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+        final dateKey =
+            DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+        if (!grouped.containsKey(dateKey)) {
+          grouped[dateKey] = [];
+        }
+        grouped[dateKey]!.add(trade);
+      }
+    }
+  }
+
+  Future<void> _fetchAndCacheCalenderPnlData(BuildContext context, String from,
+      String to, String type, String cacheKey) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _noticenewfeature = prefs.getString("notice").toString();
+      _calendarpnlloading = true;
+      notifyListeners();
+      final data = await api.getcalenderpnldata(from, to, type);
+      _calenderpnlAllData = data;
+      // Cache the result
+      _calendarPnlCache[cacheKey] = data;
+      grouped = {};
+      _originalGrouped = {};
+      if (_calenderpnlAllData != null) {
+        _heatmapData = {};
+        if (_calenderpnlAllData!.journal != null) {
+          _selectedFilters = {};
+          for (var element in _calenderpnlAllData!.journal!) {
+            if (element.realisedpnl != '0.0') {
+              String dateString = element.tRADEDATE!;
+              try {
+                DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                DateTime parsedDate = inputFormat.parse(dateString);
+                _heatmapData[DateTime(
+                        parsedDate.year, parsedDate.month, parsedDate.day)] =
+                    double.parse(element.realisedpnl ?? "0.0");
+              } catch (e) {
+                print("Error parsing date: $dateString - $e");
+              }
+            }
+          }
+        }
+        if (_calenderpnlAllData!.data != null) {
+          for (var trade in _calenderpnlAllData!.data!) {
+            DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            DateTime parsedDate = inputFormat.parse(trade.tRADEDATE!);
+            final dateKey =
+                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            if (!grouped.containsKey(dateKey)) {
+              grouped[dateKey] = [];
+            }
+            grouped[dateKey]!.add(trade);
+          }
+        }
+      }
+      setFinancialYear(selectedFinancialYear);
+      _calendarpnlloading = false;
+      if (profitlossSearchCtrl.text.isNotEmpty) {
+        profitlossSearchCtrl.clear();
+      }
+      notifyListeners();
+    } catch (e) {
+      _calendarpnlloading = false;
+      debugPrint("$e");
+    }
+  }
+
+  // Helper to check if calendar PnL data is cached for a given year and segment
+  bool isCalendarPnlDataCached(String fy, String segment) {
+    final key = _calendarPnlCacheKey(fy, segment);
+    return _calendarPnlCache.containsKey(key) && _calendarPnlCache[key] != null;
   }
 }
 // List<double> getCustItemsHeight() {

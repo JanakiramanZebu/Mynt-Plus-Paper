@@ -22,6 +22,7 @@ import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/loader_ui.dart';
+import '../../../sharedWidget/splash_loader.dart';
 import '../../../utils/no_emoji_inputformatter.dart';
 import '../../../models/fund_model_testing_copy/secured_bank_detalis_model.dart';
 import '../../../models/fund_model_testing_copy/secured_client_data_model.dart';
@@ -50,9 +51,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     }
 
     // Set default segment to Equity after a short delay to ensure data is loaded
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _setDefaultSegment(ref.read(transcationProvider));
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _setDefaultSegment(ref.read(transcationProvider));
+    // });
   }
 
   bool _isDisposedIos = false;
@@ -366,7 +367,9 @@ class _FundScreenState extends ConsumerState<FundScreen> {
     // Reset bottom sheet state when starting a new payment process
     fund.resetBottomSheetState();
 
+    // Razorpay razorpay = Razorpay();
     Razorpay razorpay = Razorpay();
+
     await fund.fetchrazorpay(
       context,
       int.parse(fund.amount.text).toString(),
@@ -475,14 +478,14 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 16),
+                          padding: const EdgeInsets.only(
+                              left: 16, top: 16, right: 16, bottom: 0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               TextWidget.subText(
                                 text:
-                                    "Available Balance (${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")}) ",
+                                    "₹ ${formatIndianCurrency(funds.fundDetailModel?.cash ?? "0.00")} Available",
                                 theme: theme.isDarkMode,
                                 color: colors.textPrimaryLight,
                               ),
@@ -591,9 +594,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                         //                     theme: false,
                         //                     color: colors.colorGrey,
                         //                     fw: 0)),
-                        const SizedBox(
-                          height: 16,
-                        ),
+
                         // Padding(
                         //   padding: const EdgeInsets.only(
                         //     left: 16,
@@ -604,41 +605,40 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                         // ),
 
                         // type selection section
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          height: 35,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _buildSegmentTab(
-                                  "Equity",
-                                  fund.textValue == "NSE_CASH",
-                                  () => _selectSegment("NSE_CASH", fund),
-                                  theme,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildSegmentTab(
-                                  "F&O",
-                                  fund.textValue == "NSE_FNO",
-                                  () => _selectSegment("NSE_FNO", fund),
-                                  theme,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildSegmentTab(
-                                  "Commodity",
-                                  fund.textValue == "MCX",
-                                  () => _selectSegment("MCX", fund),
-                                  theme,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                        // Container(
+                        //   padding: const EdgeInsets.symmetric(horizontal: 16),
+                        //   height: 35,
+                        //   child: Row(
+                        //     children: [
+                        //       Expanded(
+                        //         child: fund.decryptclientcheck!.companyCode!.contains("NSE_CASH") ? _buildSegmentTab(
+                        //           "Equity",
+                        //           fund.textValue == "NSE_CASH",
+                        // () => _selectSegment("NSE_CASH", fund),
+                        //           theme,
+                        //         ) : const SizedBox.shrink(),
+                        //       ),
+                        //       const SizedBox(width: 8),
+                        //       Expanded(
+                        //         child: fund.decryptclientcheck!.companyCode!.contains("NSE_FNO") ? _buildSegmentTab(
+                        //           "F&O",
+                        //           fund.textValue == "NSE_FNO",
+                        //           () => _selectSegment("NSE_FNO", fund),
+                        //           theme,
+                        //         ) : const SizedBox.shrink(),
+                        //       ),
+                        //       const SizedBox(width: 8),
+                        //       Expanded(
+                        //         child: fund.decryptclientcheck!.companyCode!.contains("MCX") ? _buildSegmentTab(
+                        //           "Commodity",
+                        //           fund.textValue == "MCX",
+                        //           () => _selectSegment("MCX", fund),
+                        //           theme,
+                        //         ) : const SizedBox.shrink(),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                         // Old bank account UI (commented out)
                         // Padding(
                         //     padding: const EdgeInsets.only(
@@ -708,7 +708,7 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                         padding:
                                             const EdgeInsets.only(bottom: 4),
                                         child: TextWidget.subText(
-                                          text: fund.bankdetails!.dATA![0][1],
+                                          text: fund.bankname,
                                           theme: theme.isDarkMode,
                                           color: theme.isDarkMode
                                               ? colors.colorWhite
@@ -846,7 +846,10 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                                       child: Row(
                                         children: [
                                           SvgPicture.asset(
-                                            '${fund.defaultUpiapps[index]['image']}',
+                                            '${fund.addfundIcons[index]['image']}',
+                                            width: index == 0 && index == 1
+                                                ? 40
+                                                : 40,
                                           ),
                                           const SizedBox(width: 20),
                                           Expanded(
@@ -1078,11 +1081,11 @@ class _FundScreenState extends ConsumerState<FundScreen> {
   }
 
   // Set default segment to Equity (NSE_CASH) when screen initializes
-  void _setDefaultSegment(TranctionProvider fund) {
-    if (fund.textValue.isEmpty || fund.textValue != "NSE_CASH") {
-      _selectSegment("NSE_CASH", fund);
-    }
-  }
+  // void _setDefaultSegment(TranctionProvider fund) {
+  //   if (fund.textValue.isEmpty || fund.textValue != "NSE_CASH") {
+  //     _selectSegment("NSE_CASH", fund);
+  //   }
+  // }
 
   Widget headerTitleText(String text) {
     return TextWidget.subText(
@@ -1235,13 +1238,13 @@ class _FundScreenState extends ConsumerState<FundScreen> {
 
   handlePaymentSuccessResponse(PaymentSuccessResponse response) {
     ref.read(transcationProvider).fetchrazorpayStatus("${response.paymentId}");
-
+    print("sent payment id razor pay: ${response.paymentId}");
     showModalBottomSheet(
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
         backgroundColor: const Color(0xffffffff),
-        isDismissible: false,
-        enableDrag: false,
+        isDismissible: true,
+        enableDrag: true,
         showDragHandle: false,
         useSafeArea: false,
         isScrollControlled: true,
@@ -1256,5 +1259,6 @@ class _FundScreenState extends ConsumerState<FundScreen> {
                 amount: ref.read(transcationProvider).amount.text,
               ));
         });
+    ref.read(transcationProvider).amount.clear();
   }
 }

@@ -898,6 +898,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     indexProvide.bottomMenu(4, context);
     portfolio.cancelTimer();
 
+    // Ensure years are set before prefetching
+    reportsprovider.calendarProvider();
+    // Prefetch only the current financial year for all segments
+    final currentFY = reportsprovider.availableFinancialYears.first;
+    for (final segment in reportsprovider.availableSegments) {
+      reportsprovider.prefetchAllCalendarPnlDataForSegment(context, segment,
+          years: [currentFY]);
+    }
+    // Immediately set the default year and segment to show correct data from cache
+    reportsprovider.setFinancialYear(currentFY);
+    reportsprovider.setSegment(reportsprovider.availableSegments.first);
+
     // Load minimal required profile data
     // fundProviderRef.fetchFunds(context);
     userProfile.fetchprofilemenu();
@@ -936,8 +948,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         await ref.read(transcationProvider).ip();
         await ref.read(transcationProvider).fetchupiIdView(
               ref
-                  .read(transcationProvider)
-                  .bankdetails?.dATA?[ref.read(transcationProvider).indexss][1] ?? "",
+                      .read(transcationProvider)
+                      .bankdetails
+                      ?.dATA?[ref.read(transcationProvider).indexss][1] ??
+                  "",
               ref
                   .read(transcationProvider)
                   .bankdetails!
