@@ -3005,135 +3005,77 @@ class ReportsScreen extends ConsumerWidget {
                             enableDrag: false,
                             useSafeArea: true,
                             context: context,
-                            builder: (context) => SafeArea(
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
-                                      color: theme.isDarkMode
-                                          ? colors.colorBlack
-                                          : colors.colorWhite,
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: Color(0xff999999),
-                                          blurRadius: 4.0,
-                                          offset: Offset(2.0, 0.0),
-                                        )
-                                      ],
-                                    ),
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                        bottom: 24 +
-                                            MediaQuery.of(context)
-                                                .viewInsets
-                                                .bottom,
-                                      ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                            builder: (context) => Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                color: theme.isDarkMode
+                                    ? colors.colorBlack
+                                    : colors.colorWhite,
+                                
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: 24 +
+                                      MediaQuery.of(context)
+                                          .viewInsets
+                                          .bottom,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8.0,
+                                          horizontal: 16.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment
+                                                .spaceBetween,
                                         children: [
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 8.0,
-                                                horizontal: 16.0),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                TextWidget.titleText(
-                                                  text: "Client Master (CMR)",
-                                                  theme: theme.isDarkMode,
-                                                  fw: 1,
-                                                ),
-                                                Material(
-                                                  color: Colors.transparent,
-                                                  shape: const CircleBorder(),
-                                                  child: InkWell(
-                                                    onTap: () async {
-                                                      await Future.delayed(
-                                                          const Duration(
-                                                              milliseconds:
-                                                                  150));
-                                                      Navigator.pop(context);
-                                                    },
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20),
-                                                    splashColor: theme
-                                                            .isDarkMode
-                                                        ? Colors.white
-                                                            .withOpacity(0.15)
-                                                        : Colors.black
-                                                            .withOpacity(0.15),
-                                                    highlightColor: theme
-                                                            .isDarkMode
-                                                        ? Colors.white
-                                                            .withOpacity(0.08)
-                                                        : Colors.black
-                                                            .withOpacity(0.08),
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              6.0),
-                                                      child: Icon(
-                                                        Icons.close_rounded,
-                                                        size: 22,
-                                                        color: theme.isDarkMode
-                                                            ? const Color(
-                                                                0xffBDBDBD)
-                                                            : colors.colorGrey,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                          TextWidget.titleText(
+                                            text: "Client Master (CMR)",
+                                            theme: theme.isDarkMode,
+                                            fw: 1,
                                           ),
-                                          Divider(
-                                            color: theme.isDarkMode
-                                                ? colors.darkColorDivider
-                                                : colors.colorDivider,
-                                            height: 0,
-                                          ),
-                                          const SizedBox(height: 24),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 24.0),
-                                            child: SizedBox(
-                                              width: double.infinity,
-                                              height: 48,
-                                              child: OutlinedButton(
-                                                style: OutlinedButton.styleFrom(
-                                                  elevation: 0,
-                                                  minimumSize:
-                                                      const Size(0, 48),
-                                                  backgroundColor:
-                                                      theme.isDarkMode
-                                                          ? colors.primaryDark
-                                                          : colors.primaryLight,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
-                                                  ),
-                                                  padding: EdgeInsets.zero,
-                                                ),
-                                                onPressed: () {
-                                                  // Download functionality will be added later
-                                                  print("Downloading cmr");
-                                                  ledgerdate.fetchcmrdownload(
-                                                      context);
-                                                  print("Downloading cmr api");
-                                                },
-                                                child: TextWidget.subText(
-                                                  text: "Download",
-                                                  theme: theme.isDarkMode,
-                                                  color: colors.colorWhite,
-                                                  fw: 2,
-                                                  align: TextAlign.center,
+                                          Material(
+                                            color: Colors.transparent,
+                                            shape: const CircleBorder(),
+                                            child: InkWell(
+                                              onTap: () async {
+                                                await Future.delayed(
+                                                    const Duration(
+                                                        milliseconds:
+                                                            150));
+                                                Navigator.pop(context);
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      20),
+                                              splashColor: theme
+                                                      .isDarkMode
+                                                  ? Colors.white
+                                                      .withOpacity(0.15)
+                                                  : Colors.black
+                                                      .withOpacity(0.15),
+                                              highlightColor: theme
+                                                      .isDarkMode
+                                                  ? Colors.white
+                                                      .withOpacity(0.08)
+                                                  : Colors.black
+                                                      .withOpacity(0.08),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(
+                                                        6.0),
+                                                child: Icon(
+                                                  Icons.close_rounded,
+                                                  size: 22,
+                                                  color: theme.isDarkMode
+                                                      ? const Color(
+                                                          0xffBDBDBD)
+                                                      : colors.colorGrey,
                                                 ),
                                               ),
                                             ),
@@ -3141,8 +3083,55 @@ class ReportsScreen extends ConsumerWidget {
                                         ],
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    Divider(
+                                      color: theme.isDarkMode
+                                          ? colors.darkColorDivider
+                                          : colors.colorDivider,
+                                      height: 0,
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 24.0),
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        height: 48,
+                                        child: OutlinedButton(
+                                          style: OutlinedButton.styleFrom(
+                                            elevation: 0,
+                                            minimumSize:
+                                                const Size(0, 48),
+                                            backgroundColor:
+                                                theme.isDarkMode
+                                                    ? colors.primaryDark
+                                                    : colors.primaryLight,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      5),
+                                            ),
+                                            padding: EdgeInsets.zero,
+                                          ),
+                                          onPressed: () {
+                                            // Download functionality will be added later
+                                            print("Downloading cmr");
+                                            ledgerdate.fetchcmrdownload(
+                                                context);
+                                            print("Downloading cmr api");
+                                          },
+                                          child: TextWidget.subText(
+                                            text: "Download",
+                                            theme: theme.isDarkMode,
+                                            color: colors.colorWhite,
+                                            fw: 2,
+                                            align: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 35),
+                                  ],
+                                ),
                               ),
                             ),
                           );
