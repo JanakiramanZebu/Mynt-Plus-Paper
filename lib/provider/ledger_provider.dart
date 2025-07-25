@@ -2484,10 +2484,10 @@ class LDProvider extends DefaultChangeNotifier {
   String selectedSegment = 'Equity';
   String changeornot = '';
 
-  // A list of available financial years (last 5 years).
+  // A list of available financial years (only the most recent year).
   late List<String> availableFinancialYears;
 
-  List<String> availableSegments = ['Equity', 'Fno', 'Commodity', 'Currency'];
+  List<String> availableSegments = ['Equity', 'FNO', 'Commodity', 'Currency'];
   List<String> dailyormonthly = ['Monthly', 'Daily'];
 
   // Start and end dates for the selected financial year.
@@ -2515,8 +2515,8 @@ class LDProvider extends DefaultChangeNotifier {
   Map<String, double> monthlyPnL = {};
 
   calendarProvider() {
-    // Generate and store the last 5 financial years.
-    availableFinancialYears = _generateFinancialYears(5);
+    // Only generate the current financial year.
+    availableFinancialYears = _generateFinancialYears(1);
     // Default to the first (current) financial year.
     selectedFinancialYear = availableFinancialYears.first;
     // Initialize startDate, endDate, selectedMonth, and monthlyPnL.
@@ -2556,10 +2556,10 @@ class LDProvider extends DefaultChangeNotifier {
 
     // Use cached data if available for this year/segment
     final cacheKey =
-        _calendarPnlCacheKey(selectedFinancialYear, selectedSegment);
-    if (_calendarPnlCache.containsKey(cacheKey) &&
-        _calendarPnlCache[cacheKey] != null) {
-      _calenderpnlAllData = _calendarPnlCache[cacheKey];
+        calendarPnlCacheKey(selectedFinancialYear, selectedSegment);
+    if (calendarPnlCache.containsKey(cacheKey) &&
+        calendarPnlCache[cacheKey] != null) {
+      _calenderpnlAllData = calendarPnlCache[cacheKey];
       _rebuildGroupedAndHeatmap(_calenderpnlAllData);
     }
 
@@ -3164,13 +3164,11 @@ class LDProvider extends DefaultChangeNotifier {
   /// Each financial year is represented as a string "YYYY-YYYY".
   List<String> _generateFinancialYears(int count) {
     final now = DateTime.now();
-    // If current month is before April, current FY started last year.
     int currentFYStartYear = now.month < 4 ? now.year - 1 : now.year;
     final years = <String>[];
-    for (int i = 0; i < count; i++) {
-      final startY = currentFYStartYear - i;
-      years.add("$startY-${startY + 1}");
-    }
+    // Only add the current financial year
+    final startY = currentFYStartYear;
+    years.add("$startY-${startY + 1}");
     return years;
   }
 
@@ -3505,10 +3503,10 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   // Add a cache for calendar PnL data per (year, segment)
-  final Map<String, CalenderpnlModel?> _calendarPnlCache = {};
+  final Map<String, CalenderpnlModel?> calendarPnlCache = {};
 
   // Helper to generate cache key
-  String _calendarPnlCacheKey(String fy, String segment) => '$fy|$segment';
+  String calendarPnlCacheKey(String fy, String segment) => '$fy|$segment';
 
   /// Prefetch all years' data for the current segment (used on profile icon tap)
   Future<void> prefetchAllCalendarPnlDataForSegment(
@@ -3516,7 +3514,7 @@ class LDProvider extends DefaultChangeNotifier {
       {List<String>? years}) async {
     final yearsToFetch = years ?? availableFinancialYears;
     for (final fy in yearsToFetch) {
-      final key = _calendarPnlCacheKey(fy, segment);
+      final key = calendarPnlCacheKey(fy, segment);
       await _fetchAndCacheCalenderPnlData(
         context,
         _getStartDateForFY(fy),
@@ -3549,12 +3547,12 @@ class LDProvider extends DefaultChangeNotifier {
       {bool force = false}) async {
     final fy = selectedFinancialYear;
     final segment = type;
-    final cacheKey = _calendarPnlCacheKey(fy, segment);
+    final cacheKey = calendarPnlCacheKey(fy, segment);
     if (!force &&
-        _calendarPnlCache.containsKey(cacheKey) &&
-        _calendarPnlCache[cacheKey] != null) {
+        calendarPnlCache.containsKey(cacheKey) &&
+        calendarPnlCache[cacheKey] != null) {
       // Use cached data
-      _calenderpnlAllData = _calendarPnlCache[cacheKey];
+      _calenderpnlAllData = calendarPnlCache[cacheKey];
       // Rebuild grouped and heatmapData from cached data
       _rebuildGroupedAndHeatmap(_calenderpnlAllData);
       setFinancialYear(fy);
@@ -3576,10 +3574,24 @@ class LDProvider extends DefaultChangeNotifier {
       _calendarpnlloading = true;
       notifyListeners();
       final data = await api.getcalenderpnldata(from, to, type);
-      _calenderpnlAllData = data;
-      // Cache the result if cacheKey is provided
-      if (cacheKey != null) {
-        _calendarPnlCache[cacheKey] = data;
+      // Only update cache and UI for FNO after data is received
+      if (type == 'Fno') {
+        if (cacheKey != null) {
+          calendarPnlCache[cacheKey] = data;
+        }
+        _calenderpnlAllData = data;
+        if (_calenderpnlAllData != null) {
+          _calenderpnlAllData!.segment = type;
+        }
+      } else {
+        // For other segments, keep current behavior
+        _calenderpnlAllData = data;
+        if (_calenderpnlAllData != null) {
+          _calenderpnlAllData!.segment = type;
+        }
+        if (cacheKey != null) {
+          calendarPnlCache[cacheKey] = data;
+        }
       }
       grouped = {};
       _originalGrouped = {};
@@ -3673,7 +3685,7 @@ class LDProvider extends DefaultChangeNotifier {
       final data = await api.getcalenderpnldata(from, to, type);
       _calenderpnlAllData = data;
       // Cache the result
-      _calendarPnlCache[cacheKey] = data;
+      calendarPnlCache[cacheKey] = data;
       grouped = {};
       _originalGrouped = {};
       if (_calenderpnlAllData != null) {
@@ -3722,8 +3734,8 @@ class LDProvider extends DefaultChangeNotifier {
 
   // Helper to check if calendar PnL data is cached for a given year and segment
   bool isCalendarPnlDataCached(String fy, String segment) {
-    final key = _calendarPnlCacheKey(fy, segment);
-    return _calendarPnlCache.containsKey(key) && _calendarPnlCache[key] != null;
+    final key = calendarPnlCacheKey(fy, segment);
+    return calendarPnlCache.containsKey(key) && calendarPnlCache[key] != null;
   }
 }
 // List<double> getCustItemsHeight() {

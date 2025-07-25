@@ -62,7 +62,6 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
         ref
             .read(portfolioProvider)
             .requestallHoldings(context: context, isSubscribe: false);
-        
 
         if (ref.read(ledgerProvider).pledgeandunpledge == null) {
           ref.read(ledgerProvider).getCurrentDate("pandu");
@@ -226,24 +225,8 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                                 (index == 1 &&
                                     portfolio.allPostionList.isNotEmpty))
                               Container(
-                                margin: const EdgeInsets.only(top: 2),
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: ((index == 0 &&
-                                              (portfolio.holdingsModel
-                                                      ?.isNotEmpty ??
-                                                  false)) ||
-                                          (index == 1 &&
-                                              (portfolio
-                                                  .allPostionList.isNotEmpty)))
-                                      ? colors.btnBg
-                                      : null,
-                                  // borderRadius: BorderRadius.circular(8),
-                                  shape: BoxShape.circle,
-                                ),
-                                alignment: Alignment.center,
-                                child: TextWidget.subText(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: TextWidget.paraText(
                                   text: index == 0
                                       ? (portfolio.holdingsModel?.isNotEmpty ??
                                               false

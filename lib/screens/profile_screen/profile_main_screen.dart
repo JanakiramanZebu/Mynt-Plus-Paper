@@ -453,7 +453,7 @@ class UserAccountScreen extends ConsumerWidget {
                         break;
                       case "Refer & Get ₹300":
                         await Share.share(
-                          "Loving my experience with Zebu - from Stocks & Mutual Funds to F&O, IPOs, Bonds, and more!\nOpen your free demat account here:\n👉 ${Uri.parse(reflink)}",
+                          "I invite you to explore Mynt by Zebu — from Stocks to Mutual funds and more.\nOpen your free demat account today\n👉 ${Uri.parse(reflink)}",
                         );
                         break;
                       case "Settings":
@@ -549,18 +549,47 @@ class UserAccountScreen extends ConsumerWidget {
           ),
 
           /// 🔹 Version
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: TextWidget.captionText(
-                text: auth.versiontext,
+          tapTooltip(
+            message: auth.versiontext,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: TextWidget.paraText(
+                text: "Version 3.0.2",
                 theme: false,
                 color: !theme.isDarkMode
                     ? colors.textSecondaryLight
                     : colors.textSecondaryDark,
-                fw: 0),
+                fw: 0,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
         ],
+      ),
+    );
+  }
+
+  Widget tapTooltip({required String message, required Widget child}) {
+    final GlobalKey<TooltipState> key = GlobalKey<TooltipState>();
+
+    return GestureDetector(
+      onTap: () {
+        key.currentState?.ensureTooltipVisible();
+      },
+      child: TooltipTheme(
+        data: TooltipThemeData(
+          textStyle: const TextStyle(color: Colors.white),
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        child: Tooltip(
+          key: key,
+          message: message,
+          preferBelow: false,
+          child: child,
+        ),
       ),
     );
   }
@@ -1206,8 +1235,169 @@ class SettingsScreen extends ConsumerWidget {
                                       height: 40,
                                       child: ElevatedButton(
                                         onPressed: () async {
-                                          Navigator.of(context).pop();
-                                          userProfile.fetchFreezeAc(context);
+                                          showDialog(
+                                            barrierDismissible: false,
+                                            context: context,
+                                            builder:
+                                                (BuildContext dialogContext) {
+                                              final theme =
+                                                  ref.read(themeProvider);
+                                              return AlertDialog(
+                                                backgroundColor:
+                                                    colors.colorWhite,
+                                                shape:
+                                                    const RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(8)),
+                                                ),
+                                                scrollable: true,
+                                                titlePadding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 8),
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 12,
+                                                        vertical: 12),
+                                                insetPadding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 30,
+                                                        vertical: 12),
+                                                actionsPadding:
+                                                    const EdgeInsets.only(
+                                                        bottom: 16,
+                                                        right: 16,
+                                                        left: 16,
+                                                        top: 8),
+                                                title: Column(
+                                                  children: [
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.end,
+                                                      children: [
+                                                        Material(
+                                                          color: Colors
+                                                              .transparent,
+                                                          shape:
+                                                              const CircleBorder(),
+                                                          child: InkWell(
+                                                            onTap: () async {
+                                                              await Future.delayed(
+                                                                  const Duration(
+                                                                      milliseconds:
+                                                                          150));
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        20),
+                                                            splashColor: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .splashColorDark
+                                                                : colors
+                                                                    .splashColorLight,
+                                                            highlightColor: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .splashColorDark
+                                                                : colors
+                                                                    .splashColorLight,
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(6.0),
+                                                              child: Icon(
+                                                                Icons
+                                                                    .close_rounded,
+                                                                size: 22,
+                                                                color: theme.isDarkMode
+                                                                    ? colors
+                                                                        .colorWhite
+                                                                    : colors
+                                                                        .colorBlack,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 12),
+                                                    SizedBox(
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .width,
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          TextWidget.subText(
+                                                            text:
+                                                                "Are you sure you want to freeze your account?",
+                                                            theme: theme
+                                                                .isDarkMode,
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .textPrimaryDark
+                                                                : colors
+                                                                    .textPrimaryLight,
+                                                            fw: 3,
+                                                            align: TextAlign
+                                                                .center,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                actions: [
+                                                  SizedBox(
+                                                    width: double.infinity,
+                                                    child: OutlinedButton(
+                                                      onPressed: () async {
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        userProfile
+                                                            .fetchFreezeAc(
+                                                                context);
+                                                      },
+                                                      style: OutlinedButton
+                                                          .styleFrom(
+                                                        minimumSize:
+                                                            const Size(0, 40),
+                                                        side: BorderSide(
+                                                            color: colors
+                                                                .btnOutlinedBorder),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(5),
+                                                        ),
+                                                        backgroundColor:
+                                                            colors.primaryDark,
+                                                      ),
+                                                      child:
+                                                          TextWidget.titleText(
+                                                        text: "Yes",
+                                                        theme: theme.isDarkMode,
+                                                        color: !theme.isDarkMode
+                                                            ? colors.colorWhite
+                                                            : colors.colorBlack,
+                                                        fw: 0,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
                                         },
                                         style: ElevatedButton.styleFrom(
                                           elevation: 0,
@@ -2261,7 +2451,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              profileDetails.openInWebURL(context, "mtf");
+              profileDetails.openInWebURL(context, "segment");
             },
             style: ElevatedButton.styleFrom(
               elevation: 0,
@@ -3011,28 +3201,22 @@ class ReportsScreen extends ConsumerWidget {
                                 color: theme.isDarkMode
                                     ? colors.colorBlack
                                     : colors.colorWhite,
-                                
                               ),
                               child: Padding(
                                 padding: EdgeInsets.only(
                                   bottom: 24 +
-                                      MediaQuery.of(context)
-                                          .viewInsets
-                                          .bottom,
+                                      MediaQuery.of(context).viewInsets.bottom,
                                 ),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 8.0,
-                                          horizontal: 16.0),
+                                          vertical: 8.0, horizontal: 16.0),
                                       child: Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment
-                                                .spaceBetween,
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           TextWidget.titleText(
                                             text: "Client Master (CMR)",
@@ -3046,35 +3230,29 @@ class ReportsScreen extends ConsumerWidget {
                                               onTap: () async {
                                                 await Future.delayed(
                                                     const Duration(
-                                                        milliseconds:
-                                                            150));
+                                                        milliseconds: 150));
                                                 Navigator.pop(context);
                                               },
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      20),
-                                              splashColor: theme
-                                                      .isDarkMode
+                                                  BorderRadius.circular(20),
+                                              splashColor: theme.isDarkMode
                                                   ? Colors.white
                                                       .withOpacity(0.15)
                                                   : Colors.black
                                                       .withOpacity(0.15),
-                                              highlightColor: theme
-                                                      .isDarkMode
+                                              highlightColor: theme.isDarkMode
                                                   ? Colors.white
                                                       .withOpacity(0.08)
                                                   : Colors.black
                                                       .withOpacity(0.08),
                                               child: Padding(
                                                 padding:
-                                                    const EdgeInsets.all(
-                                                        6.0),
+                                                    const EdgeInsets.all(6.0),
                                                 child: Icon(
                                                   Icons.close_rounded,
                                                   size: 22,
                                                   color: theme.isDarkMode
-                                                      ? const Color(
-                                                          0xffBDBDBD)
+                                                      ? const Color(0xffBDBDBD)
                                                       : colors.colorGrey,
                                                 ),
                                               ),
@@ -3099,24 +3277,21 @@ class ReportsScreen extends ConsumerWidget {
                                         child: OutlinedButton(
                                           style: OutlinedButton.styleFrom(
                                             elevation: 0,
-                                            minimumSize:
-                                                const Size(0, 48),
-                                            backgroundColor:
-                                                theme.isDarkMode
-                                                    ? colors.primaryDark
-                                                    : colors.primaryLight,
+                                            minimumSize: const Size(0, 48),
+                                            backgroundColor: theme.isDarkMode
+                                                ? colors.primaryDark
+                                                : colors.primaryLight,
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      5),
+                                                  BorderRadius.circular(5),
                                             ),
                                             padding: EdgeInsets.zero,
                                           ),
                                           onPressed: () {
                                             // Download functionality will be added later
                                             print("Downloading cmr");
-                                            ledgerdate.fetchcmrdownload(
-                                                context);
+                                            ledgerdate
+                                                .fetchcmrdownload(context);
                                             print("Downloading cmr api");
                                           },
                                           child: TextWidget.subText(

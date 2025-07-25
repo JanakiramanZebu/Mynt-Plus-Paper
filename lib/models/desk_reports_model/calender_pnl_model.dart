@@ -9,6 +9,7 @@ class CalenderpnlModel {
   double realized = 0;
   double unrealized = 0;
   double? totalCharges;
+  String? segment;
   CalenderpnlModel(
       {this.data,
       this.data2,
