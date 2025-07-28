@@ -108,8 +108,8 @@ mixin LedgerApi on ApiCore {
     try {
       final uri = Uri.parse('${apiLinks.reportsapi}/getLedger');
       final res = await apiClient.post(uri,
-          // headers: funddefaultHeaders,
-          headers: testingrameshheader,
+          headers: funddefaultHeaders,
+          // headers: testingrameshheader,
           body: jsonEncode({
             "cc": "${prefs.clientId}",
             // "cc": "TN1V2",
@@ -462,11 +462,11 @@ mixin LedgerApi on ApiCore {
             "to": to,
             "segment": type == 'Equity'
                 ? "NSE_CASH,BSE_CASH"
-                : type == 'Fno'
-                    ? 'NSE_FNO,BSE_FNO'
+                : type == 'FNO'
+                    ? "NSE_FNO,BSE_FNO"
                     : type == 'Commodity'
-                        ? 'MCX,NCDEX,NSE_COM,BSE_COM'
-                        : 'CD_NSE,CD_BSE,CD_MCX,CD_USE'
+                        ? "MCX,NCDEX,NSE_COM,BSE_COM"
+                        : "CD_NSE,CD_BSE,CD_MCX,CD_USE"
           }));
 
       // print(" ${res.body} reswwwww");
