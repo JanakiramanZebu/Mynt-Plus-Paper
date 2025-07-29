@@ -1,123 +1,133 @@
 class mf_order_sig_det {
-  Data? data;
+  List<Data>? data;
   String? stat;
-    String? msg;
+  String? emsg;
 
-  mf_order_sig_det({this.data, this.stat,this.msg});
+  mf_order_sig_det({this.data, this.stat,this.emsg});
 
   mf_order_sig_det.fromJson(Map<String, dynamic> json) {
-    data = json['data'] != null ? new Data.fromJson(json['data']) : null;
+    if (json['data'] != null) {
+      data = <Data>[];
+      json['data'].forEach((v) {
+        data!.add(new Data.fromJson(v));
+      });
+    }
     stat = json['stat'];
-    msg = json['msg'];
+    emsg = json['emsg'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     if (this.data != null) {
-      data['data'] = this.data!.toJson();
+      data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
     data['stat'] = this.stat;
+    data['emsg'] = this.emsg;
     return data;
   }
 }
 
 class Data {
-  String? amcCode;
-  String? amount;
-  String? buysell;
-  String? date;
-  String? dateTime;
-  String? dptrans;
-  String? enddate;
-  String? foliono;
-  String? frequencytype;
-  String? isin;
-  String? noofinstallment;
-  String? ordernumber;
-  String? orderremarks;
-  String? orderstatus;
-  String? ordertype;
-  String? schemeCode;
-  String? schemename;
-  String? settno;
-  String? sipregndate;
-  String? sipregnno;
-  String? startdate;
-  String? units;
+  String? transCode;
+  String? transNo;
+  String? orderId;
+  String? userId;
+  String? memberCode;
+  String? clientCode;
+  String? remarks;
+  String? status;
+  String? name;
+  String? stat;
+  String? source;
+  String? placedBy;
+  String? iPAddress;
+  String? datetime;
+  String? orderVal;
+  Null? folioNo;
+  String? iSIN;
+  Null? dPFolioNo;
+  String? settType;
+  String? orderType;
+  String? subOrderType;
+  String? buySell;
+  String? allRedeem;
 
   Data(
-      {this.amcCode,
-      this.amount,
-      this.buysell,
-      this.date,
-      this.dateTime,
-      this.dptrans,
-      this.enddate,
-      this.foliono,
-      this.frequencytype,
-      this.isin,
-      this.noofinstallment,
-      this.ordernumber,
-      this.orderremarks,
-      this.orderstatus,
-      this.ordertype,
-      this.schemeCode,
-      this.schemename,
-      this.settno,
-      this.sipregndate,
-      this.sipregnno,
-      this.startdate,
-      this.units});
+      {this.transCode,
+      this.transNo,
+      this.orderId,
+      this.userId,
+      this.memberCode,
+      this.clientCode,
+      this.remarks,
+      this.status,
+      this.name,
+      this.stat,
+      this.source,
+      this.placedBy,
+      this.iPAddress,
+      this.datetime,
+      this.orderVal,
+      this.folioNo,
+      this.iSIN,
+      this.dPFolioNo,
+      this.settType,
+      this.orderType,
+      this.subOrderType,
+      this.buySell,
+      this.allRedeem});
 
   Data.fromJson(Map<String, dynamic> json) {
-    amcCode = json['amc_code'];
-    amount = json['amount'];
-    buysell = json['buysell'];
-    date = json['date'];
-    dateTime = json['date_time'];
-    dptrans = json['dptrans'];
-    enddate = json['enddate'];
-    foliono = json['foliono'];
-    frequencytype = json['frequencytype'];
-    isin = json['isin'];
-    noofinstallment = json['noofinstallment'];
-    ordernumber = json['ordernumber'];
-    orderremarks = json['orderremarks'];
-    orderstatus = json['orderstatus'];
-    ordertype = json['ordertype'];
-    schemeCode = json['scheme_code'];
-    schemename = json['schemename'];
-    settno = json['settno'];
-    sipregndate = json['sipregndate'];
-    sipregnno = json['sipregnno'];
-    startdate = json['startdate'];
-    units = json['units'];
+    transCode = json['TransCode'];
+    transNo = json['TransNo'];
+    orderId = json['OrderId'];
+    userId = json['UserId'];
+    memberCode = json['MemberCode'];
+    clientCode = json['ClientCode'];
+    remarks = json['Remarks'];
+    status = json['status'];
+    name = json['name'];
+    stat = json['stat'];
+    source = json['source'];
+    placedBy = json['placed_by'];
+    iPAddress = json['IPAddress'];
+    datetime = json['datetime'];
+    orderVal = json['OrderVal'];
+    folioNo = json['FolioNo'];
+    iSIN = json['ISIN'];
+    dPFolioNo = json['DPFolioNo'];
+    settType = json['SettType'];
+    orderType = json['OrderType'];
+    subOrderType = json['SubOrderType'];
+    buySell = json['buy_sell'];
+    allRedeem = json['AllRedeem'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['amc_code'] = this.amcCode;
-    data['amount'] = this.amount;
-    data['buysell'] = this.buysell;
-    data['date'] = this.date;
-    data['date_time'] = this.dateTime;
-    data['dptrans'] = this.dptrans;
-    data['enddate'] = this.enddate;
-    data['foliono'] = this.foliono;
-    data['frequencytype'] = this.frequencytype;
-    data['isin'] = this.isin;
-    data['noofinstallment'] = this.noofinstallment;
-    data['ordernumber'] = this.ordernumber;
-    data['orderremarks'] = this.orderremarks;
-    data['orderstatus'] = this.orderstatus;
-    data['ordertype'] = this.ordertype;
-    data['scheme_code'] = this.schemeCode;
-    data['schemename'] = this.schemename;
-    data['settno'] = this.settno;
-    data['sipregndate'] = this.sipregndate;
-    data['sipregnno'] = this.sipregnno;
-    data['startdate'] = this.startdate;
-    data['units'] = this.units;
+    data['TransCode'] = this.transCode;
+    data['TransNo'] = this.transNo;
+    data['OrderId'] = this.orderId;
+    data['UserId'] = this.userId;
+    data['MemberCode'] = this.memberCode;
+    data['ClientCode'] = this.clientCode;
+    data['Remarks'] = this.remarks;
+    data['status'] = this.status;
+    data['name'] = this.name;
+    data['stat'] = this.stat;
+    data['source'] = this.source;
+    data['placed_by'] = this.placedBy;
+    data['IPAddress'] = this.iPAddress;
+    data['datetime'] = this.datetime;
+    data['OrderVal'] = this.orderVal;
+    data['FolioNo'] = this.folioNo;
+    data['ISIN'] = this.iSIN;
+    data['DPFolioNo'] = this.dPFolioNo;
+    data['SettType'] = this.settType;
+    data['OrderType'] = this.orderType;
+    data['SubOrderType'] = this.subOrderType;
+    data['buy_sell'] = this.buySell;
+    data['AllRedeem'] = this.allRedeem;
     return data;
   }
 }

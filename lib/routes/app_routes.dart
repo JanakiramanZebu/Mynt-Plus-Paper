@@ -824,11 +824,11 @@ class AppRoutes {
           pageBuilder: (_, __, ___) => const MfCommonSearch(),
           beginOffset: const Offset(0.0, 1.0),
         );
-      case Routes.mfWatchlist:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => const MFWatchlistScreen(),
-          beginOffset: const Offset(-1.0, 0.0),
-        );
+      // case Routes.mfWatchlist:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => const MFWatchlistScreen(),
+      //     beginOffset: const Offset(-1.0, 0.0),
+      //   );
       case Routes.mfStockDetail:
         return _createRoute(
           pageBuilder: (_, __, ___) => MFStockDetailScreen(mfStockData: args),

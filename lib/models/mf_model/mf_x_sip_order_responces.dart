@@ -28,6 +28,21 @@ class XsipOrderResponces {
   String? transactionNumber;
   String? error;
   String? msg;
+   String? transCode;
+  String? transNo;
+  String? userId; 
+  String? remarks;
+  String? status;
+  String? name; 
+  String? source;
+  String? placedBy;
+  String? iPAddress;
+  String? datetime;
+  String? installmentAmount; 
+  String? iSIN;
+  String? dPFolioNo;
+  String? sIPRegnNo;
+  String? sIPRegnDate;
 
   XsipOrderResponces(
       {this.amount,
@@ -58,6 +73,21 @@ class XsipOrderResponces {
       this.transactionCode,
       this.transactionNumber,
       this.error,
+      this.transCode,
+      this.transNo,
+      this.userId, 
+      this.remarks,
+      this.status,
+      this.name, 
+      this.source,
+      this.placedBy,
+      this.iPAddress,
+      this.datetime,
+      this.installmentAmount, 
+      this.iSIN,
+      this.dPFolioNo,
+      this.sIPRegnNo,
+      this.sIPRegnDate,
       this.msg});
 
   XsipOrderResponces.fromJson(Map<String, dynamic> json) {
@@ -90,6 +120,25 @@ class XsipOrderResponces {
     transactionNumber = json['transaction_number'];
     error = json['error'];
     msg = json['msg'];
+    transCode = json['TransCode'];
+    transNo = json['TransNo'];
+    userId = json['UserId'];
+    memberCode = json['MemberCode'];
+    clientCode = json['ClientCode'];
+    remarks = json['Remarks'];
+    status = json['status'];
+    name = json['name'];
+    stat = json['stat'];
+    source = json['source'];
+    placedBy = json['placed_by'];
+    iPAddress = json['IPAddress'];
+    datetime = json['datetime'];
+    installmentAmount = json['InstallmentAmount'];
+    folioNo = json['FolioNo'];
+    iSIN = json['ISIN'];
+    dPFolioNo = json['DPFolioNo'];
+    sIPRegnNo = json['SIPRegnNo'];
+    sIPRegnDate = json['SIPRegnDate'];
   }
 
   Map<String, dynamic> toJson() {
@@ -123,6 +172,25 @@ class XsipOrderResponces {
     data['transaction_number'] = transactionNumber;
     data['error'] = error;
     data['msg'] = msg;
+    data['TransCode'] = transCode;
+    data['TransNo'] = transNo;
+    data['UserId'] = userId;
+    data['MemberCode'] = memberCode;
+    data['ClientCode'] = clientCode;
+    data['Remarks'] = remarks;
+    data['status'] = status;
+    data['name'] = name;
+    data['stat'] = stat;
+    data['source'] = source;
+    data['placed_by'] = placedBy;
+    data['IPAddress'] = iPAddress;
+    data['datetime'] = datetime;
+    data['InstallmentAmount'] = installmentAmount;
+    data['FolioNo'] = folioNo;
+    data['ISIN'] = iSIN;
+    data['DPFolioNo'] = dPFolioNo;
+    data['SIPRegnNo'] = sIPRegnNo;
+    data['SIPRegnDate'] = sIPRegnDate;
     return data;
   }
 }

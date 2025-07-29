@@ -1,18 +1,16 @@
-import 'package:dropdown_button2/dropdown_button2.dart';
+ 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:mynt_plus/sharedWidget/functions.dart'; 
 import '../../../provider/profile_all_details_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/cust_text_formfield.dart';
-import '../../../sharedWidget/snack_bar.dart';
+import '../../../sharedWidget/cust_text_formfield.dart'; 
 
 class CPActionOrderScreen extends StatefulWidget {
   final dynamic data;
@@ -38,8 +36,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double screenheight = MediaQuery.of(context).size.height;
-    double notional = 0.0;
+    double screenheight = MediaQuery.of(context).size.height; 
 
     return Consumer(builder: (context, WidgetRef ref, _) {
       final ledgerprovider = ref.watch(ledgerProvider);
@@ -52,8 +49,7 @@ class _CPActionOrderScreen extends State<CPActionOrderScreen> {
       // final myController = TextEditingController(text: ledgerprovider.selectnetpledge.text);
       // String selectedValue = ledgerprovider.segmentvalue;
 
-// Optional: remove duplicates if needed (based on value)
-      final seen = <String>{};
+// Optional: remove duplicates if needed (based on value) 
 
       return WillPopScope(
         onWillPop: () async {

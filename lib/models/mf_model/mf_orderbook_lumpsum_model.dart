@@ -42,6 +42,29 @@ class Data {
   String? sipregndate;
   String? sipregnno;
   String? units;
+   String? transCode;
+  String? transNo;
+  String? orderId;
+  String? userId;
+  String? memberCode;
+  String? clientCode;
+  String? remarks;
+  String? status;
+  String? name;
+  String? stat;
+  String? source;
+  String? placedBy;
+  String? iPAddress;
+  String? datetime;
+  String? orderVal;
+  Null? folioNo;
+  String? iSIN;
+  Null? dPFolioNo;
+  String? settType;
+  String? orderType;
+  String? subOrderType;
+  String? buySell;
+  String? allRedeem;
 
   Data(
       {this.amount,
@@ -60,7 +83,31 @@ class Data {
       this.settno,
       this.sipregndate,
       this.sipregnno,
-      this.units});
+      this.units,
+      this.transCode,
+      this.transNo,
+      this.orderId,
+      this.userId,
+      this.memberCode,
+      this.clientCode,
+      this.remarks,
+      this.status,
+      this.name,
+      this.stat,
+      this.source,
+      this.placedBy,
+      this.iPAddress,
+      this.datetime,
+      this.orderVal,
+      this.folioNo,
+      this.iSIN,
+      this.dPFolioNo,
+      this.settType,
+      this.orderType,
+      this.subOrderType,
+      this.buySell,
+      this.allRedeem
+      });
 
   Data.fromJson(Map<String, dynamic> json) {
     amount = json['amount'];
@@ -80,6 +127,29 @@ class Data {
     sipregndate = json['sipregndate'];
     sipregnno = json['sipregnno'];
     units = json['units'];
+    transCode = json['TransCode'];
+    transNo = json['TransNo'];
+    orderId = json['OrderId'];
+    userId = json['UserId'];
+    memberCode = json['MemberCode'];
+    clientCode = json['ClientCode'];
+    remarks = json['Remarks'];
+    status = json['status'];
+    name = json['name'];
+    stat = json['stat'];
+    source = json['source'];
+    placedBy = json['placed_by'];
+    iPAddress = json['IPAddress'];
+    datetime = json['datetime'];
+    orderVal = json['OrderVal'];
+    folioNo = json['FolioNo'];
+    iSIN = json['ISIN'];
+    dPFolioNo = json['DPFolioNo'];
+    settType = json['SettType'];
+    orderType = json['OrderType'];
+    subOrderType = json['SubOrderType'];
+    buySell = json['buy_sell'];
+    allRedeem = json['AllRedeem'];
   }
 
   Map<String, dynamic> toJson() {
@@ -101,6 +171,29 @@ class Data {
     data['sipregndate'] = sipregndate;
     data['sipregnno'] = sipregnno;
     data['units'] = units;
+    data['TransCode'] = transCode;
+    data['TransNo'] = transNo;
+    data['OrderId'] = orderId;
+    data['UserId'] = userId;
+    data['MemberCode'] = memberCode;
+    data['ClientCode'] = clientCode;
+    data['Remarks'] = remarks;
+    data['status'] = status;
+    data['name'] = name;
+    data['stat'] = stat;
+    data['source'] = source;
+    data['placed_by'] = placedBy;
+    data['IPAddress'] = iPAddress;
+    data['datetime'] = datetime;
+    data['OrderVal'] = orderVal;
+    data['FolioNo'] = folioNo;
+    data['ISIN'] = iSIN;
+    data['DPFolioNo'] = dPFolioNo;
+    data['SettType'] = settType;
+    data['OrderType'] = orderType;
+    data['SubOrderType'] = subOrderType;
+    data['buy_sell'] = buySell;
+    data['AllRedeem'] = allRedeem;
     return data;
   }
 }

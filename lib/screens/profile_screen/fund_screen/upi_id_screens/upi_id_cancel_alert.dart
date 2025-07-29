@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
@@ -14,50 +17,69 @@ import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/payment_loader.dart';
 
 class UPIIDPaymentCancelAlert extends ConsumerStatefulWidget {
-  const UPIIDPaymentCancelAlert({
-    super.key,
-  });
-
+  const UPIIDPaymentCancelAlert({super.key, this.data});
+  final String? data;
   @override
   ConsumerState<UPIIDPaymentCancelAlert> createState() =>
       _UPIIDPaymentCancelAlertState();
 }
 
-class _UPIIDPaymentCancelAlertState extends ConsumerState<UPIIDPaymentCancelAlert> {
+class _UPIIDPaymentCancelAlertState
+    extends ConsumerState<UPIIDPaymentCancelAlert> {
   Timer? _timer;
-
+Timer? _autoPopTimer;
   @override
   void initState() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      ref.read(transcationProvider).hdfcpaymentstatus?.upiId?.status ==
-                  "REJECTED" ||
-              ref
-                      .read(transcationProvider)
-                      .hdfcpaymentstatus
-                      ?.upiId
-                      ?.status ==
-                  "SUCCESS"
-          ? null
-          : ref.read(transcationProvider).fetchHdfcpaymetstatus(
-              context,
-              '${ref.read(transcationProvider).hdfctranction!.data!.orderNumber}',
-              '${ref.read(transcationProvider).hdfctranction!.data!.upiTransactionNo}');
-    });
     super.initState();
+    _handleInitialLogic();
+  }
+
+  void _handleInitialLogic() async {
+    final mfProv = ref.read(mfProvider);
+    final txnProv = ref.read(transcationProvider);
+
+    if (mfProv.triggerfromMF == true) { 
+      _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+        mfProv.getpaymentstatus(widget.data, context);
+      });
+      _autoPopTimer = Timer(const Duration(minutes: 3), () {
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        });
+
+    } else {
+      _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+        final status = txnProv.hdfcpaymentstatus?.upiId?.status;
+        if (status != "REJECTED" || status != "SUCCESS") {
+          txnProv.fetchHdfcpaymetstatus(
+            context,
+            '${txnProv.hdfctranction!.data!.orderNumber}',
+            '${txnProv.hdfctranction!.data!.upiTransactionNo}',
+          );
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+     _autoPopTimer?.cancel();
     super.dispose();
   }
 
   void _triggerButtonAction() {
     // Clear the amount text field
-    ref.read(transcationProvider).amount.clear();
-    Navigator.pop(context);
-    _timer?.cancel();
-    FocusScope.of(context).unfocus();
+    if (ref.read(mfProvider).triggerfromMF == true) {
+      ref.read(mfProvider).setterformftrigger(false);
+      Navigator.pop(context);
+    } else {
+      ref.read(transcationProvider).amount.clear();
+      Navigator.pop(context);
+      _timer?.cancel();
+      FocusScope.of(context).unfocus();
+    }
   }
 
   @override
@@ -92,12 +114,12 @@ class _UPIIDPaymentCancelAlertState extends ConsumerState<UPIIDPaymentCancelAler
                     padding: const EdgeInsets.only(top: 10, bottom: 5),
                     alignment: Alignment.center,
                     child: TextWidget.subText(
-                        text: 'Awaiting UPI conformation',
-                        theme: false,
-                        color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                        ),
+                      text: 'Awaiting UPI conformation',
+                      theme: false,
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                    ),
                   ),
                   SizedBox(
                       width: MediaQuery.of(context).size.width,
@@ -107,10 +129,10 @@ class _UPIIDPaymentCancelAlertState extends ConsumerState<UPIIDPaymentCancelAler
                         const ProgressiveDotsLoader(),
                         const SizedBox(height: 3),
                         TextWidget.subText(
-                            text: 'This will take a few seconds.',
-                            theme: false,
-                            color:  colors.textPrimaryLight,
-                            ),
+                          text: 'This will take a few seconds.',
+                          theme: false,
+                          color: colors.textPrimaryLight,
+                        ),
                       ])),
                   const SizedBox(
                     height: 10,
@@ -123,10 +145,10 @@ class _UPIIDPaymentCancelAlertState extends ConsumerState<UPIIDPaymentCancelAler
                             onPressed: _triggerButtonAction,
                             style: ElevatedButton.styleFrom(
                               elevation: 0,
-                             minimumSize: const Size(0, 40),
+                              minimumSize: const Size(0, 40),
                               backgroundColor: theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight,
+                                  ? colors.primaryDark
+                                  : colors.primaryLight,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
@@ -134,8 +156,7 @@ class _UPIIDPaymentCancelAlertState extends ConsumerState<UPIIDPaymentCancelAler
                             child: TextWidget.subText(
                                 text: "Cancel Transaction",
                                 theme: false,
-                                color: colors.colorWhite
-                                          ,
+                                color: colors.colorWhite,
                                 fw: 2))),
                   ),
                   SizedBox(

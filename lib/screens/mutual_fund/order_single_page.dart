@@ -86,11 +86,11 @@ class _mforderdetscreen extends State<mforderdetscreen>
                     const SizedBox(height: 24),
                     _buildDetailsSection(theme, mfdata),
                     const SizedBox(height: 20),
-                    if (mfdata.mforderdet?.data?.orderstatus != "VALID") ...[
+                    if (mfdata.mforderdet?.data![0].status != "PLACED") ...[
                       TextWidget.subText(
                           align: TextAlign.start,
                           text: _getStatusText(
-                              mfdata.mforderdet?.data?.orderstatus),
+                              mfdata.mforderdet?.data![0].status),
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
                               : colors.textPrimaryLight,
@@ -101,7 +101,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                       TextWidget.subText(
                           align: TextAlign.start,
                           text:
-                              "${mfdata.mforderdet?.data?.orderremarks ?? "No remarks available"}",
+                              "${mfdata.mforderdet?.data![0].remarks ?? "No remarks available"}",
                           color: theme.isDarkMode
                               ? colors.colorWhite
                               : const Color(0xFFF33E4B),
@@ -150,7 +150,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                             children: [
                               TextWidget.subText(
                                   align: TextAlign.start,
-                                  text: mfdata.mforderdet?.data?.schemename ??
+                                  text: mfdata.mforderdet?.data?[0].name ??
                                       "Unknown Scheme",
                                   color: theme.isDarkMode
                                       ? colors.textPrimaryDark
@@ -176,14 +176,14 @@ class _mforderdetscreen extends State<mforderdetscreen>
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           SvgPicture.asset(
-            _getStatusIcon(mfdata.mforderdet?.data?.orderstatus),
+            _getStatusIcon(mfdata.mforderdet?.data?[0].status),
             width: 20,
           ),
           Padding(
             padding: const EdgeInsets.only(left: 4.0),
             child: TextWidget.paraText(
                 align: TextAlign.right,
-                text: _getStatusLabel(mfdata.mforderdet?.data?.orderstatus),
+                text: _getStatusLabel(mfdata.mforderdet?.data?[0].status),
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
                     : colors.textPrimaryLight,
@@ -197,14 +197,14 @@ class _mforderdetscreen extends State<mforderdetscreen>
   }
 
   String _getStatusIcon(String? status) {
-    if (status == "VALID") return assets.completedIcon;
-    if (status == "INVALID") return assets.cancelledIcon;
+    if (status == "PLACED") return assets.completedIcon;
+    if (status == "NOT PLACED") return assets.cancelledIcon;
     return assets.warningIcon;
   }
 
   String _getStatusLabel(String? status) {
-    if (status == "VALID") return 'Success';
-    if (status == "INVALID") return 'Failed';
+    if (status == "PLACED") return 'Success';
+    if (status == "NOT PLACED") return 'Failed';
     if (status == "PENDING") return 'Pending';
     return status ?? 'Unknown';
   }
@@ -214,7 +214,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
       children: [
         rowOfInfoData(
             "Transaction Type",
-            mfdata.mforderdet?.data?.buysell == "P" ? "Purchase" : "Redemption",
+            mfdata.mforderdet?.data?[0].buySell == "P" ? "Purchase" : "Redemption",
             theme),
         const SizedBox(height: 10),
         Divider(
@@ -225,7 +225,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
         const SizedBox(height: 10),
         rowOfInfoData(
             "Order Type",
-            mfdata.mforderdet?.data?.ordertype == "NRM" ? "Lumpsum" : "SIP",
+            mfdata.mforderdet?.data?[0].orderType == "NRM" ? "Lumpsum" : "SIP",
             theme),
         const SizedBox(height: 10),
         Divider(
@@ -235,7 +235,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
         ),
         const SizedBox(height: 10),
         rowOfInfoData(
-            "Price", "${mfdata.mforderdet?.data?.amount ?? "0.00"}", theme),
+            "Price", "${mfdata.mforderdet?.data?[0].orderVal ?? "0.00"}", theme),
         const SizedBox(height: 10),
         Divider(
           color:
@@ -243,17 +243,17 @@ class _mforderdetscreen extends State<mforderdetscreen>
           thickness: 1.0,
         ),
         const SizedBox(height: 10),
-        rowOfInfoData(
-            "Units", "${mfdata.mforderdet?.data?.units ?? "0.00"}", theme),
+        // rowOfInfoData(
+        //     "Units", "${mfdata.mforderdet?.data?.units ?? "0.00"}", theme),
+        // const SizedBox(height: 10),
+        // Divider(
+        //   color:
+        //       theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+        //   thickness: 1.0,
+        // ),
         const SizedBox(height: 10),
-        Divider(
-          color:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-          thickness: 1.0,
-        ),
-        const SizedBox(height: 10),
         rowOfInfoData(
-            "Date", "${mfdata.mforderdet?.data?.date ?? "N/A"}", theme),
+            "Date", "${mfdata.mforderdet?.data?[0].datetime ?? "N/A"}", theme),
         const SizedBox(height: 10),
         Divider(
           color:
@@ -262,7 +262,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
         ),
         const SizedBox(height: 10),
         rowOfInfoData("Date & Time",
-            "${mfdata.mforderdet?.data?.dateTime ?? "N/A"}", theme),
+            "${mfdata.mforderdet?.data?[0].datetime ?? "N/A"}", theme),
         const SizedBox(height: 10),
         Divider(
           color:
@@ -271,7 +271,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
         ),
         const SizedBox(height: 10),
         rowOfInfoData("Order No",
-            "${mfdata.mforderdet?.data?.ordernumber ?? "N/A"}", theme),
+            "${mfdata.mforderdet?.data?[0].orderId ?? "N/A"}", theme),
         const SizedBox(height: 10),
         Divider(
           color:
@@ -281,7 +281,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
         const SizedBox(height: 10),
         rowOfInfoData(
             "Folio No",
-            "${mfdata.mforderdet?.data?.foliono?.isEmpty ?? true ? "---" : mfdata.mforderdet?.data?.foliono}",
+            "${mfdata.mforderdet?.data?[0].folioNo?.isEmpty ?? true ? "---" : mfdata.mforderdet?.data?[0].folioNo}",
             theme),
         const SizedBox(height: 10),
         Divider(
@@ -296,9 +296,9 @@ class _mforderdetscreen extends State<mforderdetscreen>
   Widget _buildCancelButton(
       ThemesProvider theme, dynamic mfdata, BuildContext context) {
     // Check if we should show the cancel button
-    final shouldShowCancel = mfdata.mforderdet?.data?.ordertype == "NRM" &&
-        mfdata.mforderdet?.data?.buysell == "R" &&
-        mfdata.mforderdet?.data?.orderstatus == "PENDING";
+    final shouldShowCancel = mfdata.mforderdet?.data?[0].orderType == "NRM" &&
+        mfdata.mforderdet?.data?[0].buySell == "R" &&
+        mfdata.mforderdet?.data?[0].status == "PENDING";
 
     if (!shouldShowCancel) return const SizedBox();
 

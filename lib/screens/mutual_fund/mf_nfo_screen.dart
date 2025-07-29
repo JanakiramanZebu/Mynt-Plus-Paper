@@ -79,7 +79,7 @@ class MFNFOScreen extends ConsumerWidget {
                         try {
                           mf.chngMandate("Lumpsum");
                           await mf.fetchUpiDetail();
-                          await mf.fetchBankDetail();
+                          // await mf.fetchBankDetail();
 
                           if (nfoItem.sIPFLAG == "Y") {
                             await mf.fetchMFSipData(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -38,16 +39,19 @@ import '../models/mf_model/mf_orderbook_lumpsum_model.dart';
 import '../models/mf_model/mf_scheme_peers_model.dart';
 // import '../models/mf_model/mf_search_model.dart';
 import '../models/mf_model/mf_sip_model.dart';
+import '../models/mf_model/mf_upi_payment_check.dart';
 import '../models/mf_model/mf_watch_list.dart';
 import '../models/mf_model/mf_x_sip_order_responces.dart';
 import '../models/mf_model/mf_xsip_cancle_resone_res.dart';
 import '../models/mf_model/mutual_fundmodel.dart';
 import '../models/mf_model/redemption_model.dart';
 import '../models/mf_model/top_schemes_model.dart';
+import '../models/mf_model/upi_respose_model.dart';
 import '../models/mf_model/x_sip_cancel_order_model.dart';
 import '../res/res.dart';
 // import '../routes/route_names.dart';
 import '../routes/route_names.dart';
+import '../screens/profile_screen/fund_screen/upi_id_screens/upi_id_payment_fail_or_success.dart';
 import '../sharedWidget/functions.dart';
 import '../sharedWidget/snack_bar.dart';
 import 'core/default_change_notifier.dart';
@@ -122,6 +126,9 @@ class MFProvider extends DefaultChangeNotifier {
   MfSIPModel? get mfSIPModel => _mfSIPModel;
   MandateDetailModel? _mandateDetailModel;
   MandateDetailModel? get mandateDetailModel => _mandateDetailModel;
+
+  UpiIdOrderResponse? _upiApiresponse;
+  UpiIdOrderResponse? get upiApiresponse => _upiApiresponse;
 
   List<MandateDetails>? _mandateData = [];
   List<MandateDetails>? get mandateData => _mandateData;
@@ -201,6 +208,9 @@ class MFProvider extends DefaultChangeNotifier {
   bool? _singleloader = false;
   bool? get singleloader => _singleloader;
 
+  bool? _timer = false;
+  bool? get timer => _timer;
+
   String _selechip = "";
   String get selctedchip => _selechip;
 
@@ -215,6 +225,14 @@ class MFProvider extends DefaultChangeNotifier {
 
   bool? _watchbatchval = false;
   bool? get watchbatchval => _watchbatchval;
+
+  bool? _triggerfromMF = false;
+  bool? get triggerfromMF => _triggerfromMF;
+
+  setterformftrigger(bool name) {
+    _triggerfromMF = name;
+    notifyListeners();
+  }
 
   bool? _holdstatload = false;
   bool? get holdstatload => _holdstatload;
@@ -242,6 +260,13 @@ class MFProvider extends DefaultChangeNotifier {
 
   int? _activeTab = 0;
   int? get activeTab => _activeTab;
+
+  Timer? _autoPopTimer; 
+  Timer? get autoPopTimer => _autoPopTimer;
+  
+  Timer? _threeSecondTimer;
+
+  Timer? get threeSecondTimer => _threeSecondTimer;
 
   String _namechange = "";
   String get namechange => _namechange;
@@ -400,6 +425,9 @@ class MFProvider extends DefaultChangeNotifier {
 
   XsipOrderCancleResone? _xsipOrderCancleResone;
   XsipOrderCancleResone? get xsipOrderCancleResone => _xsipOrderCancleResone;
+
+  UPIPaymentStatusCheck? _statusCheckUpi;
+  UPIPaymentStatusCheck? get statusCheckUpi => _statusCheckUpi;
 
   XsipOrderCancleResponces? _xsipOrderCancleResponces;
   XsipOrderCancleResponces? get xsipOrderCancleResponces =>
@@ -806,7 +834,7 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   chngPayName(String val) {
-    if (val == "Net banking") {
+    if (val == "NET BANKING") {
       upiError = "";
     } else {
       final RegExp upiRegex =
@@ -893,7 +921,7 @@ class MFProvider extends DefaultChangeNotifier {
   invertfun(String isin, String schemeCode) {
     _singleloader = true;
     fetchMFMandateDetail();
-    fetchBankDetail();
+    // fetchBankDetail();
     fetchUpiDetail();
     fetchMFSipData(isin, schemeCode);
     chngMandate("Lumpsum");
@@ -1024,7 +1052,7 @@ class MFProvider extends DefaultChangeNotifier {
       }
       var search = "";
       for (var i = 0; i < _mutualFundsearchdata!.length; i++) {
-        search = "${_mutualFundsearchdata![i].fSchemeName}";
+        search = "${_mutualFundsearchdata![i].schemeName}";
       }
       notifyListeners();
       // print("object ${search}");
@@ -1280,20 +1308,22 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future<void> fetchorderdetails(String value, String bs, String type,
-      String status, String sipno, String remarks) async {
+  Future<void> fetchorderdetails(String orderid,
+  //  String bs, String type,
+  //     String status, String sipno, String remarks
+      ) async {
     try {
       _bestmfloader = true;
 
       // print("1111${value},${type},${bs},${status},${sipno},${remarks}");
       // print("nwewwwww${_mforderdet.toString()}");
 
-      String orderStatus = checkOrderRemarks(remarks);
+      // String orderStatus = checkOrderRemarks(remarks);
       // print(
       //     "payload${value},${type},${bs},${status},${sipno},${orderStatus == 'usercancel' ? "" : orderStatus}");
 
       _mforderdet = await api.getsingleortderapi(
-          value, bs, type, status, sipno, orderStatus);
+          orderid);
       // print("11111@@${orderStatus}");
       return notifyListeners();
     } catch (e, stackTrace) {
@@ -2135,104 +2165,252 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future placeordermftemp(
-    BuildContext context,
-    String upiId,
-    MfPlaceOrderInput input,
-  ) async {
+  void checknetbankingstatus(BuildContext context) {
+    // Cancel existing timers before starting new ones (optional safety)
+    _autoPopTimer?.cancel();
+    _threeSecondTimer?.cancel();
+
+    // Start 3-second repeating timer
+    _threeSecondTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      getpaymentstatus(_mfPlaceOrderResponces!.orderId, context);
+    });
+
+    // Start 1-minute auto pop timer
+    _autoPopTimer = Timer(const Duration(minutes: 1), () {
+      _threeSecondTimer?.cancel(); // Stop the repeating timer
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop(); // Auto pop after 1 minute
+        
+      }
+    });
+    
+  }
+
+  Future upipaymenttrigger(
+      BuildContext context, id, val, upiid, ordertype) async {
+    try {
+      _investloader = true;
+      notifyListeners();
+
+      _upiApiresponse = await api.apiPushUpiTrigger(id, val, upiid, ordertype);
+      if (_upiApiresponse?.stat != "Not Ok") {
+        if (_upiApiresponse?.stat == "Ok") {
+          Navigator.pop(context);
+          _triggerfromMF = true;
+          if (_paymentName == 'NET BANKING') {
+            checknetbankingstatus(context);
+          }
+
+          // ScaffoldMessenger.of(context)
+          //     .showSnackBar(successMessage(context, "${_upiApiresponse!.msg}"));
+          //     showModalBottomSheet(
+          //   context: context,
+          //   shape: const RoundedRectangleBorder(
+          //     borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          //   ),
+          //   isScrollControlled: true,
+          //   isDismissible: false,
+          //   enableDrag: false,
+          //   builder: (context) {
+          //     return WillPopScope(
+          //       onWillPop: () async => false,
+          //       child: StatefulBuilder(
+          //         builder: (context, setState) {
+
+          //           // Start the timer only once
+
+          //           return Padding(
+          //             padding: const EdgeInsets.only(
+          //                 top: 22.0, bottom: 16.0, left: 16.0, right: 16.0),
+          //             child: Wrap(
+          //               children: [
+          //                 Center(
+          //                   child: Column(
+          //                     mainAxisSize: MainAxisSize.min,
+          //                     children: [
+          //                       const Icon(Icons.check_circle,
+          //                           color: Colors.green, size: 48),
+          //                       const SizedBox(height: 12),
+          //                       const Text(
+          //                         "BSE StAR MF has requested payment from your UPI account. To authorise debit please login to your UPI account.",
+          //                         style: TextStyle(
+          //                             fontSize: 18,
+          //                             fontWeight: FontWeight.bold),
+          //                         textAlign: TextAlign.center,
+          //                       ),
+          //                       const SizedBox(height: 20),
+
+          //                       /// 🔥 Countdown Timer
+          //                       // Text(
+          //                       //   formatTime(countdown),
+          //                       //   style: const TextStyle(
+          //                       //     fontSize: 24,
+          //                       //     fontWeight: FontWeight.bold,
+          //                       //     color: Colors.red,
+          //                       //   ),
+          //                       // ),
+          //                       const SizedBox(height: 20),
+
+          //                       const SizedBox(height: 20),
+          //                       SizedBox(
+          //                         width: double.infinity,
+          //                         child: ElevatedButton(
+          //                           onPressed: () {
+
+          //                             Navigator.of(context)
+          //                                 .pop(); // Manual cancel
+          //                           },
+          //                           style: ElevatedButton.styleFrom(
+          //                             elevation: 0,
+          //                             backgroundColor: colors.primaryLight,
+          //                             shape: RoundedRectangleBorder(
+          //                               borderRadius: BorderRadius.circular(5),
+          //                             ),
+          //                           ),
+          //                           child: const Text(
+          //                             "Cancel",
+          //                             style: TextStyle(
+          //                               color:
+          //                                   Color.fromARGB(255, 246, 246, 246),
+          //                               fontSize: 12,
+          //                               fontWeight: FontWeight.normal,
+          //                             ),
+          //                           ),
+          //                         ),
+          //                       ),
+          //                       const SizedBox(height: 8),
+          //                     ],
+          //                   ),
+          //                 ),
+          //               ],
+          //             ),
+          //           );
+          //         },
+          //       ),
+          //     );
+          //   },
+          // );
+          // _timer = true;
+          notifyListeners();
+        }
+      }
+      _investloader = false;
+Navigator.pop(context);
+        
+      ScaffoldMessenger.of(context)
+          .showSnackBar(warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
+          notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+        Navigator.pop(context);
+        
+      ScaffoldMessenger.of(context)
+          .showSnackBar(warningMessage(context, "Something Went Wrong"));
+          notifyListeners();
+    } finally {
+      _investloader = false;
+
+      notifyListeners();
+    }
+  }
+
+  Future placeordermftemp(BuildContext context, String upiId,
+      MfPlaceOrderInput input, String scode, double amt) async {
     _investloader = true;
     notifyListeners();
 
     try {
-      _mfPlaceOrderResponces = await api.getLumpSumOrder(input);
+      _mfPlaceOrderResponces = await api.getLumpSumOrder(scode, amt);
       _investloader = false;
-      notifyListeners();
 
-      if (_mfPlaceOrderResponces != null) {
-        final val = await api.getlinkfordisplay();
+      // if (_mfPlaceOrderResponces != null) {
+      //   final val = await api.getlinkfordisplay();
 
-        if (_mfPlaceOrderResponces!.stat == "Ok" && val['stat'] == 'Ok') {
-          showModalBottomSheet(
-              context: context,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              isScrollControlled: true,
-              builder: (context) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                      top: 22.0, bottom: 16.0, left: 16.0, right: 16.0),
-                  child: Wrap(
-                    children: [
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.check_circle,
-                                color: Colors.green, size: 48),
-                            const SizedBox(height: 12),
-                            const Text(
-                              "Payment URL link sent to your registered Mail ID ",
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 20),
+      //   if (_mfPlaceOrderResponces!.stat == "Ok" && val['stat'] == 'Ok') {
+      ScaffoldMessenger.of(context).showSnackBar(
+          successMessage(context, "Order initiated successfully"));
+      //     // showModalBottomSheet(
+      //     //     context: context,
+      //     //     shape: const RoundedRectangleBorder(
+      //     //       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      //     //     ),
+      //     //     isScrollControlled: true,
+      //     //     builder: (context) {
+      //     //       return Padding(
+      //     //         padding: EdgeInsets.only(
+      //     //             top: 22.0, bottom: 16.0, left: 16.0, right: 16.0),
+      //     //         child: Wrap(
+      //     //           children: [
+      //     //             Center(
+      //     //               child: Column(
+      //     //                 mainAxisSize: MainAxisSize.min,
+      //     //                 children: [
+      //     //                   const Icon(Icons.check_circle,
+      //     //                       color: Colors.green, size: 48),
+      //     //                   const SizedBox(height: 12),
+      //     //                   const Text(
+      //     //                     "Payment URL link sent to your registered Mail ID ",
+      //     //                     style: TextStyle(
+      //     //                         fontSize: 18, fontWeight: FontWeight.bold),
+      //     //                   ),
+      //     //                   const SizedBox(height: 20),
 
-                            Text("or"),
-                            const SizedBox(height: 20),
-                            Container(
-  width: double.infinity, // 👈 Full width
-  child: ElevatedButton(
-    onPressed: () async {
-      final Uri url = Uri.parse(val['url']);
-      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-        print("Could not launch URL");
-      }
-    },
-    style: ElevatedButton.styleFrom(
-      elevation: 0,
-      backgroundColor: colors.primaryLight,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(5),
-      ),
-    ),
-    child: const Text(
-      "Click here to pay",
-      style: TextStyle(
-        color: Color.fromARGB(255, 246, 246, 246),
-        fontSize: 12,
-        fontWeight: FontWeight.normal,
-      ),
-    ),
-  ),
-),
-                            // InkWell(
-                            //   onTap: () async{
+      //     //                   Text("or"),
+      //     //                   const SizedBox(height: 20),
+      //     //                   Container(
+      //     //                     width: double.infinity, // 👈 Full width
+      //     //                     child: ElevatedButton(
+      //     //                       onPressed: () async {
+      //     //                         final Uri url = Uri.parse(val['url']);
+      //     //                         if (!await launchUrl(url,
+      //     //                             mode: LaunchMode.externalApplication)) {
+      //     //                           print("Could not launch URL");
+      //     //                         }
+      //     //                       },
+      //     //                       style: ElevatedButton.styleFrom(
+      //     //                         elevation: 0,
+      //     //                         backgroundColor: colors.primaryLight,
+      //     //                         shape: RoundedRectangleBorder(
+      //     //                           borderRadius: BorderRadius.circular(5),
+      //     //                         ),
+      //     //                       ),
+      //     //                       child: const Text(
+      //     //                         "Click here to pay",
+      //     //                         style: TextStyle(
+      //     //                           color: Color.fromARGB(255, 246, 246, 246),
+      //     //                           fontSize: 12,
+      //     //                           fontWeight: FontWeight.normal,
+      //     //                         ),
+      //     //                       ),
+      //     //                     ),
+      //     //                   ),
+      //     //                   // InkWell(
+      //     //                   //   onTap: () async{
 
-                            //   },
-                            //   child: Padding(
-                            //     padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                            //     child: Text(
-                            //       "${val['url']}",
-                            //       style:const  TextStyle(
-                            //         color: Color(0xFF0037B7),
-                            //           fontSize: 12, fontWeight: FontWeight.normal ),
-                            //     ),
-                            //   ),
-                            // ),
-                            const SizedBox(height: 8),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              });
-        }
-      } else {
-        _investloader = false;
-        notifyListeners();
-      }
+      //     //                   //   },
+      //     //                   //   child: Padding(
+      //     //                   //     padding: const EdgeInsets.symmetric(horizontal: 14.0),
+      //     //                   //     child: Text(
+      //     //                   //       "${val['url']}",
+      //     //                   //       style:const  TextStyle(
+      //     //                   //         color: Color(0xFF0037B7),
+      //     //                   //           fontSize: 12, fontWeight: FontWeight.normal ),
+      //     //                   //     ),
+      //     //                   //   ),
+      //     //                   // ),
+      //     //                   const SizedBox(height: 8),
+      //     //                 ],
+      //     //               ),
+      //     //             ),
+      //     //           ],
+      //     //         ),
+      //     //       );
+      //     //     });
+      //   }
+      // } else {
+      //   _investloader = false;
+      //   notifyListeners();
+      // }
 
       notifyListeners();
 
@@ -2293,29 +2471,29 @@ class MFProvider extends DefaultChangeNotifier {
       _xsipOrderResponces = await api.getXsipPurchase(schemecode, startDate,
           freqtype, amt, noofinstallment, endDate, mandateId);
 // print("okokok11${loading}");
-      if (_xsipOrderResponces?.stat == 'OK') {
+      if (_xsipOrderResponces?.stat == 'Ok') {
         toggleLoadingOn(false);
 
         // toggleLoad(false);
         ScaffoldMessenger.of(context).showSnackBar(
-            successMessage(context, "${_xsipOrderResponces!.responseMessage}"));
-        fetchAllPayment(
-            context,
-            "${_mfPlaceOrderResponces?.orderNumber}",
-            amt,
-            accNum,
-            ifsc,
-            bankname,
-            paymentName == "UPI" ? "UPI" : "NET BANKING",
-            "",
-            "",
-            upiId.text,
-            schemecode);
+            successMessage(context, "${_xsipOrderResponces!.remarks}"));
+        // fetchAllPayment(
+        //     context,
+        //     "${_mfPlaceOrderResponces?.orderNumber}",
+        //     amt,
+        //     accNum,
+        //     ifsc,
+        //     bankname,
+        //     paymentName == "UPI" ? "UPI" : "NET BANKING",
+        //     "",
+        //     "",
+        //     upiId.text,
+        //     schemecode);
         Navigator.pop(context);
       } else {
         toggleLoadingOn(false);
         ScaffoldMessenger.of(context).showSnackBar(
-            warningMessage(context, "${_xsipOrderResponces!.responseMessage}"));
+            warningMessage(context, "${_xsipOrderResponces!.remarks}"));
         Navigator.pop(context);
       }
       fetchmfsiplist();
@@ -2339,6 +2517,49 @@ class MFProvider extends DefaultChangeNotifier {
       _xsipOrderCancleResone = await api.getXsipCancleResone();
       _xsipvalue = "${_xsipOrderCancleResone!.data![0].reasonName}";
       _xsipcaseno = "${_xsipOrderCancleResone!.data![0].id}";
+      // print("object ${_xsipOrderCancleResone?.data![0].id}");
+      notifyListeners();
+    } catch (e) {
+      debugPrint("$e");
+    }
+  }
+
+  Future getpaymentstatus(orderid, BuildContext context) async {
+    try {
+      _statusCheckUpi = await api.getstatuspaymentcheck(orderid);
+
+      if ((_statusCheckUpi != null) &&
+          (_statusCheckUpi!.status == 'PAYMENT DECLINED' ||
+              _statusCheckUpi!.status == 'PAYMENT APPROVED')) {
+        setterformftrigger(false);
+        if (context.mounted) {
+          showModalBottomSheet(
+                  shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(16))),
+                  backgroundColor: Colors.transparent,
+                  isDismissible: false,
+                  enableDrag: false,
+                  showDragHandle: false,
+                  useSafeArea: false,
+                  isScrollControlled: true,
+                  context: context,
+                  builder: (BuildContext context) {
+                    return PopScope(
+                        canPop: false,
+                        onPopInvokedWithResult: (didPop, result) async {
+                          if (didPop) return;
+                        },
+                        child: Container(
+                            child: const UpiIdSucessorFaliureScreen()));
+                  })
+              //     .whenComplete(()
+              //     {
+
+              // })
+              ;
+        }
+      }
       // print("object ${_xsipOrderCancleResone?.data![0].id}");
       notifyListeners();
     } catch (e) {
@@ -2746,6 +2967,7 @@ class MFProvider extends DefaultChangeNotifier {
 
       if (_upiDetailsModel!.stat == "Ok") {
         _paymentMethod.add("UPI");
+        _paymentMethod.add("NET BANKING");
       }
       notifyListeners();
     } catch (e) {
@@ -2766,7 +2988,7 @@ class MFProvider extends DefaultChangeNotifier {
       _bankDetailsModel = await api.getBankDetail();
       _bankData = [];
       if (_bankDetailsModel!.stat == "Ok") {
-        _paymentMethod.add("Net banking");
+        _paymentMethod.add("NET BANKING");
         _bankData = _bankDetailsModel!.data ?? [];
         if (_bankData!.isNotEmpty) {
           _accNum = "${_bankData![0].bankAcNo}";

@@ -51,53 +51,56 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
       return Scaffold(
         body: Stack(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.only(bottom: 0, left: 0, top: 2),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: theme.isDarkMode
-                            ? colors.darkColorDivider
-                            : colors.colorDivider,
-                        width: 0.4,
+            TransparentLoaderScreen(
+              isLoading:   mforderbook.bestmfloader == true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.only(bottom: 0, left: 0, top: 2),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider,
+                          width: 0.4,
+                        ),
+                        bottom: BorderSide(
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider,
+                          width: 0.4,
+                        ),
                       ),
-                      bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? colors.darkColorDivider
-                            : colors.colorDivider,
-                        width: 0.4,
+                    ),
+                    child: TabBar(
+                      labelPadding: const EdgeInsets.only(right: 0, bottom: 0),
+                      tabAlignment: TabAlignment.start,
+                      indicatorColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight, 
+                      controller: _tabController,
+                      isScrollable: true,
+                      tabs: List.generate(
+                        tablistitems.length,
+                        (tab) => _buildTab(tab, theme),
                       ),
                     ),
                   ),
-                  child: TabBar(
-                    labelPadding: const EdgeInsets.only(right: 0, bottom: 0),
-                    tabAlignment: TabAlignment.start,
-                    indicatorColor: theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight, 
-                    controller: _tabController,
-                    isScrollable: true,
-                    tabs: List.generate(
-                      tablistitems.length,
-                      (tab) => _buildTab(tab, theme),
+                  Expanded(
+                    child: TabBarView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      controller: _tabController,
+                      children: [
+                        const MfHoldNewScreen(),
+                        _buildOrdersTab(mforderbook, theme, context),
+                      ],
                     ),
                   ),
-                ),
-                Expanded(
-                  child: TabBarView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    controller: _tabController,
-                    children: [
-                      const MfHoldNewScreen(),
-                      _buildOrdersTab(mforderbook, theme, context),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -137,19 +140,19 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
           onTap: () async {
             mforderbook.loaderfun();
             await mforderbook.fetchorderdetails(
-              orderData.ordernumber ?? "",
-              orderData.buysell ?? "",
-              orderData.ordertype ?? "",
-              orderData.orderstatus ?? "",
-              orderData.sipregnno ?? "",
-              orderData.orderremarks ?? "",
+              orderData.orderId ?? ""
+              // orderData.buysell ?? "",
+              // orderData.ordertype ?? "",
+              // orderData.orderstatus ?? "",
+              // orderData.sipregnno ?? "",
+              // orderData.orderremarks ?? "",
             );
 
             if (mforderbook.mforderdet?.stat == "Ok") {
               Navigator.pushNamed(context, Routes.mforderdetscreen);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                successMessage(context, "${mforderbook.mforderdet?.msg ?? 'Error loading order details'}")
+                warningMessage(context, mforderbook.mforderdet?.emsg ?? 'Error loading order details')
               );
             }
           },
@@ -169,7 +172,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                           child: 
                           TextWidget.subText(
                                                     align: TextAlign.start,
-                                                    text: orderData.schemename ?? "Unknown Fund",
+                                                    text: orderData.name ?? "Unknown Fund",
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:
                                                          colors.textPrimaryLight
@@ -186,14 +189,14 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         SvgPicture.asset(
-                          _getStatusIcon(orderData.orderstatus),
+                          _getStatusIcon(orderData.status),
                           width: 20,
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 4.0),
                          child:   TextWidget.paraText(
                                                     align: TextAlign.start,
-                                                    text: _getStatusText(orderData.orderstatus),
+                                                    text: _getStatusText(orderData.status),
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:
                                                          colors.textPrimaryLight
@@ -223,7 +226,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                         vertical: 2
                       ),
                       child: Text(
-                        orderData.buysell ?? "-",
+                        orderData.buySell ?? "-",
                         style: textStyle(
                           orderData.buysell == "P"
                               ? const Color(0xFF42A833)
@@ -236,7 +239,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                     const SizedBox(width: 8),
                     TextWidget.paraText(
                                                     align: TextAlign.start,
-                                                    text: "${orderData.ordertype == 'NRM' ? 'One-Time' : 'SIP'}",
+                                                    text: orderData.orderType == 'NRM' ? 'One-Time' : 'SIP',
                                                     color: theme.isDarkMode
                                                         ?  colors.textSecondaryDark:
                                                           colors.textSecondaryLight 
@@ -248,7 +251,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                      
                     const SizedBox(width: 8),
                     Text(
-                      orderData.dateTime ?? "-",
+                      orderData.datetime ?? "-",
                       style: textStyle(
                         theme.isDarkMode
                             ? colors.colorWhite
@@ -260,7 +263,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                     const Spacer(),
                     TextWidget.paraText(
                                                     align: TextAlign.right,
-                                                    text:  _formatAmount(orderData.amount),
+                                                    text:  _formatAmount(orderData.orderVal),
                                                     color: theme.isDarkMode
                                                         ?  colors.textSecondaryDark:
                                                          colors.textSecondaryLight
@@ -289,8 +292,8 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
   }
 
   String _getStatusIcon(String? status) {
-    if (status == "VALID") return assets.completedIcon;
-    if (status == "INVALID") return assets.cancelledIcon;
+    if (status == "PLACED") return assets.completedIcon;
+    if (status == "NOT PLACED") return assets.cancelledIcon;
     return assets.warningIcon;
   }
 

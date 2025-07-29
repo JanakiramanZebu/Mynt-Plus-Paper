@@ -343,5 +343,13 @@ class ApiLinks {
   String get mfsinglepagechartapi => "$newvenketmfurl/singlepage/getNavGraph"; 
   String get mforderbookapi => "$newvenketmfurl/singlepage/getNavGraph"; 
   String get mftemporderlinkget => "$dashBoardURL/mf/payment_gateway_link"; 
+  String get mflumsumorderplacenew => "$newvenketmfurl/order/PlaceLumpsumOrder"; 
+  String get mfallpaymentnew => "$newvenketmfurl/order/all_payment"; 
+  String get mfupipaymentchecknew => "$newvenketmfurl/order/get_payment_status"; 
+  String get mfSipNew => "$newvenketmfurl/order/sip_values";
+  String get mfXSipordernew => "$newvenketmfurl/order/xsip_purchase";
+  String get lumpsumOrderbooknew => "$newvenketmfurl/order/OrderBook";
+  String get mfsingleordernew => "$newvenketmfurl/order/SingleOrderHistory";
+  
 
 }

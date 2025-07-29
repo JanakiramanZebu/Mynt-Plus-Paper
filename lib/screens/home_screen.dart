@@ -744,8 +744,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   style: TextWidget.textStyle(
                     fontSize: 12,
                     color: _getBottomNavColor(theme, isSelected),
-                    theme: theme.isDarkMode,
-
+                    theme: theme.isDarkMode, 
                     // fw: isSelected ? 1 : 00
                   ),
                   textAlign: TextAlign.center,

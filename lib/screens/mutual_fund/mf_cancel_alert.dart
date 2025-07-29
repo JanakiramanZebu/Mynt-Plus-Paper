@@ -29,8 +29,8 @@ class MfCancelAlert extends ConsumerWidget {
     final isDarkMode = theme.isDarkMode;
     
     // Safe access to scheme name with fallback
-    final schemeName = mfcancel.schemename ?? "this mutual fund";
-    final orderNumber = mfcancel.ordernumber;
+    final schemeName = mfcancel.name ?? "this mutual fund";
+    final orderNumber = mfcancel.orderId;
     
     return AlertDialog(
       backgroundColor: isDarkMode

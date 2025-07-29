@@ -324,7 +324,7 @@ class MfCommonSearch extends ConsumerWidget {
       onTap: () async {
         mfData.chngMandate("Lumpsum");
         await mfData.fetchUpiDetail();
-        await mfData.fetchBankDetail();
+        // await mfData.fetchBankDetail();
         
         final isin = item.iSIN;
         final schemeCode = item.schemeCode;

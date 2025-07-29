@@ -77,6 +77,7 @@ class MutualFundList {
   String? fIVEYEARDATA;
   String? nETSCHEMECODE;
   String? nETASSETVALUE;
+  String? cUurentnav;
   String? launchDate;
   String? closureDate;
   String? fundname;
@@ -146,6 +147,7 @@ class MutualFundList {
       this.fIVEYEARDATA,
       this.nETSCHEMECODE,
       this.nETASSETVALUE,
+      this.cUurentnav,
       this.launchDate,
       this.closureDate,
       this.sCHEMECATEGORY,
