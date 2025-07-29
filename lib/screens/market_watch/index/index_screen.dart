@@ -57,7 +57,7 @@ class _DefaultIndexListState extends ConsumerState<DefaultIndexList>
 
     // Width calculation for 2 items per page
     final screenWidth = MediaQuery.of(context).size.width;
-    final itemWidth = MediaQuery.of(context).size.width * 0.50;
+    final itemWidth = MediaQuery.of(context).size.width * 0.45;
 
     // Create a unique key based on the indices to force rebuild when they change
     final indexKey =
@@ -579,24 +579,21 @@ class _LivePriceWidgetState extends State<_LivePriceWidget> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  "$_ltp  ",
+                  "$_ltp ",
                   style: _getTextStyle(
                     changeColor,
-                    16,
+                    15,
                   ),
                 ),
                 Row(
                   children: [
-                    Text("$_change ",
+                    Text("${_change.toString().split('.').first} ",
                         style: _getTextStyle(
                           widget.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
                           12,
                         )),
-                    const SizedBox(
-                      width: 4,
-                    ),
                     Text("($_perChange%)",
                         style: _getTextStyle(
                           widget.isDarkMode

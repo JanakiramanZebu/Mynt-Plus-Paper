@@ -86,17 +86,25 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           await Future.delayed(
               const Duration(seconds: 0)); // simulate refresh delay
           print("refresh ");
+          // Always use the currently visible tab for refresh
+          final currentTabIndex = _tabController.index;
+          final currentSegment =
+              ledgerprovider.availableSegments[currentTabIndex];
+          ledgerprovider
+              .setSegment(currentSegment); // ensure provider is in sync
           await ledgerprovider.getCurrentDate('else');
           ledgerprovider.calendarProvider();
-          ledgerprovider.fetchsharingdata(ledgerprovider.startDate,
-              ledgerprovider.today, 'Equity', context);
-          ledgerprovider.setSegment("Equity");
-
+          ledgerprovider.fetchsharingdata(
+            ledgerprovider.startDate,
+            ledgerprovider.today,
+            currentSegment,
+            context,
+          );
           await ledgerprovider.loadOrFetchCalendarPnlData(
             context,
             ledgerprovider.startDate,
             ledgerprovider.today,
-            ledgerprovider.selectedSegment,
+            currentSegment,
             force: true,
           );
         }
@@ -184,21 +192,46 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                             .toList(),
                         controller: _tabController,
                         onTap: (index) {
-                          ledgerprovider.setSegment(
-                              ledgerprovider.availableSegments[index]);
-                          ledgerprovider.loadOrFetchCalendarPnlData(
-                            context,
-                            ledgerprovider.formattedStartDate,
-                            ledgerprovider.formattedendDate,
-                            ledgerprovider.availableSegments[index],
+                          final selectedSegment =
+                              ledgerprovider.availableSegments[index];
+                          ledgerprovider.setSegment(selectedSegment);
+                          // Check if data is cached for this segment and year
+                          final cacheKey = ledgerprovider.calendarPnlCacheKey(
+                            ledgerprovider.selectedFinancialYear,
+                            selectedSegment,
                           );
+                          if (!ledgerprovider.calendarPnlCache
+                                  .containsKey(cacheKey) ||
+                              ledgerprovider.calendarPnlCache[cacheKey] ==
+                                  null) {
+                            // Show loader and fetch data
+                            ledgerprovider.loadOrFetchCalendarPnlData(
+                              context,
+                              ledgerprovider.formattedStartDate,
+                              ledgerprovider.formattedendDate,
+                              selectedSegment,
+                              force: true,
+                            );
+                          } else {
+                            // Use cached data
+                            ledgerprovider.loadOrFetchCalendarPnlData(
+                              context,
+                              ledgerprovider.formattedStartDate,
+                              ledgerprovider.formattedendDate,
+                              selectedSegment,
+                              force: false,
+                            );
+                          }
                         },
                       ),
                     ],
                   ),
                 ),
               ),
-              body: ledgerprovider.calendarpnlloading
+              body: (ledgerprovider.calendarpnlloading ||
+                      ledgerprovider.calenderpnlAllData == null ||
+                      (ledgerprovider.selectedSegment == 'Fno' &&
+                          ledgerprovider.calenderpnlAllData?.segment != 'Fno'))
                   ? Center(
                       child: Container(
                         color: Colors.white,
@@ -210,275 +243,6 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ledgerprovider.noticenewfeature != 'yes'
-                          //     ? Container(
-                          //         width: screenWidth,
-                          //         child: Container(
-                          //           decoration: BoxDecoration(
-                          //               color: theme.isDarkMode
-                          //                   ? const Color.fromARGB(255, 207, 204, 181)
-                          //                       .withOpacity(.15)
-                          //                   : const Color.fromARGB(255, 255, 226, 129)),
-                          //           child: Column(
-                          //             children: [
-                          //               Padding(
-                          //                 padding: const EdgeInsets.only(
-                          //                     left: 2.0, right: 2.0),
-                          //                 child: Row(
-                          //                   mainAxisAlignment:
-                          //                       MainAxisAlignment.spaceBetween,
-                          //                   children: [
-                          //                     Row(
-                          //                       children: [
-                          //                         IconButton(
-                          //                           iconSize: 20,
-                          //                           icon: Icon(
-                          //                               Icons.notification_important,
-                          //                               color: theme.isDarkMode
-                          //                                   ? colors.colorWhite
-                          //                                   : colors.colorBlack),
-                          //                           onPressed: () {},
-                          //                         ),
-                          //                         Padding(
-                          //                             padding: EdgeInsets.symmetric(
-                          //                                 vertical: 8.0),
-                          //                             child: TextWidget.subText(
-                          //                                 align: TextAlign.start,
-                          //                                 text:
-                          //                                     "Verified P&L Integrate in P&L Insights",
-                          //                                 textOverflow:
-                          //                                     TextOverflow.ellipsis,
-                          //                                 theme: theme.isDarkMode,
-                          //                                 color: theme.isDarkMode
-                          //                                     ? colors.colorWhite
-                          //                                     : colors.colorBlack,
-                          //                                 fw: 1)),
-                          //                       ],
-                          //                     ),
-                          //                     IconButton(
-                          //                       iconSize: 20,
-                          //                       icon: Icon(Icons.close,
-                          //                           color: theme.isDarkMode
-                          //                               ? colors.colorWhite
-                          //                               : colors.colorBlack),
-                          //                       onPressed: () {
-                          //                         ledgerprovider.setthenotice();
-                          //                       },
-                          //                     ),
-                          //                   ],
-                          //                 ),
-                          //               ),
-                          //             ],
-                          //           ),
-                          //         ),
-                          //       )
-                          //     : SizedBox(),
-                          // Row(
-                          //   children: [
-                          //     Container(
-                          //       width: screenWidth,
-                          //       child: Container(
-                          //         decoration: BoxDecoration(
-                          //             color: theme.isDarkMode
-                          //                 ? const Color(0xffB5C0CF).withOpacity(.15)
-                          //                 : const Color(0xffF1F3F8)),
-                          //         child: Column(
-                          //           children: [
-                          //             Padding(
-                          //               padding: const EdgeInsets.all(16.0),
-                          //               child: Row(
-                          //                 mainAxisAlignment:
-                          //                     MainAxisAlignment.spaceBetween,
-                          //                 children: [
-                          //                   Column(
-                          //                     crossAxisAlignment:
-                          //                         CrossAxisAlignment.start,
-                          //                     children: [
-                          //                       Text(
-                          //                         "Realised P&L",
-                          //                         style: textStyle(
-                          //                             const Color(0xFF696969),
-                          //                             14,
-                          //                             FontWeight.w500),
-                          //                       ),
-                          //                       Padding(
-                          //                         padding:
-                          //                             const EdgeInsets.only(top: 8.0),
-                          //                         child: Text(
-                          //                           "${ledgerprovider.calenderpnlAllData != null ? ledgerprovider.calenderpnlAllData!.realized.toStringAsFixed(2) : 0.0} ",
-                          //                           style: ledgerprovider
-                          //                                       .calenderpnlAllData !=
-                          //                                   null
-                          //                               ? ledgerprovider
-                          //                                           .calenderpnlAllData!
-                          //                                           .realized !=
-                          //                                       0
-                          //                                   ? ledgerprovider
-                          //                                               .calenderpnlAllData!
-                          //                                               .realized <
-                          //                                           0
-                          //                                       ? textStyle(Colors.red,
-                          //                                           16, FontWeight.w600)
-                          //                                       : textStyle(Colors.green,
-                          //                                           16, FontWeight.w600)
-                          //                                   : textStyle(
-                          //                                       theme.isDarkMode
-                          //                                           ? colors.colorWhite
-                          //                                           : colors.colorBlack,
-                          //                                       16,
-                          //                                       FontWeight.w600)
-                          //                               : textStyle(
-                          //                                   theme.isDarkMode
-                          //                                       ? colors.colorWhite
-                          //                                       : colors.colorBlack,
-                          //                                   16,
-                          //                                   FontWeight.w600),
-                          //                         ),
-                          //                       )
-                          //                     ],
-                          //                   ),
-                          //                   Column(
-                          //                     crossAxisAlignment: CrossAxisAlignment.end,
-                          //                     children: [
-                          //                       Text(
-                          //                         "Unrealised P&L",
-                          //                         textAlign: TextAlign.right,
-                          //                         style: textStyle(
-                          //                             const Color(0xFF696969),
-                          //                             14,
-                          //                             FontWeight.w500),
-                          //                       ),
-                          //                       Padding(
-                          //                         padding:
-                          //                             const EdgeInsets.only(top: 8.0),
-                          //                         child: Text(
-                          //                           ledgerprovider.calenderpnlAllData !=
-                          //                                   null
-                          //                               ? ledgerprovider
-                          //                                   .calenderpnlAllData!
-                          //                                   .unrealized
-                          //                                   .toStringAsFixed(2)
-                          //                               : '0.0',
-                          //                           style: ledgerprovider
-                          //                                       .calenderpnlAllData !=
-                          //                                   null
-                          //                               ? ledgerprovider
-                          //                                           .calenderpnlAllData!
-                          //                                           .unrealized !=
-                          //                                       0
-                          //                                   ? ledgerprovider
-                          //                                               .calenderpnlAllData!
-                          //                                               .unrealized <
-                          //                                           0
-                          //                                       ? textStyle(Colors.red,
-                          //                                           16, FontWeight.w600)
-                          //                                       : textStyle(Colors.green,
-                          //                                           16, FontWeight.w600)
-                          //                                   : textStyle(
-                          //                                       theme.isDarkMode
-                          //                                           ? colors.colorWhite
-                          //                                           : colors.colorBlack,
-                          //                                       16,
-                          //                                       FontWeight.w600)
-                          //                               : textStyle(
-                          //                                   theme.isDarkMode
-                          //                                       ? colors.colorWhite
-                          //                                       : colors.colorBlack,
-                          //                                   16,
-                          //                                   FontWeight.w600),
-                          //                         ),
-                          //                       )
-                          //                     ],
-                          //                   ),
-                          //                 ],
-                          //               ),
-                          //             ),
-                          //             Padding(
-                          //               padding: const EdgeInsets.only(
-                          //                   left: 18.0,
-                          //                   right: 18.0,
-                          //                   top: 4.0,
-                          //                   bottom: 18.0),
-                          //               child: Row(
-                          //                 mainAxisAlignment:
-                          //                     MainAxisAlignment.spaceBetween,
-                          //                 children: [
-                          //                   Column(
-                          //                     crossAxisAlignment:
-                          //                         CrossAxisAlignment.start,
-                          //                     children: [
-                          //                       Text(
-                          //                         "Charges and Taxes",
-                          //                         style: textStyle(
-                          //                             const Color(0xFF696969),
-                          //                             14,
-                          //                             FontWeight.w500),
-                          //                       ),
-                          //                       Padding(
-                          //                         padding:
-                          //                             const EdgeInsets.only(top: 8.0),
-                          //                         child: Text(
-                          //                           ledgerprovider.calenderpnlAllData !=
-                          //                                   null
-                          //                               ? ledgerprovider
-                          //                                           .calenderpnlAllData!
-                          //                                           .totalCharges !=
-                          //                                       null
-                          //                                   ? ledgerprovider
-                          //                                       .calenderpnlAllData!
-                          //                                       .totalCharges!
-                          //                                       .toStringAsFixed(2)
-                          //                                   : '0.0'
-                          //                               : '0.0',
-                          //                           textAlign: TextAlign.right,
-                          //                           style: textStyle(
-                          //                               Colors.red, 16, FontWeight.w600),
-                          //                         ),
-                          //                       )
-                          //                     ],
-                          //                   ),
-                          //                   Column(
-                          //                     crossAxisAlignment: CrossAxisAlignment.end,
-                          //                     children: [
-                          //                       Text(
-                          //                         "Net Realised P&L",
-                          //                         textAlign: TextAlign.right,
-                          //                         style: textStyle(
-                          //                             const Color(0xFF696969),
-                          //                             14,
-                          //                             FontWeight.w500),
-                          //                       ),
-                          //                       Padding(
-                          //                         padding:
-                          //                             const EdgeInsets.only(top: 8.0),
-                          //                         child: Text(
-                          //                           netvalue.toStringAsFixed(2),
-                          //                           textAlign: TextAlign.right,
-                          //                           style: netvalue != 0
-                          //                               ? netvalue > 0
-                          //                                   ? textStyle(Colors.green, 16,
-                          //                                       FontWeight.w600)
-                          //                                   : textStyle(Colors.red, 16,
-                          //                                       FontWeight.w600)
-                          //                               : textStyle(
-                          //                                   theme.isDarkMode
-                          //                                       ? colors.colorWhite
-                          //                                       : colors.colorBlack,
-                          //                                   16,
-                          //                                   FontWeight.w600),
-                          //                         ),
-                          //                       )
-                          //                     ],
-                          //                   ),
-                          //                 ],
-                          //               ),
-                          //             ),
-                          //           ],
-                          //         ),
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
                           Column(
                             children: [
                               Padding(
@@ -486,219 +250,10 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                     horizontal: 16.0, vertical: 16),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    ledgerprovider.availableFinancialYears
-                                                .indexOf(ledgerprovider
-                                                    .selectedFinancialYear) <
-                                            ledgerprovider
-                                                    .availableFinancialYears
-                                                    .length -
-                                                1
-                                        ? Material(
-                                            color: Colors.transparent,
-                                            shape: const CircleBorder(),
-                                            child: InkWell(
-                                              splashColor: theme.isDarkMode
-                                                  ? colors.splashColorDark
-                                                  : colors.splashColorLight,
-                                              highlightColor: theme.isDarkMode
-                                                  ? colors.highlightDark
-                                                  : colors.highlightLight,
-                                              customBorder:
-                                                  const CircleBorder(),
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Icon(
-                                                  Icons.arrow_back_ios_outlined,
-                                                  size: 18,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                ),
-                                              ),
-                                              onTap: () async {
-                                                final index = ledgerprovider
-                                                    .availableFinancialYears
-                                                    .indexOf(ledgerprovider
-                                                        .selectedFinancialYear);
-                                                if (index <
-                                                    ledgerprovider
-                                                            .availableFinancialYears
-                                                            .length -
-                                                        1) {
-                                                  final newFY = ledgerprovider
-                                                          .availableFinancialYears[
-                                                      index + 1];
-                                                  ledgerprovider
-                                                      .setFinancialYear(newFY);
-                                                  ledgerprovider
-                                                      .fetchsharingdata(
-                                                    ledgerprovider
-                                                        .formattedStartDate,
-                                                    ledgerprovider
-                                                        .formattedendDate,
-                                                    ledgerprovider
-                                                        .selectedSegment,
-                                                    context,
-                                                  );
-                                                  ledgerprovider
-                                                      .changeormountedsharing(
-                                                          "change");
-                                                  // Prefetch this year for all segments if not already cached
-                                                  for (final segment
-                                                      in ledgerprovider
-                                                          .availableSegments) {
-                                                    if (!ledgerprovider
-                                                        .isCalendarPnlDataCached(
-                                                            newFY, segment)) {
-                                                      ledgerprovider
-                                                          .prefetchAllCalendarPnlDataForSegment(
-                                                              context, segment,
-                                                              years: [newFY]);
-                                                    }
-                                                  }
-                                                  if (!ledgerprovider
-                                                      .isCalendarPnlDataCached(
-                                                          newFY,
-                                                          ledgerprovider
-                                                              .selectedSegment)) {
-                                                    ledgerprovider
-                                                        .loadOrFetchCalendarPnlData(
-                                                      context,
-                                                      ledgerprovider
-                                                          .formattedStartDate,
-                                                      ledgerprovider
-                                                          .formattedendDate,
-                                                      ledgerprovider
-                                                          .selectedSegment,
-                                                    );
-                                                  }
-                                                }
-                                              },
-                                            ),
-                                          )
-                                        : const SizedBox(
-                                            width: 20,
-                                          ),
                                     Column(
                                       children: [
-                                        // ledgerprovider.calenderpnlAllData?.data == null
-                                        //     ? SizedBox()
-                                        //     : Padding(
-                                        //         padding: const EdgeInsets.only(
-                                        //             left: 16.0, right: 4.0, top: 8.0),
-                                        //         child: Row(
-                                        //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        //           children: [
-                                        //             Row(
-                                        //               children: [
-                                        //                 TextWidget.subText(
-                                        //                     text: "Your trade is verified by ZEBU",
-                                        //                     textOverflow: TextOverflow.ellipsis,
-                                        //                     theme: theme.isDarkMode,
-                                        //                     fw: 1),
-                                        //                 IconButton(
-                                        //                   iconSize: 20,
-                                        //                   icon: const Icon(Icons.check_circle,
-                                        //                       color: Colors.green),
-                                        //                   onPressed: () => {},
-                                        //                 ),
-                                        //               ],
-                                        //             ),
-                                        //             Row(
-                                        //               children: [
-                                        //                 Padding(
-                                        //                   padding: const EdgeInsets.only(
-                                        //                       top: 8.0, bottom: 8.0),
-                                        //                   child: Row(
-                                        //                     mainAxisAlignment:
-                                        //                         MainAxisAlignment.center,
-                                        //                     children: [
-                                        //                       CustomSwitch(
-                                        //                           onChanged: (bool value) {
-                                        //                             print(
-                                        //                                 'object ${ledgerprovider.notsharing}');
-                                        //                             ledgerprovider
-                                        //                                 .sharingornotsharing(value);
-                                        //                             if (value == false &&
-                                        //                                 ledgerprovider.ucode ==
-                                        //                                     '') {
-                                        //                               ledgerprovider.sendsharing(
-                                        //                                   "",
-                                        //                                   ledgerprovider
-                                        //                                               .changeornot ==
-                                        //                                           'change'
-                                        //                                       ? ledgerprovider
-                                        //                                           .formattedStartDate
-                                        //                                       : ledgerprovider
-                                        //                                           .startDate,
-                                        //                                   ledgerprovider
-                                        //                                               .changeornot ==
-                                        //                                           'change'
-                                        //                                       ? ledgerprovider
-                                        //                                           .formattedendDate
-                                        //                                       : ledgerprovider
-                                        //                                           .today,
-                                        //                                   ledgerprovider
-                                        //                                       .calenderpnlAllData!
-                                        //                                       .fullresponse!,
-                                        //                                   ledgerprovider.notsharing,
-                                        //                                   ledgerprovider
-                                        //                                       .selectedSegment,
-                                        //                                   context);
-                                        //                             } else {
-                                        //                               ledgerprovider.sendsharing(
-                                        //                                   ledgerprovider.ucode,
-                                        //                                   "",
-                                        //                                   "",
-                                        //                                   "",
-                                        //                                   ledgerprovider.notsharing,
-                                        //                                   "",
-                                        //                                   context);
-                                        //                             }
-                                        //                           },
-                                        //                           color: theme.isDarkMode
-                                        //                               ? const Color(0xffB5C0CF)
-                                        //                                   .withOpacity(.15)
-                                        //                               : const Color(0xffF1F3F8),
-                                        //                           value: ledgerprovider.notsharing),
-                                        //                       const SizedBox(width: 6),
-                                        //                     ],
-                                        //                   ),
-                                        //                 ),
-                                        //                 IconButton(
-                                        //                   iconSize: 20,
-                                        //                   icon: Icon(Icons.share_outlined,
-                                        //                       color:
-                                        //                           ledgerprovider.notsharing == false
-                                        //                               ? Colors.black
-                                        //                               : Colors.grey),
-                                        //                   onPressed: () => {
-                                        //                     if (ledgerprovider.notsharing == false)
-                                        //                       {
-                                        //                         _showBottomSheetSharing(
-                                        //                             context, SharingScreen())
-                                        //                       }
-                                        //                     else
-                                        //                       {
-                                        //                         ScaffoldMessenger.of(context)
-                                        //                             .showSnackBar(
-                                        //                           warningMessage(
-                                        //                               context, 'Sharing is not on'),
-                                        //                         )
-                                        //                       }
-                                        //                   },
-                                        //                 ),
-                                        //               ],
-                                        //             ),
-                                        //           ],
-                                        //         ),
-                                        //       ),
-
                                         TextWidget.subText(
                                             text: ledgerprovider
                                                 .selectedFinancialYear,
@@ -751,121 +306,11 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                             fw: 0),
                                       ],
                                     ),
-                                    ledgerprovider.availableFinancialYears
-                                                .indexOf(ledgerprovider
-                                                    .selectedFinancialYear) >
-                                            0
-                                        ? Material(
-                                            color: Colors.transparent,
-                                            shape: const CircleBorder(),
-                                            child: InkWell(
-                                              splashColor: theme.isDarkMode
-                                                  ? colors.splashColorDark
-                                                  : colors.splashColorLight,
-                                              highlightColor: theme.isDarkMode
-                                                  ? colors.highlightDark
-                                                  : colors.highlightLight,
-                                              customBorder:
-                                                  const CircleBorder(),
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Icon(
-                                                  Icons
-                                                      .arrow_forward_ios_outlined,
-                                                  size: 18,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
-                                                ),
-                                              ),
-                                              onTap: () async {
-                                                final index = ledgerprovider
-                                                    .availableFinancialYears
-                                                    .indexOf(ledgerprovider
-                                                        .selectedFinancialYear);
-                                                if (index > 0) {
-                                                  final newFY = ledgerprovider
-                                                          .availableFinancialYears[
-                                                      index - 1];
-                                                  ledgerprovider
-                                                      .setFinancialYear(newFY);
-                                                  await ledgerprovider
-                                                      .fetchsharingdata(
-                                                    ledgerprovider
-                                                        .formattedStartDate,
-                                                    ledgerprovider
-                                                        .formattedendDate,
-                                                    ledgerprovider
-                                                        .selectedSegment,
-                                                    context,
-                                                  );
-                                                  ledgerprovider
-                                                      .changeormountedsharing(
-                                                          "change");
-                                                  // Prefetch this year for all segments if not already cached
-                                                  for (final segment
-                                                      in ledgerprovider
-                                                          .availableSegments) {
-                                                    if (!ledgerprovider
-                                                        .isCalendarPnlDataCached(
-                                                            newFY, segment)) {
-                                                      ledgerprovider
-                                                          .prefetchAllCalendarPnlDataForSegment(
-                                                              context, segment,
-                                                              years: [newFY]);
-                                                    }
-                                                  }
-                                                  if (!ledgerprovider
-                                                      .isCalendarPnlDataCached(
-                                                          newFY,
-                                                          ledgerprovider
-                                                              .selectedSegment)) {
-                                                    ledgerprovider
-                                                        .loadOrFetchCalendarPnlData(
-                                                      context,
-                                                      ledgerprovider
-                                                          .formattedStartDate,
-                                                      ledgerprovider
-                                                          .formattedendDate,
-                                                      ledgerprovider
-                                                          .selectedSegment,
-                                                    );
-                                                  }
-                                                }
-                                              },
-                                            ),
-                                          )
-                                        : const SizedBox(
-                                            width: 20,
-                                          ),
                                   ],
                                 ),
                               ),
                             ],
                           ),
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.end,
-                          //   children: [
-                          //     Padding(
-                          //       padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
-                          //       child: TextWidget.overlineText(
-                          //           text: "M-Monthly and D-Daily",
-                          //           color: const Color.fromARGB(255, 105, 105, 105),
-                          //           textOverflow: TextOverflow.ellipsis,
-                          //           theme: theme.isDarkMode,
-                          //           align: TextAlign.end,
-                          //           fw: 0),
-                          //     ),
-                          //   ],
-                          // ),
-                          // Divider(
-                          //   color: theme.isDarkMode
-                          //       ? const Color(0xffB5C0CF).withOpacity(.15)
-                          //       : const Color(0xffF1F3F8),
-                          //   thickness: 1.0,
-                          // ),
                           ledgerprovider.calenderpnlAllData == null
                               ? const Center(
                                   child: Padding(
@@ -1233,28 +678,6 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                                           '${dateKey.day.toString().padLeft(2, '0')} '
                                                           '${_monthName(dateKey.month)} '
                                                           '${dateKey.year}';
-
-                                                      // Get the first trade symbol for display (or use a default)
-                                                      // final firstTrade = tradesForDate
-                                                      //         .isNotEmpty
-                                                      //     ? ((tradesForDate.first
-                                                      //                     .sCRIPNAME
-                                                      //                     ?.trim()
-                                                      //                     .isEmpty ??
-                                                      //                 true) ||
-                                                      //             tradesForDate
-                                                      //                 .first
-                                                      //                 .sCRIPNAME!
-                                                      //                 .contains(
-                                                      //                     "0")
-                                                      //         ? tradesForDate
-                                                      //                 .first
-                                                      //                 .sCRIPSYMBOL ??
-                                                      //             "N/A"
-                                                      //         : tradesForDate
-                                                      //             .first
-                                                      //             .sCRIPNAME!)
-                                                      //     : "N/A";
 
                                                       return Theme(
                                                           data: Theme.of(
@@ -1757,19 +1180,6 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                         ? colors.dividerDark
                         : colors.dividerLight,
                   ),
-                  // Text(
-                  //                       date,
-                  //                       style: textStyle(
-                  //                         theme.isDarkMode
-                  //                             ? colors.colorWhite
-                  //                             : colors.colorBlack,
-                  //                         13,
-                  //                         FontWeight.w600,
-                  //                       ),
-                  //                       softWrap: true,
-                  //                       overflow: TextOverflow.ellipsis,
-                  //                       maxLines: 2,
-                  //                     ),
                   Expanded(
                     child: ListView.separated(
                       controller: scrollController,
@@ -1820,30 +1230,84 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                   trade[index].oQTY != "0" &&
                                           trade[index].oRATE != "0"
                                       ? _buildInfoRow(
-                                          "Open Qty ",
-                                          "${double.tryParse(trade[index].oQTY)!.toInt()} (${double.tryParse(trade[index].oRATE)!.toStringAsFixed(2)})",
+                                          "Open Qty / Price",
+                                          "${double.tryParse(trade[index].oQTY)!.toInt()} / ${double.tryParse(trade[index].oRATE)!.toStringAsFixed(2)}",
                                           theme)
                                       : const SizedBox.shrink(),
                                   const SizedBox(height: 8),
                                   _buildInfoRow(
-                                      "Buy Qty ",
-                                      "${double.tryParse(trade[index].bQTY)!.toInt()} (${double.tryParse(trade[index].bRATE)!.toStringAsFixed(2)})",
+                                      "Buy Qty / Price",
+                                      "${double.tryParse(trade[index].bQTY)!.toInt()} / ${double.tryParse(trade[index].bRATE)!.toStringAsFixed(2)}",
                                       theme),
                                   const SizedBox(height: 8),
                                   _buildInfoRow(
-                                      "Sell Qty ",
+                                      "Sell Qty",
                                       "${double.tryParse(trade[index].sQTY)!.toInt()} (${double.tryParse(trade[index].sRATE)!.toStringAsFixed(2)})",
                                       theme),
                                   const SizedBox(height: 8),
                                   _buildInfoRow(
-                                      "Net Qty ",
+                                      "Net Qty",
                                       "${double.tryParse(trade[index].updatedNETQTY)!.toInt()}",
                                       theme),
                                   const SizedBox(height: 8),
-                                  _buildInfoRow(
-                                      "Realised ",
-                                      "${double.parse(trade[index].realisedpnl).toStringAsFixed(2)}",
-                                      theme),
+                                  Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            TextWidget.subText(
+                                                text: "Realised",
+                                                theme: false,
+                                                color: theme.isDarkMode
+                                                    ? colors.textSecondaryDark
+                                                    : colors.textSecondaryLight,
+                                                fw: 3),
+                                            TextWidget.subText(
+                                                text:
+                                                    "${double.parse(trade[index].realisedpnl).toStringAsFixed(2)}",
+                                                theme: false,
+                                                color: double.parse(trade[index]
+                                                                .realisedpnl)
+                                                            .toStringAsFixed(
+                                                                2) !=
+                                                        0
+                                                    ? double.parse(trade[index]
+                                                                .realisedpnl) >
+                                                            0
+                                                        ? theme.isDarkMode
+                                                            ? colors.profitDark
+                                                            : colors.profitLight
+                                                        : double.parse(trade[
+                                                                        index]
+                                                                    .realisedpnl) <
+                                                                0
+                                                            ? theme.isDarkMode
+                                                                ? colors
+                                                                    .lossDark
+                                                                : colors
+                                                                    .lossLight
+                                                            : theme.isDarkMode
+                                                                ? colors
+                                                                    .textSecondaryDark
+                                                                : colors
+                                                                    .textSecondaryLight
+                                                    : theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors
+                                                            .textPrimaryLight,
+                                                fw: 3),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Divider(
+                                            color: theme.isDarkMode
+                                                ? colors.dividerDark
+                                                : colors.dividerLight,
+                                            thickness: 0)
+                                      ]),
                                   Padding(
                                     padding: const EdgeInsets.only(top: 8.0),
                                     child: Divider(
@@ -1852,149 +1316,6 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                           : colors.dividerLight,
                                     ),
                                   ),
-
-                                  // Padding(
-                                  //   padding: const EdgeInsets.only(bottom: 8.0),
-                                  //   child: Row(
-                                  //     mainAxisAlignment:
-                                  //         MainAxisAlignment.spaceBetween,
-                                  //     crossAxisAlignment:
-                                  //         CrossAxisAlignment.center,
-                                  //     children: [
-                                  //       Row(
-                                  //         children: [
-                                  //           TextWidget.subText(
-                                  //               color: theme.isDarkMode
-                                  //                   ? colors.textSecondaryDark
-                                  //                   : colors.textSecondaryLight,
-                                  //               text: "Buy Qty ",
-                                  //               textOverflow:
-                                  //                   TextOverflow.ellipsis,
-                                  //               theme: theme.isDarkMode,
-                                  //               fw: 3),
-                                  //           TextWidget.subText(
-                                  //               text:
-                                  //                   "${double.tryParse(trade[index].bQTY)!.toInt()} (${double.tryParse(trade[index].bRATE)!.toStringAsFixed(2)})",
-                                  //               textOverflow:
-                                  //                   TextOverflow.ellipsis,
-                                  //               theme: theme.isDarkMode,
-                                  //               color: double.tryParse(trade[index]
-                                  //                               .bQTY)!
-                                  //                           .toInt() !=
-                                  //                       0
-                                  //                   ? double.tryParse(
-                                  //                                   trade[index]
-                                  //                                       .bQTY)!
-                                  //                               .toInt() >
-                                  //                           0
-                                  //                       ? theme.isDarkMode
-                                  //                           ? colors.profitDark
-                                  //                           : colors.profitLight
-                                  //                       : double.tryParse(trade[index]
-                                  //                                       .bQTY)!
-                                  //                                   .toInt() <
-                                  //                               0
-                                  //                           ? theme.isDarkMode
-                                  //                               ? colors
-                                  //                                   .lossDark
-                                  //                               : colors
-                                  //                                   .lossLight
-                                  //                           : theme.isDarkMode
-                                  //                               ? colors
-                                  //                                   .textSecondaryDark
-                                  //                               : colors
-                                  //                                   .textSecondaryLight
-                                  //                   : theme.isDarkMode
-                                  //                       ? colors
-                                  //                           .textSecondaryDark
-                                  //                       : colors
-                                  //                           .textSecondaryLight,
-                                  //               fw: 3),
-                                  //         ],
-                                  //       ),
-                                  //       Row(
-                                  //         children: [
-                                  //           TextWidget.subText(
-                                  //               color: theme.isDarkMode
-                                  //                   ? colors.textSecondaryDark
-                                  //                   : colors.textSecondaryLight,
-                                  //               text: "Net Qty ",
-                                  //               textOverflow:
-                                  //                   TextOverflow.ellipsis,
-                                  //               theme: theme.isDarkMode,
-                                  //               fw: 3),
-                                  //           TextWidget.subText(
-                                  //               text:
-                                  //                   "${double.tryParse(trade[index].updatedNETQTY)!.toInt()}",
-                                  //               textOverflow:
-                                  //                   TextOverflow.ellipsis,
-                                  //               theme: theme.isDarkMode,
-                                  //               color: theme.isDarkMode
-                                  //                   ? colors.textSecondaryDark
-                                  //                   : colors.textSecondaryLight,
-                                  //               fw: 0),
-                                  //         ],
-                                  //       ),
-                                  //     ],
-                                  //   ),
-                                  // ),
-                                  // Padding(
-                                  //   padding: const EdgeInsets.only(bottom: 8.0),
-                                  //   child: Row(
-                                  //     mainAxisAlignment:
-                                  //         MainAxisAlignment.spaceBetween,
-                                  //     crossAxisAlignment:
-                                  //         CrossAxisAlignment.center,
-                                  //     children: [
-                                  //       Row(
-                                  //         children: [
-                                  //           TextWidget.subText(
-                                  //               color: theme.isDarkMode
-                                  //                   ? colors.textSecondaryDark
-                                  //                   : colors.textSecondaryLight,
-                                  //               text: "Sell Qty ",
-                                  //               textOverflow:
-                                  //                   TextOverflow.ellipsis,
-                                  //               theme: theme.isDarkMode,
-                                  //               fw: 0),
-                                  //           TextWidget.subText(
-                                  //               text:
-                                  //                   "${double.tryParse(trade[index].sQTY)!.toInt()} (${double.tryParse(trade[index].sRATE)!.toStringAsFixed(2)})",
-                                  //               textOverflow:
-                                  //                   TextOverflow.ellipsis,
-                                  //               theme: theme.isDarkMode,
-                                  //               color: theme.isDarkMode
-                                  //                   ? colors.lossDark
-                                  //                   : colors.lossLight,
-                                  //               fw: 0),
-                                  //         ],
-                                  //       ),
-                                  //       Row(
-                                  //         children: [
-                                  //           TextWidget.subText(
-                                  //               color: theme.isDarkMode
-                                  //                   ? colors.textSecondaryDark
-                                  //                   : colors.textSecondaryLight,
-                                  //               text: 'Realised ',
-                                  //               textOverflow:
-                                  //                   TextOverflow.ellipsis,
-                                  //               theme: theme.isDarkMode,
-                                  //               fw: 0),
-                                  //           TextWidget.subText(
-                                  //               text:
-                                  //                   "${double.parse(trade[index].realisedpnl).toStringAsFixed(2)}",
-                                  //               textOverflow:
-                                  //                   TextOverflow.ellipsis,
-                                  //               theme: theme.isDarkMode,
-                                  //               color: theme.isDarkMode
-                                  //                   ? colors.textSecondaryDark
-                                  //                   : colors.textSecondaryLight,
-                                  //               fw: 0),
-                                  //         ],
-                                  //       ),
-                                  //     ],
-                                  //   ),
-                                  // ),
                                 ],
                               ),
                             ),

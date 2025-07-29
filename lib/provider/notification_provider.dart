@@ -7,6 +7,7 @@ import '../locator/preference.dart';
 import '../models/notification_model/broker_message_model.dart';
 import '../models/notification_model/exchange_message_model.dart';
 import '../models/notification_model/exchange_status_model.dart';
+import '../models/notification_model/information_message_model.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -29,11 +30,21 @@ class NotificationProvider extends DefaultChangeNotifier {
   List<BrokerMessage>? _brokermsg;
   List<BrokerMessage>? get brokermsg => _brokermsg;
 
+  List<InformationMessageModel>? _informationMessages;
+  List<InformationMessageModel>? get informationMessages => _informationMessages;
+
   /////TAB CONTROLLER
   late TabController notifytab;
   List<Tab> _notifyTabName = [
     const Tab(text: "Message"),
-    const Tab(text: "Exchange Message"),
+    const Tab(
+      child: Text(
+        "Exchange Message",
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
+      ),
+    ),
+    const Tab(text: "Information"),
   ];
   List<Tab> get notifyTabName => _notifyTabName;
 
@@ -52,11 +63,15 @@ class NotificationProvider extends DefaultChangeNotifier {
             // (${_brokermsg![0].stat == "Not_Ok" ? "0" : _brokermsg!.length})"
       ),
       const Tab(
-          child: Text(
-              "Exchange Message"),
-
-              // (${_exchangemessage![0].stat == "Not_Ok" ? "0" : _exchangemessage!.length})")
-
+        child: Text(
+          "Exchange Message",
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+        // (${_exchangemessage![0].stat == "Not_Ok" ? "0" : _exchangemessage!.length})")
+      ),
+      const Tab(
+        child: Text("Information"),
       ),
 
 
@@ -130,6 +145,20 @@ class NotificationProvider extends DefaultChangeNotifier {
       ref.read(indexListProvider)
           .logError
           .add({"type": "Broker msg", "Error": "$e"});
+      notifyListeners();
+    } finally {}
+  }
+
+// Fetching information messages from nlog API
+  Future fetchInformationMessages(BuildContext context) async {
+    try {
+      _informationMessages = await api.getInformationMessages();
+      notifyListeners();
+      return _informationMessages;
+    } catch (e) {
+      ref.read(indexListProvider)
+          .logError
+          .add({"type": "Information msg", "Error": "$e"});
       notifyListeners();
     } finally {}
   }

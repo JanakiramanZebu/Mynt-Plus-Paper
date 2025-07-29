@@ -88,30 +88,34 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                     : colors.colorDivider,
                 height: 0,
               ),
-
+const SizedBox(height: 10,),
               // --- Current Account ListView ---
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 1,
-                separatorBuilder: (context, idx) => const ListDivider(),
-                itemBuilder: (context, idx) {
-                  return InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.only(
-                          left: 16, right: 16, top: 16, bottom: 16),
-                      color: theme.isDarkMode
-                          ? colors.colorWhite.withOpacity(0.05)
-                          : colors.colorBlack.withOpacity(0.05),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Left side with avatar and text
-                          Expanded(
-                            child: Row(
+              SizedBox(
+                height: 80,
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 1,
+                  separatorBuilder: (context, idx) => Divider(
+                    color: colors.dividerDark,
+                    height: 0,
+                  ),
+                  itemBuilder: (context, idx) {
+                    return InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.only(
+                            left: 16, right: 16, top: 16, bottom: 16),
+                        color: theme.isDarkMode
+                            ? colors.colorWhite.withOpacity(0.05)
+                            : colors.colorBlack.withOpacity(0.05),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Left side with avatar and text
+                            Row(
                               children: [
                                 CircleAvatar(
                                   backgroundColor: theme.isDarkMode
@@ -128,204 +132,202 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      TextWidget.subText(
-                                        text: activeAccount.userName,
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        fw: 0,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      TextWidget.paraText(
-                                        text: activeAccount.clientId,
-                                        theme: false,
-                                        color: !theme.isDarkMode
-                                            ? colors.textSecondaryLight
-                                            : colors.textSecondaryDark,
-                                      ),
-                                    ],
-                                  ),
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    TextWidget.subText(
+                                      text: activeAccount.userName,
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                      fw: 0,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    TextWidget.paraText(
+                                      text: activeAccount.clientId,
+                                      theme: false,
+                                      color: !theme.isDarkMode
+                                          ? colors.textSecondaryLight
+                                          : colors.textSecondaryDark,
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ),
-
-                          // Right side with logout button
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () async {
-                                // Add delay for visual feedback
-                                await Future.delayed(
-                                    const Duration(milliseconds: 150));
-
-                                if (context.mounted) {
-                                  showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (BuildContext dialogContext) {
-                                      return AlertDialog(
-                                        backgroundColor: colors.colorWhite,
-                                        titlePadding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 8),
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(8)),
-                                        ),
-                                        scrollable: true,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 12, vertical: 12),
-                                        actionsPadding: const EdgeInsets.only(
-                                            bottom: 16,
-                                            right: 16,
-                                            left: 16,
-                                            top: 8),
-                                        insetPadding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 30, vertical: 12),
-                                        title: Column(
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: [
-                                                Material(
-                                                  color: Colors.transparent,
-                                                  shape: const CircleBorder(),
-                                                  child: InkWell(
-                                                    onTap: () async {
-                                                      await Future.delayed(
-                                                          const Duration(
-                                                              milliseconds:
-                                                                  150));
-                                                      Navigator.pop(context);
-                                                    },
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20),
-                                                    splashColor: theme
-                                                            .isDarkMode
-                                                        ? colors.splashColorDark
-                                                        : colors
-                                                            .splashColorLight,
-                                                    highlightColor: theme
-                                                            .isDarkMode
-                                                        ? colors.splashColorDark
-                                                        : colors
-                                                            .splashColorLight,
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              6.0),
-                                                      child: Icon(
-                                                        Icons.close_rounded,
-                                                        size: 22,
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors.colorBlack,
+                
+                            // Right side with logout button
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () async {
+                                  // Add delay for visual feedback
+                                  await Future.delayed(
+                                      const Duration(milliseconds: 150));
+                
+                                  if (context.mounted) {
+                                    showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (BuildContext dialogContext) {
+                                        return AlertDialog(
+                                          backgroundColor: colors.colorWhite,
+                                          titlePadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 8),
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(8)),
+                                          ),
+                                          scrollable: true,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 12),
+                                          actionsPadding: const EdgeInsets.only(
+                                              bottom: 16,
+                                              right: 16,
+                                              left: 16,
+                                              top: 8),
+                                          insetPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 30, vertical: 12),
+                                          title: Column(
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  Material(
+                                                    color: Colors.transparent,
+                                                    shape: const CircleBorder(),
+                                                    child: InkWell(
+                                                      onTap: () async {
+                                                        await Future.delayed(
+                                                            const Duration(
+                                                                milliseconds:
+                                                                    150));
+                                                        Navigator.pop(context);
+                                                      },
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20),
+                                                      splashColor: theme
+                                                              .isDarkMode
+                                                          ? colors.splashColorDark
+                                                          : colors
+                                                              .splashColorLight,
+                                                      highlightColor: theme
+                                                              .isDarkMode
+                                                          ? colors.splashColorDark
+                                                          : colors
+                                                              .splashColorLight,
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                                6.0),
+                                                        child: Icon(
+                                                          Icons.close_rounded,
+                                                          size: 22,
+                                                          color: theme.isDarkMode
+                                                              ? colors.colorWhite
+                                                              : colors.colorBlack,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 12),
-                                            SizedBox(
-                                              width: MediaQuery.of(context)
-                                                  .size
-                                                  .width,
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  const SizedBox(height: 10),
-                                                  TextWidget.subText(
-                                                    text:
-                                                        "Are you sure you want to logout?",
-                                                    theme: theme.isDarkMode,
-                                                    color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors
-                                                            .textPrimaryLight,
-                                                    fw: 3,
-                                                    align: TextAlign.center,
-                                                  ),
                                                 ],
+                                              ),
+                                              const SizedBox(height: 12),
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    const SizedBox(height: 10),
+                                                    TextWidget.subText(
+                                                      text:
+                                                          "Are you sure you want to logout?",
+                                                      theme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? colors.textPrimaryDark
+                                                          : colors
+                                                              .textPrimaryLight,
+                                                      fw: 3,
+                                                      align: TextAlign.center,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          actions: [
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: OutlinedButton(
+                                                onPressed: () async {
+                                                  Navigator.of(dialogContext)
+                                                      .pop();
+                                                  await ref
+                                                      .read(authProvider)
+                                                      .fetchLogout(context);
+                                                },
+                                                style: OutlinedButton.styleFrom(
+                                                  minimumSize: const Size(0, 40),
+                                                  side: BorderSide(
+                                                      color: colors
+                                                          .btnOutlinedBorder),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(5),
+                                                  ),
+                                                  backgroundColor:
+                                                      colors.primaryDark,
+                                                ),
+                                                child: TextWidget.titleText(
+                                                  text: "Logout",
+                                                  theme: theme.isDarkMode,
+                                                  color: !theme.isDarkMode
+                                                      ? colors.colorWhite
+                                                      : colors.colorBlack,
+                                                  fw: 0,
+                                                ),
                                               ),
                                             ),
                                           ],
-                                        ),
-                                        actions: [
-                                          SizedBox(
-                                            width: double.infinity,
-                                            child: OutlinedButton(
-                                              onPressed: () async {
-                                                Navigator.of(dialogContext)
-                                                    .pop();
-                                                await ref
-                                                    .read(authProvider)
-                                                    .fetchLogout(context);
-                                              },
-                                              style: OutlinedButton.styleFrom(
-                                                minimumSize: const Size(0, 40),
-                                                side: BorderSide(
-                                                    color: colors
-                                                        .btnOutlinedBorder),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
-                                                ),
-                                                backgroundColor:
-                                                    colors.primaryDark,
-                                              ),
-                                              child: TextWidget.titleText(
-                                                text: "Logout",
-                                                theme: theme.isDarkMode,
-                                                color: !theme.isDarkMode
-                                                    ? colors.colorWhite
-                                                    : colors.colorBlack,
-                                                fw: 0,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(5),
-                              splashColor: theme.isDarkMode
-                                  ? colors.splashColorDark
-                                  : colors.splashColorLight,
-                              highlightColor: theme.isDarkMode
-                                  ? colors.highlightDark
-                                  : colors.highlightLight,
-                              child: Padding(
-                                padding: const EdgeInsets.all(5),
-                                child: TextWidget.subText(
-                                    text: "Log Out",
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.secondaryDark
-                                        : colors.secondaryLight,
-                                    align: TextAlign.center),
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(5),
+                                splashColor: theme.isDarkMode
+                                    ? colors.splashColorDark
+                                    : colors.splashColorLight,
+                                highlightColor: theme.isDarkMode
+                                    ? colors.highlightDark
+                                    : colors.highlightLight,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(5),
+                                  child: TextWidget.subText(
+                                      text: "Log Out",
+                                      theme: false,
+                                      color: theme.isDarkMode
+                                          ? colors.secondaryDark
+                                          : colors.secondaryLight,
+                                      align: TextAlign.center),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
 
               const ListDivider(),
@@ -379,7 +381,7 @@ class LoggedUserBottomSheet extends ConsumerWidget {
                             },
                             child: Container(
                               padding: const EdgeInsets.only(
-                                  left: 16, right: 16, top: 16, bottom: 0),
+                                  left: 16, right: 16, top: 16, bottom: 16),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,

@@ -281,8 +281,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           }
         },
         child: Scaffold(
-          resizeToAvoidBottomInset:
-              ref.read(userProfileProvider).showchartof ? false : true,
+          resizeToAvoidBottomInset: false,
           body: Stack(
             children: [
               _buildMainScaffold(),
@@ -901,9 +900,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     reportsprovider.calendarProvider();
     // Prefetch only the current financial year for all segments
     final currentFY = reportsprovider.availableFinancialYears.first;
-    for (final segment in reportsprovider.availableSegments) {
-      reportsprovider.prefetchAllCalendarPnlDataForSegment(context, segment,
-          years: [currentFY]);
+    if ((reportsprovider.pnlAllData == null)) {
+      for (final segment in reportsprovider.availableSegments) {
+        reportsprovider.prefetchAllCalendarPnlDataForSegment(context, segment,
+            years: [currentFY]);
+      }
     }
     // Immediately set the default year and segment to show correct data from cache
     reportsprovider.setFinancialYear(currentFY);
@@ -938,6 +939,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         await ref.read(apikeyprovider).fetchapikey(context);
         await ref.read(notificationprovider).fetchexchagemsg(context);
         await ref.read(notificationprovider).fetchbrokermsg(context);
+        await ref.read(notificationprovider).fetchInformationMessages(context);
 
         //funds
 
@@ -964,11 +966,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               context, reportsprovider.startDate, reportsprovider.endDate);
         }
 
-        if (reportsprovider.pnlAllData == null) {
-          await reportsprovider.getCurrentDate('else');
-          reportsprovider.fetchpnldata(
-              context, reportsprovider.startDate, reportsprovider.today, true);
-        }
+        // if (reportsprovider.pnlAllData == null) {
+        //   await reportsprovider.getCurrentDate('else');
+        //   reportsprovider.fetchpnldata(
+        //       context, reportsprovider.startDate, reportsprovider.today, true);
+        // }
         if (reportsprovider.calenderpnlAllData == null) {
           await reportsprovider.getCurrentDate('else');
           reportsprovider.calendarProvider();

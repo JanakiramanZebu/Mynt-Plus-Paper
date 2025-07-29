@@ -8,6 +8,7 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import 'tabs/broker_message.dart';
 import 'tabs/exchange_message.dart';
+import 'tabs/information_message.dart';
 
 class Notificationpage extends ConsumerStatefulWidget {
   const Notificationpage({super.key});
@@ -98,6 +99,7 @@ class _NotificationpageState extends ConsumerState<Notificationpage>
                     children: const [
                   BrokerMsg(),
                   ExchangeMessage(),
+                  InformationMessage(),
                 ]))
           ],
         );

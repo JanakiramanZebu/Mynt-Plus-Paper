@@ -570,37 +570,18 @@ class _SecureFundState extends ConsumerState<SecureFund> {
                 noDecimal: false),
             text: "Delivery Sell Benefit",
           ),
-          if (funds.fundDetailModel?.pendordval != null &&
-              funds.fundDetailModel!.pendordval != "0.00") ...[
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextWidget.subText(
-                        text: "Unrealized Expenses",
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        fw: 3),
-                    TextWidget.subText(
-                        text: getFormatter(
-                            value: double.parse(
-                                "${funds.fundDetailModel?.pendordval ?? 0.00}"),
-                            v4d: false,
-                            noDecimal: false),
-                        theme: false,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        fw: 3),
-                  ]),
-            ),
-            Divider(
-              color: colors.colorDivider.withOpacity(0.5),
-            ),
-          ],
+          buildPeakMarginInfo(
+            isDarkMode: theme.isDarkMode,
+            theme: theme,
+            value: getFormatter(
+                value: double.parse(
+                    "${funds.fundDetailModel?.pendordval ?? 0.00}"),
+                v4d: false,
+                noDecimal: false),
+            text: "Unrealized Expenses",
+          ),
+
+          
           if (funds.listOfUsedMrgn.isNotEmpty) ...[
             ListView.separated(
                 shrinkWrap: true,
