@@ -89,6 +89,8 @@ class _UPIIDPaymentCancelAlertState
     // Clear the amount text field
     if (ref.read(mfProvider).triggerfromMF == true) {
       ref.read(mfProvider).setterformftrigger(false);
+      _timer?.cancel(); // This is safe even if already cancelled
+          _autoPopTimer?.cancel();
       Navigator.pop(context);
     } else {
       ref.read(transcationProvider).amount.clear();
