@@ -246,68 +246,8 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                         const SizedBox(height: 20),
                                         Row(children: [
                                           Expanded(
-                                            child: Material(
-                                              color: Colors.transparent,
-                                              shape:
-                                                  const BeveledRectangleBorder(),
-                                              child: Container(
-                                                height: 40,
-                                                decoration: BoxDecoration(
-                                                  color: colors.btnBg,
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
-                                                  border: Border.all(
-                                                    color: colors
-                                                        .btnOutlinedBorder,
-                                                    width: 1,
-                                                  ),
-                                                ),
-                                                child: InkWell(
-                                                  customBorder:
-                                                      const BeveledRectangleBorder(),
-                                                  splashColor: theme.isDarkMode
-                                                      ? colors.splashColorDark
-                                                      : colors.splashColorLight,
-                                                  highlightColor: theme
-                                                          .isDarkMode
-                                                      ? colors.highlightDark
-                                                      : colors.highlightLight,
-                                                  onTap: () async {
-                                                    await scripInfo.fetchScripInfo(
-                                                        "${displayData.token}",
-                                                        "${displayData.exch}",
-                                                        context);
-                                                    Navigator.pop(context);
-
-                                                    Navigator.pushNamed(context,
-                                                        Routes.modifyGtt,
-                                                        arguments: {
-                                                          "gttOrderBook":
-                                                              displayData,
-                                                          "scripInfo": ref
-                                                              .read(
-                                                                  marketWatchProvider)
-                                                              .scripInfoModel!
-                                                        });
-                                                  },
-                                                  child: Center(
-                                                    child: TextWidget.subText(
-                                                        text: "Modify Order",
-                                                        theme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? colors.primaryDark
-                                                            : colors
-                                                                .primaryLight,
-                                                        fw: 0),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
                                             child: Container(
-                                              height: 40,
+                                              height: 45,
                                               decoration: BoxDecoration(
                                                 border: Border.all(
                                                   color:
@@ -540,6 +480,64 @@ class _GttOrderDetailState extends ConsumerState<GttOrderDetail> {
                                                                 : colors
                                                                     .primaryLight,
                                                             fw: 0),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Material(
+                                              color: Colors.transparent,
+                                              shape:
+                                                  const BeveledRectangleBorder(),
+                                              child: Container(
+                                                height: 45,
+                                                decoration: BoxDecoration(
+                                                  color: colors.primaryLight,
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                  // border: Border.all(
+                                                  //   color: colors
+                                                  //       .btnOutlinedBorder,
+                                                  //   width: 1,
+                                                  // ),
+                                                ),
+                                                child: InkWell(
+                                                  customBorder:
+                                                      const BeveledRectangleBorder(),
+                                                  splashColor: theme.isDarkMode
+                                                      ? colors.splashColorDark
+                                                      : colors.splashColorLight,
+                                                  highlightColor: theme
+                                                          .isDarkMode
+                                                      ? colors.highlightDark
+                                                      : colors.highlightLight,
+                                                  onTap: () async {
+                                                    await scripInfo.fetchScripInfo(
+                                                        "${displayData.token}",
+                                                        "${displayData.exch}",
+                                                        context);
+                                                    Navigator.pop(context);
+
+                                                    Navigator.pushNamed(context,
+                                                        Routes.modifyGtt,
+                                                        arguments: {
+                                                          "gttOrderBook":
+                                                              displayData,
+                                                          "scripInfo": ref
+                                                              .read(
+                                                                  marketWatchProvider)
+                                                              .scripInfoModel!
+                                                        });
+                                                  },
+                                                  child: Center(
+                                                    child: TextWidget.subText(
+                                                        text: "Modify Order",
+                                                        theme: theme.isDarkMode,
+                                                        color:
+                                                            colors.colorWhite,
+                                                        fw: 0),
                                                   ),
                                                 ),
                                               ),

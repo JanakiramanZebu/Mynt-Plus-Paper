@@ -1374,7 +1374,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                               }
                             },
                             style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 40),
+                              minimumSize: const Size(0, 45),
                               side: BorderSide(color: colors.btnOutlinedBorder),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),

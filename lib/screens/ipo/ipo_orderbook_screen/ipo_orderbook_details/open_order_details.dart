@@ -127,7 +127,7 @@ class _IpoOpenOrderDetailsState extends ConsumerState<IpoOpenOrderDetails> {
                                         style: OutlinedButton.styleFrom(
                                           backgroundColor: colors.btnBg,
                                           minimumSize:
-                                              const Size.fromHeight(40),
+                                              const Size.fromHeight(45),
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(5),

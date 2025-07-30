@@ -631,9 +631,9 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                           assets
                                                                               .alert,
                                                                           width:
-                                                                              20,
+                                                                              24,
                                                                           height:
-                                                                              20,
+                                                                              24,
                                                                           color: theme.isDarkMode
                                                                               ? colors.textPrimaryDark
                                                                               : colors.textPrimaryLight,
@@ -763,7 +763,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                         },
                                                                         child: Container(
                                                                             height:
-                                                                                40,
+                                                                                45,
                                                                             decoration:
                                                                                 BoxDecoration(color: colors.primary, borderRadius: BorderRadius.circular(5)),
                                                                             child: Center(child: TextWidget.subText(text: "Buy", color: colors.colorWhite, theme: theme.isDarkMode, fw: 2))),
@@ -776,7 +776,7 @@ class _ScripDepthInfoState extends ConsumerState<ScripDepthInfo>
                                                                               onTap: () async {
                                                                                 await placeOrderInput(scripInfo, ctx, depthData, false);
                                                                               },
-                                                                              child: Container(height: 40, decoration: BoxDecoration(color: colors.tertiary, borderRadius: BorderRadius.circular(5)), child: Center(child: TextWidget.subText(text: "Sell", color: colors.colorWhite, theme: theme.isDarkMode, fw: 2)))))
+                                                                              child: Container(height: 45, decoration: BoxDecoration(color: colors.tertiary, borderRadius: BorderRadius.circular(5)), child: Center(child: TextWidget.subText(text: "Sell", color: colors.colorWhite, theme: theme.isDarkMode, fw: 2)))))
                                                                     ])),
                                                     ],
                                                   ),

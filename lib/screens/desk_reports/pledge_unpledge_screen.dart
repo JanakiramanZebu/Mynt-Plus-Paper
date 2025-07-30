@@ -379,6 +379,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                               BorderRadius.circular(5),
                                         ),
                                         child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
@@ -387,6 +389,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                 padding: const EdgeInsets.only(
                                                     right: 10),
                                                 child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
                                                   children: [
                                                     if (!isSearching)
                                                       Material(
@@ -439,45 +443,19 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                     if (isSearching)
                                                       Expanded(
                                                         child: Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
                                                           children: [
-                                                            Material(
-                                                              color: Colors
-                                                                  .transparent,
-                                                              shape:
-                                                                  const CircleBorder(),
-                                                              clipBehavior:
-                                                                  Clip.hardEdge,
-                                                              child: InkWell(
-                                                                customBorder:
-                                                                    const CircleBorder(),
-                                                                splashColor: theme
-                                                                        .isDarkMode
-                                                                    ? colors
-                                                                        .splashColorDark
-                                                                    : colors
-                                                                        .splashColorLight,
-                                                                highlightColor: theme
-                                                                        .isDarkMode
-                                                                    ? colors
-                                                                        .highlightDark
-                                                                    : colors
-                                                                        .highlightLight,
-                                                                onTap:
-                                                                    _toggleSearch,
-                                                                child: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .all(
-                                                                          8.0),
-                                                                  child: Icon(
-                                                                    Icons
-                                                                        .arrow_back,
-                                                                    color: colors
-                                                                        .textPrimaryLight,
-                                                                    size: 20,
-                                                                  ),
-                                                                ),
-                                                              ),
+                                                            const SizedBox(
+                                                                width: 4),
+                                                            SvgPicture.asset(
+                                                              assets.searchIcon,
+                                                              color: colors
+                                                                  .textPrimaryLight,
+                                                              width: 20,
+                                                              fit: BoxFit
+                                                                  .scaleDown,
                                                             ),
                                                             Expanded(
                                                               child: TextField(
@@ -517,9 +495,8 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                                                       const EdgeInsets
                                                                           .symmetric(
                                                                     horizontal:
-                                                                        8,
-                                                                    vertical:
                                                                         12,
+                                                                    vertical: 8,
                                                                   ),
                                                                 ),
                                                               ),
@@ -580,58 +557,121 @@ class _PledgenUnpledgeState extends State<PledgenUnpledge>
                                             ),
                                             Row(
                                               children: [
-                                                // if (hasHoldings && showEdis)
-
-                                                Material(
-                                                  color: Colors.transparent,
-                                                  shape:
-                                                      const RoundedRectangleBorder(),
-                                                  clipBehavior: Clip.hardEdge,
-                                                  child: InkWell(
-                                                    customBorder:
-                                                        const RoundedRectangleBorder(),
-                                                    splashColor: theme
-                                                            .isDarkMode
-                                                        ? colors.splashColorDark
-                                                        : colors
-                                                            .splashColorLight,
-                                                    highlightColor: theme
-                                                            .isDarkMode
-                                                        ? colors.highlightDark
-                                                        : colors.highlightLight,
-                                                    onTap: () async {
-                                                      ledgerprovider
-                                                          .fetchunpledgehistory(
-                                                              context);
-                                                      ledgerprovider
-                                                          .fetchpledgehistory(
-                                                              context);
-                                                      ledgerprovider
-                                                          .taxpnlExTabchange(0);
-                                                      Navigator.pushNamed(
-                                                          context,
-                                                          Routes
-                                                              .pledgehistorymainscreen,
-                                                          arguments: "DDDDD");
-                                                    },
-                                                    child: Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 10,
-                                                          vertical: 5),
-                                                      child: TextWidget.subText(
-                                                        text: "History",
-                                                        theme: false,
-                                                        color: theme.isDarkMode
-                                                            ? colors
-                                                                .secondaryDark
-                                                            : colors
-                                                                .secondaryLight,
-                                                        fw: 3,
+                                                isSearching
+                                                    ?
+                                                    // if (hasHoldings && showEdis)
+                                                    Row(
+                                                        children: [
+                                                          Material(
+                                                            color: Colors
+                                                                .transparent,
+                                                            shape:
+                                                                const CircleBorder(),
+                                                            clipBehavior:
+                                                                Clip.hardEdge,
+                                                            child: InkWell(
+                                                              customBorder:
+                                                                  const CircleBorder(),
+                                                              splashColor: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .splashColorDark
+                                                                  : colors
+                                                                      .splashColorLight,
+                                                              highlightColor: theme
+                                                                      .isDarkMode
+                                                                  ? colors
+                                                                      .highlightDark
+                                                                  : colors
+                                                                      .highlightLight,
+                                                              onTap: () async {
+                                                                Future.delayed(
+                                                                    const Duration(
+                                                                        milliseconds:
+                                                                            150),
+                                                                    () {
+                                                                  _toggleSearch();
+                                                                });
+                                                              },
+                                                              child: Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        8.0),
+                                                                child: SvgPicture.asset(
+                                                                    assets
+                                                                        .removeIcon,
+                                                                    fit: BoxFit
+                                                                        .scaleDown,
+                                                                    width: 20),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          const SizedBox(
+                                                              width: 4),
+                                                        ],
+                                                      )
+                                                    : Material(
+                                                        color:
+                                                            Colors.transparent,
+                                                        shape:
+                                                            const RoundedRectangleBorder(),
+                                                        clipBehavior:
+                                                            Clip.hardEdge,
+                                                        child: InkWell(
+                                                          customBorder:
+                                                              const RoundedRectangleBorder(),
+                                                          splashColor: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .splashColorDark
+                                                              : colors
+                                                                  .splashColorLight,
+                                                          highlightColor: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .highlightDark
+                                                              : colors
+                                                                  .highlightLight,
+                                                          onTap: () async {
+                                                            ledgerprovider
+                                                                .fetchunpledgehistory(
+                                                                    context);
+                                                            ledgerprovider
+                                                                .fetchpledgehistory(
+                                                                    context);
+                                                            ledgerprovider
+                                                                .taxpnlExTabchange(
+                                                                    0);
+                                                            Navigator.pushNamed(
+                                                                context,
+                                                                Routes
+                                                                    .pledgehistorymainscreen,
+                                                                arguments:
+                                                                    "DDDDD");
+                                                          },
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        10,
+                                                                    vertical:
+                                                                        5),
+                                                            child: TextWidget
+                                                                .subText(
+                                                              text: "History",
+                                                              theme: false,
+                                                              color: theme.isDarkMode
+                                                                  ? colors
+                                                                      .secondaryDark
+                                                                  : colors
+                                                                      .secondaryLight,
+                                                              fw: 3,
+                                                            ),
+                                                          ),
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ),
-                                                ),
                                               ],
                                             )
                                           ],

@@ -496,9 +496,9 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
         builder: (context, scrollController) {
           return Container(
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-               ),
+              borderRadius: BorderRadius.circular(16),
+              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            ),
             child: Scaffold(
               backgroundColor: Colors.transparent,
               body: Column(
@@ -653,7 +653,7 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                     children: [
                                       Expanded(
                                           child: Container(
-                                              height: 40,
+                                              height: 45,
                                               decoration: BoxDecoration(
                                                   border: Border.all(
                                                     color: colors
@@ -711,14 +711,14 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Container(
-                                            height: 40,
+                                            height: 45,
                                             decoration: BoxDecoration(
-                                                border: Border.all(
-                                                  color:
-                                                      colors.btnOutlinedBorder,
-                                                  width: 1,
-                                                ),
-                                                color: colors.btnBg,
+                                                // border: Border.all(
+                                                //   color:
+                                                //       colors.btnOutlinedBorder,
+                                                //   width: 1,
+                                                // ),
+                                                color: colors.primaryLight,
                                                 borderRadius:
                                                     BorderRadius.circular(5)),
                                             child: Material(
@@ -755,12 +755,8 @@ class _HoldingDetailScreenState extends ConsumerState<HoldingDetailScreen>
                                                       : TextWidget.subText(
                                                           text: "Add",
                                                           theme: false,
-                                                          color: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .primaryDark
-                                                              : colors
-                                                                  .primaryLight,
+                                                          color:
+                                                              colors.colorWhite,
                                                           fw: 0),
                                                 ),
                                               ),
