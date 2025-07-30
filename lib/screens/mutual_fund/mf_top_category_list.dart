@@ -12,18 +12,338 @@ import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../routes/route_names.dart';
+import '../../sharedWidget/custom_back_btn.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
+import '../../sharedWidget/list_divider.dart';
 
-class MFCategoryListScreen extends ConsumerWidget {
+class MFCategoryListScreen extends ConsumerStatefulWidget {
   final String title;
   const MFCategoryListScreen({super.key, required this.title});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MFCategoryListScreen> createState() => _MFCategoryListScreenState();
+}
+
+class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  late ScrollController _scrollController;
+  int selectedTab = 0;
+  List<String> tabTitles = [];
+  String selectedReturn = '3Y Returns'; // Track selected return period
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize tab titles based on the category data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeTabs();
+    });
+  }
+
+  void _initializeTabs() {
+    final mfData = ref.read(mfProvider);
+    final categoryData = mfData.mFCategoryTypesStatic;
+    
+    // Find the matching category and get its sub-tabs
+    for (var category in categoryData) {
+      if (category['title'] == widget.title) {
+        List<dynamic> subTabs = category['sub'] ?? [];
+        setState(() {
+          tabTitles = subTabs.map((tab) => tab.toString()).toList();
+        });
+        break;
+      }
+    }
+
+    // Initialize TabController after we have the tabs
+    if (tabTitles.isNotEmpty) {
+      _tabController = TabController(
+        length: tabTitles.length, 
+        vsync: this, 
+        initialIndex: 0
+      );
+      _scrollController = ScrollController();
+      selectedTab = 0;
+
+      _tabController.animation!.addListener(() {
+        final newIndex = _tabController.animation!.value.round();
+        if (selectedTab != newIndex) {
+          setState(() {
+            selectedTab = newIndex;
+          });
+          // Update the selected chip in provider
+          if (newIndex < tabTitles.length) {
+            ref.read(mfProvider).changetitle(tabTitles[newIndex]);
+            ref.read(mfProvider).fetchcatdatanew(widget.title, tabTitles[newIndex]);
+          }
+          // Scroll to center the active tab
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToActiveTab(newIndex);
+          });
+        }
+      });
+
+      // Scroll to center the initial tab after the widget is built
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToActiveTab(selectedTab);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToActiveTab(int index) {
+    if (_scrollController.hasClients) {
+      // Calculate cumulative width up to the current tab
+      final double totalWidthUpToIndex = _calculateTotalWidthUpToIndex(index);
+      final double currentTabWidth = _calculateTabWidth(tabTitles[index]);
+      final double screenWidth = MediaQuery.of(context).size.width;
+      
+      // Calculate scroll position to center the active tab
+      final double scrollPosition = totalWidthUpToIndex - (screenWidth / 2) + (currentTabWidth / 2);
+
+      _scrollController.animateTo(
+        scrollPosition.clamp(0.0, _scrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  double _calculateTabWidth(String text) {
+    // Base width for padding and minimum space
+    const double baseWidth = 24.0; // Reduced from 30.0
+    // Approximate character width (adjust based on your font)
+    const double charWidth = 7.0;
+    // Calculate width based on text length
+    double textWidth = text.length * charWidth;
+    // Add base width and ensure minimum width
+    return (textWidth + baseWidth).clamp(100.0, 250.0);
+  }
+
+  double _calculateTotalWidthUpToIndex(int index) {
+    double totalWidth = 0.0;
+    for (int i = 0; i < index && i < tabTitles.length; i++) {
+      totalWidth += _calculateTabWidth(tabTitles[i]);
+    }
+    return totalWidth;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
 
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        leadingWidth: 41,
+        centerTitle: false,
+        titleSpacing: 6,
+        leading: CustomBackBtn(),
+        shadowColor: const Color(0xffECEFF3),
+        title: TextWidget.titleText(
+          text: widget.title,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          fw: 1,
+          theme: theme.isDarkMode,
+        ),
+      ),
+      body: TransparentLoaderScreen(
+        isLoading: mfData.bestmfloader ?? false,
+        child: tabTitles.isEmpty
+            ? const Center(child: NoDataFound())
+            : Column(
+                children: [
+                  // Custom tabs section
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: theme.isDarkMode
+                              ? colors.darkColorDivider
+                              : colors.colorDivider,
+                          width: 0,
+                        ),
+                      ),
+                    ),
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: List.generate(
+                          tabTitles.length,
+                          (tab) => Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(0.05)
+                                  : Colors.black.withOpacity(0.05),
+                              highlightColor: theme.isDarkMode
+                                  ? Colors.white.withOpacity(0.01)
+                                  : Colors.black.withOpacity(0.01),
+                              onTap: () {
+                                setState(() {
+                                  selectedTab = tab;
+                                });
+                                _tabController.animateTo(tab);
+                                // Update the selected chip in your provider
+                                mfData.changetitle(tabTitles[tab]);
+                                mfData.fetchcatdatanew(widget.title, tabTitles[tab]);
+                                // Scroll to center the active tab
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  _scrollToActiveTab(tab);
+                                });
+                              },
+                              child: _tabConstruct(
+                                tabTitles[tab],
+                                theme,
+                                tab,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Header row for "Funds" and "3Y Returns"
+                  Container(
+                    padding: const EdgeInsets.only(
+                        left: 12, bottom: 8, top: 16, right: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextWidget.paraText(
+                          align: TextAlign.right,
+                          text: 'Funds',
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          fw: 3,
+                        ),
+                         PopupMenuButton<String>(
+                        onSelected: (value) {
+                          setState(() {
+                            selectedReturn = value;
+                          });
+                        },
+                        itemBuilder: (context) => [
+                           PopupMenuItem(
+                              value: '1Y Returns', 
+                              child: TextWidget.paraText(
+                                text: '1Y Returns',
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                theme: theme.isDarkMode,
+                                fw: 3,
+                              )),
+                           PopupMenuItem(
+                              value: '2Y Returns', 
+                              child: TextWidget.paraText(
+                                text: '2Y Returns',
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                theme: theme.isDarkMode,
+                                fw: 3,
+                              )),
+                           PopupMenuItem(
+                              value: '3Y Returns', 
+                              child: TextWidget.paraText(
+                                text: '3Y Returns',
+                                color: theme.isDarkMode
+                                    ? colors.textSecondaryDark
+                                    : colors.textSecondaryLight,
+                                theme: theme.isDarkMode,
+                                fw: 3,
+                              )),
+                        ],
+                        child: InkWell(
+                          child: TextWidget.paraText(
+                            align: TextAlign.right,
+                            text: selectedReturn,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 3,
+                          ),
+                        ),
+                      )
+                      ],
+                    ),
+                  ),
+                  // TabBarView with fund lists
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: tabTitles.map((tabTitle) {
+                        return _buildFundList(tabTitle, mfData, theme, context);
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _tabConstruct(String title, ThemesProvider theme, int tab) {
+    final isActive = selectedTab == tab;
+    final double tabWidth = _calculateTabWidth(title);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: tabWidth,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: TextWidget.subText(
+            text: title,
+            color: isActive
+                ? theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight
+                : colors.textSecondaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            theme: theme.isDarkMode,
+            fw: isActive ? 2 : null,
+          ),
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          height: 2,
+          width: isActive ? (tabWidth - 12) : 0, // Dynamic underline width
+          margin: const EdgeInsets.only(top: 6),
+          decoration: BoxDecoration(
+            color: colors.colorBlue,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFundList(String selectedTab, dynamic mfData, ThemesProvider theme, BuildContext context) {
     // Sort the list based on s3Year in descending order
     final sortedList = mfData.catnewlist?.toList();
 
@@ -35,88 +355,33 @@ class MFCategoryListScreen extends ConsumerWidget {
       });
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        leadingWidth: 41,
-        centerTitle: false,
-        titleSpacing: 6,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 8),
-          child: IconButton(
-            icon: Icon(Icons.arrow_back_ios,
-                color:
-                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-        shadowColor: const Color(0xffECEFF3),
-        title: Text(
-          title,
-          style: textStyles.appBarTitleTxt.copyWith(
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          ),
-        ),
-      ),
-      body: TransparentLoaderScreen(
-        isLoading: mfData.bestmfloader ?? false,
-        child: mfData.catnewlist?.isEmpty ?? true
-            ? const Center(child: NoDataFound())
-            : Column(
-                children: [
-                  _buildCategoryChips(context, ref, theme, title, mfData),
-                  Expanded(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.all(8),
-                      itemCount: sortedList?.length ?? 0,
-                      itemBuilder: (BuildContext context, int index) {
-                        final item = sortedList?[index];
-                        if (item == null) return const SizedBox.shrink();
+    if (sortedList == null || sortedList.isEmpty) {
+      return const Center(child: NoDataFound());
+    }
 
-                        return _buildListItem(context, item, theme, mfData);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryChips(BuildContext context, WidgetRef ref,
-      ThemesProvider theme, String title, dynamic mfData) {
     return ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(0),
+      itemCount: sortedList.length,
+      separatorBuilder: (_, __) => const ListDivider(),
       itemBuilder: (BuildContext context, int index) {
-        final categoryData = mfData.mFCategoryTypesStatic;
-        if (index >= categoryData.length) return const SizedBox.shrink();
+        final item = sortedList[index];
+        if (item == null) return const SizedBox.shrink();
 
-        return title == categoryData[index]['title']
-            ? buildCategoryCard(
-                chips: categoryData[index]['sub'] ?? [],
-                ref: ref,
-                themee: theme,
-                title: title,
-              )
-            : const SizedBox.shrink();
+        return _buildListItem(context, item, theme, mfData);
       },
-      separatorBuilder: (BuildContext context, int index) {
-        return const SizedBox(height: 0);
-      },
-      itemCount: mfData.mFCategoryTypesStatic.length,
     );
   }
 
   Widget _buildListItem(BuildContext context, dynamic item,
       ThemesProvider theme, dynamic mfData) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 0),
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
+         splashColor: theme.isDarkMode
+                ? Colors.white.withOpacity(0.15)
+                : Colors.black.withOpacity(0.15),
+            highlightColor: theme.isDarkMode
+                ? Colors.white.withOpacity(0.08)
+                : Colors.black.withOpacity(0.08),
         onLongPress: () async {
           try {
             if (item.iSIN != null) {
@@ -138,7 +403,7 @@ class MFCategoryListScreen extends ConsumerWidget {
             mfData.loaderfun();
             if (item.iSIN != null) {
               await mfData.fetchFactSheet(item.iSIN);
-
+      
               if (mfData.factSheetDataModel?.stat != "Not Ok") {
                 Map<String, dynamic> jsonData = item.toJson();
                 MutualFundList bInstance = MutualFundList.fromJson(jsonData);
@@ -165,113 +430,40 @@ class MFCategoryListScreen extends ConsumerWidget {
                 context, "Error loading fund details: ${e.toString()}"));
           }
         },
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.symmetric(
-              vertical: BorderSide(
-                color: theme.isDarkMode
-                    ? colors.darkGrey
-                    : const Color(0xffEEF0F2),
-                width: 0,
-              ),
-            ),
-          ),
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: CircleAvatar(
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+          dense: false,
+          leading: CircleAvatar(
                       backgroundImage: NetworkImage(
                         "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.6,
-                              child: TextWidget.subText(
-                                  align: TextAlign.start,
-                                  text:
-                                      item.name ?? "Unknown Scheme",
-                                  color: theme.isDarkMode
-                                      ? colors.textPrimaryDark
-                                      : colors.textPrimaryLight,
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
-                                  fw: 3),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: SizedBox(
-                            height: 18,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                TextWidget.paraText(
-                                  fw: 3,
-                                  text: "${item.type ?? "Unknown"}",
-                                  textOverflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  theme: false,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 5),
-                                  child: TextWidget.paraText(
-                                    fw: 3,
-                                    text: "${item.subType ?? "Unknown"}",
-                                    textOverflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    theme: false,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextWidget.titleText(
-                    fw: 3,
-                    text: _formatReturns(item.s3Year),
-                    textOverflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    color: _getReturnColor(item.s3Year),
-                    theme: false,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.only(top: 0),
-                child: Divider(
-                  color: theme.isDarkMode
-                      ? colors.darkColorDivider
-                      : colors.colorDivider,
-                  thickness: 1.0,
-                ),
-              ),
-            ],
+          title: Container(
+              margin:  EdgeInsets.only(right: MediaQuery.of(context).size.width *0.1,),
+            child: TextWidget.subText(
+              text: item.name ?? "Unknown Scheme",
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+              fw: 3,
+            ),
           ),
-        ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: TextWidget.paraText(
+              text: "${item.type ?? "Unknown"}",
+              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+              theme: theme.isDarkMode,
+              fw: 3,
+            ),
+          ),
+
+          trailing: TextWidget.subText(
+            text: _formatReturns(item.s3Year),
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            theme: theme.isDarkMode,
+            fw: 3,
+          ),
+        )
       ),
     );
   }
@@ -296,116 +488,5 @@ class MFCategoryListScreen extends ConsumerWidget {
       return Colors.grey;
     }
   }
-
-  Widget buildCategoryCard({
-    required List<dynamic> chips,
-    required WidgetRef ref,
-    required ThemesProvider themee,
-    required String title,
-  }) {
-    final mfData = ref.watch(mfProvider);
-
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: themee.isDarkMode ? colors.colorBlack : Colors.white,
-        border: Border.all(
-          color: themee.isDarkMode
-              ? colors.colorBlack
-              : const Color.fromARGB(255, 255, 255, 255),
-          width: 0,
-        ),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: SizedBox(
-              height: 34,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: chips.length,
-                itemBuilder: (context, index) {
-                  final chipText = chips[index]?.toString() ?? "";
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: GestureDetector(
-                        onTap: () async {
-                          mfData.changetitle(chipText);
-                          mfData.fetchcatdatanew(title, chipText);
-                        },
-                        child: Container(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: chipText == mfData.selctedchip
-                                    ? colors.primaryDark
-                                    : Colors.transparent,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                          child: 
-                          TextWidget.subText(
-                            letterSpacing: 0.2,
-                                                    align: TextAlign.start,
-                                                    text: chipText,
-                                                    color: chipText == mfData.selctedchip
-                                  ? colors.primaryLight
-                                  : Colors.black,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: themee.isDarkMode,
-                                                    fw: chipText == mfData.selctedchip ? 1 :3),
-                           
-                        )),
-                  );
-                },
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Container(
-              color: themee.isDarkMode
-                  ? const Color(0xFF2A2A2A)
-                  : const Color(0xFFF1F3F8),
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextWidget.captionText(
-                      align: TextAlign.right,
-                      text: 'FUNDS',
-                      color: themee.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      textOverflow: TextOverflow.ellipsis,
-                      theme: themee.isDarkMode,
-                      fw: 3),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: TextWidget.captionText(
-                        align: TextAlign.right,
-                        text: '3Y RETURNS',
-                        color: themee.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: themee.isDarkMode,
-                        fw: 3),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
+

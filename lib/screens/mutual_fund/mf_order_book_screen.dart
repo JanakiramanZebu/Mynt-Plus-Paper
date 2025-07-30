@@ -13,8 +13,10 @@ import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
+import '../../sharedWidget/list_divider.dart';
 import '../../sharedWidget/loader_ui.dart';
 import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
+import 'order_single_page.dart';
 
 class MfOrderBookScreen extends StatefulWidget {
   const MfOrderBookScreen({super.key});
@@ -108,13 +110,16 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
     });
   }
 
-  Widget _buildOrdersTab(MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
+  Widget _buildOrdersTab(
+      MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
     return TransparentLoaderScreen(
       isLoading: mforderbook.mforderloader,
       child: SingleChildScrollView(
         child: Column(
           children: [
-            if (mforderbook.mfOrderbookfilter == "All" && mforderbook.mflumpsumorderbook != null && mforderbook.mflumpsumorderbook?.stat != "Not Ok")
+            if (mforderbook.mfOrderbookfilter == "All" &&
+                mforderbook.mflumpsumorderbook?.data != null &&
+                mforderbook.mflumpsumorderbook?.stat != "Not Ok")
               _buildOrderList(mforderbook, theme, context)
             else
               const Padding(
@@ -127,140 +132,170 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
     );
   }
 
-  Widget _buildOrderList(MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
+  Widget _buildOrderList(
+      MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      separatorBuilder: (_, __) => const ListDivider(),
       itemCount: mforderbook.mflumpsumorderbook?.data?.length ?? 0,
       itemBuilder: (context, index) {
         final orderData = mforderbook.mflumpsumorderbook?.data?[index];
         if (orderData == null) return const SizedBox();
-        
+
         return InkWell(
           onTap: () async {
             mforderbook.loaderfun();
             await mforderbook.fetchorderdetails(
               orderData.orderId ?? ""
-              // orderData.buysell ?? "",
+              // orderData.buySell ?? "",
               // orderData.ordertype ?? "",
-              // orderData.orderstatus ?? "",
+              // orderData.status ?? "",
               // orderData.sipregnno ?? "",
               // orderData.orderremarks ?? "",
             );
 
-            if (mforderbook.mforderdet?.stat == "Ok") {
-              Navigator.pushNamed(context, Routes.mforderdetscreen);
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                warningMessage(context, mforderbook.mforderdet?.emsg ?? 'Error loading order details')
-              );
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 1.0),
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.4,
-                          child: 
-                          TextWidget.subText(
-                                                    align: TextAlign.start,
-                                                    text: orderData.name ?? "Unknown Fund",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                           
-                        ),
+              if (mforderbook.mforderdet?.stat == "Ok") {
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  isDismissible: true,
+                  enableDrag: false,
+                  useSafeArea: true,
+                  context: context,
+                  builder: (context) => Container(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
                       ),
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        SvgPicture.asset(
-                          _getStatusIcon(orderData.status),
-                          width: 20,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4.0),
-                         child:   TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text: _getStatusText(orderData.status),
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                          
-                        ),
-                      ],
-                    ),
-                  ],
+                      child: const mforderdetscreen()),
+                );
+                // Navigator.pushNamed(context, Routes.mforderdetscreen);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(warningMessage(
+                    context,
+                    mforderbook.mforderdet?.emsg ?? 'Error loading order details'));
+              }
+            },
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16,),
+                title: Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Container(
+                   margin:  EdgeInsets.only(right: MediaQuery.of(context).size.width *0.1,),
+                    child: TextWidget.subText(
+                        align: TextAlign.start,
+                        text: orderData.name ?? "Unknown Fund",
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 3),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Row(
+                subtitle: Row(
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: orderData.buysell == "P"
-                            ? const Color(0xFFE5F5EA)
-                            : const Color(0xFFFFC7C7),
+                        color: orderData.buySell == "P"
+                            ? colors.profit.withOpacity(0.1)
+                            : colors.loss.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(3),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2
-                      ),
-                      child: Text(
-                        orderData.buySell ?? "-",
-                        style: textStyle(
-                          orderData.buysell == "P"
-                              ? const Color(0xFF42A833)
-                              : const Color(0xFFF33E4B),
-                          10,
-                          FontWeight.w400,
-                        ),
+                          horizontal: 4, vertical: 2),
+                      child: TextWidget.paraText(
+                        // align: TextAlign.start,
+                        theme: theme.isDarkMode,
+                        text: orderData.buySell ?? "-",
+                        color: orderData.buySell == "P"
+                            ? colors.profit
+                            : colors.loss,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 4),
                     TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text: orderData.orderType == 'NRM' ? 'One-Time' : 'SIP',
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textSecondaryDark:
-                                                          colors.textSecondaryLight 
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: 3),
-                     
+                        // align: TextAlign.start,
+                        text:
+                            "${orderData.orderType == 'NRM' ? 'One-Time' : 'SIP'}",
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 3),
                     const SizedBox(width: 8),
-                    Text(
-                      orderData.datetime ?? "-",
-                      style: textStyle(
-                        theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.colorBlack,
-                        10,
-                        FontWeight.w400
+
+                    TextWidget.paraText(
+                        // align: TextAlign.start,
+                        text: orderData.datetime ?? "-",
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 3),
+                    // Text(
+                    //   orderData.dateTime ?? "-",
+                    //   style: textStyle(
+                    //       theme.isDarkMode
+                    //           ? colors.colorWhite
+                    //           : colors.colorBlack,
+                    //       10,
+                    //       FontWeight.w400),
+                    // ),
+                  ],
+                ),
+                trailing: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // SvgPicture.asset(
+                    //   _getStatusIcon(orderData.status),
+                    //   width: 20,
+                    // ),
+
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: orderData.status == "VALID"
+                            ? colors.profit.withOpacity(0.1)
+                            : orderData.status == "INVALID"
+                                ? colors.loss.withOpacity(0.1)
+                                : orderData.status == "PENDING"
+                                    ? colors.pending.withOpacity(0.1)
+                                    : colors.pending
+                                        .withOpacity(0.1), // default fallback
+                        borderRadius: BorderRadius.circular(4),
                       ),
+                      child: TextWidget.paraText(
+                          text: _getStatusText(orderData.status),
+                          theme: false,
+                          color: orderData.status == "VALID"
+                              ? colors.profit
+                              : orderData.status == "INVALID"
+                                  ? colors.loss
+                                  : orderData.status == "PENDING"
+                                      ? colors.pending
+                                      : colors.pending),
                     ),
-                    const Spacer(),
+                    // TextWidget.paraText(
+                    //     // align: TextAlign.start,
+
+                    //     color: theme.isDarkMode
+                    //         ? colors.textPrimaryDark
+                    //         : colors.textPrimaryLight,
+                    //     textOverflow: TextOverflow.ellipsis,
+                    //     theme: theme.isDarkMode,
+                    //     fw: 3),
+
+                    const SizedBox(height: 12),
+
                     TextWidget.paraText(
                                                     align: TextAlign.right,
                                                     text:  _formatAmount(orderData.orderVal),
@@ -274,19 +309,7 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                                                     fw: 3),
                     
                   ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-      separatorBuilder: (BuildContext context, int index) {
-        return Container(
-          color: theme.isDarkMode
-              ? colors.darkGrey
-              : const Color(0xffF1F3F8),
-          height: 2,
-        );
+                )));
       },
     );
   }
@@ -331,25 +354,146 @@ class _MfOrderBookScreen extends State<MfOrderBookScreen>
                 : const Color.fromARGB(255, 255, 255, 255),
         shape: const StadiumBorder(),
       ),
-      child: 
-      TextWidget.subText(
-                                                    align: TextAlign.right,
-                                                    text:  tablistitems[tab]['title'].toString(),
-       
-                                                    color:theme.isDarkMode
-              ? tab == activeTab  
-              ? colors.primaryDark : colors.textSecondaryDark
+      child: TextWidget.subText(
+          align: TextAlign.right,
+          text: tablistitems[tab]['title'].toString(),
+          color: theme.isDarkMode
+              ? tab == activeTab
+                  ? colors.primaryDark
+                  : colors.textSecondaryDark
               : tab == activeTab
-                ? colors.primaryLight
-                : colors.textSecondaryLight,
-              
-                                                             
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    fw: tab == activeTab ? 1 : 3),
-      
-      
+                  ? colors.primaryLight
+                  : colors.textSecondaryLight,
+          textOverflow: TextOverflow.ellipsis,
+          theme: theme.isDarkMode,
+          fw: tab == activeTab ? 1 : 3),
     );
   }
 }
+
+
+
+
+
+// Container(
+//             padding: const EdgeInsets.all(20),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Row(
+//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                   children: [
+//                     Expanded(
+//                       child: Padding(
+//                         padding: const EdgeInsets.only(right: 1.0),
+//                         child: SizedBox(
+//                           width: MediaQuery.of(context).size.width * 0.4,
+//                           child: 
+//                           TextWidget.subText(
+//                                                     align: TextAlign.start,
+//                                                     text: orderData.schemename ?? "Unknown Fund",
+//                                                     color: theme.isDarkMode
+//                                                         ?  colors.textPrimaryDark:
+//                                                          colors.textPrimaryLight
+//                                                              ,
+//                                                     textOverflow:
+//                                                         TextOverflow.ellipsis,
+//                                                     theme: theme.isDarkMode,
+//                                                     fw: 3),
+                           
+//                         ),
+//                       ),
+//                     ),
+//                     Row(
+//                       crossAxisAlignment: CrossAxisAlignment.end,
+//                       children: [
+//                         SvgPicture.asset(
+//                           _getStatusIcon(orderData.status),
+//                           width: 20,
+//                         ),
+//                         Padding(
+//                           padding: const EdgeInsets.only(left: 4.0),
+//                          child:   TextWidget.paraText(
+//                                                     align: TextAlign.start,
+//                                                     text: _getStatusText(orderData.status),
+//                                                     color: theme.isDarkMode
+//                                                         ?  colors.textPrimaryDark:
+//                                                          colors.textPrimaryLight
+//                                                              ,
+//                                                     textOverflow:
+//                                                         TextOverflow.ellipsis,
+//                                                     theme: theme.isDarkMode,
+//                                                     fw: 3),
+                          
+//                         ),
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//                 const SizedBox(height: 8),
+//                 Row(
+//                   children: [
+//                     Container(
+//                       decoration: BoxDecoration(
+//                         color: orderData.buySell == "P"
+//                             ? const Color(0xFFE5F5EA)
+//                             : const Color(0xFFFFC7C7),
+//                         borderRadius: BorderRadius.circular(3),
+//                       ),
+//                       padding: const EdgeInsets.symmetric(
+//                         horizontal: 4,
+//                         vertical: 2
+//                       ),
+//                       child: Text(
+//                         orderData.buySell ?? "-",
+//                         style: textStyle(
+//                           orderData.buySell == "P"
+//                               ? const Color(0xFF42A833)
+//                               : const Color(0xFFF33E4B),
+//                           10,
+//                           FontWeight.w400,
+//                         ),
+//                       ),
+//                     ),
+//                     const SizedBox(width: 8),
+//                     TextWidget.paraText(
+//                                                     align: TextAlign.start,
+//                                                     text: "${orderData.ordertype == 'NRM' ? 'One-Time' : 'SIP'}",
+//                                                     color: theme.isDarkMode
+//                                                         ?  colors.textSecondaryDark:
+//                                                           colors.textSecondaryLight 
+//                                                              ,
+//                                                     textOverflow:
+//                                                         TextOverflow.ellipsis,
+//                                                     theme: theme.isDarkMode,
+//                                                     fw: 3),
+                     
+//                     const SizedBox(width: 8),
+//                     Text(
+//                       orderData.dateTime ?? "-",
+//                       style: textStyle(
+//                         theme.isDarkMode
+//                             ? colors.colorWhite
+//                             : colors.colorBlack,
+//                         10,
+//                         FontWeight.w400
+//                       ),
+//                     ),
+//                     const Spacer(),
+//                     TextWidget.paraText(
+//                                                     align: TextAlign.right,
+//                                                     text:  _formatAmount(orderData.amount),
+//                                                     color: theme.isDarkMode
+//                                                         ?  colors.textSecondaryDark:
+//                                                          colors.textSecondaryLight
+//                                                              ,
+//                                                     textOverflow:
+//                                                         TextOverflow.ellipsis,
+//                                                     theme: theme.isDarkMode,
+//                                                     fw: 3),
+                    
+//                   ],
+//                 ),
+//               ],
+//             ),
+//           ),

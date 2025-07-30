@@ -28,6 +28,7 @@ class MFExploreScreens extends ConsumerStatefulWidget {
 class _ExploreScreensState extends ConsumerState<MFExploreScreens>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int selectedTab = 0;
 
   final tablistitems = [
     {
@@ -86,6 +87,14 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
         length: 4,
         vsync: this,
         initialIndex: ref.read(mfProvider).activeTab ?? 0);
+    _tabController.animation!.addListener(() {
+      final newIndex = _tabController.animation!.value.round();
+      if (selectedTab != newIndex) {
+        setState(() {
+          selectedTab = newIndex;
+        });
+      }
+    });
   }
 
   @override
@@ -107,67 +116,49 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // const CustomDragHandler(),
-          SizedBox(
+          Container(
             width: MediaQuery.of(context).size.width,
-            height: 40,
-            child: TabBar(
-              onTap: (index) {
-                setState(() {});
-              },
-              tabAlignment: TabAlignment.start,
-              indicatorSize: TabBarIndicatorSize.tab,
-              isScrollable: true,
-              indicatorColor: theme.isDarkMode
-                  ? colors.secondaryDark
-                  : colors.secondaryLight,
-              unselectedLabelColor: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              unselectedLabelStyle: TextWidget.textStyle(
-                fontSize: 14,
-                theme: false,
-                fw: 3,
+            padding: const EdgeInsets.only(top: 8),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                  width: 0,
+                ),
               ),
-              labelColor: theme.isDarkMode
-                  ? colors.secondaryDark
-                  : colors.secondaryLight,
-              labelStyle:
-                  TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
-              controller: _tabController,
-              tabs: List.generate(tablistitems.length, (index) {
-                final isSelected = _tabController.index == index;
-
-                final color = isSelected
-                    ? (theme.isDarkMode
-                        ? colors.secondaryDark
-                        : colors.secondaryLight)
-                    : (theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight);
-
-                return Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      TextWidget.subText(
-                        text: tablistitems[index]['title'].toString(),
-                        theme: false,
-                        color: color,
-                        fw: isSelected ? 2 : null,
-                      ),
-                      const SizedBox(width: 5),
-                       
-                    ],
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: List.generate(
+                  tablistitems.length,
+                  (tab) => Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      splashColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.black.withOpacity(0.05),
+                      highlightColor: theme.isDarkMode
+                          ? Colors.white.withOpacity(0.01)
+                          : Colors.black.withOpacity(0.01),
+                      onTap: () {
+                        setState(() {
+                          selectedTab = tab;
+                        });
+                        _tabController.animateTo(tab);
+                      },
+                      child: _tabConstruct(tablistitems[tab]['title'].toString(), theme, tab),
+                    ),
                   ),
-                );
-              }),
+                ),
+              ),
             ),
           ),
 
           Expanded(
             child: TabBarView(
-              physics: const NeverScrollableScrollPhysics(),
+              physics: const BouncingScrollPhysics(),
               controller: _tabController,
               children: [
                 MutualFundNewScreen(
@@ -181,6 +172,43 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _tabConstruct(String title, ThemesProvider theme, int tab) {
+    final isActive = selectedTab == tab;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 100,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: TextWidget.subText(
+            text: title,
+            color: isActive
+                ? theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight
+                : colors.textSecondaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            theme: theme.isDarkMode,
+            fw: isActive ? 2 : null,
+          ),
+        ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          height: 2,
+          width: isActive ? 82 : 0,
+          margin: const EdgeInsets.only(top: 1),
+          decoration: BoxDecoration(
+            color: colors.colorBlue,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      ],
     );
   }
 

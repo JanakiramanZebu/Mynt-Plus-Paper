@@ -39,10 +39,27 @@ class _UPIIDPaymentCancelAlertState
     final txnProv = ref.read(transcationProvider);
 
     if (mfProv.triggerfromMF == true) {
-      _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-        mfProv.getpaymentstatus(widget.data, context);
+      _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+        await mfProv.getpaymentstatus(
+            widget.data, context); // Use await if async
+
+        final status = mfProv.statusCheckUpi?.status;
+        if (status == 'PAYMENT REJECTED' || status == 'PAYMENT APPROVED') {
+          _timer?.cancel(); // This is safe even if already cancelled
+          _autoPopTimer?.cancel(); // Cancel auto-pop if running
+
+          mfProv.setterformftrigger(false);
+
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        }
       });
+
       _autoPopTimer = Timer(const Duration(minutes: 3), () {
+        _timer?.cancel(); // Also stop periodic timer here as a fallback
+        mfProv.setterformftrigger(false);
+
         if (Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         }

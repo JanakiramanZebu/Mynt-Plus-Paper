@@ -335,6 +335,8 @@ class MFProvider extends DefaultChangeNotifier {
     //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
   }
 
+  
+
   mfExTabchange(int tab) {
     _activeTab = tab;
     notifyListeners();
@@ -570,7 +572,7 @@ class MFProvider extends DefaultChangeNotifier {
       "dataIcon": 'assets/explore/coins.png',
       "description":
           "Invest in bonds and fixed-income securities. Lower risk, stable returns.",
-      "title": "Fixed Income",
+      "title": "Income",
       "sub": []
     },
     {
@@ -592,7 +594,8 @@ class MFProvider extends DefaultChangeNotifier {
           "Financial goals include retirement planning, funding a child's education, and etc.",
       "title": "Solution",
       "sub": []
-    }
+    },
+    
   ];
 
   List get mFCategoryTypesStatic => _mFCategoryTypesStatic;
@@ -1055,10 +1058,21 @@ class MFProvider extends DefaultChangeNotifier {
 
     notifyListeners();
   }
+  
+
+  clearMfSearchResult() {
+    _mutualFundsearchdata = [];
+    notifyListeners();
+  }
 
   Future fetchmfCommonsearch(String value, BuildContext context) async {
     try {
+      
+      print("[MF SEARCH] Query: '$value'");
       var mutualFundsearch = await api.getSearchMf(value);
+      print("[MF SEARCH] API Request Body: {\"text\": \"$value\"}");
+      print("[MF SEARCH] API Response: ");
+      print(mutualFundsearch.data);
       _mutualFundsearchdata = mutualFundsearch.data ?? [];
       for (var masterMf in _mfWatchlist!) {
         _mutualFundsearchdata!
@@ -1402,6 +1416,10 @@ class MFProvider extends DefaultChangeNotifier {
 
   void fetchmfholdsingpage(String isin) async {
     // print("qqqq|${isin}---");
+    
+    // Clear previous data
+    _holssinglelist = [];
+    notifyListeners();
 
     for (var item in _mfholdingnew?.data ?? []) {
       if (isin == item.iSIN) {
@@ -1411,8 +1429,12 @@ class MFProvider extends DefaultChangeNotifier {
         _holssinglelist = item != null ? [item] : [];
 
         // print("ttttttt$_holssinglelist");
+        break; // Found the item, no need to continue
+
       }
     }
+    
+    notifyListeners();
   }
 
   Future fetchMFCategoryList(String type, String subtype) async {
@@ -2090,7 +2112,7 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  void fetchcatdatanew(String tit, String chi) {
+   fetchcatdatanew(String tit, String chi) {
     // print("qqqq|${tit}----${chi}");
 
     // Define mapping of title to index dynamically
@@ -2197,6 +2219,7 @@ class MFProvider extends DefaultChangeNotifier {
       _threeSecondTimer?.cancel(); // Stop the repeating timer
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop(); // Auto pop after 1 minute
+          _triggerfromMF = false; 
       }
     });
   }
@@ -2219,9 +2242,9 @@ class MFProvider extends DefaultChangeNotifier {
 
           // Navigator.pop(context);
           _triggerfromMF = true;
-          if (_paymentName == 'NET BANKING') {
-            checknetbankingstatus(context);
-          }
+          // if (_paymentName == 'NET BANKING') {
+            // checknetbankingstatus(context);
+          // }
           // ScaffoldMessenger.of(context)
           //     .showSnackBar(successMessage(context, "${_upiApiresponse!.msg}"));
           //     showModalBottomSheet(
@@ -2319,9 +2342,9 @@ class MFProvider extends DefaultChangeNotifier {
       _loadingMessage = null;
       Navigator.pop(context);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-          warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
-      notifyListeners();
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //     warningMessage(context, "${_upiApiresponse?.data?.responsestring}"));
+      // notifyListeners();
     } catch (e) {
       debugPrint("$e");
       Navigator.pop(context);
@@ -2581,30 +2604,31 @@ class MFProvider extends DefaultChangeNotifier {
       _statusCheckUpi = await api.getstatuspaymentcheck(orderid);
 
       if ((_statusCheckUpi != null) &&
-          (_statusCheckUpi!.status == 'PAYMENT DECLINED' ||
+          (_statusCheckUpi!.status == 'PAYMENT REJECTED' ||
               _statusCheckUpi!.status == 'PAYMENT APPROVED')) {
         setterformftrigger(false);
         if (context.mounted) {
-          showModalBottomSheet(
-                  shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(16))),
-                  backgroundColor: Colors.transparent,
-                  isDismissible: false,
-                  enableDrag: false,
-                  showDragHandle: false,
-                  useSafeArea: false,
-                  isScrollControlled: true,
-                  context: context,
-                  builder: (BuildContext context) {
-                    return PopScope(
-                        canPop: false,
-                        onPopInvokedWithResult: (didPop, result) async {
-                          if (didPop) return;
-                        },
-                        child: Container(
-                            child: const UpiIdSucessorFaliureScreen()));
-                  })
+          // Navigator.pop(context);
+          // showModalBottomSheet(
+          //         shape: const RoundedRectangleBorder(
+          //             borderRadius:
+          //                 BorderRadius.vertical(top: Radius.circular(16))),
+          //         backgroundColor: Colors.transparent,
+          //         isDismissible: false,
+          //         enableDrag: false,
+          //         showDragHandle: false,
+          //         useSafeArea: false,
+          //         isScrollControlled: true,
+          //         context: context,
+          //         builder: (BuildContext context) {
+          //           return PopScope(
+          //               canPop: false,
+          //               onPopInvokedWithResult: (didPop, result) async {
+          //                 if (didPop) return;
+          //               },
+          //               child: Container(
+          //                   child: const UpiIdSucessorFaliureScreen()));
+          //         })
               //     .whenComplete(()
               //     {
 
@@ -3238,3 +3262,4 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 }
+

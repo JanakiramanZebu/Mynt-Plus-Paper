@@ -220,12 +220,14 @@ mixin MutualFundApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
-            "client_code": "${prefs.clientId}",
-            "limit" : '50'
+            "ClientCode": "${prefs.clientId}"
             }));
-
+      final res2 = {
+            "client_code": "${prefs.clientId}"
+            };
       final json = jsonDecode((res.body));
-//  print("MF orderBook ==>${json}");
+    print("MF orderBook ==>${json}");
+    print("MF res2 ==>${res2}");
       // log("MF orderBook ==>${json}");
 
       return MFOrderBookModel.fromJson(json as Map<String, dynamic>);
@@ -783,6 +785,7 @@ mixin MutualFundApi on ApiCore {
       final json = jsonDecode((res.body)); 
       return UpiIdOrderResponse.fromJson(json as Map<String, dynamic>);
     } catch (e) {
+      
       rethrow;
     }
   }
@@ -886,7 +889,9 @@ mixin MutualFundApi on ApiCore {
 
       final json = jsonDecode((res.body));
 
-      // print("mfsingle orfderrrrrr$json");
+      print("mfsingle orfderrrrrr$json");
+      final PAYLOAD = {"ClientCode": "${prefs.clientId}","OrderId": orderid};
+      print("Request::$PAYLOAD");
       // print("mflisttt Type MF ==>$json.total_sip_amount");
 
       return mf_order_sig_det.fromJson(json);

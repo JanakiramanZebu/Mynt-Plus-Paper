@@ -1161,9 +1161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           ),
                           child: TextWidget.titleText(
                             text: "Exit",
-                            color: !theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.colorBlack,
+                            color: colors.colorWhite,
                             theme: theme.isDarkMode,
                             fw: 0,
                           ),
