@@ -56,37 +56,49 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                     _buildHeaderSection(mfdata, theme),
                                     const SizedBox(height: 20),
 
-                                    _buildPauseButton( context, mfdata, theme),
-                                    if (mfdata.mfsinglepageres?.liveCancel ==
-                                        "LIVE")
+                                     
+                                    if (widget.data?.status ==
+                                        "ACTIVE")
+                                        _buildPauseButton( context, mfdata, theme),
                                       _buildCancelButton(
-                                          context, mfdata, theme),
-                                    
-                                    if (mfdata.mfsinglepageres?.invList !=
-                                            null &&
-                                        mfdata.mfsinglepageres!.invList!
-                                            .isNotEmpty)
+                                          context, mfdata, theme), 
+                                    // if (widget.data?.invList !=
+                                    //         null &&
+                                    //     widget.data!.invList!
+                                    //         .isNotEmpty)
                                       rowOfInfoData(
                                           "SIP Register Date",
                                           "${widget.data!.sIPRegnDate ?? ""}",
-                                          theme),
-
-                                  
-
+                                          theme), 
                                     rowOfInfoData(
                                         "Amount",
                                         "${widget.data!.installmentAmount ?? "0.00"}",
-                                        theme),
-
-                                         if ((mfdata.mfsinglepageres
-                                                  ?.nextInstallmentDate ??
-                                              "")
-                                          .isNotEmpty) ...[
+                                        theme),  
                                         rowOfInfoData(
                                             "Next Due Date",
-                                            "${widget.data?.nextInstallmentDate ?? ""}",
+                                            "${widget.data?.NextSIPDate ?? ""}",
                                             theme),
-                                      ],
+                                            rowOfInfoData(
+                                            "Start Date",
+                                            "${widget.data?.startDate ?? ""}",
+                                            theme),
+                                            rowOfInfoData(
+                                            "End Date",
+                                            "${widget.data?.endDate ?? ""}",
+                                            theme),
+                                            rowOfInfoData(
+                                            "Sip Reg No",
+                                            "${widget.data?.sIPRegnNo ?? ""}",
+                                            theme),
+                                       rowOfInfoData(
+                                            "Sett Type",
+                                            "${widget.data?.settType ?? ""}",
+                                            theme),
+
+                                             rowOfInfoData(
+                                            "Frequency Type",
+                                            "${widget.data?.frequencyType ?? ""}",
+                                            theme),
                                    
                                     // TextWidget.subText(
                                     //     align: TextAlign.right,
@@ -103,35 +115,35 @@ class _mfSipdetScren extends State<mfSipdetScren>
                                     // // Safely build the timeline list
                                     // _buildTimelineList(mfdata),
 
-                                    if ((mfdata.mfsinglepageres
-                                                ?.nextInstallmentDate ??
-                                            "")
-                                        .isEmpty) ...[
-                                      const SizedBox(height: 16),
-                                      TextWidget.subText(
-                                          // align: TextAlign.right,
-                                          text: "Rejected Reason",
-                                          color: theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight,
-                                          textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
-                                          fw: 3),
-                                      const SizedBox(height: 8),
-                                      if (mfdata.mfsinglepageres?.invList !=
-                                              null &&
-                                          mfdata.mfsinglepageres!.invList!
-                                              .isNotEmpty)
-                                        TextWidget.paraText(
+                                    // if ((widget.data
+                                    //             ?.NextSIPDate ??
+                                    //         "")
+                                    //     .isEmpty) ...[
+                                    //   const SizedBox(height: 16),
+                                    //   TextWidget.subText(
+                                    //       // align: TextAlign.right,
+                                    //       text: "Rejected Reason",
+                                    //       color: theme.isDarkMode
+                                    //             ? colors.textSecondaryDark
+                                    //             : colors.textSecondaryLight,
+                                    //       textOverflow: TextOverflow.ellipsis,
+                                    //       theme: theme.isDarkMode,
+                                    //       fw: 3),
+                                    //   const SizedBox(height: 8),
+                                    //   if (widget.data?.invList !=
+                                    //           null &&
+                                    //       widget.data!.invList!
+                                    //           .isNotEmpty)
+                                    //     TextWidget.paraText(
                                           
-                                            text:
-                                                "${mfdata.mfsinglepageres!.invList![0]["orderremarks"] ?? "No reason provided"}",
-                                            color:colors.loss,
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            maxLines: 3,
-                                            fw: 3),
-                                    ],
+                                    //         text:
+                                    //             "${widget.data!.invList![0]["orderremarks"] ?? "No reason provided"}",
+                                    //         color:colors.loss,
+                                    //         textOverflow: TextOverflow.ellipsis,
+                                    //         theme: theme.isDarkMode,
+                                    //         maxLines: 3,
+                                    //         fw: 3),
+                                    // ],
                                     
                                   ]))),
                 ));
@@ -157,7 +169,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                     children: [
                       TextWidget.titleText(
                           // align: TextAlign.right,
-                          text: mfdata.mfsinglepageres?.name ??
+                          text: widget.data?.name ??
                               "Unknown Scheme",
                           color: theme.isDarkMode
                               ? colors.textPrimaryDark
@@ -174,16 +186,16 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: mfdata.mfsinglepageres?.status == "LIVE"
+                    color: widget.data?.status == "ACTIVE"
                         ? colors.profit.withOpacity(0.1)
                         : colors.loss.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: TextWidget.paraText(
-                    text: mfdata.mfsinglepageres?.liveCancel == "LIVE"
+                    text: widget.data?.status == "ACTIVE"
                         ? "Live"
                         : "Cancel",
-                    color: mfdata.mfsinglepageres?.liveCancel == "LIVE"
+                    color: widget.data?.status == "ACTIVE"
                         ? colors.profit
                         : colors.loss,
                     theme: theme.isDarkMode,
@@ -198,7 +210,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
           ])),
       // TextWidget.titleText(
       //     align: TextAlign.right,
-      //     text: mfdata.mfsinglepageres?.installmentAmount ?? "0.00",
+      //     text: widget.data?.installmentAmount ?? "0.00",
       //     color: theme.isDarkMode
       //         ? colors.textSecondaryDark
       //         : colors.textSecondaryLight,
@@ -210,23 +222,23 @@ class _mfSipdetScren extends State<mfSipdetScren>
   }
 
   Widget _buildTimelineList(dynamic mfdata) {
-    if (mfdata.mfsinglepageres?.invList == null ||
-        mfdata.mfsinglepageres!.invList!.isEmpty) {
+    if (widget.data?.invList == null ||
+        widget.data!.invList!.isEmpty) {
       return const Center(child: Text("No timeline data available"));
     }
 
     return ListView.builder(
-      itemCount: mfdata.mfsinglepageres!.invList!.length,
+      itemCount: widget.data!.invList!.length,
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemBuilder: (BuildContext context, int index) {
         final isFirst = index == 0;
-        final isLast = index == mfdata.mfsinglepageres!.invList!.length - 1;
+        final isLast = index == widget.data!.invList!.length - 1;
 
         return MFtimelineWidget(
           isfFrist: isFirst,
           isLast: isLast,
-          orderHistoryData: mfdata.mfsinglepageres?.invList?[index] ?? {},
+          orderHistoryData: widget.data?.invList?[index] ?? {},
         );
       },
     );
@@ -288,15 +300,15 @@ class _mfSipdetScren extends State<mfSipdetScren>
                   context: context,
                   builder: (BuildContext context) {
                     return MfSipCancelalert(
-                        mfcancels: mfdata.mfsinglepageres?.schemename ?? "",
-                        mforderno: mfdata.mfsinglepageres?.sipregnno ?? "",
+                        mfcancels: widget.data?.schemename ?? "",
+                        mforderno: widget.data?.sipregnno ?? "",
                         mfreferno:
-                            mfdata.mfsinglepageres?.internalrefernumber ?? "",
+                            widget.data?.internalrefernumber ?? "",
                         message: "sip",
                         mffreqtype:
-                            mfdata.mfsinglepageres?.frequency_type ?? "",
+                            widget.data?.frequency_type ?? "",
                         mfnextsipdate:
-                            mfdata.mfsinglepageres?.nextInstallmentDate ?? "");
+                            widget.data?.NextSIPDate ?? "");
                   },
                 );
               },
