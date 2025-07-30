@@ -88,6 +88,8 @@ class Assets {
   final String bookmarkIcon = "assets/icon/watchlistIcon/bookmark.svg";
   final String watchlistIcon = "assets/icon/watchlistIcon/Vector - 0.svg";
   final String portfolioIcon = "assets/icon/watchlistIcon/Vector - 1.svg";
+  final String bluerightarrow = "assets/icon/watchlistIcon/bluerightarrow.png";
+  final String calc = "assets/icon/watchlistIcon/calc.svg";
 
   final String ordersIcon = "assets/icon/watchlistIcon/Vector - 2.svg";
   final String profileIcon = "assets/icon/watchlistIcon/Vector - 3.svg";

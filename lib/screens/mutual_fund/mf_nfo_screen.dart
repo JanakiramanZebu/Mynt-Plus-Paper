@@ -150,7 +150,7 @@ class MFNFOScreen extends ConsumerWidget {
                                             
                                             TextWidget.subText(
                                                     align: TextAlign.start,
-                                                    text: nfoItem.schemeName ??
+                                                    text: nfoItem.name ??
                                                   "Unknown Fund",
                                                     color: theme.isDarkMode
                                                         ?  colors.textPrimaryDark:

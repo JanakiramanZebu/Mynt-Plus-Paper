@@ -335,6 +335,8 @@ class MFProvider extends DefaultChangeNotifier {
     //     "https://mynt.zebuetrade.com/mutualfund?sUserId=${pref.clientId}&sAccountId=${pref.clientId}&sToken=${funds.fundHstoken!.hstk}");
   }
 
+  
+
   mfExTabchange(int tab) {
     _activeTab = tab;
     notifyListeners();
@@ -557,7 +559,7 @@ class MFProvider extends DefaultChangeNotifier {
       "dataIcon": 'assets/explore/coins.png',
       "description":
           "Invest in bonds and fixed-income securities. Lower risk, stable returns.",
-      "title": "Fixed Income",
+      "title": "Income",
       "sub": []
     },
     {
@@ -579,7 +581,8 @@ class MFProvider extends DefaultChangeNotifier {
           "Financial goals include retirement planning, funding a child's education, and etc.",
       "title": "Solution",
       "sub": []
-    }
+    },
+    
   ];
 
   List get mFCategoryTypesStatic => _mFCategoryTypesStatic;
@@ -1042,10 +1045,21 @@ class MFProvider extends DefaultChangeNotifier {
 
     notifyListeners();
   }
+  
+
+  clearMfSearchResult() {
+    _mutualFundsearchdata = [];
+    notifyListeners();
+  }
 
   Future fetchmfCommonsearch(String value, BuildContext context) async {
     try {
+      
+      print("[MF SEARCH] Query: '$value'");
       var mutualFundsearch = await api.getSearchMf(value);
+      print("[MF SEARCH] API Request Body: {\"text\": \"$value\"}");
+      print("[MF SEARCH] API Response: ");
+      print(mutualFundsearch.data);
       _mutualFundsearchdata = mutualFundsearch.data ?? [];
       for (var masterMf in _mfWatchlist!) {
         _mutualFundsearchdata!
@@ -1389,6 +1403,10 @@ class MFProvider extends DefaultChangeNotifier {
 
   void fetchmfholdsingpage(String isin) async {
     // print("qqqq|${isin}---");
+    
+    // Clear previous data
+    _holssinglelist = [];
+    notifyListeners();
 
     for (var item in _mfholdingnew?.data ?? []) {
       if (isin == item.iSIN) {
@@ -1398,8 +1416,12 @@ class MFProvider extends DefaultChangeNotifier {
         _holssinglelist = item != null ? [item] : [];
 
         // print("ttttttt$_holssinglelist");
+        break; // Found the item, no need to continue
+
       }
     }
+    
+    notifyListeners();
   }
 
   Future fetchMFCategoryList(String type, String subtype) async {
@@ -2077,7 +2099,7 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  void fetchcatdatanew(String tit, String chi) {
+   fetchcatdatanew(String tit, String chi) {
     // print("qqqq|${tit}----${chi}");
 
     // Define mapping of title to index dynamically
@@ -3181,3 +3203,4 @@ Navigator.pop(context);
     }
   }
 }
+

@@ -8,6 +8,7 @@ import '../../provider/index_list_provider.dart';
 import '../../provider/mf_provider.dart';
 import '../../provider/portfolio_provider.dart';
 import '../../provider/thems.dart';
+import '../../res/global_state_text.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_back_btn.dart';
 import 'mf_explore_screens.dart';
@@ -66,28 +67,30 @@ class _MfmainScreenState extends State<MfmainScreen> {
                  child: Container(
                    height: 40,
                    decoration: BoxDecoration(
-                     color: const Color(0xFFF1F3F8),
                      borderRadius: BorderRadius.circular(25),
                    ),
                    child: InkWell( // Wrap with InkWell to capture taps
-                     borderRadius: BorderRadius.circular(25),
+                     borderRadius: BorderRadius.circular(5),
                      onTap: () {
                        Navigator.pushNamed(context, Routes.mfsearchscreen);
                      },
                      child: AbsorbPointer( // Prevents user input but allows onTap
                        child: SearchBar(
                          hintText: "Search Mutual Fund",
-                          hintStyle: MaterialStateProperty.all(TextStyle(color: theme.isDarkMode ? Colors.white: const Color.fromARGB(255, 0, 0, 0))),
+                          hintStyle: MaterialStateProperty.all(TextWidget.textStyle(color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight, fontSize: 14, theme: theme.isDarkMode)),
                          backgroundColor: WidgetStateProperty.all(
-                              theme.isDarkMode ? const Color(0xFF2A2A2A): colors.kColorLightGrey), // Gray background
+                                colors.searchBg,), // Gray background
                          shape: WidgetStateProperty.all(
                            RoundedRectangleBorder(
-                               borderRadius: BorderRadius.circular(50), // Rounded corners
+                               borderRadius: BorderRadius.circular(5), // Rounded corners
                                side: BorderSide.none, // No border
                            ),
                          ),
                          elevation: WidgetStateProperty.all(0), // No shadow
-                         leading: Icon(Icons.search, color: theme.isDarkMode ? Colors.white: Colors.black54), // Prefix icon
+                         leading:Padding(
+                           padding: const EdgeInsets.only(left: 4),
+                           child: SvgPicture.asset(assets.searchIcon, width: 18, height: 18),
+                         ), // Prefix icon
                        ),
                      ),
                    ),

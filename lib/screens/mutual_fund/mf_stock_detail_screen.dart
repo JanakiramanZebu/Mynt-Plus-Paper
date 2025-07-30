@@ -214,18 +214,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       centerTitle: false,
       titleSpacing: 2,
       toolbarHeight: 68,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 8.0),
-        child: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      leading: CustomBackBtn(),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 8),
@@ -246,7 +235,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                 color: mfData.watchbatchval == true
                     ? colors.colorBlue
                     : colors.colorGrey,
-                height: 25,
+                height: 20,
               ),
               onPressed: () async {
                 final isin = widget.mfStockData.iSIN;

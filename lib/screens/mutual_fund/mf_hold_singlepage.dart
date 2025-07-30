@@ -13,6 +13,8 @@ import '../../provider/mf_provider.dart';
 import '../../provider/thems.dart';
 import '../../res/global_state_text.dart';
 import '../../res/res.dart';
+import '../../sharedWidget/custom_back_btn.dart';
+import '../../sharedWidget/custom_drag_handler.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 // import '../../sharedWidget/loader_ui.dart';
 import '../../sharedWidget/loader_ui.dart';
@@ -20,6 +22,9 @@ import '../mutual_fund_old/cancle_xsip_resone.dart';
 // import '../mutual_fund_old/mf_order_filter_sheet.dart';
 import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
 import '../mutual_fund/mf_cancel_alert.dart';
+import '../../routes/route_names.dart';
+import '../../sharedWidget/snack_bar.dart';
+import '../../models/mf_model/mutual_fundmodel.dart';
 
 class mfholdsinlepage extends StatefulWidget {
   const mfholdsinlepage({super.key});
@@ -40,6 +45,22 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
     return value >= 0 ? Colors.green : Colors.red;
   }
 
+  //  MutualFundList _convertHoldingToMutualFundList(dynamic holdingData) {
+  //   return MutualFundList(
+  //     iSIN: holdingData.iSIN,
+  //     schemeCode: holdingData.sCHEMECODE,
+  //     schemeName: holdingData.name,
+  //     name: holdingData.name,
+  //     mfsearchnamename: holdingData.name,
+  //     aMCCode: holdingData.iSIN?.substring(0, 4), // Extract AMC code from ISIN
+  //     type: "Equity", // Default type
+  //     subtype: "Growth", // Default subtype
+  //     aUM: "0", // Default AUM
+  //     nETASSETVALUE: holdingData.curNav,
+  //     minimumRedemptionQty: holdingData.minRedemptionQty,
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
@@ -51,43 +72,31 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           mfdata.holssinglelist!.isNotEmpty &&
           mfdata.holssinglelist![0] != null;
 
-      return Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-            centerTitle: false,
-            leadingWidth: 41,
-            titleSpacing: 6,
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: IconButton(
-                icon: Icon(Icons.arrow_back_ios,
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            backgroundColor:
-                theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            shadowColor: const Color(0xffECEFF3),
-            title: Text("Holding details",
-                style: textStyles.appBarTitleTxt.copyWith(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color:
-                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                )),
+      return Container(
+        decoration: BoxDecoration(
+          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
           ),
-          body: Stack(children: [
-            TransparentLoaderScreen(
-              isLoading: mfdata.bestmfloader ?? false,
-              child: hasData
-                  ? _buildHoldingDetails(context, theme, mfdata)
-                  : const Center(child: Text("No holding data available")),
-            )
-          ]));
+        ),
+        child: DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.88,
+          maxChildSize: 0.99,
+          builder: (context, scrollController) {
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              body: SingleChildScrollView(
+                controller: scrollController,
+                child: hasData
+                    ? _buildHoldingDetails(context, theme, mfdata)
+                    : const Center(child: NoDataFound()),
+              ),
+            );
+          },
+        ),
+      );
     });
   }
 
@@ -97,83 +106,99 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
     final data = mfdata.holssinglelist![0];
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const SizedBox(width: 0),
+              // const SizedBox(width: 0),
+
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.9,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      TextWidget.titleText(
-                                          align: TextAlign.start,
-                                          text: data.name ?? "Unknown Fund",
-                                          color: theme.isDarkMode
-                                              ? colors.textPrimaryDark
-                                              : colors.textPrimaryLight,
-                                          textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
-                                          maxLines: 2,
-                                          fw: 0),
-                                      const SizedBox(height: 8),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            "₹ ${_formatValue(data.profitLoss)} ",
-                                            style: textStyle(
-                                              _getColorBasedOnValue(
-                                                  data.profitLoss),
-                                              14,
-                                              FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 3),
-                                          Text(
-                                            "(${(double.tryParse(data.profitLoss ?? '0') ?? 0).toStringAsFixed(2)}%)",
-                                            style: textStyle(
-                                              _getColorBasedOnValue(
-                                                  data.profitLoss),
-                                              14,
-                                              FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const CustomDragHandler(),
+                              Material(
+                                color: Colors.transparent,
+                                // shape: const CircleBorder(),
+                                child: InkWell(
+                                    splashColor: theme.isDarkMode
+                                                ? colors.splashColorDark
+                                                : colors.splashColorLight,
+                                            highlightColor: theme.isDarkMode
+                                                ? colors.highlightDark
+                                                : colors.highlightLight,
+                                  onTap: () async {
+                                    await Future.delayed(const Duration(milliseconds: 150));
+                                    // try {
+                                    //   final isin = data.iSIN;
+                                    //   if (isin != null) {
+                                    //     mfdata.loaderfun();
+                                    //     await mfdata.fetchFactSheet(isin);
+                                    //     mfdata.fetchmatchisan(isin);
+                                    //     Navigator.pushNamed(
+                                    //       context,
+                                    //       Routes.mfStockDetail,
+                                    //       arguments: _convertHoldingToMutualFundList(data),
+                                    //     );
+                                    //   } else {
+                                    //     ScaffoldMessenger.of(context).showSnackBar(
+                                    //         successMessage(context, "Missing fund information"));
+                                    //   }
+                                    // } catch (e) {
+                                    //   ScaffoldMessenger.of(context).showSnackBar(successMessage(
+                                    //       context, "Error loading fund details: ${e.toString()}"));
+                                    // }
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        SizedBox(
+                                          width: MediaQuery.of(context).size.width * 0.7,
+                                          child: TextWidget.titleText(
+                                              // align: TextAlign.start,
+                                              text: data.name ?? "Unknown Fund",
+                                              color: theme.isDarkMode
+                                                  ? colors.textPrimaryDark
+                                                  : colors.textPrimaryLight,
+                                              textOverflow: TextOverflow.ellipsis,
+                                              theme: theme.isDarkMode,
+                                              maxLines: 2,
+                                              fw: 1),
+                                        ),
+                                    
+                                        SvgPicture.asset(
+                                                   assets.rightarrowcur,
+                                                   width: 20,
+                                                   height: 20,
+                                                   color: colors.iconColor,
+                                                 ),
+                                             
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                  ],
                 ),
               ),
             ],
@@ -224,34 +249,31 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
 
           const SizedBox(height: 24),
 
+          rowOfInfoData(
+            "Returns",
+            "${_formatValue(data.profitLoss)} (${(double.tryParse(data.changeprofitLoss ?? '0') ?? 0).toStringAsFixed(2)}%)",
+            theme,
+            valueColor: _getColorBasedOnValue(data.profitLoss),
+          ),
+
           // Units and Avg Price
           rowOfInfoData(
             "Units",
             "${data.avgQty ?? '0'}",
             theme,
           ),
-          const SizedBox(height: 12),
-          Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider,
-            thickness: 1.0,
-          ),
-          const SizedBox(height: 12),
 
           rowOfInfoData(
             "Avg Price",
             "${data.avgNav ?? '0'}",
             theme,
           ),
-          const SizedBox(height: 12),
-          Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider,
-            thickness: 1.0,
+
+            rowOfInfoData(
+            "NAV",
+            "${data.curNav ?? '0'}",
+            theme,
           ),
-          const SizedBox(height: 12),
 
           // Pledged Units and Current NAV
           rowOfInfoData(
@@ -261,46 +283,19 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
 
             theme,
           ),
-          const SizedBox(height: 12),
-          Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider,
-            thickness: 1.0,
-          ),
-          const SizedBox(height: 12),
 
           rowOfInfoData(
-            "Current NAV",
+            "Current",
             "${data.currentValue ?? '0'}",
             theme,
           ),
 
-          const SizedBox(height: 12),
-          Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider,
-            thickness: 1.0,
-          ),
-          const SizedBox(height: 12),
-
           // Invested and Current Value
           rowOfInfoData(
             "Invested",
-            "₹ ${data.investedValue ?? '0'}",
+            "${data.investedValue ?? '0'}",
             theme,
           ),
-          const SizedBox(height: 12),
-          Divider(
-            color: theme.isDarkMode
-                ? colors.darkColorDivider
-                : colors.colorDivider,
-            thickness: 1.0,
-          ),
-          const SizedBox(height: 12),
-
-           
 
           // const SizedBox(height: 12),
           // Divider(
@@ -310,7 +305,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           //   thickness: 1.0,
           // ),
 
-          const Spacer(),
+          // const Spacer(),
 
           // Redeem button
           // SafeArea(
@@ -358,26 +353,39 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
     );
   }
 
-  Row rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      TextWidget.subText(
-          align: TextAlign.right,
-          text: title1,
-          color: theme.isDarkMode
-              ? colors.textPrimaryDark
-              : colors.textPrimaryLight,
-          textOverflow: TextOverflow.ellipsis,
-          theme: theme.isDarkMode,
-          fw: 3),
-      TextWidget.subText(
-          align: TextAlign.right,
-          text: value1,
-          color: theme.isDarkMode
-              ? colors.textPrimaryDark
-              : colors.textPrimaryLight,
-          textOverflow: TextOverflow.ellipsis,
-          theme: theme.isDarkMode,
-          fw: 3),
+  Column rowOfInfoData(String title1, String value1, ThemesProvider theme,
+      {Color? valueColor}) {
+    return Column(children: [
+      const SizedBox(height: 12),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextWidget.subText(
+              // align: TextAlign.right,
+              text: title1,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 3),
+          TextWidget.subText(
+              align: TextAlign.right,
+              text: value1,
+              color: valueColor ??
+                  (theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight),
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 3),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Divider(
+        thickness: 0,
+        color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+      )
     ]);
   }
 

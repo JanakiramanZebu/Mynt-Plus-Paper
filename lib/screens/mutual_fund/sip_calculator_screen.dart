@@ -11,6 +11,8 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
+import '../../res/global_state_text.dart';
+import '../../sharedWidget/custom_back_btn.dart';
 
 class MFSIPSCREEN extends StatefulWidget {
   const MFSIPSCREEN({super.key});
@@ -119,27 +121,15 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: AppBar(
-            elevation: 0.2,
+            elevation: 0,
             leadingWidth: 41,
             centerTitle: false,
             titleSpacing: 6,
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: IconButton(
-                icon: Icon(Icons.arrow_back_ios,
-                    color: theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-            title: Text(
-              "SIP Calculator",
-              style: textStyles.appBarTitleTxt.copyWith(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-              ),
+            leading: const CustomBackBtn(),
+            title: TextWidget.titleText(
+              text: "SIP Calculator",
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
           ),
         ),
@@ -211,13 +201,11 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Principal Amount",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                16,
-                FontWeight.w600,
-              ),
+            TextWidget.subText(
+              text: "Principal Amount",
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+              
             ),
             Container(
               width: 150,
@@ -240,10 +228,10 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                   }
                   calculateSIP();
                 },
-                style: textStyle(
-                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  14,
-                  FontWeight.w600,
+                style: TextWidget.textStyle(
+                  color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  fontSize: 14,
+                  theme: theme.isDarkMode,
                 ),
                 prefixIcon: Container(
                   margin: const EdgeInsets.all(12),
@@ -269,9 +257,9 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 4.0,
-            activeTrackColor: const Color(0xFFA3C8FF),
+            activeTrackColor: colors.primary,
             inactiveTrackColor: const Color(0xFFEEEEEE),
-            thumbColor: Colors.blue,
+            thumbColor: colors.primary,
             overlayColor: const Color(0xFFCCCCCC),
             thumbShape: const RoundSliderThumbShape(
               enabledThumbRadius: 8.0,
@@ -305,21 +293,17 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Interest Rate (p.a.)",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                16,
-                FontWeight.w600,
-              ),
+            TextWidget.subText(
+              text: "Interest Rate (p.a.)",
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+            
             ),
-            Text(
-              "${_interestRate.toStringAsFixed(0)}%",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w600,
-              ),
+            TextWidget.subText(
+              text: "${_interestRate.toStringAsFixed(0)}%",
+              color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+             
             ),
           ],
         ),
@@ -327,9 +311,9 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 4.0,
-            activeTrackColor: const Color(0xFFA3C8FF),
+            activeTrackColor: colors.primary,
             inactiveTrackColor: const Color(0xFFEEEEEE),
-            thumbColor: Colors.blue,
+            thumbColor: colors.primary,
             overlayColor: const Color(0xFFCCCCCC),
             thumbShape: const RoundSliderThumbShape(
               enabledThumbRadius: 8.0,
@@ -360,21 +344,17 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Tenure Period (Years)",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                16,
-                FontWeight.w600,
-              ),
+            TextWidget.subText(
+              text: "Tenure Period (Years)",
+             color :   theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+              
             ),
-            Text(
-              "${_tenureYears.toStringAsFixed(0)} Yr",
-              style: textStyle(
-                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                14,
-                FontWeight.w600,
-              ),
+            TextWidget.subText(
+              text: "${_tenureYears.toStringAsFixed(0)} Yr",
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+          
             ),
           ],
         ),
@@ -382,9 +362,9 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 4.0,
-            activeTrackColor: const Color(0xFFA3C8FF),
+            activeTrackColor: colors.primary,
             inactiveTrackColor: const Color(0xFFEEEEEE),
-            thumbColor: Colors.blue,
+            thumbColor: colors.primary,
             overlayColor: const Color(0xFFCCCCCC),
             thumbShape: const RoundSliderThumbShape(
               enabledThumbRadius: 8.0,
@@ -413,23 +393,21 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Estimation",
-          style: textStyle(
-            theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            16,
-            FontWeight.w600
-          )
+        TextWidget.subText(
+          text: "Estimation",
+          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+          theme: theme.isDarkMode,
+          
         ),
         const SizedBox(height: 16),
-        resultRow("Principal Amount", _investedAmount, const Color(0xff015FEC)),
-        resultRow("Total Interest", _returns, Colors.black),
-        resultRow("Total Amount", _totalAmount, const Color(0xff6eb94b)),
+        resultRow("Principal Amount", _investedAmount, const Color(0xff015FEC), theme),
+        resultRow("Total Interest", _returns, Colors.black, theme),
+        resultRow("Total Amount", _totalAmount, const Color(0xff6eb94b), theme),
       ],
     );
   }
 
-  Widget resultRow(String label, int value, Color iconColor) {
+  Widget resultRow(String label, int value, Color iconColor, ThemesProvider theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
@@ -443,15 +421,19 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                 size: 14
               ),
               const SizedBox(width: 4),
-              Text(
-                label,
-                style: textStyle(const Color(0xff666666), 14, FontWeight.w500),
+              TextWidget.subText(
+                text: label,
+                color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                theme: false,
+                
               ),
             ],
           ),
-          Text(
-            "₹ ${value.toStringAsFixed(0)}",
-            style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+          TextWidget.subText(
+            text: "₹ ${value.toStringAsFixed(0)}",
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            theme: false,
+            
           ),
         ],
       ),

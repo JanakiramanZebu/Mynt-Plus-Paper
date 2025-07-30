@@ -12,6 +12,7 @@ import '../../res/res.dart';
 import '../../routes/route_names.dart';
 import '../../sharedWidget/custom_exch_badge.dart';
 import '../../sharedWidget/functions.dart';
+import '../../sharedWidget/list_divider.dart';
 import 'mf_sip_details_screen.dart';
 
 class MFSipdetScreen extends ConsumerWidget {
@@ -43,198 +44,149 @@ class MFSipdetScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSipOrderList(BuildContext context, dynamic mfData, dynamic theme) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(0),
+  Widget _buildSipOrderList(
+      BuildContext context, dynamic mfData, dynamic theme) {
+    return ListView.separated(
+      shrinkWrap: true,
+      separatorBuilder: (context, index) => const ListDivider(),
+      // padding: const EdgeInsets.all(0),
       itemCount: mfData.mfsiporderlist?.data?.length ?? 0,
       itemBuilder: (BuildContext context, int index) {
         final item = mfData.mfsiporderlist?.data?[index];
         if (item == null) return const SizedBox.shrink();
-        
-        return Column(
-          children: [
-            InkWell(
-              onTap: () async {
-                // try {
-                  // mfData.loaderfun();
-                  final sIPRegnNo = item.sIPRegnNo;
-                  
-                  if (sIPRegnNo != null) {
-                    // await mfData.fetchmfsipsinglepage(sIPRegnNo);
-                    
-                    // if (mfData.mfsinglepageres?.stat == "Ok") {
-                    showModalBottomSheet(
-                                                  context: context,
-                                                  builder: (context) =>
-                                                      mfSipdetScren(
-                                                          data: item));
-                      // Navigator.pushNamed(context, Routes.mfSipdetScren);
-                    // } else {
-                      // final errorMsg = mfData.mfsinglepageres?.Msg ?? "Failed to fetch SIP details";
-                      // ScaffoldMessenger.of(context).showSnackBar(
-                      //   successMessage(context, errorMsg)
-                      // );
-                  //   }
-                  // } else {
-                  //   ScaffoldMessenger.of(context).showSnackBar(
-                  //     successMessage(context, "Missing SIP registration ID")
-                  //   );
-                  // }
-                // } catch (e) {
-                //   ScaffoldMessenger.of(context).showSnackBar(
-                //     successMessage(context, "Error: ${e.toString()}")
-                //   );
-                }
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.symmetric(
-                    vertical: BorderSide(
-                      color: theme.isDarkMode
-                          ? colors.darkGrey
-                          : const Color(0xffEEF0F2),
-                      width: 0,
-                    ),
+
+        return InkWell(
+          onTap: () async {
+            // try {
+            // mfData.loaderfun();
+            final sIPRegnNo = item.sIPRegnNo;
+
+            if (sIPRegnNo != null) {
+              // await mfData.fetchmfsipsinglepage(sIPRegnNo);
+
+              // if (mfData.mfsinglepageres?.stat == "Ok") {
+              showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => mfSipdetScren(data: item));
+              // Navigator.pushNamed(context, Routes.mfSipdetScren);
+              // } else {
+              // final errorMsg = mfData.mfsinglepageres?.Msg ?? "Failed to fetch SIP details";
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   successMessage(context, errorMsg)
+              // );
+              //   }
+              // } else {
+              //   ScaffoldMessenger.of(context).showSnackBar(
+              //     successMessage(context, "Missing SIP registration ID")
+              //   );
+              // }
+              // } catch (e) {
+              //   ScaffoldMessenger.of(context).showSnackBar(
+              //     successMessage(context, "Error: ${e.toString()}")
+              //   );
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.6,
+                        child: TextWidget.subText(
+                            align: TextAlign.start,
+                            text: item.name ?? "Unknown Scheme",
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            maxLines: 1,
+                            fw: 3),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: item.status == "ACTIVE"
+                              ? colors.profit.withOpacity(0.1)
+                              : colors.loss.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: TextWidget.paraText(
+                            // align: TextAlign.start,
+                            text: item.status == "ACTIVE" ? "Live" : "Cancel",
+                            color: item.status == "ACTIVE"
+                                ? colors.profit
+                                : colors.loss,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            maxLines: 2,
+                            fw: 3),
+                      ),
+                    ],
                   ),
                 ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 0),
-                                    child: SizedBox(
-                                      width: MediaQuery.of(context).size.width * 0.7,
-                                      child: TextWidget.subText(
-                                                    align: TextAlign.start,
-                                                    text: item.name ?? "Unknown Scheme",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    maxLines: 2,
-                                                    fw: 3),
-                                      
-                                       
-                                      ),
-                                   
-                                  ),
-                                  const Spacer(),
-                                  SvgPicture.asset(
-                                    item.status == "ACTIVE"
-                                        ? assets.completedIcon
-                                        : assets.cancelledIcon,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 4.0),
-                                    child: 
-                                    TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text:  item.status == "ACTIVE" ? "Live" : "Cancel",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    maxLines: 2,
-                                                    fw: 3),
-                                    
-                                    
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                   TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text:  item.frequencyType ?? "Unknown",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    maxLines: 2,
-                                                    fw: 3),
-                                 
-                                  const SizedBox(width: 5),
-                                     TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text:  item.datetime ?? "Unknown Date",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    maxLines: 2,
-                                                    fw: 3),
-                                  
-                                  const SizedBox(width: 5),
-                                  if (item.status == "ACTIVE" && item.startDate != null) 
-                                   TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text:  "Due Date : ${item.startDate}",
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    maxLines: 2,
-                                                    fw: 3),
-                                     
-                                  const Spacer(),
-                                   TextWidget.paraText(
-                                                    align: TextAlign.start,
-                                                    text:  item.installmentAmount ?? 'N/A',
-                                                    color: theme.isDarkMode
-                                                        ?  colors.textPrimaryDark:
-                                                         colors.textPrimaryLight
-                                                             ,
-                                                    textOverflow:
-                                                        TextOverflow.ellipsis,
-                                                    theme: theme.isDarkMode,
-                                                    maxLines: 2,
-                                                    fw: 3),
-                                  
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    children: [
+                      // TextWidget.paraText(
+                      //     align: TextAlign.start,
+                      //     text: item.frequencyType ?? "Unknown",
+                      //     color: theme.isDarkMode
+                      //         ? colors.textPrimaryDark
+                      //         : colors.textPrimaryLight,
+                      //     textOverflow: TextOverflow.ellipsis,
+                      //     theme: theme.isDarkMode,
+                      //     maxLines: 2,
+                      //     fw: 3),
+                      // const SizedBox(width: 5),
+                      // TextWidget.paraText(
+                      //     align: TextAlign.start,
+                      //     text: item.datetime ?? "Unknown Date",
+                      //     color: theme.isDarkMode
+                      //         ? colors.textPrimaryDark
+                      //         : colors.textPrimaryLight,
+                      //     textOverflow: TextOverflow.ellipsis,
+                      //     theme: theme.isDarkMode,
+                      //     maxLines: 2,
+                      //     fw: 3),
+                      // const SizedBox(width: 5),
+                      if (item.status == "ACTIVE" && item.startDate != null)
+                        TextWidget.paraText(
+                            align: TextAlign.start,
+                            text: "Due Date : ${item.startDate}",
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            maxLines: 2,
+                            fw: 3),
+                      const Spacer(),
+                      TextWidget.paraText(
+                          align: TextAlign.start,
+                          text: item.installmentAmount ?? 'N/A',
+                          color: theme.isDarkMode
+                              ? colors.textPrimaryDark
+                              : colors.textPrimaryLight,
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          maxLines: 2,
+                          fw: 3),
+                    ],
+                  ),
+                )
+              ],
             ),
-            // Divider between items
-            Divider(
-              color: theme.isDarkMode
-                  ? colors.darkColorDivider
-                  : const Color(0xffECEDEE),
-              thickness: 2.0,
-            ),
-          ],
+          ),
         );
       },
     );

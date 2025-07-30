@@ -9,6 +9,9 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../provider/thems.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
 
+import '../../res/global_state_text.dart';
+import '../../sharedWidget/custom_back_btn.dart';
+
 class MFCAGRCAL extends StatefulWidget {
   const MFCAGRCAL({super.key});
 
@@ -17,8 +20,10 @@ class MFCAGRCAL extends StatefulWidget {
 }
 
 class _MFCAGRCALState extends State<MFCAGRCAL> {
-  final TextEditingController _principalCtrl = TextEditingController(text: '5000');
-  final TextEditingController _finalAmountCtrl = TextEditingController(text: '25000');
+  final TextEditingController _principalCtrl =
+      TextEditingController(text: '5000');
+  final TextEditingController _finalAmountCtrl =
+      TextEditingController(text: '25000');
   double _tenureYears = 5.0;
   String _cagrResult = '38.01'; // Default result based on initial values
   double _principalSliderValue = 5000; // Match initial value
@@ -27,10 +32,10 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
   @override
   void initState() {
     super.initState();
-    
+
     // Calculate initial CAGR
     calculateCAGR();
-    
+
     // Add listeners to text controllers
     _principalCtrl.addListener(_onPrincipalChanged);
     _finalAmountCtrl.addListener(_onFinalAmountChanged);
@@ -59,13 +64,13 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
   void calculateCAGR() {
     final principal = double.tryParse(_principalCtrl.text) ?? 0.0;
     final finalAmount = double.tryParse(_finalAmountCtrl.text) ?? 0.0;
-    
+
     if (principal > 0 && finalAmount > 0 && _tenureYears > 0) {
       try {
         final first = finalAmount / principal;
         final second = pow(first, 1 / _tenureYears) - 1;
         final cagr = second * 100;
-        
+
         setState(() {
           _cagrResult = cagr.toStringAsFixed(2);
         });
@@ -86,7 +91,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
     // Remove listeners to prevent memory leaks
     _principalCtrl.removeListener(_onPrincipalChanged);
     _finalAmountCtrl.removeListener(_onFinalAmountChanged);
-    
+
     // Dispose controllers
     _principalCtrl.dispose();
     _finalAmountCtrl.dispose();
@@ -98,11 +103,11 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
     return Consumer(builder: (context, ref, child) {
       final theme = ref.watch(themeProvider);
       final isDarkMode = theme.isDarkMode;
-      
+
       // Safely parse values for chart
       final double principal = double.tryParse(_principalCtrl.text) ?? 0.0;
       final double finalAmount = double.tryParse(_finalAmountCtrl.text) ?? 0.0;
-      
+
       final List<ChartData> donutChart = [
         ChartData('Initial Investment Value', principal, colors.colorBlack),
         ChartData('Final Investment', finalAmount, const Color(0xff015FEC)),
@@ -112,25 +117,15 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: AppBar(
-            elevation: 0.2,
+            elevation: 0,
             leadingWidth: 41,
             centerTitle: false,
             titleSpacing: 6,
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: IconButton(
-                icon: Icon(Icons.arrow_back_ios,
-                    color: isDarkMode ? colors.colorWhite : colors.colorBlack),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-            title: Text(
-              "CAGR Calculator",
-              style: textStyles.appBarTitleTxt.copyWith(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: isDarkMode ? colors.colorWhite : colors.colorBlack,
-              ),
+            leading: const CustomBackBtn(),
+            title: TextWidget.titleText(
+              text: "CAGR Calculator",
+              theme: isDarkMode,
+              fw: 1,
             ),
           ),
         ),
@@ -152,24 +147,20 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                         widget: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              'CAGR',
-                              textAlign: TextAlign.center,
-                              style: textStyle(
-                                Colors.grey,
-                                12,
-                                FontWeight.w500,
-                              ),
+                            TextWidget.paraText(
+                              text: 'CAGR',
+                              align: TextAlign.center,
+                              color: Colors.grey,
+                              theme: false,
+                              fw: 0,
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              "$_cagrResult %",
-                              textAlign: TextAlign.center,
-                              style: textStyle(
-                                colors.colorBlack,
-                                16,
-                                FontWeight.bold,
-                              ),
+                            TextWidget.titleText(
+                              text: "$_cagrResult %",
+                              align: TextAlign.center,
+                              color: colors.colorBlack,
+                              theme: false,
+                              fw: 2,
                             ),
                           ],
                         ),
@@ -204,13 +195,12 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Initial Investment",
-                      style: textStyle(
-                        isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        16,
-                        FontWeight.w600,
-                      ),
+                    TextWidget.subText(
+                      text: "Initial Investment",
+                      color: isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      theme: isDarkMode,
                     ),
                     const SizedBox(width: 6),
                     Container(
@@ -223,12 +213,12 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                             : const Color(0xffF1F3F8),
                         hintText: '10000',
                         textCtrl: _principalCtrl,
-                        style: textStyle(
-                          isDarkMode
+                        style: TextWidget.textStyle(
+                          color: isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack,
-                          14,
-                          FontWeight.w600,
+                          fontSize: 14,
+                          theme: isDarkMode,
                         ),
                         prefixIcon: Container(
                           margin: const EdgeInsets.all(12),
@@ -257,9 +247,9 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 4.0,
-                    activeTrackColor: const Color(0xFFA3C8FF),
+                    activeTrackColor: colors.primary,
                     inactiveTrackColor: const Color(0xFFEEEEEE),
-                    thumbColor: Colors.blue,
+                    thumbColor: colors.primary,
                     overlayColor: const Color(0xFFCCCCCC),
                     thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 8.0,
@@ -292,13 +282,12 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Final Investment",
-                      style: textStyle(
-                        isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        16,
-                        FontWeight.w600,
-                      ),
+                    TextWidget.subText(
+                      text: "Final Investment",
+                      color: isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      theme: isDarkMode,
                     ),
                     const SizedBox(width: 6),
                     Container(
@@ -311,12 +300,12 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                             : const Color(0xffF1F3F8),
                         hintText: '10000',
                         textCtrl: _finalAmountCtrl,
-                        style: textStyle(
-                          isDarkMode
+                        style: TextWidget.textStyle(
+                          color: isDarkMode
                               ? colors.colorWhite
                               : colors.colorBlack,
-                          14,
-                          FontWeight.w600,
+                          fontSize: 14,
+                          theme: isDarkMode,
                         ),
                         prefixIcon: Container(
                           margin: const EdgeInsets.all(12),
@@ -345,9 +334,9 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 4.0,
-                    activeTrackColor: const Color(0xFFA3C8FF),
+                    activeTrackColor: colors.primary,
                     inactiveTrackColor: const Color(0xFFEEEEEE),
-                    thumbColor: Colors.blue,
+                    thumbColor: colors.primary,
                     overlayColor: const Color(0xFFCCCCCC),
                     thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 8.0,
@@ -375,42 +364,42 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                 ),
 
                 const SizedBox(height: 24),
-                
+
                 // Duration of Investment
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Duration of Investment (Years)",
-                      style: textStyle(
-                        isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        16,
-                        FontWeight.w600,
-                      ),
+                    TextWidget.subText(
+                      text: "Duration of Investment (Years)",
+                      color: isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      theme: isDarkMode,
                     ),
-                    Text(
-                      "${_tenureYears.toStringAsFixed(0)} Yr",
-                      style: textStyle(
-                        isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        14,
-                        FontWeight.w600,
-                      ),
+                    TextWidget.subText(
+                      text: "${_tenureYears.toStringAsFixed(0)} Yr",
+                      color: isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      theme: isDarkMode,
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Duration Slider
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 4.0,
-                    activeTrackColor: const Color(0xFFA3C8FF),
+                    activeTrackColor: colors.primary,
                     inactiveTrackColor: const Color(0xFFEEEEEE),
-                    thumbColor: Colors.blue,
+                    thumbColor: colors.primary,
                     overlayColor: const Color(0xFFCCCCCC),
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
-                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 0.0),
+                    thumbShape:
+                        const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+                    overlayShape:
+                        const RoundSliderOverlayShape(overlayRadius: 0.0),
                   ),
                   child: Slider(
                     value: _tenureYears.clamp(1, 50),
@@ -426,26 +415,27 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                     },
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Estimation Section
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Estimation",
-                      style: textStyle(
-                        isDarkMode ? colors.colorWhite : colors.colorBlack,
-                        16,
-                        FontWeight.w600
-                      )
+                    TextWidget.subText(
+                      text: "Estimation",
+                      color: isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      theme: isDarkMode,
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Initial and Final Values
-                    resultRow("Initial Value", int.tryParse(_principalCtrl.text) ?? 0),
-                    resultRow("Final Value", int.tryParse(_finalAmountCtrl.text) ?? 0),
+                    resultRow("Initial Value",
+                        int.tryParse(_principalCtrl.text) ?? 0, theme),
+                    resultRow("Final Value",
+                        int.tryParse(_finalAmountCtrl.text) ?? 0, theme),
                     const SizedBox(height: 4),
                   ],
                 ),
@@ -457,7 +447,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
     });
   }
 
-  Widget resultRow(String label, int value) {
+  Widget resultRow(String label, int value, ThemesProvider theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
@@ -465,34 +455,30 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.circle,
-                color: label == 'Initial Value'
-                    ? const Color.fromARGB(255, 0, 0, 0)
-                    : const Color(0xff015FEC),
-                size: 14
-              ),
+              Icon(Icons.circle,
+                  color: label == 'Initial Value'
+                      ? const Color.fromARGB(255, 0, 0, 0)
+                      : const Color(0xff015FEC),
+                  size: 14),
               const SizedBox(width: 4),
-              Text(
-                label,
-                style: textStyle(const Color(0xff666666), 14, FontWeight.w500),
+              TextWidget.subText(
+                text: label,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                theme: theme.isDarkMode,
               ),
             ],
           ),
-          Text(
-            "₹ ${value.toStringAsFixed(0)}",
-            style: textStyle(colors.colorBlack, 14, FontWeight.w600),
+          TextWidget.subText(
+            text: "₹ ${value.toStringAsFixed(0)}",
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            theme: theme.isDarkMode,
           ),
         ],
       ),
-    );
-  }
-  
-  TextStyle textStyle(Color color, double fontSize, FontWeight fontWeight) {
-    return TextStyle(
-      fontSize: fontSize,
-      fontWeight: fontWeight,
-      color: color,
     );
   }
 }
